@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CapacityPoolGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the capacity pool get o k response
+func (o *CapacityPoolGetOK) Code() int {
+	return 200
+}
+
 func (o *CapacityPoolGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/licensing/capacity-pools/{serial_number}][%d] capacityPoolGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/licensing/capacity-pools/{serial_number}][%d] capacityPoolGetOK %s", 200, payload)
 }
 
 func (o *CapacityPoolGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/licensing/capacity-pools/{serial_number}][%d] capacityPoolGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/licensing/capacity-pools/{serial_number}][%d] capacityPoolGetOK %s", 200, payload)
 }
 
 func (o *CapacityPoolGetOK) GetPayload() *models.CapacityPool {
@@ -122,11 +130,6 @@ type CapacityPoolGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the capacity pool get default response
-func (o *CapacityPoolGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this capacity pool get default response has a 2xx status code
 func (o *CapacityPoolGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *CapacityPoolGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the capacity pool get default response
+func (o *CapacityPoolGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CapacityPoolGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/licensing/capacity-pools/{serial_number}][%d] capacity_pool_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/licensing/capacity-pools/{serial_number}][%d] capacity_pool_get default %s", o._statusCode, payload)
 }
 
 func (o *CapacityPoolGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/licensing/capacity-pools/{serial_number}][%d] capacity_pool_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/licensing/capacity-pools/{serial_number}][%d] capacity_pool_get default %s", o._statusCode, payload)
 }
 
 func (o *CapacityPoolGetDefault) GetPayload() *models.ErrorResponse {

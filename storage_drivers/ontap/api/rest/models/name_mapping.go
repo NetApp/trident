@@ -41,7 +41,7 @@ type NameMapping struct {
 	//   * s3_win    - S3 user name to Windows user name mapping
 	//
 	// Example: win_unix
-	// Enum: [win_unix unix_win krb_unix s3_unix s3_win]
+	// Enum: ["win_unix","unix_win","krb_unix","s3_unix","s3_win"]
 	Direction *string `json:"direction,omitempty"`
 
 	// Position in the list of name mappings.
@@ -418,7 +418,7 @@ func (m *NameMappingInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NameMappingInlineSvm name mapping inline svm
+// NameMappingInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model name_mapping_inline_svm
 type NameMappingInlineSvm struct {
@@ -426,12 +426,12 @@ type NameMappingInlineSvm struct {
 	// links
 	Links *NameMappingInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

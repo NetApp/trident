@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *HostsSettingsCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the hosts settings collection get o k response
+func (o *HostsSettingsCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *HostsSettingsCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/cache/host/settings][%d] hostsSettingsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/host/settings][%d] hostsSettingsCollectionGetOK %s", 200, payload)
 }
 
 func (o *HostsSettingsCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/cache/host/settings][%d] hostsSettingsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/host/settings][%d] hostsSettingsCollectionGetOK %s", 200, payload)
 }
 
 func (o *HostsSettingsCollectionGetOK) GetPayload() *models.HostsSettingsResponse {
@@ -122,11 +130,6 @@ type HostsSettingsCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the hosts settings collection get default response
-func (o *HostsSettingsCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this hosts settings collection get default response has a 2xx status code
 func (o *HostsSettingsCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *HostsSettingsCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the hosts settings collection get default response
+func (o *HostsSettingsCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *HostsSettingsCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/cache/host/settings][%d] hosts_settings_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/host/settings][%d] hosts_settings_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *HostsSettingsCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/cache/host/settings][%d] hosts_settings_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/host/settings][%d] hosts_settings_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *HostsSettingsCollectionGetDefault) GetPayload() *models.ErrorResponse {

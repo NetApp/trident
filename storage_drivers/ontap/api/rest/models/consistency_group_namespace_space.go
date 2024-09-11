@@ -24,7 +24,7 @@ type ConsistencyGroupNamespaceSpace struct {
 	// Valid in POST when creating an NVMe namespace that is not a clone of another. Disallowed in POST when creating a namespace clone.
 	//  Valid in POST.
 	//
-	// Enum: [512 4096]
+	// Enum: [512,4096]
 	BlockSize *int64 `json:"block_size,omitempty"`
 
 	// guarantee
@@ -43,6 +43,7 @@ type ConsistencyGroupNamespaceSpace struct {
 	// This value is the total space consumed in the volume by the NVMe namespace, including filesystem overhead, but excluding prefix and suffix streams. Due to internal filesystem overhead and the many ways NVMe filesystems and applications utilize blocks within a namespace, this value does not necessarily reflect actual consumption/availability from the perspective of the filesystem or application. Without specific knowledge of how the namespace blocks are utilized outside of ONTAP, this property should not be used as an indicator for an out-of-space condition.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
 	//
+	// Read Only: true
 	Used *int64 `json:"used,omitempty"`
 }
 
@@ -142,6 +143,10 @@ func (m *ConsistencyGroupNamespaceSpace) ContextValidate(ctx context.Context, fo
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -157,6 +162,15 @@ func (m *ConsistencyGroupNamespaceSpace) contextValidateGuarantee(ctx context.Co
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupNamespaceSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "used", "body", m.Used); err != nil {
+		return err
 	}
 
 	return nil
@@ -193,6 +207,7 @@ type ConsistencyGroupNamespaceSpaceInlineGuarantee struct {
 	// Reports if the NVMe namespace is space guaranteed.<br/>
 	// This property is _true_ if a space guarantee is requested and the containing volume and aggregate support the request. This property is _false_ if a space guarantee is not requested or if a space guarantee is requested and either the containing volume and aggregate do not support the request.
 	//
+	// Read Only: true
 	Reserved *bool `json:"reserved,omitempty"`
 }
 
@@ -201,8 +216,26 @@ func (m *ConsistencyGroupNamespaceSpaceInlineGuarantee) Validate(formats strfmt.
 	return nil
 }
 
-// ContextValidate validates this consistency group namespace space inline guarantee based on context it is used
+// ContextValidate validate this consistency group namespace space inline guarantee based on the context it is used
 func (m *ConsistencyGroupNamespaceSpaceInlineGuarantee) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateReserved(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupNamespaceSpaceInlineGuarantee) contextValidateReserved(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "guarantee"+"."+"reserved", "body", m.Reserved); err != nil {
+		return err
+	}
+
 	return nil
 }
 

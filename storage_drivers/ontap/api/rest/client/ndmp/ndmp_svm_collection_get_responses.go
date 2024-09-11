@@ -6,6 +6,7 @@ package ndmp
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NdmpSvmCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ndmp svm collection get o k response
+func (o *NdmpSvmCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *NdmpSvmCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/svms][%d] ndmpSvmCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/svms][%d] ndmpSvmCollectionGetOK %s", 200, payload)
 }
 
 func (o *NdmpSvmCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/svms][%d] ndmpSvmCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/svms][%d] ndmpSvmCollectionGetOK %s", 200, payload)
 }
 
 func (o *NdmpSvmCollectionGetOK) GetPayload() *models.NdmpSvmResponse {
@@ -112,19 +120,20 @@ func NewNdmpSvmCollectionGetDefault(code int) *NdmpSvmCollectionGetDefault {
 }
 
 /*
-NdmpSvmCollectionGetDefault describes a response with status code -1, with default header values.
+	NdmpSvmCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response codes
+
+| Error code  |  Description |
+|-------------|--------------|
+| 2           | The UUID provided is an invalid value for field \"svm.uuid\".|
+| 262197      | The value provided is invalid for field \"fields\".|
+| 65601536    | The operation is not supported because NDMP SVM-aware mode is disabled.|
 */
 type NdmpSvmCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ndmp svm collection get default response
-func (o *NdmpSvmCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ndmp svm collection get default response has a 2xx status code
@@ -152,12 +161,19 @@ func (o *NdmpSvmCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ndmp svm collection get default response
+func (o *NdmpSvmCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NdmpSvmCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/svms][%d] ndmp_svm_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/svms][%d] ndmp_svm_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *NdmpSvmCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/svms][%d] ndmp_svm_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/svms][%d] ndmp_svm_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *NdmpSvmCollectionGetDefault) GetPayload() *models.ErrorResponse {

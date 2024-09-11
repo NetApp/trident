@@ -24,7 +24,7 @@ type ApplicationSnapshotRestore struct {
 	// application
 	Application *ApplicationSnapshotRestoreInlineApplication `json:"application,omitempty"`
 
-	// The Snapshot copy UUID. Valid in URL or POST.
+	// The snapshot UUID. Valid in URL or POST.
 	UUID *string `json:"uuid,omitempty"`
 }
 

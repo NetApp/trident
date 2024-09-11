@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *RolePrivilegeDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the role privilege delete o k response
+func (o *RolePrivilegeDeleteOK) Code() int {
+	return 200
+}
+
 func (o *RolePrivilegeDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] rolePrivilegeDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] rolePrivilegeDeleteOK", 200)
 }
 
 func (o *RolePrivilegeDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] rolePrivilegeDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] rolePrivilegeDeleteOK", 200)
 }
 
 func (o *RolePrivilegeDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,6 +113,7 @@ func NewRolePrivilegeDeleteDefault(code int) *RolePrivilegeDeleteDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 1263347 | Cannot modify pre-defined roles. |
+| 5636168 | This role is mapped to a rest-role and cannot be modified directly. Modifications must be done with rest-role. |
 | 5636169 | Specified URI path is invalid or not supported. Resource-qualified endpoints are not supported. |
 | 5636170 | URI does not exist. |
 | 5636172 | User accounts detected with this role assigned. Update or delete those accounts before deleting this role. |
@@ -116,16 +123,12 @@ func NewRolePrivilegeDeleteDefault(code int) *RolePrivilegeDeleteDefault {
 | 5636186 | Expanded REST roles for granular resource control requires an effective cluster version of 9.10.1 or later. |
 | 13434890 | Vserver-ID failed for Vserver roles. |
 | 13434893 | The SVM does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type RolePrivilegeDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the role privilege delete default response
-func (o *RolePrivilegeDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this role privilege delete default response has a 2xx status code
@@ -153,12 +156,19 @@ func (o *RolePrivilegeDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the role privilege delete default response
+func (o *RolePrivilegeDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *RolePrivilegeDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] role_privilege_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] role_privilege_delete default %s", o._statusCode, payload)
 }
 
 func (o *RolePrivilegeDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] role_privilege_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] role_privilege_delete default %s", o._statusCode, payload)
 }
 
 func (o *RolePrivilegeDeleteDefault) GetPayload() *models.ErrorResponse {

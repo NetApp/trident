@@ -64,6 +64,14 @@ VolumeModifyParams contains all the parameters to send to the API endpoint
 */
 type VolumeModifyParams struct {
 
+	/* AggressiveReadaheadMode.
+
+	   Specifies the `aggressive_readahead_mode` enabled on the volume. When set to _file_prefetch_, on a file read, the system aggressively issues readaheads for all of the blocks in the file and retains those blocks in a cache for a finite period of time. This feature is only available on FabricPool volumes on FSx for ONTAP and Cloud Volumes ONTAP. When the option is set to _sequential_read_, the system aggressively prefetches the file completely, or to a certain length based on the file size limit, and continues as the read makes progress. If the option is set to _cross_file_sequential_read_, then the system aggressively prefetches multiple files completely, or to a certain length, and continues as the read makes progress.
+
+	   Default: "none"
+	*/
+	AggressiveReadaheadMode *string
+
 	/* CloneMatchParentStorageTier.
 
 	   Specifies whether the FlexClone volume splits the data blocks by matching its parent storage tier. This option is applicable only if the tiering policy and the tiering minimum cooling days of the parent volume and the FlexClone volume are the same.
@@ -84,7 +92,7 @@ type VolumeModifyParams struct {
 
 	/* PreserveLunIds.
 
-	   Specifies whether LUN IDs need to be preserved during a Snapshot copy restore operation.
+	   Specifies whether LUN IDs need to be preserved during a snapshot restore operation.
 	*/
 	PreserveLunIds *bool
 
@@ -96,7 +104,7 @@ type VolumeModifyParams struct {
 
 	/* RestoreToPath.
 
-	   Path to the file which is restored from the Snapshot copy.
+	   Path to the file which is restored from the snapshot.
 	*/
 	RestoreToPath *string
 
@@ -108,13 +116,13 @@ type VolumeModifyParams struct {
 
 	/* RestoreToSnapshotName.
 
-	   Name of the Snapshot copy to restore volume to the point in time the Snapshot copy was taken.
+	   Name of the snapshot to restore volume to the point in time the snapshot was taken.
 	*/
 	RestoreToSnapshotName *string
 
 	/* RestoreToSnapshotUUID.
 
-	   UUID of the Snapshot copy to restore volume to the point in time the Snapshot copy was taken.
+	   UUID of the snapshot to restore volume to the point in time the snapshot was taken.
 	*/
 	RestoreToSnapshotUUID *string
 
@@ -132,8 +140,8 @@ type VolumeModifyParams struct {
 
 	/* ScheduledSnapshotNamingScheme.
 
-	     Naming Scheme for automatic Snapshot copies:
-	* create_time - Automatic Snapshot copies are saved as per the start of their current date and time.
+	     Naming Scheme for automatic snapshots:
+	* create_time - Automatic snapshots are saved as per the start of their current date and time.
 	* ordinal - Latest automatic snapshot copy is saved as <scheduled_frequency>.0 and subsequent copies will follow the create_time naming convention.
 
 
@@ -168,7 +176,8 @@ type VolumeModifyParams struct {
 
 	/* ValidateOnly.
 
-	   Validate the operation and its parameters, without actually performing the operation.
+	   Validate the volume move or volume conversion operations and their parameters, without actually performing the operation.
+
 	*/
 	ValidateOnly *bool
 
@@ -190,6 +199,8 @@ func (o *VolumeModifyParams) WithDefaults() *VolumeModifyParams {
 // All values with no default are reset to their zero value.
 func (o *VolumeModifyParams) SetDefaults() {
 	var (
+		aggressiveReadaheadModeDefault = string("none")
+
 		preserveLunIdsDefault = bool(false)
 
 		returnTimeoutDefault = int64(0)
@@ -202,6 +213,7 @@ func (o *VolumeModifyParams) SetDefaults() {
 	)
 
 	val := VolumeModifyParams{
+		AggressiveReadaheadMode:        &aggressiveReadaheadModeDefault,
 		PreserveLunIds:                 &preserveLunIdsDefault,
 		ReturnTimeout:                  &returnTimeoutDefault,
 		ScheduledSnapshotNamingScheme:  &scheduledSnapshotNamingSchemeDefault,
@@ -246,6 +258,17 @@ func (o *VolumeModifyParams) WithHTTPClient(client *http.Client) *VolumeModifyPa
 // SetHTTPClient adds the HTTPClient to the volume modify params
 func (o *VolumeModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithAggressiveReadaheadMode adds the aggressiveReadaheadMode to the volume modify params
+func (o *VolumeModifyParams) WithAggressiveReadaheadMode(aggressiveReadaheadMode *string) *VolumeModifyParams {
+	o.SetAggressiveReadaheadMode(aggressiveReadaheadMode)
+	return o
+}
+
+// SetAggressiveReadaheadMode adds the aggressiveReadaheadMode to the volume modify params
+func (o *VolumeModifyParams) SetAggressiveReadaheadMode(aggressiveReadaheadMode *string) {
+	o.AggressiveReadaheadMode = aggressiveReadaheadMode
 }
 
 // WithCloneMatchParentStorageTier adds the cloneMatchParentStorageTier to the volume modify params
@@ -431,6 +454,23 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		return err
 	}
 	var res []error
+
+	if o.AggressiveReadaheadMode != nil {
+
+		// query param aggressive_readahead_mode
+		var qrAggressiveReadaheadMode string
+
+		if o.AggressiveReadaheadMode != nil {
+			qrAggressiveReadaheadMode = *o.AggressiveReadaheadMode
+		}
+		qAggressiveReadaheadMode := qrAggressiveReadaheadMode
+		if qAggressiveReadaheadMode != "" {
+
+			if err := r.SetQueryParam("aggressive_readahead_mode", qAggressiveReadaheadMode); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.CloneMatchParentStorageTier != nil {
 

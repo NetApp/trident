@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SoftwareHistoryCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the software history collection get o k response
+func (o *SoftwareHistoryCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *SoftwareHistoryCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/software/history][%d] softwareHistoryCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/software/history][%d] softwareHistoryCollectionGetOK %s", 200, payload)
 }
 
 func (o *SoftwareHistoryCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/software/history][%d] softwareHistoryCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/software/history][%d] softwareHistoryCollectionGetOK %s", 200, payload)
 }
 
 func (o *SoftwareHistoryCollectionGetOK) GetPayload() *models.SoftwareHistoryResponse {
@@ -122,11 +130,6 @@ type SoftwareHistoryCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the software history collection get default response
-func (o *SoftwareHistoryCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this software history collection get default response has a 2xx status code
 func (o *SoftwareHistoryCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SoftwareHistoryCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the software history collection get default response
+func (o *SoftwareHistoryCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SoftwareHistoryCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/software/history][%d] software_history_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/software/history][%d] software_history_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SoftwareHistoryCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/software/history][%d] software_history_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/software/history][%d] software_history_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SoftwareHistoryCollectionGetDefault) GetPayload() *models.ErrorResponse {

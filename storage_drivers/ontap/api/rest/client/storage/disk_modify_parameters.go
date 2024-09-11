@@ -88,7 +88,7 @@ type DiskModifyParams struct {
 
 	/* Node.
 
-	   Node to assign disk
+	   Node to assign disk. This property is not supported on the ASA r2 platform.
 	*/
 	Node *string
 
@@ -103,6 +103,12 @@ type DiskModifyParams struct {
 	   The default is false.  If set to true, the records are returned.
 	*/
 	ReturnRecords *bool
+
+	/* SanitizeSpare.
+
+	   Confirms spare disk sanitization (non-cryptographically).
+	*/
+	SanitizeSpare *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -234,6 +240,17 @@ func (o *DiskModifyParams) SetReturnRecords(returnRecords *bool) {
 	o.ReturnRecords = returnRecords
 }
 
+// WithSanitizeSpare adds the sanitizeSpare to the disk modify params
+func (o *DiskModifyParams) WithSanitizeSpare(sanitizeSpare *bool) *DiskModifyParams {
+	o.SetSanitizeSpare(sanitizeSpare)
+	return o
+}
+
+// SetSanitizeSpare adds the sanitizeSpare to the disk modify params
+func (o *DiskModifyParams) SetSanitizeSpare(sanitizeSpare *bool) {
+	o.SanitizeSpare = sanitizeSpare
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *DiskModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -327,6 +344,23 @@ func (o *DiskModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		if qReturnRecords != "" {
 
 			if err := r.SetQueryParam("return_records", qReturnRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SanitizeSpare != nil {
+
+		// query param sanitize_spare
+		var qrSanitizeSpare bool
+
+		if o.SanitizeSpare != nil {
+			qrSanitizeSpare = *o.SanitizeSpare
+		}
+		qSanitizeSpare := swag.FormatBool(qrSanitizeSpare)
+		if qSanitizeSpare != "" {
+
+			if err := r.SetQueryParam("sanitize_spare", qSanitizeSpare); err != nil {
 				return err
 			}
 		}

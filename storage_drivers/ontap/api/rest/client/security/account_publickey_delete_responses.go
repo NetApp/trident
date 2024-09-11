@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *AccountPublickeyDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the account publickey delete o k response
+func (o *AccountPublickeyDeleteOK) Code() int {
+	return 200
+}
+
 func (o *AccountPublickeyDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] accountPublickeyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] accountPublickeyDeleteOK", 200)
 }
 
 func (o *AccountPublickeyDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] accountPublickeyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] accountPublickeyDeleteOK", 200)
 }
 
 func (o *AccountPublickeyDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type AccountPublickeyDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the account publickey delete default response
-func (o *AccountPublickeyDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this account publickey delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *AccountPublickeyDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the account publickey delete default response
+func (o *AccountPublickeyDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AccountPublickeyDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] account_publickey_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] account_publickey_delete default %s", o._statusCode, payload)
 }
 
 func (o *AccountPublickeyDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] account_publickey_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] account_publickey_delete default %s", o._statusCode, payload)
 }
 
 func (o *AccountPublickeyDeleteDefault) GetPayload() *models.ErrorResponse {

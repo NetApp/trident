@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,12 +92,19 @@ func (o *ConsistencyGroupSnapshotCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the consistency group snapshot create created response
+func (o *ConsistencyGroupSnapshotCreateCreated) Code() int {
+	return 201
+}
+
 func (o *ConsistencyGroupSnapshotCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotCreateCreated %s", 201, payload)
 }
 
 func (o *ConsistencyGroupSnapshotCreateCreated) String() string {
-	return fmt.Sprintf("[POST /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotCreateCreated %s", 201, payload)
 }
 
 func (o *ConsistencyGroupSnapshotCreateCreated) GetPayload() *models.ConsistencyGroupSnapshotResponse {
@@ -138,7 +146,7 @@ type ConsistencyGroupSnapshotCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.ConsistencyGroupSnapshotJobLinkResponse
 }
 
 // IsSuccess returns true when this consistency group snapshot create accepted response has a 2xx status code
@@ -166,15 +174,22 @@ func (o *ConsistencyGroupSnapshotCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the consistency group snapshot create accepted response
+func (o *ConsistencyGroupSnapshotCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *ConsistencyGroupSnapshotCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotCreateAccepted %s", 202, payload)
 }
 
 func (o *ConsistencyGroupSnapshotCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotCreateAccepted %s", 202, payload)
 }
 
-func (o *ConsistencyGroupSnapshotCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *ConsistencyGroupSnapshotCreateAccepted) GetPayload() *models.ConsistencyGroupSnapshotJobLinkResponse {
 	return o.Payload
 }
 
@@ -187,7 +202,7 @@ func (o *ConsistencyGroupSnapshotCreateAccepted) readResponse(response runtime.C
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.ConsistencyGroupSnapshotJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -205,19 +220,20 @@ func NewConsistencyGroupSnapshotCreateDefault(code int) *ConsistencyGroupSnapsho
 }
 
 /*
-ConsistencyGroupSnapshotCreateDefault describes a response with status code -1, with default header values.
+	ConsistencyGroupSnapshotCreateDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 53411918 | Snapshot operation not permitted. |
+| 53411921 | Failed to create snapshot for consistency group. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ConsistencyGroupSnapshotCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the consistency group snapshot create default response
-func (o *ConsistencyGroupSnapshotCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this consistency group snapshot create default response has a 2xx status code
@@ -245,12 +261,19 @@ func (o *ConsistencyGroupSnapshotCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the consistency group snapshot create default response
+func (o *ConsistencyGroupSnapshotCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ConsistencyGroupSnapshotCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistency_group_snapshot_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistency_group_snapshot_create default %s", o._statusCode, payload)
 }
 
 func (o *ConsistencyGroupSnapshotCreateDefault) String() string {
-	return fmt.Sprintf("[POST /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistency_group_snapshot_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistency_group_snapshot_create default %s", o._statusCode, payload)
 }
 
 func (o *ConsistencyGroupSnapshotCreateDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *UnixGroupCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the unix group create created response
+func (o *UnixGroupCreateCreated) Code() int {
+	return 201
+}
+
 func (o *UnixGroupCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /name-services/unix-groups][%d] unixGroupCreateCreated ", 201)
+	return fmt.Sprintf("[POST /name-services/unix-groups][%d] unixGroupCreateCreated", 201)
 }
 
 func (o *UnixGroupCreateCreated) String() string {
-	return fmt.Sprintf("[POST /name-services/unix-groups][%d] unixGroupCreateCreated ", 201)
+	return fmt.Sprintf("[POST /name-services/unix-groups][%d] unixGroupCreateCreated", 201)
 }
 
 func (o *UnixGroupCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -118,6 +124,7 @@ func NewUnixGroupCreateDefault(code int) *UnixGroupCreateDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621706    | The specified SVM UUID is incorrect for the specified SVM name. |
+| 2621516    | This operation is only supported on a data SVM. |
 | 3277025    | Maximum supported limit of UNIX group count reached. |
 | 3277051    | Invalid characters in group name. Valid characters are 0-9, A-Z, a-z, ".", "_" and "-". Names cannot start with "-". |
 | 23724067   | Group name too long. Maximum supported length is 64 characters. |
@@ -127,11 +134,6 @@ type UnixGroupCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the unix group create default response
-func (o *UnixGroupCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this unix group create default response has a 2xx status code
@@ -159,12 +161,19 @@ func (o *UnixGroupCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the unix group create default response
+func (o *UnixGroupCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *UnixGroupCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /name-services/unix-groups][%d] unix_group_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/unix-groups][%d] unix_group_create default %s", o._statusCode, payload)
 }
 
 func (o *UnixGroupCreateDefault) String() string {
-	return fmt.Sprintf("[POST /name-services/unix-groups][%d] unix_group_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/unix-groups][%d] unix_group_create default %s", o._statusCode, payload)
 }
 
 func (o *UnixGroupCreateDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *FcZoneCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fc zone collection get o k response
+func (o *FcZoneCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *FcZoneCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/fc/fabrics/{fabric.name}/zones][%d] fcZoneCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/fabrics/{fabric.name}/zones][%d] fcZoneCollectionGetOK %s", 200, payload)
 }
 
 func (o *FcZoneCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /network/fc/fabrics/{fabric.name}/zones][%d] fcZoneCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/fabrics/{fabric.name}/zones][%d] fcZoneCollectionGetOK %s", 200, payload)
 }
 
 func (o *FcZoneCollectionGetOK) GetPayload() *models.FcZoneResponse {
@@ -118,17 +126,15 @@ func NewFcZoneCollectionGetDefault(code int) *FcZoneCollectionGetDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 5373982 | An invalid WWN was specified. The length is incorrect. |
+| 5373983 | An invalid WWN was specified. The format is incorrect. |
 | 5375053 | The Fibre Channel fabric specified by name in the request URI was not found in the FC fabric cache. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type FcZoneCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the fc zone collection get default response
-func (o *FcZoneCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this fc zone collection get default response has a 2xx status code
@@ -156,12 +162,19 @@ func (o *FcZoneCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fc zone collection get default response
+func (o *FcZoneCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FcZoneCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/fc/fabrics/{fabric.name}/zones][%d] fc_zone_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/fabrics/{fabric.name}/zones][%d] fc_zone_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *FcZoneCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/fc/fabrics/{fabric.name}/zones][%d] fc_zone_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/fabrics/{fabric.name}/zones][%d] fc_zone_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *FcZoneCollectionGetDefault) GetPayload() *models.ErrorResponse {

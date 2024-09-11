@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *DNSCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the dns create created response
+func (o *DNSCreateCreated) Code() int {
+	return 201
+}
+
 func (o *DNSCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /name-services/dns][%d] dnsCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/dns][%d] dnsCreateCreated %s", 201, payload)
 }
 
 func (o *DNSCreateCreated) String() string {
-	return fmt.Sprintf("[POST /name-services/dns][%d] dnsCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/dns][%d] dnsCreateCreated %s", 201, payload)
 }
 
 func (o *DNSCreateCreated) GetPayload() *models.DNSResponse {
@@ -145,16 +153,12 @@ func NewDNSCreateDefault(code int) *DNSCreateDefault {
 | 9240607    | One of the FQDN labels is too long. Maximum supported length is 63 characters |
 | 13434916   | The SVM is in the process of being created. Wait a few minutes, and then try the command again. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
+| 1377682    | IPv6 is not enabled in the cluster |
 */
 type DNSCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the dns create default response
-func (o *DNSCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this dns create default response has a 2xx status code
@@ -182,12 +186,19 @@ func (o *DNSCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the dns create default response
+func (o *DNSCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *DNSCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /name-services/dns][%d] dns_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/dns][%d] dns_create default %s", o._statusCode, payload)
 }
 
 func (o *DNSCreateDefault) String() string {
-	return fmt.Sprintf("[POST /name-services/dns][%d] dns_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/dns][%d] dns_create default %s", o._statusCode, payload)
 }
 
 func (o *DNSCreateDefault) GetPayload() *models.ErrorResponse {

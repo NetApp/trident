@@ -28,6 +28,9 @@ type SecurityCertificate struct {
 	// Read Only: true
 	AuthorityKeyIdentifier *string `json:"authority_key_identifier,omitempty"`
 
+	// azure
+	Azure *SecurityCertificateInlineAzure `json:"azure,omitempty"`
+
 	// Certificate authority
 	// Read Only: true
 	// Max Length: 256
@@ -38,26 +41,27 @@ type SecurityCertificate struct {
 	// Example: test.domain.com
 	CommonName *string `json:"common_name,omitempty"`
 
-	// Certificate expiration time. Can be provided on POST if creating self-signed certificate. The expiration time range is between 1 day to 10 years.
+	// Certificate expiration time, in ISO 8601 duration format or date and time format. Can be provided on POST if creating self-signed certificate. The expiration time range is between 1 day to 10 years.
+	// Example: 2030-01-25 11:20:13
 	ExpiryTime *string `json:"expiry_time,omitempty"`
 
 	// Hashing function. Can be provided on POST when creating a self-signed certificate. Hash functions md5 and sha1 are not allowed on POST.
-	// Enum: [sha1 sha256 md5 sha224 sha384 sha512]
+	// Enum: ["sha1","sha256","md5","sha224","sha384","sha512"]
 	HashFunction *string `json:"hash_function,omitempty"`
 
-	// Key size of requested Certificate in bits. One of 512, 1024, 1536, 2048, 3072. Can be provided on POST if creating self-signed certificate. Key size of 512 is not allowed on POST.
+	// Key size of requested Certificate in bits. One of 512, 1024, 1536, 2048, 3072. Can be provided on POST if creating self-signed certificate with a minimum permissible value of 2048.
+	// Enum: [512,1024,1536,2048,3072]
 	KeySize *int64 `json:"key_size,omitempty"`
 
-	// Certificate name. If not provided in POST, a unique name specific to the SVM is automatically generated.
-	// Example: cert1
+	// Certificate name or name of the certificate to be downloaded from the Azure Key Vault (AKV). If not provided in POST, a unique name specific to the SVM is automatically generated.
 	Name *string `json:"name,omitempty"`
 
 	// Private key Certificate in PEM format. Only valid for create when installing a CA-signed certificate. This is not audited.
-	// Example: -----BEGIN PRIVATE KEY----- MIIBVAIBADANBgkqhkiG9w0BAQEFAASCAT4wggE6AgEAAkEAu1/a8f3G47cZ6pel Hd3aONMNkGJ8vSCH5QjicuDm92VtVwkAACEjIoZSLYlJvPD+odL+lFzVQSmkneW7 VCGqYQIDAQABAkAcfNpg6GCQxoneLOghvlUrRotNZGvqpUOEAvHK3X7AJhz5SU4V an36qvsAt5ghFMVM2iGvGaXbj0dAd+Jg64pxAiEA32Eh9mPtFSmZhTIUMeGcPmPk qIYCEuP8a/ZLmI9s4TsCIQDWvLQuvjSVfwPhi0TFAb5wqAET8X5LBFqtGX5QlUep EwIgFnqM02Gc4wtLoqa2d4qPkYu13+uUW9hLd4XSd6i/OS8CIQDT3elU+Rt+qIwW u0cFrVvNYSV3HNzDfS9N/IoxTagfewIgPvXADe5c2EWbhCUkhN+ZCf38AKewK9TW lQcDy4L+f14= -----END PRIVATE KEY-----
+	// Example: -----BEGIN PRIVATE KEY-----\\nprivate-key\\n-----END PRIVATE KEY-----\\n
 	PrivateKey *string `json:"private_key,omitempty"`
 
 	// Public key Certificate in PEM format. If this is not provided in POST, a self-signed certificate is created.
-	// Example: -----BEGIN CERTIFICATE----- MIIBuzCCAWWgAwIBAgIIFTZBrqZwUUMwDQYJKoZIhvcNAQELBQAwHDENMAsGA1UE AxMEVEVTVDELMAkGA1UEBhMCVVMwHhcNMTgwNjA4MTgwOTAxWhcNMTkwNjA4MTgw OTAxWjAcMQ0wCwYDVQQDEwRURVNUMQswCQYDVQQGEwJVUzBcMA0GCSqGSIb3DQEB AQUAA0sAMEgCQQDaPvbqUJJFJ6NNTyK3Yb+ytSjJ9aa3yUmYTD9uMiP+6ycjxHWB e8u9z6yCHsW03ync+dnhE5c5z8wuDAY0fv15AgMBAAGjgYowgYcwDAYDVR0TBAUw AwEB/zALBgNVHQ8EBAMCAQYwHQYDVR0OBBYEFMJ7Ev/o/3+YNzYh5XNlqqjnw4zm MEsGA1UdIwREMEKAFMJ7Ev/o/3+YNzYh5XNlqqjnw4zmoSCkHjAcMQ0wCwYDVQQD EwRURVNUMQswCQYDVQQGEwJVU4IIFTZBrqZwUUMwDQYJKoZIhvcNAQELBQADQQAv DovYeyGNnknjGI+TVNX6nDbyzf7zUPqnri0KuvObEeybrbPW45sgsnT5dyeE/32U 9Yr6lklnkBtVBDTmLnrC -----END CERTIFICATE-----
+	// Example: -----BEGIN CERTIFICATE-----\nMIIBuzCCAWWgAwIBAgIIFTZBrqZwUUMwDQYJKoZIhvcNAQELBQAwHDENMAsGA1UE\nAxMEVEVTVDELMAkGA1UEBhMCVVMwHhcNMTgwNjA4MTgwOTAxWhcNMTkwNjA4MTgw\nOTAxWjAcMQ0wCwYDVQQDEwRURVNUMQswCQYDVQQGEwJVUzBcMA0GCSqGSIb3DQEB\nAQUAA0sAMEgCQQDaPvbqUJJFJ6NNTyK3Yb+ytSjJ9aa3yUmYTD9uMiP+6ycjxHWB\ne8u9z6yCHsW03ync+dnhE5c5z8wuDAY0fv15AgMBAAGjgYowgYcwDAYDVR0TBAUw\nAwEB/zALBgNVHQ8EBAMCAQYwHQYDVR0OBBYEFMJ7Ev/o/3+YNzYh5XNlqqjnw4zm\nMEsGA1UdIwREMEKAFMJ7Ev/o/3+YNzYh5XNlqqjnw4zmoSCkHjAcMQ0wCwYDVQQD\nEwRURVNUMQswCQYDVQQGEwJVU4IIFTZBrqZwUUMwDQYJKoZIhvcNAQELBQADQQAv\nDovYeyGNnknjGI+TVNX6nDbyzf7zUPqnri0KuvObEeybrbPW45sgsnT5dyeE/32U\n9Yr6lklnkBtVBDTmLnrC\n-----END CERTIFICATE-----\n
 	PublicCertificate *string `json:"public_certificate,omitempty"`
 
 	// scope
@@ -71,6 +75,9 @@ type SecurityCertificate struct {
 	// Max Length: 40
 	// Min Length: 1
 	SerialNumber *string `json:"serial_number,omitempty"`
+
+	// subject alternatives
+	SubjectAlternatives *SecurityCertificateInlineSubjectAlternatives `json:"subject_alternatives,omitempty"`
 
 	// Provides the key identifier used to identify the public key in the SSL certificate.
 	// Example: 26:1F:C5:53:5B:D7:9E:E2:37:74:F4:F4:06:09:03:3D:EB:41:75:D8
@@ -87,7 +94,7 @@ type SecurityCertificate struct {
 	// * server_ca - a Certificate Authority certificate used by an SSL client in ONTAP to verify an SSL server certificate.
 	// * root_ca - a self-signed certificate used by ONTAP to sign other certificates by acting as a Certificate Authority.
 	//
-	// Enum: [client server client_ca server_ca root_ca]
+	// Enum: ["client","server","client_ca","server_ca","root_ca"]
 	Type *string `json:"type,omitempty"`
 
 	// Unique ID that identifies a certificate.
@@ -103,6 +110,10 @@ func (m *SecurityCertificate) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateAzure(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateCa(formats); err != nil {
 		res = append(res, err)
 	}
@@ -111,11 +122,19 @@ func (m *SecurityCertificate) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateKeySize(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateScope(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateSerialNumber(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSubjectAlternatives(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -142,6 +161,23 @@ func (m *SecurityCertificate) validateLinks(formats strfmt.Registry) error {
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *SecurityCertificate) validateAzure(formats strfmt.Registry) error {
+	if swag.IsZero(m.Azure) { // not required
+		return nil
+	}
+
+	if m.Azure != nil {
+		if err := m.Azure.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("azure")
 			}
 			return err
 		}
@@ -262,6 +298,39 @@ func (m *SecurityCertificate) validateHashFunction(formats strfmt.Registry) erro
 	return nil
 }
 
+var securityCertificateTypeKeySizePropEnum []interface{}
+
+func init() {
+	var res []int64
+	if err := json.Unmarshal([]byte(`[512,1024,1536,2048,3072]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		securityCertificateTypeKeySizePropEnum = append(securityCertificateTypeKeySizePropEnum, v)
+	}
+}
+
+// prop value enum
+func (m *SecurityCertificate) validateKeySizeEnum(path, location string, value int64) error {
+	if err := validate.EnumCase(path, location, value, securityCertificateTypeKeySizePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SecurityCertificate) validateKeySize(formats strfmt.Registry) error {
+	if swag.IsZero(m.KeySize) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateKeySizeEnum("key_size", "body", *m.KeySize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *SecurityCertificate) validateScope(formats strfmt.Registry) error {
 	if swag.IsZero(m.Scope) { // not required
 		return nil
@@ -290,6 +359,23 @@ func (m *SecurityCertificate) validateSerialNumber(formats strfmt.Registry) erro
 
 	if err := validate.MaxLength("serial_number", "body", *m.SerialNumber, 40); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *SecurityCertificate) validateSubjectAlternatives(formats strfmt.Registry) error {
+	if swag.IsZero(m.SubjectAlternatives) { // not required
+		return nil
+	}
+
+	if m.SubjectAlternatives != nil {
+		if err := m.SubjectAlternatives.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("subject_alternatives")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -410,6 +496,10 @@ func (m *SecurityCertificate) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAzure(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateCa(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -419,6 +509,10 @@ func (m *SecurityCertificate) ContextValidate(ctx context.Context, formats strfm
 	}
 
 	if err := m.contextValidateSerialNumber(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSubjectAlternatives(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -463,6 +557,20 @@ func (m *SecurityCertificate) contextValidateAuthorityKeyIdentifier(ctx context.
 	return nil
 }
 
+func (m *SecurityCertificate) contextValidateAzure(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Azure != nil {
+		if err := m.Azure.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("azure")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *SecurityCertificate) contextValidateCa(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "ca", "body", m.Ca); err != nil {
@@ -490,6 +598,20 @@ func (m *SecurityCertificate) contextValidateSerialNumber(ctx context.Context, f
 
 	if err := validate.ReadOnly(ctx, "serial_number", "body", m.SerialNumber); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *SecurityCertificate) contextValidateSubjectAlternatives(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.SubjectAlternatives != nil {
+		if err := m.SubjectAlternatives.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("subject_alternatives")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -538,6 +660,293 @@ func (m *SecurityCertificate) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *SecurityCertificate) UnmarshalBinary(b []byte) error {
 	var res SecurityCertificate
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SecurityCertificateInlineAzure security certificate inline azure
+//
+// swagger:model security_certificate_inline_azure
+type SecurityCertificateInlineAzure struct {
+
+	// PKCS12 certificate used by the application to prove its identity to AKV.
+	// Example: PEM Cert
+	// Format: password
+	ClientCertificate *strfmt.Password `json:"client_certificate,omitempty"`
+
+	// Application client ID of the deployed Azure application with appropriate access to an AKV.
+	// Example: aaaaaaaa-bbbb-aaaa-bbbb-aaaaaaaaaaaa
+	ClientID *string `json:"client_id,omitempty"`
+
+	// Secret used by the application to prove its identity to AKV.
+	// Example: abcdef
+	// Format: password
+	ClientSecret *strfmt.Password `json:"client_secret,omitempty"`
+
+	// URI of the deployed AKV that is used by ONTAP for storing keys.
+	// Example: https://kmip-akv-keyvault.vault.azure.net/
+	// Format: uri
+	KeyVault *strfmt.URI `json:"key_vault,omitempty"`
+
+	// Open authorization server host name.
+	// Example: login.microsoftonline.com
+	OauthHost *string `json:"oauth_host,omitempty"`
+
+	// proxy
+	Proxy *SecurityCertificateInlineAzureInlineProxy `json:"proxy,omitempty"`
+
+	// Directory (tenant) ID of the deployed Azure application with appropriate access to an AKV.
+	// Example: zzzzzzzz-yyyy-zzzz-yyyy-zzzzzzzzzzzz
+	TenantID *string `json:"tenant_id,omitempty"`
+
+	// AKV connection timeout, in seconds. The allowed range is between 0 to 30 seconds.
+	// Example: 25
+	Timeout *int64 `json:"timeout,omitempty"`
+
+	// Verify the identity of the AKV host name. By default, verify_host is set to true.
+	VerifyHost *bool `json:"verify_host,omitempty"`
+}
+
+// Validate validates this security certificate inline azure
+func (m *SecurityCertificateInlineAzure) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateClientCertificate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateClientSecret(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateKeyVault(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProxy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SecurityCertificateInlineAzure) validateClientCertificate(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClientCertificate) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("azure"+"."+"client_certificate", "body", "password", m.ClientCertificate.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SecurityCertificateInlineAzure) validateClientSecret(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClientSecret) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("azure"+"."+"client_secret", "body", "password", m.ClientSecret.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SecurityCertificateInlineAzure) validateKeyVault(formats strfmt.Registry) error {
+	if swag.IsZero(m.KeyVault) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("azure"+"."+"key_vault", "body", "uri", m.KeyVault.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SecurityCertificateInlineAzure) validateProxy(formats strfmt.Registry) error {
+	if swag.IsZero(m.Proxy) { // not required
+		return nil
+	}
+
+	if m.Proxy != nil {
+		if err := m.Proxy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("azure" + "." + "proxy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this security certificate inline azure based on the context it is used
+func (m *SecurityCertificateInlineAzure) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateProxy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SecurityCertificateInlineAzure) contextValidateProxy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Proxy != nil {
+		if err := m.Proxy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("azure" + "." + "proxy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SecurityCertificateInlineAzure) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SecurityCertificateInlineAzure) UnmarshalBinary(b []byte) error {
+	var res SecurityCertificateInlineAzure
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SecurityCertificateInlineAzureInlineProxy security certificate inline azure inline proxy
+//
+// swagger:model security_certificate_inline_azure_inline_proxy
+type SecurityCertificateInlineAzureInlineProxy struct {
+
+	// Proxy host.
+	// Example: proxy.eng.com
+	Host *string `json:"host,omitempty"`
+
+	// Proxy password. Password is not audited.
+	// Example: proxypassword
+	Password *string `json:"password,omitempty"`
+
+	// Proxy port.
+	// Example: 1234
+	Port *int64 `json:"port,omitempty"`
+
+	// Proxy type.
+	// Enum: ["http","https"]
+	Type *string `json:"type,omitempty"`
+
+	// Proxy username.
+	// Example: proxyuser
+	Username *string `json:"username,omitempty"`
+}
+
+// Validate validates this security certificate inline azure inline proxy
+func (m *SecurityCertificateInlineAzureInlineProxy) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var securityCertificateInlineAzureInlineProxyTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["http","https"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		securityCertificateInlineAzureInlineProxyTypeTypePropEnum = append(securityCertificateInlineAzureInlineProxyTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// security_certificate_inline_azure_inline_proxy
+	// SecurityCertificateInlineAzureInlineProxy
+	// type
+	// Type
+	// http
+	// END DEBUGGING
+	// SecurityCertificateInlineAzureInlineProxyTypeHTTP captures enum value "http"
+	SecurityCertificateInlineAzureInlineProxyTypeHTTP string = "http"
+
+	// BEGIN DEBUGGING
+	// security_certificate_inline_azure_inline_proxy
+	// SecurityCertificateInlineAzureInlineProxy
+	// type
+	// Type
+	// https
+	// END DEBUGGING
+	// SecurityCertificateInlineAzureInlineProxyTypeHTTPS captures enum value "https"
+	SecurityCertificateInlineAzureInlineProxyTypeHTTPS string = "https"
+)
+
+// prop value enum
+func (m *SecurityCertificateInlineAzureInlineProxy) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, securityCertificateInlineAzureInlineProxyTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SecurityCertificateInlineAzureInlineProxy) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("azure"+"."+"proxy"+"."+"type", "body", *m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this security certificate inline azure inline proxy based on context it is used
+func (m *SecurityCertificateInlineAzureInlineProxy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SecurityCertificateInlineAzureInlineProxy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SecurityCertificateInlineAzureInlineProxy) UnmarshalBinary(b []byte) error {
+	var res SecurityCertificateInlineAzureInlineProxy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -631,7 +1040,53 @@ func (m *SecurityCertificateInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityCertificateInlineSvm security certificate inline svm
+// SecurityCertificateInlineSubjectAlternatives security certificate inline subject alternatives
+//
+// swagger:model security_certificate_inline_subject_alternatives
+type SecurityCertificateInlineSubjectAlternatives struct {
+
+	// A list of DNS names for Subject Alternate name extension.
+	DNS []*string `json:"dns,omitempty"`
+
+	// A list of email addresses for Subject Alternate name extension
+	Email []*string `json:"email,omitempty"`
+
+	// A list of IP addresses for Subject Alternate name extension.
+	IP []*string `json:"ip,omitempty"`
+
+	// A list of URIs for Subject Alternate name extension.
+	URI []*string `json:"uri,omitempty"`
+}
+
+// Validate validates this security certificate inline subject alternatives
+func (m *SecurityCertificateInlineSubjectAlternatives) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this security certificate inline subject alternatives based on context it is used
+func (m *SecurityCertificateInlineSubjectAlternatives) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SecurityCertificateInlineSubjectAlternatives) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SecurityCertificateInlineSubjectAlternatives) UnmarshalBinary(b []byte) error {
+	var res SecurityCertificateInlineSubjectAlternatives
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SecurityCertificateInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model security_certificate_inline_svm
 type SecurityCertificateInlineSvm struct {
@@ -639,12 +1094,12 @@ type SecurityCertificateInlineSvm struct {
 	// links
 	Links *SecurityCertificateInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

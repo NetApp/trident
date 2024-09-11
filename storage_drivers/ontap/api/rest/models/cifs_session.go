@@ -33,7 +33,7 @@ type CifsSession struct {
 	//
 	// Example: ntlmv2
 	// Read Only: true
-	// Enum: [none ntlmv1 ntlmv2 kerberos anonymous]
+	// Enum: ["none","ntlmv1","ntlmv2","kerberos","anonymous"]
 	Authentication *string `json:"authentication,omitempty"`
 
 	// A group of volumes, the client is accessing.
@@ -63,14 +63,14 @@ type CifsSession struct {
 	// Read Only: true
 	ConnectionID *int64 `json:"connection_id,omitempty"`
 
-	// The level of continuous availabilty protection provided to the SMB sessions and/or files.
+	// The level of continuous availability protection provided to the SMB sessions and/or files.
 	// * unavailable - Open file is not continuously available. For sessions, it contains one or more open files but none of them are continuously available.
 	// * available - open file is continuously available. For sessions, it contains one or more open files and all of them are continuously available.
 	// * partial - Sessions only. Contains at least one continuously available open file with other files open but not continuously available.
 	//
 	// Example: unavailable
 	// Read Only: true
-	// Enum: [unavailable available partial]
+	// Enum: ["unavailable","available","partial"]
 	ContinuousAvailability *string `json:"continuous_availability,omitempty"`
 
 	// A unique 64-bit unsigned number used to represent each SMB session's identifier.
@@ -124,7 +124,7 @@ type CifsSession struct {
 	//
 	// Example: smb3_1
 	// Read Only: true
-	// Enum: [smb1 smb2 smb2_1 smb3 smb3_1]
+	// Enum: ["smb1","smb2","smb2_1","smb3","smb3_1"]
 	Protocol *string `json:"protocol,omitempty"`
 
 	// Specifies the IP address of the SVM.
@@ -140,7 +140,7 @@ type CifsSession struct {
 	//
 	// Example: unencrypted
 	// Read Only: true
-	// Enum: [unencrypted encrypted partially_encrypted]
+	// Enum: ["unencrypted","encrypted","partially_encrypted"]
 	SmbEncryption *string `json:"smb_encryption,omitempty"`
 
 	// Specifies whether or not SMB signing is enabled.
@@ -1183,7 +1183,7 @@ func (m *CifsSessionInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsSessionInlineSvm cifs session inline svm
+// CifsSessionInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model cifs_session_inline_svm
 type CifsSessionInlineSvm struct {
@@ -1191,12 +1191,12 @@ type CifsSessionInlineSvm struct {
 	// links
 	Links *CifsSessionInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -1373,7 +1373,7 @@ type CifsSessionInlineVolumesInlineArrayItem struct {
 	// links
 	Links *CifsSessionInlineVolumesInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

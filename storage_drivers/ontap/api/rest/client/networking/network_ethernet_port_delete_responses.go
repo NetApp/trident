@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *NetworkEthernetPortDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the network ethernet port delete o k response
+func (o *NetworkEthernetPortDeleteOK) Code() int {
+	return 200
+}
+
 func (o *NetworkEthernetPortDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] networkEthernetPortDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] networkEthernetPortDeleteOK", 200)
 }
 
 func (o *NetworkEthernetPortDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] networkEthernetPortDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] networkEthernetPortDeleteOK", 200)
 }
 
 func (o *NetworkEthernetPortDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,16 +114,14 @@ func NewNetworkEthernetPortDeleteDefault(code int) *NetworkEthernetPortDeleteDef
 | ---------- | ----------- |
 | 1376858 | Port already has an interface bound. |
 | 1966189 | Port is the home port or current port of an interface. |
+| 1966302 | This interface group is hosting VLAN interfaces that must be deleted before running this command. |
+| 1967105 | Cannot delete a physical port. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NetworkEthernetPortDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the network ethernet port delete default response
-func (o *NetworkEthernetPortDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this network ethernet port delete default response has a 2xx status code
@@ -145,12 +149,19 @@ func (o *NetworkEthernetPortDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the network ethernet port delete default response
+func (o *NetworkEthernetPortDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetworkEthernetPortDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] network_ethernet_port_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] network_ethernet_port_delete default %s", o._statusCode, payload)
 }
 
 func (o *NetworkEthernetPortDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] network_ethernet_port_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] network_ethernet_port_delete default %s", o._statusCode, payload)
 }
 
 func (o *NetworkEthernetPortDeleteDefault) GetPayload() *models.ErrorResponse {

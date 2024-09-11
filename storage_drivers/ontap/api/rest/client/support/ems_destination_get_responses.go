@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *EmsDestinationGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ems destination get o k response
+func (o *EmsDestinationGetOK) Code() int {
+	return 200
+}
+
 func (o *EmsDestinationGetOK) Error() string {
-	return fmt.Sprintf("[GET /support/ems/destinations/{name}][%d] emsDestinationGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems/destinations/{name}][%d] emsDestinationGetOK %s", 200, payload)
 }
 
 func (o *EmsDestinationGetOK) String() string {
-	return fmt.Sprintf("[GET /support/ems/destinations/{name}][%d] emsDestinationGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems/destinations/{name}][%d] emsDestinationGetOK %s", 200, payload)
 }
 
 func (o *EmsDestinationGetOK) GetPayload() *models.EmsDestination {
@@ -122,11 +130,6 @@ type EmsDestinationGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the ems destination get default response
-func (o *EmsDestinationGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this ems destination get default response has a 2xx status code
 func (o *EmsDestinationGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *EmsDestinationGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ems destination get default response
+func (o *EmsDestinationGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *EmsDestinationGetDefault) Error() string {
-	return fmt.Sprintf("[GET /support/ems/destinations/{name}][%d] ems_destination_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems/destinations/{name}][%d] ems_destination_get default %s", o._statusCode, payload)
 }
 
 func (o *EmsDestinationGetDefault) String() string {
-	return fmt.Sprintf("[GET /support/ems/destinations/{name}][%d] ems_destination_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems/destinations/{name}][%d] ems_destination_get default %s", o._statusCode, payload)
 }
 
 func (o *EmsDestinationGetDefault) GetPayload() *models.ErrorResponse {

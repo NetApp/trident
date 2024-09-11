@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *IscsiServiceModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the iscsi service modify o k response
+func (o *IscsiServiceModifyOK) Code() int {
+	return 200
+}
+
 func (o *IscsiServiceModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/san/iscsi/services/{svm.uuid}][%d] iscsiServiceModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/san/iscsi/services/{svm.uuid}][%d] iscsiServiceModifyOK", 200)
 }
 
 func (o *IscsiServiceModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/san/iscsi/services/{svm.uuid}][%d] iscsiServiceModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/san/iscsi/services/{svm.uuid}][%d] iscsiServiceModifyOK", 200)
 }
 
 func (o *IscsiServiceModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,16 +114,12 @@ func NewIscsiServiceModifyDefault(code int) *IscsiServiceModifyDefault {
 | ---------- | ----------- |
 | 2621462 | An SVM with the specified UUID does not exist. |
 | 5374078 | The SVM does not have an iSCSI service. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IscsiServiceModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the iscsi service modify default response
-func (o *IscsiServiceModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this iscsi service modify default response has a 2xx status code
@@ -145,12 +147,19 @@ func (o *IscsiServiceModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the iscsi service modify default response
+func (o *IscsiServiceModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IscsiServiceModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/san/iscsi/services/{svm.uuid}][%d] iscsi_service_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/san/iscsi/services/{svm.uuid}][%d] iscsi_service_modify default %s", o._statusCode, payload)
 }
 
 func (o *IscsiServiceModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/san/iscsi/services/{svm.uuid}][%d] iscsi_service_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/san/iscsi/services/{svm.uuid}][%d] iscsi_service_modify default %s", o._statusCode, payload)
 }
 
 func (o *IscsiServiceModifyDefault) GetPayload() *models.ErrorResponse {

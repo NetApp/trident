@@ -22,12 +22,12 @@ type GroupPolicyObjectEventAudit struct {
 
 	// Type of logon event to be audited.
 	// Example: failure
-	// Enum: [none success failure both]
+	// Enum: ["none","success","failure","both"]
 	LogonType *string `json:"logon_type,omitempty"`
 
 	// Type of object access to be audited.
 	// Example: failure
-	// Enum: [none success failure both]
+	// Enum: ["none","success","failure","both"]
 	ObjectAccessType *string `json:"object_access_type,omitempty"`
 }
 

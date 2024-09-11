@@ -68,6 +68,13 @@ type PerformanceFcInterfaceMetricCollectionGetParams struct {
 	*/
 	Duration *string
 
+	/* FcInterfaceUUID.
+
+	   The unique identifier of the Fibre Channel interface.
+
+	*/
+	FcInterfaceUUID string
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -197,9 +204,9 @@ type PerformanceFcInterfaceMetricCollectionGetParams struct {
 
 	/* UUID.
 
-	   Unique identifier of the FC interface.
+	   Filter by uuid
 	*/
-	UUID string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -280,6 +287,17 @@ func (o *PerformanceFcInterfaceMetricCollectionGetParams) WithDuration(duration 
 // SetDuration adds the duration to the performance fc interface metric collection get params
 func (o *PerformanceFcInterfaceMetricCollectionGetParams) SetDuration(duration *string) {
 	o.Duration = duration
+}
+
+// WithFcInterfaceUUID adds the fcInterfaceUUID to the performance fc interface metric collection get params
+func (o *PerformanceFcInterfaceMetricCollectionGetParams) WithFcInterfaceUUID(fcInterfaceUUID string) *PerformanceFcInterfaceMetricCollectionGetParams {
+	o.SetFcInterfaceUUID(fcInterfaceUUID)
+	return o
+}
+
+// SetFcInterfaceUUID adds the fcInterfaceUuid to the performance fc interface metric collection get params
+func (o *PerformanceFcInterfaceMetricCollectionGetParams) SetFcInterfaceUUID(fcInterfaceUUID string) {
+	o.FcInterfaceUUID = fcInterfaceUUID
 }
 
 // WithFields adds the fields to the performance fc interface metric collection get params
@@ -492,13 +510,13 @@ func (o *PerformanceFcInterfaceMetricCollectionGetParams) SetTimestamp(timestamp
 }
 
 // WithUUID adds the uuid to the performance fc interface metric collection get params
-func (o *PerformanceFcInterfaceMetricCollectionGetParams) WithUUID(uuid string) *PerformanceFcInterfaceMetricCollectionGetParams {
+func (o *PerformanceFcInterfaceMetricCollectionGetParams) WithUUID(uuid *string) *PerformanceFcInterfaceMetricCollectionGetParams {
 	o.SetUUID(uuid)
 	return o
 }
 
 // SetUUID adds the uuid to the performance fc interface metric collection get params
-func (o *PerformanceFcInterfaceMetricCollectionGetParams) SetUUID(uuid string) {
+func (o *PerformanceFcInterfaceMetricCollectionGetParams) SetUUID(uuid *string) {
 	o.UUID = uuid
 }
 
@@ -525,6 +543,11 @@ func (o *PerformanceFcInterfaceMetricCollectionGetParams) WriteToRequest(r runti
 				return err
 			}
 		}
+	}
+
+	// path param fc_interface.uuid
+	if err := r.SetPathParam("fc_interface.uuid", o.FcInterfaceUUID); err != nil {
+		return err
 	}
 
 	if o.Fields != nil {
@@ -838,9 +861,21 @@ func (o *PerformanceFcInterfaceMetricCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUID); err != nil {
-		return err
+	if o.UUID != nil {
+
+		// query param uuid
+		var qrUUID string
+
+		if o.UUID != nil {
+			qrUUID = *o.UUID
+		}
+		qUUID := qrUUID
+		if qUUID != "" {
+
+			if err := r.SetQueryParam("uuid", qUUID); err != nil {
+				return err
+			}
+		}
 	}
 
 	if len(res) > 0 {

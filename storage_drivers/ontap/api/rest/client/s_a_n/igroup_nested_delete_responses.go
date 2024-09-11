@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *IgroupNestedDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the igroup nested delete o k response
+func (o *IgroupNestedDeleteOK) Code() int {
+	return 200
+}
+
 func (o *IgroupNestedDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}][%d] igroupNestedDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}][%d] igroupNestedDeleteOK", 200)
 }
 
 func (o *IgroupNestedDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}][%d] igroupNestedDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}][%d] igroupNestedDeleteOK", 200)
 }
 
 func (o *IgroupNestedDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,17 +114,14 @@ func NewIgroupNestedDeleteDefault(code int) *IgroupNestedDeleteDefault {
 | ---------- | ----------- |
 | 1254213 | The initiator group is mapped to one or more LUNs and `allow_delete_while_mapped` has not been specified. |
 | 5374738 | The child initiator group is not owned by the parent initiator group. |
+| 5374743 | LUN maps exist for a parent initiator group. |
 | 5374852 | The initiator group specified in the URI does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IgroupNestedDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the igroup nested delete default response
-func (o *IgroupNestedDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this igroup nested delete default response has a 2xx status code
@@ -146,12 +149,19 @@ func (o *IgroupNestedDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the igroup nested delete default response
+func (o *IgroupNestedDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IgroupNestedDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}][%d] igroup_nested_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}][%d] igroup_nested_delete default %s", o._statusCode, payload)
 }
 
 func (o *IgroupNestedDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}][%d] igroup_nested_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}][%d] igroup_nested_delete default %s", o._statusCode, payload)
 }
 
 func (o *IgroupNestedDeleteDefault) GetPayload() *models.ErrorResponse {

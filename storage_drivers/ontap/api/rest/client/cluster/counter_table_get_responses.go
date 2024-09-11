@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CounterTableGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the counter table get o k response
+func (o *CounterTableGetOK) Code() int {
+	return 200
+}
+
 func (o *CounterTableGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/counter/tables/{name}][%d] counterTableGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/counter/tables/{name}][%d] counterTableGetOK %s", 200, payload)
 }
 
 func (o *CounterTableGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/counter/tables/{name}][%d] counterTableGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/counter/tables/{name}][%d] counterTableGetOK %s", 200, payload)
 }
 
 func (o *CounterTableGetOK) GetPayload() *models.CounterTable {
@@ -120,16 +128,12 @@ func NewCounterTableGetDefault(code int) *CounterTableGetDefault {
 | ---------- | ----------- |
 | 8585320 | Table requested is not found |
 | 8585368 | The system has not completed it's initialization |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type CounterTableGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the counter table get default response
-func (o *CounterTableGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this counter table get default response has a 2xx status code
@@ -157,12 +161,19 @@ func (o *CounterTableGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the counter table get default response
+func (o *CounterTableGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CounterTableGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/counter/tables/{name}][%d] counter_table_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/counter/tables/{name}][%d] counter_table_get default %s", o._statusCode, payload)
 }
 
 func (o *CounterTableGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/counter/tables/{name}][%d] counter_table_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/counter/tables/{name}][%d] counter_table_get default %s", o._statusCode, payload)
 }
 
 func (o *CounterTableGetDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type S3AuditModifyReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *S3AuditModifyReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewS3AuditModifyOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewS3AuditModifyAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -39,6 +46,62 @@ func (o *S3AuditModifyReader) ReadResponse(response runtime.ClientResponse, cons
 		}
 		return nil, result
 	}
+}
+
+// NewS3AuditModifyOK creates a S3AuditModifyOK with default headers values
+func NewS3AuditModifyOK() *S3AuditModifyOK {
+	return &S3AuditModifyOK{}
+}
+
+/*
+S3AuditModifyOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type S3AuditModifyOK struct {
+}
+
+// IsSuccess returns true when this s3 audit modify o k response has a 2xx status code
+func (o *S3AuditModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 audit modify o k response has a 3xx status code
+func (o *S3AuditModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 audit modify o k response has a 4xx status code
+func (o *S3AuditModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 audit modify o k response has a 5xx status code
+func (o *S3AuditModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 audit modify o k response a status code equal to that given
+func (o *S3AuditModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the s3 audit modify o k response
+func (o *S3AuditModifyOK) Code() int {
+	return 200
+}
+
+func (o *S3AuditModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}/object-store][%d] s3AuditModifyOK", 200)
+}
+
+func (o *S3AuditModifyOK) String() string {
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}/object-store][%d] s3AuditModifyOK", 200)
+}
+
+func (o *S3AuditModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	return nil
 }
 
 // NewS3AuditModifyAccepted creates a S3AuditModifyAccepted with default headers values
@@ -79,12 +142,17 @@ func (o *S3AuditModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the s3 audit modify accepted response
+func (o *S3AuditModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *S3AuditModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}/object-store][%d] s3AuditModifyAccepted ", 202)
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}/object-store][%d] s3AuditModifyAccepted", 202)
 }
 
 func (o *S3AuditModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}/object-store][%d] s3AuditModifyAccepted ", 202)
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}/object-store][%d] s3AuditModifyAccepted", 202)
 }
 
 func (o *S3AuditModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -133,9 +201,11 @@ func NewS3AuditModifyDefault(code int) *S3AuditModifyDefault {
 | 140902474 | The log_path contains an unsupported Snaplock volume. |
 | 140902478 | The log_path validation failed. |
 | 140902478 | The log_path cannot be accessed for validation. |
+| 140902479 | No other fields can be specified when \"enabled\" is specified. |
 | 140902490 | Audit configuration is absent for rotate. |
 | 140902491 | Failed to rotate audit log. |
 | 140902492 | Cannot rotate audit log, auditing is not enabled for this SVM. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
@@ -146,11 +216,6 @@ type S3AuditModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the s3 audit modify default response
-func (o *S3AuditModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this s3 audit modify default response has a 2xx status code
@@ -178,12 +243,19 @@ func (o *S3AuditModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the s3 audit modify default response
+func (o *S3AuditModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *S3AuditModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_modify default %s", o._statusCode, payload)
 }
 
 func (o *S3AuditModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_modify default %s", o._statusCode, payload)
 }
 
 func (o *S3AuditModifyDefault) GetPayload() *models.ErrorResponse {

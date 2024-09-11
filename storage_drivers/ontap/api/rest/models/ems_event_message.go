@@ -31,7 +31,7 @@ type EmsEventMessage struct {
 	// Severity of the event. Returned by default.
 	// Example: emergency
 	// Read Only: true
-	// Enum: [emergency alert error notice informational debug]
+	// Enum: ["emergency","alert","error","notice","informational","debug"]
 	Severity *string `json:"severity,omitempty"`
 }
 

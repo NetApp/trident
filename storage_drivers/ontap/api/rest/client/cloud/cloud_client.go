@@ -30,13 +30,17 @@ type ClientOption func(*runtime.ClientOperation)
 type ClientService interface {
 	CloudTargetCollectionGet(params *CloudTargetCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetCollectionGetOK, error)
 
-	CloudTargetCreate(params *CloudTargetCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetCreateAccepted, error)
+	CloudTargetCreate(params *CloudTargetCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetCreateCreated, *CloudTargetCreateAccepted, error)
 
-	CloudTargetDelete(params *CloudTargetDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetDeleteAccepted, error)
+	CloudTargetDelete(params *CloudTargetDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetDeleteOK, *CloudTargetDeleteAccepted, error)
+
+	CloudTargetDeleteCollection(params *CloudTargetDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetDeleteCollectionOK, *CloudTargetDeleteCollectionAccepted, error)
 
 	CloudTargetGet(params *CloudTargetGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetGetOK, error)
 
-	CloudTargetModify(params *CloudTargetModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetModifyAccepted, error)
+	CloudTargetModify(params *CloudTargetModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetModifyOK, *CloudTargetModifyAccepted, error)
+
+	CloudTargetModifyCollection(params *CloudTargetModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetModifyCollectionOK, *CloudTargetModifyCollectionAccepted, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -46,6 +50,7 @@ type ClientService interface {
 
 ### Related ONTAP commands
 * `storage aggregate object-store config show`
+* `snapmirror object-store config show`
 */
 func (a *Client) CloudTargetCollectionGet(params *CloudTargetCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -56,8 +61,8 @@ func (a *Client) CloudTargetCollectionGet(params *CloudTargetCollectionGetParams
 		ID:                 "cloud_target_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cloud/targets",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CloudTargetCollectionGetReader{formats: a.formats},
@@ -97,6 +102,7 @@ func (a *Client) CloudTargetCollectionGet(params *CloudTargetCollectionGetParams
 * `azure_private_key` - Azure access key if `provider_type` is _Azure_Cloud_.
 * `cap_url` - Full URL of the request to a CAP server for retrieving temporary credentials if `authentication_type` is _cap_.
 * `snapmirror_use` - Use of the cloud target if `owner` is _snapmirror_: data, metadata.
+* `azure_msi_token` - Azure Managed Service Identity (MSI) token if `owner` is _fabricpool_ or _snapmirror_, `provider_type` is _Azure_Cloud_,  `authentication_type` if specified must be  _azure_msi_ and platform is Azure Netapp Files.
 ### Recommended optional properties
 * `authentication_type` - Authentication used to access the target: _key_, _cap_, _ec2_iam_, _gcp_sa_, _azure_msi_.
 * `ssl_enabled` - SSL/HTTPS enabled or disabled.
@@ -105,11 +111,12 @@ func (a *Client) CloudTargetCollectionGet(params *CloudTargetCollectionGetParams
 * `use_http_proxy` - Use the HTTP proxy when connecting to the object store server.
 * `azure_sas_token` - Shared access signature to grant limited access to Azure storage account resources.
 * `svm.name` or `svm.uuid` - Name or UUID of SVM if `owner` is _snapmirror_.
+* `read_latency_warning_threshold` - Latency threshold to determine when to issue a warning alert EMS for a GET request.
 ### Default property values
 * `authentication_type`
   - _ec2_iam_ - if running in Cloud Volumes ONTAP in AWS
   - _gcp_sa_ - if running in Cloud Volumes ONTAP in GCP
-  - _azure_msi_ - if running in Cloud Volumes ONTAP in Azure
+  - _azure_msi_ - if running in Cloud Volumes ONTAP in Azure or if running on Azure NetApp Files platform with a Managed Service Identity (MSI) token.
   - _key_  - in all other cases.
 
 * `server`
@@ -139,7 +146,7 @@ func (a *Client) CloudTargetCollectionGet(params *CloudTargetCollectionGetParams
 ### Related ONTAP commands
 * `storage aggregate object-store config create`
 */
-func (a *Client) CloudTargetCreate(params *CloudTargetCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetCreateAccepted, error) {
+func (a *Client) CloudTargetCreate(params *CloudTargetCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetCreateCreated, *CloudTargetCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewCloudTargetCreateParams()
@@ -148,8 +155,8 @@ func (a *Client) CloudTargetCreate(params *CloudTargetCreateParams, authInfo run
 		ID:                 "cloud_target_create",
 		Method:             "POST",
 		PathPattern:        "/cloud/targets",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CloudTargetCreateReader{formats: a.formats},
@@ -163,15 +170,17 @@ func (a *Client) CloudTargetCreate(params *CloudTargetCreateParams, authInfo run
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*CloudTargetCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *CloudTargetCreateCreated:
+		return value, nil, nil
+	case *CloudTargetCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*CloudTargetCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -180,7 +189,7 @@ func (a *Client) CloudTargetCreate(params *CloudTargetCreateParams, authInfo run
 ### Related ONTAP commands
 * `storage aggregate object-store config delete`
 */
-func (a *Client) CloudTargetDelete(params *CloudTargetDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetDeleteAccepted, error) {
+func (a *Client) CloudTargetDelete(params *CloudTargetDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetDeleteOK, *CloudTargetDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewCloudTargetDeleteParams()
@@ -189,8 +198,8 @@ func (a *Client) CloudTargetDelete(params *CloudTargetDeleteParams, authInfo run
 		ID:                 "cloud_target_delete",
 		Method:             "DELETE",
 		PathPattern:        "/cloud/targets/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CloudTargetDeleteReader{formats: a.formats},
@@ -204,15 +213,57 @@ func (a *Client) CloudTargetDelete(params *CloudTargetDeleteParams, authInfo run
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*CloudTargetDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *CloudTargetDeleteOK:
+		return value, nil, nil
+	case *CloudTargetDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*CloudTargetDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+CloudTargetDeleteCollection cloud target delete collection API
+*/
+func (a *Client) CloudTargetDeleteCollection(params *CloudTargetDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetDeleteCollectionOK, *CloudTargetDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCloudTargetDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cloud_target_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/cloud/targets",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CloudTargetDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *CloudTargetDeleteCollectionOK:
+		return value, nil, nil
+	case *CloudTargetDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CloudTargetDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -230,8 +281,8 @@ func (a *Client) CloudTargetGet(params *CloudTargetGetParams, authInfo runtime.C
 		ID:                 "cloud_target_get",
 		Method:             "GET",
 		PathPattern:        "/cloud/targets/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CloudTargetGetReader{formats: a.formats},
@@ -262,7 +313,7 @@ func (a *Client) CloudTargetGet(params *CloudTargetGetParams, authInfo runtime.C
 ### Related ONTAP commands
 * `storage aggregate object-store config modify`
 */
-func (a *Client) CloudTargetModify(params *CloudTargetModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetModifyAccepted, error) {
+func (a *Client) CloudTargetModify(params *CloudTargetModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetModifyOK, *CloudTargetModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewCloudTargetModifyParams()
@@ -271,8 +322,8 @@ func (a *Client) CloudTargetModify(params *CloudTargetModifyParams, authInfo run
 		ID:                 "cloud_target_modify",
 		Method:             "PATCH",
 		PathPattern:        "/cloud/targets/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CloudTargetModifyReader{formats: a.formats},
@@ -286,15 +337,57 @@ func (a *Client) CloudTargetModify(params *CloudTargetModifyParams, authInfo run
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*CloudTargetModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *CloudTargetModifyOK:
+		return value, nil, nil
+	case *CloudTargetModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*CloudTargetModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+CloudTargetModifyCollection cloud target modify collection API
+*/
+func (a *Client) CloudTargetModifyCollection(params *CloudTargetModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetModifyCollectionOK, *CloudTargetModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCloudTargetModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cloud_target_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/cloud/targets",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CloudTargetModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *CloudTargetModifyCollectionOK:
+		return value, nil, nil
+	case *CloudTargetModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CloudTargetModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 // SetTransport changes the transport on the client

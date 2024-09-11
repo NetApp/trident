@@ -253,7 +253,7 @@ type BroadcastDomainInlineIpspace struct {
 	Links *BroadcastDomainInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
-	// Example: exchange
+	// Example: Default
 	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID

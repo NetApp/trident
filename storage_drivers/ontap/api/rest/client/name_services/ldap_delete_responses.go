@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *LdapDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ldap delete o k response
+func (o *LdapDeleteOK) Code() int {
+	return 200
+}
+
 func (o *LdapDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/ldap/{svm.uuid}][%d] ldapDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/ldap/{svm.uuid}][%d] ldapDeleteOK", 200)
 }
 
 func (o *LdapDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /name-services/ldap/{svm.uuid}][%d] ldapDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/ldap/{svm.uuid}][%d] ldapDeleteOK", 200)
 }
 
 func (o *LdapDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type LdapDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ldap delete default response
-func (o *LdapDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ldap delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *LdapDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ldap delete default response
+func (o *LdapDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LdapDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/ldap/{svm.uuid}][%d] ldap_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/ldap/{svm.uuid}][%d] ldap_delete default %s", o._statusCode, payload)
 }
 
 func (o *LdapDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /name-services/ldap/{svm.uuid}][%d] ldap_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/ldap/{svm.uuid}][%d] ldap_delete default %s", o._statusCode, payload)
 }
 
 func (o *LdapDeleteDefault) GetPayload() *models.ErrorResponse {

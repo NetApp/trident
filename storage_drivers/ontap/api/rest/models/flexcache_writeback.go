@@ -19,15 +19,6 @@ type FlexcacheWriteback struct {
 
 	// Indicates whether or not writeback is enabled for the FlexCache volume. Writeback is a storage method where data is first written to the FlexCache volume and then written to the origin of a FlexCache volume.
 	Enabled *bool `json:"enabled,omitempty"`
-
-	// Specifies the amount of data in 4KB blocks that the system can write per inode in a FlexCache volume before a writeback is initiated for that inode. This property is only relevant to a FlexCache Volume with the writeback property enabled.
-	PerInodeDirtyLimit *int64 `json:"per_inode_dirty_limit,omitempty"`
-
-	// Specifies the threshold value in 4KB data blocks which when hit will trigger a scrub that will initiate writeback for all dirty inodes on the FlexCache volume. This property is only relevant to a FlexCache Volume with the writeback property enabled.
-	ScrubThreshold *int64 `json:"scrub_threshold,omitempty"`
-
-	// Specifies the maximum number of 4KB data blocks the system can transfer, at one time, from the cache to the origin. This process will keep on recurring until all the dirty blocks for the inode are transferred to the origin volume. This property is only relevant to a FlexCache Volume with the writeback property enabled.
-	TransferLimit *int64 `json:"transfer_limit,omitempty"`
 }
 
 // Validate validates this flexcache writeback

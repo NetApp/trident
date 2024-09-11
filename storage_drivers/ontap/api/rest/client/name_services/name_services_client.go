@@ -34,9 +34,13 @@ type ClientService interface {
 
 	DNSDelete(params *DNSDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DNSDeleteOK, error)
 
+	DNSDeleteCollection(params *DNSDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DNSDeleteCollectionOK, error)
+
 	DNSGet(params *DNSGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DNSGetOK, error)
 
 	DNSModify(params *DNSModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DNSModifyOK, error)
+
+	DNSModifyCollection(params *DNSModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DNSModifyCollectionOK, error)
 
 	GlobalCacheSettingGet(params *GlobalCacheSettingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GlobalCacheSettingGetOK, error)
 
@@ -48,6 +52,8 @@ type ClientService interface {
 
 	GroupMembershipSettingsModify(params *GroupMembershipSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupMembershipSettingsModifyOK, error)
 
+	GroupMembershipSettingsModifyCollection(params *GroupMembershipSettingsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupMembershipSettingsModifyCollectionOK, error)
+
 	HostRecordGet(params *HostRecordGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostRecordGetOK, error)
 
 	HostsSettingsCollectionGet(params *HostsSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostsSettingsCollectionGetOK, error)
@@ -56,15 +62,21 @@ type ClientService interface {
 
 	HostsSettingsModify(params *HostsSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostsSettingsModifyOK, error)
 
+	HostsSettingsModifyCollection(params *HostsSettingsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostsSettingsModifyCollectionOK, error)
+
 	LdapCollectionGet(params *LdapCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapCollectionGetOK, error)
 
 	LdapCreate(params *LdapCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapCreateCreated, error)
 
 	LdapDelete(params *LdapDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapDeleteOK, error)
 
+	LdapDeleteCollection(params *LdapDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapDeleteCollectionOK, error)
+
 	LdapGet(params *LdapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapGetOK, error)
 
 	LdapModify(params *LdapModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapModifyOK, error)
+
+	LdapModifyCollection(params *LdapModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapModifyCollectionOK, error)
 
 	LdapSchemaCollectionGet(params *LdapSchemaCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaCollectionGetOK, error)
 
@@ -72,9 +84,13 @@ type ClientService interface {
 
 	LdapSchemaDelete(params *LdapSchemaDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaDeleteOK, error)
 
+	LdapSchemaDeleteCollection(params *LdapSchemaDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaDeleteCollectionOK, error)
+
 	LdapSchemaGet(params *LdapSchemaGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaGetOK, error)
 
 	LdapSchemaModify(params *LdapSchemaModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaModifyOK, error)
+
+	LdapSchemaModifyCollection(params *LdapSchemaModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaModifyCollectionOK, error)
 
 	LocalHostCollectionGet(params *LocalHostCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostCollectionGetOK, error)
 
@@ -82,9 +98,13 @@ type ClientService interface {
 
 	LocalHostDelete(params *LocalHostDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostDeleteOK, error)
 
+	LocalHostDeleteCollection(params *LocalHostDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostDeleteCollectionOK, error)
+
 	LocalHostGet(params *LocalHostGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostGetOK, error)
 
 	LocalHostModify(params *LocalHostModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostModifyOK, error)
+
+	LocalHostModifyCollection(params *LocalHostModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostModifyCollectionOK, error)
 
 	NameMappingCollectionGet(params *NameMappingCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NameMappingCollectionGetOK, error)
 
@@ -92,7 +112,11 @@ type ClientService interface {
 
 	NameMappingDelete(params *NameMappingDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NameMappingDeleteOK, error)
 
+	NameMappingDeleteCollection(params *NameMappingDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NameMappingDeleteCollectionOK, error)
+
 	NameMappingModify(params *NameMappingModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NameMappingModifyOK, error)
+
+	NameMappingModifyCollection(params *NameMappingModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NameMappingModifyCollectionOK, error)
 
 	NameMappingPositionGet(params *NameMappingPositionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NameMappingPositionGetOK, error)
 
@@ -106,15 +130,21 @@ type ClientService interface {
 
 	NetgroupsSettingsModify(params *NetgroupsSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupsSettingsModifyOK, error)
 
+	NetgroupsSettingsModifyCollection(params *NetgroupsSettingsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupsSettingsModifyCollectionOK, error)
+
 	NisCollectionGet(params *NisCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NisCollectionGetOK, error)
 
 	NisCreate(params *NisCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NisCreateCreated, error)
 
 	NisDelete(params *NisDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NisDeleteOK, error)
 
+	NisDeleteCollection(params *NisDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NisDeleteCollectionOK, error)
+
 	NisGet(params *NisGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NisGetOK, error)
 
 	NisModify(params *NisModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NisModifyOK, error)
+
+	NisModifyCollection(params *NisModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NisModifyCollectionOK, error)
 
 	UnixGroupCollectionGet(params *UnixGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupCollectionGetOK, error)
 
@@ -122,9 +152,13 @@ type ClientService interface {
 
 	UnixGroupDelete(params *UnixGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupDeleteOK, error)
 
+	UnixGroupDeleteCollection(params *UnixGroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupDeleteCollectionOK, error)
+
 	UnixGroupGet(params *UnixGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupGetOK, error)
 
 	UnixGroupModify(params *UnixGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupModifyOK, error)
+
+	UnixGroupModifyCollection(params *UnixGroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupModifyCollectionOK, error)
 
 	UnixGroupSettingsCollectionGet(params *UnixGroupSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupSettingsCollectionGetOK, error)
 
@@ -132,7 +166,11 @@ type ClientService interface {
 
 	UnixGroupSettingsModify(params *UnixGroupSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupSettingsModifyOK, error)
 
+	UnixGroupSettingsModifyCollection(params *UnixGroupSettingsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupSettingsModifyCollectionOK, error)
+
 	UnixGroupUserDelete(params *UnixGroupUserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUserDeleteOK, error)
+
+	UnixGroupUserDeleteCollection(params *UnixGroupUserDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUserDeleteCollectionOK, error)
 
 	UnixGroupUsersCollectionGet(params *UnixGroupUsersCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUsersCollectionGetOK, error)
 
@@ -146,15 +184,21 @@ type ClientService interface {
 
 	UnixUserDelete(params *UnixUserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserDeleteOK, error)
 
+	UnixUserDeleteCollection(params *UnixUserDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserDeleteCollectionOK, error)
+
 	UnixUserGet(params *UnixUserGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserGetOK, error)
 
 	UnixUserModify(params *UnixUserModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserModifyOK, error)
+
+	UnixUserModifyCollection(params *UnixUserModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserModifyCollectionOK, error)
 
 	UnixUserSettingsCollectionGet(params *UnixUserSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserSettingsCollectionGetOK, error)
 
 	UnixUserSettingsGet(params *UnixUserSettingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserSettingsGetOK, error)
 
 	UnixUserSettingsModify(params *UnixUserSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserSettingsModifyOK, error)
+
+	UnixUserSettingsModifyCollection(params *UnixUserSettingsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserSettingsModifyCollectionOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -169,10 +213,12 @@ Specify 'scope' as 'cluster' to retrieve the DNS configuration of the cluster.
 * 'source_address_match'
 * 'packet_query_match'
 * 'status' property retrieves the status of each name server of the DNS configuration for an SVM.
+* 'service_ips' property is displayed only when both service.name and SVM are set.
 ### Related ONTAP commands
 * `vserver services name-service dns show`
 * `vserver services name-service dns check`
 * `vserver services name-service dns dynamic-update show`
+* `vserver services access-check dns srv-lookup`
 ### Learn more
 * [`DOC /name-services/dns`](#docs-name-services-name-services_dns)
 */
@@ -185,8 +231,8 @@ func (a *Client) DNSCollectionGet(params *DNSCollectionGetParams, authInfo runti
 		ID:                 "dns_collection_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/dns",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DNSCollectionGetReader{formats: a.formats},
@@ -244,8 +290,8 @@ func (a *Client) DNSCreate(params *DNSCreateParams, authInfo runtime.ClientAuthI
 		ID:                 "dns_create",
 		Method:             "POST",
 		PathPattern:        "/name-services/dns",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DNSCreateReader{formats: a.formats},
@@ -286,9 +332,9 @@ func (a *Client) DNSDelete(params *DNSDeleteParams, authInfo runtime.ClientAuthI
 	op := &runtime.ClientOperation{
 		ID:                 "dns_delete",
 		Method:             "DELETE",
-		PathPattern:        "/name-services/dns/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		PathPattern:        "/name-services/dns/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DNSDeleteReader{formats: a.formats},
@@ -314,6 +360,44 @@ func (a *Client) DNSDelete(params *DNSDeleteParams, authInfo runtime.ClientAuthI
 }
 
 /*
+DNSDeleteCollection dns delete collection API
+*/
+func (a *Client) DNSDeleteCollection(params *DNSDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DNSDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDNSDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "dns_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/name-services/dns",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DNSDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DNSDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DNSDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	DNSGet Retrieves DNS domain and server configuration of an SVM. By default, both DNS domains and servers are displayed.
 
 ### Advanced properties
@@ -321,10 +405,12 @@ func (a *Client) DNSDelete(params *DNSDeleteParams, authInfo runtime.ClientAuthI
 * 'source_address_match'
 * 'packet_query_match'
 * 'status' property retrieves the status of each name server of the DNS configuration for an SVM.
+* 'service_ips' property is displayed only when both service.name and SVM are set.
 ### Related ONTAP commands
 * `vserver services name-service dns show`
 * `vserver services name-service dns check`
 * `vserver services name-service dns dynamic-update show`
+* `vserver services access-check dns srv-lookup`
 ### Learn more
 * [`DOC /name-services/dns`](#docs-name-services-name-services_dns)
 */
@@ -336,9 +422,9 @@ func (a *Client) DNSGet(params *DNSGetParams, authInfo runtime.ClientAuthInfoWri
 	op := &runtime.ClientOperation{
 		ID:                 "dns_get",
 		Method:             "GET",
-		PathPattern:        "/name-services/dns/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		PathPattern:        "/name-services/dns/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DNSGetReader{formats: a.formats},
@@ -404,9 +490,9 @@ func (a *Client) DNSModify(params *DNSModifyParams, authInfo runtime.ClientAuthI
 	op := &runtime.ClientOperation{
 		ID:                 "dns_modify",
 		Method:             "PATCH",
-		PathPattern:        "/name-services/dns/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		PathPattern:        "/name-services/dns/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DNSModifyReader{formats: a.formats},
@@ -432,6 +518,44 @@ func (a *Client) DNSModify(params *DNSModifyParams, authInfo runtime.ClientAuthI
 }
 
 /*
+DNSModifyCollection dns modify collection API
+*/
+func (a *Client) DNSModifyCollection(params *DNSModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DNSModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDNSModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "dns_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/dns",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DNSModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DNSModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DNSModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	GlobalCacheSettingGet Retrieves a global nameservice cache setting.
 
 ### Related ONTAP commands
@@ -448,8 +572,8 @@ func (a *Client) GlobalCacheSettingGet(params *GlobalCacheSettingGetParams, auth
 		ID:                 "global_cache_setting_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/cache/setting",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GlobalCacheSettingGetReader{formats: a.formats},
@@ -494,8 +618,8 @@ func (a *Client) GlobalCacheSettingModify(params *GlobalCacheSettingModifyParams
 		ID:                 "global_cache_setting_modify",
 		Method:             "PATCH",
 		PathPattern:        "/name-services/cache/setting",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GlobalCacheSettingModifyReader{formats: a.formats},
@@ -537,8 +661,8 @@ func (a *Client) GroupMembershipSettingsCollectionGet(params *GroupMembershipSet
 		ID:                 "group_membership_settings_collection_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/cache/group-membership/settings",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GroupMembershipSettingsCollectionGetReader{formats: a.formats},
@@ -580,8 +704,8 @@ func (a *Client) GroupMembershipSettingsGet(params *GroupMembershipSettingsGetPa
 		ID:                 "group_membership_settings_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/cache/group-membership/settings/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GroupMembershipSettingsGetReader{formats: a.formats},
@@ -627,8 +751,8 @@ func (a *Client) GroupMembershipSettingsModify(params *GroupMembershipSettingsMo
 		ID:                 "group_membership_settings_modify",
 		Method:             "PATCH",
 		PathPattern:        "/name-services/cache/group-membership/settings/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GroupMembershipSettingsModifyReader{formats: a.formats},
@@ -654,7 +778,45 @@ func (a *Client) GroupMembershipSettingsModify(params *GroupMembershipSettingsMo
 }
 
 /*
-	HostRecordGet Retrieves the IP address of the specified hostname.
+GroupMembershipSettingsModifyCollection group membership settings modify collection API
+*/
+func (a *Client) GroupMembershipSettingsModifyCollection(params *GroupMembershipSettingsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupMembershipSettingsModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupMembershipSettingsModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_membership_settings_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/cache/group-membership/settings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupMembershipSettingsModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupMembershipSettingsModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupMembershipSettingsModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	HostRecordGet Retrieves the IP address of the specified hostname and vice-versa.
 
 ### Related ONTAP commands
 * `vserver services name-service getxxbyyy getnameinfo`
@@ -669,8 +831,8 @@ func (a *Client) HostRecordGet(params *HostRecordGetParams, authInfo runtime.Cli
 		ID:                 "host_record_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/host-record/{svm.uuid}/{host}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &HostRecordGetReader{formats: a.formats},
@@ -712,8 +874,8 @@ func (a *Client) HostsSettingsCollectionGet(params *HostsSettingsCollectionGetPa
 		ID:                 "hosts_settings_collection_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/cache/host/settings",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &HostsSettingsCollectionGetReader{formats: a.formats},
@@ -754,9 +916,9 @@ func (a *Client) HostsSettingsGet(params *HostsSettingsGetParams, authInfo runti
 	op := &runtime.ClientOperation{
 		ID:                 "hosts_settings_get",
 		Method:             "GET",
-		PathPattern:        "/name-services/cache/host/settings/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		PathPattern:        "/name-services/cache/host/settings/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &HostsSettingsGetReader{formats: a.formats},
@@ -785,7 +947,7 @@ func (a *Client) HostsSettingsGet(params *HostsSettingsGetParams, authInfo runti
 	HostsSettingsModify Updates a host cache setting.
 
 ### Important notes
-  - svm.uuid field cannot be empty.
+  - UUID field cannot be empty.
   - Returns success in case no values are provided for update.
 
 ### Related ONTAP commands
@@ -801,9 +963,9 @@ func (a *Client) HostsSettingsModify(params *HostsSettingsModifyParams, authInfo
 	op := &runtime.ClientOperation{
 		ID:                 "hosts_settings_modify",
 		Method:             "PATCH",
-		PathPattern:        "/name-services/cache/host/settings/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		PathPattern:        "/name-services/cache/host/settings/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &HostsSettingsModifyReader{formats: a.formats},
@@ -829,7 +991,54 @@ func (a *Client) HostsSettingsModify(params *HostsSettingsModifyParams, authInfo
 }
 
 /*
-LdapCollectionGet Retrieves the LDAP configurations for all SVMs.
+HostsSettingsModifyCollection hosts settings modify collection API
+*/
+func (a *Client) HostsSettingsModifyCollection(params *HostsSettingsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostsSettingsModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewHostsSettingsModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "hosts_settings_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/cache/host/settings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &HostsSettingsModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*HostsSettingsModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*HostsSettingsModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	LdapCollectionGet Retrieves the LDAP configurations for all SVMs.
+
+### Related ONTAP commands
+  - `ldap show`
+  - `ldap check -vserver vs0`
+  - `ldap check-ipv6 -vserver vs0`
+
+### Important notes
+  - The status.code, status.dn_message, status.message, and status.state fields have the same status fields that are returned using the "ldap check" CLI command.
+  - Refer to the ipv4 or ipv6 objects available in the status field to get specific information about the code, dn_messages, or message and state information for ipv4 or ipv6.
 */
 func (a *Client) LdapCollectionGet(params *LdapCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -840,8 +1049,8 @@ func (a *Client) LdapCollectionGet(params *LdapCollectionGetParams, authInfo run
 		ID:                 "ldap_collection_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/ldap",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LdapCollectionGetReader{formats: a.formats},
@@ -898,10 +1107,11 @@ func (a *Client) LdapCollectionGet(params *LdapCollectionGetParams, authInfo run
 - is_netgroup_byhost_enabled
 - group_membership_filter
 - skip_config_validation
-- try_channel_binding</br>
+- try_channel_binding
+- restrict_discovery_to_site</br>
 Configuring more than one LDAP server is recommended to avoid a single point of failure.
 Both FQDNs and IP addresses are supported for the "servers" field.
-The Acitve Directory domain or LDAP servers are validated as part of this operation.</br>
+The Active Directory domain or LDAP servers are validated as part of this operation.</br>
 LDAP validation fails in the following scenarios:<br/>
 1. The server does not have LDAP installed.
 2. The server or Active Directory domain is invalid.
@@ -916,8 +1126,8 @@ func (a *Client) LdapCreate(params *LdapCreateParams, authInfo runtime.ClientAut
 		ID:                 "ldap_create",
 		Method:             "POST",
 		PathPattern:        "/name-services/ldap",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LdapCreateReader{formats: a.formats},
@@ -954,8 +1164,8 @@ func (a *Client) LdapDelete(params *LdapDeleteParams, authInfo runtime.ClientAut
 		ID:                 "ldap_delete",
 		Method:             "DELETE",
 		PathPattern:        "/name-services/ldap/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LdapDeleteReader{formats: a.formats},
@@ -981,7 +1191,54 @@ func (a *Client) LdapDelete(params *LdapDeleteParams, authInfo runtime.ClientAut
 }
 
 /*
-LdapGet Retrieves LDAP configuration for an SVM. All parameters for the LDAP configuration are displayed by default.
+LdapDeleteCollection ldap delete collection API
+*/
+func (a *Client) LdapDeleteCollection(params *LdapDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLdapDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ldap_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/name-services/ldap",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LdapDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LdapDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LdapDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	LdapGet Retrieves LDAP configuration for an SVM. All parameters for the LDAP configuration are displayed by default.
+
+### Related ONTAP commands
+  - `ldap show`
+  - `ldap check -vserver vs0`
+  - `ldap check-ipv6 -vserver vs0`
+
+### Important notes
+  - The status.code, status.dn_message, status.message, and status.state fields have the same status fields that are returned using the "ldap check" CLI command.
+  - Refer to the ipv4 or ipv6 objects available in the status field to get specific information about the code, dn_messages, or message and state information for ipv4 or ipv6.
 */
 func (a *Client) LdapGet(params *LdapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapGetOK, error) {
 	// TODO: Validate the params before sending
@@ -992,8 +1249,8 @@ func (a *Client) LdapGet(params *LdapGetParams, authInfo runtime.ClientAuthInfoW
 		ID:                 "ldap_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/ldap/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LdapGetReader{formats: a.formats},
@@ -1025,7 +1282,7 @@ func (a *Client) LdapGet(params *LdapGetParams, authInfo runtime.ClientAuthInfoW
 * Both mandatory and optional parameters of the LDAP configuration can be updated.
 * The LDAP servers and Active Directory domain are mutually exclusive fields. These fields cannot be empty. At any point in time, either the LDAP servers or Active Directory domain must be populated.
 * IPv6 must be enabled if IPv6 family addresses are specified.<br/>
-</br>Configuring more than one LDAP server is recommended to avoid a sinlge point of failure.
+</br>Configuring more than one LDAP server is recommended to avoid a single point of failure.
 Both FQDNs and IP addresses are supported for the "servers" field.
 The Active Directory domain or LDAP servers are validated as part of this operation.<br/>
 LDAP validation fails in the following scenarios:<br/>
@@ -1042,8 +1299,8 @@ func (a *Client) LdapModify(params *LdapModifyParams, authInfo runtime.ClientAut
 		ID:                 "ldap_modify",
 		Method:             "PATCH",
 		PathPattern:        "/name-services/ldap/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LdapModifyReader{formats: a.formats},
@@ -1069,6 +1326,44 @@ func (a *Client) LdapModify(params *LdapModifyParams, authInfo runtime.ClientAut
 }
 
 /*
+LdapModifyCollection ldap modify collection API
+*/
+func (a *Client) LdapModifyCollection(params *LdapModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLdapModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ldap_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/ldap",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LdapModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LdapModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LdapModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	LdapSchemaCollectionGet Retrieves all the LDAP schemas.
 
 ### Related ONTAP commands
@@ -1083,8 +1378,8 @@ func (a *Client) LdapSchemaCollectionGet(params *LdapSchemaCollectionGetParams, 
 		ID:                 "ldap_schema_collection_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/ldap-schemas",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LdapSchemaCollectionGetReader{formats: a.formats},
@@ -1127,8 +1422,8 @@ func (a *Client) LdapSchemaCreate(params *LdapSchemaCreateParams, authInfo runti
 		ID:                 "ldap_schema_create",
 		Method:             "POST",
 		PathPattern:        "/name-services/ldap-schemas",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LdapSchemaCreateReader{formats: a.formats},
@@ -1168,8 +1463,8 @@ func (a *Client) LdapSchemaDelete(params *LdapSchemaDeleteParams, authInfo runti
 		ID:                 "ldap_schema_delete",
 		Method:             "DELETE",
 		PathPattern:        "/name-services/ldap-schemas/{owner.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LdapSchemaDeleteReader{formats: a.formats},
@@ -1195,6 +1490,44 @@ func (a *Client) LdapSchemaDelete(params *LdapSchemaDeleteParams, authInfo runti
 }
 
 /*
+LdapSchemaDeleteCollection ldap schema delete collection API
+*/
+func (a *Client) LdapSchemaDeleteCollection(params *LdapSchemaDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLdapSchemaDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ldap_schema_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/name-services/ldap-schemas",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LdapSchemaDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LdapSchemaDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LdapSchemaDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	LdapSchemaGet Retrieves LDAP schema details for a given owner and schema.
 
 ### Related ONTAP commands
@@ -1209,8 +1542,8 @@ func (a *Client) LdapSchemaGet(params *LdapSchemaGetParams, authInfo runtime.Cli
 		ID:                 "ldap_schema_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/ldap-schemas/{owner.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LdapSchemaGetReader{formats: a.formats},
@@ -1253,8 +1586,8 @@ func (a *Client) LdapSchemaModify(params *LdapSchemaModifyParams, authInfo runti
 		ID:                 "ldap_schema_modify",
 		Method:             "PATCH",
 		PathPattern:        "/name-services/ldap-schemas/{owner.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LdapSchemaModifyReader{formats: a.formats},
@@ -1280,6 +1613,44 @@ func (a *Client) LdapSchemaModify(params *LdapSchemaModifyParams, authInfo runti
 }
 
 /*
+LdapSchemaModifyCollection ldap schema modify collection API
+*/
+func (a *Client) LdapSchemaModifyCollection(params *LdapSchemaModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLdapSchemaModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ldap_schema_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/ldap-schemas",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LdapSchemaModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LdapSchemaModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LdapSchemaModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	LocalHostCollectionGet Retrieves all IP to hostname mappings for all SVMs of the cluster.
 
 ### Related ONTAP commands
@@ -1296,8 +1667,8 @@ func (a *Client) LocalHostCollectionGet(params *LocalHostCollectionGetParams, au
 		ID:                 "local_host_collection_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/local-hosts",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalHostCollectionGetReader{formats: a.formats},
@@ -1323,12 +1694,14 @@ func (a *Client) LocalHostCollectionGet(params *LocalHostCollectionGetParams, au
 }
 
 /*
-	LocalHostCreate Creates a new IP to hostname mapping.
+	LocalHostCreate Creates a new cluster-scoped or SVM-scoped IP to hostname mapping. For SVM-scoped mappings, include either the SVM name as owner.name or the SVM UUID as owner.uuid in the request body, along with other necessary parameters. For cluster-scoped mappings, specifying owner.uuid or owner.name is not required.
 
 ### Required properties
-* `owner.uuid` or `owner.name` - Existing SVM in which to create IP to host mapping.
 * `address` - IPv4/IPv6 address in dotted form.
 * `hostname` - Canonical hostname.
+### Optional properties
+* `owner.uuid` or `owner.name` - Specify the name or UUID of an existing SVM to create an SVM-scoped IP-to-host mapping.
+* `aliases` - The list of aliases.
 ### Related ONTAP commands
 * `vserver services name-service dns hosts create`
 ### Learn more
@@ -1343,8 +1716,8 @@ func (a *Client) LocalHostCreate(params *LocalHostCreateParams, authInfo runtime
 		ID:                 "local_host_create",
 		Method:             "POST",
 		PathPattern:        "/name-services/local-hosts",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalHostCreateReader{formats: a.formats},
@@ -1386,8 +1759,8 @@ func (a *Client) LocalHostDelete(params *LocalHostDeleteParams, authInfo runtime
 		ID:                 "local_host_delete",
 		Method:             "DELETE",
 		PathPattern:        "/name-services/local-hosts/{owner.uuid}/{address}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalHostDeleteReader{formats: a.formats},
@@ -1413,6 +1786,44 @@ func (a *Client) LocalHostDelete(params *LocalHostDeleteParams, authInfo runtime
 }
 
 /*
+LocalHostDeleteCollection local host delete collection API
+*/
+func (a *Client) LocalHostDeleteCollection(params *LocalHostDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalHostDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_host_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/name-services/local-hosts",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalHostDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalHostDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalHostDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	LocalHostGet For a specified SVM and IP address, returns the corresponding IP to hostname mapping.
 
 ### Related ONTAP commands
@@ -1429,8 +1840,8 @@ func (a *Client) LocalHostGet(params *LocalHostGetParams, authInfo runtime.Clien
 		ID:                 "local_host_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/local-hosts/{owner.uuid}/{address}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalHostGetReader{formats: a.formats},
@@ -1472,8 +1883,8 @@ func (a *Client) LocalHostModify(params *LocalHostModifyParams, authInfo runtime
 		ID:                 "local_host_modify",
 		Method:             "PATCH",
 		PathPattern:        "/name-services/local-hosts/{owner.uuid}/{address}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalHostModifyReader{formats: a.formats},
@@ -1499,6 +1910,44 @@ func (a *Client) LocalHostModify(params *LocalHostModifyParams, authInfo runtime
 }
 
 /*
+LocalHostModifyCollection local host modify collection API
+*/
+func (a *Client) LocalHostModifyCollection(params *LocalHostModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalHostModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_host_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/local-hosts",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalHostModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalHostModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalHostModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NameMappingCollectionGet Retrieves the name mapping configuration for all SVMs.
 
 ### Related ONTAP commands
@@ -1515,8 +1964,8 @@ func (a *Client) NameMappingCollectionGet(params *NameMappingCollectionGetParams
 		ID:                 "name_mapping_collection_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/name-mappings",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NameMappingCollectionGetReader{formats: a.formats},
@@ -1566,8 +2015,8 @@ func (a *Client) NameMappingCreate(params *NameMappingCreateParams, authInfo run
 		ID:                 "name_mapping_create",
 		Method:             "POST",
 		PathPattern:        "/name-services/name-mappings",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NameMappingCreateReader{formats: a.formats},
@@ -1609,8 +2058,8 @@ func (a *Client) NameMappingDelete(params *NameMappingDeleteParams, authInfo run
 		ID:                 "name_mapping_delete",
 		Method:             "DELETE",
 		PathPattern:        "/name-services/name-mappings/{svm.uuid}/{direction}/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NameMappingDeleteReader{formats: a.formats},
@@ -1636,6 +2085,44 @@ func (a *Client) NameMappingDelete(params *NameMappingDeleteParams, authInfo run
 }
 
 /*
+NameMappingDeleteCollection name mapping delete collection API
+*/
+func (a *Client) NameMappingDeleteCollection(params *NameMappingDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NameMappingDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNameMappingDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "name_mapping_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/name-services/name-mappings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NameMappingDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NameMappingDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NameMappingDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NameMappingModify Updates the name mapping configuration of an SVM. The positions can be swapped by providing the `new_index` property.
 
 Swapping is not allowed for entries that have `client_match` property configured.
@@ -1654,8 +2141,8 @@ func (a *Client) NameMappingModify(params *NameMappingModifyParams, authInfo run
 		ID:                 "name_mapping_modify",
 		Method:             "PATCH",
 		PathPattern:        "/name-services/name-mappings/{svm.uuid}/{direction}/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NameMappingModifyReader{formats: a.formats},
@@ -1681,6 +2168,44 @@ func (a *Client) NameMappingModify(params *NameMappingModifyParams, authInfo run
 }
 
 /*
+NameMappingModifyCollection name mapping modify collection API
+*/
+func (a *Client) NameMappingModifyCollection(params *NameMappingModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NameMappingModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNameMappingModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "name_mapping_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/name-mappings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NameMappingModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NameMappingModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NameMappingModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NameMappingPositionGet Retrieves the name mapping configuration of an SVM.
 
 ### Related ONTAP commands
@@ -1697,8 +2222,8 @@ func (a *Client) NameMappingPositionGet(params *NameMappingPositionGetParams, au
 		ID:                 "name_mapping_position_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/name-mappings/{svm.uuid}/{direction}/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NameMappingPositionGetReader{formats: a.formats},
@@ -1740,8 +2265,8 @@ func (a *Client) NetgroupFileDelete(params *NetgroupFileDeleteParams, authInfo r
 		ID:                 "netgroup_file_delete",
 		Method:             "DELETE",
 		PathPattern:        "/name-services/netgroup-files/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetgroupFileDeleteReader{formats: a.formats},
@@ -1772,7 +2297,7 @@ func (a *Client) NetgroupFileDelete(params *NetgroupFileDeleteParams, authInfo r
 If the header is set as "accept: multipart/form-data", the raw netgroup file of the given SVM is retrieved.
 ### Important notes
 * For a raw netgroup file, set the header as "accept: multipart/form-data" else "accept: application/json" for netgroup file details.
-* Maximum size supported for raw netgroup file is 5MB, but netgroup file details of any valid SVM can be retrived if present.
+* Maximum size supported for raw netgroup file is 5MB, but netgroup file details of any valid SVM can be retrieved if present.
 ### Related ONTAP commands
 * `vserver services name-service netgroup status`
 * `vserver services name-service netgroup file show`
@@ -1788,8 +2313,8 @@ func (a *Client) NetgroupFileGet(params *NetgroupFileGetParams, authInfo runtime
 		ID:                 "netgroup_file_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/netgroup-files/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetgroupFileGetReader{formats: a.formats},
@@ -1831,8 +2356,8 @@ func (a *Client) NetgroupsSettingsCollectionGet(params *NetgroupsSettingsCollect
 		ID:                 "netgroups_settings_collection_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/cache/netgroup/settings",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetgroupsSettingsCollectionGetReader{formats: a.formats},
@@ -1874,8 +2399,8 @@ func (a *Client) NetgroupsSettingsGet(params *NetgroupsSettingsGetParams, authIn
 		ID:                 "netgroups_settings_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/cache/netgroup/settings/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetgroupsSettingsGetReader{formats: a.formats},
@@ -1921,8 +2446,8 @@ func (a *Client) NetgroupsSettingsModify(params *NetgroupsSettingsModifyParams, 
 		ID:                 "netgroups_settings_modify",
 		Method:             "PATCH",
 		PathPattern:        "/name-services/cache/netgroup/settings/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetgroupsSettingsModifyReader{formats: a.formats},
@@ -1948,6 +2473,44 @@ func (a *Client) NetgroupsSettingsModify(params *NetgroupsSettingsModifyParams, 
 }
 
 /*
+NetgroupsSettingsModifyCollection netgroups settings modify collection API
+*/
+func (a *Client) NetgroupsSettingsModifyCollection(params *NetgroupsSettingsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupsSettingsModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNetgroupsSettingsModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "netgroups_settings_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/cache/netgroup/settings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NetgroupsSettingsModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NetgroupsSettingsModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NetgroupsSettingsModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NisCollectionGet Retrieves NIS domain configurations of all the SVMs. The bound_servers field indicates the successfully bound NIS servers. Lookups and authentications fail if there are no bound servers.
 
 ### Related ONTAP commands
@@ -1966,8 +2529,8 @@ func (a *Client) NisCollectionGet(params *NisCollectionGetParams, authInfo runti
 		ID:                 "nis_collection_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/nis",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NisCollectionGetReader{formats: a.formats},
@@ -1993,7 +2556,7 @@ func (a *Client) NisCollectionGet(params *NisCollectionGetParams, authInfo runti
 }
 
 /*
-	NisCreate Creates an NIS domain and server confguration for a data SVM.
+	NisCreate Creates an NIS domain and server configuration for a data SVM.
 
 NIS configuration for the cluster is managed via [`/api/security/authentication/cluster/nis`](#docs-security-security_authentication_cluster_nis).<br/>
 ### Important notes
@@ -2021,8 +2584,8 @@ func (a *Client) NisCreate(params *NisCreateParams, authInfo runtime.ClientAuthI
 		ID:                 "nis_create",
 		Method:             "POST",
 		PathPattern:        "/name-services/nis",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NisCreateReader{formats: a.formats},
@@ -2064,8 +2627,8 @@ func (a *Client) NisDelete(params *NisDeleteParams, authInfo runtime.ClientAuthI
 		ID:                 "nis_delete",
 		Method:             "DELETE",
 		PathPattern:        "/name-services/nis/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NisDeleteReader{formats: a.formats},
@@ -2091,6 +2654,44 @@ func (a *Client) NisDelete(params *NisDeleteParams, authInfo runtime.ClientAuthI
 }
 
 /*
+NisDeleteCollection nis delete collection API
+*/
+func (a *Client) NisDeleteCollection(params *NisDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NisDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNisDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nis_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/name-services/nis",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NisDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NisDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NisDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NisGet Retrieves NIS domain and server configurations of an SVM. Both NIS domain and servers are displayed by default. The bound_servers field indicates the successfully bound NIS servers.
 
 ### Related ONTAP commands
@@ -2109,8 +2710,8 @@ func (a *Client) NisGet(params *NisGetParams, authInfo runtime.ClientAuthInfoWri
 		ID:                 "nis_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/nis/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NisGetReader{formats: a.formats},
@@ -2159,8 +2760,8 @@ func (a *Client) NisModify(params *NisModifyParams, authInfo runtime.ClientAuthI
 		ID:                 "nis_modify",
 		Method:             "PATCH",
 		PathPattern:        "/name-services/nis/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NisModifyReader{formats: a.formats},
@@ -2186,6 +2787,44 @@ func (a *Client) NisModify(params *NisModifyParams, authInfo runtime.ClientAuthI
 }
 
 /*
+NisModifyCollection nis modify collection API
+*/
+func (a *Client) NisModifyCollection(params *NisModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NisModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNisModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nis_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/nis",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NisModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NisModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NisModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	UnixGroupCollectionGet Retrieves the UNIX groups for all of the SVMs. UNIX users who are the members of the group are also displayed.
 
 ### Related ONTAP commands
@@ -2202,8 +2841,8 @@ func (a *Client) UnixGroupCollectionGet(params *UnixGroupCollectionGetParams, au
 		ID:                 "unix_group_collection_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/unix-groups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixGroupCollectionGetReader{formats: a.formats},
@@ -2246,8 +2885,8 @@ func (a *Client) UnixGroupCreate(params *UnixGroupCreateParams, authInfo runtime
 		ID:                 "unix_group_create",
 		Method:             "POST",
 		PathPattern:        "/name-services/unix-groups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixGroupCreateReader{formats: a.formats},
@@ -2289,8 +2928,8 @@ func (a *Client) UnixGroupDelete(params *UnixGroupDeleteParams, authInfo runtime
 		ID:                 "unix_group_delete",
 		Method:             "DELETE",
 		PathPattern:        "/name-services/unix-groups/{svm.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixGroupDeleteReader{formats: a.formats},
@@ -2316,6 +2955,44 @@ func (a *Client) UnixGroupDelete(params *UnixGroupDeleteParams, authInfo runtime
 }
 
 /*
+UnixGroupDeleteCollection unix group delete collection API
+*/
+func (a *Client) UnixGroupDeleteCollection(params *UnixGroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixGroupDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_group_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/name-services/unix-groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixGroupDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixGroupDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixGroupDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	UnixGroupGet Retrieves UNIX group information for the specified group and SVM. UNIX users who are part of this group
 
 are also retrieved.
@@ -2333,8 +3010,8 @@ func (a *Client) UnixGroupGet(params *UnixGroupGetParams, authInfo runtime.Clien
 		ID:                 "unix_group_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/unix-groups/{svm.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixGroupGetReader{formats: a.formats},
@@ -2374,8 +3051,8 @@ func (a *Client) UnixGroupModify(params *UnixGroupModifyParams, authInfo runtime
 		ID:                 "unix_group_modify",
 		Method:             "PATCH",
 		PathPattern:        "/name-services/unix-groups/{svm.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixGroupModifyReader{formats: a.formats},
@@ -2401,6 +3078,44 @@ func (a *Client) UnixGroupModify(params *UnixGroupModifyParams, authInfo runtime
 }
 
 /*
+UnixGroupModifyCollection unix group modify collection API
+*/
+func (a *Client) UnixGroupModifyCollection(params *UnixGroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixGroupModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_group_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/unix-groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixGroupModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixGroupModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixGroupModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	UnixGroupSettingsCollectionGet Retrieves unix-group cache settings.
 
 ### Related ONTAP commands
@@ -2417,8 +3132,8 @@ func (a *Client) UnixGroupSettingsCollectionGet(params *UnixGroupSettingsCollect
 		ID:                 "unix_group_settings_collection_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/cache/unix-group/settings",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixGroupSettingsCollectionGetReader{formats: a.formats},
@@ -2460,8 +3175,8 @@ func (a *Client) UnixGroupSettingsGet(params *UnixGroupSettingsGetParams, authIn
 		ID:                 "unix_group_settings_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/cache/unix-group/settings/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixGroupSettingsGetReader{formats: a.formats},
@@ -2507,8 +3222,8 @@ func (a *Client) UnixGroupSettingsModify(params *UnixGroupSettingsModifyParams, 
 		ID:                 "unix_group_settings_modify",
 		Method:             "PATCH",
 		PathPattern:        "/name-services/cache/unix-group/settings/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixGroupSettingsModifyReader{formats: a.formats},
@@ -2534,6 +3249,44 @@ func (a *Client) UnixGroupSettingsModify(params *UnixGroupSettingsModifyParams, 
 }
 
 /*
+UnixGroupSettingsModifyCollection unix group settings modify collection API
+*/
+func (a *Client) UnixGroupSettingsModifyCollection(params *UnixGroupSettingsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupSettingsModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixGroupSettingsModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_group_settings_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/cache/unix-group/settings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixGroupSettingsModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixGroupSettingsModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixGroupSettingsModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	UnixGroupUserDelete Deletes a user from the specified UNIX group.
 
 ### Related ONTAP commands
@@ -2548,8 +3301,8 @@ func (a *Client) UnixGroupUserDelete(params *UnixGroupUserDeleteParams, authInfo
 		ID:                 "unix_group_user_delete",
 		Method:             "DELETE",
 		PathPattern:        "/name-services/unix-groups/{svm.uuid}/{unix_group.name}/users/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixGroupUserDeleteReader{formats: a.formats},
@@ -2575,6 +3328,44 @@ func (a *Client) UnixGroupUserDelete(params *UnixGroupUserDeleteParams, authInfo
 }
 
 /*
+UnixGroupUserDeleteCollection unix group user delete collection API
+*/
+func (a *Client) UnixGroupUserDeleteCollection(params *UnixGroupUserDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUserDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixGroupUserDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_group_user_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/name-services/unix-groups/{svm.uuid}/{unix_group.name}/users",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixGroupUserDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixGroupUserDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixGroupUserDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	UnixGroupUsersCollectionGet Retrieves users for the specified UNIX group and SVM.
 
 ### Related ONTAP commands
@@ -2589,8 +3380,8 @@ func (a *Client) UnixGroupUsersCollectionGet(params *UnixGroupUsersCollectionGet
 		ID:                 "unix_group_users_collection_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/unix-groups/{svm.uuid}/{unix_group.name}/users",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixGroupUsersCollectionGetReader{formats: a.formats},
@@ -2636,8 +3427,8 @@ func (a *Client) UnixGroupUsersCreate(params *UnixGroupUsersCreateParams, authIn
 		ID:                 "unix_group_users_create",
 		Method:             "POST",
 		PathPattern:        "/name-services/unix-groups/{svm.uuid}/{unix_group.name}/users",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixGroupUsersCreateReader{formats: a.formats},
@@ -2677,8 +3468,8 @@ func (a *Client) UnixGroupUsersGet(params *UnixGroupUsersGetParams, authInfo run
 		ID:                 "unix_group_users_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/unix-groups/{svm.uuid}/{unix_group.name}/users/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixGroupUsersGetReader{formats: a.formats},
@@ -2707,7 +3498,7 @@ func (a *Client) UnixGroupUsersGet(params *UnixGroupUsersGetParams, authInfo run
 	UnixUserCollectionGet Retrieves all of the UNIX users for all of the SVMs.
 
 ### Important notes
-* The current UNIX users count can be retrieved from the num_records field by calling the API with the paramter "return_records=false".
+* The current UNIX users count can be retrieved from the num_records field by calling the API with the parameter "return_records=false".
 ### Related ONTAP commands
 * `vserver services name-service unix-user show`
 */
@@ -2720,8 +3511,8 @@ func (a *Client) UnixUserCollectionGet(params *UnixUserCollectionGetParams, auth
 		ID:                 "unix_user_collection_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/unix-users",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixUserCollectionGetReader{formats: a.formats},
@@ -2761,8 +3552,8 @@ func (a *Client) UnixUserCreate(params *UnixUserCreateParams, authInfo runtime.C
 		ID:                 "unix_user_create",
 		Method:             "POST",
 		PathPattern:        "/name-services/unix-users",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixUserCreateReader{formats: a.formats},
@@ -2802,8 +3593,8 @@ func (a *Client) UnixUserDelete(params *UnixUserDeleteParams, authInfo runtime.C
 		ID:                 "unix_user_delete",
 		Method:             "DELETE",
 		PathPattern:        "/name-services/unix-users/{svm.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixUserDeleteReader{formats: a.formats},
@@ -2829,6 +3620,44 @@ func (a *Client) UnixUserDelete(params *UnixUserDeleteParams, authInfo runtime.C
 }
 
 /*
+UnixUserDeleteCollection unix user delete collection API
+*/
+func (a *Client) UnixUserDeleteCollection(params *UnixUserDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixUserDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_user_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/name-services/unix-users",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixUserDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixUserDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixUserDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	UnixUserGet Retrieves UNIX user information for the specified user and SVM.
 
 ### Related ONTAP commands
@@ -2843,8 +3672,8 @@ func (a *Client) UnixUserGet(params *UnixUserGetParams, authInfo runtime.ClientA
 		ID:                 "unix_user_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/unix-users/{svm.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixUserGetReader{formats: a.formats},
@@ -2881,8 +3710,8 @@ func (a *Client) UnixUserModify(params *UnixUserModifyParams, authInfo runtime.C
 		ID:                 "unix_user_modify",
 		Method:             "PATCH",
 		PathPattern:        "/name-services/unix-users/{svm.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixUserModifyReader{formats: a.formats},
@@ -2908,6 +3737,44 @@ func (a *Client) UnixUserModify(params *UnixUserModifyParams, authInfo runtime.C
 }
 
 /*
+UnixUserModifyCollection unix user modify collection API
+*/
+func (a *Client) UnixUserModifyCollection(params *UnixUserModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixUserModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_user_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/unix-users",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixUserModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixUserModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixUserModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	UnixUserSettingsCollectionGet Retrieves unix-user cache settings.
 
 ### Related ONTAP commands
@@ -2924,8 +3791,8 @@ func (a *Client) UnixUserSettingsCollectionGet(params *UnixUserSettingsCollectio
 		ID:                 "unix_user_settings_collection_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/cache/unix-user/settings",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixUserSettingsCollectionGetReader{formats: a.formats},
@@ -2967,8 +3834,8 @@ func (a *Client) UnixUserSettingsGet(params *UnixUserSettingsGetParams, authInfo
 		ID:                 "unix_user_settings_get",
 		Method:             "GET",
 		PathPattern:        "/name-services/cache/unix-user/settings/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixUserSettingsGetReader{formats: a.formats},
@@ -3014,8 +3881,8 @@ func (a *Client) UnixUserSettingsModify(params *UnixUserSettingsModifyParams, au
 		ID:                 "unix_user_settings_modify",
 		Method:             "PATCH",
 		PathPattern:        "/name-services/cache/unix-user/settings/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UnixUserSettingsModifyReader{formats: a.formats},
@@ -3037,6 +3904,44 @@ func (a *Client) UnixUserSettingsModify(params *UnixUserSettingsModifyParams, au
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*UnixUserSettingsModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+UnixUserSettingsModifyCollection unix user settings modify collection API
+*/
+func (a *Client) UnixUserSettingsModifyCollection(params *UnixUserSettingsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserSettingsModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixUserSettingsModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_user_settings_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/cache/unix-user/settings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixUserSettingsModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixUserSettingsModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixUserSettingsModifyCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

@@ -69,11 +69,11 @@ type DNSModifyParams struct {
 	*/
 	Info *models.DNS
 
-	/* SvmUUID.
+	/* UUID.
 
-	   UUID of the SVM to which this object belongs.
+	   UUID of the DNS object.
 	*/
-	SvmUUID string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *DNSModifyParams) SetInfo(info *models.DNS) {
 	o.Info = info
 }
 
-// WithSvmUUID adds the svmUUID to the dns modify params
-func (o *DNSModifyParams) WithSvmUUID(svmUUID string) *DNSModifyParams {
-	o.SetSvmUUID(svmUUID)
+// WithUUID adds the uuid to the dns modify params
+func (o *DNSModifyParams) WithUUID(uuid string) *DNSModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the dns modify params
-func (o *DNSModifyParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetUUID adds the uuid to the dns modify params
+func (o *DNSModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -163,8 +163,8 @@ func (o *DNSModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 		}
 	}
 
-	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	// path param uuid
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

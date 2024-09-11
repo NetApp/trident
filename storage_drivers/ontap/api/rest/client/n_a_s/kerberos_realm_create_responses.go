@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *KerberosRealmCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the kerberos realm create created response
+func (o *KerberosRealmCreateCreated) Code() int {
+	return 201
+}
+
 func (o *KerberosRealmCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/nfs/kerberos/realms][%d] kerberosRealmCreateCreated ", 201)
+	return fmt.Sprintf("[POST /protocols/nfs/kerberos/realms][%d] kerberosRealmCreateCreated", 201)
 }
 
 func (o *KerberosRealmCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/nfs/kerberos/realms][%d] kerberosRealmCreateCreated ", 201)
+	return fmt.Sprintf("[POST /protocols/nfs/kerberos/realms][%d] kerberosRealmCreateCreated", 201)
 }
 
 func (o *KerberosRealmCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -131,11 +137,6 @@ type KerberosRealmCreateDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the kerberos realm create default response
-func (o *KerberosRealmCreateDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this kerberos realm create default response has a 2xx status code
 func (o *KerberosRealmCreateDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -161,12 +162,19 @@ func (o *KerberosRealmCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the kerberos realm create default response
+func (o *KerberosRealmCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *KerberosRealmCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/nfs/kerberos/realms][%d] kerberos_realm_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nfs/kerberos/realms][%d] kerberos_realm_create default %s", o._statusCode, payload)
 }
 
 func (o *KerberosRealmCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/nfs/kerberos/realms][%d] kerberos_realm_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nfs/kerberos/realms][%d] kerberos_realm_create default %s", o._statusCode, payload)
 }
 
 func (o *KerberosRealmCreateDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *HTTPProxyCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the http proxy create created response
+func (o *HTTPProxyCreateCreated) Code() int {
+	return 201
+}
+
 func (o *HTTPProxyCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /network/http-proxy][%d] httpProxyCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/http-proxy][%d] httpProxyCreateCreated %s", 201, payload)
 }
 
 func (o *HTTPProxyCreateCreated) String() string {
-	return fmt.Sprintf("[POST /network/http-proxy][%d] httpProxyCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/http-proxy][%d] httpProxyCreateCreated %s", 201, payload)
 }
 
 func (o *HTTPProxyCreateCreated) GetPayload() *models.NetworkHTTPProxyResponse {
@@ -136,16 +144,14 @@ func NewHTTPProxyCreateDefault(code int) *HTTPProxyCreateDefault {
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 interfaces. |
 | 26214481   | Username and password cannot be empty when HTTP proxy authentication is enabled. |
 | 26214482   | Username and password cannot be specified when HTTP proxy authentication is disabled. |
+| 26214480   | One of \"svm.name\", \"svm.uuid\", \"ipspace.name\" or \"ipspace.uuid\" must be specified. |
+| 2621462    | SVM \"vs0\" does not exist. |
+| 262186     | Field \"svm.name\" cannot be used with field \"ipspace.name\". |
 */
 type HTTPProxyCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the http proxy create default response
-func (o *HTTPProxyCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this http proxy create default response has a 2xx status code
@@ -173,12 +179,19 @@ func (o *HTTPProxyCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the http proxy create default response
+func (o *HTTPProxyCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *HTTPProxyCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /network/http-proxy][%d] http_proxy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/http-proxy][%d] http_proxy_create default %s", o._statusCode, payload)
 }
 
 func (o *HTTPProxyCreateDefault) String() string {
-	return fmt.Sprintf("[POST /network/http-proxy][%d] http_proxy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/http-proxy][%d] http_proxy_create default %s", o._statusCode, payload)
 }
 
 func (o *HTTPProxyCreateDefault) GetPayload() *models.ErrorResponse {

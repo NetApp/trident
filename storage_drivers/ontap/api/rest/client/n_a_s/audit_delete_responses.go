@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type AuditDeleteReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *AuditDeleteReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewAuditDeleteOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewAuditDeleteAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *AuditDeleteReader) ReadResponse(response runtime.ClientResponse, consum
 	}
 }
 
+// NewAuditDeleteOK creates a AuditDeleteOK with default headers values
+func NewAuditDeleteOK() *AuditDeleteOK {
+	return &AuditDeleteOK{}
+}
+
+/*
+AuditDeleteOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type AuditDeleteOK struct {
+	Payload *models.AuditJobLinkResponse
+}
+
+// IsSuccess returns true when this audit delete o k response has a 2xx status code
+func (o *AuditDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this audit delete o k response has a 3xx status code
+func (o *AuditDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this audit delete o k response has a 4xx status code
+func (o *AuditDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this audit delete o k response has a 5xx status code
+func (o *AuditDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this audit delete o k response a status code equal to that given
+func (o *AuditDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the audit delete o k response
+func (o *AuditDeleteOK) Code() int {
+	return 200
+}
+
+func (o *AuditDeleteOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}][%d] auditDeleteOK %s", 200, payload)
+}
+
+func (o *AuditDeleteOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}][%d] auditDeleteOK %s", 200, payload)
+}
+
+func (o *AuditDeleteOK) GetPayload() *models.AuditJobLinkResponse {
+	return o.Payload
+}
+
+func (o *AuditDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.AuditJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewAuditDeleteAccepted creates a AuditDeleteAccepted with default headers values
 func NewAuditDeleteAccepted() *AuditDeleteAccepted {
 	return &AuditDeleteAccepted{}
@@ -52,6 +129,7 @@ AuditDeleteAccepted describes a response with status code 202, with default head
 Accepted
 */
 type AuditDeleteAccepted struct {
+	Payload *models.AuditJobLinkResponse
 }
 
 // IsSuccess returns true when this audit delete accepted response has a 2xx status code
@@ -79,15 +157,33 @@ func (o *AuditDeleteAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the audit delete accepted response
+func (o *AuditDeleteAccepted) Code() int {
+	return 202
+}
+
 func (o *AuditDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}][%d] auditDeleteAccepted ", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}][%d] auditDeleteAccepted %s", 202, payload)
 }
 
 func (o *AuditDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}][%d] auditDeleteAccepted ", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}][%d] auditDeleteAccepted %s", 202, payload)
+}
+
+func (o *AuditDeleteAccepted) GetPayload() *models.AuditJobLinkResponse {
+	return o.Payload
 }
 
 func (o *AuditDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.AuditJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }
@@ -118,11 +214,6 @@ type AuditDeleteDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the audit delete default response
-func (o *AuditDeleteDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this audit delete default response has a 2xx status code
 func (o *AuditDeleteDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -148,12 +239,19 @@ func (o *AuditDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the audit delete default response
+func (o *AuditDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AuditDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}][%d] audit_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}][%d] audit_delete default %s", o._statusCode, payload)
 }
 
 func (o *AuditDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}][%d] audit_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}][%d] audit_delete default %s", o._statusCode, payload)
 }
 
 func (o *AuditDeleteDefault) GetPayload() *models.ErrorResponse {

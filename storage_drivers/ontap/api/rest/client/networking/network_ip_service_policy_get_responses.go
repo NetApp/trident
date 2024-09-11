@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NetworkIPServicePolicyGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the network Ip service policy get o k response
+func (o *NetworkIPServicePolicyGetOK) Code() int {
+	return 200
+}
+
 func (o *NetworkIPServicePolicyGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/ip/service-policies/{uuid}][%d] networkIpServicePolicyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/service-policies/{uuid}][%d] networkIpServicePolicyGetOK %s", 200, payload)
 }
 
 func (o *NetworkIPServicePolicyGetOK) String() string {
-	return fmt.Sprintf("[GET /network/ip/service-policies/{uuid}][%d] networkIpServicePolicyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/service-policies/{uuid}][%d] networkIpServicePolicyGetOK %s", 200, payload)
 }
 
 func (o *NetworkIPServicePolicyGetOK) GetPayload() *models.IPServicePolicy {
@@ -122,11 +130,6 @@ type NetworkIPServicePolicyGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the network ip service policy get default response
-func (o *NetworkIPServicePolicyGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this network ip service policy get default response has a 2xx status code
 func (o *NetworkIPServicePolicyGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NetworkIPServicePolicyGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the network ip service policy get default response
+func (o *NetworkIPServicePolicyGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetworkIPServicePolicyGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/ip/service-policies/{uuid}][%d] network_ip_service_policy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/service-policies/{uuid}][%d] network_ip_service_policy_get default %s", o._statusCode, payload)
 }
 
 func (o *NetworkIPServicePolicyGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/ip/service-policies/{uuid}][%d] network_ip_service_policy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/service-policies/{uuid}][%d] network_ip_service_policy_get default %s", o._statusCode, payload)
 }
 
 func (o *NetworkIPServicePolicyGetDefault) GetPayload() *models.ErrorResponse {

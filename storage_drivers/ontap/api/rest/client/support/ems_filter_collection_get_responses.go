@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *EmsFilterCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ems filter collection get o k response
+func (o *EmsFilterCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *EmsFilterCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /support/ems/filters][%d] emsFilterCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems/filters][%d] emsFilterCollectionGetOK %s", 200, payload)
 }
 
 func (o *EmsFilterCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /support/ems/filters][%d] emsFilterCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems/filters][%d] emsFilterCollectionGetOK %s", 200, payload)
 }
 
 func (o *EmsFilterCollectionGetOK) GetPayload() *models.EmsFilterResponse {
@@ -122,11 +130,6 @@ type EmsFilterCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the ems filter collection get default response
-func (o *EmsFilterCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this ems filter collection get default response has a 2xx status code
 func (o *EmsFilterCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *EmsFilterCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ems filter collection get default response
+func (o *EmsFilterCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *EmsFilterCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /support/ems/filters][%d] ems_filter_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems/filters][%d] ems_filter_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *EmsFilterCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /support/ems/filters][%d] ems_filter_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems/filters][%d] ems_filter_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *EmsFilterCollectionGetDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *IpsecPolicyCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ipsec policy collection get o k response
+func (o *IpsecPolicyCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *IpsecPolicyCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/ipsec/policies][%d] ipsecPolicyCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/policies][%d] ipsecPolicyCollectionGetOK %s", 200, payload)
 }
 
 func (o *IpsecPolicyCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /security/ipsec/policies][%d] ipsecPolicyCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/policies][%d] ipsecPolicyCollectionGetOK %s", 200, payload)
 }
 
 func (o *IpsecPolicyCollectionGetOK) GetPayload() *models.IpsecPolicyResponse {
@@ -122,11 +130,6 @@ type IpsecPolicyCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the ipsec policy collection get default response
-func (o *IpsecPolicyCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this ipsec policy collection get default response has a 2xx status code
 func (o *IpsecPolicyCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *IpsecPolicyCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ipsec policy collection get default response
+func (o *IpsecPolicyCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IpsecPolicyCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/ipsec/policies][%d] ipsec_policy_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/policies][%d] ipsec_policy_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *IpsecPolicyCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/ipsec/policies][%d] ipsec_policy_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/policies][%d] ipsec_policy_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *IpsecPolicyCollectionGetDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package ndmp
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NdmpNodeGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ndmp node get o k response
+func (o *NdmpNodeGetOK) Code() int {
+	return 200
+}
+
 func (o *NdmpNodeGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/nodes/{node.uuid}][%d] ndmpNodeGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/nodes/{node.uuid}][%d] ndmpNodeGetOK %s", 200, payload)
 }
 
 func (o *NdmpNodeGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/nodes/{node.uuid}][%d] ndmpNodeGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/nodes/{node.uuid}][%d] ndmpNodeGetOK %s", 200, payload)
 }
 
 func (o *NdmpNodeGetOK) GetPayload() *models.NdmpNode {
@@ -128,11 +136,6 @@ type NdmpNodeGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the ndmp node get default response
-func (o *NdmpNodeGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this ndmp node get default response has a 2xx status code
 func (o *NdmpNodeGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -158,12 +161,19 @@ func (o *NdmpNodeGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ndmp node get default response
+func (o *NdmpNodeGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NdmpNodeGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/nodes/{node.uuid}][%d] ndmp_node_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/nodes/{node.uuid}][%d] ndmp_node_get default %s", o._statusCode, payload)
 }
 
 func (o *NdmpNodeGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/nodes/{node.uuid}][%d] ndmp_node_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/nodes/{node.uuid}][%d] ndmp_node_get default %s", o._statusCode, payload)
 }
 
 func (o *NdmpNodeGetDefault) GetPayload() *models.ErrorResponse {

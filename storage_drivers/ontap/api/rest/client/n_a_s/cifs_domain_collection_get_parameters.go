@@ -62,6 +62,12 @@ CifsDomainCollectionGetParams contains all the parameters to send to the API end
 */
 type CifsDomainCollectionGetParams struct {
 
+	/* ClientID.
+
+	   Filter by client_id
+	*/
+	ClientID *string
+
 	/* DiscoveredServersDomain.
 
 	   Filter by discovered_servers.domain
@@ -182,18 +188,6 @@ type CifsDomainCollectionGetParams struct {
 	*/
 	PreferredDcsServerIP *string
 
-	/* PreferredDcsStatusDetails.
-
-	   Filter by preferred_dcs.status.details
-	*/
-	PreferredDcsStatusDetails *string
-
-	/* PreferredDcsStatusReachable.
-
-	   Filter by preferred_dcs.status.reachable
-	*/
-	PreferredDcsStatusReachable *bool
-
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -210,6 +204,12 @@ type CifsDomainCollectionGetParams struct {
 	*/
 	ReturnTimeout *int64
 
+	/* ServerDiscoveryMode.
+
+	   Filter by server_discovery_mode
+	*/
+	ServerDiscoveryMode *string
+
 	/* SvmName.
 
 	   Filter by svm.name
@@ -221,6 +221,12 @@ type CifsDomainCollectionGetParams struct {
 	   Filter by svm.uuid
 	*/
 	SvmUUID *string
+
+	/* TenantID.
+
+	   Filter by tenant_id
+	*/
+	TenantID *string
 
 	/* TrustRelationshipsHomeDomain.
 
@@ -311,6 +317,17 @@ func (o *CifsDomainCollectionGetParams) WithHTTPClient(client *http.Client) *Cif
 // SetHTTPClient adds the HTTPClient to the cifs domain collection get params
 func (o *CifsDomainCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithClientID adds the clientID to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithClientID(clientID *string) *CifsDomainCollectionGetParams {
+	o.SetClientID(clientID)
+	return o
+}
+
+// SetClientID adds the clientId to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetClientID(clientID *string) {
+	o.ClientID = clientID
 }
 
 // WithDiscoveredServersDomain adds the discoveredServersDomain to the cifs domain collection get params
@@ -533,28 +550,6 @@ func (o *CifsDomainCollectionGetParams) SetPreferredDcsServerIP(preferredDcsServ
 	o.PreferredDcsServerIP = preferredDcsServerIP
 }
 
-// WithPreferredDcsStatusDetails adds the preferredDcsStatusDetails to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithPreferredDcsStatusDetails(preferredDcsStatusDetails *string) *CifsDomainCollectionGetParams {
-	o.SetPreferredDcsStatusDetails(preferredDcsStatusDetails)
-	return o
-}
-
-// SetPreferredDcsStatusDetails adds the preferredDcsStatusDetails to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetPreferredDcsStatusDetails(preferredDcsStatusDetails *string) {
-	o.PreferredDcsStatusDetails = preferredDcsStatusDetails
-}
-
-// WithPreferredDcsStatusReachable adds the preferredDcsStatusReachable to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithPreferredDcsStatusReachable(preferredDcsStatusReachable *bool) *CifsDomainCollectionGetParams {
-	o.SetPreferredDcsStatusReachable(preferredDcsStatusReachable)
-	return o
-}
-
-// SetPreferredDcsStatusReachable adds the preferredDcsStatusReachable to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetPreferredDcsStatusReachable(preferredDcsStatusReachable *bool) {
-	o.PreferredDcsStatusReachable = preferredDcsStatusReachable
-}
-
 // WithReturnRecords adds the returnRecords to the cifs domain collection get params
 func (o *CifsDomainCollectionGetParams) WithReturnRecords(returnRecords *bool) *CifsDomainCollectionGetParams {
 	o.SetReturnRecords(returnRecords)
@@ -577,6 +572,17 @@ func (o *CifsDomainCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
 	o.ReturnTimeout = returnTimeout
 }
 
+// WithServerDiscoveryMode adds the serverDiscoveryMode to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithServerDiscoveryMode(serverDiscoveryMode *string) *CifsDomainCollectionGetParams {
+	o.SetServerDiscoveryMode(serverDiscoveryMode)
+	return o
+}
+
+// SetServerDiscoveryMode adds the serverDiscoveryMode to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetServerDiscoveryMode(serverDiscoveryMode *string) {
+	o.ServerDiscoveryMode = serverDiscoveryMode
+}
+
 // WithSvmName adds the svmName to the cifs domain collection get params
 func (o *CifsDomainCollectionGetParams) WithSvmName(svmName *string) *CifsDomainCollectionGetParams {
 	o.SetSvmName(svmName)
@@ -597,6 +603,17 @@ func (o *CifsDomainCollectionGetParams) WithSvmUUID(svmUUID *string) *CifsDomain
 // SetSvmUUID adds the svmUuid to the cifs domain collection get params
 func (o *CifsDomainCollectionGetParams) SetSvmUUID(svmUUID *string) {
 	o.SvmUUID = svmUUID
+}
+
+// WithTenantID adds the tenantID to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithTenantID(tenantID *string) *CifsDomainCollectionGetParams {
+	o.SetTenantID(tenantID)
+	return o
+}
+
+// SetTenantID adds the tenantId to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetTenantID(tenantID *string) {
+	o.TenantID = tenantID
 }
 
 // WithTrustRelationshipsHomeDomain adds the trustRelationshipsHomeDomain to the cifs domain collection get params
@@ -650,6 +667,23 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		return err
 	}
 	var res []error
+
+	if o.ClientID != nil {
+
+		// query param client_id
+		var qrClientID string
+
+		if o.ClientID != nil {
+			qrClientID = *o.ClientID
+		}
+		qClientID := qrClientID
+		if qClientID != "" {
+
+			if err := r.SetQueryParam("client_id", qClientID); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.DiscoveredServersDomain != nil {
 
@@ -979,40 +1013,6 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.PreferredDcsStatusDetails != nil {
-
-		// query param preferred_dcs.status.details
-		var qrPreferredDcsStatusDetails string
-
-		if o.PreferredDcsStatusDetails != nil {
-			qrPreferredDcsStatusDetails = *o.PreferredDcsStatusDetails
-		}
-		qPreferredDcsStatusDetails := qrPreferredDcsStatusDetails
-		if qPreferredDcsStatusDetails != "" {
-
-			if err := r.SetQueryParam("preferred_dcs.status.details", qPreferredDcsStatusDetails); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.PreferredDcsStatusReachable != nil {
-
-		// query param preferred_dcs.status.reachable
-		var qrPreferredDcsStatusReachable bool
-
-		if o.PreferredDcsStatusReachable != nil {
-			qrPreferredDcsStatusReachable = *o.PreferredDcsStatusReachable
-		}
-		qPreferredDcsStatusReachable := swag.FormatBool(qrPreferredDcsStatusReachable)
-		if qPreferredDcsStatusReachable != "" {
-
-			if err := r.SetQueryParam("preferred_dcs.status.reachable", qPreferredDcsStatusReachable); err != nil {
-				return err
-			}
-		}
-	}
-
 	if o.ReturnRecords != nil {
 
 		// query param return_records
@@ -1047,6 +1047,23 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
+	if o.ServerDiscoveryMode != nil {
+
+		// query param server_discovery_mode
+		var qrServerDiscoveryMode string
+
+		if o.ServerDiscoveryMode != nil {
+			qrServerDiscoveryMode = *o.ServerDiscoveryMode
+		}
+		qServerDiscoveryMode := qrServerDiscoveryMode
+		if qServerDiscoveryMode != "" {
+
+			if err := r.SetQueryParam("server_discovery_mode", qServerDiscoveryMode); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SvmName != nil {
 
 		// query param svm.name
@@ -1076,6 +1093,23 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		if qSvmUUID != "" {
 
 			if err := r.SetQueryParam("svm.uuid", qSvmUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TenantID != nil {
+
+		// query param tenant_id
+		var qrTenantID string
+
+		if o.TenantID != nil {
+			qrTenantID = *o.TenantID
+		}
+		qTenantID := qrTenantID
+		if qTenantID != "" {
+
+			if err := r.SetQueryParam("tenant_id", qTenantID); err != nil {
 				return err
 			}
 		}

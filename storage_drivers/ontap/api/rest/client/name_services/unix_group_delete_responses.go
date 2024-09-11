@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *UnixGroupDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the unix group delete o k response
+func (o *UnixGroupDeleteOK) Code() int {
+	return 200
+}
+
 func (o *UnixGroupDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{name}][%d] unixGroupDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{name}][%d] unixGroupDeleteOK", 200)
 }
 
 func (o *UnixGroupDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{name}][%d] unixGroupDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{name}][%d] unixGroupDeleteOK", 200)
 }
 
 func (o *UnixGroupDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type UnixGroupDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the unix group delete default response
-func (o *UnixGroupDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this unix group delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *UnixGroupDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the unix group delete default response
+func (o *UnixGroupDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *UnixGroupDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{name}][%d] unix_group_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{name}][%d] unix_group_delete default %s", o._statusCode, payload)
 }
 
 func (o *UnixGroupDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{name}][%d] unix_group_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{name}][%d] unix_group_delete default %s", o._statusCode, payload)
 }
 
 func (o *UnixGroupDeleteDefault) GetPayload() *models.ErrorResponse {

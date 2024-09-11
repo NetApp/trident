@@ -6,6 +6,7 @@ package n_v_me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NvmeSubsystemHostGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nvme subsystem host get o k response
+func (o *NvmeSubsystemHostGetOK) Code() int {
+	return 200
+}
+
 func (o *NvmeSubsystemHostGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{subsystem.uuid}/hosts/{nqn}][%d] nvmeSubsystemHostGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{subsystem.uuid}/hosts/{nqn}][%d] nvmeSubsystemHostGetOK %s", 200, payload)
 }
 
 func (o *NvmeSubsystemHostGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{subsystem.uuid}/hosts/{nqn}][%d] nvmeSubsystemHostGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{subsystem.uuid}/hosts/{nqn}][%d] nvmeSubsystemHostGetOK %s", 200, payload)
 }
 
 func (o *NvmeSubsystemHostGetOK) GetPayload() *models.NvmeSubsystemHost {
@@ -119,16 +127,14 @@ func NewNvmeSubsystemHostGetDefault(code int) *NvmeSubsystemHostGetDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 72090001 | The NVMe subsystem does not exist. |
+| 72090004 | The NVMe subsystem host does not exist. |
+| 72090022 | The NVMe subsystem host does not exist in the specified subsystem. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NvmeSubsystemHostGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nvme subsystem host get default response
-func (o *NvmeSubsystemHostGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nvme subsystem host get default response has a 2xx status code
@@ -156,12 +162,19 @@ func (o *NvmeSubsystemHostGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nvme subsystem host get default response
+func (o *NvmeSubsystemHostGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NvmeSubsystemHostGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{subsystem.uuid}/hosts/{nqn}][%d] nvme_subsystem_host_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{subsystem.uuid}/hosts/{nqn}][%d] nvme_subsystem_host_get default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemHostGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{subsystem.uuid}/hosts/{nqn}][%d] nvme_subsystem_host_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{subsystem.uuid}/hosts/{nqn}][%d] nvme_subsystem_host_get default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemHostGetDefault) GetPayload() *models.ErrorResponse {

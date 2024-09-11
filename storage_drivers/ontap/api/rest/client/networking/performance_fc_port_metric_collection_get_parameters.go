@@ -68,6 +68,13 @@ type PerformanceFcPortMetricCollectionGetParams struct {
 	*/
 	Duration *string
 
+	/* FcPortUUID.
+
+	   The unique identifier of the Fibre Channel port.
+
+	*/
+	FcPortUUID string
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -197,9 +204,9 @@ type PerformanceFcPortMetricCollectionGetParams struct {
 
 	/* UUID.
 
-	   Unique identifier of the FC port.
+	   Filter by uuid
 	*/
-	UUID string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -280,6 +287,17 @@ func (o *PerformanceFcPortMetricCollectionGetParams) WithDuration(duration *stri
 // SetDuration adds the duration to the performance fc port metric collection get params
 func (o *PerformanceFcPortMetricCollectionGetParams) SetDuration(duration *string) {
 	o.Duration = duration
+}
+
+// WithFcPortUUID adds the fcPortUUID to the performance fc port metric collection get params
+func (o *PerformanceFcPortMetricCollectionGetParams) WithFcPortUUID(fcPortUUID string) *PerformanceFcPortMetricCollectionGetParams {
+	o.SetFcPortUUID(fcPortUUID)
+	return o
+}
+
+// SetFcPortUUID adds the fcPortUuid to the performance fc port metric collection get params
+func (o *PerformanceFcPortMetricCollectionGetParams) SetFcPortUUID(fcPortUUID string) {
+	o.FcPortUUID = fcPortUUID
 }
 
 // WithFields adds the fields to the performance fc port metric collection get params
@@ -492,13 +510,13 @@ func (o *PerformanceFcPortMetricCollectionGetParams) SetTimestamp(timestamp *str
 }
 
 // WithUUID adds the uuid to the performance fc port metric collection get params
-func (o *PerformanceFcPortMetricCollectionGetParams) WithUUID(uuid string) *PerformanceFcPortMetricCollectionGetParams {
+func (o *PerformanceFcPortMetricCollectionGetParams) WithUUID(uuid *string) *PerformanceFcPortMetricCollectionGetParams {
 	o.SetUUID(uuid)
 	return o
 }
 
 // SetUUID adds the uuid to the performance fc port metric collection get params
-func (o *PerformanceFcPortMetricCollectionGetParams) SetUUID(uuid string) {
+func (o *PerformanceFcPortMetricCollectionGetParams) SetUUID(uuid *string) {
 	o.UUID = uuid
 }
 
@@ -525,6 +543,11 @@ func (o *PerformanceFcPortMetricCollectionGetParams) WriteToRequest(r runtime.Cl
 				return err
 			}
 		}
+	}
+
+	// path param fc_port.uuid
+	if err := r.SetPathParam("fc_port.uuid", o.FcPortUUID); err != nil {
+		return err
 	}
 
 	if o.Fields != nil {
@@ -838,9 +861,21 @@ func (o *PerformanceFcPortMetricCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUID); err != nil {
-		return err
+	if o.UUID != nil {
+
+		// query param uuid
+		var qrUUID string
+
+		if o.UUID != nil {
+			qrUUID = *o.UUID
+		}
+		qUUID := qrUUID
+		if qUUID != "" {
+
+			if err := r.SetQueryParam("uuid", qUUID); err != nil {
+				return err
+			}
+		}
 	}
 
 	if len(res) > 0 {

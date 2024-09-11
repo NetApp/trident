@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SnmpUsersModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snmp users modify o k response
+func (o *SnmpUsersModifyOK) Code() int {
+	return 200
+}
+
 func (o *SnmpUsersModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /support/snmp/users/{engine_id}/{name}][%d] snmpUsersModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /support/snmp/users/{engine_id}/{name}][%d] snmpUsersModifyOK", 200)
 }
 
 func (o *SnmpUsersModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /support/snmp/users/{engine_id}/{name}][%d] snmpUsersModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /support/snmp/users/{engine_id}/{name}][%d] snmpUsersModifyOK", 200)
 }
 
 func (o *SnmpUsersModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -113,16 +119,12 @@ func NewSnmpUsersModifyDefault(code int) *SnmpUsersModifyDefault {
 | 5832712 | Cannot modify attributes for user \"diag.\" |
 | 7077906 | Cannot use given role with this SVM because a role with that name has not been defined for the SVM. |
 | 9043999 | ONTAP failed to create an SNMPv3 user because SNMPv3 is disabled in the cluster. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SnmpUsersModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snmp users modify default response
-func (o *SnmpUsersModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snmp users modify default response has a 2xx status code
@@ -150,12 +152,19 @@ func (o *SnmpUsersModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snmp users modify default response
+func (o *SnmpUsersModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnmpUsersModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /support/snmp/users/{engine_id}/{name}][%d] snmp_users_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/snmp/users/{engine_id}/{name}][%d] snmp_users_modify default %s", o._statusCode, payload)
 }
 
 func (o *SnmpUsersModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /support/snmp/users/{engine_id}/{name}][%d] snmp_users_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/snmp/users/{engine_id}/{name}][%d] snmp_users_modify default %s", o._statusCode, payload)
 }
 
 func (o *SnmpUsersModifyDefault) GetPayload() *models.ErrorResponse {

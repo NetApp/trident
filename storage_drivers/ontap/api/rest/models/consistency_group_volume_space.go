@@ -8,8 +8,10 @@ package models
 import (
 	"context"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // ConsistencyGroupVolumeSpace consistency group volume space
@@ -18,12 +20,14 @@ import (
 type ConsistencyGroupVolumeSpace struct {
 
 	// The available space, in bytes.
+	// Read Only: true
 	Available *int64 `json:"available,omitempty"`
 
 	// Total provisioned size, in bytes.
 	Size *int64 `json:"size,omitempty"`
 
 	// The virtual space used (includes volume reserves) before storage efficiency, in bytes.
+	// Read Only: true
 	Used *int64 `json:"used,omitempty"`
 }
 
@@ -32,8 +36,39 @@ func (m *ConsistencyGroupVolumeSpace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this consistency group volume space based on context it is used
+// ContextValidate validate this consistency group volume space based on the context it is used
 func (m *ConsistencyGroupVolumeSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAvailable(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeSpace) contextValidateAvailable(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "available", "body", m.Available); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "used", "body", m.Used); err != nil {
+		return err
+	}
+
 	return nil
 }
 

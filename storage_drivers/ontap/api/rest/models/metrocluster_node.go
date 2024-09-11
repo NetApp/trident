@@ -32,7 +32,7 @@ type MetroclusterNode struct {
 
 	// Configuration state of the node.
 	// Read Only: true
-	// Enum: [unreachable configured]
+	// Enum: ["unreachable","configured"]
 	ConfigurationState *string `json:"configuration_state,omitempty"`
 
 	// dr auxiliary cluster
@@ -47,12 +47,12 @@ type MetroclusterNode struct {
 
 	// State of the DR mirroring configuration.
 	// Read Only: true
-	// Enum: [enabled disabled unreachable configured]
+	// Enum: ["enabled","disabled","unreachable","configured"]
 	DrMirroringState *string `json:"dr_mirroring_state,omitempty"`
 
 	// State of the DR operation.
 	// Read Only: true
-	// Enum: [normal switchover_bypassed switchover_in_progress switchover_completed switchover_failed switched_over heal_aggrs_in_progress heal_aggrs_completed heal_aggrs_failed heal_roots_in_progress heal_roots_completed heal_roots_failed switchback_vetoed switchback_vetocheck_locked switchback_pre_commit_completed switchback_in_progress switchback_completed switchback_failed negotiated_switchover_vetoed negotiated_switchover_vetocheck_locked negotiated_switchover_pre_commit_completed negotiated_switchover_in_progress negotiated_switchover_completed negotiated_switchover_in_progress_waiting_for_DR_partner negotiated_switchover_incomplete negotiated_switchover_failed negotiated_switchover_failed_on_DR_partner switchback_recovery_in_progress switchback_recovery_complete waiting_for_switchback_recovery unknown]
+	// Enum: ["normal","switchover_bypassed","switchover_in_progress","switchover_completed","switchover_failed","switched_over","heal_aggrs_in_progress","heal_aggrs_completed","heal_aggrs_failed","heal_roots_in_progress","heal_roots_completed","heal_roots_failed","switchback_vetoed","switchback_vetocheck_locked","switchback_pre_commit_completed","switchback_in_progress","switchback_completed","switchback_failed","negotiated_switchover_vetoed","negotiated_switchover_vetocheck_locked","negotiated_switchover_pre_commit_completed","negotiated_switchover_in_progress","negotiated_switchover_completed","negotiated_switchover_in_progress_waiting_for_DR_partner","negotiated_switchover_incomplete","negotiated_switchover_failed","negotiated_switchover_failed_on_DR_partner","switchback_recovery_in_progress","switchback_recovery_complete","waiting_for_switchback_recovery","unknown"]
 	DrOperationState *string `json:"dr_operation_state,omitempty"`
 
 	// dr partner
@@ -60,6 +60,9 @@ type MetroclusterNode struct {
 
 	// dr partner cluster
 	DrPartnerCluster *MetroclusterNodeInlineDrPartnerCluster `json:"dr_partner_cluster,omitempty"`
+
+	// Indicates if the encryption for NVLog and storage traffic is enabled.
+	EncryptionEnabled *bool `json:"encryption_enabled,omitempty"`
 
 	// ha partner
 	HaPartner *MetroclusterNodeInlineHaPartner `json:"ha_partner,omitempty"`
@@ -73,7 +76,7 @@ type MetroclusterNode struct {
 
 	// Indicates if the node object limits are enforced.
 	// Read Only: true
-	// Enum: [enabled disabled]
+	// Enum: ["enabled","disabled"]
 	LimitEnforcement *string `json:"limit_enforcement,omitempty"`
 
 	// node

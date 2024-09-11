@@ -70,7 +70,7 @@ type SnapshotGetParams struct {
 
 	/* UUID.
 
-	   Snapshot copy UUID
+	   Snapshot UUID
 	*/
 	UUID string
 

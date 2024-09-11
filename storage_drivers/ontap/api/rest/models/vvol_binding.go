@@ -30,13 +30,14 @@ type VvolBinding struct {
 	// Read Only: true
 	Count *int64 `json:"count,omitempty"`
 
-	// The identifier assigned to the vVol binding. The bind identifier is unique amongst all class `vvol` LUNs bound to the same class `protocol_endpoint` LUN.
+	// The ONTAP internal identifier assigned to the vVol binding. The bind identifier is unique amongst all class `vvol` LUNs bound to the same class `protocol_endpoint` LUN.</br>
+	// This property was included in early releases of the REST API for vVols and is maintained for backward compatibility. See the `secondary_id` property, which replaces `id`.
 	//
 	// Example: 1
 	// Read Only: true
 	ID *int64 `json:"id,omitempty"`
 
-	// Indicates if the class `procotol_endpoint` LUN and the class `vvol` LUN are on the same cluster node.
+	// Indicates if the class `protocol_endpoint` LUN and the class `vvol` LUN are on the same cluster node.
 	//
 	// Example: true
 	// Read Only: true
@@ -44,6 +45,13 @@ type VvolBinding struct {
 
 	// protocol endpoint
 	ProtocolEndpoint *VvolBindingInlineProtocolEndpoint `json:"protocol_endpoint,omitempty"`
+
+	// The identifier assigned to the vVol binding, known as the secondary LUN ID. The identifier is unique amongst all class `vvol` LUNs bound to the same class `protocol_endpoint` LUN.</br>
+	// The format for a secondary LUN ID is 16 hexadecimal digits (zero-filled) followed by a lower case "h".
+	//
+	// Example: 0000D20000010000h
+	// Read Only: true
+	SecondaryID *string `json:"secondary_id,omitempty"`
 
 	// svm
 	Svm *VvolBindingInlineSvm `json:"svm,omitempty"`
@@ -170,6 +178,10 @@ func (m *VvolBinding) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSecondaryID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -234,6 +246,15 @@ func (m *VvolBinding) contextValidateProtocolEndpoint(ctx context.Context, forma
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *VvolBinding) contextValidateSecondaryID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "secondary_id", "body", m.SecondaryID); err != nil {
+		return err
 	}
 
 	return nil
@@ -379,7 +400,13 @@ type VvolBindingInlineProtocolEndpoint struct {
 	// links
 	Links *VvolBindingInlineProtocolEndpointInlineLinks `json:"_links,omitempty"`
 
-	// The fully qualified path name of the LUN composed of the "/vol" prefix, the volume name, the (optional) qtree name, and base name of the LUN. Valid in POST and PATCH.
+	// The name of a LUN.
+	// ### Platform Specifics
+	// * **Unified ONTAP**:
+	// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.
+	// * **ASA r2**:
+	// LUN names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.
 	//
 	// Example: /vol/volume1/lun1
 	Name *string `json:"name,omitempty"`
@@ -561,12 +588,12 @@ type VvolBindingInlineSvm struct {
 	// links
 	Links *VvolBindingInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -743,7 +770,13 @@ type VvolBindingInlineVvol struct {
 	// links
 	Links *VvolBindingInlineVvolInlineLinks `json:"_links,omitempty"`
 
-	// The fully qualified path name of the LUN composed of the "/vol" prefix, the volume name, the (optional) qtree name, and base name of the LUN. Valid in POST and PATCH.
+	// The name of a LUN.
+	// ### Platform Specifics
+	// * **Unified ONTAP**:
+	// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.
+	// * **ASA r2**:
+	// LUN names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.
 	//
 	// Example: /vol/volume1/lun1
 	Name *string `json:"name,omitempty"`

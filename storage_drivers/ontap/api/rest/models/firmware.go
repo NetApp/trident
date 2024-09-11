@@ -37,6 +37,10 @@ type Firmware struct {
 	// sp bmc
 	// Read Only: true
 	SpBmc *FirmwareSpBmc `json:"sp_bmc,omitempty"`
+
+	// system firmware
+	// Read Only: true
+	SystemFirmware *SystemFirmware `json:"system_firmware,omitempty"`
 }
 
 // Validate validates this firmware
@@ -60,6 +64,10 @@ func (m *Firmware) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSpBmc(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSystemFirmware(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -161,6 +169,23 @@ func (m *Firmware) validateSpBmc(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Firmware) validateSystemFirmware(formats strfmt.Registry) error {
+	if swag.IsZero(m.SystemFirmware) { // not required
+		return nil
+	}
+
+	if m.SystemFirmware != nil {
+		if err := m.SystemFirmware.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("system_firmware")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this firmware based on the context it is used
 func (m *Firmware) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -182,6 +207,10 @@ func (m *Firmware) ContextValidate(ctx context.Context, formats strfmt.Registry)
 	}
 
 	if err := m.contextValidateSpBmc(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSystemFirmware(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -257,6 +286,20 @@ func (m *Firmware) contextValidateSpBmc(ctx context.Context, formats strfmt.Regi
 		if err := m.SpBmc.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("sp_bmc")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Firmware) contextValidateSystemFirmware(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.SystemFirmware != nil {
+		if err := m.SystemFirmware.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("system_firmware")
 			}
 			return err
 		}

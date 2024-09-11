@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *UnixGroupSettingsModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the unix group settings modify o k response
+func (o *UnixGroupSettingsModifyOK) Code() int {
+	return 200
+}
+
 func (o *UnixGroupSettingsModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /name-services/cache/unix-group/settings/{svm.uuid}][%d] unixGroupSettingsModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /name-services/cache/unix-group/settings/{svm.uuid}][%d] unixGroupSettingsModifyOK", 200)
 }
 
 func (o *UnixGroupSettingsModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /name-services/cache/unix-group/settings/{svm.uuid}][%d] unixGroupSettingsModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /name-services/cache/unix-group/settings/{svm.uuid}][%d] unixGroupSettingsModifyOK", 200)
 }
 
 func (o *UnixGroupSettingsModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,16 +113,12 @@ func NewUnixGroupSettingsModifyDefault(code int) *UnixGroupSettingsModifyDefault
 | Error Code | Description |
 | ---------- | ----------- |
 | 23724055 | Internal error. Configuration for Vserver failed. Verify that the cluster is healthy, then try the command again. For further assistance, contact technical support. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type UnixGroupSettingsModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the unix group settings modify default response
-func (o *UnixGroupSettingsModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this unix group settings modify default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *UnixGroupSettingsModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the unix group settings modify default response
+func (o *UnixGroupSettingsModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *UnixGroupSettingsModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /name-services/cache/unix-group/settings/{svm.uuid}][%d] unix_group_settings_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /name-services/cache/unix-group/settings/{svm.uuid}][%d] unix_group_settings_modify default %s", o._statusCode, payload)
 }
 
 func (o *UnixGroupSettingsModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /name-services/cache/unix-group/settings/{svm.uuid}][%d] unix_group_settings_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /name-services/cache/unix-group/settings/{svm.uuid}][%d] unix_group_settings_modify default %s", o._statusCode, payload)
 }
 
 func (o *UnixGroupSettingsModifyDefault) GetPayload() *models.ErrorResponse {

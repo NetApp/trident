@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type StoragePoolDeleteReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *StoragePoolDeleteReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewStoragePoolDeleteOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewStoragePoolDeleteAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *StoragePoolDeleteReader) ReadResponse(response runtime.ClientResponse, 
 	}
 }
 
+// NewStoragePoolDeleteOK creates a StoragePoolDeleteOK with default headers values
+func NewStoragePoolDeleteOK() *StoragePoolDeleteOK {
+	return &StoragePoolDeleteOK{}
+}
+
+/*
+StoragePoolDeleteOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type StoragePoolDeleteOK struct {
+	Payload *models.StoragePoolJobLinkResponse
+}
+
+// IsSuccess returns true when this storage pool delete o k response has a 2xx status code
+func (o *StoragePoolDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this storage pool delete o k response has a 3xx status code
+func (o *StoragePoolDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this storage pool delete o k response has a 4xx status code
+func (o *StoragePoolDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this storage pool delete o k response has a 5xx status code
+func (o *StoragePoolDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this storage pool delete o k response a status code equal to that given
+func (o *StoragePoolDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the storage pool delete o k response
+func (o *StoragePoolDeleteOK) Code() int {
+	return 200
+}
+
+func (o *StoragePoolDeleteOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/pools/{uuid}][%d] storagePoolDeleteOK %s", 200, payload)
+}
+
+func (o *StoragePoolDeleteOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/pools/{uuid}][%d] storagePoolDeleteOK %s", 200, payload)
+}
+
+func (o *StoragePoolDeleteOK) GetPayload() *models.StoragePoolJobLinkResponse {
+	return o.Payload
+}
+
+func (o *StoragePoolDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.StoragePoolJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewStoragePoolDeleteAccepted creates a StoragePoolDeleteAccepted with default headers values
 func NewStoragePoolDeleteAccepted() *StoragePoolDeleteAccepted {
 	return &StoragePoolDeleteAccepted{}
@@ -52,7 +129,7 @@ StoragePoolDeleteAccepted describes a response with status code 202, with defaul
 Accepted
 */
 type StoragePoolDeleteAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.StoragePoolJobLinkResponse
 }
 
 // IsSuccess returns true when this storage pool delete accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *StoragePoolDeleteAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the storage pool delete accepted response
+func (o *StoragePoolDeleteAccepted) Code() int {
+	return 202
+}
+
 func (o *StoragePoolDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /storage/pools/{uuid}][%d] storagePoolDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/pools/{uuid}][%d] storagePoolDeleteAccepted %s", 202, payload)
 }
 
 func (o *StoragePoolDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /storage/pools/{uuid}][%d] storagePoolDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/pools/{uuid}][%d] storagePoolDeleteAccepted %s", 202, payload)
 }
 
-func (o *StoragePoolDeleteAccepted) GetPayload() *models.JobLinkResponse {
+func (o *StoragePoolDeleteAccepted) GetPayload() *models.StoragePoolJobLinkResponse {
 	return o.Payload
 }
 
 func (o *StoragePoolDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.StoragePoolJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -125,16 +209,12 @@ func NewStoragePoolDeleteDefault(code int) *StoragePoolDeleteDefault {
 | 11209673 | Unable to assign shared capacity from a constituent disk. |
 | 11209675 | A constituent disk of the storage pool has non-spare capacity. |
 | 11209676 | A constituent disk of the storage pool is reserved for coredump. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type StoragePoolDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the storage pool delete default response
-func (o *StoragePoolDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this storage pool delete default response has a 2xx status code
@@ -162,12 +242,19 @@ func (o *StoragePoolDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the storage pool delete default response
+func (o *StoragePoolDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *StoragePoolDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /storage/pools/{uuid}][%d] storage_pool_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/pools/{uuid}][%d] storage_pool_delete default %s", o._statusCode, payload)
 }
 
 func (o *StoragePoolDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /storage/pools/{uuid}][%d] storage_pool_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/pools/{uuid}][%d] storage_pool_delete default %s", o._statusCode, payload)
 }
 
 func (o *StoragePoolDeleteDefault) GetPayload() *models.ErrorResponse {

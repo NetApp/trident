@@ -64,7 +64,7 @@ type ConsistencyGroupSnapshotDeleteParams struct {
 
 	/* ConsistencyGroupUUID.
 
-	   The unique identifier of the Snapshot copy of the consistency group to delete.
+	   The unique identifier of the snapshot of the consistency group to delete.
 
 	*/
 	ConsistencyGroupUUID string
@@ -77,7 +77,7 @@ type ConsistencyGroupSnapshotDeleteParams struct {
 
 	/* UUID.
 
-	   Snapshot copy UUID
+	   Snapshot UUID
 	*/
 	UUID string
 

@@ -30,6 +30,7 @@ type FlexcacheOrigin struct {
 	FlexcacheOriginInlineFlexcaches []*FlexcacheRelationship `json:"flexcaches,omitempty"`
 
 	// Specifies whether a global file locking option is enabled for an origin volume of a FlexCache volume.
+	// Read Only: true
 	GlobalFileLockingEnabled *bool `json:"global_file_locking_enabled,omitempty"`
 
 	// Origin volume name
@@ -159,6 +160,10 @@ func (m *FlexcacheOrigin) ContextValidate(ctx context.Context, formats strfmt.Re
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateGlobalFileLockingEnabled(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -200,6 +205,15 @@ func (m *FlexcacheOrigin) contextValidateFlexcacheOriginInlineFlexcaches(ctx con
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *FlexcacheOrigin) contextValidateGlobalFileLockingEnabled(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "global_file_locking_enabled", "body", m.GlobalFileLockingEnabled); err != nil {
+		return err
 	}
 
 	return nil
@@ -340,12 +354,12 @@ type FlexcacheOriginInlineSvm struct {
 	// links
 	Links *FlexcacheOriginInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

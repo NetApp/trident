@@ -92,6 +92,12 @@ type MultiAdminVerifyRequestCollectionGetParams struct {
 	*/
 	CreateTime *string
 
+	/* ExecuteOnApproval.
+
+	   Filter by execute_on_approval
+	*/
+	ExecuteOnApproval *bool
+
 	/* ExecutionExpiryTime.
 
 	   Filter by execution_expiry_time
@@ -324,6 +330,17 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WithCreateTime(createTime *
 // SetCreateTime adds the createTime to the multi admin verify request collection get params
 func (o *MultiAdminVerifyRequestCollectionGetParams) SetCreateTime(createTime *string) {
 	o.CreateTime = createTime
+}
+
+// WithExecuteOnApproval adds the executeOnApproval to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithExecuteOnApproval(executeOnApproval *bool) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetExecuteOnApproval(executeOnApproval)
+	return o
+}
+
+// SetExecuteOnApproval adds the executeOnApproval to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetExecuteOnApproval(executeOnApproval *bool) {
+	o.ExecuteOnApproval = executeOnApproval
 }
 
 // WithExecutionExpiryTime adds the executionExpiryTime to the multi admin verify request collection get params
@@ -612,6 +629,23 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		if qCreateTime != "" {
 
 			if err := r.SetQueryParam("create_time", qCreateTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ExecuteOnApproval != nil {
+
+		// query param execute_on_approval
+		var qrExecuteOnApproval bool
+
+		if o.ExecuteOnApproval != nil {
+			qrExecuteOnApproval = *o.ExecuteOnApproval
+		}
+		qExecuteOnApproval := swag.FormatBool(qrExecuteOnApproval)
+		if qExecuteOnApproval != "" {
+
+			if err := r.SetQueryParam("execute_on_approval", qExecuteOnApproval); err != nil {
 				return err
 			}
 		}

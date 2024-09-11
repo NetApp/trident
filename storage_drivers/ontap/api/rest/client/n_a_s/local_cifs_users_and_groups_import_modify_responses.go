@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type LocalCifsUsersAndGroupsImportModifyReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *LocalCifsUsersAndGroupsImportModifyReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewLocalCifsUsersAndGroupsImportModifyOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewLocalCifsUsersAndGroupsImportModifyAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *LocalCifsUsersAndGroupsImportModifyReader) ReadResponse(response runtim
 	}
 }
 
+// NewLocalCifsUsersAndGroupsImportModifyOK creates a LocalCifsUsersAndGroupsImportModifyOK with default headers values
+func NewLocalCifsUsersAndGroupsImportModifyOK() *LocalCifsUsersAndGroupsImportModifyOK {
+	return &LocalCifsUsersAndGroupsImportModifyOK{}
+}
+
+/*
+LocalCifsUsersAndGroupsImportModifyOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type LocalCifsUsersAndGroupsImportModifyOK struct {
+	Payload *models.LocalCifsUsersAndGroupsImportJobLinkResponse
+}
+
+// IsSuccess returns true when this local cifs users and groups import modify o k response has a 2xx status code
+func (o *LocalCifsUsersAndGroupsImportModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this local cifs users and groups import modify o k response has a 3xx status code
+func (o *LocalCifsUsersAndGroupsImportModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this local cifs users and groups import modify o k response has a 4xx status code
+func (o *LocalCifsUsersAndGroupsImportModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this local cifs users and groups import modify o k response has a 5xx status code
+func (o *LocalCifsUsersAndGroupsImportModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this local cifs users and groups import modify o k response a status code equal to that given
+func (o *LocalCifsUsersAndGroupsImportModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the local cifs users and groups import modify o k response
+func (o *LocalCifsUsersAndGroupsImportModifyOK) Code() int {
+	return 200
+}
+
+func (o *LocalCifsUsersAndGroupsImportModifyOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportModifyOK %s", 200, payload)
+}
+
+func (o *LocalCifsUsersAndGroupsImportModifyOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportModifyOK %s", 200, payload)
+}
+
+func (o *LocalCifsUsersAndGroupsImportModifyOK) GetPayload() *models.LocalCifsUsersAndGroupsImportJobLinkResponse {
+	return o.Payload
+}
+
+func (o *LocalCifsUsersAndGroupsImportModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.LocalCifsUsersAndGroupsImportJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewLocalCifsUsersAndGroupsImportModifyAccepted creates a LocalCifsUsersAndGroupsImportModifyAccepted with default headers values
 func NewLocalCifsUsersAndGroupsImportModifyAccepted() *LocalCifsUsersAndGroupsImportModifyAccepted {
 	return &LocalCifsUsersAndGroupsImportModifyAccepted{}
@@ -52,7 +129,7 @@ LocalCifsUsersAndGroupsImportModifyAccepted describes a response with status cod
 Accepted
 */
 type LocalCifsUsersAndGroupsImportModifyAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.LocalCifsUsersAndGroupsImportJobLinkResponse
 }
 
 // IsSuccess returns true when this local cifs users and groups import modify accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *LocalCifsUsersAndGroupsImportModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the local cifs users and groups import modify accepted response
+func (o *LocalCifsUsersAndGroupsImportModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *LocalCifsUsersAndGroupsImportModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportModifyAccepted %s", 202, payload)
 }
 
 func (o *LocalCifsUsersAndGroupsImportModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportModifyAccepted %s", 202, payload)
 }
 
-func (o *LocalCifsUsersAndGroupsImportModifyAccepted) GetPayload() *models.JobLinkResponse {
+func (o *LocalCifsUsersAndGroupsImportModifyAccepted) GetPayload() *models.LocalCifsUsersAndGroupsImportJobLinkResponse {
 	return o.Payload
 }
 
 func (o *LocalCifsUsersAndGroupsImportModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.LocalCifsUsersAndGroupsImportJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -122,11 +206,6 @@ type LocalCifsUsersAndGroupsImportModifyDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the local cifs users and groups import modify default response
-func (o *LocalCifsUsersAndGroupsImportModifyDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this local cifs users and groups import modify default response has a 2xx status code
 func (o *LocalCifsUsersAndGroupsImportModifyDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +231,19 @@ func (o *LocalCifsUsersAndGroupsImportModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the local cifs users and groups import modify default response
+func (o *LocalCifsUsersAndGroupsImportModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LocalCifsUsersAndGroupsImportModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] local_cifs_users_and_groups_import_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] local_cifs_users_and_groups_import_modify default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsUsersAndGroupsImportModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] local_cifs_users_and_groups_import_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] local_cifs_users_and_groups_import_modify default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsUsersAndGroupsImportModifyDefault) GetPayload() *models.ErrorResponse {

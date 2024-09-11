@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SnapshotPolicyGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snapshot policy get o k response
+func (o *SnapshotPolicyGetOK) Code() int {
+	return 200
+}
+
 func (o *SnapshotPolicyGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/snapshot-policies/{uuid}][%d] snapshotPolicyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snapshot-policies/{uuid}][%d] snapshotPolicyGetOK %s", 200, payload)
 }
 
 func (o *SnapshotPolicyGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/snapshot-policies/{uuid}][%d] snapshotPolicyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snapshot-policies/{uuid}][%d] snapshotPolicyGetOK %s", 200, payload)
 }
 
 func (o *SnapshotPolicyGetOK) GetPayload() *models.SnapshotPolicy {
@@ -122,11 +130,6 @@ type SnapshotPolicyGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the snapshot policy get default response
-func (o *SnapshotPolicyGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this snapshot policy get default response has a 2xx status code
 func (o *SnapshotPolicyGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SnapshotPolicyGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snapshot policy get default response
+func (o *SnapshotPolicyGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnapshotPolicyGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/snapshot-policies/{uuid}][%d] snapshot_policy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snapshot-policies/{uuid}][%d] snapshot_policy_get default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotPolicyGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/snapshot-policies/{uuid}][%d] snapshot_policy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snapshot-policies/{uuid}][%d] snapshot_policy_get default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotPolicyGetDefault) GetPayload() *models.ErrorResponse {

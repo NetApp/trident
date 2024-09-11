@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type SwitchCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *SwitchCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewSwitchCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewSwitchCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *SwitchCreateReader) ReadResponse(response runtime.ClientResponse, consu
 	}
 }
 
+// NewSwitchCreateCreated creates a SwitchCreateCreated with default headers values
+func NewSwitchCreateCreated() *SwitchCreateCreated {
+	return &SwitchCreateCreated{}
+}
+
+/*
+SwitchCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type SwitchCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.SwitchJobLinkResponse
+}
+
+// IsSuccess returns true when this switch create created response has a 2xx status code
+func (o *SwitchCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this switch create created response has a 3xx status code
+func (o *SwitchCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this switch create created response has a 4xx status code
+func (o *SwitchCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this switch create created response has a 5xx status code
+func (o *SwitchCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this switch create created response a status code equal to that given
+func (o *SwitchCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the switch create created response
+func (o *SwitchCreateCreated) Code() int {
+	return 201
+}
+
+func (o *SwitchCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ethernet/switches][%d] switchCreateCreated %s", 201, payload)
+}
+
+func (o *SwitchCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ethernet/switches][%d] switchCreateCreated %s", 201, payload)
+}
+
+func (o *SwitchCreateCreated) GetPayload() *models.SwitchJobLinkResponse {
+	return o.Payload
+}
+
+func (o *SwitchCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.SwitchJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewSwitchCreateAccepted creates a SwitchCreateAccepted with default headers values
 func NewSwitchCreateAccepted() *SwitchCreateAccepted {
 	return &SwitchCreateAccepted{}
@@ -57,7 +146,7 @@ type SwitchCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.SwitchJobLinkResponse
 }
 
 // IsSuccess returns true when this switch create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *SwitchCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the switch create accepted response
+func (o *SwitchCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *SwitchCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /network/ethernet/switches][%d] switchCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ethernet/switches][%d] switchCreateAccepted %s", 202, payload)
 }
 
 func (o *SwitchCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /network/ethernet/switches][%d] switchCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ethernet/switches][%d] switchCreateAccepted %s", 202, payload)
 }
 
-func (o *SwitchCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *SwitchCreateAccepted) GetPayload() *models.SwitchJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *SwitchCreateAccepted) readResponse(response runtime.ClientResponse, con
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.SwitchJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -130,23 +226,19 @@ func NewSwitchCreateDefault(code int) *SwitchCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 12517376 | Model number validation failed. Specify correct model number and try the command again. |
-| 12517377 | IP address \"{address}\" is not reachable. Verify that the address is valid or check the network path. |
-| 12517379 | SNMP validation request timed out. Verify that the \"snmp.user\" parameter is valid. |
-| 12517381 | SNMP validation request timed out. Verify that the \"snmp.user\" parameter is valid (i.e., the SNMPv3 user exists in ONTAP and on the remote switch). If the \"snmp.user\" parameter is valid, verify that the SNMPv3 user's credentials are the same both in ONTAP as well as in the remote switch. If a custom engine-id was provided for the SNMPv3 user, ensure it is the same as that of the remote switch. |
-| 12517383 | Switch type \"{network}\" is not valid for specified switch model \"{model}\". |
+| 5636149 | \"{snmp.user}\" must be a valid SNMPv3 user belonging to remote switch with IP address \"{address}\" and must also be configured in ONTAP. |
+| 12517377 | Model number validation failed. Specify correct model number and try the command again. |
+| 12517378 | IP address \"{address}\" is not reachable. Verify that the address is valid or check the network path. |
+| 12517380 | SNMP validation request timed out. Verify that the \"snmp.user\" parameter is valid. |
+| 12517382 | SNMP validation request timed out. Verify that the \"snmp.user\" parameter is valid (i.e., the SNMPv3 user exists in ONTAP and on the remote switch). If the \"snmp.user\" parameter is valid, verify that the SNMPv3 user's credentials are the same both in ONTAP as well as in the remote switch. If a custom engine-id was provided for the SNMPv3 user, ensure it is the same as that of the remote switch. |
 | 12517384 | SHM is already monitoring a switch with IP address \"{address}\". |
 | 12517385 | Model \"{model}\" is unknown. Use \"OTHER\" if the switch model is not one of the following&#58; {models}. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SwitchCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the switch create default response
-func (o *SwitchCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this switch create default response has a 2xx status code
@@ -174,12 +266,19 @@ func (o *SwitchCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the switch create default response
+func (o *SwitchCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SwitchCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /network/ethernet/switches][%d] switch_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ethernet/switches][%d] switch_create default %s", o._statusCode, payload)
 }
 
 func (o *SwitchCreateDefault) String() string {
-	return fmt.Sprintf("[POST /network/ethernet/switches][%d] switch_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ethernet/switches][%d] switch_create default %s", o._statusCode, payload)
 }
 
 func (o *SwitchCreateDefault) GetPayload() *models.ErrorResponse {

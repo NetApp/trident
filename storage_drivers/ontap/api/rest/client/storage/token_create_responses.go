@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *TokenCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the token create created response
+func (o *TokenCreateCreated) Code() int {
+	return 201
+}
+
 func (o *TokenCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /storage/file/clone/tokens][%d] tokenCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/file/clone/tokens][%d] tokenCreateCreated %s", 201, payload)
 }
 
 func (o *TokenCreateCreated) String() string {
-	return fmt.Sprintf("[POST /storage/file/clone/tokens][%d] tokenCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/file/clone/tokens][%d] tokenCreateCreated %s", 201, payload)
 }
 
 func (o *TokenCreateCreated) GetPayload() *models.TokenResponse {
@@ -124,19 +132,21 @@ func NewTokenCreateDefault(code int) *TokenCreateDefault {
 }
 
 /*
-TokenCreateDefault describes a response with status code -1, with default header values.
+	TokenCreateDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 13565959 | Failed to create token for node `node.name`. |
+| 13565964 | Reserve size cannot be negative. |
+| 13565997 | The node.uuid doesn't exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type TokenCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the token create default response
-func (o *TokenCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this token create default response has a 2xx status code
@@ -164,12 +174,19 @@ func (o *TokenCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the token create default response
+func (o *TokenCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *TokenCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/file/clone/tokens][%d] token_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/file/clone/tokens][%d] token_create default %s", o._statusCode, payload)
 }
 
 func (o *TokenCreateDefault) String() string {
-	return fmt.Sprintf("[POST /storage/file/clone/tokens][%d] token_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/file/clone/tokens][%d] token_create default %s", o._statusCode, payload)
 }
 
 func (o *TokenCreateDefault) GetPayload() *models.ErrorResponse {

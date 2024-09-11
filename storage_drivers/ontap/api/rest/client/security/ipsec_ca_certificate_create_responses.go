@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *IpsecCaCertificateCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the ipsec ca certificate create created response
+func (o *IpsecCaCertificateCreateCreated) Code() int {
+	return 201
+}
+
 func (o *IpsecCaCertificateCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/ipsec/ca-certificates][%d] ipsecCaCertificateCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/ipsec/ca-certificates][%d] ipsecCaCertificateCreateCreated %s", 201, payload)
 }
 
 func (o *IpsecCaCertificateCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/ipsec/ca-certificates][%d] ipsecCaCertificateCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/ipsec/ca-certificates][%d] ipsecCaCertificateCreateCreated %s", 201, payload)
 }
 
 func (o *IpsecCaCertificateCreateCreated) GetPayload() *models.IpsecCaCertificateResponse {
@@ -130,17 +138,13 @@ func NewIpsecCaCertificateCreateDefault(code int) *IpsecCaCertificateCreateDefau
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 66257296 | CA certificate is not installed. |
+| 66257304 | CA certificate is not installed. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IpsecCaCertificateCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ipsec ca certificate create default response
-func (o *IpsecCaCertificateCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ipsec ca certificate create default response has a 2xx status code
@@ -168,12 +172,19 @@ func (o *IpsecCaCertificateCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ipsec ca certificate create default response
+func (o *IpsecCaCertificateCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IpsecCaCertificateCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/ipsec/ca-certificates][%d] ipsec_ca_certificate_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/ipsec/ca-certificates][%d] ipsec_ca_certificate_create default %s", o._statusCode, payload)
 }
 
 func (o *IpsecCaCertificateCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/ipsec/ca-certificates][%d] ipsec_ca_certificate_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/ipsec/ca-certificates][%d] ipsec_ca_certificate_create default %s", o._statusCode, payload)
 }
 
 func (o *IpsecCaCertificateCreateDefault) GetPayload() *models.ErrorResponse {

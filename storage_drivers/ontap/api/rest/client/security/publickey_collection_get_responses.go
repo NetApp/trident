@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *PublickeyCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the publickey collection get o k response
+func (o *PublickeyCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *PublickeyCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/authentication/publickeys][%d] publickeyCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/publickeys][%d] publickeyCollectionGetOK %s", 200, payload)
 }
 
 func (o *PublickeyCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /security/authentication/publickeys][%d] publickeyCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/publickeys][%d] publickeyCollectionGetOK %s", 200, payload)
 }
 
 func (o *PublickeyCollectionGetOK) GetPayload() *models.PublickeyResponse {
@@ -122,11 +130,6 @@ type PublickeyCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the publickey collection get default response
-func (o *PublickeyCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this publickey collection get default response has a 2xx status code
 func (o *PublickeyCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *PublickeyCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the publickey collection get default response
+func (o *PublickeyCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *PublickeyCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/authentication/publickeys][%d] publickey_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/publickeys][%d] publickey_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PublickeyCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/authentication/publickeys][%d] publickey_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/publickeys][%d] publickey_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PublickeyCollectionGetDefault) GetPayload() *models.ErrorResponse {

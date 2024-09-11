@@ -64,13 +64,13 @@ type FileDeleteParams struct {
 
 	/* Path.
 
-	   The relative path of a directory in the volume. The path field requires using "%2E" to represent "." and "%2F" to represent "/" for the path provided.
+	   The relative path of a directory in the volume. The path field requires using "%2E" to represent ".", "%2E%2E" to represent ".." and "%2F" to represent "/" for the path provided. Refer to "relative reference resolution" section in [Getting started with the ONTAP REST API](#Getting_started_with_the_ONTAP_REST_API) for considerations when using "..".
 	*/
 	Path string
 
 	/* Recurse.
 
-	   Delete an entire directory. The behaviour of this call is equivalent to rm -rf.
+	   Delete an entire directory. The behavior of this call is equivalent to rm -rf.
 	*/
 	Recurse *bool
 

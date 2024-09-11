@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *LocalHostCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the local host collection get o k response
+func (o *LocalHostCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *LocalHostCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/local-hosts][%d] localHostCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/local-hosts][%d] localHostCollectionGetOK %s", 200, payload)
 }
 
 func (o *LocalHostCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/local-hosts][%d] localHostCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/local-hosts][%d] localHostCollectionGetOK %s", 200, payload)
 }
 
 func (o *LocalHostCollectionGetOK) GetPayload() *models.LocalHostResponse {
@@ -122,11 +130,6 @@ type LocalHostCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the local host collection get default response
-func (o *LocalHostCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this local host collection get default response has a 2xx status code
 func (o *LocalHostCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *LocalHostCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the local host collection get default response
+func (o *LocalHostCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LocalHostCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/local-hosts][%d] local_host_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/local-hosts][%d] local_host_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *LocalHostCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/local-hosts][%d] local_host_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/local-hosts][%d] local_host_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *LocalHostCollectionGetDefault) GetPayload() *models.ErrorResponse {

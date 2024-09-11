@@ -38,7 +38,7 @@ type Status struct {
 	// The validation status of the DNS server.
 	//
 	// Example: up
-	// Enum: [up down]
+	// Enum: ["up","down"]
 	State *string `json:"state,omitempty"`
 }
 

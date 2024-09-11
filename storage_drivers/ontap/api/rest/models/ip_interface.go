@@ -65,7 +65,7 @@ type IPInterface struct {
 	RdmaProtocols []*string `json:"rdma_protocols,omitempty"`
 
 	// Set to "svm" for interfaces owned by an SVM. Otherwise, set to "cluster".
-	// Enum: [svm cluster]
+	// Enum: ["svm","cluster"]
 	Scope *string `json:"scope,omitempty"`
 
 	// service policy
@@ -73,7 +73,7 @@ type IPInterface struct {
 
 	// The operational state of the interface.
 	// Read Only: true
-	// Enum: [up down]
+	// Enum: ["up","down"]
 	State *string `json:"state,omitempty"`
 
 	// statistics
@@ -735,7 +735,7 @@ type IPInterfaceInlineIpspace struct {
 	Links *IPInterfaceInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
-	// Example: exchange
+	// Example: Default
 	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
@@ -1294,7 +1294,7 @@ func (m *IPInterfaceInlineLocation) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceInlineLocationInlineBroadcastDomain ip interface inline location inline broadcast domain
+// IPInterfaceInlineLocationInlineBroadcastDomain Broadcast domain UUID along with a readable name.
 //
 // swagger:model ip_interface_inline_location_inline_broadcast_domain
 type IPInterfaceInlineLocationInlineBroadcastDomain struct {
@@ -1654,7 +1654,7 @@ func (m *IPInterfaceInlineLocationInlineHomeNodeInlineLinks) UnmarshalBinary(b [
 	return nil
 }
 
-// IPInterfaceInlineLocationInlineHomePort ip interface inline location inline home port
+// IPInterfaceInlineLocationInlineHomePort Port UUID along with readable names. Either the UUID or both names may be supplied on input.
 //
 // swagger:model ip_interface_inline_location_inline_home_port
 type IPInterfaceInlineLocationInlineHomePort struct {
@@ -2094,7 +2094,7 @@ func (m *IPInterfaceInlineLocationInlineNodeInlineLinks) UnmarshalBinary(b []byt
 	return nil
 }
 
-// IPInterfaceInlineLocationInlinePort ip interface inline location inline port
+// IPInterfaceInlineLocationInlinePort Port UUID along with readable names. Either the UUID or both names may be supplied on input.
 //
 // swagger:model ip_interface_inline_location_inline_port
 type IPInterfaceInlineLocationInlinePort struct {
@@ -2365,19 +2365,19 @@ type IPInterfaceInlineMetric struct {
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
-	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
+	// Enum: ["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]
 	Duration *string `json:"duration,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: ["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *IPInterfaceInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
@@ -2853,7 +2853,7 @@ type IPInterfaceInlineMetricInlineThroughput struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -3073,14 +3073,14 @@ type IPInterfaceInlineStatistics struct {
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: ["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *IPInterfaceInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
@@ -3331,7 +3331,7 @@ type IPInterfaceInlineStatisticsInlineThroughputRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -3372,12 +3372,12 @@ type IPInterfaceInlineSvm struct {
 	// links
 	Links *IPInterfaceInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

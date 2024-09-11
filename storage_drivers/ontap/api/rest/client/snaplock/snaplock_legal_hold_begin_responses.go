@@ -6,6 +6,7 @@ package snaplock
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -56,8 +57,6 @@ type SnaplockLegalHoldBeginCreated struct {
 	/* Useful for tracking the resource location
 	 */
 	Location string
-
-	Payload *models.SnaplockLitigation
 }
 
 // IsSuccess returns true when this snaplock legal hold begin created response has a 2xx status code
@@ -85,16 +84,17 @@ func (o *SnaplockLegalHoldBeginCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the snaplock legal hold begin created response
+func (o *SnaplockLegalHoldBeginCreated) Code() int {
+	return 201
+}
+
 func (o *SnaplockLegalHoldBeginCreated) Error() string {
-	return fmt.Sprintf("[POST /storage/snaplock/litigations][%d] snaplockLegalHoldBeginCreated  %+v", 201, o.Payload)
+	return fmt.Sprintf("[POST /storage/snaplock/litigations][%d] snaplockLegalHoldBeginCreated", 201)
 }
 
 func (o *SnaplockLegalHoldBeginCreated) String() string {
-	return fmt.Sprintf("[POST /storage/snaplock/litigations][%d] snaplockLegalHoldBeginCreated  %+v", 201, o.Payload)
-}
-
-func (o *SnaplockLegalHoldBeginCreated) GetPayload() *models.SnaplockLitigation {
-	return o.Payload
+	return fmt.Sprintf("[POST /storage/snaplock/litigations][%d] snaplockLegalHoldBeginCreated", 201)
 }
 
 func (o *SnaplockLegalHoldBeginCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -104,13 +104,6 @@ func (o *SnaplockLegalHoldBeginCreated) readResponse(response runtime.ClientResp
 
 	if hdrLocation != "" {
 		o.Location = hdrLocation
-	}
-
-	o.Payload = new(models.SnaplockLitigation)
-
-	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
-		return err
 	}
 
 	return nil
@@ -130,6 +123,9 @@ func NewSnaplockLegalHoldBeginDefault(code int) *SnaplockLegalHoldBeginDefault {
 
 | Error code  |  Description |
 |-------------|--------------|
+| 13762586    | Volume is not a SnapLock Compliance volume  |
+| 13763162    | Audit logging is not configured for the SVM |
+| 13763280    | Only a user with security login role \"vsadmin-snaplock\" is allowed to perform this operation.  |
 | 14090346    | Internal Error. Wait a few minutes, then try the command again  |
 | 14090340    | {field} is a required field  |
 | 14090343    | Invalid Field  |
@@ -139,11 +135,6 @@ type SnaplockLegalHoldBeginDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snaplock legal hold begin default response
-func (o *SnaplockLegalHoldBeginDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snaplock legal hold begin default response has a 2xx status code
@@ -171,12 +162,19 @@ func (o *SnaplockLegalHoldBeginDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snaplock legal hold begin default response
+func (o *SnaplockLegalHoldBeginDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnaplockLegalHoldBeginDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/snaplock/litigations][%d] snaplock_legal_hold_begin default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/snaplock/litigations][%d] snaplock_legal_hold_begin default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockLegalHoldBeginDefault) String() string {
-	return fmt.Sprintf("[POST /storage/snaplock/litigations][%d] snaplock_legal_hold_begin default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/snaplock/litigations][%d] snaplock_legal_hold_begin default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockLegalHoldBeginDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *NetworkIPRouteDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the network Ip route delete o k response
+func (o *NetworkIPRouteDeleteOK) Code() int {
+	return 200
+}
+
 func (o *NetworkIPRouteDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /network/ip/routes/{uuid}][%d] networkIpRouteDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /network/ip/routes/{uuid}][%d] networkIpRouteDeleteOK", 200)
 }
 
 func (o *NetworkIPRouteDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /network/ip/routes/{uuid}][%d] networkIpRouteDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /network/ip/routes/{uuid}][%d] networkIpRouteDeleteOK", 200)
 }
 
 func (o *NetworkIPRouteDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type NetworkIPRouteDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the network ip route delete default response
-func (o *NetworkIPRouteDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this network ip route delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *NetworkIPRouteDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the network ip route delete default response
+func (o *NetworkIPRouteDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetworkIPRouteDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /network/ip/routes/{uuid}][%d] network_ip_route_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/ip/routes/{uuid}][%d] network_ip_route_delete default %s", o._statusCode, payload)
 }
 
 func (o *NetworkIPRouteDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /network/ip/routes/{uuid}][%d] network_ip_route_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/ip/routes/{uuid}][%d] network_ip_route_delete default %s", o._statusCode, payload)
 }
 
 func (o *NetworkIPRouteDeleteDefault) GetPayload() *models.ErrorResponse {

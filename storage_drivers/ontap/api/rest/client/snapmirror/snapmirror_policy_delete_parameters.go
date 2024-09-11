@@ -70,7 +70,7 @@ type SnapmirrorPolicyDeleteParams struct {
 
 	/* UUID.
 
-	   Policy UUID
+	   SnapMirror policy UUID
 	*/
 	UUID string
 

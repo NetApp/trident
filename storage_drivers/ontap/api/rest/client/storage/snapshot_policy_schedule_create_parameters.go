@@ -78,7 +78,7 @@ type SnapshotPolicyScheduleCreateParams struct {
 
 	/* SnapshotPolicyUUID.
 
-	   Snapshot copy policy UUID
+	   Snapshot policy UUID
 	*/
 	SnapshotPolicyUUID string
 

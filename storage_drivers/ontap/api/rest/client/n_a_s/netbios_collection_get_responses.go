@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NetbiosCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the netbios collection get o k response
+func (o *NetbiosCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *NetbiosCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/netbios][%d] netbiosCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/netbios][%d] netbiosCollectionGetOK %s", 200, payload)
 }
 
 func (o *NetbiosCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/netbios][%d] netbiosCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/netbios][%d] netbiosCollectionGetOK %s", 200, payload)
 }
 
 func (o *NetbiosCollectionGetOK) GetPayload() *models.NetbiosResponse {
@@ -122,11 +130,6 @@ type NetbiosCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the netbios collection get default response
-func (o *NetbiosCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this netbios collection get default response has a 2xx status code
 func (o *NetbiosCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NetbiosCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the netbios collection get default response
+func (o *NetbiosCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetbiosCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/netbios][%d] netbios_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/netbios][%d] netbios_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *NetbiosCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/netbios][%d] netbios_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/netbios][%d] netbios_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *NetbiosCollectionGetDefault) GetPayload() *models.ErrorResponse {

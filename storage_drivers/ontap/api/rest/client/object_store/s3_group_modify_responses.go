@@ -6,6 +6,7 @@ package object_store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *S3GroupModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the s3 group modify o k response
+func (o *S3GroupModifyOK) Code() int {
+	return 200
+}
+
 func (o *S3GroupModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3GroupModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3GroupModifyOK", 200)
 }
 
 func (o *S3GroupModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3GroupModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3GroupModifyOK", 200)
 }
 
 func (o *S3GroupModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,22 +113,19 @@ func NewS3GroupModifyDefault(code int) *S3GroupModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 92405896   | Users list cannot be empty.
-| 92405930   | Group name is not valid. Group names must have between 1 and 128 characters.
-| 92405931   | Group name contains invalid characters. Valid characters for a group name are 0-9, A-Z, a-z, "_", "+", "=", ",", ".", "@", and "-".
-| 92405934   | User name specified in the user list do not exist for SVM. Use the "object-store-server user create" command to create a user.
+| 92405930   | Group name \\\"{group name}\\\" is not valid. Group names must have between 1 and 128 characters.
+| 92405931   | Group name \\\"{group name}\\\" contains invalid characters. Valid characters for a group name are 0-9, A-Z, a-z, "_", "+", "=", ",", ".", "@", and "-".
+| 92405934   | Users {user name} specified in the user list do not exist for SVM \\\"{vserver name}\\\". Use the \"object-store-server user create\" command to create a user.
 | 92405936   | Query characters such as * are not supported in the user list.
-| 92405937   | Policy name specified in the policy list do not exist for SVM.
-| 92405966   | User name is present more than once in the users field.
+| 92405937   | Policies {policy name} specified in the policy list do not exist for SVM \\\"{vserver name}\\\".
+| 262222     | User name is present more than once in the users field.
+| 2621706    | The specified \\\"{svm.uuid}\\\" and \\\"{svm.name}\\\" refer to different SVMs.
+| 92406154   | Users {user} specified in the user list do not exist for SVM "vs1". Use the "/protocols/s3/services/{svm.uuid}/users" endpoint to create a user.
 */
 type S3GroupModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the s3 group modify default response
-func (o *S3GroupModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this s3 group modify default response has a 2xx status code
@@ -150,12 +153,19 @@ func (o *S3GroupModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the s3 group modify default response
+func (o *S3GroupModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *S3GroupModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3_group_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3_group_modify default %s", o._statusCode, payload)
 }
 
 func (o *S3GroupModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3_group_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3_group_modify default %s", o._statusCode, payload)
 }
 
 func (o *S3GroupModifyDefault) GetPayload() *models.ErrorResponse {

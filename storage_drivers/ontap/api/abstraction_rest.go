@@ -1642,7 +1642,8 @@ func (d OntapAPIREST) SnapshotDeleteByNameAndStyle(
 	}
 
 	// check snapshot delete job status
-	snapshotDeleteErr := d.api.PollJobStatus(ctx, snapshotDeleteResult.Payload)
+	jobLink := getGenericJobLinkFromSnapshotJobLink(snapshotDeleteResult.Payload)
+	snapshotDeleteErr := d.api.PollJobStatus(ctx, jobLink)
 	// if err := client.PollJobStatus(ctx, snapshotDeleteResult.Payload); err != nil {
 	if snapshotDeleteErr != nil {
 		Logc(ctx).Debugf("Could not delete the snapshot, going to check if it's busy; error was: %v", snapshotDeleteErr)

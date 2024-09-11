@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *UnixGroupSettingsGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the unix group settings get o k response
+func (o *UnixGroupSettingsGetOK) Code() int {
+	return 200
+}
+
 func (o *UnixGroupSettingsGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/cache/unix-group/settings/{svm.uuid}][%d] unixGroupSettingsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/unix-group/settings/{svm.uuid}][%d] unixGroupSettingsGetOK %s", 200, payload)
 }
 
 func (o *UnixGroupSettingsGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/cache/unix-group/settings/{svm.uuid}][%d] unixGroupSettingsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/unix-group/settings/{svm.uuid}][%d] unixGroupSettingsGetOK %s", 200, payload)
 }
 
 func (o *UnixGroupSettingsGetOK) GetPayload() *models.UnixGroupSettings {
@@ -122,11 +130,6 @@ type UnixGroupSettingsGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the unix group settings get default response
-func (o *UnixGroupSettingsGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this unix group settings get default response has a 2xx status code
 func (o *UnixGroupSettingsGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *UnixGroupSettingsGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the unix group settings get default response
+func (o *UnixGroupSettingsGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *UnixGroupSettingsGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/cache/unix-group/settings/{svm.uuid}][%d] unix_group_settings_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/unix-group/settings/{svm.uuid}][%d] unix_group_settings_get default %s", o._statusCode, payload)
 }
 
 func (o *UnixGroupSettingsGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/cache/unix-group/settings/{svm.uuid}][%d] unix_group_settings_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/unix-group/settings/{svm.uuid}][%d] unix_group_settings_get default %s", o._statusCode, payload)
 }
 
 func (o *UnixGroupSettingsGetDefault) GetPayload() *models.ErrorResponse {

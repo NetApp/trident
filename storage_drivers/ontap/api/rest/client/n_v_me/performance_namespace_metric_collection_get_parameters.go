@@ -143,6 +143,13 @@ type PerformanceNamespaceMetricCollectionGetParams struct {
 	*/
 	MaxRecords *int64
 
+	/* NvmeNamespaceUUID.
+
+	   The unique identifier of the NVMe namespace.
+
+	*/
+	NvmeNamespaceUUID string
+
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
@@ -197,9 +204,9 @@ type PerformanceNamespaceMetricCollectionGetParams struct {
 
 	/* UUID.
 
-	   Unique identifier of the NVMe namespace.
+	   Filter by uuid
 	*/
-	UUID string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -403,6 +410,17 @@ func (o *PerformanceNamespaceMetricCollectionGetParams) SetMaxRecords(maxRecords
 	o.MaxRecords = maxRecords
 }
 
+// WithNvmeNamespaceUUID adds the nvmeNamespaceUUID to the performance namespace metric collection get params
+func (o *PerformanceNamespaceMetricCollectionGetParams) WithNvmeNamespaceUUID(nvmeNamespaceUUID string) *PerformanceNamespaceMetricCollectionGetParams {
+	o.SetNvmeNamespaceUUID(nvmeNamespaceUUID)
+	return o
+}
+
+// SetNvmeNamespaceUUID adds the nvmeNamespaceUuid to the performance namespace metric collection get params
+func (o *PerformanceNamespaceMetricCollectionGetParams) SetNvmeNamespaceUUID(nvmeNamespaceUUID string) {
+	o.NvmeNamespaceUUID = nvmeNamespaceUUID
+}
+
 // WithOrderBy adds the orderBy to the performance namespace metric collection get params
 func (o *PerformanceNamespaceMetricCollectionGetParams) WithOrderBy(orderBy []string) *PerformanceNamespaceMetricCollectionGetParams {
 	o.SetOrderBy(orderBy)
@@ -492,13 +510,13 @@ func (o *PerformanceNamespaceMetricCollectionGetParams) SetTimestamp(timestamp *
 }
 
 // WithUUID adds the uuid to the performance namespace metric collection get params
-func (o *PerformanceNamespaceMetricCollectionGetParams) WithUUID(uuid string) *PerformanceNamespaceMetricCollectionGetParams {
+func (o *PerformanceNamespaceMetricCollectionGetParams) WithUUID(uuid *string) *PerformanceNamespaceMetricCollectionGetParams {
 	o.SetUUID(uuid)
 	return o
 }
 
 // SetUUID adds the uuid to the performance namespace metric collection get params
-func (o *PerformanceNamespaceMetricCollectionGetParams) SetUUID(uuid string) {
+func (o *PerformanceNamespaceMetricCollectionGetParams) SetUUID(uuid *string) {
 	o.UUID = uuid
 }
 
@@ -708,6 +726,11 @@ func (o *PerformanceNamespaceMetricCollectionGetParams) WriteToRequest(r runtime
 		}
 	}
 
+	// path param nvme_namespace.uuid
+	if err := r.SetPathParam("nvme_namespace.uuid", o.NvmeNamespaceUUID); err != nil {
+		return err
+	}
+
 	if o.OrderBy != nil {
 
 		// binding items for order_by
@@ -838,9 +861,21 @@ func (o *PerformanceNamespaceMetricCollectionGetParams) WriteToRequest(r runtime
 		}
 	}
 
-	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUID); err != nil {
-		return err
+	if o.UUID != nil {
+
+		// query param uuid
+		var qrUUID string
+
+		if o.UUID != nil {
+			qrUUID = *o.UUID
+		}
+		qUUID := qrUUID
+		if qUUID != "" {
+
+			if err := r.SetQueryParam("uuid", qUUID); err != nil {
+				return err
+			}
+		}
 	}
 
 	if len(res) > 0 {

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *LocalCifsUserCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the local cifs user create created response
+func (o *LocalCifsUserCreateCreated) Code() int {
+	return 201
+}
+
 func (o *LocalCifsUserCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/local-users][%d] localCifsUserCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/local-users][%d] localCifsUserCreateCreated %s", 201, payload)
 }
 
 func (o *LocalCifsUserCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/local-users][%d] localCifsUserCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/local-users][%d] localCifsUserCreateCreated %s", 201, payload)
 }
 
 func (o *LocalCifsUserCreateCreated) GetPayload() *models.LocalCifsUserResponse {
@@ -148,11 +156,6 @@ type LocalCifsUserCreateDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the local cifs user create default response
-func (o *LocalCifsUserCreateDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this local cifs user create default response has a 2xx status code
 func (o *LocalCifsUserCreateDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -178,12 +181,19 @@ func (o *LocalCifsUserCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the local cifs user create default response
+func (o *LocalCifsUserCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LocalCifsUserCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/local-users][%d] local_cifs_user_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/local-users][%d] local_cifs_user_create default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsUserCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/local-users][%d] local_cifs_user_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/local-users][%d] local_cifs_user_create default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsUserCreateDefault) GetPayload() *models.ErrorResponse {

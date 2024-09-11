@@ -6,6 +6,7 @@ package object_store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *S3UserModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the s3 user modify o k response
+func (o *S3UserModifyOK) Code() int {
+	return 200
+}
+
 func (o *S3UserModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3UserModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3UserModifyOK %s", 200, payload)
 }
 
 func (o *S3UserModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3UserModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3UserModifyOK %s", 200, payload)
 }
 
 func (o *S3UserModifyOK) GetPayload() *models.S3UserPostPatchResponse {
@@ -119,16 +127,25 @@ func NewS3UserModifyDefault(code int) *S3UserModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 92405792   | Failed to regenerate access-key and secret-key for user. |
+| 92406082   | Cannot perform \"regenerate_keys\" and \"delete_keys\" operations simultaneously on an S3 user. |
+| 92406081   | The \"regenerate_keys\" operation on S3 User \"user-2\" in SVM \"vs1\" succeeded. However, modifying all of the other S3 user properties failed. Reason: resource limit exceeded. Retry the operation again without specifying the \"regenerate_keys\" parameter. |
+| 92406080   | Cannot delete root user keys because there exists at least one S3 SnapMirror relationship that is using these keys. |
+| 92406083   | The maximum supported value for user key expiry configuration is \"1095\" days. |
+| 92406088   | The \"key_time_to_live\" parameter can only be used when the \"regenerate_keys\" operation is performed. |
+| 92406096   | The user does not have permission to access the requested resource \\\"{0}\\\". |
+| 92406097   | Internal error. The operation configuration is not correct. |
+
+| 92406196   | The specified value for the \"key_time_to_live\" field cannot be greater than the maximum limit specified for the \"max_key_time_to_live\" field in the object store server. |
+| 92406197   | Object store user \"user-2\" must have a non-zero value for the \"key_time_to_live\" field because the maximum limit specified for the \"max_key_time_to_live\" field in the object store server is not zero.
+| 92406200   | An object store user with the same access-key already exists. |
+| 92406201   | Missing access-key or secret-key. Either provide both of the keys or none. If not provided, keys are generated automatically. |
+| 92406202   | The \"delete_keys\" operation must be performed without specifying the user keys. |
+| 92406205   | The object store user access key contains invalid characters. Valid characters are 0-9 and A-Z. |
 */
 type S3UserModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the s3 user modify default response
-func (o *S3UserModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this s3 user modify default response has a 2xx status code
@@ -156,12 +173,19 @@ func (o *S3UserModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the s3 user modify default response
+func (o *S3UserModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *S3UserModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3_user_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3_user_modify default %s", o._statusCode, payload)
 }
 
 func (o *S3UserModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3_user_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3_user_modify default %s", o._statusCode, payload)
 }
 
 func (o *S3UserModifyDefault) GetPayload() *models.ErrorResponse {

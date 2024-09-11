@@ -6,6 +6,7 @@ package snapmirror
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *SnapmirrorRelationshipTransferCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the snapmirror relationship transfer create created response
+func (o *SnapmirrorRelationshipTransferCreateCreated) Code() int {
+	return 201
+}
+
 func (o *SnapmirrorRelationshipTransferCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /snapmirror/relationships/{relationship.uuid}/transfers][%d] snapmirrorRelationshipTransferCreateCreated ", 201)
+	return fmt.Sprintf("[POST /snapmirror/relationships/{relationship.uuid}/transfers][%d] snapmirrorRelationshipTransferCreateCreated", 201)
 }
 
 func (o *SnapmirrorRelationshipTransferCreateCreated) String() string {
-	return fmt.Sprintf("[POST /snapmirror/relationships/{relationship.uuid}/transfers][%d] snapmirrorRelationshipTransferCreateCreated ", 201)
+	return fmt.Sprintf("[POST /snapmirror/relationships/{relationship.uuid}/transfers][%d] snapmirrorRelationshipTransferCreateCreated", 201)
 }
 
 func (o *SnapmirrorRelationshipTransferCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -121,20 +127,16 @@ func NewSnapmirrorRelationshipTransferCreateDefault(code int) *SnapmirrorRelatio
 | 13303812    | Initialize operation failed |
 | 13303844    | Update operation failed |
 | 13303846    | Empty source path file list |
-| 13303847    | Invalid arguments |
+| 13303847    | Invalid property |
 | 13304040    | Throttle not supported for update of Synchronous SnapMirror relationships |
 | 6620237     | SnapMirror relationship database write failed |
 | 6620238     | SnapMirror relationship database read failed |
+| 13304134    | The overwrite property specified does not match the value specified in the previous request. ||
 */
 type SnapmirrorRelationshipTransferCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snapmirror relationship transfer create default response
-func (o *SnapmirrorRelationshipTransferCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snapmirror relationship transfer create default response has a 2xx status code
@@ -162,12 +164,19 @@ func (o *SnapmirrorRelationshipTransferCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snapmirror relationship transfer create default response
+func (o *SnapmirrorRelationshipTransferCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnapmirrorRelationshipTransferCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /snapmirror/relationships/{relationship.uuid}/transfers][%d] snapmirror_relationship_transfer_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /snapmirror/relationships/{relationship.uuid}/transfers][%d] snapmirror_relationship_transfer_create default %s", o._statusCode, payload)
 }
 
 func (o *SnapmirrorRelationshipTransferCreateDefault) String() string {
-	return fmt.Sprintf("[POST /snapmirror/relationships/{relationship.uuid}/transfers][%d] snapmirror_relationship_transfer_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /snapmirror/relationships/{relationship.uuid}/transfers][%d] snapmirror_relationship_transfer_create default %s", o._statusCode, payload)
 }
 
 func (o *SnapmirrorRelationshipTransferCreateDefault) GetPayload() *models.ErrorResponse {

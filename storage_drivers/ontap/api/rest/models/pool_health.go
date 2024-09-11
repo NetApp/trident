@@ -26,7 +26,7 @@ type PoolHealth struct {
 
 	// The state of the shared storage pool.
 	// Read Only: true
-	// Enum: [normal degraded creating deleting reassigning growing]
+	// Enum: ["normal","degraded","creating","deleting","reassigning","growing"]
 	State *string `json:"state,omitempty"`
 
 	// Indicates why the storage pool is unhealthy. This property is not returned for healthy storage pools.

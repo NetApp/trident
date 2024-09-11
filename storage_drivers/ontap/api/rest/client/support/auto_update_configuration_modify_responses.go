@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *AutoUpdateConfigurationModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the auto update configuration modify o k response
+func (o *AutoUpdateConfigurationModifyOK) Code() int {
+	return 200
+}
+
 func (o *AutoUpdateConfigurationModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /support/auto-update/configurations/{uuid}][%d] autoUpdateConfigurationModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /support/auto-update/configurations/{uuid}][%d] autoUpdateConfigurationModifyOK", 200)
 }
 
 func (o *AutoUpdateConfigurationModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /support/auto-update/configurations/{uuid}][%d] autoUpdateConfigurationModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /support/auto-update/configurations/{uuid}][%d] autoUpdateConfigurationModifyOK", 200)
 }
 
 func (o *AutoUpdateConfigurationModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,16 +113,12 @@ func NewAutoUpdateConfigurationModifyDefault(code int) *AutoUpdateConfigurationM
 | Error Code | Description |
 | ---------- | ----------- |
 | 262179 | Unexpected argument. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AutoUpdateConfigurationModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the auto update configuration modify default response
-func (o *AutoUpdateConfigurationModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this auto update configuration modify default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *AutoUpdateConfigurationModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the auto update configuration modify default response
+func (o *AutoUpdateConfigurationModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AutoUpdateConfigurationModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /support/auto-update/configurations/{uuid}][%d] auto_update_configuration_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/auto-update/configurations/{uuid}][%d] auto_update_configuration_modify default %s", o._statusCode, payload)
 }
 
 func (o *AutoUpdateConfigurationModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /support/auto-update/configurations/{uuid}][%d] auto_update_configuration_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/auto-update/configurations/{uuid}][%d] auto_update_configuration_modify default %s", o._statusCode, payload)
 }
 
 func (o *AutoUpdateConfigurationModifyDefault) GetPayload() *models.ErrorResponse {

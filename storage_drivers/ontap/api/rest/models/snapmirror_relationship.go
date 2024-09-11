@@ -16,7 +16,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// SnapmirrorRelationship SnapMirror relationship information. The SnapMirror relatiosnhip can be either "async" or "sync" based on the type of SnapMirror policy associated with the relationship. The source and destination endpoints of a SnapMirror relationship must be of the same type, for example, if the source endpoint is a FlexVol volume then the destination endpoint must be a FlexVol volume.<br>The SnapMirror policy type "async" can be used when the SnapMirror relationship has FlexVol volume or FlexGroup volume or SVM as the endpoint. The SnapMirror policy type "sync" can be used when the SnapMirror relationship has FlexVol volume as the endpoint. The SnapMirror policy type "sync" with "sync_type" as "automated_failover" can be used when the SnapMirror relationship has Consistency Group as the endpoint.
+// SnapmirrorRelationship SnapMirror relationship information. The SnapMirror relationship can be either "async" or "sync" based on the type of SnapMirror policy associated with the relationship. The source and destination endpoints of a SnapMirror relationship must be of the same type, for example, if the source endpoint is a FlexVol volume then the destination endpoint must be a FlexVol volume.<br>The SnapMirror policy type "async" can be used when the SnapMirror relationship has FlexVol volume or FlexGroup volume or SVM as the endpoint. The SnapMirror policy type "sync" can be used when the SnapMirror relationship has FlexVol volume as the endpoint. The SnapMirror policy type "sync" with "sync_type" as "automated_failover" can be used when the SnapMirror relationship has Consistency Group as the endpoint.
 //
 // swagger:model snapmirror_relationship
 type SnapmirrorRelationship struct {
@@ -24,22 +24,28 @@ type SnapmirrorRelationship struct {
 	// links
 	Links *SnapmirrorRelationshipInlineLinks `json:"_links,omitempty"`
 
+	// Specifies the SnapMirror backoff level due to Client Ops for FlexVol SnapMirror relationships.
+	// Example: medium
+	// Enum: ["high","medium","none"]
+	BackoffLevel *string `json:"backoff_level,omitempty"`
+
 	// consistency group failover
 	ConsistencyGroupFailover *SnapmirrorConsistencyGroupFailover `json:"consistency_group_failover,omitempty"`
 
 	// create destination
 	CreateDestination *SnapmirrorDestinationCreation `json:"create_destination,omitempty"`
 
-	// This property is the destination endpoint of the relationship. The destination endpoint can be a FlexVol volume, FlexGroup volume, Consistency Group, or SVM. For the POST request, the destination endpoint must be of type "DP" when the endpoint is a FlexVol volume or a FlexGroup volume. When specifying a Consistency Group as the destination endpoint, the "destination.consistency_group_volumes" property must be specified with the FlexVol volumes of type "DP". The POST request for SVM must have a destination endpoint of type "dp-destination". The destination endpoint path name must be specified in the "destination.path" property. For relationships of type "async", the destination endpoint for FlexVol volume and FlexGroup volume will change to type "RW" when the relationship status is "broken_off" and will revert to type "DP" when the relationship status is "snapmirrored" or "in_sync" using the PATCH request. The destination endpoint for SVM will change from "dp-destination" to type "default" when the relationship status is "broken_off" and will revert to type "dp-destination" when the relationship status is "snapmirrored" using the PATCH request. When the destination endpoint is a Consistency Group, the Consistency Group FlexVol volumes will change to type "RW" when the relationship status is "broken_off" and will revert to type "DP" when the relationship status is "in_sync" using the PATCH request.
+	// This property is the destination endpoint of the relationship. The destination endpoint can be a FlexVol volume, FlexGroup volume, Consistency Group, or SVM. For the POST request, the destination endpoint must be of type "DP" when the endpoint is a FlexVol volume or a FlexGroup volume. When specifying a Consistency Group as the destination endpoint, the "destination.consistency_group_volumes" or "destination.luns" property must be specified with the FlexVol volumes or LUNs of type "DP". The POST request for SVM must have a destination endpoint of type "dp-destination". The destination endpoint path name must be specified in the "destination.path" property. For relationships of type "async", the destination endpoint for FlexVol volume and FlexGroup volume will change to type "RW" when the relationship status is "broken_off" and will revert to type "DP" when the relationship status is "snapmirrored" or "in_sync" using the PATCH request. The destination endpoint for SVM will change from "dp-destination" to type "default" when the relationship status is "broken_off" and will revert to type "dp-destination" when the relationship status is "snapmirrored" using the PATCH request. When the destination endpoint is a Consistency Group, the Consistency Group FlexVol volumes will change to type "RW" when the relationship status is "broken_off" and will revert to type "DP" when the relationship status is "in_sync" using the PATCH request.
 	Destination *SnapmirrorEndpoint `json:"destination,omitempty"`
 
-	// Snapshot copy exported to clients on destination.
+	// Snapshot exported to clients on destination.
 	// Read Only: true
 	ExportedSnapshot *string `json:"exported_snapshot,omitempty"`
 
 	// Specifies the group type of the top level SnapMirror relationship. The volume relationships are shown as _none_, the SVMDR relationships are shown as _svm_dr_, the Consistency Group relationships are shown as _consistency_group_, and the FlexGroup volume relationships are shown as _flexgroup_.
 	// Example: consistency_group
-	// Enum: [none svm_dr consistency_group flexgroup]
+	// Read Only: true
+	// Enum: ["none","svm_dr","consistency_group","flexgroup"]
 	GroupType *string `json:"group_type,omitempty"`
 
 	// Is the relationship healthy?
@@ -47,52 +53,83 @@ type SnapmirrorRelationship struct {
 	Healthy *bool `json:"healthy,omitempty"`
 
 	// Specifies which configuration of the source SVM is replicated to the destination SVM. This property is applicable only for SVM data protection with "async" policy type. This "identity_preservation" overrides the "identity_preservation" set on the SnapMirror relationship's policy.
-	// Enum: [full exclude_network_config exclude_network_and_protocol_config]
+	// Enum: ["full","exclude_network_config","exclude_network_and_protocol_config"]
 	IdentityPreservation *string `json:"identity_preservation,omitempty"`
 
-	// Time since the exported Snapshot copy was created.
+	// Specifies the sites serving I/O for the SnapMirror active sync relationship.
+	// Example: C1_sti85-vsim-ucs209a_cluster, C1_sti85-vsim-ucs209c_cluster
+	IoServingCopy *string `json:"io_serving_copy,omitempty"`
+
+	// Time since the exported snapshot was created.
 	// Example: PT8H35M42S
 	// Read Only: true
 	LagTime *string `json:"lag_time,omitempty"`
 
-	// Specifies the operation type of the last transfer that occured on the relationship. The _initialize_ transfer occurs when the relationship state changes from uninitialized to snapmirrored or in_sync. The _update_ transfer occurs when the snapshots are transferred from the source endpoint to the destination endpoint as part of scheduled or manual update. The _resync_ transfer occurs when the relationship state changes from broken_off to snapmirrored or in_sync. The _restore_ transfer occurs when the snapshot is restored from a destination endpoint to another endpoint.
+	// Specifies the compression ratio achieved for the data sent over the wire with network compression enabled for the last successful transfer.
+	// Example: 61
+	// Read Only: true
+	LastTransferNetworkCompressionRatio *string `json:"last_transfer_network_compression_ratio,omitempty"`
+
+	// Specifies the operation type of the last transfer that occurred on the relationship. The _initialize_ transfer occurs when the relationship state changes from uninitialized to snapmirrored or in_sync. The _update_ transfer occurs when the snapshots are transferred from the source endpoint to the destination endpoint as part of scheduled or manual update. The _resync_ transfer occurs when the relationship state changes from broken_off to snapmirrored or in_sync. The _restore_ transfer occurs when the snapshot is restored from a destination endpoint to another endpoint.
 	// Example: initialize
-	// Enum: [initialize update resync restore]
+	// Read Only: true
+	// Enum: ["initialize","update","resync","restore"]
 	LastTransferType *string `json:"last_transfer_type,omitempty"`
+
+	// Specifies the Master Bias Activated Site for the SnapMirror active sync relationship.
+	// Example: C1_sti85-vsim-ucs209a_cluster
+	MasterBiasActivatedSite *string `json:"master_bias_activated_site,omitempty"`
 
 	// policy
 	Policy *SnapmirrorRelationshipInlinePolicy `json:"policy,omitempty"`
 
-	// Set to true on resync to preserve Snapshot copies on the destination that are newer than the latest common Snapshot copy. This property is applicable only for relationships with FlexVol volume or FlexGroup volume endpoints and when the PATCH state is being changed to "snapmirrored".
+	// Specifies the Primary Site of the SnapMirror active sync relationship.
+	// Example: C1_sti85-vsim-ucs209a_cluster
+	PreferredSite *string `json:"preferred_site,omitempty"`
+
+	// Set to true on resync to preserve snapshots on the destination that are newer than the latest common snapshot. This property is applicable only for relationships with FlexVol volume or FlexGroup volume endpoints and when the PATCH state is being changed to "snapmirrored".
 	Preserve *bool `json:"preserve,omitempty"`
 
 	// Set to true to reduce resync time by not preserving storage efficiency. This property is applicable only for relationships with FlexVol volume endpoints and SVMDR relationships when the PATCH state is being changed to "snapmirrored".
 	QuickResync *bool `json:"quick_resync,omitempty"`
 
-	// Set to true to recover from a failed SnapMirror break operation on a FlexGroup volume relationship. This restores all destination FlexGroup constituent volumes to the latest Snapshot copy, and any writes to the read-write constituents are lost. This property is applicable only for SnapMirror relationships with FlexGroup volume endpoints and when the PATCH state is being changed to "broken_off".
+	// Set to true to recover from a failed SnapMirror break operation on a FlexGroup volume relationship. This restores all destination FlexGroup constituent volumes to the latest snapshot, and any writes to the read-write constituents are lost. This property is applicable only for SnapMirror relationships with FlexGroup volume endpoints and when the PATCH state is being changed to "broken_off".
 	RecoverAfterBreak *bool `json:"recover_after_break,omitempty"`
 
 	// Set to true to create a relationship for restore. To trigger restore-transfer, use transfers POST on the restore relationship. SnapMirror relationships with the policy type "async" can be restored. SnapMirror relationships with the policy type "sync" cannot be restored.
 	Restore *bool `json:"restore,omitempty"`
 
-	// Specifies the Snapshot copy to restore to on the destination during the break operation. This property is applicable only for SnapMirror relationships with FlexVol volume endpoints and when the PATCH state is being changed to "broken_off".
+	// Specifies the snapshot to restore to on the destination during the break operation. This property is applicable only for SnapMirror relationships with FlexVol volume endpoints and when the PATCH state is being changed to "broken_off".
 	RestoreToSnapshot *string `json:"restore_to_snapshot,omitempty"`
 
+	// Specifies the list of constituent FlexVol volumes and FlexGroup volumes for an SVM DR SnapMirror relationship. FlexGroup constituents are not considered.
+	SnapmirrorRelationshipInlineSvmdrVolumes []*SnapmirrorRelationshipInlineSvmdrVolumesInlineArrayItem `json:"svmdr_volumes,omitempty"`
+
 	// Reason the relationship is not healthy. It is a concatenation of up to four levels of error messages.
-	// Example: [{"code":"6621444","message":"Failed to complete update operation on one or more item relationships.","parameters":[]},{"code":"6621445","message":"Group Update failed","parameters":[]}]
+	// Example: [{"arguments":[],"code":"6621444","message":"Failed to complete update operation on one or more item relationships."},{"arguments":[],"code":"6621445","message":"Group Update failed"}]
 	// Read Only: true
 	SnapmirrorRelationshipInlineUnhealthyReason []*SnapmirrorError `json:"unhealthy_reason,omitempty"`
 
-	// This property is the source endpoint of the relationship. The source endpoint can be a FlexVol volume, FlexGroup volume, Consistency Group, or SVM. To establish a SnapMirror relationship with SVM as source endpoint, the SVM must have only FlexVol volumes. For a Consistency Group this property identifies the source Consistency Group name. When specifying a Consistency Group as the source endpoint, the "source.consistency_group_volumes" property must be specified with the FlexVol volumes of type "RW". FlexVol volumes of type "DP" cannot be specified in the "source.consistency_group_volumes" list.
-	Source *SnapmirrorEndpoint `json:"source,omitempty"`
+	// This property is the source endpoint of the relationship. The source endpoint can be a FlexVol volume, FlexGroup volume, Consistency Group, or SVM. To establish a SnapMirror relationship with SVM as source endpoint, the SVM must have only FlexVol volumes. For a Consistency Group this property identifies the source Consistency Group name. When specifying a Consistency Group as the source endpoint, the "source.consistency_group_volumes" property must be specified with the FlexVol volumes of type "RW". FlexVol volumes of type "DP" cannot be specified in the "source.consistency_group_volumes" list. Optionally, "source.luns" property of source endpoint can be specified with source LUN names during SnapMirror Consistency Group LUN Restore Operation.
+	Source *SnapmirrorSourceEndpoint `json:"source,omitempty"`
 
-	// State of the relationship.<br>To initialize the relationship, PATCH the state to "snapmirrored" for relationships with a policy of type "async" or to state "in_sync" for relationships with a policy of type "sync".<br>To break the relationship, PATCH the state to "broken_off" for relationships with a policy of type "async" or "sync". SnapMirror relationships with the policy type as "sync" and "sync_type" as "automated_failover" cannot be "broken_off".<br>To resync the relationship, PATCH the state to "snapmirrored" for relationships with a policy of type "async" or to state "in_sync" for relationships with a policy of type "sync". SnapMirror relationships with the policy type as "sync" and "sync_type" as "automated_failover" can be in "broken_off" state due to a failed attempt of SnapMirror failover.<br>To pause the relationship, suspending further transfers, PATCH the state to "paused" for relationships with a policy of type "async" or "sync". SnapMirror relationships with the policy type as "sync" and "sync_type" as "automated_failover" cannot be "paused".<br>To resume transfers for a paused relationship, PATCH the state to "snapmirrored" for relationships with a policy of type "async" or to state "in_sync" for relationships with a policy of type "sync".<br>The entries "in_sync", "out_of_sync", and "synchronizing" are only applicable to relationships with a policy of type "sync". A PATCH call on the state change only triggers the transition to the specified state. You must poll on the "state", "healthy" and "unhealthy_reason" properties using a GET request to determine if the transition is successful. To automatically initialize the relationship when specifying "create_destination" property, set the state to "snapmirrored" for relationships with a policy of type "async" or to state "in_sync" for relationships with a policy of type "sync".
+	// State of the relationship.<br>To initialize the relationship, PATCH the state to "snapmirrored" for relationships with a policy of type "async" or to state "in_sync" for relationships with a policy of type "sync".<br>To break the relationship, PATCH the state to "broken_off" for relationships with a policy of type "async" or "sync". SnapMirror relationships with the policy type as "sync" and "sync_type" as "automated_failover" cannot be "broken_off".<br>To resync the relationship, PATCH the state to "snapmirrored" for relationships with a policy of type "async" or to state "in_sync" for relationships with a policy of type "sync". SnapMirror relationships with the policy type as "sync" and "sync_type" as "automated_failover" can be in "broken_off" state due to a failed attempt of SnapMirror failover.<br>To pause the relationship, suspending further transfers, PATCH the state to "paused" for relationships with a policy of type "async" or "sync". SnapMirror relationships with the policy type as "sync" and "sync_type" as "automated_failover" cannot be "paused".<br>To resume transfers for a paused relationship, PATCH the state to "snapmirrored" for relationships with a policy of type "async" or to state "in_sync" for relationships with a policy of type "sync".<br>The entries "in_sync", "out_of_sync", "synchronizing", and "expanding" are only applicable to relationships with a policy of type "sync". A PATCH call on the state change only triggers the transition to the specified state. You must poll on the "state", "healthy" and "unhealthy_reason" properties using a GET request to determine if the transition is successful. To automatically initialize the relationship when specifying "create_destination" property, set the state to "snapmirrored" for relationships with a policy of type "async" or to state "in_sync" for relationships with a policy of type "sync".
 	// Example: snapmirrored
-	// Enum: [broken_off paused snapmirrored uninitialized in_sync out_of_sync synchronizing]
+	// Enum: ["broken_off","paused","snapmirrored","uninitialized","in_sync","out_of_sync","synchronizing","expanding"]
 	State *string `json:"state,omitempty"`
 
 	// Throttle, in KBs per second. This "throttle" overrides the "throttle" set on the SnapMirror relationship's policy. If neither of these are set, defaults to 0, which is interpreted as unlimited.
 	Throttle *int64 `json:"throttle,omitempty"`
+
+	// Cumulative bytes transferred for the relationship.
+	// Example: 1098210312
+	// Read Only: true
+	TotalTransferBytes *int64 `json:"total_transfer_bytes,omitempty"`
+
+	// Indicates the cumulative duration of all transfers since the last aggregate relocation, takeover/giveback, or metrocluster switchover/switchback involving the node that hosts the relationship.
+	// Example: PT3M21S
+	// Read Only: true
+	TotalTransferDuration *string `json:"total_transfer_duration,omitempty"`
 
 	// transfer
 	Transfer *SnapmirrorRelationshipInlineTransfer `json:"transfer,omitempty"`
@@ -100,7 +137,7 @@ type SnapmirrorRelationship struct {
 	// transfer schedule
 	TransferSchedule *SnapmirrorRelationshipInlineTransferSchedule `json:"transfer_schedule,omitempty"`
 
-	// uuid
+	// Unique identifier of the SnapMirror relationship.
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
 	// Format: uuid
@@ -112,6 +149,10 @@ func (m *SnapmirrorRelationship) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateBackoffLevel(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -140,6 +181,10 @@ func (m *SnapmirrorRelationship) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnapmirrorRelationshipInlineSvmdrVolumes(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -185,6 +230,72 @@ func (m *SnapmirrorRelationship) validateLinks(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var snapmirrorRelationshipTypeBackoffLevelPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["high","medium","none"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		snapmirrorRelationshipTypeBackoffLevelPropEnum = append(snapmirrorRelationshipTypeBackoffLevelPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship
+	// SnapmirrorRelationship
+	// backoff_level
+	// BackoffLevel
+	// high
+	// END DEBUGGING
+	// SnapmirrorRelationshipBackoffLevelHigh captures enum value "high"
+	SnapmirrorRelationshipBackoffLevelHigh string = "high"
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship
+	// SnapmirrorRelationship
+	// backoff_level
+	// BackoffLevel
+	// medium
+	// END DEBUGGING
+	// SnapmirrorRelationshipBackoffLevelMedium captures enum value "medium"
+	SnapmirrorRelationshipBackoffLevelMedium string = "medium"
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship
+	// SnapmirrorRelationship
+	// backoff_level
+	// BackoffLevel
+	// none
+	// END DEBUGGING
+	// SnapmirrorRelationshipBackoffLevelNone captures enum value "none"
+	SnapmirrorRelationshipBackoffLevelNone string = "none"
+)
+
+// prop value enum
+func (m *SnapmirrorRelationship) validateBackoffLevelEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, snapmirrorRelationshipTypeBackoffLevelPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SnapmirrorRelationship) validateBackoffLevel(formats strfmt.Registry) error {
+	if swag.IsZero(m.BackoffLevel) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateBackoffLevelEnum("backoff_level", "body", *m.BackoffLevel); err != nil {
+		return err
 	}
 
 	return nil
@@ -476,6 +587,30 @@ func (m *SnapmirrorRelationship) validatePolicy(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *SnapmirrorRelationship) validateSnapmirrorRelationshipInlineSvmdrVolumes(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnapmirrorRelationshipInlineSvmdrVolumes) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SnapmirrorRelationshipInlineSvmdrVolumes); i++ {
+		if swag.IsZero(m.SnapmirrorRelationshipInlineSvmdrVolumes[i]) { // not required
+			continue
+		}
+
+		if m.SnapmirrorRelationshipInlineSvmdrVolumes[i] != nil {
+			if err := m.SnapmirrorRelationshipInlineSvmdrVolumes[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("svmdr_volumes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *SnapmirrorRelationship) validateSnapmirrorRelationshipInlineUnhealthyReason(formats strfmt.Registry) error {
 	if swag.IsZero(m.SnapmirrorRelationshipInlineUnhealthyReason) { // not required
 		return nil
@@ -521,7 +656,7 @@ var snapmirrorRelationshipTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["broken_off","paused","snapmirrored","uninitialized","in_sync","out_of_sync","synchronizing"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["broken_off","paused","snapmirrored","uninitialized","in_sync","out_of_sync","synchronizing","expanding"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -600,6 +735,16 @@ const (
 	// END DEBUGGING
 	// SnapmirrorRelationshipStateSynchronizing captures enum value "synchronizing"
 	SnapmirrorRelationshipStateSynchronizing string = "synchronizing"
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship
+	// SnapmirrorRelationship
+	// state
+	// State
+	// expanding
+	// END DEBUGGING
+	// SnapmirrorRelationshipStateExpanding captures enum value "expanding"
+	SnapmirrorRelationshipStateExpanding string = "expanding"
 )
 
 // prop value enum
@@ -693,6 +838,10 @@ func (m *SnapmirrorRelationship) ContextValidate(ctx context.Context, formats st
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateGroupType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateHealthy(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -701,7 +850,19 @@ func (m *SnapmirrorRelationship) ContextValidate(ctx context.Context, formats st
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateLastTransferNetworkCompressionRatio(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastTransferType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidatePolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSnapmirrorRelationshipInlineSvmdrVolumes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -710,6 +871,14 @@ func (m *SnapmirrorRelationship) ContextValidate(ctx context.Context, formats st
 	}
 
 	if err := m.contextValidateSource(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTotalTransferBytes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTotalTransferDuration(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -796,6 +965,15 @@ func (m *SnapmirrorRelationship) contextValidateExportedSnapshot(ctx context.Con
 	return nil
 }
 
+func (m *SnapmirrorRelationship) contextValidateGroupType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "group_type", "body", m.GroupType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *SnapmirrorRelationship) contextValidateHealthy(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "healthy", "body", m.Healthy); err != nil {
@@ -814,6 +992,24 @@ func (m *SnapmirrorRelationship) contextValidateLagTime(ctx context.Context, for
 	return nil
 }
 
+func (m *SnapmirrorRelationship) contextValidateLastTransferNetworkCompressionRatio(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "last_transfer_network_compression_ratio", "body", m.LastTransferNetworkCompressionRatio); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SnapmirrorRelationship) contextValidateLastTransferType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "last_transfer_type", "body", m.LastTransferType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *SnapmirrorRelationship) contextValidatePolicy(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Policy != nil {
@@ -823,6 +1019,24 @@ func (m *SnapmirrorRelationship) contextValidatePolicy(ctx context.Context, form
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SnapmirrorRelationship) contextValidateSnapmirrorRelationshipInlineSvmdrVolumes(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.SnapmirrorRelationshipInlineSvmdrVolumes); i++ {
+
+		if m.SnapmirrorRelationshipInlineSvmdrVolumes[i] != nil {
+			if err := m.SnapmirrorRelationshipInlineSvmdrVolumes[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("svmdr_volumes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -859,6 +1073,24 @@ func (m *SnapmirrorRelationship) contextValidateSource(ctx context.Context, form
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SnapmirrorRelationship) contextValidateTotalTransferBytes(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "total_transfer_bytes", "body", m.TotalTransferBytes); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SnapmirrorRelationship) contextValidateTotalTransferDuration(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "total_transfer_duration", "body", m.TotalTransferDuration); err != nil {
+		return err
 	}
 
 	return nil
@@ -1013,16 +1245,16 @@ type SnapmirrorRelationshipInlinePolicy struct {
 	// links
 	Links *SnapmirrorRelationshipInlinePolicyInlineLinks `json:"_links,omitempty"`
 
-	// name
+	// Name of the SnapMirror policy.
 	// Example: Asynchronous
 	Name *string `json:"name,omitempty"`
 
 	// type
 	// Read Only: true
-	// Enum: [async sync continuous]
+	// Enum: ["async","sync","continuous"]
 	Type *string `json:"type,omitempty"`
 
-	// uuid
+	// Unique identifier of the SnapMirror policy.
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
 	// Format: uuid
 	UUID *strfmt.UUID `json:"uuid,omitempty"`
@@ -1290,6 +1522,44 @@ func (m *SnapmirrorRelationshipInlinePolicyInlineLinks) UnmarshalBinary(b []byte
 	return nil
 }
 
+// SnapmirrorRelationshipInlineSvmdrVolumesInlineArrayItem snapmirror relationship inline svmdr volumes inline array item
+//
+// swagger:model snapmirror_relationship_inline_svmdr_volumes_inline_array_item
+type SnapmirrorRelationshipInlineSvmdrVolumesInlineArrayItem struct {
+
+	// The name of the volume.
+	// Example: volume1
+	Name *string `json:"name,omitempty"`
+}
+
+// Validate validates this snapmirror relationship inline svmdr volumes inline array item
+func (m *SnapmirrorRelationshipInlineSvmdrVolumesInlineArrayItem) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this snapmirror relationship inline svmdr volumes inline array item based on context it is used
+func (m *SnapmirrorRelationshipInlineSvmdrVolumesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SnapmirrorRelationshipInlineSvmdrVolumesInlineArrayItem) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SnapmirrorRelationshipInlineSvmdrVolumesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorRelationshipInlineSvmdrVolumesInlineArrayItem
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // SnapmirrorRelationshipInlineTransfer Basic information on the current transfer or the last transfer if there is no active transfer at the time of the request.
 //
 // swagger:model snapmirror_relationship_inline_transfer
@@ -1298,21 +1568,31 @@ type SnapmirrorRelationshipInlineTransfer struct {
 	// links
 	Links *SnapmirrorRelationshipInlineTransferInlineLinks `json:"_links,omitempty"`
 
-	// Bytes transferred.
+	// Total bytes transferred in the current or last successful transfer.
 	BytesTransferred *int64 `json:"bytes_transferred,omitempty"`
 
 	// End time of the last transfer.
-	// Example: 2020-12-02T18:36:19-08:00
+	// Example: 2020-12-03 02:36:19
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
 
+	// Last updated time of the bytes transferred in the current transfer.
+	// Example: 2023-09-14 22:39:19
+	// Format: date-time
+	LastUpdatedTime *strfmt.DateTime `json:"last_updated_time,omitempty"`
+
 	// state
-	// Enum: [aborted failed hard_aborted queued success transferring]
+	// Enum: ["aborted","failed","hard_aborted","queued","success","transferring"]
 	State *string `json:"state,omitempty"`
 
-	// Transfer elapsed time.
+	// Elapsed time to transfer all snapshots for the last successful transfer.
 	// Example: PT28M41S
 	TotalDuration *string `json:"total_duration,omitempty"`
+
+	// Specifies the operation type of the current transfer on the relationship. The _initialize_ transfer occurs when the relationship state changes from "uninitialized" to "snapmirrored" or "in_sync". The _update_ transfer occurs when snapshots are being transferred from the source endpoint to the destination endpoint as part of a scheduled or manual update. The _resync_ transfer occurs when the relationship state changes from "broken_off" to "snapmirrored" or "in_sync". The _restore_ transfer occurs when a snapshot is being restored from a destination endpoint to another endpoint.
+	// Example: initialize
+	// Enum: ["initialize","update","resync","restore"]
+	Type *string `json:"type,omitempty"`
 
 	// Transfer UUID. This property is applicable only for active transfers.
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
@@ -1332,7 +1612,15 @@ func (m *SnapmirrorRelationshipInlineTransfer) Validate(formats strfmt.Registry)
 		res = append(res, err)
 	}
 
+	if err := m.validateLastUpdatedTime(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1369,6 +1657,18 @@ func (m *SnapmirrorRelationshipInlineTransfer) validateEndTime(formats strfmt.Re
 	}
 
 	if err := validate.FormatOf("transfer"+"."+"end_time", "body", "date-time", m.EndTime.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SnapmirrorRelationshipInlineTransfer) validateLastUpdatedTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.LastUpdatedTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("transfer"+"."+"last_updated_time", "body", "date-time", m.LastUpdatedTime.String(), formats); err != nil {
 		return err
 	}
 
@@ -1465,6 +1765,82 @@ func (m *SnapmirrorRelationshipInlineTransfer) validateState(formats strfmt.Regi
 
 	// value enum
 	if err := m.validateStateEnum("transfer"+"."+"state", "body", *m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var snapmirrorRelationshipInlineTransferTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["initialize","update","resync","restore"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		snapmirrorRelationshipInlineTransferTypeTypePropEnum = append(snapmirrorRelationshipInlineTransferTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship_inline_transfer
+	// SnapmirrorRelationshipInlineTransfer
+	// type
+	// Type
+	// initialize
+	// END DEBUGGING
+	// SnapmirrorRelationshipInlineTransferTypeInitialize captures enum value "initialize"
+	SnapmirrorRelationshipInlineTransferTypeInitialize string = "initialize"
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship_inline_transfer
+	// SnapmirrorRelationshipInlineTransfer
+	// type
+	// Type
+	// update
+	// END DEBUGGING
+	// SnapmirrorRelationshipInlineTransferTypeUpdate captures enum value "update"
+	SnapmirrorRelationshipInlineTransferTypeUpdate string = "update"
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship_inline_transfer
+	// SnapmirrorRelationshipInlineTransfer
+	// type
+	// Type
+	// resync
+	// END DEBUGGING
+	// SnapmirrorRelationshipInlineTransferTypeResync captures enum value "resync"
+	SnapmirrorRelationshipInlineTransferTypeResync string = "resync"
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship_inline_transfer
+	// SnapmirrorRelationshipInlineTransfer
+	// type
+	// Type
+	// restore
+	// END DEBUGGING
+	// SnapmirrorRelationshipInlineTransferTypeRestore captures enum value "restore"
+	SnapmirrorRelationshipInlineTransferTypeRestore string = "restore"
+)
+
+// prop value enum
+func (m *SnapmirrorRelationshipInlineTransfer) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, snapmirrorRelationshipInlineTransferTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SnapmirrorRelationshipInlineTransfer) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("transfer"+"."+"type", "body", *m.Type); err != nil {
 		return err
 	}
 

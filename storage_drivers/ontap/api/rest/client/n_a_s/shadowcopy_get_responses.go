@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ShadowcopyGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the shadowcopy get o k response
+func (o *ShadowcopyGetOK) Code() int {
+	return 200
+}
+
 func (o *ShadowcopyGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/shadow-copies/{client_uuid}][%d] shadowcopyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/shadow-copies/{client_uuid}][%d] shadowcopyGetOK %s", 200, payload)
 }
 
 func (o *ShadowcopyGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/shadow-copies/{client_uuid}][%d] shadowcopyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/shadow-copies/{client_uuid}][%d] shadowcopyGetOK %s", 200, payload)
 }
 
 func (o *ShadowcopyGetOK) GetPayload() *models.Shadowcopy {
@@ -122,11 +130,6 @@ type ShadowcopyGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the shadowcopy get default response
-func (o *ShadowcopyGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this shadowcopy get default response has a 2xx status code
 func (o *ShadowcopyGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *ShadowcopyGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the shadowcopy get default response
+func (o *ShadowcopyGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ShadowcopyGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/shadow-copies/{client_uuid}][%d] shadowcopy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/shadow-copies/{client_uuid}][%d] shadowcopy_get default %s", o._statusCode, payload)
 }
 
 func (o *ShadowcopyGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/shadow-copies/{client_uuid}][%d] shadowcopy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/shadow-copies/{client_uuid}][%d] shadowcopy_get default %s", o._statusCode, payload)
 }
 
 func (o *ShadowcopyGetDefault) GetPayload() *models.ErrorResponse {

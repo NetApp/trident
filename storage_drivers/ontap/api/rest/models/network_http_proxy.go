@@ -45,7 +45,7 @@ type NetworkHTTPProxy struct {
 	// Set to “svm” for HTTP proxy owned by an SVM. Otherwise, set to "cluster".
 	//
 	// Read Only: true
-	// Enum: [svm cluster]
+	// Enum: ["svm","cluster"]
 	Scope *string `json:"scope,omitempty"`
 
 	// Fully qualified domain name (FQDN) or IP address of the HTTP proxy server.
@@ -326,7 +326,7 @@ func (m *NetworkHTTPProxy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkHTTPProxyInlineIpspace Applies to both SVM and cluster-scoped objects. Either the UUID or name is supplied on input.
+// NetworkHTTPProxyInlineIpspace Applies to both SVM and cluster-scoped objects. Either the UUID or name is supplied on input. This is mutually exclusive with SVM during POST and PATCH.
 //
 // swagger:model network_http_proxy_inline_ipspace
 type NetworkHTTPProxyInlineIpspace struct {
@@ -335,7 +335,7 @@ type NetworkHTTPProxyInlineIpspace struct {
 	Links *NetworkHTTPProxyInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
-	// Example: exchange
+	// Example: Default
 	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
@@ -592,7 +592,7 @@ func (m *NetworkHTTPProxyInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkHTTPProxyInlineSvm network http proxy inline svm
+// NetworkHTTPProxyInlineSvm This is mutually exclusive with IPspace during POST and PATCH.
 //
 // swagger:model network_http_proxy_inline_svm
 type NetworkHTTPProxyInlineSvm struct {
@@ -600,12 +600,12 @@ type NetworkHTTPProxyInlineSvm struct {
 	// links
 	Links *NetworkHTTPProxyInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

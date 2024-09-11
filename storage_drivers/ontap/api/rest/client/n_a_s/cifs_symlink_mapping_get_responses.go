@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CifsSymlinkMappingGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs symlink mapping get o k response
+func (o *CifsSymlinkMappingGetOK) Code() int {
+	return 200
+}
+
 func (o *CifsSymlinkMappingGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifsSymlinkMappingGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifsSymlinkMappingGetOK %s", 200, payload)
 }
 
 func (o *CifsSymlinkMappingGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifsSymlinkMappingGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifsSymlinkMappingGetOK %s", 200, payload)
 }
 
 func (o *CifsSymlinkMappingGetOK) GetPayload() *models.CifsSymlinkMapping {
@@ -122,11 +130,6 @@ type CifsSymlinkMappingGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cifs symlink mapping get default response
-func (o *CifsSymlinkMappingGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cifs symlink mapping get default response has a 2xx status code
 func (o *CifsSymlinkMappingGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *CifsSymlinkMappingGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs symlink mapping get default response
+func (o *CifsSymlinkMappingGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsSymlinkMappingGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifs_symlink_mapping_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifs_symlink_mapping_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsSymlinkMappingGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifs_symlink_mapping_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifs_symlink_mapping_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsSymlinkMappingGetDefault) GetPayload() *models.ErrorResponse {

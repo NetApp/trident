@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *NameMappingCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the name mapping create created response
+func (o *NameMappingCreateCreated) Code() int {
+	return 201
+}
+
 func (o *NameMappingCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /name-services/name-mappings][%d] nameMappingCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/name-mappings][%d] nameMappingCreateCreated %s", 201, payload)
 }
 
 func (o *NameMappingCreateCreated) String() string {
-	return fmt.Sprintf("[POST /name-services/name-mappings][%d] nameMappingCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/name-mappings][%d] nameMappingCreateCreated %s", 201, payload)
 }
 
 func (o *NameMappingCreateCreated) GetPayload() *models.NameMappingResponse {
@@ -131,6 +139,7 @@ func NewNameMappingCreateDefault(code int) *NameMappingCreateDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 65798185   | Failed to resolve the specified hostname   |
+| 65798173   | The name mapping pattern already exists with a more generic IP qualifier   |
 | 65798149   | Invalid index for the name mapping entry   |
 | 2621706    | The specified svm.uuid and svm.name refer to different SVMs   |
 */
@@ -138,11 +147,6 @@ type NameMappingCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the name mapping create default response
-func (o *NameMappingCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this name mapping create default response has a 2xx status code
@@ -170,12 +174,19 @@ func (o *NameMappingCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the name mapping create default response
+func (o *NameMappingCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NameMappingCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /name-services/name-mappings][%d] name_mapping_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/name-mappings][%d] name_mapping_create default %s", o._statusCode, payload)
 }
 
 func (o *NameMappingCreateDefault) String() string {
-	return fmt.Sprintf("[POST /name-services/name-mappings][%d] name_mapping_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/name-mappings][%d] name_mapping_create default %s", o._statusCode, payload)
 }
 
 func (o *NameMappingCreateDefault) GetPayload() *models.ErrorResponse {

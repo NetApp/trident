@@ -92,7 +92,7 @@ type SoftwareModifyParams struct {
 
 	/* NodesToUpdate.
 
-	   A comma separated list of node names to be updated. The nodes must be a part of a HA Pair. The default is all nodes.
+	   A comma separated list of node names to be updated. The nodes must be a part of a HA Pair. The default is all nodes. If the nodes_to_update parameter is empty then upgrade will error out and will not proceed.
 
 	*/
 	NodesToUpdate *string
@@ -116,6 +116,16 @@ type SoftwareModifyParams struct {
 
 	*/
 	ShowValidationDetails *bool
+
+	/* SkipNodesAtTargetVersion.
+
+	     Defaults to true in non-MetroCluster configurations. When set to true, nodes already at the target version will not be upgraded.
+	Setting this field to false will force nodes at the target version to undergo upgrade including migrating LIFs, performing takeover/giveback, and rebooting.
+	It's invalid to set this option to true when the action field is set.
+	It's an invalid option until effective cluster version is 9_16_0.
+
+	*/
+	SkipNodesAtTargetVersion *bool
 
 	/* SkipWarnings.
 
@@ -287,6 +297,17 @@ func (o *SoftwareModifyParams) SetShowValidationDetails(showValidationDetails *b
 	o.ShowValidationDetails = showValidationDetails
 }
 
+// WithSkipNodesAtTargetVersion adds the skipNodesAtTargetVersion to the software modify params
+func (o *SoftwareModifyParams) WithSkipNodesAtTargetVersion(skipNodesAtTargetVersion *bool) *SoftwareModifyParams {
+	o.SetSkipNodesAtTargetVersion(skipNodesAtTargetVersion)
+	return o
+}
+
+// SetSkipNodesAtTargetVersion adds the skipNodesAtTargetVersion to the software modify params
+func (o *SoftwareModifyParams) SetSkipNodesAtTargetVersion(skipNodesAtTargetVersion *bool) {
+	o.SkipNodesAtTargetVersion = skipNodesAtTargetVersion
+}
+
 // WithSkipWarnings adds the skipWarnings to the software modify params
 func (o *SoftwareModifyParams) WithSkipWarnings(skipWarnings *bool) *SoftwareModifyParams {
 	o.SetSkipWarnings(skipWarnings)
@@ -447,6 +468,23 @@ func (o *SoftwareModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		if qShowValidationDetails != "" {
 
 			if err := r.SetQueryParam("show_validation_details", qShowValidationDetails); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SkipNodesAtTargetVersion != nil {
+
+		// query param skip_nodes_at_target_version
+		var qrSkipNodesAtTargetVersion bool
+
+		if o.SkipNodesAtTargetVersion != nil {
+			qrSkipNodesAtTargetVersion = *o.SkipNodesAtTargetVersion
+		}
+		qSkipNodesAtTargetVersion := swag.FormatBool(qrSkipNodesAtTargetVersion)
+		if qSkipNodesAtTargetVersion != "" {
+
+			if err := r.SetQueryParam("skip_nodes_at_target_version", qSkipNodesAtTargetVersion); err != nil {
 				return err
 			}
 		}

@@ -23,18 +23,18 @@ type StoragePoolShowSpares struct {
 
 	// The checksum type that has been assigned to the spares.
 	// Read Only: true
-	// Enum: [block advanced_zoned]
+	// Enum: ["block","advanced_zoned"]
 	ChecksumStyle *string `json:"checksum_style,omitempty"`
 
 	// Disk class of spares.
 	// Example: solid_state
 	// Read Only: true
-	// Enum: [unknown capacity performance archive solid_state array virtual data_center capacity_flash]
+	// Enum: ["unknown","capacity","performance","archive","solid_state","array","virtual","data_center","capacity_flash"]
 	DiskClass *string `json:"disk_class,omitempty"`
 
 	// Type of disk.
 	// Read Only: true
-	// Enum: [fc lun nl_sas nvme_ssd sas sata scsi ssd ssd_cap ssd_zns vm_disk]
+	// Enum: ["fc","lun","nl_sas","nvme_ssd","sas","sata","scsi","ssd","ssd_cap","ssd_zns","vm_disk"]
 	DiskType *string `json:"disk_type,omitempty"`
 
 	// Usable size of each spare, in bytes.
@@ -48,7 +48,7 @@ type StoragePoolShowSpares struct {
 
 	// SyncMirror spare pool.
 	// Read Only: true
-	// Enum: [pool0 pool1]
+	// Enum: ["pool0","pool1"]
 	SyncmirrorPool *string `json:"syncmirror_pool,omitempty"`
 
 	// Total number of usable spares in the bucket. The usable count for each class of spares does not include reserved spare capacity recommended by ONTAP best practices.

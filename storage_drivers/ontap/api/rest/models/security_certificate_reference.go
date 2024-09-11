@@ -22,7 +22,6 @@ type SecurityCertificateReference struct {
 	Links *SecurityCertificateReferenceInlineLinks `json:"_links,omitempty"`
 
 	// Certificate name
-	// Example: cert1
 	Name *string `json:"name,omitempty"`
 
 	// Certificate UUID

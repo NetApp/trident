@@ -16,7 +16,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// ClusterSpace cluster space
+// ClusterSpace Provides information on cluster-wide storage details across the different tiers. Storage details include storage efficiency, block storage and cloud storage information.
 //
 // swagger:model cluster_space
 type ClusterSpace struct {
@@ -27,14 +27,14 @@ type ClusterSpace struct {
 	// cloud storage
 	CloudStorage *ClusterSpaceInlineCloudStorage `json:"cloud_storage,omitempty"`
 
-	// Storage efficiency
-	Efficiency *SpaceEfficiency `json:"efficiency,omitempty"`
+	// efficiency
+	Efficiency *ClusterSpaceInlineEfficiency `json:"efficiency,omitempty"`
 
-	// Storage efficiency that does not include the savings provided by Snapshot copies.
-	EfficiencyWithoutSnapshots *SpaceEfficiency `json:"efficiency_without_snapshots,omitempty"`
+	// efficiency without snapshots
+	EfficiencyWithoutSnapshots *ClusterSpaceInlineEfficiencyWithoutSnapshots `json:"efficiency_without_snapshots,omitempty"`
 
-	// Storage efficiency that does not include the savings provided by Snapshot copies and FlexClones.
-	EfficiencyWithoutSnapshotsFlexclones *SpaceEfficiency `json:"efficiency_without_snapshots_flexclones,omitempty"`
+	// efficiency without snapshots flexclones
+	EfficiencyWithoutSnapshotsFlexclones *ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones `json:"efficiency_without_snapshots_flexclones,omitempty"`
 }
 
 // Validate validates this cluster space
@@ -270,27 +270,31 @@ func (m *ClusterSpace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterSpaceInlineBlockStorage cluster space inline block storage
+// ClusterSpaceInlineBlockStorage Configuration information for the locally attached portion of the storage across the cluster. When a cloud store is also used by the storage, this is referred to as the performance tier.
 //
 // swagger:model cluster_space_inline_block_storage
 type ClusterSpaceInlineBlockStorage struct {
 
-	// Available space across the cluster
+	// Available space across the cluster.
 	Available *int64 `json:"available,omitempty"`
 
-	// Inactive data across all aggregates
+	// Inactive data across the cluster.
+	//
+	//
 	InactiveData *int64 `json:"inactive_data,omitempty"`
 
-	// medias
+	// Configuration information based on type of media. For example, SSD media type information includes the sum of all the SSD storage across the cluster.
 	Medias []*ClusterSpaceBlockStorageMediasItems0 `json:"medias,omitempty"`
 
-	// Total physical used space across the cluster
+	// Total physical used space across the cluster.
 	PhysicalUsed *int64 `json:"physical_used,omitempty"`
 
-	// Total space across the cluster
+	// Total space across the cluster.
 	Size *int64 `json:"size,omitempty"`
 
-	// Space used (includes volume reserves)
+	// Used space (includes volume reserves) across the cluster.
+	//
+	//
 	Used *int64 `json:"used,omitempty"`
 }
 
@@ -387,29 +391,31 @@ func (m *ClusterSpaceInlineBlockStorage) UnmarshalBinary(b []byte) error {
 // swagger:model ClusterSpaceBlockStorageMediasItems0
 type ClusterSpaceBlockStorageMediasItems0 struct {
 
-	// Available space
+	// Available space across the cluster based on media type.
 	Available *int64 `json:"available,omitempty"`
 
-	// Storage Efficiency
-	Efficiency *SpaceEfficiency `json:"efficiency,omitempty"`
+	// efficiency
+	Efficiency *ClusterSpaceBlockStorageMediasItems0Efficiency `json:"efficiency,omitempty"`
 
-	// Storage efficiency that does not include the savings provided by Snapshot copies.
-	EfficiencyWithoutSnapshots *SpaceEfficiency `json:"efficiency_without_snapshots,omitempty"`
+	// efficiency without snapshots
+	EfficiencyWithoutSnapshots *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshots `json:"efficiency_without_snapshots,omitempty"`
 
-	// Storage efficiency that does not include the savings provided by Snapshot copies and FlexClones.
-	EfficiencyWithoutSnapshotsFlexclones *SpaceEfficiency `json:"efficiency_without_snapshots_flexclones,omitempty"`
+	// efficiency without snapshots flexclones
+	EfficiencyWithoutSnapshotsFlexclones *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones `json:"efficiency_without_snapshots_flexclones,omitempty"`
 
-	// Total physical used space
+	// Total physical used space across the cluster based on media type.
 	PhysicalUsed *int64 `json:"physical_used,omitempty"`
 
-	// Total space
+	// Total space across the cluster based on media type.
 	Size *int64 `json:"size,omitempty"`
 
-	// The type of media being used
-	// Enum: [hdd hybrid lun ssd vmdisk]
+	// The type of media being used.
+	// Enum: ["hdd","hybrid","lun","ssd","vmdisk"]
 	Type *string `json:"type,omitempty"`
 
-	// Used space
+	// Used space across the cluster based on media type.
+	//
+	//
 	Used *int64 `json:"used,omitempty"`
 }
 
@@ -658,7 +664,277 @@ func (m *ClusterSpaceBlockStorageMediasItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterSpaceInlineCloudStorage cluster space inline cloud storage
+// ClusterSpaceBlockStorageMediasItems0Efficiency Storage efficiency.
+//
+// swagger:model ClusterSpaceBlockStorageMediasItems0Efficiency
+type ClusterSpaceBlockStorageMediasItems0Efficiency struct {
+
+	// Logical used
+	// Read Only: true
+	LogicalUsed *int64 `json:"logical_used,omitempty"`
+
+	// Data reduction ratio (logical_used / used)
+	// Read Only: true
+	Ratio *float64 `json:"ratio,omitempty"`
+
+	// Space saved by storage efficiencies (logical_used - used)
+	// Read Only: true
+	Savings *int64 `json:"savings,omitempty"`
+}
+
+// Validate validates this cluster space block storage medias items0 efficiency
+func (m *ClusterSpaceBlockStorageMediasItems0Efficiency) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this cluster space block storage medias items0 efficiency based on the context it is used
+func (m *ClusterSpaceBlockStorageMediasItems0Efficiency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLogicalUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRatio(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSavings(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterSpaceBlockStorageMediasItems0Efficiency) contextValidateLogicalUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency"+"."+"logical_used", "body", m.LogicalUsed); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceBlockStorageMediasItems0Efficiency) contextValidateRatio(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency"+"."+"ratio", "body", m.Ratio); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceBlockStorageMediasItems0Efficiency) contextValidateSavings(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency"+"."+"savings", "body", m.Savings); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterSpaceBlockStorageMediasItems0Efficiency) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterSpaceBlockStorageMediasItems0Efficiency) UnmarshalBinary(b []byte) error {
+	var res ClusterSpaceBlockStorageMediasItems0Efficiency
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshots Storage efficiency that does not include the savings provided by snapshots.
+//
+// swagger:model ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshots
+type ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshots struct {
+
+	// Logical used
+	// Read Only: true
+	LogicalUsed *int64 `json:"logical_used,omitempty"`
+
+	// Data reduction ratio (logical_used / used)
+	// Read Only: true
+	Ratio *float64 `json:"ratio,omitempty"`
+
+	// Space saved by storage efficiencies (logical_used - used)
+	// Read Only: true
+	Savings *int64 `json:"savings,omitempty"`
+}
+
+// Validate validates this cluster space block storage medias items0 efficiency without snapshots
+func (m *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshots) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this cluster space block storage medias items0 efficiency without snapshots based on the context it is used
+func (m *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshots) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLogicalUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRatio(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSavings(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshots) contextValidateLogicalUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency_without_snapshots"+"."+"logical_used", "body", m.LogicalUsed); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshots) contextValidateRatio(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency_without_snapshots"+"."+"ratio", "body", m.Ratio); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshots) contextValidateSavings(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency_without_snapshots"+"."+"savings", "body", m.Savings); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshots) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshots) UnmarshalBinary(b []byte) error {
+	var res ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshots
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones Storage efficiency that does not include the savings provided by snapshots and FlexClone volumes.
+//
+// swagger:model ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones
+type ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones struct {
+
+	// Logical used
+	// Read Only: true
+	LogicalUsed *int64 `json:"logical_used,omitempty"`
+
+	// Data reduction ratio (logical_used / used)
+	// Read Only: true
+	Ratio *float64 `json:"ratio,omitempty"`
+
+	// Space saved by storage efficiencies (logical_used - used)
+	// Read Only: true
+	Savings *int64 `json:"savings,omitempty"`
+}
+
+// Validate validates this cluster space block storage medias items0 efficiency without snapshots flexclones
+func (m *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this cluster space block storage medias items0 efficiency without snapshots flexclones based on the context it is used
+func (m *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLogicalUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRatio(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSavings(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones) contextValidateLogicalUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency_without_snapshots_flexclones"+"."+"logical_used", "body", m.LogicalUsed); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones) contextValidateRatio(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency_without_snapshots_flexclones"+"."+"ratio", "body", m.Ratio); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones) contextValidateSavings(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency_without_snapshots_flexclones"+"."+"savings", "body", m.Savings); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones) UnmarshalBinary(b []byte) error {
+	var res ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterSpaceInlineCloudStorage Configuration information for the cloud storage portion of all the aggregates across the cluster. This is referred to as the capacity tier.
 //
 // swagger:model cluster_space_inline_cloud_storage
 type ClusterSpaceInlineCloudStorage struct {
@@ -707,6 +983,276 @@ func (m *ClusterSpaceInlineCloudStorage) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ClusterSpaceInlineCloudStorage) UnmarshalBinary(b []byte) error {
 	var res ClusterSpaceInlineCloudStorage
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterSpaceInlineEfficiency Storage efficiency.
+//
+// swagger:model cluster_space_inline_efficiency
+type ClusterSpaceInlineEfficiency struct {
+
+	// Logical used
+	// Read Only: true
+	LogicalUsed *int64 `json:"logical_used,omitempty"`
+
+	// Data reduction ratio (logical_used / used)
+	// Read Only: true
+	Ratio *float64 `json:"ratio,omitempty"`
+
+	// Space saved by storage efficiencies (logical_used - used)
+	// Read Only: true
+	Savings *int64 `json:"savings,omitempty"`
+}
+
+// Validate validates this cluster space inline efficiency
+func (m *ClusterSpaceInlineEfficiency) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this cluster space inline efficiency based on the context it is used
+func (m *ClusterSpaceInlineEfficiency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLogicalUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRatio(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSavings(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterSpaceInlineEfficiency) contextValidateLogicalUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency"+"."+"logical_used", "body", m.LogicalUsed); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineEfficiency) contextValidateRatio(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency"+"."+"ratio", "body", m.Ratio); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineEfficiency) contextValidateSavings(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency"+"."+"savings", "body", m.Savings); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterSpaceInlineEfficiency) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterSpaceInlineEfficiency) UnmarshalBinary(b []byte) error {
+	var res ClusterSpaceInlineEfficiency
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterSpaceInlineEfficiencyWithoutSnapshots Storage efficiency that does not include the savings provided by snapshots.
+//
+// swagger:model cluster_space_inline_efficiency_without_snapshots
+type ClusterSpaceInlineEfficiencyWithoutSnapshots struct {
+
+	// Logical used
+	// Read Only: true
+	LogicalUsed *int64 `json:"logical_used,omitempty"`
+
+	// Data reduction ratio (logical_used / used)
+	// Read Only: true
+	Ratio *float64 `json:"ratio,omitempty"`
+
+	// Space saved by storage efficiencies (logical_used - used)
+	// Read Only: true
+	Savings *int64 `json:"savings,omitempty"`
+}
+
+// Validate validates this cluster space inline efficiency without snapshots
+func (m *ClusterSpaceInlineEfficiencyWithoutSnapshots) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this cluster space inline efficiency without snapshots based on the context it is used
+func (m *ClusterSpaceInlineEfficiencyWithoutSnapshots) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLogicalUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRatio(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSavings(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterSpaceInlineEfficiencyWithoutSnapshots) contextValidateLogicalUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency_without_snapshots"+"."+"logical_used", "body", m.LogicalUsed); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineEfficiencyWithoutSnapshots) contextValidateRatio(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency_without_snapshots"+"."+"ratio", "body", m.Ratio); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineEfficiencyWithoutSnapshots) contextValidateSavings(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency_without_snapshots"+"."+"savings", "body", m.Savings); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterSpaceInlineEfficiencyWithoutSnapshots) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterSpaceInlineEfficiencyWithoutSnapshots) UnmarshalBinary(b []byte) error {
+	var res ClusterSpaceInlineEfficiencyWithoutSnapshots
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones Storage efficiency that does not include the savings provided by snapshots and FlexClone volumes.
+//
+// swagger:model cluster_space_inline_efficiency_without_snapshots_flexclones
+type ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones struct {
+
+	// Logical used
+	// Read Only: true
+	LogicalUsed *int64 `json:"logical_used,omitempty"`
+
+	// Data reduction ratio (logical_used / used)
+	// Read Only: true
+	Ratio *float64 `json:"ratio,omitempty"`
+
+	// Space saved by storage efficiencies (logical_used - used)
+	// Read Only: true
+	Savings *int64 `json:"savings,omitempty"`
+}
+
+// Validate validates this cluster space inline efficiency without snapshots flexclones
+func (m *ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this cluster space inline efficiency without snapshots flexclones based on the context it is used
+func (m *ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLogicalUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRatio(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSavings(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones) contextValidateLogicalUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency_without_snapshots_flexclones"+"."+"logical_used", "body", m.LogicalUsed); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones) contextValidateRatio(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency_without_snapshots_flexclones"+"."+"ratio", "body", m.Ratio); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones) contextValidateSavings(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency_without_snapshots_flexclones"+"."+"savings", "body", m.Savings); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones) UnmarshalBinary(b []byte) error {
+	var res ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

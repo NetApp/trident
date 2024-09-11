@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type QtreeDeleteReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *QtreeDeleteReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewQtreeDeleteOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewQtreeDeleteAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *QtreeDeleteReader) ReadResponse(response runtime.ClientResponse, consum
 	}
 }
 
+// NewQtreeDeleteOK creates a QtreeDeleteOK with default headers values
+func NewQtreeDeleteOK() *QtreeDeleteOK {
+	return &QtreeDeleteOK{}
+}
+
+/*
+QtreeDeleteOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type QtreeDeleteOK struct {
+	Payload *models.QtreeJobLinkResponse
+}
+
+// IsSuccess returns true when this qtree delete o k response has a 2xx status code
+func (o *QtreeDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this qtree delete o k response has a 3xx status code
+func (o *QtreeDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this qtree delete o k response has a 4xx status code
+func (o *QtreeDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this qtree delete o k response has a 5xx status code
+func (o *QtreeDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this qtree delete o k response a status code equal to that given
+func (o *QtreeDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the qtree delete o k response
+func (o *QtreeDeleteOK) Code() int {
+	return 200
+}
+
+func (o *QtreeDeleteOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/qtrees/{volume.uuid}/{id}][%d] qtreeDeleteOK %s", 200, payload)
+}
+
+func (o *QtreeDeleteOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/qtrees/{volume.uuid}/{id}][%d] qtreeDeleteOK %s", 200, payload)
+}
+
+func (o *QtreeDeleteOK) GetPayload() *models.QtreeJobLinkResponse {
+	return o.Payload
+}
+
+func (o *QtreeDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.QtreeJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewQtreeDeleteAccepted creates a QtreeDeleteAccepted with default headers values
 func NewQtreeDeleteAccepted() *QtreeDeleteAccepted {
 	return &QtreeDeleteAccepted{}
@@ -52,7 +129,7 @@ QtreeDeleteAccepted describes a response with status code 202, with default head
 Accepted
 */
 type QtreeDeleteAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.QtreeJobLinkResponse
 }
 
 // IsSuccess returns true when this qtree delete accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *QtreeDeleteAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the qtree delete accepted response
+func (o *QtreeDeleteAccepted) Code() int {
+	return 202
+}
+
 func (o *QtreeDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /storage/qtrees/{volume.uuid}/{id}][%d] qtreeDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/qtrees/{volume.uuid}/{id}][%d] qtreeDeleteAccepted %s", 202, payload)
 }
 
 func (o *QtreeDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /storage/qtrees/{volume.uuid}/{id}][%d] qtreeDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/qtrees/{volume.uuid}/{id}][%d] qtreeDeleteAccepted %s", 202, payload)
 }
 
-func (o *QtreeDeleteAccepted) GetPayload() *models.JobLinkResponse {
+func (o *QtreeDeleteAccepted) GetPayload() *models.QtreeJobLinkResponse {
 	return o.Payload
 }
 
 func (o *QtreeDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.QtreeJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -118,20 +202,27 @@ func NewQtreeDeleteDefault(code int) *QtreeDeleteDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 917505 | Vserver not found. |
+| 917506 | Volume not found. |
+| 917525 | The specified volume does not exist in Vserver. |
 | 918235 | A volume with UUID was not found. |
+| 5242894 | The default qtree cannot be deleted. |
+| 5242895 | Failed to delete the qtree. |
+| 5242897 | This operation is not permitted on read-only volume. |
+| 5242898 | This operation is only permitted on a data Vserver. |
+| 5242916 | Cannot delete qtree because the volume contains one or more LUNs. |
 | 5242925 | The limit for the number of concurrent delete jobs has been reached. |
+| 5242927 | Unable to find qtree. |
 | 5242955 | The UUID of the volume is required. |
 | 5242957 | Failed to delete qtree with ID in the volume and SVM. |
+| 5242965 | Invalid qtree path. The volume name component of the qtree path, must be the same as the volume specified with the parameter. |
+| 10485796 | Cannot delete qtree because it contains a Storage Level Access Guard (SLAG). |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type QtreeDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the qtree delete default response
-func (o *QtreeDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this qtree delete default response has a 2xx status code
@@ -159,12 +250,19 @@ func (o *QtreeDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the qtree delete default response
+func (o *QtreeDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *QtreeDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /storage/qtrees/{volume.uuid}/{id}][%d] qtree_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/qtrees/{volume.uuid}/{id}][%d] qtree_delete default %s", o._statusCode, payload)
 }
 
 func (o *QtreeDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /storage/qtrees/{volume.uuid}/{id}][%d] qtree_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/qtrees/{volume.uuid}/{id}][%d] qtree_delete default %s", o._statusCode, payload)
 }
 
 func (o *QtreeDeleteDefault) GetPayload() *models.ErrorResponse {

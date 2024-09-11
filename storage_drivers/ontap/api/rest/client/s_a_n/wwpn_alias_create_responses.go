@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *WwpnAliasCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the wwpn alias create created response
+func (o *WwpnAliasCreateCreated) Code() int {
+	return 201
+}
+
 func (o *WwpnAliasCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /network/fc/wwpn-aliases][%d] wwpnAliasCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/fc/wwpn-aliases][%d] wwpnAliasCreateCreated %s", 201, payload)
 }
 
 func (o *WwpnAliasCreateCreated) String() string {
-	return fmt.Sprintf("[POST /network/fc/wwpn-aliases][%d] wwpnAliasCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/fc/wwpn-aliases][%d] wwpnAliasCreateCreated %s", 201, payload)
 }
 
 func (o *WwpnAliasCreateCreated) GetPayload() *models.WwpnAliasResponse {
@@ -130,22 +138,18 @@ func NewWwpnAliasCreateDefault(code int) *WwpnAliasCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 1254317    | The alias already exists. |
-| 1260882    | The supplied SVM does not exist. |
-| 2621462    | The supplied SVM does not exist. |
-| 2621706    | Both the SVM UUID and SVM name were supplied, but do not refer to the same SVM. |
-| 2621707    | No SVM was specified. Either `svm.name` or `svm.uuid` must be supplied. |
-| 5373982    | An invalid WWPN was supplied. The valid WWN format is XX:XX:XX:XX:XX:XX:XX:XX, where X is a hexadecimal digit. Example: "01:02:03:04:0a:0b:0c:0d". |
+| 2621462 | The specified SVM does not exist or cannot be accessed by this user. |
+| 2621706 | The specified `svm.uuid` and `svm.name` do not refer to the same SVM. |
+| 2621707 | No SVM was specified. Either `svm.name` or `svm.uuid` must be supplied. |
+| 5373982 | An invalid WWN was specified. The length is incorrect. |
+| 5373983 | An invalid WWN was specified. The format is incorrect. |
+| 5374869 | The alias already exists. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type WwpnAliasCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the wwpn alias create default response
-func (o *WwpnAliasCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this wwpn alias create default response has a 2xx status code
@@ -173,12 +177,19 @@ func (o *WwpnAliasCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the wwpn alias create default response
+func (o *WwpnAliasCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *WwpnAliasCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /network/fc/wwpn-aliases][%d] wwpn_alias_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/fc/wwpn-aliases][%d] wwpn_alias_create default %s", o._statusCode, payload)
 }
 
 func (o *WwpnAliasCreateDefault) String() string {
-	return fmt.Sprintf("[POST /network/fc/wwpn-aliases][%d] wwpn_alias_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/fc/wwpn-aliases][%d] wwpn_alias_create default %s", o._statusCode, payload)
 }
 
 func (o *WwpnAliasCreateDefault) GetPayload() *models.ErrorResponse {

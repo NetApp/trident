@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *LdapSchemaDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ldap schema delete o k response
+func (o *LdapSchemaDeleteOK) Code() int {
+	return 200
+}
+
 func (o *LdapSchemaDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldapSchemaDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldapSchemaDeleteOK", 200)
 }
 
 func (o *LdapSchemaDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldapSchemaDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldapSchemaDeleteOK", 200)
 }
 
 func (o *LdapSchemaDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -116,11 +122,6 @@ type LdapSchemaDeleteDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the ldap schema delete default response
-func (o *LdapSchemaDeleteDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this ldap schema delete default response has a 2xx status code
 func (o *LdapSchemaDeleteDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -146,12 +147,19 @@ func (o *LdapSchemaDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ldap schema delete default response
+func (o *LdapSchemaDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LdapSchemaDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldap_schema_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldap_schema_delete default %s", o._statusCode, payload)
 }
 
 func (o *LdapSchemaDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldap_schema_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldap_schema_delete default %s", o._statusCode, payload)
 }
 
 func (o *LdapSchemaDeleteDefault) GetPayload() *models.ErrorResponse {

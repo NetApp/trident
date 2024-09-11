@@ -12,6 +12,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // IPInterfaceResponse ip interface response
@@ -28,6 +29,9 @@ type IPInterfaceResponse struct {
 	// Number of records
 	// Example: 1
 	NumRecords *int64 `json:"num_records,omitempty"`
+
+	// recommend
+	Recommend *IPInterfaceResponseInlineRecommend `json:"recommend,omitempty"`
 }
 
 // Validate validates this ip interface response
@@ -39,6 +43,10 @@ func (m *IPInterfaceResponse) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateIPInterfaceResponseInlineRecords(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRecommend(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -89,6 +97,23 @@ func (m *IPInterfaceResponse) validateIPInterfaceResponseInlineRecords(formats s
 	return nil
 }
 
+func (m *IPInterfaceResponse) validateRecommend(formats strfmt.Registry) error {
+	if swag.IsZero(m.Recommend) { // not required
+		return nil
+	}
+
+	if m.Recommend != nil {
+		if err := m.Recommend.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("recommend")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this ip interface response based on the context it is used
 func (m *IPInterfaceResponse) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -98,6 +123,10 @@ func (m *IPInterfaceResponse) ContextValidate(ctx context.Context, formats strfm
 	}
 
 	if err := m.contextValidateIPInterfaceResponseInlineRecords(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRecommend(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -134,6 +163,20 @@ func (m *IPInterfaceResponse) contextValidateIPInterfaceResponseInlineRecords(ct
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *IPInterfaceResponse) contextValidateRecommend(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Recommend != nil {
+		if err := m.Recommend.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("recommend")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -278,6 +321,63 @@ func (m *IPInterfaceResponseInlineLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *IPInterfaceResponseInlineLinks) UnmarshalBinary(b []byte) error {
 	var res IPInterfaceResponseInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IPInterfaceResponseInlineRecommend Response properties specific to the LIF recommendation functionality.
+//
+// swagger:model ip_interface_response_inline_recommend
+type IPInterfaceResponseInlineRecommend struct {
+
+	// Messages describing the results of a LIF recommendation request.
+	//
+	// Read Only: true
+	Messages []IPInterfaceRecommendMessage `json:"messages,omitempty"`
+}
+
+// Validate validates this ip interface response inline recommend
+func (m *IPInterfaceResponseInlineRecommend) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this ip interface response inline recommend based on the context it is used
+func (m *IPInterfaceResponseInlineRecommend) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateMessages(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IPInterfaceResponseInlineRecommend) contextValidateMessages(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "recommend"+"."+"messages", "body", []IPInterfaceRecommendMessage(m.Messages)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IPInterfaceResponseInlineRecommend) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IPInterfaceResponseInlineRecommend) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceResponseInlineRecommend
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

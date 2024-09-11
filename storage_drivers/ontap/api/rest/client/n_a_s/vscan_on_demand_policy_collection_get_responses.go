@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *VscanOnDemandPolicyCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the vscan on demand policy collection get o k response
+func (o *VscanOnDemandPolicyCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *VscanOnDemandPolicyCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscanOnDemandPolicyCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscanOnDemandPolicyCollectionGetOK %s", 200, payload)
 }
 
 func (o *VscanOnDemandPolicyCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscanOnDemandPolicyCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscanOnDemandPolicyCollectionGetOK %s", 200, payload)
 }
 
 func (o *VscanOnDemandPolicyCollectionGetOK) GetPayload() *models.VscanOnDemandResponse {
@@ -122,11 +130,6 @@ type VscanOnDemandPolicyCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the vscan on demand policy collection get default response
-func (o *VscanOnDemandPolicyCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this vscan on demand policy collection get default response has a 2xx status code
 func (o *VscanOnDemandPolicyCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *VscanOnDemandPolicyCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the vscan on demand policy collection get default response
+func (o *VscanOnDemandPolicyCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VscanOnDemandPolicyCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscan_on_demand_policy_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscan_on_demand_policy_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *VscanOnDemandPolicyCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscan_on_demand_policy_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscan_on_demand_policy_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *VscanOnDemandPolicyCollectionGetDefault) GetPayload() *models.ErrorResponse {

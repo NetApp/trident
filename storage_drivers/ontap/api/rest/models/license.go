@@ -35,7 +35,7 @@ type License struct {
 	Evaluation *bool `json:"evaluation,omitempty"`
 
 	// Date and time when the license expires.
-	// Example: 2019-03-02T19:00:00Z
+	// Example: 2019-03-02 19:00:00
 	// Read Only: true
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
@@ -65,7 +65,7 @@ type License struct {
 	ShutdownImminent *bool `json:"shutdown_imminent,omitempty"`
 
 	// Date and time when the license starts.
-	// Example: 2019-02-02T19:00:00Z
+	// Example: 2019-02-02 19:00:00
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
@@ -417,7 +417,7 @@ type LicenseInlineCompliance struct {
 	// Compliance state of the license.
 	// Example: compliant
 	// Read Only: true
-	// Enum: [compliant noncompliant unlicensed unknown]
+	// Enum: ["compliant","noncompliant","unlicensed","unknown"]
 	State *string `json:"state,omitempty"`
 }
 

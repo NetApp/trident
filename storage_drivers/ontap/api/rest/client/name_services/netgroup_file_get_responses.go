@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NetgroupFileGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the netgroup file get o k response
+func (o *NetgroupFileGetOK) Code() int {
+	return 200
+}
+
 func (o *NetgroupFileGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/netgroup-files/{svm.uuid}][%d] netgroupFileGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/netgroup-files/{svm.uuid}][%d] netgroupFileGetOK %s", 200, payload)
 }
 
 func (o *NetgroupFileGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/netgroup-files/{svm.uuid}][%d] netgroupFileGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/netgroup-files/{svm.uuid}][%d] netgroupFileGetOK %s", 200, payload)
 }
 
 func (o *NetgroupFileGetOK) GetPayload() *models.NetgroupFile {
@@ -122,11 +130,6 @@ type NetgroupFileGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the netgroup file get default response
-func (o *NetgroupFileGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this netgroup file get default response has a 2xx status code
 func (o *NetgroupFileGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NetgroupFileGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the netgroup file get default response
+func (o *NetgroupFileGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetgroupFileGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/netgroup-files/{svm.uuid}][%d] netgroup_file_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/netgroup-files/{svm.uuid}][%d] netgroup_file_get default %s", o._statusCode, payload)
 }
 
 func (o *NetgroupFileGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/netgroup-files/{svm.uuid}][%d] netgroup_file_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/netgroup-files/{svm.uuid}][%d] netgroup_file_get default %s", o._statusCode, payload)
 }
 
 func (o *NetgroupFileGetDefault) GetPayload() *models.ErrorResponse {

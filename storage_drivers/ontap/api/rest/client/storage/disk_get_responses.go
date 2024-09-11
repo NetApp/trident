@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *DiskGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the disk get o k response
+func (o *DiskGetOK) Code() int {
+	return 200
+}
+
 func (o *DiskGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/disks/{name}][%d] diskGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/disks/{name}][%d] diskGetOK %s", 200, payload)
 }
 
 func (o *DiskGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/disks/{name}][%d] diskGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/disks/{name}][%d] diskGetOK %s", 200, payload)
 }
 
 func (o *DiskGetOK) GetPayload() *models.Disk {
@@ -122,11 +130,6 @@ type DiskGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the disk get default response
-func (o *DiskGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this disk get default response has a 2xx status code
 func (o *DiskGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *DiskGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the disk get default response
+func (o *DiskGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *DiskGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/disks/{name}][%d] disk_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/disks/{name}][%d] disk_get default %s", o._statusCode, payload)
 }
 
 func (o *DiskGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/disks/{name}][%d] disk_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/disks/{name}][%d] disk_get default %s", o._statusCode, payload)
 }
 
 func (o *DiskGetDefault) GetPayload() *models.ErrorResponse {

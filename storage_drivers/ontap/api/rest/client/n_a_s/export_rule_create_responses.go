@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *ExportRuleCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the export rule create created response
+func (o *ExportRuleCreateCreated) Code() int {
+	return 201
+}
+
 func (o *ExportRuleCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules][%d] exportRuleCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules][%d] exportRuleCreateCreated %s", 201, payload)
 }
 
 func (o *ExportRuleCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules][%d] exportRuleCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules][%d] exportRuleCreateCreated %s", 201, payload)
 }
 
 func (o *ExportRuleCreateCreated) GetPayload() *models.ExportRuleResponse {
@@ -142,21 +150,20 @@ func NewExportRuleCreateDefault(code int) *ExportRuleCreateDefault {
 | 1704044    | Invalid clientmatch: invalid characters in host name |
 | 1704045    | Invalid clientmatch: invalid characters in domain name |
 | 1704050    | Invalid clientmatch: clientmatch list contains a duplicate string. Duplicate strings in a clientmatch list are not supported |
-| 1704051    | Warning: Not adding any new strings to the clientmatch field for ruleindex. All of the match strings are already in the clientmatch list |
+| 1704054    | Invalid clientmatch: invalid characters in netgroup name. Valid characters for a netgroup name are 0-9, A-Z, a-z, ".", "_" and "-" |
 | 1704064    | Clientmatch host name too long |
 | 1704065    | Clientmatch domain name too long |
-| 3277000    | Upgrade all nodes to Data ONTAP 9.0.0 or above to use krb5p as a security flavor in export-policy rules |
+| 1704070    | Export policy rule already exists. The export policy rule was not created because an export policy rule with the same values already exists. |
+| 3277000    | Upgrade all nodes to ONTAP 9.0.0 or above to use krb5p as a security flavor in export-policy rules |
 | 3277083    | User ID is not valid. Enter a value for User ID from 0 to 4294967295 |
+| 3277162    | The specified \"index\", 0, is invalid. Valid values are values from 1 to 4294967295 |
+| 3277163    | The system cannot automatically specify an "index" for this rule, because a rule with "index" 4294967295 exists. Either specify an unused "index", or update the existing rules so that "index" 4294967295 is not used. |
+| 3277149    | The "Anon" field cannot be an empty string |
 */
 type ExportRuleCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the export rule create default response
-func (o *ExportRuleCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this export rule create default response has a 2xx status code
@@ -184,12 +191,19 @@ func (o *ExportRuleCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the export rule create default response
+func (o *ExportRuleCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ExportRuleCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules][%d] export_rule_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules][%d] export_rule_create default %s", o._statusCode, payload)
 }
 
 func (o *ExportRuleCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules][%d] export_rule_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules][%d] export_rule_create default %s", o._statusCode, payload)
 }
 
 func (o *ExportRuleCreateDefault) GetPayload() *models.ErrorResponse {

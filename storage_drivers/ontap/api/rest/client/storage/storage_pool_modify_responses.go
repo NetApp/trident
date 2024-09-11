@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -86,12 +87,19 @@ func (o *StoragePoolModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the storage pool modify o k response
+func (o *StoragePoolModifyOK) Code() int {
+	return 200
+}
+
 func (o *StoragePoolModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storagePoolModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storagePoolModifyOK %s", 200, payload)
 }
 
 func (o *StoragePoolModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storagePoolModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storagePoolModifyOK %s", 200, payload)
 }
 
 func (o *StoragePoolModifyOK) GetPayload() *models.StoragePoolPatch {
@@ -149,12 +157,19 @@ func (o *StoragePoolModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the storage pool modify accepted response
+func (o *StoragePoolModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *StoragePoolModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storagePoolModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storagePoolModifyAccepted %s", 202, payload)
 }
 
 func (o *StoragePoolModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storagePoolModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storagePoolModifyAccepted %s", 202, payload)
 }
 
 func (o *StoragePoolModifyAccepted) GetPayload() *models.StoragePoolPatch {
@@ -204,16 +219,12 @@ func NewStoragePoolModifyDefault(code int) *StoragePoolModifyDefault {
 | 11215659 | Storage pool PATCH request for reassign have invalid allocation unit count. |
 | 11215660 | Storage pool PATCH request for reassign have invalid node name. |
 | 11215662 | Storage pool PATCH request have invalid disk count. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type StoragePoolModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the storage pool modify default response
-func (o *StoragePoolModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this storage pool modify default response has a 2xx status code
@@ -241,12 +252,19 @@ func (o *StoragePoolModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the storage pool modify default response
+func (o *StoragePoolModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *StoragePoolModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storage_pool_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storage_pool_modify default %s", o._statusCode, payload)
 }
 
 func (o *StoragePoolModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storage_pool_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storage_pool_modify default %s", o._statusCode, payload)
 }
 
 func (o *StoragePoolModifyDefault) GetPayload() *models.ErrorResponse {

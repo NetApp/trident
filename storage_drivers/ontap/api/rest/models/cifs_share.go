@@ -35,6 +35,14 @@ type CifsShare struct {
 	//
 	AllowUnencryptedAccess *bool `json:"allow_unencrypted_access,omitempty"`
 
+	// Specifies that connections through this share cache attributes for a short time to improve performance.
+	//
+	AttributeCache *bool `json:"attribute_cache,omitempty"`
+
+	// Specifies whether or not the Windows clients can browse the share.
+	//
+	Browsable *bool `json:"browsable,omitempty"`
+
 	// Specifies whether CIFS clients can request for change notifications for directories on this share.
 	ChangeNotify *bool `json:"change_notify,omitempty"`
 
@@ -53,8 +61,8 @@ type CifsShare struct {
 	ContinuouslyAvailable *bool `json:"continuously_available,omitempty"`
 
 	// Directory Mode Creation Mask to be viewed as an octal number.
-	// Example: 22
-	DirUmask *int64 `json:"dir_umask,omitempty"`
+	// Example: 21
+	DirUmask *string `json:"dir_umask,omitempty"`
 
 	// Specifies that SMB encryption must be used when accessing this share. Clients that do not support encryption are not
 	// able to access this share.
@@ -62,8 +70,8 @@ type CifsShare struct {
 	Encryption *bool `json:"encryption,omitempty"`
 
 	// File Mode Creation Mask to be viewed as an octal number.
-	// Example: 22
-	FileUmask *int64 `json:"file_umask,omitempty"`
+	// Example: 21
+	FileUmask *string `json:"file_umask,omitempty"`
 
 	// Specifies that all files that CIFS users create in a specific share belong to the same group
 	// (also called the "force-group"). The "force-group" must be a predefined group in the UNIX group
@@ -82,6 +90,10 @@ type CifsShare struct {
 	// %w, %u, and %d variables with the corresponding Windows user name, UNIX user name, and domain name, respectively.
 	//
 	HomeDirectory *bool `json:"home_directory,omitempty"`
+
+	// Maximum number of tree connections on share.
+	//
+	MaxConnectionsPerShare *int64 `json:"max_connections_per_share,omitempty"`
 
 	// Specifies the name of the CIFS share that you want to create. If this
 	// is a home directory share then the share name includes the pattern as
@@ -110,7 +122,7 @@ type CifsShare struct {
 	//   * programs - Clients may automatically cache files that are used by the user for offline access
 	//                and may use those files in an offline mode even if the share is available.
 	//
-	// Enum: [none manual documents programs]
+	// Enum: ["none","manual","documents","programs"]
 	OfflineFiles *string `json:"offline_files,omitempty"`
 
 	// Specify whether opportunistic locks are enabled on this share. "Oplocks" allow clients to lock files and cache content locally,
@@ -129,7 +141,10 @@ type CifsShare struct {
 	// Min Length: 1
 	Path *string `json:"path,omitempty"`
 
-	// Specifies whether or not the Snapshot copies can be viewed and traversed by clients.
+	// Specifies that the previous version can be viewed and restored from the client.
+	ShowPreviousVersions *bool `json:"show_previous_versions,omitempty"`
+
+	// Specifies whether or not the snapshots can be viewed and traversed by clients.
 	//
 	ShowSnapshot *bool `json:"show_snapshot,omitempty"`
 
@@ -142,7 +157,7 @@ type CifsShare struct {
 	//     * widelink - Enables both local symlinks and widelinks.
 	//     * disable - Disables local symlinks and widelinks.
 	//
-	// Enum: [local widelink disable]
+	// Enum: ["local","widelink","disable"]
 	UnixSymlink *string `json:"unix_symlink,omitempty"`
 
 	// volume
@@ -155,7 +170,7 @@ type CifsShare struct {
 	//   * strict - Virus scans can be triggered by open, read, close, and rename operations.
 	//   * writes_only - Virus scans can be triggered only when a file that has been modified is closed.
 	//
-	// Enum: [no_scan standard strict writes_only]
+	// Enum: ["no_scan","standard","strict","writes_only"]
 	VscanProfile *string `json:"vscan_profile,omitempty"`
 }
 
@@ -669,7 +684,7 @@ type CifsShareInlineAclsInlineArrayItem struct {
 	// * change       - User has change access
 	// * full_control - User has full_control access
 	//
-	// Enum: [no_access read change full_control]
+	// Enum: ["no_access","read","change","full_control"]
 	Permission *string `json:"permission,omitempty"`
 
 	// Specifies the type of the user or group to add to the access control
@@ -678,12 +693,15 @@ type CifsShareInlineAclsInlineArrayItem struct {
 	// * unix_user  - UNIX user
 	// * unix_group - UNIX group
 	//
-	// Enum: [windows unix_user unix_group]
+	// Enum: ["windows","unix_user","unix_group"]
 	Type *string `json:"type,omitempty"`
 
 	// Specifies the user or group name to add to the access control list of a CIFS share.
 	// Example: ENGDOMAIN\\ad_user
 	UserOrGroup *string `json:"user_or_group,omitempty"`
+
+	// Windows SID/UNIX ID depending on access-control type.
+	WinSidUnixID *string `json:"win_sid_unix_id,omitempty"`
 }
 
 // Validate validates this cifs share inline acls inline array item
@@ -1085,7 +1103,7 @@ func (m *CifsShareInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsShareInlineSvm cifs share inline svm
+// CifsShareInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model cifs_share_inline_svm
 type CifsShareInlineSvm struct {
@@ -1093,12 +1111,12 @@ type CifsShareInlineSvm struct {
 	// links
 	Links *CifsShareInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -1275,7 +1293,7 @@ type CifsShareInlineVolume struct {
 	// links
 	Links *CifsShareInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

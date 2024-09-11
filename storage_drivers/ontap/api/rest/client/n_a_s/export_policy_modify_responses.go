@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ExportPolicyModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the export policy modify o k response
+func (o *ExportPolicyModifyOK) Code() int {
+	return 200
+}
+
 func (o *ExportPolicyModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{id}][%d] exportPolicyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{id}][%d] exportPolicyModifyOK", 200)
 }
 
 func (o *ExportPolicyModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{id}][%d] exportPolicyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{id}][%d] exportPolicyModifyOK", 200)
 }
 
 func (o *ExportPolicyModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,16 +114,29 @@ func NewExportPolicyModifyDefault(code int) *ExportPolicyModifyDefault {
 | ---------- | ----------- |
 | 1703950    | Failed to rename ruleset |
 | 1703952    | Invalid ruleset name provided. No spaces are allowed in a ruleset name|
+| 1704036    | Invalid clientmatch:  missing domain name |
+| 1704037    | Invalid clientmatch:  missing network name |
+| 1704038    | Invalid clientmatch:  missing netgroup name |
+| 1704039    | Invalid clientmatch |
+| 1704040    | Invalid clientmatch: address bytes masked out by netmask are non-zero |
+| 1704041    | Invalid clientmatch: address bytes masked to zero by netmask |
+| 1704042    | Invalid clientmatch: too many bits in netmask |
+| 1704043    | Invalid clientmatch: invalid netmask |
+| 1704044    | Invalid clientmatch: invalid characters in host name |
+| 1704045    | Invalid clientmatch: invalid characters in domain name |
+| 1704047    | The export policy name cannot be longer than 256 characters |
+| 1704050    | Invalid clientmatch: clientmatch list contains a duplicate string. Duplicate strings in a clientmatch list are not supported |
+| 1704054    | Invalid clientmatch: invalid characters in netgroup name. Valid characters for a netgroup name are 0-9, A-Z, a-z, ".", "_" and "-" |
+| 1704064    | Clientmatch host name too long |
+| 1704065    | Clientmatch domain name too long |
+| 3277000    | Upgrade all nodes to ONTAP 9.0.0 or above to use krb5p as a security flavor in export-policy rules |
+| 3277083    | User ID is not valid. Enter a value for User ID from 0 to 4294967295 |
+| 3277149    | The "Anon" field cannot be an empty string |
 */
 type ExportPolicyModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the export policy modify default response
-func (o *ExportPolicyModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this export policy modify default response has a 2xx status code
@@ -145,12 +164,19 @@ func (o *ExportPolicyModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the export policy modify default response
+func (o *ExportPolicyModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ExportPolicyModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{id}][%d] export_policy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{id}][%d] export_policy_modify default %s", o._statusCode, payload)
 }
 
 func (o *ExportPolicyModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{id}][%d] export_policy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{id}][%d] export_policy_modify default %s", o._statusCode, payload)
 }
 
 func (o *ExportPolicyModifyDefault) GetPayload() *models.ErrorResponse {

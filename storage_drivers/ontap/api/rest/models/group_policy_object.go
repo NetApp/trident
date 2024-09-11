@@ -26,7 +26,7 @@ type GroupPolicyObject struct {
 
 	// Types of events to be audited.
 	// Example: none
-	// Enum: [none success failure both]
+	// Enum: ["none","success","failure","both"]
 	CentralAccessPolicyStagingAuditType *string `json:"central_access_policy_staging_audit_type,omitempty"`
 
 	// Specifies whether group policies are enabled for the SVM.
@@ -50,7 +50,7 @@ type GroupPolicyObject struct {
 
 	// Link info.
 	// Example: domain
-	// Enum: [local site domain organizational_unit rsop]
+	// Enum: ["local","site","domain","organizational_unit","rsop"]
 	Link *string `json:"link,omitempty"`
 
 	// name
@@ -503,12 +503,12 @@ type GroupPolicyObjectInlineSvm struct {
 	// links
 	Links *GroupPolicyObjectInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

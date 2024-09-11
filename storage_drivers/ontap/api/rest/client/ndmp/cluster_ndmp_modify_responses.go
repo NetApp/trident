@@ -6,6 +6,7 @@ package ndmp
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ClusterNdmpModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cluster ndmp modify o k response
+func (o *ClusterNdmpModifyOK) Code() int {
+	return 200
+}
+
 func (o *ClusterNdmpModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/ndmp][%d] clusterNdmpModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/ndmp][%d] clusterNdmpModifyOK %s", 200, payload)
 }
 
 func (o *ClusterNdmpModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/ndmp][%d] clusterNdmpModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/ndmp][%d] clusterNdmpModifyOK %s", 200, payload)
 }
 
 func (o *ClusterNdmpModifyOK) GetPayload() *models.ClusterNdmpProperties {
@@ -112,19 +120,18 @@ func NewClusterNdmpModifyDefault(code int) *ClusterNdmpModifyDefault {
 }
 
 /*
-ClusterNdmpModifyDefault describes a response with status code -1, with default header values.
+	ClusterNdmpModifyDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response codes
+
+| Error code  |  Description |
+|-------------|--------------|
+| 65601575    | NDMP node-scope mode is not supported in FSx for ONTAP.|
 */
 type ClusterNdmpModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cluster ndmp modify default response
-func (o *ClusterNdmpModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cluster ndmp modify default response has a 2xx status code
@@ -152,12 +159,19 @@ func (o *ClusterNdmpModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster ndmp modify default response
+func (o *ClusterNdmpModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterNdmpModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/ndmp][%d] cluster_ndmp_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/ndmp][%d] cluster_ndmp_modify default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNdmpModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/ndmp][%d] cluster_ndmp_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/ndmp][%d] cluster_ndmp_modify default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNdmpModifyDefault) GetPayload() *models.ErrorResponse {

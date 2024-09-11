@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *HostRecordGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the host record get o k response
+func (o *HostRecordGetOK) Code() int {
+	return 200
+}
+
 func (o *HostRecordGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/host-record/{svm.uuid}/{host}][%d] hostRecordGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/host-record/{svm.uuid}/{host}][%d] hostRecordGetOK %s", 200, payload)
 }
 
 func (o *HostRecordGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/host-record/{svm.uuid}/{host}][%d] hostRecordGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/host-record/{svm.uuid}/{host}][%d] hostRecordGetOK %s", 200, payload)
 }
 
 func (o *HostRecordGetOK) GetPayload() *models.HostRecord {
@@ -119,16 +127,12 @@ func NewHostRecordGetDefault(code int) *HostRecordGetDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 |  8912900   | Invalid IP address. |
+|  23724050  | Failed to resolve the specified hostname or IP address. |
 */
 type HostRecordGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the host record get default response
-func (o *HostRecordGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this host record get default response has a 2xx status code
@@ -156,12 +160,19 @@ func (o *HostRecordGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the host record get default response
+func (o *HostRecordGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *HostRecordGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/host-record/{svm.uuid}/{host}][%d] host_record_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/host-record/{svm.uuid}/{host}][%d] host_record_get default %s", o._statusCode, payload)
 }
 
 func (o *HostRecordGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/host-record/{svm.uuid}/{host}][%d] host_record_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/host-record/{svm.uuid}/{host}][%d] host_record_get default %s", o._statusCode, payload)
 }
 
 func (o *HostRecordGetDefault) GetPayload() *models.ErrorResponse {

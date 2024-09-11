@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *JobCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the job collection get o k response
+func (o *JobCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *JobCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/jobs][%d] jobCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/jobs][%d] jobCollectionGetOK %s", 200, payload)
 }
 
 func (o *JobCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/jobs][%d] jobCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/jobs][%d] jobCollectionGetOK %s", 200, payload)
 }
 
 func (o *JobCollectionGetOK) GetPayload() *models.JobResponse {
@@ -122,11 +130,6 @@ type JobCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the job collection get default response
-func (o *JobCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this job collection get default response has a 2xx status code
 func (o *JobCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *JobCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the job collection get default response
+func (o *JobCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *JobCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/jobs][%d] job_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/jobs][%d] job_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *JobCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/jobs][%d] job_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/jobs][%d] job_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *JobCollectionGetDefault) GetPayload() *models.ErrorResponse {

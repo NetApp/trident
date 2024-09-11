@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *KeyManagerKeysCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the key manager keys collection get o k response
+func (o *KeyManagerKeysCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *KeyManagerKeysCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids][%d] keyManagerKeysCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids][%d] keyManagerKeysCollectionGetOK %s", 200, payload)
 }
 
 func (o *KeyManagerKeysCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids][%d] keyManagerKeysCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids][%d] keyManagerKeysCollectionGetOK %s", 200, payload)
 }
 
 func (o *KeyManagerKeysCollectionGetOK) GetPayload() *models.KeyManagerKeysResponse {
@@ -112,19 +120,19 @@ func NewKeyManagerKeysCollectionGetDefault(code int) *KeyManagerKeysCollectionGe
 }
 
 /*
-KeyManagerKeysCollectionGetDefault describes a response with status code -1, with default header values.
+	KeyManagerKeysCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 65537125 | The provided key manager UUID is not the UUID of a keymanager. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type KeyManagerKeysCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the key manager keys collection get default response
-func (o *KeyManagerKeysCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this key manager keys collection get default response has a 2xx status code
@@ -152,12 +160,19 @@ func (o *KeyManagerKeysCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the key manager keys collection get default response
+func (o *KeyManagerKeysCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *KeyManagerKeysCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids][%d] key_manager_keys_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids][%d] key_manager_keys_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *KeyManagerKeysCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids][%d] key_manager_keys_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids][%d] key_manager_keys_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *KeyManagerKeysCollectionGetDefault) GetPayload() *models.ErrorResponse {

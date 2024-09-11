@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ApplicationTemplateGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the application template get o k response
+func (o *ApplicationTemplateGetOK) Code() int {
+	return 200
+}
+
 func (o *ApplicationTemplateGetOK) Error() string {
-	return fmt.Sprintf("[GET /application/templates/{name}][%d] applicationTemplateGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/templates/{name}][%d] applicationTemplateGetOK %s", 200, payload)
 }
 
 func (o *ApplicationTemplateGetOK) String() string {
-	return fmt.Sprintf("[GET /application/templates/{name}][%d] applicationTemplateGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/templates/{name}][%d] applicationTemplateGetOK %s", 200, payload)
 }
 
 func (o *ApplicationTemplateGetOK) GetPayload() *models.ApplicationTemplate {
@@ -122,11 +130,6 @@ type ApplicationTemplateGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the application template get default response
-func (o *ApplicationTemplateGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this application template get default response has a 2xx status code
 func (o *ApplicationTemplateGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *ApplicationTemplateGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the application template get default response
+func (o *ApplicationTemplateGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ApplicationTemplateGetDefault) Error() string {
-	return fmt.Sprintf("[GET /application/templates/{name}][%d] application_template_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/templates/{name}][%d] application_template_get default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationTemplateGetDefault) String() string {
-	return fmt.Sprintf("[GET /application/templates/{name}][%d] application_template_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/templates/{name}][%d] application_template_get default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationTemplateGetDefault) GetPayload() *models.ErrorResponse {

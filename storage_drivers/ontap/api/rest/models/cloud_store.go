@@ -28,8 +28,13 @@ type CloudStore struct {
 
 	// Availability of the object store.
 	// Read Only: true
-	// Enum: [available unavailable]
+	// Enum: ["available","unavailable"]
 	Availability *string `json:"availability,omitempty"`
+
+	// Availability of the object store at the HA partner.
+	// Read Only: true
+	// Enum: ["available","unavailable"]
+	AvailabilityAtPartner *string `json:"availability_at_partner,omitempty"`
 
 	// This field identifies if the mirror cloud store is in sync with the primary cloud store of a FabricPool.
 	// Read Only: true
@@ -37,6 +42,10 @@ type CloudStore struct {
 
 	// This field indicates whether the cloud store is the primary cloud store of a mirrored FabricPool.
 	Primary *bool `json:"primary,omitempty"`
+
+	// Resync progress of the mirror object store in percentage.
+	// Read Only: true
+	ResyncProgress *int64 `json:"resync-progress,omitempty"`
 
 	// target
 	Target *CloudStoreInlineTarget `json:"target,omitempty"`
@@ -66,6 +75,10 @@ func (m *CloudStore) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateAvailability(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAvailabilityAtPartner(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -173,6 +186,62 @@ func (m *CloudStore) validateAvailability(formats strfmt.Registry) error {
 	return nil
 }
 
+var cloudStoreTypeAvailabilityAtPartnerPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["available","unavailable"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		cloudStoreTypeAvailabilityAtPartnerPropEnum = append(cloudStoreTypeAvailabilityAtPartnerPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cloud_store
+	// CloudStore
+	// availability_at_partner
+	// AvailabilityAtPartner
+	// available
+	// END DEBUGGING
+	// CloudStoreAvailabilityAtPartnerAvailable captures enum value "available"
+	CloudStoreAvailabilityAtPartnerAvailable string = "available"
+
+	// BEGIN DEBUGGING
+	// cloud_store
+	// CloudStore
+	// availability_at_partner
+	// AvailabilityAtPartner
+	// unavailable
+	// END DEBUGGING
+	// CloudStoreAvailabilityAtPartnerUnavailable captures enum value "unavailable"
+	CloudStoreAvailabilityAtPartnerUnavailable string = "unavailable"
+)
+
+// prop value enum
+func (m *CloudStore) validateAvailabilityAtPartnerEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cloudStoreTypeAvailabilityAtPartnerPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CloudStore) validateAvailabilityAtPartner(formats strfmt.Registry) error {
+	if swag.IsZero(m.AvailabilityAtPartner) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAvailabilityAtPartnerEnum("availability_at_partner", "body", *m.AvailabilityAtPartner); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *CloudStore) validateTarget(formats strfmt.Registry) error {
 	if swag.IsZero(m.Target) { // not required
 		return nil
@@ -223,7 +292,15 @@ func (m *CloudStore) ContextValidate(ctx context.Context, formats strfmt.Registr
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAvailabilityAtPartner(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateMirrorDegraded(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateResyncProgress(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -282,9 +359,27 @@ func (m *CloudStore) contextValidateAvailability(ctx context.Context, formats st
 	return nil
 }
 
+func (m *CloudStore) contextValidateAvailabilityAtPartner(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "availability_at_partner", "body", m.AvailabilityAtPartner); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *CloudStore) contextValidateMirrorDegraded(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "mirror_degraded", "body", m.MirrorDegraded); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CloudStore) contextValidateResyncProgress(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "resync-progress", "body", m.ResyncProgress); err != nil {
 		return err
 	}
 

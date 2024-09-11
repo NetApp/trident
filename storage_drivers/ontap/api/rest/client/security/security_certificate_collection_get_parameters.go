@@ -98,12 +98,6 @@ type SecurityCertificateCollectionGetParams struct {
 	*/
 	HashFunction *string
 
-	/* IntermediateCertificates.
-
-	   Filter by intermediate_certificates
-	*/
-	IntermediateCertificates *string
-
 	/* KeySize.
 
 	   Filter by key_size
@@ -127,12 +121,6 @@ type SecurityCertificateCollectionGetParams struct {
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
 	OrderBy []string
-
-	/* PrivateKey.
-
-	   Filter by private_key
-	*/
-	PrivateKey *string
 
 	/* PublicCertificate.
 
@@ -167,6 +155,30 @@ type SecurityCertificateCollectionGetParams struct {
 	   Filter by serial_number
 	*/
 	SerialNumber *string
+
+	/* SubjectAlternativesDNS.
+
+	   Filter by subject_alternatives.dns
+	*/
+	SubjectAlternativesDNS *string
+
+	/* SubjectAlternativesEmail.
+
+	   Filter by subject_alternatives.email
+	*/
+	SubjectAlternativesEmail *string
+
+	/* SubjectAlternativesIP.
+
+	   Filter by subject_alternatives.ip
+	*/
+	SubjectAlternativesIP *string
+
+	/* SubjectAlternativesURI.
+
+	   Filter by subject_alternatives.uri
+	*/
+	SubjectAlternativesURI *string
 
 	/* SubjectKeyIdentifier.
 
@@ -331,17 +343,6 @@ func (o *SecurityCertificateCollectionGetParams) SetHashFunction(hashFunction *s
 	o.HashFunction = hashFunction
 }
 
-// WithIntermediateCertificates adds the intermediateCertificates to the security certificate collection get params
-func (o *SecurityCertificateCollectionGetParams) WithIntermediateCertificates(intermediateCertificates *string) *SecurityCertificateCollectionGetParams {
-	o.SetIntermediateCertificates(intermediateCertificates)
-	return o
-}
-
-// SetIntermediateCertificates adds the intermediateCertificates to the security certificate collection get params
-func (o *SecurityCertificateCollectionGetParams) SetIntermediateCertificates(intermediateCertificates *string) {
-	o.IntermediateCertificates = intermediateCertificates
-}
-
 // WithKeySize adds the keySize to the security certificate collection get params
 func (o *SecurityCertificateCollectionGetParams) WithKeySize(keySize *int64) *SecurityCertificateCollectionGetParams {
 	o.SetKeySize(keySize)
@@ -384,17 +385,6 @@ func (o *SecurityCertificateCollectionGetParams) WithOrderBy(orderBy []string) *
 // SetOrderBy adds the orderBy to the security certificate collection get params
 func (o *SecurityCertificateCollectionGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
-}
-
-// WithPrivateKey adds the privateKey to the security certificate collection get params
-func (o *SecurityCertificateCollectionGetParams) WithPrivateKey(privateKey *string) *SecurityCertificateCollectionGetParams {
-	o.SetPrivateKey(privateKey)
-	return o
-}
-
-// SetPrivateKey adds the privateKey to the security certificate collection get params
-func (o *SecurityCertificateCollectionGetParams) SetPrivateKey(privateKey *string) {
-	o.PrivateKey = privateKey
 }
 
 // WithPublicCertificate adds the publicCertificate to the security certificate collection get params
@@ -450,6 +440,50 @@ func (o *SecurityCertificateCollectionGetParams) WithSerialNumber(serialNumber *
 // SetSerialNumber adds the serialNumber to the security certificate collection get params
 func (o *SecurityCertificateCollectionGetParams) SetSerialNumber(serialNumber *string) {
 	o.SerialNumber = serialNumber
+}
+
+// WithSubjectAlternativesDNS adds the subjectAlternativesDNS to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) WithSubjectAlternativesDNS(subjectAlternativesDNS *string) *SecurityCertificateCollectionGetParams {
+	o.SetSubjectAlternativesDNS(subjectAlternativesDNS)
+	return o
+}
+
+// SetSubjectAlternativesDNS adds the subjectAlternativesDns to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) SetSubjectAlternativesDNS(subjectAlternativesDNS *string) {
+	o.SubjectAlternativesDNS = subjectAlternativesDNS
+}
+
+// WithSubjectAlternativesEmail adds the subjectAlternativesEmail to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) WithSubjectAlternativesEmail(subjectAlternativesEmail *string) *SecurityCertificateCollectionGetParams {
+	o.SetSubjectAlternativesEmail(subjectAlternativesEmail)
+	return o
+}
+
+// SetSubjectAlternativesEmail adds the subjectAlternativesEmail to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) SetSubjectAlternativesEmail(subjectAlternativesEmail *string) {
+	o.SubjectAlternativesEmail = subjectAlternativesEmail
+}
+
+// WithSubjectAlternativesIP adds the subjectAlternativesIP to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) WithSubjectAlternativesIP(subjectAlternativesIP *string) *SecurityCertificateCollectionGetParams {
+	o.SetSubjectAlternativesIP(subjectAlternativesIP)
+	return o
+}
+
+// SetSubjectAlternativesIP adds the subjectAlternativesIp to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) SetSubjectAlternativesIP(subjectAlternativesIP *string) {
+	o.SubjectAlternativesIP = subjectAlternativesIP
+}
+
+// WithSubjectAlternativesURI adds the subjectAlternativesURI to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) WithSubjectAlternativesURI(subjectAlternativesURI *string) *SecurityCertificateCollectionGetParams {
+	o.SetSubjectAlternativesURI(subjectAlternativesURI)
+	return o
+}
+
+// SetSubjectAlternativesURI adds the subjectAlternativesUri to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) SetSubjectAlternativesURI(subjectAlternativesURI *string) {
+	o.SubjectAlternativesURI = subjectAlternativesURI
 }
 
 // WithSubjectKeyIdentifier adds the subjectKeyIdentifier to the security certificate collection get params
@@ -611,23 +645,6 @@ func (o *SecurityCertificateCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IntermediateCertificates != nil {
-
-		// query param intermediate_certificates
-		var qrIntermediateCertificates string
-
-		if o.IntermediateCertificates != nil {
-			qrIntermediateCertificates = *o.IntermediateCertificates
-		}
-		qIntermediateCertificates := qrIntermediateCertificates
-		if qIntermediateCertificates != "" {
-
-			if err := r.SetQueryParam("intermediate_certificates", qIntermediateCertificates); err != nil {
-				return err
-			}
-		}
-	}
-
 	if o.KeySize != nil {
 
 		// query param key_size
@@ -687,23 +704,6 @@ func (o *SecurityCertificateCollectionGetParams) WriteToRequest(r runtime.Client
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
-		}
-	}
-
-	if o.PrivateKey != nil {
-
-		// query param private_key
-		var qrPrivateKey string
-
-		if o.PrivateKey != nil {
-			qrPrivateKey = *o.PrivateKey
-		}
-		qPrivateKey := qrPrivateKey
-		if qPrivateKey != "" {
-
-			if err := r.SetQueryParam("private_key", qPrivateKey); err != nil {
-				return err
-			}
 		}
 	}
 
@@ -787,6 +787,74 @@ func (o *SecurityCertificateCollectionGetParams) WriteToRequest(r runtime.Client
 		if qSerialNumber != "" {
 
 			if err := r.SetQueryParam("serial_number", qSerialNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubjectAlternativesDNS != nil {
+
+		// query param subject_alternatives.dns
+		var qrSubjectAlternativesDNS string
+
+		if o.SubjectAlternativesDNS != nil {
+			qrSubjectAlternativesDNS = *o.SubjectAlternativesDNS
+		}
+		qSubjectAlternativesDNS := qrSubjectAlternativesDNS
+		if qSubjectAlternativesDNS != "" {
+
+			if err := r.SetQueryParam("subject_alternatives.dns", qSubjectAlternativesDNS); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubjectAlternativesEmail != nil {
+
+		// query param subject_alternatives.email
+		var qrSubjectAlternativesEmail string
+
+		if o.SubjectAlternativesEmail != nil {
+			qrSubjectAlternativesEmail = *o.SubjectAlternativesEmail
+		}
+		qSubjectAlternativesEmail := qrSubjectAlternativesEmail
+		if qSubjectAlternativesEmail != "" {
+
+			if err := r.SetQueryParam("subject_alternatives.email", qSubjectAlternativesEmail); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubjectAlternativesIP != nil {
+
+		// query param subject_alternatives.ip
+		var qrSubjectAlternativesIP string
+
+		if o.SubjectAlternativesIP != nil {
+			qrSubjectAlternativesIP = *o.SubjectAlternativesIP
+		}
+		qSubjectAlternativesIP := qrSubjectAlternativesIP
+		if qSubjectAlternativesIP != "" {
+
+			if err := r.SetQueryParam("subject_alternatives.ip", qSubjectAlternativesIP); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubjectAlternativesURI != nil {
+
+		// query param subject_alternatives.uri
+		var qrSubjectAlternativesURI string
+
+		if o.SubjectAlternativesURI != nil {
+			qrSubjectAlternativesURI = *o.SubjectAlternativesURI
+		}
+		qSubjectAlternativesURI := qrSubjectAlternativesURI
+		if qSubjectAlternativesURI != "" {
+
+			if err := r.SetQueryParam("subject_alternatives.uri", qSubjectAlternativesURI); err != nil {
 				return err
 			}
 		}

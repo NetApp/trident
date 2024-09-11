@@ -25,8 +25,9 @@ import (
 // <li><i>/api/svm/svms/{svm.uuid}/top-metrics/clients</i></li>
 // <li><i>/api/svm/svms/{svm.uuid}/top-metrics/directories</i></li>
 // <li><i>/api/svm/svms/{svm.uuid}/top-metrics/files</i></li>
-// <li><i>/api/svm/svms/{svm.uuid}/top-metrics/users</i></li><br/></ul><br/>
-// In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs.
+// <li><i>/api/svm/svms/{svm.uuid}/top-metrics/users</i></li>
+// <li><i>/api/protocols/s3/services/{svm.uuid}/users</i></li><br/></ul><br/>
+// In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs. The <i>{volume.uuid}</i> refers to the <i>-instance-uuid</i> field value in the \"volume show\" command output at diagnostic privilege level. It can also be fetched through REST endpoint <i>/api/storage/volumes</i>.
 //
 // swagger:model role_privilege
 type RolePrivilege struct {

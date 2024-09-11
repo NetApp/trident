@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ExportPolicyGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the export policy get o k response
+func (o *ExportPolicyGetOK) Code() int {
+	return 200
+}
+
 func (o *ExportPolicyGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{id}][%d] exportPolicyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{id}][%d] exportPolicyGetOK %s", 200, payload)
 }
 
 func (o *ExportPolicyGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{id}][%d] exportPolicyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{id}][%d] exportPolicyGetOK %s", 200, payload)
 }
 
 func (o *ExportPolicyGetOK) GetPayload() *models.ExportPolicy {
@@ -122,11 +130,6 @@ type ExportPolicyGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the export policy get default response
-func (o *ExportPolicyGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this export policy get default response has a 2xx status code
 func (o *ExportPolicyGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *ExportPolicyGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the export policy get default response
+func (o *ExportPolicyGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ExportPolicyGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{id}][%d] export_policy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{id}][%d] export_policy_get default %s", o._statusCode, payload)
 }
 
 func (o *ExportPolicyGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{id}][%d] export_policy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{id}][%d] export_policy_get default %s", o._statusCode, payload)
 }
 
 func (o *ExportPolicyGetDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type AwsKmsRekeyInternalReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *AwsKmsRekeyInternalReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewAwsKmsRekeyInternalCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewAwsKmsRekeyInternalAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -39,6 +46,73 @@ func (o *AwsKmsRekeyInternalReader) ReadResponse(response runtime.ClientResponse
 		}
 		return nil, result
 	}
+}
+
+// NewAwsKmsRekeyInternalCreated creates a AwsKmsRekeyInternalCreated with default headers values
+func NewAwsKmsRekeyInternalCreated() *AwsKmsRekeyInternalCreated {
+	return &AwsKmsRekeyInternalCreated{}
+}
+
+/*
+AwsKmsRekeyInternalCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type AwsKmsRekeyInternalCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+}
+
+// IsSuccess returns true when this aws kms rekey internal created response has a 2xx status code
+func (o *AwsKmsRekeyInternalCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this aws kms rekey internal created response has a 3xx status code
+func (o *AwsKmsRekeyInternalCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this aws kms rekey internal created response has a 4xx status code
+func (o *AwsKmsRekeyInternalCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this aws kms rekey internal created response has a 5xx status code
+func (o *AwsKmsRekeyInternalCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this aws kms rekey internal created response a status code equal to that given
+func (o *AwsKmsRekeyInternalCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the aws kms rekey internal created response
+func (o *AwsKmsRekeyInternalCreated) Code() int {
+	return 201
+}
+
+func (o *AwsKmsRekeyInternalCreated) Error() string {
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] awsKmsRekeyInternalCreated", 201)
+}
+
+func (o *AwsKmsRekeyInternalCreated) String() string {
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] awsKmsRekeyInternalCreated", 201)
+}
+
+func (o *AwsKmsRekeyInternalCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	return nil
 }
 
 // NewAwsKmsRekeyInternalAccepted creates a AwsKmsRekeyInternalAccepted with default headers values
@@ -83,12 +157,17 @@ func (o *AwsKmsRekeyInternalAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the aws kms rekey internal accepted response
+func (o *AwsKmsRekeyInternalAccepted) Code() int {
+	return 202
+}
+
 func (o *AwsKmsRekeyInternalAccepted) Error() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] awsKmsRekeyInternalAccepted ", 202)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] awsKmsRekeyInternalAccepted", 202)
 }
 
 func (o *AwsKmsRekeyInternalAccepted) String() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] awsKmsRekeyInternalAccepted ", 202)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] awsKmsRekeyInternalAccepted", 202)
 }
 
 func (o *AwsKmsRekeyInternalAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -121,17 +200,16 @@ func NewAwsKmsRekeyInternalDefault(code int) *AwsKmsRekeyInternalDefault {
 | 65537556 | Unable to successfully encrypt or decrypt because the configured external key manager for the given SVM is in a blocked state. |
 | 65537559 | There are no existing internal keys for the SVM. A rekey operation is allowed for an SVM with one or more encryption keys. |
 | 65537566 | Internal error. All nodes in the cluster are not currently online. |
+| 65537610 | Rekey cannot be performed on the SVM while the enabled keystore configuration is being switched. If a previous attempt to switch the keystore configuration failed, or was interrupted, the system will continue to prevent rekeying for the SVM. Use the REST API PATCH method "/api/security/key-stores/{uuid}" to re-run and complete the operation. |
 | 65537926 | AWS KMS is not configured for the given SVM. |
+| 65539436 | Rekey cannot be performed on the SVM while the enabled keystore configuration is being initialized. Wait until the keystore is in the active state, and rerun the rekey operation. |
+| 65539437 | Rekey cannot be performed on the SVM while the enabled keystore configuration is being disabled. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AwsKmsRekeyInternalDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the aws kms rekey internal default response
-func (o *AwsKmsRekeyInternalDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this aws kms rekey internal default response has a 2xx status code
@@ -159,12 +237,19 @@ func (o *AwsKmsRekeyInternalDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the aws kms rekey internal default response
+func (o *AwsKmsRekeyInternalDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AwsKmsRekeyInternalDefault) Error() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] aws_kms_rekey_internal default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] aws_kms_rekey_internal default %s", o._statusCode, payload)
 }
 
 func (o *AwsKmsRekeyInternalDefault) String() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] aws_kms_rekey_internal default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] aws_kms_rekey_internal default %s", o._statusCode, payload)
 }
 
 func (o *AwsKmsRekeyInternalDefault) GetPayload() *models.ErrorResponse {

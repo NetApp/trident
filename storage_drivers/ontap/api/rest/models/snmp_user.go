@@ -25,7 +25,7 @@ type SnmpUser struct {
 
 	// Optional authentication method.
 	// Example: usm
-	// Enum: [community usm both]
+	// Enum: ["community","usm","both"]
 	AuthenticationMethod *string `json:"authentication_method,omitempty"`
 
 	// Optional comment text.
@@ -49,7 +49,7 @@ type SnmpUser struct {
 	// Set to "svm" for data Storage Virtual Machine (SVM) SNMP users and to "cluster" for administrative SVM SNMP users.
 	// Example: svm
 	// Read Only: true
-	// Enum: [svm cluster]
+	// Enum: ["svm","cluster"]
 	Scope *string `json:"scope,omitempty"`
 
 	// snmpv3
@@ -488,12 +488,12 @@ type SnmpUserInlineOwner struct {
 	// links
 	Links *SnmpUserInlineOwnerInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -677,7 +677,7 @@ type SnmpUserInlineSnmpv3 struct {
 
 	// Authentication protocol.
 	// Example: sha2_256
-	// Enum: [none md5 sha sha2_256]
+	// Enum: ["none","md5","sha","sha2_256"]
 	AuthenticationProtocol *string `json:"authentication_protocol,omitempty"`
 
 	// Privacy protocol password.
@@ -687,7 +687,7 @@ type SnmpUserInlineSnmpv3 struct {
 
 	// Privacy protocol.
 	// Example: aes128
-	// Enum: [none des aes128]
+	// Enum: ["none","des","aes128"]
 	PrivacyProtocol *string `json:"privacy_protocol,omitempty"`
 }
 

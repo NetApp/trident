@@ -92,6 +92,18 @@ type AzureKeyVaultCollectionGetParams struct {
 	*/
 	ClientID *string
 
+	/* ConfigurationName.
+
+	   Filter by configuration.name
+	*/
+	ConfigurationName *string
+
+	/* ConfigurationUUID.
+
+	   Filter by configuration.uuid
+	*/
+	ConfigurationUUID *string
+
 	/* EkmipReachabilityCode.
 
 	   Filter by ekmip_reachability.code
@@ -122,6 +134,12 @@ type AzureKeyVaultCollectionGetParams struct {
 	*/
 	EkmipReachabilityReachable *bool
 
+	/* Enabled.
+
+	   Filter by enabled
+	*/
+	Enabled *bool
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -146,11 +164,23 @@ type AzureKeyVaultCollectionGetParams struct {
 	*/
 	Name *string
 
+	/* OauthHost.
+
+	   Filter by oauth_host
+	*/
+	OauthHost *string
+
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
 	OrderBy []string
+
+	/* Port.
+
+	   Filter by port
+	*/
+	Port *int64
 
 	/* ProxyHost.
 
@@ -198,6 +228,12 @@ type AzureKeyVaultCollectionGetParams struct {
 	*/
 	Scope *string
 
+	/* SkipVerification.
+
+	   Filter by skip_verification
+	*/
+	SkipVerification *bool
+
 	/* StateAvailable.
 
 	   Filter by state.available
@@ -239,6 +275,24 @@ type AzureKeyVaultCollectionGetParams struct {
 	   Filter by uuid
 	*/
 	UUID *string
+
+	/* VaultHost.
+
+	   Filter by vault_host
+	*/
+	VaultHost *string
+
+	/* VerifyHost.
+
+	   Filter by verify_host
+	*/
+	VerifyHost *bool
+
+	/* VerifyIP.
+
+	   Filter by verify_ip
+	*/
+	VerifyIP *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -362,6 +416,28 @@ func (o *AzureKeyVaultCollectionGetParams) SetClientID(clientID *string) {
 	o.ClientID = clientID
 }
 
+// WithConfigurationName adds the configurationName to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithConfigurationName(configurationName *string) *AzureKeyVaultCollectionGetParams {
+	o.SetConfigurationName(configurationName)
+	return o
+}
+
+// SetConfigurationName adds the configurationName to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetConfigurationName(configurationName *string) {
+	o.ConfigurationName = configurationName
+}
+
+// WithConfigurationUUID adds the configurationUUID to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithConfigurationUUID(configurationUUID *string) *AzureKeyVaultCollectionGetParams {
+	o.SetConfigurationUUID(configurationUUID)
+	return o
+}
+
+// SetConfigurationUUID adds the configurationUuid to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetConfigurationUUID(configurationUUID *string) {
+	o.ConfigurationUUID = configurationUUID
+}
+
 // WithEkmipReachabilityCode adds the ekmipReachabilityCode to the azure key vault collection get params
 func (o *AzureKeyVaultCollectionGetParams) WithEkmipReachabilityCode(ekmipReachabilityCode *string) *AzureKeyVaultCollectionGetParams {
 	o.SetEkmipReachabilityCode(ekmipReachabilityCode)
@@ -417,6 +493,17 @@ func (o *AzureKeyVaultCollectionGetParams) SetEkmipReachabilityReachable(ekmipRe
 	o.EkmipReachabilityReachable = ekmipReachabilityReachable
 }
 
+// WithEnabled adds the enabled to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithEnabled(enabled *bool) *AzureKeyVaultCollectionGetParams {
+	o.SetEnabled(enabled)
+	return o
+}
+
+// SetEnabled adds the enabled to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
+}
+
 // WithFields adds the fields to the azure key vault collection get params
 func (o *AzureKeyVaultCollectionGetParams) WithFields(fields []string) *AzureKeyVaultCollectionGetParams {
 	o.SetFields(fields)
@@ -461,6 +548,17 @@ func (o *AzureKeyVaultCollectionGetParams) SetName(name *string) {
 	o.Name = name
 }
 
+// WithOauthHost adds the oauthHost to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithOauthHost(oauthHost *string) *AzureKeyVaultCollectionGetParams {
+	o.SetOauthHost(oauthHost)
+	return o
+}
+
+// SetOauthHost adds the oauthHost to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetOauthHost(oauthHost *string) {
+	o.OauthHost = oauthHost
+}
+
 // WithOrderBy adds the orderBy to the azure key vault collection get params
 func (o *AzureKeyVaultCollectionGetParams) WithOrderBy(orderBy []string) *AzureKeyVaultCollectionGetParams {
 	o.SetOrderBy(orderBy)
@@ -470,6 +568,17 @@ func (o *AzureKeyVaultCollectionGetParams) WithOrderBy(orderBy []string) *AzureK
 // SetOrderBy adds the orderBy to the azure key vault collection get params
 func (o *AzureKeyVaultCollectionGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
+}
+
+// WithPort adds the port to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithPort(port *int64) *AzureKeyVaultCollectionGetParams {
+	o.SetPort(port)
+	return o
+}
+
+// SetPort adds the port to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetPort(port *int64) {
+	o.Port = port
 }
 
 // WithProxyHost adds the proxyHost to the azure key vault collection get params
@@ -549,6 +658,17 @@ func (o *AzureKeyVaultCollectionGetParams) SetScope(scope *string) {
 	o.Scope = scope
 }
 
+// WithSkipVerification adds the skipVerification to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithSkipVerification(skipVerification *bool) *AzureKeyVaultCollectionGetParams {
+	o.SetSkipVerification(skipVerification)
+	return o
+}
+
+// SetSkipVerification adds the skipVerification to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetSkipVerification(skipVerification *bool) {
+	o.SkipVerification = skipVerification
+}
+
 // WithStateAvailable adds the stateAvailable to the azure key vault collection get params
 func (o *AzureKeyVaultCollectionGetParams) WithStateAvailable(stateAvailable *bool) *AzureKeyVaultCollectionGetParams {
 	o.SetStateAvailable(stateAvailable)
@@ -624,6 +744,39 @@ func (o *AzureKeyVaultCollectionGetParams) WithUUID(uuid *string) *AzureKeyVault
 // SetUUID adds the uuid to the azure key vault collection get params
 func (o *AzureKeyVaultCollectionGetParams) SetUUID(uuid *string) {
 	o.UUID = uuid
+}
+
+// WithVaultHost adds the vaultHost to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithVaultHost(vaultHost *string) *AzureKeyVaultCollectionGetParams {
+	o.SetVaultHost(vaultHost)
+	return o
+}
+
+// SetVaultHost adds the vaultHost to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetVaultHost(vaultHost *string) {
+	o.VaultHost = vaultHost
+}
+
+// WithVerifyHost adds the verifyHost to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithVerifyHost(verifyHost *bool) *AzureKeyVaultCollectionGetParams {
+	o.SetVerifyHost(verifyHost)
+	return o
+}
+
+// SetVerifyHost adds the verifyHost to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetVerifyHost(verifyHost *bool) {
+	o.VerifyHost = verifyHost
+}
+
+// WithVerifyIP adds the verifyIP to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithVerifyIP(verifyIP *bool) *AzureKeyVaultCollectionGetParams {
+	o.SetVerifyIP(verifyIP)
+	return o
+}
+
+// SetVerifyIP adds the verifyIp to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetVerifyIP(verifyIP *bool) {
+	o.VerifyIP = verifyIP
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -719,6 +872,40 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.ConfigurationName != nil {
+
+		// query param configuration.name
+		var qrConfigurationName string
+
+		if o.ConfigurationName != nil {
+			qrConfigurationName = *o.ConfigurationName
+		}
+		qConfigurationName := qrConfigurationName
+		if qConfigurationName != "" {
+
+			if err := r.SetQueryParam("configuration.name", qConfigurationName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConfigurationUUID != nil {
+
+		// query param configuration.uuid
+		var qrConfigurationUUID string
+
+		if o.ConfigurationUUID != nil {
+			qrConfigurationUUID = *o.ConfigurationUUID
+		}
+		qConfigurationUUID := qrConfigurationUUID
+		if qConfigurationUUID != "" {
+
+			if err := r.SetQueryParam("configuration.uuid", qConfigurationUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.EkmipReachabilityCode != nil {
 
 		// query param ekmip_reachability.code
@@ -804,6 +991,23 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.Enabled != nil {
+
+		// query param enabled
+		var qrEnabled bool
+
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
+		}
+		qEnabled := swag.FormatBool(qrEnabled)
+		if qEnabled != "" {
+
+			if err := r.SetQueryParam("enabled", qEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.Fields != nil {
 
 		// binding items for fields
@@ -866,6 +1070,23 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.OauthHost != nil {
+
+		// query param oauth_host
+		var qrOauthHost string
+
+		if o.OauthHost != nil {
+			qrOauthHost = *o.OauthHost
+		}
+		qOauthHost := qrOauthHost
+		if qOauthHost != "" {
+
+			if err := r.SetQueryParam("oauth_host", qOauthHost); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.OrderBy != nil {
 
 		// binding items for order_by
@@ -874,6 +1095,23 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.Port != nil {
+
+		// query param port
+		var qrPort int64
+
+		if o.Port != nil {
+			qrPort = *o.Port
+		}
+		qPort := swag.FormatInt64(qrPort)
+		if qPort != "" {
+
+			if err := r.SetQueryParam("port", qPort); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -996,6 +1234,23 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.SkipVerification != nil {
+
+		// query param skip_verification
+		var qrSkipVerification bool
+
+		if o.SkipVerification != nil {
+			qrSkipVerification = *o.SkipVerification
+		}
+		qSkipVerification := swag.FormatBool(qrSkipVerification)
+		if qSkipVerification != "" {
+
+			if err := r.SetQueryParam("skip_verification", qSkipVerification); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.StateAvailable != nil {
 
 		// query param state.available
@@ -1110,6 +1365,57 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qUUID != "" {
 
 			if err := r.SetQueryParam("uuid", qUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VaultHost != nil {
+
+		// query param vault_host
+		var qrVaultHost string
+
+		if o.VaultHost != nil {
+			qrVaultHost = *o.VaultHost
+		}
+		qVaultHost := qrVaultHost
+		if qVaultHost != "" {
+
+			if err := r.SetQueryParam("vault_host", qVaultHost); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VerifyHost != nil {
+
+		// query param verify_host
+		var qrVerifyHost bool
+
+		if o.VerifyHost != nil {
+			qrVerifyHost = *o.VerifyHost
+		}
+		qVerifyHost := swag.FormatBool(qrVerifyHost)
+		if qVerifyHost != "" {
+
+			if err := r.SetQueryParam("verify_host", qVerifyHost); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VerifyIP != nil {
+
+		// query param verify_ip
+		var qrVerifyIP bool
+
+		if o.VerifyIP != nil {
+			qrVerifyIP = *o.VerifyIP
+		}
+		qVerifyIP := swag.FormatBool(qrVerifyIP)
+		if qVerifyIP != "" {
+
+			if err := r.SetQueryParam("verify_ip", qVerifyIP); err != nil {
 				return err
 			}
 		}

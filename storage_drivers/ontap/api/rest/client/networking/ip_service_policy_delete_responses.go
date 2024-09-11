@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *IPServicePolicyDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ip service policy delete o k response
+func (o *IPServicePolicyDeleteOK) Code() int {
+	return 200
+}
+
 func (o *IPServicePolicyDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /network/ip/service-policies/{uuid}][%d] ipServicePolicyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /network/ip/service-policies/{uuid}][%d] ipServicePolicyDeleteOK", 200)
 }
 
 func (o *IPServicePolicyDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /network/ip/service-policies/{uuid}][%d] ipServicePolicyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /network/ip/service-policies/{uuid}][%d] ipServicePolicyDeleteOK", 200)
 }
 
 func (o *IPServicePolicyDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,18 +112,15 @@ func NewIPServicePolicyDeleteDefault(code int) *IPServicePolicyDeleteDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 2621740 | An unexpected error when trying to determine whether the target Vserver was locked or not on this cluster. |
 | 53281927 | Service policies owned by the system cannot be deleted. |
 | 53281928 | Service policies assigned to LIFs cannot be deleted. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IPServicePolicyDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ip service policy delete default response
-func (o *IPServicePolicyDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ip service policy delete default response has a 2xx status code
@@ -145,12 +148,19 @@ func (o *IPServicePolicyDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ip service policy delete default response
+func (o *IPServicePolicyDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IPServicePolicyDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /network/ip/service-policies/{uuid}][%d] ip_service_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/ip/service-policies/{uuid}][%d] ip_service_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *IPServicePolicyDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /network/ip/service-policies/{uuid}][%d] ip_service_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/ip/service-policies/{uuid}][%d] ip_service_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *IPServicePolicyDeleteDefault) GetPayload() *models.ErrorResponse {

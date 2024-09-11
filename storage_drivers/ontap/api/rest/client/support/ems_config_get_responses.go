@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *EmsConfigGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ems config get o k response
+func (o *EmsConfigGetOK) Code() int {
+	return 200
+}
+
 func (o *EmsConfigGetOK) Error() string {
-	return fmt.Sprintf("[GET /support/ems][%d] emsConfigGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems][%d] emsConfigGetOK %s", 200, payload)
 }
 
 func (o *EmsConfigGetOK) String() string {
-	return fmt.Sprintf("[GET /support/ems][%d] emsConfigGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems][%d] emsConfigGetOK %s", 200, payload)
 }
 
 func (o *EmsConfigGetOK) GetPayload() *models.EmsConfig {
@@ -122,11 +130,6 @@ type EmsConfigGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the ems config get default response
-func (o *EmsConfigGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this ems config get default response has a 2xx status code
 func (o *EmsConfigGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *EmsConfigGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ems config get default response
+func (o *EmsConfigGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *EmsConfigGetDefault) Error() string {
-	return fmt.Sprintf("[GET /support/ems][%d] ems_config_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems][%d] ems_config_get default %s", o._statusCode, payload)
 }
 
 func (o *EmsConfigGetDefault) String() string {
-	return fmt.Sprintf("[GET /support/ems][%d] ems_config_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems][%d] ems_config_get default %s", o._statusCode, payload)
 }
 
 func (o *EmsConfigGetDefault) GetPayload() *models.ErrorResponse {

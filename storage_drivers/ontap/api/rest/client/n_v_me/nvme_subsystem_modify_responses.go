@@ -6,6 +6,7 @@ package n_v_me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *NvmeSubsystemModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nvme subsystem modify o k response
+func (o *NvmeSubsystemModifyOK) Code() int {
+	return 200
+}
+
 func (o *NvmeSubsystemModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/nvme/subsystems/{uuid}][%d] nvmeSubsystemModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/nvme/subsystems/{uuid}][%d] nvmeSubsystemModifyOK", 200)
 }
 
 func (o *NvmeSubsystemModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/nvme/subsystems/{uuid}][%d] nvmeSubsystemModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/nvme/subsystems/{uuid}][%d] nvmeSubsystemModifyOK", 200)
 }
 
 func (o *NvmeSubsystemModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,16 +113,12 @@ func NewNvmeSubsystemModifyDefault(code int) *NvmeSubsystemModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 72090001 | The NVMe subsystem does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NvmeSubsystemModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nvme subsystem modify default response
-func (o *NvmeSubsystemModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nvme subsystem modify default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *NvmeSubsystemModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nvme subsystem modify default response
+func (o *NvmeSubsystemModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NvmeSubsystemModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/nvme/subsystems/{uuid}][%d] nvme_subsystem_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/nvme/subsystems/{uuid}][%d] nvme_subsystem_modify default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/nvme/subsystems/{uuid}][%d] nvme_subsystem_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/nvme/subsystems/{uuid}][%d] nvme_subsystem_modify default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemModifyDefault) GetPayload() *models.ErrorResponse {

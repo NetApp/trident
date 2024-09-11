@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ExportRuleDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the export rule delete o k response
+func (o *ExportRuleDeleteOK) Code() int {
+	return 200
+}
+
 func (o *ExportRuleDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] exportRuleDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] exportRuleDeleteOK", 200)
 }
 
 func (o *ExportRuleDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] exportRuleDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] exportRuleDeleteOK", 200)
 }
 
 func (o *ExportRuleDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -116,11 +122,6 @@ type ExportRuleDeleteDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the export rule delete default response
-func (o *ExportRuleDeleteDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this export rule delete default response has a 2xx status code
 func (o *ExportRuleDeleteDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -146,12 +147,19 @@ func (o *ExportRuleDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the export rule delete default response
+func (o *ExportRuleDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ExportRuleDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] export_rule_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] export_rule_delete default %s", o._statusCode, payload)
 }
 
 func (o *ExportRuleDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] export_rule_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] export_rule_delete default %s", o._statusCode, payload)
 }
 
 func (o *ExportRuleDeleteDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *VscanOnDemandDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the vscan on demand delete o k response
+func (o *VscanOnDemandDeleteOK) Code() int {
+	return 200
+}
+
 func (o *VscanOnDemandDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-demand-policies/{name}][%d] vscanOnDemandDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-demand-policies/{name}][%d] vscanOnDemandDeleteOK", 200)
 }
 
 func (o *VscanOnDemandDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-demand-policies/{name}][%d] vscanOnDemandDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-demand-policies/{name}][%d] vscanOnDemandDeleteOK", 200)
 }
 
 func (o *VscanOnDemandDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type VscanOnDemandDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the vscan on demand delete default response
-func (o *VscanOnDemandDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this vscan on demand delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *VscanOnDemandDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the vscan on demand delete default response
+func (o *VscanOnDemandDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VscanOnDemandDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-demand-policies/{name}][%d] vscan_on_demand_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-demand-policies/{name}][%d] vscan_on_demand_delete default %s", o._statusCode, payload)
 }
 
 func (o *VscanOnDemandDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-demand-policies/{name}][%d] vscan_on_demand_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-demand-policies/{name}][%d] vscan_on_demand_delete default %s", o._statusCode, payload)
 }
 
 func (o *VscanOnDemandDeleteDefault) GetPayload() *models.ErrorResponse {

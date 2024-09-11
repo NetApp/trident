@@ -6,6 +6,7 @@ package snaplock
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SnaplockLegalHoldDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snaplock legal hold delete o k response
+func (o *SnaplockLegalHoldDeleteOK) Code() int {
+	return 200
+}
+
 func (o *SnaplockLegalHoldDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /storage/snaplock/litigations/{id}][%d] snaplockLegalHoldDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/snaplock/litigations/{id}][%d] snaplockLegalHoldDeleteOK", 200)
 }
 
 func (o *SnaplockLegalHoldDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /storage/snaplock/litigations/{id}][%d] snaplockLegalHoldDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/snaplock/litigations/{id}][%d] snaplockLegalHoldDeleteOK", 200)
 }
 
 func (o *SnaplockLegalHoldDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,19 +112,15 @@ func NewSnaplockLegalHoldDeleteDefault(code int) *SnaplockLegalHoldDeleteDefault
 
 | Error code  |  Description |
 |-------------|--------------|
-| 14090346    | Internal Error. Wait a few minutes, then try the command again  |
+| 13763280    | Only a user with security login role \"vsadmin-snaplock\" is allowed to perform this operation.  |
 | 14090343    | Invalid Field  |
+| 14090346    | Internal Error. Wait a few minutes, then try the command again  |
 | 14090642    | Legal-Hold operation is in progress. Legal-Hold end cannot be performed. Wait for the operation to complete or abort the operation  |
 */
 type SnaplockLegalHoldDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snaplock legal hold delete default response
-func (o *SnaplockLegalHoldDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snaplock legal hold delete default response has a 2xx status code
@@ -146,12 +148,19 @@ func (o *SnaplockLegalHoldDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snaplock legal hold delete default response
+func (o *SnaplockLegalHoldDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnaplockLegalHoldDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /storage/snaplock/litigations/{id}][%d] snaplock_legal_hold_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/snaplock/litigations/{id}][%d] snaplock_legal_hold_delete default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockLegalHoldDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /storage/snaplock/litigations/{id}][%d] snaplock_legal_hold_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/snaplock/litigations/{id}][%d] snaplock_legal_hold_delete default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockLegalHoldDeleteDefault) GetPayload() *models.ErrorResponse {

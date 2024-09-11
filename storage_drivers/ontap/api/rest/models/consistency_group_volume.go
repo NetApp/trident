@@ -26,11 +26,7 @@ type ConsistencyGroupVolume struct {
 	// Min Length: 0
 	Comment *string `json:"comment,omitempty"`
 
-	// Language encoding setting for volume. If no language is specified, the volume inherits its SVM language encoding setting.
-	// Enum: [ar ar.utf_8 c c.utf_8 cs cs.utf_8 da da.utf_8 de de.utf_8 en en.utf_8 en_us en_us.utf_8 es es.utf_8 fi fi.utf_8 fr fr.utf_8 he he.utf_8 hr hr.utf_8 hu hu.utf_8 it it.utf_8 ja ja.utf_8 ja_jp.932 ja_jp.932.utf_8 ja_jp.pck ja_jp.pck.utf_8 ja_jp.pck_v2 ja_jp.pck_v2.utf_8 ja_v1 ja_v1.utf_8 ko ko.utf_8 nl nl.utf_8 no no.utf_8 pl pl.utf_8 pt pt.utf_8 ro ro.utf_8 ru ru.utf_8 sk sk.utf_8 sl sl.utf_8 sv sv.utf_8 tr tr.utf_8 utf8mb4 zh zh.gbk zh.gbk.utf_8 zh.utf_8 zh_tw zh_tw.big5 zh_tw.big5.utf_8 zh_tw.utf_8]
-	Language *string `json:"language,omitempty"`
-
-	// Volume name. The name of volume must start with an alphabetic character (a to z or A to Z) or an underscore (_). The name must be 197 or fewer characters in length for FlexGroups, and 203 or fewer characters in length for all other types of volumes. Volume names must be unique within an SVM. Required on POST.
+	// Volume name. The name of volume must start with an alphabetic character (a to z or A to Z) or an underscore (_). The name must be 197 or fewer characters in length for FlexGroup volumes, and 203 or fewer characters in length for all other types of volumes. Volume names must be unique within an SVM. Required on POST.
 	// Example: vol_cs_dept
 	// Max Length: 203
 	// Min Length: 1
@@ -45,7 +41,7 @@ type ConsistencyGroupVolume struct {
 	// qos
 	Qos *ConsistencyGroupVolumeInlineQos `json:"qos,omitempty"`
 
-	// The Snapshot copy policy for this volume.
+	// The snapshot policy for this volume.
 	//
 	SnapshotPolicy *SnapshotPolicyReference `json:"snapshot_policy,omitempty"`
 
@@ -66,10 +62,6 @@ func (m *ConsistencyGroupVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateComment(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateLanguage(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -117,732 +109,6 @@ func (m *ConsistencyGroupVolume) validateComment(formats strfmt.Registry) error 
 	}
 
 	if err := validate.MaxLength("comment", "body", *m.Comment, 1023); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-var consistencyGroupVolumeTypeLanguagePropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["ar","ar.utf_8","c","c.utf_8","cs","cs.utf_8","da","da.utf_8","de","de.utf_8","en","en.utf_8","en_us","en_us.utf_8","es","es.utf_8","fi","fi.utf_8","fr","fr.utf_8","he","he.utf_8","hr","hr.utf_8","hu","hu.utf_8","it","it.utf_8","ja","ja.utf_8","ja_jp.932","ja_jp.932.utf_8","ja_jp.pck","ja_jp.pck.utf_8","ja_jp.pck_v2","ja_jp.pck_v2.utf_8","ja_v1","ja_v1.utf_8","ko","ko.utf_8","nl","nl.utf_8","no","no.utf_8","pl","pl.utf_8","pt","pt.utf_8","ro","ro.utf_8","ru","ru.utf_8","sk","sk.utf_8","sl","sl.utf_8","sv","sv.utf_8","tr","tr.utf_8","utf8mb4","zh","zh.gbk","zh.gbk.utf_8","zh.utf_8","zh_tw","zh_tw.big5","zh_tw.big5.utf_8","zh_tw.utf_8"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		consistencyGroupVolumeTypeLanguagePropEnum = append(consistencyGroupVolumeTypeLanguagePropEnum, v)
-	}
-}
-
-const (
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ar
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageAr captures enum value "ar"
-	ConsistencyGroupVolumeLanguageAr string = "ar"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ar.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageArDotUTF8 captures enum value "ar.utf_8"
-	ConsistencyGroupVolumeLanguageArDotUTF8 string = "ar.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// c
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageC captures enum value "c"
-	ConsistencyGroupVolumeLanguageC string = "c"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// c.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageCDotUTF8 captures enum value "c.utf_8"
-	ConsistencyGroupVolumeLanguageCDotUTF8 string = "c.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// cs
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageCs captures enum value "cs"
-	ConsistencyGroupVolumeLanguageCs string = "cs"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// cs.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageCsDotUTF8 captures enum value "cs.utf_8"
-	ConsistencyGroupVolumeLanguageCsDotUTF8 string = "cs.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// da
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageDa captures enum value "da"
-	ConsistencyGroupVolumeLanguageDa string = "da"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// da.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageDaDotUTF8 captures enum value "da.utf_8"
-	ConsistencyGroupVolumeLanguageDaDotUTF8 string = "da.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// de
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageDe captures enum value "de"
-	ConsistencyGroupVolumeLanguageDe string = "de"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// de.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageDeDotUTF8 captures enum value "de.utf_8"
-	ConsistencyGroupVolumeLanguageDeDotUTF8 string = "de.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// en
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageEn captures enum value "en"
-	ConsistencyGroupVolumeLanguageEn string = "en"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// en.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageEnDotUTF8 captures enum value "en.utf_8"
-	ConsistencyGroupVolumeLanguageEnDotUTF8 string = "en.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// en_us
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageEnUs captures enum value "en_us"
-	ConsistencyGroupVolumeLanguageEnUs string = "en_us"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// en_us.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageEnUsDotUTF8 captures enum value "en_us.utf_8"
-	ConsistencyGroupVolumeLanguageEnUsDotUTF8 string = "en_us.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// es
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageEs captures enum value "es"
-	ConsistencyGroupVolumeLanguageEs string = "es"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// es.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageEsDotUTF8 captures enum value "es.utf_8"
-	ConsistencyGroupVolumeLanguageEsDotUTF8 string = "es.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// fi
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageFi captures enum value "fi"
-	ConsistencyGroupVolumeLanguageFi string = "fi"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// fi.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageFiDotUTF8 captures enum value "fi.utf_8"
-	ConsistencyGroupVolumeLanguageFiDotUTF8 string = "fi.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// fr
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageFr captures enum value "fr"
-	ConsistencyGroupVolumeLanguageFr string = "fr"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// fr.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageFrDotUTF8 captures enum value "fr.utf_8"
-	ConsistencyGroupVolumeLanguageFrDotUTF8 string = "fr.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// he
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageHe captures enum value "he"
-	ConsistencyGroupVolumeLanguageHe string = "he"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// he.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageHeDotUTF8 captures enum value "he.utf_8"
-	ConsistencyGroupVolumeLanguageHeDotUTF8 string = "he.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// hr
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageHr captures enum value "hr"
-	ConsistencyGroupVolumeLanguageHr string = "hr"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// hr.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageHrDotUTF8 captures enum value "hr.utf_8"
-	ConsistencyGroupVolumeLanguageHrDotUTF8 string = "hr.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// hu
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageHu captures enum value "hu"
-	ConsistencyGroupVolumeLanguageHu string = "hu"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// hu.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageHuDotUTF8 captures enum value "hu.utf_8"
-	ConsistencyGroupVolumeLanguageHuDotUTF8 string = "hu.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// it
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageIt captures enum value "it"
-	ConsistencyGroupVolumeLanguageIt string = "it"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// it.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageItDotUTF8 captures enum value "it.utf_8"
-	ConsistencyGroupVolumeLanguageItDotUTF8 string = "it.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ja
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageJa captures enum value "ja"
-	ConsistencyGroupVolumeLanguageJa string = "ja"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ja.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageJaDotUTF8 captures enum value "ja.utf_8"
-	ConsistencyGroupVolumeLanguageJaDotUTF8 string = "ja.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ja_jp.932
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageJaJpDot932 captures enum value "ja_jp.932"
-	ConsistencyGroupVolumeLanguageJaJpDot932 string = "ja_jp.932"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ja_jp.932.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageJaJpDot932DotUTF8 captures enum value "ja_jp.932.utf_8"
-	ConsistencyGroupVolumeLanguageJaJpDot932DotUTF8 string = "ja_jp.932.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ja_jp.pck
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageJaJpDotPck captures enum value "ja_jp.pck"
-	ConsistencyGroupVolumeLanguageJaJpDotPck string = "ja_jp.pck"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ja_jp.pck.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageJaJpDotPckDotUTF8 captures enum value "ja_jp.pck.utf_8"
-	ConsistencyGroupVolumeLanguageJaJpDotPckDotUTF8 string = "ja_jp.pck.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ja_jp.pck_v2
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageJaJpDotPckV2 captures enum value "ja_jp.pck_v2"
-	ConsistencyGroupVolumeLanguageJaJpDotPckV2 string = "ja_jp.pck_v2"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ja_jp.pck_v2.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageJaJpDotPckV2DotUTF8 captures enum value "ja_jp.pck_v2.utf_8"
-	ConsistencyGroupVolumeLanguageJaJpDotPckV2DotUTF8 string = "ja_jp.pck_v2.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ja_v1
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageJaV1 captures enum value "ja_v1"
-	ConsistencyGroupVolumeLanguageJaV1 string = "ja_v1"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ja_v1.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageJaV1DotUTF8 captures enum value "ja_v1.utf_8"
-	ConsistencyGroupVolumeLanguageJaV1DotUTF8 string = "ja_v1.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ko
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageKo captures enum value "ko"
-	ConsistencyGroupVolumeLanguageKo string = "ko"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ko.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageKoDotUTF8 captures enum value "ko.utf_8"
-	ConsistencyGroupVolumeLanguageKoDotUTF8 string = "ko.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// nl
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageNl captures enum value "nl"
-	ConsistencyGroupVolumeLanguageNl string = "nl"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// nl.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageNlDotUTF8 captures enum value "nl.utf_8"
-	ConsistencyGroupVolumeLanguageNlDotUTF8 string = "nl.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// no
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageNo captures enum value "no"
-	ConsistencyGroupVolumeLanguageNo string = "no"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// no.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageNoDotUTF8 captures enum value "no.utf_8"
-	ConsistencyGroupVolumeLanguageNoDotUTF8 string = "no.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// pl
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguagePl captures enum value "pl"
-	ConsistencyGroupVolumeLanguagePl string = "pl"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// pl.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguagePlDotUTF8 captures enum value "pl.utf_8"
-	ConsistencyGroupVolumeLanguagePlDotUTF8 string = "pl.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// pt
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguagePt captures enum value "pt"
-	ConsistencyGroupVolumeLanguagePt string = "pt"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// pt.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguagePtDotUTF8 captures enum value "pt.utf_8"
-	ConsistencyGroupVolumeLanguagePtDotUTF8 string = "pt.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ro
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageRo captures enum value "ro"
-	ConsistencyGroupVolumeLanguageRo string = "ro"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ro.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageRoDotUTF8 captures enum value "ro.utf_8"
-	ConsistencyGroupVolumeLanguageRoDotUTF8 string = "ro.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ru
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageRu captures enum value "ru"
-	ConsistencyGroupVolumeLanguageRu string = "ru"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// ru.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageRuDotUTF8 captures enum value "ru.utf_8"
-	ConsistencyGroupVolumeLanguageRuDotUTF8 string = "ru.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// sk
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageSk captures enum value "sk"
-	ConsistencyGroupVolumeLanguageSk string = "sk"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// sk.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageSkDotUTF8 captures enum value "sk.utf_8"
-	ConsistencyGroupVolumeLanguageSkDotUTF8 string = "sk.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// sl
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageSl captures enum value "sl"
-	ConsistencyGroupVolumeLanguageSl string = "sl"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// sl.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageSlDotUTF8 captures enum value "sl.utf_8"
-	ConsistencyGroupVolumeLanguageSlDotUTF8 string = "sl.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// sv
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageSv captures enum value "sv"
-	ConsistencyGroupVolumeLanguageSv string = "sv"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// sv.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageSvDotUTF8 captures enum value "sv.utf_8"
-	ConsistencyGroupVolumeLanguageSvDotUTF8 string = "sv.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// tr
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageTr captures enum value "tr"
-	ConsistencyGroupVolumeLanguageTr string = "tr"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// tr.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageTrDotUTF8 captures enum value "tr.utf_8"
-	ConsistencyGroupVolumeLanguageTrDotUTF8 string = "tr.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// utf8mb4
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageUtf8mb4 captures enum value "utf8mb4"
-	ConsistencyGroupVolumeLanguageUtf8mb4 string = "utf8mb4"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// zh
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageZh captures enum value "zh"
-	ConsistencyGroupVolumeLanguageZh string = "zh"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// zh.gbk
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageZhDotGbk captures enum value "zh.gbk"
-	ConsistencyGroupVolumeLanguageZhDotGbk string = "zh.gbk"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// zh.gbk.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageZhDotGbkDotUTF8 captures enum value "zh.gbk.utf_8"
-	ConsistencyGroupVolumeLanguageZhDotGbkDotUTF8 string = "zh.gbk.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// zh.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageZhDotUTF8 captures enum value "zh.utf_8"
-	ConsistencyGroupVolumeLanguageZhDotUTF8 string = "zh.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// zh_tw
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageZhTw captures enum value "zh_tw"
-	ConsistencyGroupVolumeLanguageZhTw string = "zh_tw"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// zh_tw.big5
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageZhTwDotBig5 captures enum value "zh_tw.big5"
-	ConsistencyGroupVolumeLanguageZhTwDotBig5 string = "zh_tw.big5"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// zh_tw.big5.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageZhTwDotBig5DotUTF8 captures enum value "zh_tw.big5.utf_8"
-	ConsistencyGroupVolumeLanguageZhTwDotBig5DotUTF8 string = "zh_tw.big5.utf_8"
-
-	// BEGIN DEBUGGING
-	// consistency_group_volume
-	// ConsistencyGroupVolume
-	// language
-	// Language
-	// zh_tw.utf_8
-	// END DEBUGGING
-	// ConsistencyGroupVolumeLanguageZhTwDotUTF8 captures enum value "zh_tw.utf_8"
-	ConsistencyGroupVolumeLanguageZhTwDotUTF8 string = "zh_tw.utf_8"
-)
-
-// prop value enum
-func (m *ConsistencyGroupVolume) validateLanguageEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, consistencyGroupVolumeTypeLanguagePropEnum, true); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *ConsistencyGroupVolume) validateLanguage(formats strfmt.Registry) error {
-	if swag.IsZero(m.Language) { // not required
-		return nil
-	}
-
-	// value enum
-	if err := m.validateLanguageEnum("language", "body", *m.Language); err != nil {
 		return err
 	}
 
@@ -1138,14 +404,14 @@ type ConsistencyGroupVolumeInlineNas struct {
 	Path *string `json:"path,omitempty"`
 
 	// Security style associated with the volume. Valid in POST or PATCH.<br>mixed &dash; Mixed-style security<br>ntfs &dash; NTFS/WIndows-style security<br>unified &dash; Unified-style security, unified UNIX, NFS and CIFS permissions<br>unix &dash; UNIX-style security.
-	// Enum: [mixed ntfs unified unix]
+	// Enum: ["mixed","ntfs","unified","unix"]
 	SecurityStyle *string `json:"security_style,omitempty"`
 
 	// The UNIX user ID of the volume. Valid in POST or PATCH.
 	UID *int64 `json:"uid,omitempty"`
 
 	// UNIX permissions to be viewed as an octal number, consisting of 4 digits derived by adding up bits 4 (read), 2 (write), and 1 (execute). First digit selects the set user ID (4), set group ID (2), and sticky (1) attributes. Second digit selects permission for the owner of the file. Third selects permissions for other users in the same group while the fourth selects permissions for other users not in the group. Valid in POST or PATCH. For security style "mixed" or "unix", the default setting is 0755 in octal (493 in decimal) and for security style "ntfs", the default setting is 0000. In cases where only owner, group, and other permissions are given (as in 755, representing the second, third and fourth digit), the first digit is assumed to be zero.
-	// Example: 755
+	// Example: 493
 	UnixPermissions *int64 `json:"unix_permissions,omitempty"`
 }
 
@@ -1489,15 +755,15 @@ type ConsistencyGroupVolumeInlineNasInlineExportPolicy struct {
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
+	// Identifier for the export policy.
+	// Read Only: true
+	ID *int64 `json:"id,omitempty"`
+
 	// Name of the export policy.
 	Name *string `json:"name,omitempty"`
 
 	// The set of rules that govern the export policy.
 	Rules []*ExportRules `json:"rules,omitempty"`
-
-	// Identifier for the export policy.
-	// Read Only: true
-	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this consistency group volume inline nas inline export policy
@@ -1567,11 +833,11 @@ func (m *ConsistencyGroupVolumeInlineNasInlineExportPolicy) ContextValidate(ctx 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRules(ctx, formats); err != nil {
+	if err := m.contextValidateID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateUUID(ctx, formats); err != nil {
+	if err := m.contextValidateRules(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1595,6 +861,15 @@ func (m *ConsistencyGroupVolumeInlineNasInlineExportPolicy) contextValidateLinks
 	return nil
 }
 
+func (m *ConsistencyGroupVolumeInlineNasInlineExportPolicy) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "nas"+"."+"export_policy"+"."+"id", "body", m.ID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *ConsistencyGroupVolumeInlineNasInlineExportPolicy) contextValidateRules(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Rules); i++ {
@@ -1608,15 +883,6 @@ func (m *ConsistencyGroupVolumeInlineNasInlineExportPolicy) contextValidateRules
 			}
 		}
 
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupVolumeInlineNasInlineExportPolicy) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "nas"+"."+"export_policy"+"."+"uuid", "body", m.UUID); err != nil {
-		return err
 	}
 
 	return nil
@@ -1740,7 +1006,7 @@ func (m *ConsistencyGroupVolumeInlineNasInlineJunctionParent) UnmarshalBinary(b 
 type ConsistencyGroupVolumeInlineProvisioningOptions struct {
 
 	// Operation to perform
-	// Enum: [create add remove]
+	// Enum: ["create","add","remove","reassign"]
 	Action *string `json:"action,omitempty"`
 
 	// Number of elements to perform the operation on.
@@ -1772,7 +1038,7 @@ var consistencyGroupVolumeInlineProvisioningOptionsTypeActionPropEnum []interfac
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["create","add","remove"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["create","add","remove","reassign"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1811,6 +1077,16 @@ const (
 	// END DEBUGGING
 	// ConsistencyGroupVolumeInlineProvisioningOptionsActionRemove captures enum value "remove"
 	ConsistencyGroupVolumeInlineProvisioningOptionsActionRemove string = "remove"
+
+	// BEGIN DEBUGGING
+	// consistency_group_volume_inline_provisioning_options
+	// ConsistencyGroupVolumeInlineProvisioningOptions
+	// action
+	// Action
+	// reassign
+	// END DEBUGGING
+	// ConsistencyGroupVolumeInlineProvisioningOptionsActionReassign captures enum value "reassign"
+	ConsistencyGroupVolumeInlineProvisioningOptionsActionReassign string = "reassign"
 )
 
 // prop value enum
@@ -1904,7 +1180,7 @@ type ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageService struct 
 
 	// Storage service name. If not specified, the default value is the most performant for the platform.
 	//
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -2105,22 +1381,6 @@ type ConsistencyGroupVolumeInlineQosInlinePolicy struct {
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
-	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
-	// Example: 10000
-	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
-
-	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
-	// Example: 500
-	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
-
-	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
-	// Example: 2000
-	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
-
-	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
-	// Example: 500
-	MinThroughputMbps *int64 `json:"min_throughput_mbps,omitempty"`
-
 	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
 	// Example: performance
 	Name *string `json:"name,omitempty"`
@@ -2213,12 +1473,14 @@ func (m *ConsistencyGroupVolumeInlineQosInlinePolicy) UnmarshalBinary(b []byte) 
 type ConsistencyGroupVolumeInlineSpace struct {
 
 	// The available space, in bytes.
+	// Read Only: true
 	Available *int64 `json:"available,omitempty"`
 
 	// Total provisioned size, in bytes.
 	Size *int64 `json:"size,omitempty"`
 
 	// The virtual space used (includes volume reserves) before storage efficiency, in bytes.
+	// Read Only: true
 	Used *int64 `json:"used,omitempty"`
 }
 
@@ -2227,8 +1489,39 @@ func (m *ConsistencyGroupVolumeInlineSpace) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validates this consistency group volume inline space based on context it is used
+// ContextValidate validate this consistency group volume inline space based on the context it is used
 func (m *ConsistencyGroupVolumeInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAvailable(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineSpace) contextValidateAvailable(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"available", "body", m.Available); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"used", "body", m.Used); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -2256,7 +1549,7 @@ func (m *ConsistencyGroupVolumeInlineSpace) UnmarshalBinary(b []byte) error {
 type ConsistencyGroupVolumeInlineTiering struct {
 
 	// Storage tiering placement rules for the object.
-	// Enum: [allowed best_effort disallowed required]
+	// Enum: ["allowed","best_effort","disallowed","required"]
 	Control *string `json:"control,omitempty"`
 
 	// Object stores to use. Used for placement.
@@ -2266,10 +1559,10 @@ type ConsistencyGroupVolumeInlineTiering struct {
 	ObjectStores []*ConsistencyGroupVolumeTieringObjectStoresItems0 `json:"object_stores,omitempty"`
 
 	// Policy that determines whether the user data blocks of a volume in a FabricPool will be tiered to the cloud store when they become cold.
-	// <br>FabricPool combines flash (performance tier) with a cloud store into a single aggregate. Temperature of a volume block increases if it is accessed frequently and decreases when it is not. Valid in POST or PATCH.<br/>all &dash; Allows tiering of both Snapshot copies and active file system user data to the cloud store as soon as possible by ignoring the temperature on the volume blocks.<br/>auto &dash; Allows tiering of both snapshot and active file system user data to the cloud store<br/>none &dash; Volume blocks are not be tiered to the cloud store.<br/>snapshot_only &dash; Allows tiering of only the volume Snapshot copies not associated with the active file system.
+	// <br>FabricPool combines flash (performance tier) with a cloud store into a single aggregate. Temperature of a volume block increases if it is accessed frequently and decreases when it is not. Valid in POST or PATCH.<br/>all &dash; Allows tiering of both snapshots and active file system user data to the cloud store as soon as possible by ignoring the temperature on the volume blocks.<br/>auto &dash; Allows tiering of both snapshot and active file system user data to the cloud store<br/>none &dash; Volume blocks are not be tiered to the cloud store.<br/>snapshot_only &dash; Allows tiering of only the volume snapshots not associated with the active file system.
 	// <br>The default tiering policy is "snapshot-only" for a FlexVol volume and "none" for a FlexGroup volume. The default minimum cooling period for the "snapshot-only" tiering policy is 2 days and for the "auto" tiering policy it is 31 days.
 	//
-	// Enum: [all auto backup none snapshot_only]
+	// Enum: ["all","auto","backup","none","snapshot_only"]
 	Policy *string `json:"policy,omitempty"`
 }
 

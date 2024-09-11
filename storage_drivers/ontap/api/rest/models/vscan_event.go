@@ -34,11 +34,11 @@ type VscanEvent struct {
 	// * server_removed            Server removed from the active scanner-pool
 	//
 	// Read Only: true
-	// Enum: [na vscan_disabled no_data_lif session_uninitialized remote_closed invalid_protocol_msg invalid_session_id inactive_connection invalid_user server_removed]
+	// Enum: ["na","vscan_disabled","no_data_lif","session_uninitialized","remote_closed","invalid_protocol_msg","invalid_session_id","inactive_connection","invalid_user","server_removed"]
 	DisconnectReason *string `json:"disconnect_reason,omitempty"`
 
 	// Specifies the Timestamp of the event.
-	// Example: 2021-11-25T04:29:41.606Z
+	// Example: 2021-11-25 04:29:41.606000
 	// Format: date-time
 	EventTime *strfmt.DateTime `json:"event_time,omitempty"`
 
@@ -60,7 +60,7 @@ type VscanEvent struct {
 	Svm *VscanEventInlineSvm `json:"svm,omitempty"`
 
 	// Specifies the event type.
-	// Enum: [scanner_connected scanner_disconnected scanner_updated scan_internal_error scan_failed scan_timedout file_infected file_renamed file_quarantined file_deleted scanner_busy]
+	// Enum: ["scanner_connected","scanner_disconnected","scanner_updated","scan_internal_error","scan_failed","scan_timedout","file_infected","file_renamed","file_quarantined","file_deleted","scanner_busy"]
 	Type *string `json:"type,omitempty"`
 
 	// Specifies the scan-engine vendor.
@@ -1036,7 +1036,7 @@ func (m *VscanEventInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanEventInlineSvm vscan event inline svm
+// VscanEventInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model vscan_event_inline_svm
 type VscanEventInlineSvm struct {
@@ -1044,12 +1044,12 @@ type VscanEventInlineSvm struct {
 	// links
 	Links *VscanEventInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

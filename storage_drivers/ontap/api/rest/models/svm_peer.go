@@ -16,7 +16,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// SvmPeer An SVM peer relation object.
+// SvmPeer An SVM peer relationship object.
 //
 // swagger:model svm_peer
 type SvmPeer struct {
@@ -33,19 +33,19 @@ type SvmPeer struct {
 	// peer
 	Peer *SvmPeerInlinePeer `json:"peer,omitempty"`
 
-	// SVM peering state. To accept a pending SVM peer request, PATCH the state to "peered". To reject a pending SVM peer request, PATCH the state to "rejected". To suspend a peered SVM peer relation, PATCH the state to "suspended". To resume a suspended SVM peer relation, PATCH the state to "peered". The states "initiated", "pending", and "initializing" are system-generated and cannot be used for PATCH.
+	// SVM peering state. To accept a pending SVM peer request, PATCH the state to "peered". To reject a pending SVM peer request, PATCH the state to "rejected". To suspend a peered SVM peer relationship, PATCH the state to "suspended". To resume a suspended SVM peer relationship, PATCH the state to "peered". The states "initiated", "pending", and "initializing" are system-generated and cannot be used for PATCH.
 	// Example: peered
-	// Enum: [peered rejected suspended initiated pending initializing]
+	// Enum: ["peered","rejected","suspended","initiated","pending","initializing"]
 	State *string `json:"state,omitempty"`
 
 	// svm
 	Svm *SvmPeerInlineSvm `json:"svm,omitempty"`
 
-	// A list of applications for an SVM peer relation.
+	// A list of applications for an SVM peer relationship.
 	// Example: ["snapmirror","lun_copy"]
 	SvmPeerInlineApplications []*SvmPeerApplications `json:"applications,omitempty"`
 
-	// SVM peer relation UUID
+	// SVM peer relationship UUID
 	// Read Only: true
 	UUID *string `json:"uuid,omitempty"`
 }
@@ -762,7 +762,7 @@ func (m *SvmPeerInlinePeerInlineClusterInlineLinks) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// SvmPeerInlinePeerInlineSvm svm peer inline peer inline svm
+// SvmPeerInlinePeerInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model svm_peer_inline_peer_inline_svm
 type SvmPeerInlinePeerInlineSvm struct {
@@ -770,12 +770,12 @@ type SvmPeerInlinePeerInlineSvm struct {
 	// links
 	Links *SvmPeerInlinePeerInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -952,12 +952,12 @@ type SvmPeerInlineSvm struct {
 	// links
 	Links *SvmPeerInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

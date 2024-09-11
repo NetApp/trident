@@ -34,7 +34,7 @@ type ClientService interface {
 
 	SnaplockComplianceClockGet(params *SnaplockComplianceClockGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockComplianceClockGetOK, error)
 
-	SnaplockFilePrivilegedDelete(params *SnaplockFilePrivilegedDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFilePrivilegedDeleteAccepted, error)
+	SnaplockFilePrivilegedDelete(params *SnaplockFilePrivilegedDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFilePrivilegedDeleteOK, *SnaplockFilePrivilegedDeleteAccepted, error)
 
 	SnaplockFileRetentionGet(params *SnaplockFileRetentionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFileRetentionGetOK, error)
 
@@ -42,9 +42,11 @@ type ClientService interface {
 
 	SnaplockFingerprintOperationCollectionGet(params *SnaplockFingerprintOperationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFingerprintOperationCollectionGetOK, error)
 
-	SnaplockFingerprintOperationCreate(params *SnaplockFingerprintOperationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFingerprintOperationCreateAccepted, error)
+	SnaplockFingerprintOperationCreate(params *SnaplockFingerprintOperationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFingerprintOperationCreateCreated, error)
 
 	SnaplockFingerprintOperationDelete(params *SnaplockFingerprintOperationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFingerprintOperationDeleteOK, error)
+
+	SnaplockFingerprintOperationDeleteCollection(params *SnaplockFingerprintOperationDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFingerprintOperationDeleteCollectionOK, error)
 
 	SnaplockFingerprintOperationGet(params *SnaplockFingerprintOperationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFingerprintOperationGetOK, error)
 
@@ -56,6 +58,8 @@ type ClientService interface {
 
 	SnaplockLegalHoldDelete(params *SnaplockLegalHoldDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldDeleteOK, error)
 
+	SnaplockLegalHoldDeleteCollection(params *SnaplockLegalHoldDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldDeleteCollectionOK, error)
+
 	SnaplockLegalHoldFilesGet(params *SnaplockLegalHoldFilesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldFilesGetOK, error)
 
 	SnaplockLegalHoldGet(params *SnaplockLegalHoldGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldGetOK, error)
@@ -66,19 +70,25 @@ type ClientService interface {
 
 	SnaplockLogCollectionGet(params *SnaplockLogCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogCollectionGetOK, error)
 
-	SnaplockLogCreate(params *SnaplockLogCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogCreateAccepted, error)
+	SnaplockLogCreate(params *SnaplockLogCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogCreateCreated, *SnaplockLogCreateAccepted, error)
 
-	SnaplockLogDelete(params *SnaplockLogDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogDeleteAccepted, error)
+	SnaplockLogDelete(params *SnaplockLogDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogDeleteOK, *SnaplockLogDeleteAccepted, error)
+
+	SnaplockLogDeleteCollection(params *SnaplockLogDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogDeleteCollectionOK, *SnaplockLogDeleteCollectionAccepted, error)
 
 	SnaplockLogGet(params *SnaplockLogGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogGetOK, error)
 
-	SnaplockLogModify(params *SnaplockLogModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogModifyAccepted, error)
+	SnaplockLogModify(params *SnaplockLogModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogModifyOK, *SnaplockLogModifyAccepted, error)
+
+	SnaplockLogModifyCollection(params *SnaplockLogModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogModifyCollectionOK, *SnaplockLogModifyCollectionAccepted, error)
 
 	SnaplockRetentionOperationCollectionGet(params *SnaplockRetentionOperationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionOperationCollectionGetOK, error)
 
 	SnaplockRetentionOperationCreate(params *SnaplockRetentionOperationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionOperationCreateCreated, error)
 
 	SnaplockRetentionOperationDelete(params *SnaplockRetentionOperationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionOperationDeleteOK, error)
+
+	SnaplockRetentionOperationDeleteCollection(params *SnaplockRetentionOperationDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionOperationDeleteCollectionOK, error)
 
 	SnaplockRetentionOperationGet(params *SnaplockRetentionOperationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionOperationGetOK, error)
 
@@ -88,9 +98,13 @@ type ClientService interface {
 
 	SnaplockRetentionPolicyDelete(params *SnaplockRetentionPolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionPolicyDeleteOK, error)
 
+	SnaplockRetentionPolicyDeleteCollection(params *SnaplockRetentionPolicyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionPolicyDeleteCollectionOK, error)
+
 	SnaplockRetentionPolicyGet(params *SnaplockRetentionPolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionPolicyGetOK, error)
 
 	SnaplockRetentionPolicyModify(params *SnaplockRetentionPolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionPolicyModifyOK, error)
+
+	SnaplockRetentionPolicyModifyCollection(params *SnaplockRetentionPolicyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionPolicyModifyCollectionOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -112,8 +126,8 @@ func (a *Client) SnaplockComplianceClockCollectionGet(params *SnaplockCompliance
 		ID:                 "snaplock_compliance_clock_collection_get",
 		Method:             "GET",
 		PathPattern:        "/storage/snaplock/compliance-clocks",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockComplianceClockCollectionGetReader{formats: a.formats},
@@ -157,8 +171,8 @@ func (a *Client) SnaplockComplianceClockCreate(params *SnaplockComplianceClockCr
 		ID:                 "snaplock_compliance_clock_create",
 		Method:             "POST",
 		PathPattern:        "/storage/snaplock/compliance-clocks",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockComplianceClockCreateReader{formats: a.formats},
@@ -200,8 +214,8 @@ func (a *Client) SnaplockComplianceClockGet(params *SnaplockComplianceClockGetPa
 		ID:                 "snaplock_compliance_clock_get",
 		Method:             "GET",
 		PathPattern:        "/storage/snaplock/compliance-clocks/{node.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockComplianceClockGetReader{formats: a.formats},
@@ -234,7 +248,7 @@ func (a *Client) SnaplockComplianceClockGet(params *SnaplockComplianceClockGetPa
 ### Learn more
 * [`DOC /storage/snaplock/file/{volume.uuid}/{path}`](#docs-snaplock-storage_snaplock_file_{volume.uuid}_{path})
 */
-func (a *Client) SnaplockFilePrivilegedDelete(params *SnaplockFilePrivilegedDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFilePrivilegedDeleteAccepted, error) {
+func (a *Client) SnaplockFilePrivilegedDelete(params *SnaplockFilePrivilegedDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFilePrivilegedDeleteOK, *SnaplockFilePrivilegedDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSnaplockFilePrivilegedDeleteParams()
@@ -243,8 +257,8 @@ func (a *Client) SnaplockFilePrivilegedDelete(params *SnaplockFilePrivilegedDele
 		ID:                 "snaplock_file_privileged_delete",
 		Method:             "DELETE",
 		PathPattern:        "/storage/snaplock/file/{volume.uuid}/{path}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockFilePrivilegedDeleteReader{formats: a.formats},
@@ -258,15 +272,17 @@ func (a *Client) SnaplockFilePrivilegedDelete(params *SnaplockFilePrivilegedDele
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SnaplockFilePrivilegedDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SnaplockFilePrivilegedDeleteOK:
+		return value, nil, nil
+	case *SnaplockFilePrivilegedDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SnaplockFilePrivilegedDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -286,8 +302,8 @@ func (a *Client) SnaplockFileRetentionGet(params *SnaplockFileRetentionGetParams
 		ID:                 "snaplock_file_retention_get",
 		Method:             "GET",
 		PathPattern:        "/storage/snaplock/file/{volume.uuid}/{path}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockFileRetentionGetReader{formats: a.formats},
@@ -313,7 +329,7 @@ func (a *Client) SnaplockFileRetentionGet(params *SnaplockFileRetentionGetParams
 }
 
 /*
-	SnaplockFileRetentionTimeModify Updates the SnapLock retention time of a file or extends the retention time of a WORM file. Input parameter "expiry_time" expects the date in ISO 8601 format, "infinite", or "unspecified".
+	SnaplockFileRetentionTimeModify Updates the SnapLock retention time of a file or extends the retention time of a WORM file. Input parameters "expiry_time" or "retention_period" can be used to set or extend the retention time of file. Both "expiry_time" and "retention_period" parameters expect the date in ISO 8601 format. Additionally, the "expiry_time" parameter can also be set to "infinite" or "unspecified" and the "retention_period" parameter can also be set to "infinite". The input parameters are mutually exclusive.
 
 ### Related ONTAP commands
 * `volume file retention set`
@@ -329,8 +345,8 @@ func (a *Client) SnaplockFileRetentionTimeModify(params *SnaplockFileRetentionTi
 		ID:                 "snaplock_file_retention_time_modify",
 		Method:             "PATCH",
 		PathPattern:        "/storage/snaplock/file/{volume.uuid}/{path}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockFileRetentionTimeModifyReader{formats: a.formats},
@@ -378,8 +394,8 @@ func (a *Client) SnaplockFingerprintOperationCollectionGet(params *SnaplockFinge
 		ID:                 "snaplock_fingerprint_operation_collection_get",
 		Method:             "GET",
 		PathPattern:        "/storage/snaplock/file-fingerprints",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockFingerprintOperationCollectionGetReader{formats: a.formats},
@@ -413,7 +429,7 @@ func (a *Client) SnaplockFingerprintOperationCollectionGet(params *SnaplockFinge
 * `path` - Path of the file.
 ### Default property values
 If not specified in POST, the follow default property values are assigned:
-* `algorithm` - _md5_
+* `algorithm` - _sha256_
 ### Related ONTAP commands
 * `volume file fingerprint start`
 ### Example
@@ -425,7 +441,7 @@ POST "/api/storage/snaplock/file-fingerprints" '{"svm":{"uuid":"23940494-3f3a-11
 ### Learn more
 * [`DOC /storage/snaplock/file-fingerprints`](#docs-snaplock-storage_snaplock_file-fingerprints)
 */
-func (a *Client) SnaplockFingerprintOperationCreate(params *SnaplockFingerprintOperationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFingerprintOperationCreateAccepted, error) {
+func (a *Client) SnaplockFingerprintOperationCreate(params *SnaplockFingerprintOperationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFingerprintOperationCreateCreated, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSnaplockFingerprintOperationCreateParams()
@@ -434,8 +450,8 @@ func (a *Client) SnaplockFingerprintOperationCreate(params *SnaplockFingerprintO
 		ID:                 "snaplock_fingerprint_operation_create",
 		Method:             "POST",
 		PathPattern:        "/storage/snaplock/file-fingerprints",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockFingerprintOperationCreateReader{formats: a.formats},
@@ -451,7 +467,7 @@ func (a *Client) SnaplockFingerprintOperationCreate(params *SnaplockFingerprintO
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*SnaplockFingerprintOperationCreateAccepted)
+	success, ok := result.(*SnaplockFingerprintOperationCreateCreated)
 	if ok {
 		return success, nil
 	}
@@ -477,8 +493,8 @@ func (a *Client) SnaplockFingerprintOperationDelete(params *SnaplockFingerprintO
 		ID:                 "snaplock_fingerprint_operation_delete",
 		Method:             "DELETE",
 		PathPattern:        "/storage/snaplock/file-fingerprints/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockFingerprintOperationDeleteReader{formats: a.formats},
@@ -504,6 +520,44 @@ func (a *Client) SnaplockFingerprintOperationDelete(params *SnaplockFingerprintO
 }
 
 /*
+SnaplockFingerprintOperationDeleteCollection snaplock fingerprint operation delete collection API
+*/
+func (a *Client) SnaplockFingerprintOperationDeleteCollection(params *SnaplockFingerprintOperationDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFingerprintOperationDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSnaplockFingerprintOperationDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "snaplock_fingerprint_operation_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/storage/snaplock/file-fingerprints",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SnaplockFingerprintOperationDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SnaplockFingerprintOperationDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SnaplockFingerprintOperationDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	SnaplockFingerprintOperationGet Retrieves the file fingerprint information for a specific session ID.
 
 ### Related ONTAP commands
@@ -520,8 +574,8 @@ func (a *Client) SnaplockFingerprintOperationGet(params *SnaplockFingerprintOper
 		ID:                 "snaplock_fingerprint_operation_get",
 		Method:             "GET",
 		PathPattern:        "/storage/snaplock/file-fingerprints/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockFingerprintOperationGetReader{formats: a.formats},
@@ -573,8 +627,8 @@ func (a *Client) SnaplockLegalHoldBegin(params *SnaplockLegalHoldBeginParams, au
 		ID:                 "snaplock_legal_hold_begin",
 		Method:             "POST",
 		PathPattern:        "/storage/snaplock/litigations",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockLegalHoldBeginReader{formats: a.formats},
@@ -616,8 +670,8 @@ func (a *Client) SnaplockLegalHoldCollectionGet(params *SnaplockLegalHoldCollect
 		ID:                 "snaplock_legal_hold_collection_get",
 		Method:             "GET",
 		PathPattern:        "/storage/snaplock/litigations",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockLegalHoldCollectionGetReader{formats: a.formats},
@@ -663,8 +717,8 @@ func (a *Client) SnaplockLegalHoldCreate(params *SnaplockLegalHoldCreateParams, 
 		ID:                 "snaplock_legal_hold_create",
 		Method:             "POST",
 		PathPattern:        "/storage/snaplock/litigations/{litigation.id}/operations",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockLegalHoldCreateReader{formats: a.formats},
@@ -712,8 +766,8 @@ func (a *Client) SnaplockLegalHoldDelete(params *SnaplockLegalHoldDeleteParams, 
 		ID:                 "snaplock_legal_hold_delete",
 		Method:             "DELETE",
 		PathPattern:        "/storage/snaplock/litigations/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockLegalHoldDeleteReader{formats: a.formats},
@@ -739,6 +793,44 @@ func (a *Client) SnaplockLegalHoldDelete(params *SnaplockLegalHoldDeleteParams, 
 }
 
 /*
+SnaplockLegalHoldDeleteCollection snaplock legal hold delete collection API
+*/
+func (a *Client) SnaplockLegalHoldDeleteCollection(params *SnaplockLegalHoldDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSnaplockLegalHoldDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "snaplock_legal_hold_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/storage/snaplock/litigations",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SnaplockLegalHoldDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SnaplockLegalHoldDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SnaplockLegalHoldDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 SnaplockLegalHoldFilesGet Displays the list of files for the specified litigation ID.
 */
 func (a *Client) SnaplockLegalHoldFilesGet(params *SnaplockLegalHoldFilesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldFilesGetOK, error) {
@@ -750,8 +842,8 @@ func (a *Client) SnaplockLegalHoldFilesGet(params *SnaplockLegalHoldFilesGetPara
 		ID:                 "snaplock_legal_hold_files_get",
 		Method:             "GET",
 		PathPattern:        "/storage/snaplock/litigations/{litigation.id}/files",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockLegalHoldFilesGetReader{formats: a.formats},
@@ -793,8 +885,8 @@ func (a *Client) SnaplockLegalHoldGet(params *SnaplockLegalHoldGetParams, authIn
 		ID:                 "snaplock_legal_hold_get",
 		Method:             "GET",
 		PathPattern:        "/storage/snaplock/litigations/{litigation.id}/operations/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockLegalHoldGetReader{formats: a.formats},
@@ -836,8 +928,8 @@ func (a *Client) SnaplockLegalHoldInstanceGet(params *SnaplockLegalHoldInstanceG
 		ID:                 "snaplock_legal_hold_instance_get",
 		Method:             "GET",
 		PathPattern:        "/storage/snaplock/litigations/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockLegalHoldInstanceGetReader{formats: a.formats},
@@ -885,8 +977,8 @@ func (a *Client) SnaplockLegalHoldOperationDelete(params *SnaplockLegalHoldOpera
 		ID:                 "snaplock_legal_hold_operation_delete",
 		Method:             "DELETE",
 		PathPattern:        "/storage/snaplock/litigations/{litigation.id}/operations/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockLegalHoldOperationDeleteReader{formats: a.formats},
@@ -928,8 +1020,8 @@ func (a *Client) SnaplockLogCollectionGet(params *SnaplockLogCollectionGetParams
 		ID:                 "snaplock_log_collection_get",
 		Method:             "GET",
 		PathPattern:        "/storage/snaplock/audit-logs",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockLogCollectionGetReader{formats: a.formats},
@@ -955,7 +1047,7 @@ func (a *Client) SnaplockLogCollectionGet(params *SnaplockLogCollectionGetParams
 }
 
 /*
-	SnaplockLogCreate Creates a SnapLock log configuration for an SVM. A SnapLock log configuration consists of a volume to store the log, the maximum size of the log file, and the default period of time for which the log file should be retained. The input parameter retention_period expects the duration in ISO 8601 format.
+	SnaplockLogCreate Creates a SnapLock log configuration for an SVM. A SnapLock log configuration consists of a volume to store the log, the maximum size of the log file, and the default period of time for which the log file should be retained. The volume must be a Read-Write SnapLock volume of type Enterprise or Compliance. The input parameter retention_period expects the duration in ISO 8601 format.
 
 ### Required properties
 * `svm.uuid` or `svm.name` - Name or UUID of the SVM.
@@ -972,7 +1064,7 @@ If not specified in POST, the following default property values are assigned:
 ### Learn more
 * [`DOC /storage/snaplock/audit-logs`](#docs-snaplock-storage_snaplock_audit-logs)
 */
-func (a *Client) SnaplockLogCreate(params *SnaplockLogCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogCreateAccepted, error) {
+func (a *Client) SnaplockLogCreate(params *SnaplockLogCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogCreateCreated, *SnaplockLogCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSnaplockLogCreateParams()
@@ -981,8 +1073,8 @@ func (a *Client) SnaplockLogCreate(params *SnaplockLogCreateParams, authInfo run
 		ID:                 "snaplock_log_create",
 		Method:             "POST",
 		PathPattern:        "/storage/snaplock/audit-logs",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockLogCreateReader{formats: a.formats},
@@ -996,15 +1088,17 @@ func (a *Client) SnaplockLogCreate(params *SnaplockLogCreateParams, authInfo run
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SnaplockLogCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SnaplockLogCreateCreated:
+		return value, nil, nil
+	case *SnaplockLogCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SnaplockLogCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1015,7 +1109,7 @@ func (a *Client) SnaplockLogCreate(params *SnaplockLogCreateParams, authInfo run
 ### Learn more
 * [`DOC /storage/snaplock/audit-logs`](#docs-snaplock-storage_snaplock_audit-logs)
 */
-func (a *Client) SnaplockLogDelete(params *SnaplockLogDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogDeleteAccepted, error) {
+func (a *Client) SnaplockLogDelete(params *SnaplockLogDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogDeleteOK, *SnaplockLogDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSnaplockLogDeleteParams()
@@ -1024,8 +1118,8 @@ func (a *Client) SnaplockLogDelete(params *SnaplockLogDeleteParams, authInfo run
 		ID:                 "snaplock_log_delete",
 		Method:             "DELETE",
 		PathPattern:        "/storage/snaplock/audit-logs/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockLogDeleteReader{formats: a.formats},
@@ -1039,15 +1133,57 @@ func (a *Client) SnaplockLogDelete(params *SnaplockLogDeleteParams, authInfo run
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SnaplockLogDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SnaplockLogDeleteOK:
+		return value, nil, nil
+	case *SnaplockLogDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SnaplockLogDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SnaplockLogDeleteCollection snaplock log delete collection API
+*/
+func (a *Client) SnaplockLogDeleteCollection(params *SnaplockLogDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogDeleteCollectionOK, *SnaplockLogDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSnaplockLogDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "snaplock_log_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/storage/snaplock/audit-logs",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SnaplockLogDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SnaplockLogDeleteCollectionOK:
+		return value, nil, nil
+	case *SnaplockLogDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SnaplockLogDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1067,8 +1203,8 @@ func (a *Client) SnaplockLogGet(params *SnaplockLogGetParams, authInfo runtime.C
 		ID:                 "snaplock_log_get",
 		Method:             "GET",
 		PathPattern:        "/storage/snaplock/audit-logs/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockLogGetReader{formats: a.formats},
@@ -1104,7 +1240,7 @@ func (a *Client) SnaplockLogGet(params *SnaplockLogGetParams, authInfo runtime.C
 ### Learn more
 * [`DOC /storage/snaplock/audit-logs`](#docs-snaplock-storage_snaplock_audit-logs)
 */
-func (a *Client) SnaplockLogModify(params *SnaplockLogModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogModifyAccepted, error) {
+func (a *Client) SnaplockLogModify(params *SnaplockLogModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogModifyOK, *SnaplockLogModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSnaplockLogModifyParams()
@@ -1113,8 +1249,8 @@ func (a *Client) SnaplockLogModify(params *SnaplockLogModifyParams, authInfo run
 		ID:                 "snaplock_log_modify",
 		Method:             "PATCH",
 		PathPattern:        "/storage/snaplock/audit-logs/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockLogModifyReader{formats: a.formats},
@@ -1128,15 +1264,57 @@ func (a *Client) SnaplockLogModify(params *SnaplockLogModifyParams, authInfo run
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SnaplockLogModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SnaplockLogModifyOK:
+		return value, nil, nil
+	case *SnaplockLogModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SnaplockLogModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SnaplockLogModifyCollection snaplock log modify collection API
+*/
+func (a *Client) SnaplockLogModifyCollection(params *SnaplockLogModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogModifyCollectionOK, *SnaplockLogModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSnaplockLogModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "snaplock_log_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/storage/snaplock/audit-logs",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SnaplockLogModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SnaplockLogModifyCollectionOK:
+		return value, nil, nil
+	case *SnaplockLogModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SnaplockLogModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1156,8 +1334,8 @@ func (a *Client) SnaplockRetentionOperationCollectionGet(params *SnaplockRetenti
 		ID:                 "snaplock_retention_operation_collection_get",
 		Method:             "GET",
 		PathPattern:        "/storage/snaplock/event-retention/operations",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockRetentionOperationCollectionGetReader{formats: a.formats},
@@ -1183,11 +1361,15 @@ func (a *Client) SnaplockRetentionOperationCollectionGet(params *SnaplockRetenti
 }
 
 /*
-	SnaplockRetentionOperationCreate Creates an EBR policy.
+	SnaplockRetentionOperationCreate Start an EBR operation. This operation applies an EBR policy to a specific volume or to a path within the volume.
 
 ### Required properties
-* `path` - Path of the file.
-* `policy.name` - Name of the EBR policy.
+  - `path` - Path of the file.
+  - `policy.name` - Name of the EBR policy.
+    Either volume.name or volume.uuid must be specified when applying EBR policy to the volume or a path within the volume.
+  - `volume.name` - Volume name.
+  - `volume.uuid` - Volume uuid.
+
 ### Related ONTAP commands
 * `snaplock event-retention apply`
 ### Learn more
@@ -1202,8 +1384,8 @@ func (a *Client) SnaplockRetentionOperationCreate(params *SnaplockRetentionOpera
 		ID:                 "snaplock_retention_operation_create",
 		Method:             "POST",
 		PathPattern:        "/storage/snaplock/event-retention/operations",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockRetentionOperationCreateReader{formats: a.formats},
@@ -1245,8 +1427,8 @@ func (a *Client) SnaplockRetentionOperationDelete(params *SnaplockRetentionOpera
 		ID:                 "snaplock_retention_operation_delete",
 		Method:             "DELETE",
 		PathPattern:        "/storage/snaplock/event-retention/operations/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockRetentionOperationDeleteReader{formats: a.formats},
@@ -1272,6 +1454,44 @@ func (a *Client) SnaplockRetentionOperationDelete(params *SnaplockRetentionOpera
 }
 
 /*
+SnaplockRetentionOperationDeleteCollection snaplock retention operation delete collection API
+*/
+func (a *Client) SnaplockRetentionOperationDeleteCollection(params *SnaplockRetentionOperationDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionOperationDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSnaplockRetentionOperationDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "snaplock_retention_operation_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/storage/snaplock/event-retention/operations",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SnaplockRetentionOperationDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SnaplockRetentionOperationDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SnaplockRetentionOperationDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	SnaplockRetentionOperationGet Retrieves a list of attributes for an EBR operation.
 
 ### Related ONTAP commands
@@ -1288,8 +1508,8 @@ func (a *Client) SnaplockRetentionOperationGet(params *SnaplockRetentionOperatio
 		ID:                 "snaplock_retention_operation_get",
 		Method:             "GET",
 		PathPattern:        "/storage/snaplock/event-retention/operations/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockRetentionOperationGetReader{formats: a.formats},
@@ -1331,8 +1551,8 @@ func (a *Client) SnaplockRetentionPolicyCollectionGet(params *SnaplockRetentionP
 		ID:                 "snaplock_retention_policy_collection_get",
 		Method:             "GET",
 		PathPattern:        "/storage/snaplock/event-retention/policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockRetentionPolicyCollectionGetReader{formats: a.formats},
@@ -1377,8 +1597,8 @@ func (a *Client) SnaplockRetentionPolicyCreate(params *SnaplockRetentionPolicyCr
 		ID:                 "snaplock_retention_policy_create",
 		Method:             "POST",
 		PathPattern:        "/storage/snaplock/event-retention/policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockRetentionPolicyCreateReader{formats: a.formats},
@@ -1408,6 +1628,13 @@ func (a *Client) SnaplockRetentionPolicyCreate(params *SnaplockRetentionPolicyCr
 
 ### Related ONTAP commands
 * `snaplock event-retention policy delete`
+### Example
+Delete the specified Event Based Retention policy "policy_name":
+<br/>
+```
+DELETE "/api/storage/snaplock/event-retention/policies/{policy.name}"
+```
+<br/>
 ### Learn more
 * [`DOC /storage/snaplock/event-retention/policies`](#docs-snaplock-storage_snaplock_event-retention_policies)
 */
@@ -1420,8 +1647,8 @@ func (a *Client) SnaplockRetentionPolicyDelete(params *SnaplockRetentionPolicyDe
 		ID:                 "snaplock_retention_policy_delete",
 		Method:             "DELETE",
 		PathPattern:        "/storage/snaplock/event-retention/policies/{policy.name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockRetentionPolicyDeleteReader{formats: a.formats},
@@ -1447,6 +1674,44 @@ func (a *Client) SnaplockRetentionPolicyDelete(params *SnaplockRetentionPolicyDe
 }
 
 /*
+SnaplockRetentionPolicyDeleteCollection snaplock retention policy delete collection API
+*/
+func (a *Client) SnaplockRetentionPolicyDeleteCollection(params *SnaplockRetentionPolicyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionPolicyDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSnaplockRetentionPolicyDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "snaplock_retention_policy_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/storage/snaplock/event-retention/policies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SnaplockRetentionPolicyDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SnaplockRetentionPolicyDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SnaplockRetentionPolicyDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	SnaplockRetentionPolicyGet Retrieves a list of attributes of the specified Event Based Retention (EBR) policy.
 
 ### Related ONTAP commands
@@ -1463,8 +1728,8 @@ func (a *Client) SnaplockRetentionPolicyGet(params *SnaplockRetentionPolicyGetPa
 		ID:                 "snaplock_retention_policy_get",
 		Method:             "GET",
 		PathPattern:        "/storage/snaplock/event-retention/policies/{policy.name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockRetentionPolicyGetReader{formats: a.formats},
@@ -1498,7 +1763,7 @@ func (a *Client) SnaplockRetentionPolicyGet(params *SnaplockRetentionPolicyGetPa
 Updates the retention period of an EBR policy "policy_name":
 <br/>
 ```
-PATCH "/api/storage/snaplock/event-retention/policies/" '{"name": "policy_name","retention_period": "P20Y"}'
+PATCH "/api/storage/snaplock/event-retention/policies/{policy.name}" '{"retention_period": "P20Y"}'
 ```
 <br/>
 ### Learn more
@@ -1513,8 +1778,8 @@ func (a *Client) SnaplockRetentionPolicyModify(params *SnaplockRetentionPolicyMo
 		ID:                 "snaplock_retention_policy_modify",
 		Method:             "PATCH",
 		PathPattern:        "/storage/snaplock/event-retention/policies/{policy.name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnaplockRetentionPolicyModifyReader{formats: a.formats},
@@ -1536,6 +1801,44 @@ func (a *Client) SnaplockRetentionPolicyModify(params *SnaplockRetentionPolicyMo
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SnaplockRetentionPolicyModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SnaplockRetentionPolicyModifyCollection snaplock retention policy modify collection API
+*/
+func (a *Client) SnaplockRetentionPolicyModifyCollection(params *SnaplockRetentionPolicyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionPolicyModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSnaplockRetentionPolicyModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "snaplock_retention_policy_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/storage/snaplock/event-retention/policies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SnaplockRetentionPolicyModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SnaplockRetentionPolicyModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SnaplockRetentionPolicyModifyCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ExportRuleModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the export rule modify o k response
+func (o *ExportRuleModifyOK) Code() int {
+	return 200
+}
+
 func (o *ExportRuleModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] exportRuleModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] exportRuleModifyOK", 200)
 }
 
 func (o *ExportRuleModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] exportRuleModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] exportRuleModifyOK", 200)
 }
 
 func (o *ExportRuleModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,6 +112,9 @@ func NewExportRuleModifyDefault(code int) *ExportRuleModifyDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 262196     | Field 'svm.name' is not supported in the body of PATCH request |
+| 262197     | The value provided is invalid for the field |
+| 262203     | Field 'svm.uuid' is not supported in the body of PATCH request |
 | 1703954    | Export policy does not exist |
 | 1704036    | Invalid clientmatch:  missing domain name |
 | 1704037    | Invalid clientmatch:  missing network name |
@@ -118,21 +127,18 @@ func NewExportRuleModifyDefault(code int) *ExportRuleModifyDefault {
 | 1704044    | Invalid clientmatch: invalid characters in host name |
 | 1704045    | Invalid clientmatch: invalid characters in domain name |
 | 1704050    | Invalid clientmatch: clientmatch list contains a duplicate string. Duplicate strings in a clientmatch list are not supported |
-| 1704051    | Warning: Not adding any new strings to the clientmatch field for ruleindex. All of the match strings are already in the clientmatch list |
+| 1704054    | Invalid clientmatch: invalid characters in netgroup name. Valid characters for a netgroup name are 0-9, A-Z, a-z, ".", "_" and "-" |
 | 1704064    | Clientmatch host name too long |
 | 1704065    | Clientmatch domain name too long |
-| 3277000    | Upgrade all nodes to Data ONTAP 9.0.0 or above to use krb5p as a security flavor in export-policy rules |
+| 3277000    | Upgrade all nodes to ONTAP 9.0.0 or above to use krb5p as a security flavor in export-policy rules |
 | 3277083    | User ID is not valid. Enter a value for User ID from 0 to 4294967295 |
+| 3277149    | The "Anon" field cannot be an empty string |
+| 6691623    | User is not authorized |
 */
 type ExportRuleModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the export rule modify default response
-func (o *ExportRuleModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this export rule modify default response has a 2xx status code
@@ -160,12 +166,19 @@ func (o *ExportRuleModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the export rule modify default response
+func (o *ExportRuleModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ExportRuleModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] export_rule_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] export_rule_modify default %s", o._statusCode, payload)
 }
 
 func (o *ExportRuleModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] export_rule_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] export_rule_modify default %s", o._statusCode, payload)
 }
 
 func (o *ExportRuleModifyDefault) GetPayload() *models.ErrorResponse {

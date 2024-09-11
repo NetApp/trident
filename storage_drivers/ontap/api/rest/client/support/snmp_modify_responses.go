@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SnmpModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snmp modify o k response
+func (o *SnmpModifyOK) Code() int {
+	return 200
+}
+
 func (o *SnmpModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /support/snmp][%d] snmpModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /support/snmp][%d] snmpModifyOK", 200)
 }
 
 func (o *SnmpModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /support/snmp][%d] snmpModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /support/snmp][%d] snmpModifyOK", 200)
 }
 
 func (o *SnmpModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,16 +114,12 @@ func NewSnmpModifyDefault(code int) *SnmpModifyDefault {
 | ---------- | ----------- |
 | 1179738 | Cluster identification not available for modification since a cluster has not been created. |
 | 1179739 | Cluster identification modification is not available in maintenance mode or other boot modes. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SnmpModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snmp modify default response
-func (o *SnmpModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snmp modify default response has a 2xx status code
@@ -145,12 +147,19 @@ func (o *SnmpModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snmp modify default response
+func (o *SnmpModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnmpModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /support/snmp][%d] snmp_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/snmp][%d] snmp_modify default %s", o._statusCode, payload)
 }
 
 func (o *SnmpModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /support/snmp][%d] snmp_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/snmp][%d] snmp_modify default %s", o._statusCode, payload)
 }
 
 func (o *SnmpModifyDefault) GetPayload() *models.ErrorResponse {

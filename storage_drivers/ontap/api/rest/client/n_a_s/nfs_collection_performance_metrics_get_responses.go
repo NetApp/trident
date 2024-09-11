@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NfsCollectionPerformanceMetricsGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nfs collection performance metrics get o k response
+func (o *NfsCollectionPerformanceMetricsGetOK) Code() int {
+	return 200
+}
+
 func (o *NfsCollectionPerformanceMetricsGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}/metrics][%d] nfsCollectionPerformanceMetricsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}/metrics][%d] nfsCollectionPerformanceMetricsGetOK %s", 200, payload)
 }
 
 func (o *NfsCollectionPerformanceMetricsGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}/metrics][%d] nfsCollectionPerformanceMetricsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}/metrics][%d] nfsCollectionPerformanceMetricsGetOK %s", 200, payload)
 }
 
 func (o *NfsCollectionPerformanceMetricsGetOK) GetPayload() *models.PerformanceSvmNfsResponse {
@@ -122,11 +130,6 @@ type NfsCollectionPerformanceMetricsGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the nfs collection performance metrics get default response
-func (o *NfsCollectionPerformanceMetricsGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this nfs collection performance metrics get default response has a 2xx status code
 func (o *NfsCollectionPerformanceMetricsGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NfsCollectionPerformanceMetricsGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nfs collection performance metrics get default response
+func (o *NfsCollectionPerformanceMetricsGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NfsCollectionPerformanceMetricsGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}/metrics][%d] nfs_collection_performance_metrics_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}/metrics][%d] nfs_collection_performance_metrics_get default %s", o._statusCode, payload)
 }
 
 func (o *NfsCollectionPerformanceMetricsGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}/metrics][%d] nfs_collection_performance_metrics_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}/metrics][%d] nfs_collection_performance_metrics_get default %s", o._statusCode, payload)
 }
 
 func (o *NfsCollectionPerformanceMetricsGetDefault) GetPayload() *models.ErrorResponse {

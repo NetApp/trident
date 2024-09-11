@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *CifsShareCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the cifs share create created response
+func (o *CifsShareCreateCreated) Code() int {
+	return 201
+}
+
 func (o *CifsShareCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/shares][%d] cifsShareCreateCreated ", 201)
+	return fmt.Sprintf("[POST /protocols/cifs/shares][%d] cifsShareCreateCreated", 201)
 }
 
 func (o *CifsShareCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/shares][%d] cifsShareCreateCreated ", 201)
+	return fmt.Sprintf("[POST /protocols/cifs/shares][%d] cifsShareCreateCreated", 201)
 }
 
 func (o *CifsShareCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -124,21 +130,20 @@ func NewCifsShareCreateDefault(code int) *CifsShareCreateDefault {
 | 656422     | Failed to create the home directory share because the directory shares must specify a path relative to one or more home directory search paths |
 | 656423     | Failed to create CIFS share. The Shares must define an absolute share path |
 | 656424     | Failed to create CIFS the administrator share 'c$' because you are not permitted to created any admin shares |
+| 656486     | Failed to create CIFS share because the share cannot be made continuously available for FlexCache volumes. |
 | 655625     | Failed to create CIFS share. The Shares path is not a valid file-type for CIFS share |
 | 656426     | CIFS Share Creation failed because the share name is invalid |
 | 655655     | no-strict-security should be set to true only if unix_symlink is configured as "local" or "widelink" |
 | 655394     | Failed to create CIFS share because share cannot be made continuously available unless running SMB3 or later. |
 | 4849678    | Failed to create CIFS share because the specified UNIX group does not exist |
+| 655622     | Invalid value for parameter {max-connections-per-share}. Maximum connections on CIFS share {name} must be between 1 to 4294967295.|
+| 655446     | Failed to resolve the security identifier (SID) for the account named {account_name}. Reason: {Reason for failure}.|
+| 2621706    | The specified SVM UUID is incorrect for the specified SVM name |
 */
 type CifsShareCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cifs share create default response
-func (o *CifsShareCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cifs share create default response has a 2xx status code
@@ -166,12 +171,19 @@ func (o *CifsShareCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs share create default response
+func (o *CifsShareCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsShareCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/shares][%d] cifs_share_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/shares][%d] cifs_share_create default %s", o._statusCode, payload)
 }
 
 func (o *CifsShareCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/shares][%d] cifs_share_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/shares][%d] cifs_share_create default %s", o._statusCode, payload)
 }
 
 func (o *CifsShareCreateDefault) GetPayload() *models.ErrorResponse {

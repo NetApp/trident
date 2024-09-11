@@ -17,6 +17,10 @@ import (
 // swagger:model ad_domain_svm
 type AdDomainSvm struct {
 
+	// The default site used by LIFs that do not have a site membership.
+	//
+	DefaultSite *string `json:"default_site,omitempty"`
+
 	// The fully qualified domain name of the Windows Active Directory to which this CIFS server belongs. A CIFS server appears as a member of Windows server object in the Active Directory store.
 	//
 	// Example: example.com

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NfsClientsMapGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nfs clients map get o k response
+func (o *NfsClientsMapGetOK) Code() int {
+	return 200
+}
+
 func (o *NfsClientsMapGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/connected-client-maps][%d] nfsClientsMapGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/connected-client-maps][%d] nfsClientsMapGetOK %s", 200, payload)
 }
 
 func (o *NfsClientsMapGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/connected-client-maps][%d] nfsClientsMapGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/connected-client-maps][%d] nfsClientsMapGetOK %s", 200, payload)
 }
 
 func (o *NfsClientsMapGetOK) GetPayload() *models.NfsClientsMapResponse {
@@ -122,11 +130,6 @@ type NfsClientsMapGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the nfs clients map get default response
-func (o *NfsClientsMapGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this nfs clients map get default response has a 2xx status code
 func (o *NfsClientsMapGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NfsClientsMapGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nfs clients map get default response
+func (o *NfsClientsMapGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NfsClientsMapGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/connected-client-maps][%d] nfs_clients_map_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/connected-client-maps][%d] nfs_clients_map_get default %s", o._statusCode, payload)
 }
 
 func (o *NfsClientsMapGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/connected-client-maps][%d] nfs_clients_map_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/connected-client-maps][%d] nfs_clients_map_get default %s", o._statusCode, payload)
 }
 
 func (o *NfsClientsMapGetDefault) GetPayload() *models.ErrorResponse {

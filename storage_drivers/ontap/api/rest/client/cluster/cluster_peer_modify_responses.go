@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -52,7 +53,7 @@ ClusterPeerModifyOK describes a response with status code 200, with default head
 OK
 */
 type ClusterPeerModifyOK struct {
-	Payload *models.ClusterPeerSetupResponse
+	Payload *models.ClusterPeer
 }
 
 // IsSuccess returns true when this cluster peer modify o k response has a 2xx status code
@@ -80,21 +81,28 @@ func (o *ClusterPeerModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cluster peer modify o k response
+func (o *ClusterPeerModifyOK) Code() int {
+	return 200
+}
+
 func (o *ClusterPeerModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /cluster/peers/{uuid}][%d] clusterPeerModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/peers/{uuid}][%d] clusterPeerModifyOK %s", 200, payload)
 }
 
 func (o *ClusterPeerModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /cluster/peers/{uuid}][%d] clusterPeerModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/peers/{uuid}][%d] clusterPeerModifyOK %s", 200, payload)
 }
 
-func (o *ClusterPeerModifyOK) GetPayload() *models.ClusterPeerSetupResponse {
+func (o *ClusterPeerModifyOK) GetPayload() *models.ClusterPeer {
 	return o.Payload
 }
 
 func (o *ClusterPeerModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ClusterPeerSetupResponse)
+	o.Payload = new(models.ClusterPeer)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -118,29 +126,34 @@ func NewClusterPeerModifyDefault(code int) *ClusterPeerModifyDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 2621462 | SVM name does not exist. |
+| 4653061 | The specified remote cluster is invalid. |
+| 4653218 | An introductory RPC to the peer address failed to connect. Verify that the peer address is correct, and then try the operation again. |
+| 4653229 | Specified value for \"-offer-expiration\" is obsolete. |
+| 4653236 | The specified passphrase is too short. |
+| 4653257 | The vifmgr process is not running. |
 | 4653261 | Error finding IPspace. |
+| 4653671 | No operational intercluster LIFs of the IPv4 address family is available on this node for the specified IPspace. |
 | 4655058 | Expiration time cannot be more than 7 days in the future. |
+| 4655061 | SVM does not exist in the IPspace. |
 | 4656070 | The encryption protocol is meaningful only with authenticated cluster peer relationships. |
 | 4656072 | The name must conform to the same rules as a cluster name. |
 | 4656073 | Changing the encryption state requires the refreshing of the authentication passphrase. |
 | 4656075 | Cannot specify encryption: this operation requires an ECV of ONTAP 9.6.0 or later. |
 | 4656076 | Cluster peer modify was attempted with mismatched IPv4 and IPv6 addresses. |
+| 4656080 | Specify either a passphrase or set \"generate-passphrase\" to true. |
 | 4656081 | The remote IP address list is empty. |
-| 4656082 | Specify either a passphrase or \"-generate-passphrase\". |
 | 4656083 | Cannot auto-generate a passphrase when \"generate-passphrase\" is false. Modifying a passphrase using an auto-generated passphrase requires \"generate-passphrase\" be true. |
 | 4656084 | Passphrase can only be modified with an authenticated cluster peer relationship. |
 | 4656092 | Cluster peer modify was attempted with a host name that did not resolve to an IPv4 or IPv6 address. |
 | 4656095 | The address family of the specified peer addresses is not valid in this IPspace. Use /api/network/interfaces/ to verify that required LIFs are present and operational on each cluster node. |
+| 8847365 | Unknown Host |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ClusterPeerModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cluster peer modify default response
-func (o *ClusterPeerModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cluster peer modify default response has a 2xx status code
@@ -168,12 +181,19 @@ func (o *ClusterPeerModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster peer modify default response
+func (o *ClusterPeerModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterPeerModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /cluster/peers/{uuid}][%d] cluster_peer_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/peers/{uuid}][%d] cluster_peer_modify default %s", o._statusCode, payload)
 }
 
 func (o *ClusterPeerModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /cluster/peers/{uuid}][%d] cluster_peer_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/peers/{uuid}][%d] cluster_peer_modify default %s", o._statusCode, payload)
 }
 
 func (o *ClusterPeerModifyDefault) GetPayload() *models.ErrorResponse {

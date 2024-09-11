@@ -22,14 +22,20 @@ import (
 type AccountApplication struct {
 
 	// Applications
-	// Enum: [amqp console http ontapi service_processor ssh]
+	// Enum: ["amqp","console","http","ontapi","service_processor","ssh"]
 	Application *string `json:"application,omitempty"`
 
 	// authentication methods
 	AuthenticationMethods []*string `json:"authentication_methods,omitempty"`
 
-	// An optional additional authentication method for MFA. This only works with SSH as the application. It is ignored for all other applications.
-	// Enum: [none password publickey nsswitch]
+	// Optional property that specifies the mode of authentication as LDAP Fastbind.
+	IsLdapFastbind *bool `json:"is_ldap_fastbind,omitempty"`
+
+	// Optional property that specifies whether the user is an LDAP or NIS group.
+	IsNsSwitchGroup *bool `json:"is_ns_switch_group,omitempty"`
+
+	// An optional additional authentication method for multi-factor authentication (MFA). This property is only supported for SSH (_ssh_) and Service Processor (_service_processor_) applications. It is ignored for all other applications. Time-based One-Time Passwords (TOTPs) are only supported with the authentication method password or public key. For the Service Processor (_service_processor_) application, _none_ and _publickey_ are the only supported enum values.
+	// Enum: ["none","password","publickey","nsswitch","domain","totp"]
 	SecondAuthenticationMethod *string `json:"second_authentication_method,omitempty"`
 }
 
@@ -194,7 +200,7 @@ var accountApplicationTypeSecondAuthenticationMethodPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["none","password","publickey","nsswitch"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["none","password","publickey","nsswitch","domain","totp"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -243,6 +249,26 @@ const (
 	// END DEBUGGING
 	// AccountApplicationSecondAuthenticationMethodNsswitch captures enum value "nsswitch"
 	AccountApplicationSecondAuthenticationMethodNsswitch string = "nsswitch"
+
+	// BEGIN DEBUGGING
+	// account_application
+	// AccountApplication
+	// second_authentication_method
+	// SecondAuthenticationMethod
+	// domain
+	// END DEBUGGING
+	// AccountApplicationSecondAuthenticationMethodDomain captures enum value "domain"
+	AccountApplicationSecondAuthenticationMethodDomain string = "domain"
+
+	// BEGIN DEBUGGING
+	// account_application
+	// AccountApplication
+	// second_authentication_method
+	// SecondAuthenticationMethod
+	// totp
+	// END DEBUGGING
+	// AccountApplicationSecondAuthenticationMethodTotp captures enum value "totp"
+	AccountApplicationSecondAuthenticationMethodTotp string = "totp"
 )
 
 // prop value enum

@@ -23,15 +23,13 @@ type SnaplockLogFile struct {
 	// links
 	Links *SnaplockLogFileInlineLinks `json:"_links,omitempty"`
 
-	// Archive the specified SnapLock log file for the given base_name, and create a new log file. If base_name is not mentioned, archive all log files.
-	Archive *bool `json:"archive,omitempty"`
-
 	// Base name of log file
-	// Enum: [legal_hold privileged_delete system]
+	// Read Only: true
+	// Enum: ["legal_hold","privileged_delete","system"]
 	BaseName *string `json:"base_name,omitempty"`
 
 	// Expiry time of the log file in date-time format. Value '9999-12-31T00:00:00Z' indicates infinite expiry time.
-	// Example: 2058-06-04T19:00:00Z
+	// Example: 2058-06-04 19:00:00
 	// Read Only: true
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
@@ -172,6 +170,10 @@ func (m *SnaplockLogFile) ContextValidate(ctx context.Context, formats strfmt.Re
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateBaseName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateExpiryTime(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -199,6 +201,15 @@ func (m *SnaplockLogFile) contextValidateLinks(ctx context.Context, formats strf
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SnaplockLogFile) contextValidateBaseName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "base_name", "body", m.BaseName); err != nil {
+		return err
 	}
 
 	return nil

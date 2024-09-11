@@ -20,8 +20,7 @@ import (
 type S3User struct {
 
 	// Specifies the access key for the user.
-	// Example: Pz3SB54G2B_6dsXQPrA5HrTPcf478qoAW6_Xx6qyqZ948AgZ_7YfCf_9nO87YoZmskxx3cq41U2JAH2M3_fs321B4rkzS3a_oC5_8u7D8j_45N8OsBCBPWGD_1d_ccfq
-	// Read Only: true
+	// Example: HJAKU28M3SXTE2UXUACV
 	AccessKey *string `json:"access_key,omitempty"`
 
 	// Can contain any additional information about the user being created or modified.
@@ -30,11 +29,30 @@ type S3User struct {
 	// Min Length: 0
 	Comment *string `json:"comment,omitempty"`
 
+	// Specifies the date and time after which keys expire and are no longer valid.
+	// Example: 2024-01-01 00:00:00
+	// Read Only: true
+	// Format: date-time
+	KeyExpiryTime *strfmt.DateTime `json:"key_expiry_time,omitempty"`
+
+	// Indicates the time period from when this parameter is specified:
+	// * when creating or modifying a user or
+	// * when the user keys were last regenerated, after which the user keys expire and are no longer valid.
+	// * Valid format is: 'PnDTnHnMnS|PnW'. For example, P2DT6H3M10S specifies a time period of 2 days, 6 hours, 3 minutes, and 10 seconds.
+	// * If the value specified is '0' seconds, then the keys won't expire.
+	//
+	// Example: PT6H3M
+	KeyTimeToLive *string `json:"key_time_to_live,omitempty"`
+
 	// Specifies the name of the user. A user name length can range from 1 to 64 characters and can only contain the following combination of characters 0-9, A-Z, a-z, "_", "+", "=", ",", ".","@", and "-".
 	// Example: user-1
 	// Max Length: 64
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
+
+	// Specifies the secret key for the user.
+	// Example: dummy_secret_key_1234_abcd_ldjf
+	SecretKey *string `json:"secret_key,omitempty"`
 
 	// svm
 	Svm *S3UserInlineSvm `json:"svm,omitempty"`
@@ -45,6 +63,10 @@ func (m *S3User) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateComment(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateKeyExpiryTime(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -72,6 +94,18 @@ func (m *S3User) validateComment(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MaxLength("comment", "body", *m.Comment, 256); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *S3User) validateKeyExpiryTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.KeyExpiryTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("key_expiry_time", "body", "date-time", m.KeyExpiryTime.String(), formats); err != nil {
 		return err
 	}
 
@@ -115,7 +149,7 @@ func (m *S3User) validateSvm(formats strfmt.Registry) error {
 func (m *S3User) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateAccessKey(ctx, formats); err != nil {
+	if err := m.contextValidateKeyExpiryTime(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -129,9 +163,9 @@ func (m *S3User) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 	return nil
 }
 
-func (m *S3User) contextValidateAccessKey(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3User) contextValidateKeyExpiryTime(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "access_key", "body", m.AccessKey); err != nil {
+	if err := validate.ReadOnly(ctx, "key_expiry_time", "body", m.KeyExpiryTime); err != nil {
 		return err
 	}
 
@@ -170,7 +204,7 @@ func (m *S3User) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3UserInlineSvm s3 user inline svm
+// S3UserInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model s3_user_inline_svm
 type S3UserInlineSvm struct {
@@ -178,12 +212,12 @@ type S3UserInlineSvm struct {
 	// links
 	Links *S3UserInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

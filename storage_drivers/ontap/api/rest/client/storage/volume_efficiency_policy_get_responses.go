@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *VolumeEfficiencyPolicyGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the volume efficiency policy get o k response
+func (o *VolumeEfficiencyPolicyGetOK) Code() int {
+	return 200
+}
+
 func (o *VolumeEfficiencyPolicyGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyGetOK %s", 200, payload)
 }
 
 func (o *VolumeEfficiencyPolicyGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyGetOK %s", 200, payload)
 }
 
 func (o *VolumeEfficiencyPolicyGetOK) GetPayload() *models.VolumeEfficiencyPolicy {
@@ -122,11 +130,6 @@ type VolumeEfficiencyPolicyGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the volume efficiency policy get default response
-func (o *VolumeEfficiencyPolicyGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this volume efficiency policy get default response has a 2xx status code
 func (o *VolumeEfficiencyPolicyGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *VolumeEfficiencyPolicyGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the volume efficiency policy get default response
+func (o *VolumeEfficiencyPolicyGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VolumeEfficiencyPolicyGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_get default %s", o._statusCode, payload)
 }
 
 func (o *VolumeEfficiencyPolicyGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_get default %s", o._statusCode, payload)
 }
 
 func (o *VolumeEfficiencyPolicyGetDefault) GetPayload() *models.ErrorResponse {

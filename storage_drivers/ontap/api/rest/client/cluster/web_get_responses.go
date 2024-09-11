@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *WebGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the web get o k response
+func (o *WebGetOK) Code() int {
+	return 200
+}
+
 func (o *WebGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/web][%d] webGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/web][%d] webGetOK %s", 200, payload)
 }
 
 func (o *WebGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/web][%d] webGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/web][%d] webGetOK %s", 200, payload)
 }
 
 func (o *WebGetOK) GetPayload() *models.Web {
@@ -122,11 +130,6 @@ type WebGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the web get default response
-func (o *WebGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this web get default response has a 2xx status code
 func (o *WebGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *WebGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the web get default response
+func (o *WebGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *WebGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/web][%d] web_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/web][%d] web_get default %s", o._statusCode, payload)
 }
 
 func (o *WebGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/web][%d] web_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/web][%d] web_get default %s", o._statusCode, payload)
 }
 
 func (o *WebGetDefault) GetPayload() *models.ErrorResponse {

@@ -25,7 +25,7 @@ type Server struct {
 	IP *string `json:"ip,omitempty"`
 
 	// Specifies the state of the WINS server.
-	// Enum: [active inactive]
+	// Enum: ["active","inactive"]
 	State *string `json:"state,omitempty"`
 }
 

@@ -375,7 +375,7 @@ func (m *VsiOnNasInlineDatastore) UnmarshalBinary(b []byte) error {
 type VsiOnNasInlineDatastoreInlineStorageService struct {
 
 	// The storage service of the datastore.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -552,11 +552,11 @@ func (m *VsiOnNasInlineHypervAccess) UnmarshalBinary(b []byte) error {
 type VsiOnNasInlineProtectionType struct {
 
 	// The local RPO of the application.
-	// Enum: [hourly none]
+	// Enum: ["hourly","none"]
 	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
-	// Enum: [none zero]
+	// Enum: ["none","zero"]
 	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 

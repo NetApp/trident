@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *ActiveDirectoryPreferredDcCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the active directory preferred dc create created response
+func (o *ActiveDirectoryPreferredDcCreateCreated) Code() int {
+	return 201
+}
+
 func (o *ActiveDirectoryPreferredDcCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/active-directory/{svm.uuid}/preferred-domain-controllers][%d] activeDirectoryPreferredDcCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/active-directory/{svm.uuid}/preferred-domain-controllers][%d] activeDirectoryPreferredDcCreateCreated %s", 201, payload)
 }
 
 func (o *ActiveDirectoryPreferredDcCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/active-directory/{svm.uuid}/preferred-domain-controllers][%d] activeDirectoryPreferredDcCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/active-directory/{svm.uuid}/preferred-domain-controllers][%d] activeDirectoryPreferredDcCreateCreated %s", 201, payload)
 }
 
 func (o *ActiveDirectoryPreferredDcCreateCreated) GetPayload() *models.ActiveDirectoryPreferredDc {
@@ -134,17 +142,13 @@ func NewActiveDirectoryPreferredDcCreateDefault(code int) *ActiveDirectoryPrefer
 | 655506 | Failed to add preferred-dc. |
 | 655918 | The fully qualified domain name cannot be longer than 254 bytes. |
 | 656407 | Failed to validate preferred-dc. |
-| 656408 | RPC failure occured during preferred-dc config validation. |
+| 656408 | RPC failure occurred during preferred-dc config validation. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ActiveDirectoryPreferredDcCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the active directory preferred dc create default response
-func (o *ActiveDirectoryPreferredDcCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this active directory preferred dc create default response has a 2xx status code
@@ -172,12 +176,19 @@ func (o *ActiveDirectoryPreferredDcCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the active directory preferred dc create default response
+func (o *ActiveDirectoryPreferredDcCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ActiveDirectoryPreferredDcCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/active-directory/{svm.uuid}/preferred-domain-controllers][%d] active_directory_preferred_dc_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/active-directory/{svm.uuid}/preferred-domain-controllers][%d] active_directory_preferred_dc_create default %s", o._statusCode, payload)
 }
 
 func (o *ActiveDirectoryPreferredDcCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/active-directory/{svm.uuid}/preferred-domain-controllers][%d] active_directory_preferred_dc_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/active-directory/{svm.uuid}/preferred-domain-controllers][%d] active_directory_preferred_dc_create default %s", o._statusCode, payload)
 }
 
 func (o *ActiveDirectoryPreferredDcCreateDefault) GetPayload() *models.ErrorResponse {

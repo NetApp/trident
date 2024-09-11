@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ScheduleCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the schedule collection get o k response
+func (o *ScheduleCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *ScheduleCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/schedules][%d] scheduleCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/schedules][%d] scheduleCollectionGetOK %s", 200, payload)
 }
 
 func (o *ScheduleCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/schedules][%d] scheduleCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/schedules][%d] scheduleCollectionGetOK %s", 200, payload)
 }
 
 func (o *ScheduleCollectionGetOK) GetPayload() *models.ScheduleResponse {
@@ -119,16 +127,12 @@ func NewScheduleCollectionGetDefault(code int) *ScheduleCollectionGetDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 459760 | The schedule specified is not a valid schedule. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ScheduleCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the schedule collection get default response
-func (o *ScheduleCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this schedule collection get default response has a 2xx status code
@@ -156,12 +160,19 @@ func (o *ScheduleCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the schedule collection get default response
+func (o *ScheduleCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ScheduleCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/schedules][%d] schedule_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/schedules][%d] schedule_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ScheduleCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/schedules][%d] schedule_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/schedules][%d] schedule_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ScheduleCollectionGetDefault) GetPayload() *models.ErrorResponse {

@@ -66,7 +66,7 @@ type FileInfoCreateParams struct {
 
 	/* ByteOffset.
 
-	   How many bytes into the file to begin writing. Use -1 to append (default).
+	   Indicates the number of bytes into the file to begin writing. Use "-1" to append (default). Note that the byte-offset field is only supported for writing to a new or existing file, which requires specifying the Content-Type as 'multipart/form-data'.
 	*/
 	ByteOffset *int64
 

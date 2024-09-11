@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *AutosupportMessageCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the autosupport message collection get o k response
+func (o *AutosupportMessageCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *AutosupportMessageCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /support/autosupport/messages][%d] autosupportMessageCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/autosupport/messages][%d] autosupportMessageCollectionGetOK %s", 200, payload)
 }
 
 func (o *AutosupportMessageCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /support/autosupport/messages][%d] autosupportMessageCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/autosupport/messages][%d] autosupportMessageCollectionGetOK %s", 200, payload)
 }
 
 func (o *AutosupportMessageCollectionGetOK) GetPayload() *models.AutosupportMessageResponse {
@@ -122,11 +130,6 @@ type AutosupportMessageCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the autosupport message collection get default response
-func (o *AutosupportMessageCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this autosupport message collection get default response has a 2xx status code
 func (o *AutosupportMessageCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *AutosupportMessageCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the autosupport message collection get default response
+func (o *AutosupportMessageCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AutosupportMessageCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /support/autosupport/messages][%d] autosupport_message_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/autosupport/messages][%d] autosupport_message_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *AutosupportMessageCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /support/autosupport/messages][%d] autosupport_message_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/autosupport/messages][%d] autosupport_message_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *AutosupportMessageCollectionGetDefault) GetPayload() *models.ErrorResponse {

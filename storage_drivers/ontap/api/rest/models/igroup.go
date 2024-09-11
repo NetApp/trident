@@ -16,7 +16,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// Igroup An initiator group (igroup) is a collection of Fibre Channel (FC) world wide port names (WWPNs), and/or iSCSI Qualified Names (IQNs), and/or iSCSI EUIs (Extended Unique Identifiers) that identify host initiators.<br/>
+// Igroup An initiator group (igroup) is a collection of Fibre Channel (FC) world wide port names (WWPNs), and/or iSCSI Qualified Names (IQNs), and/or iSCSI EUIs (Extended Unique Identifiers) that identify host endpoints.<br/>
 // Initiator groups are used to control which hosts can access specific LUNs. To grant access to a LUN from one or more hosts, create an initiator group containing the host initiator names, then create a LUN map that associates the initiator group with the LUN.<br/>
 // An initiator group may contain either initiators or other initiator groups, but not both simultaneously. When a parent initiator group is mapped, it inherits all of the initiators of any initiator groups nested below it. If any nested initiator group is modified to contain different initiators, the parent initiator groups inherit the change. A parent can have many nested initiator groups and an initiator group can be nested under multiple parents. Initiators can only be added or removed from the initiator group that directly contains them. The maximum supported depth of nesting is three layers.<br/>
 // Best practice when using nested initiator groups is to match host hierarchies. A single initiator group should correspond to a single host. If a LUN needs to be mapped to multiple hosts, the initiator groups representing those hosts should be aggregated into a parent initiator group and the LUN should be mapped to that initiator group. For multi-ported hosts, initiators have a comment property where the port corresponding to the initiator can be documented.<br/>
@@ -44,10 +44,10 @@ type Igroup struct {
 	//
 	DeleteOnUnmap *bool `json:"delete_on_unmap,omitempty"`
 
-	// The initiator groups that are members of the group. Optional in POST.<br/>
+	// The existing initiator groups that are members of the group. Optional in POST.<br/>
 	// This property is mutually exclusive with the _initiators_ property during POST.<br/>
 	// This array contains only the direct children of the initiator group. If the member initiator groups have further nested initiator groups, those are reported in the `igroups` property of the child initiator group.<br/>
-	// Zero or more nested initiator groups can be supplied when the initiator group is created. The initiator group will act as if it contains the aggregatation of all initiators in any nested initiator groups.<br/>
+	// Zero or more nested initiator groups can be supplied when the initiator group is created. The initiator group will act as if it contains the aggregation of all initiators in any nested initiator groups.<br/>
 	// After creation, nested initiator groups can be added or removed from the initiator group using the `/protocols/san/igroups/{igroup.uuid}/igroups` endpoint. See [`POST /protocols/san/igroups/{igroup.uuid}/igroups`](#/SAN/igroup_nested_create) and [`DELETE /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}`](#/SAN/igroup_nested_delete) for more details.
 	//
 	IgroupInlineIgroups []*IgroupChild `json:"igroups,omitempty"`
@@ -66,7 +66,7 @@ type Igroup struct {
 	// Read Only: true
 	IgroupInlineLunMaps []*IgroupInlineLunMapsInlineArrayItem `json:"lun_maps,omitempty"`
 
-	// The initiator groups that contain this initiator group as as member.
+	// The initiator groups that contain this initiator group as a member.
 	//
 	// Read Only: true
 	IgroupInlineParentIgroups []*IgroupParent `json:"parent_igroups,omitempty"`
@@ -80,7 +80,7 @@ type Igroup struct {
 
 	// The host operating system of the initiator group. All initiators in the group should be hosts of the same operating system. Required in POST; optional in PATCH.
 	//
-	// Enum: [aix hpux hyper_v linux netware openvms solaris vmware windows xen]
+	// Enum: ["aix","hpux","hyper_v","linux","netware","openvms","solaris","vmware","windows","xen"]
 	OsType *string `json:"os_type,omitempty"`
 
 	// portset
@@ -89,8 +89,11 @@ type Igroup struct {
 	// The protocols supported by the initiator group. This restricts the type of initiators that can be added to the initiator group. Optional in POST; if not supplied, this defaults to _mixed_.<br/>
 	// The protocol of an initiator group cannot be changed after creation of the group.
 	//
-	// Enum: [fcp iscsi mixed]
+	// Enum: ["fcp","iscsi","mixed"]
 	Protocol *string `json:"protocol,omitempty"`
+
+	// replication
+	Replication *IgroupInlineReplication `json:"replication,omitempty"`
 
 	// An initiator group may contain either initiators or other initiator groups, but not both simultaneously. This property is _true_ when initiator groups can be added to this initiator group. The `initiators.name` property cannot be used to determine this via a query because it reports initiators inherited from nested igroups.
 	//
@@ -155,6 +158,10 @@ func (m *Igroup) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateProtocol(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateReplication(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -553,6 +560,23 @@ func (m *Igroup) validateProtocol(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Igroup) validateReplication(formats strfmt.Registry) error {
+	if swag.IsZero(m.Replication) { // not required
+		return nil
+	}
+
+	if m.Replication != nil {
+		if err := m.Replication.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("replication")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Igroup) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
@@ -616,6 +640,10 @@ func (m *Igroup) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 	}
 
 	if err := m.contextValidatePortset(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateReplication(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -763,6 +791,20 @@ func (m *Igroup) contextValidatePortset(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
+func (m *Igroup) contextValidateReplication(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Replication != nil {
+		if err := m.Replication.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("replication")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Igroup) contextValidateSupportsIgroups(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "supports_igroups", "body", m.SupportsIgroups); err != nil {
@@ -837,11 +879,13 @@ type IgroupInlineConnectivityTracking struct {
 	Alerts []*IgroupConnectivityTrackingAlertsItems0 `json:"alerts,omitempty"`
 
 	// Connection state.
+	//
 	// Read Only: true
-	// Enum: [full none partial no_initiators no_lun_maps]
+	// Enum: ["full","none","partial","no_initiators","no_lun_maps"]
 	ConnectionState *string `json:"connection_state,omitempty"`
 
 	// Nodes to which the initiators in this group should be connected to ensure reliable service. This is the collection of any node hosting a LUN mapped to this igroup as well as the HA partners of those nodes.
+	//
 	// Read Only: true
 	RequiredNodes []*IgroupConnectivityTrackingRequiredNodesItems0 `json:"required_nodes,omitempty"`
 }
@@ -1199,11 +1243,6 @@ type IgroupConnectivityTrackingAlertsItems0Summary struct {
 	// Example: entry doesn't exist
 	// Read Only: true
 	Message *string `json:"message,omitempty"`
-
-	// The target parameter that caused the error.
-	// Example: uuid
-	// Read Only: true
-	Target *string `json:"target,omitempty"`
 }
 
 // Validate validates this igroup connectivity tracking alerts items0 summary
@@ -1260,10 +1299,6 @@ func (m *IgroupConnectivityTrackingAlertsItems0Summary) ContextValidate(ctx cont
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateTarget(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -1304,15 +1339,6 @@ func (m *IgroupConnectivityTrackingAlertsItems0Summary) contextValidateCode(ctx 
 func (m *IgroupConnectivityTrackingAlertsItems0Summary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "summary"+"."+"message", "body", m.Message); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *IgroupConnectivityTrackingAlertsItems0Summary) contextValidateTarget(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "summary"+"."+"target", "body", m.Target); err != nil {
 		return err
 	}
 
@@ -1544,6 +1570,9 @@ type IgroupInlineInitiatorsInlineArrayItem struct {
 	// Max Length: 96
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
+
+	// proximity
+	Proximity *IgroupInlineInitiatorsInlineArrayItemInlineProximity `json:"proximity,omitempty"`
 }
 
 // Validate validates this igroup inline initiators inline array item
@@ -1567,6 +1596,10 @@ func (m *IgroupInlineInitiatorsInlineArrayItem) Validate(formats strfmt.Registry
 	}
 
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProximity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1659,6 +1692,23 @@ func (m *IgroupInlineInitiatorsInlineArrayItem) validateName(formats strfmt.Regi
 	return nil
 }
 
+func (m *IgroupInlineInitiatorsInlineArrayItem) validateProximity(formats strfmt.Registry) error {
+	if swag.IsZero(m.Proximity) { // not required
+		return nil
+	}
+
+	if m.Proximity != nil {
+		if err := m.Proximity.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("proximity")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this igroup inline initiators inline array item based on the context it is used
 func (m *IgroupInlineInitiatorsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -1672,6 +1722,10 @@ func (m *IgroupInlineInitiatorsInlineArrayItem) ContextValidate(ctx context.Cont
 	}
 
 	if err := m.contextValidateIgroup(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProximity(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1723,6 +1777,20 @@ func (m *IgroupInlineInitiatorsInlineArrayItem) contextValidateIgroup(ctx contex
 	return nil
 }
 
+func (m *IgroupInlineInitiatorsInlineArrayItem) contextValidateProximity(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Proximity != nil {
+		if err := m.Proximity.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("proximity")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *IgroupInlineInitiatorsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -1747,8 +1815,9 @@ func (m *IgroupInlineInitiatorsInlineArrayItem) UnmarshalBinary(b []byte) error 
 type IgroupInlineInitiatorsInlineArrayItemInlineConnectivityTracking struct {
 
 	// Connection state.
+	//
 	// Read Only: true
-	// Enum: [full none partial no_lun_maps]
+	// Enum: ["full","none","partial","no_lun_maps"]
 	ConnectionState *string `json:"connection_state,omitempty"`
 }
 
@@ -2322,6 +2391,291 @@ func (m *IgroupInlineInitiatorsInlineArrayItemInlineLinksInlineSelf) MarshalBina
 // UnmarshalBinary interface implementation
 func (m *IgroupInlineInitiatorsInlineArrayItemInlineLinksInlineSelf) UnmarshalBinary(b []byte) error {
 	var res IgroupInlineInitiatorsInlineArrayItemInlineLinksInlineSelf
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInlineInitiatorsInlineArrayItemInlineProximity Properties that define to what SVMs the initiator is proximal. This information is used to properly report active optimized and active non-optimized network paths via ALUA. If no configuration has been specified for an initiator, the sub-object will not be present in GET.<br/>
+// These properties can be set via initiator group POST and PATCH and apply to all instances of the initiator in all initiator groups in the SVM and its peers. The `proximity` sub-object for an initiator is set in POST and PATCH in its entirety and replaces any previously set proximity for the initiator within the SVM for the initiator within the SVM. The `local_svm` property must always be set to `true` or `false` when setting the `proximity` property. To clear any previously set proximity, POST or PATCH the `proximity` object to `null`.
+//
+// swagger:model igroup_inline_initiators_inline_array_item_inline_proximity
+type IgroupInlineInitiatorsInlineArrayItemInlineProximity struct {
+
+	// A boolean that indicates if the initiator is proximal to the SVM of the containing initiator group. This is required for any POST or PATCH that includes the `proximity` sub-object.
+	//
+	LocalSvm *bool `json:"local_svm,omitempty"`
+
+	// An array of remote peer SVMs to which the initiator is proximal.
+	//
+	PeerSvms []*IgroupInitiatorsItems0ProximityPeerSvmsItems0 `json:"peer_svms"`
+}
+
+// Validate validates this igroup inline initiators inline array item inline proximity
+func (m *IgroupInlineInitiatorsInlineArrayItemInlineProximity) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validatePeerSvms(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInlineInitiatorsInlineArrayItemInlineProximity) validatePeerSvms(formats strfmt.Registry) error {
+	if swag.IsZero(m.PeerSvms) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.PeerSvms); i++ {
+		if swag.IsZero(m.PeerSvms[i]) { // not required
+			continue
+		}
+
+		if m.PeerSvms[i] != nil {
+			if err := m.PeerSvms[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("proximity" + "." + "peer_svms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup inline initiators inline array item inline proximity based on the context it is used
+func (m *IgroupInlineInitiatorsInlineArrayItemInlineProximity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidatePeerSvms(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInlineInitiatorsInlineArrayItemInlineProximity) contextValidatePeerSvms(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.PeerSvms); i++ {
+
+		if m.PeerSvms[i] != nil {
+			if err := m.PeerSvms[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("proximity" + "." + "peer_svms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInlineInitiatorsInlineArrayItemInlineProximity) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInlineInitiatorsInlineArrayItemInlineProximity) UnmarshalBinary(b []byte) error {
+	var res IgroupInlineInitiatorsInlineArrayItemInlineProximity
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInitiatorsItems0ProximityPeerSvmsItems0 A reference to an SVM peer relationship.
+//
+// swagger:model IgroupInitiatorsItems0ProximityPeerSvmsItems0
+type IgroupInitiatorsItems0ProximityPeerSvmsItems0 struct {
+
+	// links
+	Links *IgroupInitiatorsItems0ProximityPeerSvmsItems0Links `json:"_links,omitempty"`
+
+	// The local name of the peer SVM. This name is unique among all local and peer SVMs.
+	//
+	// Example: peer1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM peer relationship. This is the UUID of the relationship, not the UUID of the peer SVM itself.
+	//
+	// Example: 4204cf77-4c82-9bdb-5644-b5a841c097a9
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this igroup initiators items0 proximity peer svms items0
+func (m *IgroupInitiatorsItems0ProximityPeerSvmsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorsItems0ProximityPeerSvmsItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup initiators items0 proximity peer svms items0 based on the context it is used
+func (m *IgroupInitiatorsItems0ProximityPeerSvmsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorsItems0ProximityPeerSvmsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorsItems0ProximityPeerSvmsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorsItems0ProximityPeerSvmsItems0) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorsItems0ProximityPeerSvmsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInitiatorsItems0ProximityPeerSvmsItems0Links igroup initiators items0 proximity peer svms items0 links
+//
+// swagger:model IgroupInitiatorsItems0ProximityPeerSvmsItems0Links
+type IgroupInitiatorsItems0ProximityPeerSvmsItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this igroup initiators items0 proximity peer svms items0 links
+func (m *IgroupInitiatorsItems0ProximityPeerSvmsItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorsItems0ProximityPeerSvmsItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup initiators items0 proximity peer svms items0 links based on the context it is used
+func (m *IgroupInitiatorsItems0ProximityPeerSvmsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorsItems0ProximityPeerSvmsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorsItems0ProximityPeerSvmsItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorsItems0ProximityPeerSvmsItems0Links) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorsItems0ProximityPeerSvmsItems0Links
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3080,7 +3434,8 @@ func (m *IgroupInlineLunMapsInlineArrayItemInlineLunInlineNodeInlineLinks) Unmar
 }
 
 // IgroupInlinePortset The portset to which the initiator group is bound. Binding the initiator group to a portset restricts the initiators of the group to accessing mapped LUNs only through network interfaces in the portset.<br/>
-// Optional in POST and PATCH. PATCH `portset.name` to an empty string ("") to unbind a portset from the initiator group.
+// In a nested initiator group hierarchy, only a portset bound to the initiator group at the same level at which it is mapped, applies; portsets bound to parent or child initiator groups are ignored.<br/>
+// Optional in POST and PATCH. To unbind a portset from the initiator group, PATCH the `portset` object to  `null`, or PATCH `portset.name` to an empty string ("").
 //
 // swagger:model igroup_inline_portset
 type IgroupInlinePortset struct {
@@ -3284,7 +3639,766 @@ func (m *IgroupInlinePortsetInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IgroupInlineSvm igroup inline svm
+// IgroupInlineReplication Properties related to initiator group replication.
+//
+// swagger:model igroup_inline_replication
+type IgroupInlineReplication struct {
+
+	// error
+	Error *IgroupInlineReplicationInlineError `json:"error,omitempty"`
+
+	// peer svm
+	PeerSvm *IgroupInlineReplicationInlinePeerSvm `json:"peer_svm,omitempty"`
+
+	// The state of the replication queue associated with this igroup. If this igroup is not in the replication queue, the state is reported as _ok_. If this igroup is in the replication queue, but no errors have been encountered, the state is reported as _replicating_. If this igroup is in the replication queue and the queue is blocked by an error, the state is reported as _error_. When in the _error_ state, additional context is provided by the `replication.error` property.
+	//
+	// Read Only: true
+	// Enum: ["ok","replicating","error"]
+	State *string `json:"state,omitempty"`
+}
+
+// Validate validates this igroup inline replication
+func (m *IgroupInlineReplication) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateError(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePeerSvm(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInlineReplication) validateError(formats strfmt.Registry) error {
+	if swag.IsZero(m.Error) { // not required
+		return nil
+	}
+
+	if m.Error != nil {
+		if err := m.Error.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("replication" + "." + "error")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IgroupInlineReplication) validatePeerSvm(formats strfmt.Registry) error {
+	if swag.IsZero(m.PeerSvm) { // not required
+		return nil
+	}
+
+	if m.PeerSvm != nil {
+		if err := m.PeerSvm.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("replication" + "." + "peer_svm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var igroupInlineReplicationTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","replicating","error"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		igroupInlineReplicationTypeStatePropEnum = append(igroupInlineReplicationTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// igroup_inline_replication
+	// IgroupInlineReplication
+	// state
+	// State
+	// ok
+	// END DEBUGGING
+	// IgroupInlineReplicationStateOk captures enum value "ok"
+	IgroupInlineReplicationStateOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// igroup_inline_replication
+	// IgroupInlineReplication
+	// state
+	// State
+	// replicating
+	// END DEBUGGING
+	// IgroupInlineReplicationStateReplicating captures enum value "replicating"
+	IgroupInlineReplicationStateReplicating string = "replicating"
+
+	// BEGIN DEBUGGING
+	// igroup_inline_replication
+	// IgroupInlineReplication
+	// state
+	// State
+	// error
+	// END DEBUGGING
+	// IgroupInlineReplicationStateError captures enum value "error"
+	IgroupInlineReplicationStateError string = "error"
+)
+
+// prop value enum
+func (m *IgroupInlineReplication) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, igroupInlineReplicationTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *IgroupInlineReplication) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("replication"+"."+"state", "body", *m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup inline replication based on the context it is used
+func (m *IgroupInlineReplication) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateError(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePeerSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInlineReplication) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Error != nil {
+		if err := m.Error.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("replication" + "." + "error")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IgroupInlineReplication) contextValidatePeerSvm(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.PeerSvm != nil {
+		if err := m.PeerSvm.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("replication" + "." + "peer_svm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IgroupInlineReplication) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "replication"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInlineReplication) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInlineReplication) UnmarshalBinary(b []byte) error {
+	var res IgroupInlineReplication
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInlineReplicationInlineError Information about asynchronous errors encountered while replicating this igroup. Igroups within a peering relationship are replicated in the same stream, so the error reported here might be related to this igroup or a prior replicated igroup that is now blocking the replication of this igroup. Both the error information and the igroup encountering the error are reported. If the error is configuration related, it can be corrected on the referenced igroup. The replication is retried using exponential backoff up to a maximum of one retry every 5 minutes. Every operation on the same stream triggers an immediate retry and restarts the exponential backoff starting with a 1 second delay. If the error is system related, the retries should correct the error when the system enters a healthy state.
+//
+// swagger:model igroup_inline_replication_inline_error
+type IgroupInlineReplicationInlineError struct {
+
+	// igroup
+	Igroup *IgroupInlineReplicationInlineErrorInlineIgroup `json:"igroup,omitempty"`
+
+	// summary
+	Summary *IgroupInlineReplicationInlineErrorInlineSummary `json:"summary,omitempty"`
+}
+
+// Validate validates this igroup inline replication inline error
+func (m *IgroupInlineReplicationInlineError) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateIgroup(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSummary(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInlineReplicationInlineError) validateIgroup(formats strfmt.Registry) error {
+	if swag.IsZero(m.Igroup) { // not required
+		return nil
+	}
+
+	if m.Igroup != nil {
+		if err := m.Igroup.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("replication" + "." + "error" + "." + "igroup")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IgroupInlineReplicationInlineError) validateSummary(formats strfmt.Registry) error {
+	if swag.IsZero(m.Summary) { // not required
+		return nil
+	}
+
+	if m.Summary != nil {
+		if err := m.Summary.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("replication" + "." + "error" + "." + "summary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup inline replication inline error based on the context it is used
+func (m *IgroupInlineReplicationInlineError) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIgroup(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSummary(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInlineReplicationInlineError) contextValidateIgroup(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Igroup != nil {
+		if err := m.Igroup.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("replication" + "." + "error" + "." + "igroup")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IgroupInlineReplicationInlineError) contextValidateSummary(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Summary != nil {
+		if err := m.Summary.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("replication" + "." + "error" + "." + "summary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInlineReplicationInlineError) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInlineReplicationInlineError) UnmarshalBinary(b []byte) error {
+	var res IgroupInlineReplicationInlineError
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInlineReplicationInlineErrorInlineIgroup igroup inline replication inline error inline igroup
+//
+// swagger:model igroup_inline_replication_inline_error_inline_igroup
+type IgroupInlineReplicationInlineErrorInlineIgroup struct {
+
+	// Indicates whether the reported igroup is on the local SVM or the peer SVM. When deleting a replicated igroup, the local copy is deleted first and then the peer copy is deleted. If the error is encountered between these two operations and only the peer igroup remains, the peer igroup is reported and the problem might need to be corrected on the peer cluster.
+	//
+	// Read Only: true
+	LocalSvm *bool `json:"local_svm,omitempty"`
+
+	// The name of the initiator group.
+	//
+	// Example: igroup1
+	// Max Length: 96
+	// Min Length: 1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the initiator group.
+	//
+	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this igroup inline replication inline error inline igroup
+func (m *IgroupInlineReplicationInlineErrorInlineIgroup) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInlineReplicationInlineErrorInlineIgroup) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("replication"+"."+"error"+"."+"igroup"+"."+"name", "body", *m.Name, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("replication"+"."+"error"+"."+"igroup"+"."+"name", "body", *m.Name, 96); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup inline replication inline error inline igroup based on the context it is used
+func (m *IgroupInlineReplicationInlineErrorInlineIgroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLocalSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInlineReplicationInlineErrorInlineIgroup) contextValidateLocalSvm(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "replication"+"."+"error"+"."+"igroup"+"."+"local_svm", "body", m.LocalSvm); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInlineReplicationInlineErrorInlineIgroup) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInlineReplicationInlineErrorInlineIgroup) UnmarshalBinary(b []byte) error {
+	var res IgroupInlineReplicationInlineErrorInlineIgroup
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInlineReplicationInlineErrorInlineSummary A user friendly message describing the error.
+//
+// swagger:model igroup_inline_replication_inline_error_inline_summary
+type IgroupInlineReplicationInlineErrorInlineSummary struct {
+
+	// Message arguments
+	// Read Only: true
+	Arguments []*ErrorArguments `json:"arguments,omitempty"`
+
+	// Error code
+	// Example: 4
+	// Read Only: true
+	Code *string `json:"code,omitempty"`
+
+	// Error message
+	// Example: entry doesn't exist
+	// Read Only: true
+	Message *string `json:"message,omitempty"`
+}
+
+// Validate validates this igroup inline replication inline error inline summary
+func (m *IgroupInlineReplicationInlineErrorInlineSummary) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateArguments(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInlineReplicationInlineErrorInlineSummary) validateArguments(formats strfmt.Registry) error {
+	if swag.IsZero(m.Arguments) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Arguments); i++ {
+		if swag.IsZero(m.Arguments[i]) { // not required
+			continue
+		}
+
+		if m.Arguments[i] != nil {
+			if err := m.Arguments[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("replication" + "." + "error" + "." + "summary" + "." + "arguments" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup inline replication inline error inline summary based on the context it is used
+func (m *IgroupInlineReplicationInlineErrorInlineSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateArguments(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInlineReplicationInlineErrorInlineSummary) contextValidateArguments(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "replication"+"."+"error"+"."+"summary"+"."+"arguments", "body", []*ErrorArguments(m.Arguments)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Arguments); i++ {
+
+		if m.Arguments[i] != nil {
+			if err := m.Arguments[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("replication" + "." + "error" + "." + "summary" + "." + "arguments" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *IgroupInlineReplicationInlineErrorInlineSummary) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "replication"+"."+"error"+"."+"summary"+"."+"code", "body", m.Code); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *IgroupInlineReplicationInlineErrorInlineSummary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "replication"+"."+"error"+"."+"summary"+"."+"message", "body", m.Message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInlineReplicationInlineErrorInlineSummary) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInlineReplicationInlineErrorInlineSummary) UnmarshalBinary(b []byte) error {
+	var res IgroupInlineReplicationInlineErrorInlineSummary
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInlineReplicationInlinePeerSvm The peered SVM to which the initiator group should be replicated. Optional in POST and PATCH. To clear any previously set replication peer, PATCH the `replication.peer_svm` object to `null`.
+//
+// swagger:model igroup_inline_replication_inline_peer_svm
+type IgroupInlineReplicationInlinePeerSvm struct {
+
+	// links
+	Links *IgroupInlineReplicationInlinePeerSvmInlineLinks `json:"_links,omitempty"`
+
+	// The local name of the peer SVM. This name is unique among all local and peer SVMs.
+	//
+	// Example: peer1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM peer relationship. This is the UUID of the relationship, not the UUID of the peer SVM itself.
+	//
+	// Example: 4204cf77-4c82-9bdb-5644-b5a841c097a9
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this igroup inline replication inline peer svm
+func (m *IgroupInlineReplicationInlinePeerSvm) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInlineReplicationInlinePeerSvm) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("replication" + "." + "peer_svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup inline replication inline peer svm based on the context it is used
+func (m *IgroupInlineReplicationInlinePeerSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInlineReplicationInlinePeerSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("replication" + "." + "peer_svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInlineReplicationInlinePeerSvm) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInlineReplicationInlinePeerSvm) UnmarshalBinary(b []byte) error {
+	var res IgroupInlineReplicationInlinePeerSvm
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInlineReplicationInlinePeerSvmInlineLinks igroup inline replication inline peer svm inline links
+//
+// swagger:model igroup_inline_replication_inline_peer_svm_inline__links
+type IgroupInlineReplicationInlinePeerSvmInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this igroup inline replication inline peer svm inline links
+func (m *IgroupInlineReplicationInlinePeerSvmInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInlineReplicationInlinePeerSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("replication" + "." + "peer_svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup inline replication inline peer svm inline links based on the context it is used
+func (m *IgroupInlineReplicationInlinePeerSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInlineReplicationInlinePeerSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("replication" + "." + "peer_svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInlineReplicationInlinePeerSvmInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInlineReplicationInlinePeerSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IgroupInlineReplicationInlinePeerSvmInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model igroup_inline_svm
 type IgroupInlineSvm struct {
@@ -3292,12 +4406,12 @@ type IgroupInlineSvm struct {
 	// links
 	Links *IgroupInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

@@ -63,7 +63,7 @@ type QosWorkload struct {
 	// Class of the QoS workload.
 	// Example: autovolume
 	// Read Only: true
-	// Enum: [undefined preset user_defined system_defined autovolume load_control]
+	// Enum: ["undefined","preset","user_defined","system_defined","autovolume","load_control"]
 	WorkloadClass *string `json:"workload_class,omitempty"`
 }
 
@@ -679,7 +679,7 @@ func (m *QosWorkloadInlinePolicyInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QosWorkloadInlineSvm qos workload inline svm
+// QosWorkloadInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model qos_workload_inline_svm
 type QosWorkloadInlineSvm struct {
@@ -687,12 +687,12 @@ type QosWorkloadInlineSvm struct {
 	// links
 	Links *QosWorkloadInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

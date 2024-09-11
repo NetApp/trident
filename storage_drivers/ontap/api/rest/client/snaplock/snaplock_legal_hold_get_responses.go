@@ -6,6 +6,7 @@ package snaplock
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SnaplockLegalHoldGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snaplock legal hold get o k response
+func (o *SnaplockLegalHoldGetOK) Code() int {
+	return 200
+}
+
 func (o *SnaplockLegalHoldGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/operations/{id}][%d] snaplockLegalHoldGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/operations/{id}][%d] snaplockLegalHoldGetOK %s", 200, payload)
 }
 
 func (o *SnaplockLegalHoldGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/operations/{id}][%d] snaplockLegalHoldGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/operations/{id}][%d] snaplockLegalHoldGetOK %s", 200, payload)
 }
 
 func (o *SnaplockLegalHoldGetOK) GetPayload() *models.SnaplockLegalHoldOperation {
@@ -118,18 +126,14 @@ func NewSnaplockLegalHoldGetDefault(code int) *SnaplockLegalHoldGetDefault {
 
 | Error code  |  Description |
 |-------------|--------------|
-| 14090346    | Internal Error. Wait a few minutes, then try the command again  |
+| 13763280    | Only a user with security login role \"vsadmin-snaplock\" is allowed to perform this operation.  |
 | 14090343    | Invalid Field  |
+| 14090346    | Internal Error. Wait a few minutes, then try the command again  |
 */
 type SnaplockLegalHoldGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snaplock legal hold get default response
-func (o *SnaplockLegalHoldGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snaplock legal hold get default response has a 2xx status code
@@ -157,12 +161,19 @@ func (o *SnaplockLegalHoldGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snaplock legal hold get default response
+func (o *SnaplockLegalHoldGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnaplockLegalHoldGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/operations/{id}][%d] snaplock_legal_hold_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/operations/{id}][%d] snaplock_legal_hold_get default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockLegalHoldGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/operations/{id}][%d] snaplock_legal_hold_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/operations/{id}][%d] snaplock_legal_hold_get default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockLegalHoldGetDefault) GetPayload() *models.ErrorResponse {

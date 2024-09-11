@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CounterRowGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the counter row get o k response
+func (o *CounterRowGetOK) Code() int {
+	return 200
+}
+
 func (o *CounterRowGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows/{id}][%d] counterRowGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows/{id}][%d] counterRowGetOK %s", 200, payload)
 }
 
 func (o *CounterRowGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows/{id}][%d] counterRowGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows/{id}][%d] counterRowGetOK %s", 200, payload)
 }
 
 func (o *CounterRowGetOK) GetPayload() *models.CounterRow {
@@ -121,16 +129,12 @@ func NewCounterRowGetDefault(code int) *CounterRowGetDefault {
 | 8585320 | Table requested is not found |
 | 8586228 | Invalid counter name request. |
 | 8586229 | Invalid counter property request. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type CounterRowGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the counter row get default response
-func (o *CounterRowGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this counter row get default response has a 2xx status code
@@ -158,12 +162,19 @@ func (o *CounterRowGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the counter row get default response
+func (o *CounterRowGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CounterRowGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows/{id}][%d] counter_row_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows/{id}][%d] counter_row_get default %s", o._statusCode, payload)
 }
 
 func (o *CounterRowGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows/{id}][%d] counter_row_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows/{id}][%d] counter_row_get default %s", o._statusCode, payload)
 }
 
 func (o *CounterRowGetDefault) GetPayload() *models.ErrorResponse {

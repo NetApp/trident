@@ -70,7 +70,7 @@ type SnapmirrorPolicyGetParams struct {
 
 	/* UUID.
 
-	   Policy UUID
+	   SnapMirror policy UUID.
 	*/
 	UUID string
 

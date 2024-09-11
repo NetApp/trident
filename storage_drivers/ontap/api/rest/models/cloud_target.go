@@ -27,11 +27,15 @@ type CloudTarget struct {
 	AccessKey *string `json:"access_key,omitempty"`
 
 	// Authentication used to access the target. SnapMirror does not yet support CAP. Required in POST.
-	// Enum: [key cap ec2_iam gcp_sa azure_msi]
+	// Enum: ["key","cap","ec2_iam","gcp_sa","azure_msi"]
 	AuthenticationType *string `json:"authentication_type,omitempty"`
 
 	// Azure account
 	AzureAccount *string `json:"azure_account,omitempty"`
+
+	// Managed Service Identity (MSI) token required to authenticate to the Azure object store. This form of authentication is only supported on Azure NetApp Files.
+	// Format: password
+	AzureMsiToken *strfmt.Password `json:"azure_msi_token,omitempty"`
 
 	// Azure access key
 	// Format: password
@@ -41,7 +45,7 @@ type CloudTarget struct {
 	// Format: password
 	AzureSasToken *strfmt.Password `json:"azure_sas_token,omitempty"`
 
-	// This parameter is available only when auth-type is CAP. It specifies a full URL of the request to a CAP server for retrieving temporary credentials (access-key, secret-pasword, and session token) for accessing the object store.
+	// This parameter is available only when auth-type is CAP. It specifies a full URL of the request to a CAP server for retrieving temporary credentials (access-key, secret-password, and session token) for accessing the object store.
 	// Example: https://123.45.67.89:1234/CAP/api/v1/credentials?agency=myagency\u0026mission=mymission\u0026role=myrole
 	CapURL *string `json:"cap_url,omitempty"`
 
@@ -62,18 +66,21 @@ type CloudTarget struct {
 	Name *string `json:"name,omitempty"`
 
 	// Owner of the target. Allowed values are FabricPool, SnapMirror or S3_SnapMirror. A target can be used by only one feature.
-	// Enum: [fabricpool snapmirror s3_snapmirror]
+	// Enum: ["fabricpool","snapmirror","s3_snapmirror"]
 	Owner *string `json:"owner,omitempty"`
 
 	// Port number of the object store that ONTAP uses when establishing a connection. Required in POST.
 	Port *int64 `json:"port,omitempty"`
 
-	// Type of cloud provider. Allowed values depend on owner type. For FabricPool, AliCloud, AWS_S3, Azure_Cloud, GoggleCloud, IBM_COS, SGWS, and ONTAP_S3 are allowed. For SnapMirror, the valid values are AWS_S3 or SGWS. For FabricLink, AWS_S3, SGWS, S3_Compatible, S3EMU, LOOPBACK and ONTAP_S3 are allowed.
+	// Type of cloud provider. Allowed values depend on owner type. For FabricPool, AliCloud, AWS_S3, Azure_Cloud, GoogleCloud, IBM_COS, SGWS, and ONTAP_S3 are allowed. For SnapMirror, the valid values are AWS_S3 or SGWS. For FabricLink, AWS_S3, SGWS, S3_Compatible, S3EMU, LOOPBACK and ONTAP_S3 are allowed.
 	ProviderType *string `json:"provider_type,omitempty"`
+
+	// The warning threshold for read latency that is used to determine when an alert ems for a read operation from an object store should be issued.
+	ReadLatencyWarningThreshold *int64 `json:"read_latency_warning_threshold,omitempty"`
 
 	// If the cloud target is owned by a data SVM, then the scope is set to svm. Otherwise it will be set to cluster.
 	// Read Only: true
-	// Enum: [cluster svm]
+	// Enum: ["cluster","svm"]
 	Scope *string `json:"scope,omitempty"`
 
 	// Secret access key for AWS_S3 and other S3 compatible provider types.
@@ -83,12 +90,12 @@ type CloudTarget struct {
 	// Fully qualified domain name of the object store server. Required on POST.  For Amazon S3, server name must be an AWS regional endpoint in the format s3.amazonaws.com or s3-<region>.amazonaws.com, for example, s3-us-west-2.amazonaws.com. The region of the server and the bucket must match. For Azure, if the server is a "blob.core.windows.net" or a "blob.core.usgovcloudapi.net", then a value of azure-account followed by a period is added in front of the server.
 	Server *string `json:"server,omitempty"`
 
-	// Encryption of data at rest by the object store server for AWS_S3 and other S3 compatible provider types. This is an advanced property. In most cases it is best not to change default value of "sse_s3" for object store servers which support SSE-S3 encryption. The encryption is in addition to any encryption done by ONTAP at a volume or at an aggregate level. Note that changing this option does not change encryption of data which already exist in the object store.
-	// Enum: [none sse_s3]
+	// Encryption of data at rest by the object store server for AWS_S3 and other S3 compatible provider types. In most cases it is best not to change default value of "sse_s3" for object store servers which support SSE-S3 encryption. The encryption is in addition to any encryption done by ONTAP at a volume or at an aggregate level. Note that changing this option does not change encryption of data which already exist in the object store.
+	// Enum: ["none","sse_s3","sse_kms","dsse_kms"]
 	ServerSideEncryption *string `json:"server_side_encryption,omitempty"`
 
 	// Use of the cloud target by SnapMirror.
-	// Enum: [data metadata]
+	// Enum: ["data","metadata"]
 	SnapmirrorUse *string `json:"snapmirror_use,omitempty"`
 
 	// SSL/HTTPS enabled or not
@@ -98,7 +105,7 @@ type CloudTarget struct {
 	Svm *CloudTargetInlineSvm `json:"svm,omitempty"`
 
 	// URL style used to access S3 bucket.
-	// Enum: [path_style virtual_hosted_style]
+	// Enum: ["path_style","virtual_hosted_style"]
 	URLStyle *string `json:"url_style,omitempty"`
 
 	// Use HTTP proxy when connecting to the object store.
@@ -122,6 +129,10 @@ func (m *CloudTarget) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateAuthenticationType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAzureMsiToken(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -272,6 +283,18 @@ func (m *CloudTarget) validateAuthenticationType(formats strfmt.Registry) error 
 
 	// value enum
 	if err := m.validateAuthenticationTypeEnum("authentication_type", "body", *m.AuthenticationType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CloudTarget) validateAzureMsiToken(formats strfmt.Registry) error {
+	if swag.IsZero(m.AzureMsiToken) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("azure_msi_token", "body", "password", m.AzureMsiToken.String(), formats); err != nil {
 		return err
 	}
 
@@ -474,7 +497,7 @@ var cloudTargetTypeServerSideEncryptionPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["none","sse_s3"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["none","sse_s3","sse_kms","dsse_kms"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -503,6 +526,26 @@ const (
 	// END DEBUGGING
 	// CloudTargetServerSideEncryptionSseS3 captures enum value "sse_s3"
 	CloudTargetServerSideEncryptionSseS3 string = "sse_s3"
+
+	// BEGIN DEBUGGING
+	// cloud_target
+	// CloudTarget
+	// server_side_encryption
+	// ServerSideEncryption
+	// sse_kms
+	// END DEBUGGING
+	// CloudTargetServerSideEncryptionSseKms captures enum value "sse_kms"
+	CloudTargetServerSideEncryptionSseKms string = "sse_kms"
+
+	// BEGIN DEBUGGING
+	// cloud_target
+	// CloudTarget
+	// server_side_encryption
+	// ServerSideEncryption
+	// dsse_kms
+	// END DEBUGGING
+	// CloudTargetServerSideEncryptionDsseKms captures enum value "dsse_kms"
+	CloudTargetServerSideEncryptionDsseKms string = "dsse_kms"
 )
 
 // prop value enum
@@ -843,7 +886,7 @@ type CloudTargetInlineIpspace struct {
 	Links *CloudTargetInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
-	// Example: exchange
+	// Example: Default
 	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
@@ -1100,7 +1143,7 @@ func (m *CloudTargetInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CloudTargetInlineSvm This field is only applicable when used for SnapMirror and FabricLink. For POST and PATCH, SVM information is required for SnapMirror and FabricLink targets and not allowed for FabricPool targets.
+// CloudTargetInlineSvm This field is only applicable when used for SnapMirror and FabricLink. For POST and PATCH, SVM information is required for SnapMirror and FabricLink targets when the scope is svm and is not allowed for FabricPool targets. For GET, this field is not set if the scope of the cloud target is "cluster".
 //
 // swagger:model cloud_target_inline_svm
 type CloudTargetInlineSvm struct {
@@ -1108,12 +1151,12 @@ type CloudTargetInlineSvm struct {
 	// links
 	Links *CloudTargetInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

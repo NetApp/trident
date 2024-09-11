@@ -105,11 +105,47 @@ type ConsistencyGroupSnapshotCollectionGetParams struct {
 	*/
 	IsPartial *bool
 
+	/* LunsName.
+
+	   Filter by luns.name
+	*/
+	LunsName *string
+
+	/* LunsUUID.
+
+	   Filter by luns.uuid
+	*/
+	LunsUUID *string
+
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
 	MaxRecords *int64
+
+	/* MissingLunsName.
+
+	   Filter by missing_luns.name
+	*/
+	MissingLunsName *string
+
+	/* MissingLunsUUID.
+
+	   Filter by missing_luns.uuid
+	*/
+	MissingLunsUUID *string
+
+	/* MissingNamespacesName.
+
+	   Filter by missing_namespaces.name
+	*/
+	MissingNamespacesName *string
+
+	/* MissingNamespacesUUID.
+
+	   Filter by missing_namespaces.uuid
+	*/
+	MissingNamespacesUUID *string
 
 	/* MissingVolumesName.
 
@@ -129,11 +165,35 @@ type ConsistencyGroupSnapshotCollectionGetParams struct {
 	*/
 	Name *string
 
+	/* NamespacesName.
+
+	   Filter by namespaces.name
+	*/
+	NamespacesName *string
+
+	/* NamespacesUUID.
+
+	   Filter by namespaces.uuid
+	*/
+	NamespacesUUID *string
+
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
 	OrderBy []string
+
+	/* ReclaimableSpace.
+
+	   Filter by reclaimable_space
+	*/
+	ReclaimableSpace *int64
+
+	/* RestoreSize.
+
+	   Filter by restore_size
+	*/
+	RestoreSize *int64
 
 	/* ReturnRecords.
 
@@ -150,6 +210,24 @@ type ConsistencyGroupSnapshotCollectionGetParams struct {
 	   Default: 15
 	*/
 	ReturnTimeout *int64
+
+	/* SnaplockExpired.
+
+	   Filter by snaplock.expired
+	*/
+	SnaplockExpired *bool
+
+	/* SnaplockExpiryTime.
+
+	   Filter by snaplock.expiry_time
+	*/
+	SnaplockExpiryTime *string
+
+	/* SnaplockTimeUntilExpiry.
+
+	   Filter by snaplock.time_until_expiry
+	*/
+	SnaplockTimeUntilExpiry *string
 
 	/* SnapmirrorLabel.
 
@@ -198,6 +276,12 @@ type ConsistencyGroupSnapshotCollectionGetParams struct {
 	   Filter by uuid
 	*/
 	UUID *string
+
+	/* WriteFence.
+
+	   Filter by write_fence
+	*/
+	WriteFence *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -343,6 +427,28 @@ func (o *ConsistencyGroupSnapshotCollectionGetParams) SetIsPartial(isPartial *bo
 	o.IsPartial = isPartial
 }
 
+// WithLunsName adds the lunsName to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) WithLunsName(lunsName *string) *ConsistencyGroupSnapshotCollectionGetParams {
+	o.SetLunsName(lunsName)
+	return o
+}
+
+// SetLunsName adds the lunsName to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) SetLunsName(lunsName *string) {
+	o.LunsName = lunsName
+}
+
+// WithLunsUUID adds the lunsUUID to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) WithLunsUUID(lunsUUID *string) *ConsistencyGroupSnapshotCollectionGetParams {
+	o.SetLunsUUID(lunsUUID)
+	return o
+}
+
+// SetLunsUUID adds the lunsUuid to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) SetLunsUUID(lunsUUID *string) {
+	o.LunsUUID = lunsUUID
+}
+
 // WithMaxRecords adds the maxRecords to the consistency group snapshot collection get params
 func (o *ConsistencyGroupSnapshotCollectionGetParams) WithMaxRecords(maxRecords *int64) *ConsistencyGroupSnapshotCollectionGetParams {
 	o.SetMaxRecords(maxRecords)
@@ -352,6 +458,50 @@ func (o *ConsistencyGroupSnapshotCollectionGetParams) WithMaxRecords(maxRecords 
 // SetMaxRecords adds the maxRecords to the consistency group snapshot collection get params
 func (o *ConsistencyGroupSnapshotCollectionGetParams) SetMaxRecords(maxRecords *int64) {
 	o.MaxRecords = maxRecords
+}
+
+// WithMissingLunsName adds the missingLunsName to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) WithMissingLunsName(missingLunsName *string) *ConsistencyGroupSnapshotCollectionGetParams {
+	o.SetMissingLunsName(missingLunsName)
+	return o
+}
+
+// SetMissingLunsName adds the missingLunsName to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) SetMissingLunsName(missingLunsName *string) {
+	o.MissingLunsName = missingLunsName
+}
+
+// WithMissingLunsUUID adds the missingLunsUUID to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) WithMissingLunsUUID(missingLunsUUID *string) *ConsistencyGroupSnapshotCollectionGetParams {
+	o.SetMissingLunsUUID(missingLunsUUID)
+	return o
+}
+
+// SetMissingLunsUUID adds the missingLunsUuid to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) SetMissingLunsUUID(missingLunsUUID *string) {
+	o.MissingLunsUUID = missingLunsUUID
+}
+
+// WithMissingNamespacesName adds the missingNamespacesName to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) WithMissingNamespacesName(missingNamespacesName *string) *ConsistencyGroupSnapshotCollectionGetParams {
+	o.SetMissingNamespacesName(missingNamespacesName)
+	return o
+}
+
+// SetMissingNamespacesName adds the missingNamespacesName to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) SetMissingNamespacesName(missingNamespacesName *string) {
+	o.MissingNamespacesName = missingNamespacesName
+}
+
+// WithMissingNamespacesUUID adds the missingNamespacesUUID to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) WithMissingNamespacesUUID(missingNamespacesUUID *string) *ConsistencyGroupSnapshotCollectionGetParams {
+	o.SetMissingNamespacesUUID(missingNamespacesUUID)
+	return o
+}
+
+// SetMissingNamespacesUUID adds the missingNamespacesUuid to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) SetMissingNamespacesUUID(missingNamespacesUUID *string) {
+	o.MissingNamespacesUUID = missingNamespacesUUID
 }
 
 // WithMissingVolumesName adds the missingVolumesName to the consistency group snapshot collection get params
@@ -387,6 +537,28 @@ func (o *ConsistencyGroupSnapshotCollectionGetParams) SetName(name *string) {
 	o.Name = name
 }
 
+// WithNamespacesName adds the namespacesName to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) WithNamespacesName(namespacesName *string) *ConsistencyGroupSnapshotCollectionGetParams {
+	o.SetNamespacesName(namespacesName)
+	return o
+}
+
+// SetNamespacesName adds the namespacesName to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) SetNamespacesName(namespacesName *string) {
+	o.NamespacesName = namespacesName
+}
+
+// WithNamespacesUUID adds the namespacesUUID to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) WithNamespacesUUID(namespacesUUID *string) *ConsistencyGroupSnapshotCollectionGetParams {
+	o.SetNamespacesUUID(namespacesUUID)
+	return o
+}
+
+// SetNamespacesUUID adds the namespacesUuid to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) SetNamespacesUUID(namespacesUUID *string) {
+	o.NamespacesUUID = namespacesUUID
+}
+
 // WithOrderBy adds the orderBy to the consistency group snapshot collection get params
 func (o *ConsistencyGroupSnapshotCollectionGetParams) WithOrderBy(orderBy []string) *ConsistencyGroupSnapshotCollectionGetParams {
 	o.SetOrderBy(orderBy)
@@ -396,6 +568,28 @@ func (o *ConsistencyGroupSnapshotCollectionGetParams) WithOrderBy(orderBy []stri
 // SetOrderBy adds the orderBy to the consistency group snapshot collection get params
 func (o *ConsistencyGroupSnapshotCollectionGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
+}
+
+// WithReclaimableSpace adds the reclaimableSpace to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) WithReclaimableSpace(reclaimableSpace *int64) *ConsistencyGroupSnapshotCollectionGetParams {
+	o.SetReclaimableSpace(reclaimableSpace)
+	return o
+}
+
+// SetReclaimableSpace adds the reclaimableSpace to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) SetReclaimableSpace(reclaimableSpace *int64) {
+	o.ReclaimableSpace = reclaimableSpace
+}
+
+// WithRestoreSize adds the restoreSize to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) WithRestoreSize(restoreSize *int64) *ConsistencyGroupSnapshotCollectionGetParams {
+	o.SetRestoreSize(restoreSize)
+	return o
+}
+
+// SetRestoreSize adds the restoreSize to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) SetRestoreSize(restoreSize *int64) {
+	o.RestoreSize = restoreSize
 }
 
 // WithReturnRecords adds the returnRecords to the consistency group snapshot collection get params
@@ -418,6 +612,39 @@ func (o *ConsistencyGroupSnapshotCollectionGetParams) WithReturnTimeout(returnTi
 // SetReturnTimeout adds the returnTimeout to the consistency group snapshot collection get params
 func (o *ConsistencyGroupSnapshotCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
 	o.ReturnTimeout = returnTimeout
+}
+
+// WithSnaplockExpired adds the snaplockExpired to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) WithSnaplockExpired(snaplockExpired *bool) *ConsistencyGroupSnapshotCollectionGetParams {
+	o.SetSnaplockExpired(snaplockExpired)
+	return o
+}
+
+// SetSnaplockExpired adds the snaplockExpired to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) SetSnaplockExpired(snaplockExpired *bool) {
+	o.SnaplockExpired = snaplockExpired
+}
+
+// WithSnaplockExpiryTime adds the snaplockExpiryTime to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) WithSnaplockExpiryTime(snaplockExpiryTime *string) *ConsistencyGroupSnapshotCollectionGetParams {
+	o.SetSnaplockExpiryTime(snaplockExpiryTime)
+	return o
+}
+
+// SetSnaplockExpiryTime adds the snaplockExpiryTime to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) SetSnaplockExpiryTime(snaplockExpiryTime *string) {
+	o.SnaplockExpiryTime = snaplockExpiryTime
+}
+
+// WithSnaplockTimeUntilExpiry adds the snaplockTimeUntilExpiry to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) WithSnaplockTimeUntilExpiry(snaplockTimeUntilExpiry *string) *ConsistencyGroupSnapshotCollectionGetParams {
+	o.SetSnaplockTimeUntilExpiry(snaplockTimeUntilExpiry)
+	return o
+}
+
+// SetSnaplockTimeUntilExpiry adds the snaplockTimeUntilExpiry to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) SetSnaplockTimeUntilExpiry(snaplockTimeUntilExpiry *string) {
+	o.SnaplockTimeUntilExpiry = snaplockTimeUntilExpiry
 }
 
 // WithSnapmirrorLabel adds the snapmirrorLabel to the consistency group snapshot collection get params
@@ -506,6 +733,17 @@ func (o *ConsistencyGroupSnapshotCollectionGetParams) WithUUID(uuid *string) *Co
 // SetUUID adds the uuid to the consistency group snapshot collection get params
 func (o *ConsistencyGroupSnapshotCollectionGetParams) SetUUID(uuid *string) {
 	o.UUID = uuid
+}
+
+// WithWriteFence adds the writeFence to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) WithWriteFence(writeFence *bool) *ConsistencyGroupSnapshotCollectionGetParams {
+	o.SetWriteFence(writeFence)
+	return o
+}
+
+// SetWriteFence adds the writeFence to the consistency group snapshot collection get params
+func (o *ConsistencyGroupSnapshotCollectionGetParams) SetWriteFence(writeFence *bool) {
+	o.WriteFence = writeFence
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -617,6 +855,40 @@ func (o *ConsistencyGroupSnapshotCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
+	if o.LunsName != nil {
+
+		// query param luns.name
+		var qrLunsName string
+
+		if o.LunsName != nil {
+			qrLunsName = *o.LunsName
+		}
+		qLunsName := qrLunsName
+		if qLunsName != "" {
+
+			if err := r.SetQueryParam("luns.name", qLunsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LunsUUID != nil {
+
+		// query param luns.uuid
+		var qrLunsUUID string
+
+		if o.LunsUUID != nil {
+			qrLunsUUID = *o.LunsUUID
+		}
+		qLunsUUID := qrLunsUUID
+		if qLunsUUID != "" {
+
+			if err := r.SetQueryParam("luns.uuid", qLunsUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.MaxRecords != nil {
 
 		// query param max_records
@@ -629,6 +901,74 @@ func (o *ConsistencyGroupSnapshotCollectionGetParams) WriteToRequest(r runtime.C
 		if qMaxRecords != "" {
 
 			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MissingLunsName != nil {
+
+		// query param missing_luns.name
+		var qrMissingLunsName string
+
+		if o.MissingLunsName != nil {
+			qrMissingLunsName = *o.MissingLunsName
+		}
+		qMissingLunsName := qrMissingLunsName
+		if qMissingLunsName != "" {
+
+			if err := r.SetQueryParam("missing_luns.name", qMissingLunsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MissingLunsUUID != nil {
+
+		// query param missing_luns.uuid
+		var qrMissingLunsUUID string
+
+		if o.MissingLunsUUID != nil {
+			qrMissingLunsUUID = *o.MissingLunsUUID
+		}
+		qMissingLunsUUID := qrMissingLunsUUID
+		if qMissingLunsUUID != "" {
+
+			if err := r.SetQueryParam("missing_luns.uuid", qMissingLunsUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MissingNamespacesName != nil {
+
+		// query param missing_namespaces.name
+		var qrMissingNamespacesName string
+
+		if o.MissingNamespacesName != nil {
+			qrMissingNamespacesName = *o.MissingNamespacesName
+		}
+		qMissingNamespacesName := qrMissingNamespacesName
+		if qMissingNamespacesName != "" {
+
+			if err := r.SetQueryParam("missing_namespaces.name", qMissingNamespacesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MissingNamespacesUUID != nil {
+
+		// query param missing_namespaces.uuid
+		var qrMissingNamespacesUUID string
+
+		if o.MissingNamespacesUUID != nil {
+			qrMissingNamespacesUUID = *o.MissingNamespacesUUID
+		}
+		qMissingNamespacesUUID := qrMissingNamespacesUUID
+		if qMissingNamespacesUUID != "" {
+
+			if err := r.SetQueryParam("missing_namespaces.uuid", qMissingNamespacesUUID); err != nil {
 				return err
 			}
 		}
@@ -685,6 +1025,40 @@ func (o *ConsistencyGroupSnapshotCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
+	if o.NamespacesName != nil {
+
+		// query param namespaces.name
+		var qrNamespacesName string
+
+		if o.NamespacesName != nil {
+			qrNamespacesName = *o.NamespacesName
+		}
+		qNamespacesName := qrNamespacesName
+		if qNamespacesName != "" {
+
+			if err := r.SetQueryParam("namespaces.name", qNamespacesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesUUID != nil {
+
+		// query param namespaces.uuid
+		var qrNamespacesUUID string
+
+		if o.NamespacesUUID != nil {
+			qrNamespacesUUID = *o.NamespacesUUID
+		}
+		qNamespacesUUID := qrNamespacesUUID
+		if qNamespacesUUID != "" {
+
+			if err := r.SetQueryParam("namespaces.uuid", qNamespacesUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.OrderBy != nil {
 
 		// binding items for order_by
@@ -693,6 +1067,40 @@ func (o *ConsistencyGroupSnapshotCollectionGetParams) WriteToRequest(r runtime.C
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.ReclaimableSpace != nil {
+
+		// query param reclaimable_space
+		var qrReclaimableSpace int64
+
+		if o.ReclaimableSpace != nil {
+			qrReclaimableSpace = *o.ReclaimableSpace
+		}
+		qReclaimableSpace := swag.FormatInt64(qrReclaimableSpace)
+		if qReclaimableSpace != "" {
+
+			if err := r.SetQueryParam("reclaimable_space", qReclaimableSpace); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RestoreSize != nil {
+
+		// query param restore_size
+		var qrRestoreSize int64
+
+		if o.RestoreSize != nil {
+			qrRestoreSize = *o.RestoreSize
+		}
+		qRestoreSize := swag.FormatInt64(qrRestoreSize)
+		if qRestoreSize != "" {
+
+			if err := r.SetQueryParam("restore_size", qRestoreSize); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -725,6 +1133,57 @@ func (o *ConsistencyGroupSnapshotCollectionGetParams) WriteToRequest(r runtime.C
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnaplockExpired != nil {
+
+		// query param snaplock.expired
+		var qrSnaplockExpired bool
+
+		if o.SnaplockExpired != nil {
+			qrSnaplockExpired = *o.SnaplockExpired
+		}
+		qSnaplockExpired := swag.FormatBool(qrSnaplockExpired)
+		if qSnaplockExpired != "" {
+
+			if err := r.SetQueryParam("snaplock.expired", qSnaplockExpired); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnaplockExpiryTime != nil {
+
+		// query param snaplock.expiry_time
+		var qrSnaplockExpiryTime string
+
+		if o.SnaplockExpiryTime != nil {
+			qrSnaplockExpiryTime = *o.SnaplockExpiryTime
+		}
+		qSnaplockExpiryTime := qrSnaplockExpiryTime
+		if qSnaplockExpiryTime != "" {
+
+			if err := r.SetQueryParam("snaplock.expiry_time", qSnaplockExpiryTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnaplockTimeUntilExpiry != nil {
+
+		// query param snaplock.time_until_expiry
+		var qrSnaplockTimeUntilExpiry string
+
+		if o.SnaplockTimeUntilExpiry != nil {
+			qrSnaplockTimeUntilExpiry = *o.SnaplockTimeUntilExpiry
+		}
+		qSnaplockTimeUntilExpiry := qrSnaplockTimeUntilExpiry
+		if qSnaplockTimeUntilExpiry != "" {
+
+			if err := r.SetQueryParam("snaplock.time_until_expiry", qSnaplockTimeUntilExpiry); err != nil {
 				return err
 			}
 		}
@@ -861,6 +1320,23 @@ func (o *ConsistencyGroupSnapshotCollectionGetParams) WriteToRequest(r runtime.C
 		if qUUID != "" {
 
 			if err := r.SetQueryParam("uuid", qUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.WriteFence != nil {
+
+		// query param write_fence
+		var qrWriteFence bool
+
+		if o.WriteFence != nil {
+			qrWriteFence = *o.WriteFence
+		}
+		qWriteFence := swag.FormatBool(qrWriteFence)
+		if qWriteFence != "" {
+
+			if err := r.SetQueryParam("write_fence", qWriteFence); err != nil {
 				return err
 			}
 		}

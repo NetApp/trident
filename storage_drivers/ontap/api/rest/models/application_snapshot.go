@@ -36,25 +36,25 @@ type ApplicationSnapshot struct {
 	// Min Length: 0
 	Comment *string `json:"comment,omitempty"`
 
-	// Consistency type. This is for categorization purposes only. A Snapshot copy should not be set to 'application consistent' unless the host application is quiesced for the Snapshot copy. Valid in POST.
-	// Enum: [crash application]
+	// Consistency type. This is for categorization purposes only. A snapshot should not be set to 'application consistent' unless the host application is quiesced for the snapshot. Valid in POST.
+	// Enum: ["crash","application"]
 	ConsistencyType *string `json:"consistency_type,omitempty"`
 
 	// Creation time
 	// Read Only: true
 	CreateTime *string `json:"create_time,omitempty"`
 
-	// A partial Snapshot copy means that not all volumes in an application component were included in the Snapshot copy.
+	// A partial snapshot means that not all volumes in an application component were included in the snapshot.
 	// Read Only: true
 	IsPartial *bool `json:"is_partial,omitempty"`
 
-	// The Snapshot copy name. Valid in POST.
+	// The snapshot name. Valid in POST.
 	Name *string `json:"name,omitempty"`
 
 	// svm
 	Svm *ApplicationSnapshotInlineSvm `json:"svm,omitempty"`
 
-	// The Snapshot copy UUID. Valid in URL.
+	// The snapshot UUID. Valid in URL.
 	// Read Only: true
 	UUID *string `json:"uuid,omitempty"`
 }

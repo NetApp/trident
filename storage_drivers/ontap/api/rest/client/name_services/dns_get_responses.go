@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *DNSGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the dns get o k response
+func (o *DNSGetOK) Code() int {
+	return 200
+}
+
 func (o *DNSGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/dns/{svm.uuid}][%d] dnsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/dns/{uuid}][%d] dnsGetOK %s", 200, payload)
 }
 
 func (o *DNSGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/dns/{svm.uuid}][%d] dnsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/dns/{uuid}][%d] dnsGetOK %s", 200, payload)
 }
 
 func (o *DNSGetOK) GetPayload() *models.DNS {
@@ -122,11 +130,6 @@ type DNSGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the dns get default response
-func (o *DNSGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this dns get default response has a 2xx status code
 func (o *DNSGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *DNSGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the dns get default response
+func (o *DNSGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *DNSGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/dns/{svm.uuid}][%d] dns_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/dns/{uuid}][%d] dns_get default %s", o._statusCode, payload)
 }
 
 func (o *DNSGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/dns/{svm.uuid}][%d] dns_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/dns/{uuid}][%d] dns_get default %s", o._statusCode, payload)
 }
 
 func (o *DNSGetDefault) GetPayload() *models.ErrorResponse {

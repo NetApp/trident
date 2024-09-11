@@ -22,11 +22,11 @@ type SnapmirrorPolicyReference struct {
 	// links
 	Links *SnapmirrorPolicyReferenceInlineLinks `json:"_links,omitempty"`
 
-	// name
+	// Name of the SnapMirror policy.
 	// Example: Asynchronous
 	Name *string `json:"name,omitempty"`
 
-	// uuid
+	// Unique identifier of the SnapMirror policy.
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
 	// Format: uuid
 	UUID *strfmt.UUID `json:"uuid,omitempty"`

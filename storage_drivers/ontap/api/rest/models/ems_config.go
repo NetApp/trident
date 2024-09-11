@@ -26,8 +26,16 @@ type EmsConfig struct {
 	MailFrom *string `json:"mail_from,omitempty"`
 
 	// Mail server (SMTP)
-	// Example: mail@mycompany.com
+	// Example: mail.mycompany.com
 	MailServer *string `json:"mail_server,omitempty"`
+
+	// Password for Mail server (SMTP)
+	// Example: password
+	MailServerPassword *string `json:"mail_server_password,omitempty"`
+
+	// Username for Mail server (SMTP)
+	// Example: user
+	MailServerUser *string `json:"mail_server_user,omitempty"`
 
 	// Password for HTTP/HTTPS proxy
 	// Example: password

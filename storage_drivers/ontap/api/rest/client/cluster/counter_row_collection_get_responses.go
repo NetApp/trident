@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CounterRowCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the counter row collection get o k response
+func (o *CounterRowCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *CounterRowCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows][%d] counterRowCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows][%d] counterRowCollectionGetOK %s", 200, payload)
 }
 
 func (o *CounterRowCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows][%d] counterRowCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows][%d] counterRowCollectionGetOK %s", 200, payload)
 }
 
 func (o *CounterRowCollectionGetOK) GetPayload() *models.CounterRowResponse {
@@ -121,16 +129,12 @@ func NewCounterRowCollectionGetDefault(code int) *CounterRowCollectionGetDefault
 | 8585320 | Table requested is not found |
 | 8586228 | Invalid counter name request. |
 | 8586229 | Invalid counter property request. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type CounterRowCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the counter row collection get default response
-func (o *CounterRowCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this counter row collection get default response has a 2xx status code
@@ -158,12 +162,19 @@ func (o *CounterRowCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the counter row collection get default response
+func (o *CounterRowCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CounterRowCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows][%d] counter_row_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows][%d] counter_row_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *CounterRowCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows][%d] counter_row_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows][%d] counter_row_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *CounterRowCollectionGetDefault) GetPayload() *models.ErrorResponse {

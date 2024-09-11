@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *PoliciesAndRulesToBeAppliedCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the policies and rules to be applied collection get o k response
+func (o *PoliciesAndRulesToBeAppliedCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *PoliciesAndRulesToBeAppliedCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/group-policies][%d] policiesAndRulesToBeAppliedCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/group-policies][%d] policiesAndRulesToBeAppliedCollectionGetOK %s", 200, payload)
 }
 
 func (o *PoliciesAndRulesToBeAppliedCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/group-policies][%d] policiesAndRulesToBeAppliedCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/group-policies][%d] policiesAndRulesToBeAppliedCollectionGetOK %s", 200, payload)
 }
 
 func (o *PoliciesAndRulesToBeAppliedCollectionGetOK) GetPayload() *models.PoliciesAndRulesToBeAppliedResponse {
@@ -122,11 +130,6 @@ type PoliciesAndRulesToBeAppliedCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the policies and rules to be applied collection get default response
-func (o *PoliciesAndRulesToBeAppliedCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this policies and rules to be applied collection get default response has a 2xx status code
 func (o *PoliciesAndRulesToBeAppliedCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *PoliciesAndRulesToBeAppliedCollectionGetDefault) IsCode(code int) bool 
 	return o._statusCode == code
 }
 
+// Code gets the status code for the policies and rules to be applied collection get default response
+func (o *PoliciesAndRulesToBeAppliedCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *PoliciesAndRulesToBeAppliedCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/group-policies][%d] policies_and_rules_to_be_applied_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/group-policies][%d] policies_and_rules_to_be_applied_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PoliciesAndRulesToBeAppliedCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/group-policies][%d] policies_and_rules_to_be_applied_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/group-policies][%d] policies_and_rules_to_be_applied_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PoliciesAndRulesToBeAppliedCollectionGetDefault) GetPayload() *models.ErrorResponse {

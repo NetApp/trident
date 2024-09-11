@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *AggregateCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the aggregate collection get o k response
+func (o *AggregateCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *AggregateCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/aggregates][%d] aggregateCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates][%d] aggregateCollectionGetOK %s", 200, payload)
 }
 
 func (o *AggregateCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/aggregates][%d] aggregateCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates][%d] aggregateCollectionGetOK %s", 200, payload)
 }
 
 func (o *AggregateCollectionGetOK) GetPayload() *models.AggregateResponse {
@@ -137,16 +145,12 @@ func NewAggregateCollectionGetDefault(code int) *AggregateCollectionGetDefault {
 | 19726540 | The next tag is not supported for recommended aggregates. Retry the operation with a higher "return_timeout" value. |
 | 196608055 | Aggregate recommendation is not supported on this node because it does not support NetApp Aggregate Encryption (NAE). |
 | 196608206 | Internal error. Failed to get encryption operation status. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AggregateCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the aggregate collection get default response
-func (o *AggregateCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this aggregate collection get default response has a 2xx status code
@@ -174,12 +178,19 @@ func (o *AggregateCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the aggregate collection get default response
+func (o *AggregateCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AggregateCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/aggregates][%d] aggregate_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates][%d] aggregate_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *AggregateCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/aggregates][%d] aggregate_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates][%d] aggregate_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *AggregateCollectionGetDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package n_v_me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NvmeServiceGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nvme service get o k response
+func (o *NvmeServiceGetOK) Code() int {
+	return 200
+}
+
 func (o *NvmeServiceGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceGetOK %s", 200, payload)
 }
 
 func (o *NvmeServiceGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceGetOK %s", 200, payload)
 }
 
 func (o *NvmeServiceGetOK) GetPayload() *models.NvmeService {
@@ -120,16 +128,12 @@ func NewNvmeServiceGetDefault(code int) *NvmeServiceGetDefault {
 | ---------- | ----------- |
 | 2621462 | The supplied SVM does not exist. |
 | 72089651 | The supplied SVM does not have an NVMe service. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NvmeServiceGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nvme service get default response
-func (o *NvmeServiceGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nvme service get default response has a 2xx status code
@@ -157,12 +161,19 @@ func (o *NvmeServiceGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nvme service get default response
+func (o *NvmeServiceGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NvmeServiceGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nvme/services/{svm.uuid}][%d] nvme_service_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/services/{svm.uuid}][%d] nvme_service_get default %s", o._statusCode, payload)
 }
 
 func (o *NvmeServiceGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nvme/services/{svm.uuid}][%d] nvme_service_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/services/{svm.uuid}][%d] nvme_service_get default %s", o._statusCode, payload)
 }
 
 func (o *NvmeServiceGetDefault) GetPayload() *models.ErrorResponse {

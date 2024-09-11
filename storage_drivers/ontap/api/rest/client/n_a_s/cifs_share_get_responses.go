@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CifsShareGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs share get o k response
+func (o *CifsShareGetOK) Code() int {
+	return 200
+}
+
 func (o *CifsShareGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifsShareGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifsShareGetOK %s", 200, payload)
 }
 
 func (o *CifsShareGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifsShareGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifsShareGetOK %s", 200, payload)
 }
 
 func (o *CifsShareGetOK) GetPayload() *models.CifsShare {
@@ -122,11 +130,6 @@ type CifsShareGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cifs share get default response
-func (o *CifsShareGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cifs share get default response has a 2xx status code
 func (o *CifsShareGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *CifsShareGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs share get default response
+func (o *CifsShareGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsShareGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifs_share_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifs_share_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsShareGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifs_share_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifs_share_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsShareGetDefault) GetPayload() *models.ErrorResponse {

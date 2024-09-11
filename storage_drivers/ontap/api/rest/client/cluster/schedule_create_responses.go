@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *ScheduleCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the schedule create created response
+func (o *ScheduleCreateCreated) Code() int {
+	return 201
+}
+
 func (o *ScheduleCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /cluster/schedules][%d] scheduleCreateCreated ", 201)
+	return fmt.Sprintf("[POST /cluster/schedules][%d] scheduleCreateCreated", 201)
 }
 
 func (o *ScheduleCreateCreated) String() string {
-	return fmt.Sprintf("[POST /cluster/schedules][%d] scheduleCreateCreated ", 201)
+	return fmt.Sprintf("[POST /cluster/schedules][%d] scheduleCreateCreated", 201)
 }
 
 func (o *ScheduleCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -123,16 +129,13 @@ func NewScheduleCreateDefault(code int) *ScheduleCreateDefault {
 | 459764 | Cannot create a schedule with the same name as an existing schedule from the MetroCluster partner cluster but of a different schedule type. |
 | 460783 | As this is a MetroCluster configuration and the local cluster is waiting for switchback, changes to non-system schedules are not allowed. |
 | 460784 | An error occurred creating the remote cluster version of this schedule. |
+| 2621601 | Cannot create a schedule on a system SVM. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ScheduleCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the schedule create default response
-func (o *ScheduleCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this schedule create default response has a 2xx status code
@@ -160,12 +163,19 @@ func (o *ScheduleCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the schedule create default response
+func (o *ScheduleCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ScheduleCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /cluster/schedules][%d] schedule_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/schedules][%d] schedule_create default %s", o._statusCode, payload)
 }
 
 func (o *ScheduleCreateDefault) String() string {
-	return fmt.Sprintf("[POST /cluster/schedules][%d] schedule_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/schedules][%d] schedule_create default %s", o._statusCode, payload)
 }
 
 func (o *ScheduleCreateDefault) GetPayload() *models.ErrorResponse {

@@ -243,7 +243,7 @@ type SnaplockLogVolumeInlineVolume struct {
 	// links
 	Links *SnaplockLogVolumeInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

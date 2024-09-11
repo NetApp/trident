@@ -68,6 +68,30 @@ type PublickeyCollectionGetParams struct {
 	*/
 	AccountName *string
 
+	/* Certificate.
+
+	   Filter by certificate
+	*/
+	Certificate *string
+
+	/* CertificateDetails.
+
+	   Filter by certificate_details
+	*/
+	CertificateDetails *string
+
+	/* CertificateExpired.
+
+	   Filter by certificate_expired
+	*/
+	CertificateExpired *string
+
+	/* CertificateRevoked.
+
+	   Filter by certificate_revoked
+	*/
+	CertificateRevoked *string
+
 	/* Comment.
 
 	   Filter by comment
@@ -226,6 +250,50 @@ func (o *PublickeyCollectionGetParams) WithAccountName(accountName *string) *Pub
 // SetAccountName adds the accountName to the publickey collection get params
 func (o *PublickeyCollectionGetParams) SetAccountName(accountName *string) {
 	o.AccountName = accountName
+}
+
+// WithCertificate adds the certificate to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithCertificate(certificate *string) *PublickeyCollectionGetParams {
+	o.SetCertificate(certificate)
+	return o
+}
+
+// SetCertificate adds the certificate to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetCertificate(certificate *string) {
+	o.Certificate = certificate
+}
+
+// WithCertificateDetails adds the certificateDetails to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithCertificateDetails(certificateDetails *string) *PublickeyCollectionGetParams {
+	o.SetCertificateDetails(certificateDetails)
+	return o
+}
+
+// SetCertificateDetails adds the certificateDetails to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetCertificateDetails(certificateDetails *string) {
+	o.CertificateDetails = certificateDetails
+}
+
+// WithCertificateExpired adds the certificateExpired to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithCertificateExpired(certificateExpired *string) *PublickeyCollectionGetParams {
+	o.SetCertificateExpired(certificateExpired)
+	return o
+}
+
+// SetCertificateExpired adds the certificateExpired to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetCertificateExpired(certificateExpired *string) {
+	o.CertificateExpired = certificateExpired
+}
+
+// WithCertificateRevoked adds the certificateRevoked to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithCertificateRevoked(certificateRevoked *string) *PublickeyCollectionGetParams {
+	o.SetCertificateRevoked(certificateRevoked)
+	return o
+}
+
+// SetCertificateRevoked adds the certificateRevoked to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetCertificateRevoked(certificateRevoked *string) {
+	o.CertificateRevoked = certificateRevoked
 }
 
 // WithComment adds the comment to the publickey collection get params
@@ -391,6 +459,74 @@ func (o *PublickeyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qAccountName != "" {
 
 			if err := r.SetQueryParam("account.name", qAccountName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Certificate != nil {
+
+		// query param certificate
+		var qrCertificate string
+
+		if o.Certificate != nil {
+			qrCertificate = *o.Certificate
+		}
+		qCertificate := qrCertificate
+		if qCertificate != "" {
+
+			if err := r.SetQueryParam("certificate", qCertificate); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CertificateDetails != nil {
+
+		// query param certificate_details
+		var qrCertificateDetails string
+
+		if o.CertificateDetails != nil {
+			qrCertificateDetails = *o.CertificateDetails
+		}
+		qCertificateDetails := qrCertificateDetails
+		if qCertificateDetails != "" {
+
+			if err := r.SetQueryParam("certificate_details", qCertificateDetails); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CertificateExpired != nil {
+
+		// query param certificate_expired
+		var qrCertificateExpired string
+
+		if o.CertificateExpired != nil {
+			qrCertificateExpired = *o.CertificateExpired
+		}
+		qCertificateExpired := qrCertificateExpired
+		if qCertificateExpired != "" {
+
+			if err := r.SetQueryParam("certificate_expired", qCertificateExpired); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CertificateRevoked != nil {
+
+		// query param certificate_revoked
+		var qrCertificateRevoked string
+
+		if o.CertificateRevoked != nil {
+			qrCertificateRevoked = *o.CertificateRevoked
+		}
+		qCertificateRevoked := qrCertificateRevoked
+		if qCertificateRevoked != "" {
+
+			if err := r.SetQueryParam("certificate_revoked", qCertificateRevoked); err != nil {
 				return err
 			}
 		}

@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type ApplicationSnapshotDeleteReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *ApplicationSnapshotDeleteReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewApplicationSnapshotDeleteOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewApplicationSnapshotDeleteAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *ApplicationSnapshotDeleteReader) ReadResponse(response runtime.ClientRe
 	}
 }
 
+// NewApplicationSnapshotDeleteOK creates a ApplicationSnapshotDeleteOK with default headers values
+func NewApplicationSnapshotDeleteOK() *ApplicationSnapshotDeleteOK {
+	return &ApplicationSnapshotDeleteOK{}
+}
+
+/*
+ApplicationSnapshotDeleteOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type ApplicationSnapshotDeleteOK struct {
+	Payload *models.ApplicationSnapshotJobLinkResponse
+}
+
+// IsSuccess returns true when this application snapshot delete o k response has a 2xx status code
+func (o *ApplicationSnapshotDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this application snapshot delete o k response has a 3xx status code
+func (o *ApplicationSnapshotDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this application snapshot delete o k response has a 4xx status code
+func (o *ApplicationSnapshotDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this application snapshot delete o k response has a 5xx status code
+func (o *ApplicationSnapshotDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this application snapshot delete o k response a status code equal to that given
+func (o *ApplicationSnapshotDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the application snapshot delete o k response
+func (o *ApplicationSnapshotDeleteOK) Code() int {
+	return 200
+}
+
+func (o *ApplicationSnapshotDeleteOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /application/applications/{application.uuid}/snapshots/{uuid}][%d] applicationSnapshotDeleteOK %s", 200, payload)
+}
+
+func (o *ApplicationSnapshotDeleteOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /application/applications/{application.uuid}/snapshots/{uuid}][%d] applicationSnapshotDeleteOK %s", 200, payload)
+}
+
+func (o *ApplicationSnapshotDeleteOK) GetPayload() *models.ApplicationSnapshotJobLinkResponse {
+	return o.Payload
+}
+
+func (o *ApplicationSnapshotDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ApplicationSnapshotJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewApplicationSnapshotDeleteAccepted creates a ApplicationSnapshotDeleteAccepted with default headers values
 func NewApplicationSnapshotDeleteAccepted() *ApplicationSnapshotDeleteAccepted {
 	return &ApplicationSnapshotDeleteAccepted{}
@@ -52,7 +129,7 @@ ApplicationSnapshotDeleteAccepted describes a response with status code 202, wit
 Accepted
 */
 type ApplicationSnapshotDeleteAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.ApplicationSnapshotJobLinkResponse
 }
 
 // IsSuccess returns true when this application snapshot delete accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *ApplicationSnapshotDeleteAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the application snapshot delete accepted response
+func (o *ApplicationSnapshotDeleteAccepted) Code() int {
+	return 202
+}
+
 func (o *ApplicationSnapshotDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /application/applications/{application.uuid}/snapshots/{uuid}][%d] applicationSnapshotDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /application/applications/{application.uuid}/snapshots/{uuid}][%d] applicationSnapshotDeleteAccepted %s", 202, payload)
 }
 
 func (o *ApplicationSnapshotDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /application/applications/{application.uuid}/snapshots/{uuid}][%d] applicationSnapshotDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /application/applications/{application.uuid}/snapshots/{uuid}][%d] applicationSnapshotDeleteAccepted %s", 202, payload)
 }
 
-func (o *ApplicationSnapshotDeleteAccepted) GetPayload() *models.JobLinkResponse {
+func (o *ApplicationSnapshotDeleteAccepted) GetPayload() *models.ApplicationSnapshotJobLinkResponse {
 	return o.Payload
 }
 
 func (o *ApplicationSnapshotDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.ApplicationSnapshotJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -122,11 +206,6 @@ type ApplicationSnapshotDeleteDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the application snapshot delete default response
-func (o *ApplicationSnapshotDeleteDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this application snapshot delete default response has a 2xx status code
 func (o *ApplicationSnapshotDeleteDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +231,19 @@ func (o *ApplicationSnapshotDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the application snapshot delete default response
+func (o *ApplicationSnapshotDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ApplicationSnapshotDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /application/applications/{application.uuid}/snapshots/{uuid}][%d] application_snapshot_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /application/applications/{application.uuid}/snapshots/{uuid}][%d] application_snapshot_delete default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationSnapshotDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /application/applications/{application.uuid}/snapshots/{uuid}][%d] application_snapshot_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /application/applications/{application.uuid}/snapshots/{uuid}][%d] application_snapshot_delete default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationSnapshotDeleteDefault) GetPayload() *models.ErrorResponse {

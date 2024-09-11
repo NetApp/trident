@@ -26,12 +26,12 @@ type ConsistencyGroupExportPolicy struct {
 	// The set of rules that govern the export policy.
 	ConsistencyGroupExportPolicyInlineRules []*ExportRules `json:"rules,omitempty"`
 
-	// Name of the export policy.
-	Name *string `json:"name,omitempty"`
-
 	// Identifier for the export policy.
 	// Read Only: true
-	UUID *string `json:"uuid,omitempty"`
+	ID *int64 `json:"id,omitempty"`
+
+	// Name of the export policy.
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this consistency group export policy
@@ -105,7 +105,7 @@ func (m *ConsistencyGroupExportPolicy) ContextValidate(ctx context.Context, form
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateUUID(ctx, formats); err != nil {
+	if err := m.contextValidateID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -147,9 +147,9 @@ func (m *ConsistencyGroupExportPolicy) contextValidateConsistencyGroupExportPoli
 	return nil
 }
 
-func (m *ConsistencyGroupExportPolicy) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupExportPolicy) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
+	if err := validate.ReadOnly(ctx, "id", "body", m.ID); err != nil {
 		return err
 	}
 

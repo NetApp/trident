@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ClusterNtpKeysDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cluster ntp keys delete o k response
+func (o *ClusterNtpKeysDeleteOK) Code() int {
+	return 200
+}
+
 func (o *ClusterNtpKeysDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /cluster/ntp/keys/{id}][%d] clusterNtpKeysDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /cluster/ntp/keys/{id}][%d] clusterNtpKeysDeleteOK", 200)
 }
 
 func (o *ClusterNtpKeysDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /cluster/ntp/keys/{id}][%d] clusterNtpKeysDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /cluster/ntp/keys/{id}][%d] clusterNtpKeysDeleteOK", 200)
 }
 
 func (o *ClusterNtpKeysDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,16 +113,12 @@ func NewClusterNtpKeysDeleteDefault(code int) *ClusterNtpKeysDeleteDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 2097186 | The key cannot be deleted because it is being used by an NTP server. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ClusterNtpKeysDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cluster ntp keys delete default response
-func (o *ClusterNtpKeysDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cluster ntp keys delete default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *ClusterNtpKeysDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster ntp keys delete default response
+func (o *ClusterNtpKeysDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterNtpKeysDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /cluster/ntp/keys/{id}][%d] cluster_ntp_keys_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/ntp/keys/{id}][%d] cluster_ntp_keys_delete default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNtpKeysDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /cluster/ntp/keys/{id}][%d] cluster_ntp_keys_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/ntp/keys/{id}][%d] cluster_ntp_keys_delete default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNtpKeysDeleteDefault) GetPayload() *models.ErrorResponse {

@@ -34,7 +34,7 @@ type MetroclusterOperation struct {
 	CommandLine *string `json:"command_line,omitempty"`
 
 	// End Time
-	// Example: 2016-03-10T14:35:16-08:00
+	// Example: 2016-03-10 22:35:16
 	// Read Only: true
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
@@ -48,7 +48,7 @@ type MetroclusterOperation struct {
 	Node *MetroclusterOperationInlineNode `json:"node,omitempty"`
 
 	// Start Time
-	// Example: 2016-03-10T14:33:16-08:00
+	// Example: 2016-03-10 22:33:16
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
@@ -56,13 +56,13 @@ type MetroclusterOperation struct {
 	// Indicates the state of the operation.
 	// Example: completed_with_warnings
 	// Read Only: true
-	// Enum: [completed_with_manual_recovery_needed completed_with_warnings failed in_progress partially_successful successful unknown]
+	// Enum: ["completed_with_manual_recovery_needed","completed_with_warnings","failed","in_progress","partially_successful","successful","unknown"]
 	State *string `json:"state,omitempty"`
 
 	// Name of the operation.
 	// Example: switchover
 	// Read Only: true
-	// Enum: [check configure connect disconnect dr_group_create dr_group_delete heal_aggr_auto heal_aggregates heal_root_aggr_auto heal_root_aggregates interface_create interface_delete interface_modify ip_setup ip_teardown modify switchback switchback_continuation_agent switchback_simulate switchover switchover_simulate unconfigure unconfigure_continuation_agent unknown]
+	// Enum: ["check","configure","connect","disconnect","dr_group_create","dr_group_delete","heal_aggr_auto","heal_aggregates","heal_root_aggr_auto","heal_root_aggregates","interface_create","interface_delete","interface_modify","ip_setup","ip_teardown","modify","switchback","switchback_continuation_agent","switchback_simulate","switchover","switchover_simulate","unconfigure","unconfigure_continuation_agent","unknown"]
 	Type *string `json:"type,omitempty"`
 
 	// Identifier for the operation.

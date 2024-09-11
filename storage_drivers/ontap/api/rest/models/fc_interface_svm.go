@@ -24,7 +24,7 @@ type FcInterfaceSvm struct {
 	Links *FcInterfaceSvmInlineLinks `json:"_links,omitempty"`
 
 	// The data protocol for which the Fibre Channel interface is configured.
-	// Enum: [fcp fc_nvme]
+	// Enum: ["fcp","fc_nvme"]
 	DataProtocol *string `json:"data_protocol,omitempty"`
 
 	// location

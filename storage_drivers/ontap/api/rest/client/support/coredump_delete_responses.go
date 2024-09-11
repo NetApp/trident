@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *CoredumpDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the coredump delete o k response
+func (o *CoredumpDeleteOK) Code() int {
+	return 200
+}
+
 func (o *CoredumpDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /support/coredump/coredumps/{node.uuid}/{name}][%d] coredumpDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /support/coredump/coredumps/{node.uuid}/{name}][%d] coredumpDeleteOK", 200)
 }
 
 func (o *CoredumpDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /support/coredump/coredumps/{node.uuid}/{name}][%d] coredumpDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /support/coredump/coredumps/{node.uuid}/{name}][%d] coredumpDeleteOK", 200)
 }
 
 func (o *CoredumpDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type CoredumpDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the coredump delete default response
-func (o *CoredumpDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this coredump delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *CoredumpDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the coredump delete default response
+func (o *CoredumpDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CoredumpDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /support/coredump/coredumps/{node.uuid}/{name}][%d] coredump_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /support/coredump/coredumps/{node.uuid}/{name}][%d] coredump_delete default %s", o._statusCode, payload)
 }
 
 func (o *CoredumpDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /support/coredump/coredumps/{node.uuid}/{name}][%d] coredump_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /support/coredump/coredumps/{node.uuid}/{name}][%d] coredump_delete default %s", o._statusCode, payload)
 }
 
 func (o *CoredumpDeleteDefault) GetPayload() *models.ErrorResponse {

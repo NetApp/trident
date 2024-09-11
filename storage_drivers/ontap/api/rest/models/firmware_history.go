@@ -25,7 +25,7 @@ type FirmwareHistory struct {
 	Links *FirmwareHistoryInlineLinks `json:"_links,omitempty"`
 
 	// End time of this update request.
-	// Example: 2019-02-02T19:00:00Z
+	// Example: 2019-02-02 19:00:00
 	// Read Only: true
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
@@ -39,7 +39,7 @@ type FirmwareHistory struct {
 
 	// fw update state
 	// Read Only: true
-	// Enum: [downloading moving_firmware starting_workers waiting_on_workers completed failed]
+	// Enum: ["downloading","moving_firmware","starting_workers","waiting_on_workers","completed","failed"]
 	FwUpdateState *string `json:"fw_update_state,omitempty"`
 
 	// job
@@ -49,7 +49,7 @@ type FirmwareHistory struct {
 	Node *FirmwareHistoryInlineNode `json:"node,omitempty"`
 
 	// Start time of this update request.
-	// Example: 2019-02-02T19:00:00Z
+	// Example: 2019-02-02 19:00:00
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`

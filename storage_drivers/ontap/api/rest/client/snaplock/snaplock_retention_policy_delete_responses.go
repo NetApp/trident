@@ -6,6 +6,7 @@ package snaplock
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SnaplockRetentionPolicyDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snaplock retention policy delete o k response
+func (o *SnaplockRetentionPolicyDeleteOK) Code() int {
+	return 200
+}
+
 func (o *SnaplockRetentionPolicyDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/policies/{policy.name}][%d] snaplockRetentionPolicyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/policies/{policy.name}][%d] snaplockRetentionPolicyDeleteOK", 200)
 }
 
 func (o *SnaplockRetentionPolicyDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/policies/{policy.name}][%d] snaplockRetentionPolicyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/policies/{policy.name}][%d] snaplockRetentionPolicyDeleteOK", 200)
 }
 
 func (o *SnaplockRetentionPolicyDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -100,19 +106,18 @@ func NewSnaplockRetentionPolicyDeleteDefault(code int) *SnaplockRetentionPolicyD
 }
 
 /*
-SnaplockRetentionPolicyDeleteDefault describes a response with status code -1, with default header values.
+	SnaplockRetentionPolicyDeleteDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response codes
+
+| Error code  |  Description |
+|-------------|--------------|
+| 13763280    | Only a user with security login role \"vsadmin-snaplock\" is allowed to perform this operation.  |
 */
 type SnaplockRetentionPolicyDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snaplock retention policy delete default response
-func (o *SnaplockRetentionPolicyDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snaplock retention policy delete default response has a 2xx status code
@@ -140,12 +145,19 @@ func (o *SnaplockRetentionPolicyDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snaplock retention policy delete default response
+func (o *SnaplockRetentionPolicyDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnaplockRetentionPolicyDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/policies/{policy.name}][%d] snaplock_retention_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/policies/{policy.name}][%d] snaplock_retention_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockRetentionPolicyDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/policies/{policy.name}][%d] snaplock_retention_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/policies/{policy.name}][%d] snaplock_retention_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockRetentionPolicyDeleteDefault) GetPayload() *models.ErrorResponse {

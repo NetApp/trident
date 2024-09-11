@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *AwsKmsCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the aws kms collection get o k response
+func (o *AwsKmsCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *AwsKmsCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/aws-kms][%d] awsKmsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/aws-kms][%d] awsKmsCollectionGetOK %s", 200, payload)
 }
 
 func (o *AwsKmsCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /security/aws-kms][%d] awsKmsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/aws-kms][%d] awsKmsCollectionGetOK %s", 200, payload)
 }
 
 func (o *AwsKmsCollectionGetOK) GetPayload() *models.AwsKmsResponse {
@@ -121,16 +129,12 @@ func NewAwsKmsCollectionGetDefault(code int) *AwsKmsCollectionGetDefault {
 | 65537551 | Top-level internal key protection key (KEK) unavailable on one or more nodes. |
 | 65537552 | Embedded KMIP server status not available. |
 | 65537915 | The Amazon Web Service Key Management Service is unreachable from one or more nodes. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AwsKmsCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the aws kms collection get default response
-func (o *AwsKmsCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this aws kms collection get default response has a 2xx status code
@@ -158,12 +162,19 @@ func (o *AwsKmsCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the aws kms collection get default response
+func (o *AwsKmsCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AwsKmsCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/aws-kms][%d] aws_kms_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/aws-kms][%d] aws_kms_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *AwsKmsCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/aws-kms][%d] aws_kms_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/aws-kms][%d] aws_kms_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *AwsKmsCollectionGetDefault) GetPayload() *models.ErrorResponse {

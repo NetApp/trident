@@ -6,6 +6,7 @@ package snaplock
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SnaplockFileRetentionTimeModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snaplock file retention time modify o k response
+func (o *SnaplockFileRetentionTimeModifyOK) Code() int {
+	return 200
+}
+
 func (o *SnaplockFileRetentionTimeModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplockFileRetentionTimeModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplockFileRetentionTimeModifyOK", 200)
 }
 
 func (o *SnaplockFileRetentionTimeModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplockFileRetentionTimeModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplockFileRetentionTimeModifyOK", 200)
 }
 
 func (o *SnaplockFileRetentionTimeModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,18 +112,18 @@ func NewSnaplockFileRetentionTimeModifyDefault(code int) *SnaplockFileRetentionT
 
 | Error code  |  Description |
 |-------------|--------------|
-| 14090347    | File path must be in the format \"/<dir>/<file path>\"  |
+| 262179      | Unexpected argument \"<file_name>\"  |
+| 262186      | Field \"expiry_time\" cannot be used with field \"retention_period\"  |
+| 6691623     | User is not authorized  |
+| 13763279    | The resulting expiry time due to the specified retention period is earlier than the current expiry time  |
 | 14090348    | Invalid Expiry time  |
+| 14090347    | File path must be in the format \"\/\<dir\>\/\<file path\>\"  |
+| 917804      | Path should be given in the format \"\/\vol\/\<volume name>\/\<file path>\".
 */
 type SnaplockFileRetentionTimeModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snaplock file retention time modify default response
-func (o *SnaplockFileRetentionTimeModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snaplock file retention time modify default response has a 2xx status code
@@ -145,12 +151,19 @@ func (o *SnaplockFileRetentionTimeModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snaplock file retention time modify default response
+func (o *SnaplockFileRetentionTimeModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnaplockFileRetentionTimeModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplock_file_retention_time_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplock_file_retention_time_modify default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockFileRetentionTimeModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplock_file_retention_time_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplock_file_retention_time_modify default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockFileRetentionTimeModifyDefault) GetPayload() *models.ErrorResponse {

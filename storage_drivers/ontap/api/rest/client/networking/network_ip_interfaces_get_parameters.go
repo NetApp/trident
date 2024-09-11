@@ -260,6 +260,92 @@ type NetworkIPInterfacesGetParams struct {
 	*/
 	RdmaProtocols *string
 
+	/* RecommendInterfacesPerNode.
+
+	   The number of IP interfaces to recommend per node.
+
+	*/
+	RecommendInterfacesPerNode *int64
+
+	/* RecommendIPFamily.
+
+	   The name of an IP Address Family for which to recommend IP interfaces. Unless ipv6 is specified, the default value is ipv4.
+
+
+	   Default: "ipv4"
+	*/
+	RecommendIPFamily *string
+
+	/* RecommendIpspaceName.
+
+	   The name of an existing IPspace for which to recommend IP interfaces.
+
+	*/
+	RecommendIpspaceName *string
+
+	/* RecommendIpspaceUUID.
+
+	   The UUID of an existing IPspace for which to recommend IP interfaces.
+
+	*/
+	RecommendIpspaceUUID *string
+
+	/* RecommendLocationBroadcastDomainName.
+
+	   The name of an existing broadcast domain for which to recommend IP interfaces.
+
+	*/
+	RecommendLocationBroadcastDomainName *string
+
+	/* RecommendLocationBroadcastDomainUUID.
+
+	   The UUID of an existing broadcast domain for which to recommend IP interfaces.
+
+	*/
+	RecommendLocationBroadcastDomainUUID *string
+
+	/* RecommendServicePolicyName.
+
+	   The name of an IP service policy for which to recommend IP interfaces.
+
+	*/
+	RecommendServicePolicyName *string
+
+	/* RecommendServicePolicyUUID.
+
+	   The UUID of an IP service policy for which to recommend IP interfaces.
+
+	*/
+	RecommendServicePolicyUUID *string
+
+	/* RecommendSubnetName.
+
+	   The name of an existing subnet for which to recommend IP interfaces.
+
+	*/
+	RecommendSubnetName *string
+
+	/* RecommendSubnetUUID.
+
+	   The UUID of an existing subnet for which to recommend IP interfaces.
+
+	*/
+	RecommendSubnetUUID *string
+
+	/* RecommendSvmName.
+
+	   The name of an existing SVM for which to recommend IP interfaces.
+
+	*/
+	RecommendSvmName *string
+
+	/* RecommendSvmUUID.
+
+	   The UUID of an existing SVM for which to recommend IP interfaces.
+
+	*/
+	RecommendSvmUUID *string
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -390,14 +476,17 @@ func (o *NetworkIPInterfacesGetParams) WithDefaults() *NetworkIPInterfacesGetPar
 // All values with no default are reset to their zero value.
 func (o *NetworkIPInterfacesGetParams) SetDefaults() {
 	var (
+		recommendIPFamilyDefault = string("ipv4")
+
 		returnRecordsDefault = bool(true)
 
 		returnTimeoutDefault = int64(15)
 	)
 
 	val := NetworkIPInterfacesGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		RecommendIPFamily: &recommendIPFamilyDefault,
+		ReturnRecords:     &returnRecordsDefault,
+		ReturnTimeout:     &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -800,6 +889,138 @@ func (o *NetworkIPInterfacesGetParams) WithRdmaProtocols(rdmaProtocols *string) 
 // SetRdmaProtocols adds the rdmaProtocols to the network ip interfaces get params
 func (o *NetworkIPInterfacesGetParams) SetRdmaProtocols(rdmaProtocols *string) {
 	o.RdmaProtocols = rdmaProtocols
+}
+
+// WithRecommendInterfacesPerNode adds the recommendInterfacesPerNode to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithRecommendInterfacesPerNode(recommendInterfacesPerNode *int64) *NetworkIPInterfacesGetParams {
+	o.SetRecommendInterfacesPerNode(recommendInterfacesPerNode)
+	return o
+}
+
+// SetRecommendInterfacesPerNode adds the recommendInterfacesPerNode to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetRecommendInterfacesPerNode(recommendInterfacesPerNode *int64) {
+	o.RecommendInterfacesPerNode = recommendInterfacesPerNode
+}
+
+// WithRecommendIPFamily adds the recommendIPFamily to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithRecommendIPFamily(recommendIPFamily *string) *NetworkIPInterfacesGetParams {
+	o.SetRecommendIPFamily(recommendIPFamily)
+	return o
+}
+
+// SetRecommendIPFamily adds the recommendIpFamily to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetRecommendIPFamily(recommendIPFamily *string) {
+	o.RecommendIPFamily = recommendIPFamily
+}
+
+// WithRecommendIpspaceName adds the recommendIpspaceName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithRecommendIpspaceName(recommendIpspaceName *string) *NetworkIPInterfacesGetParams {
+	o.SetRecommendIpspaceName(recommendIpspaceName)
+	return o
+}
+
+// SetRecommendIpspaceName adds the recommendIpspaceName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetRecommendIpspaceName(recommendIpspaceName *string) {
+	o.RecommendIpspaceName = recommendIpspaceName
+}
+
+// WithRecommendIpspaceUUID adds the recommendIpspaceUUID to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithRecommendIpspaceUUID(recommendIpspaceUUID *string) *NetworkIPInterfacesGetParams {
+	o.SetRecommendIpspaceUUID(recommendIpspaceUUID)
+	return o
+}
+
+// SetRecommendIpspaceUUID adds the recommendIpspaceUuid to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetRecommendIpspaceUUID(recommendIpspaceUUID *string) {
+	o.RecommendIpspaceUUID = recommendIpspaceUUID
+}
+
+// WithRecommendLocationBroadcastDomainName adds the recommendLocationBroadcastDomainName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithRecommendLocationBroadcastDomainName(recommendLocationBroadcastDomainName *string) *NetworkIPInterfacesGetParams {
+	o.SetRecommendLocationBroadcastDomainName(recommendLocationBroadcastDomainName)
+	return o
+}
+
+// SetRecommendLocationBroadcastDomainName adds the recommendLocationBroadcastDomainName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetRecommendLocationBroadcastDomainName(recommendLocationBroadcastDomainName *string) {
+	o.RecommendLocationBroadcastDomainName = recommendLocationBroadcastDomainName
+}
+
+// WithRecommendLocationBroadcastDomainUUID adds the recommendLocationBroadcastDomainUUID to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithRecommendLocationBroadcastDomainUUID(recommendLocationBroadcastDomainUUID *string) *NetworkIPInterfacesGetParams {
+	o.SetRecommendLocationBroadcastDomainUUID(recommendLocationBroadcastDomainUUID)
+	return o
+}
+
+// SetRecommendLocationBroadcastDomainUUID adds the recommendLocationBroadcastDomainUuid to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetRecommendLocationBroadcastDomainUUID(recommendLocationBroadcastDomainUUID *string) {
+	o.RecommendLocationBroadcastDomainUUID = recommendLocationBroadcastDomainUUID
+}
+
+// WithRecommendServicePolicyName adds the recommendServicePolicyName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithRecommendServicePolicyName(recommendServicePolicyName *string) *NetworkIPInterfacesGetParams {
+	o.SetRecommendServicePolicyName(recommendServicePolicyName)
+	return o
+}
+
+// SetRecommendServicePolicyName adds the recommendServicePolicyName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetRecommendServicePolicyName(recommendServicePolicyName *string) {
+	o.RecommendServicePolicyName = recommendServicePolicyName
+}
+
+// WithRecommendServicePolicyUUID adds the recommendServicePolicyUUID to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithRecommendServicePolicyUUID(recommendServicePolicyUUID *string) *NetworkIPInterfacesGetParams {
+	o.SetRecommendServicePolicyUUID(recommendServicePolicyUUID)
+	return o
+}
+
+// SetRecommendServicePolicyUUID adds the recommendServicePolicyUuid to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetRecommendServicePolicyUUID(recommendServicePolicyUUID *string) {
+	o.RecommendServicePolicyUUID = recommendServicePolicyUUID
+}
+
+// WithRecommendSubnetName adds the recommendSubnetName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithRecommendSubnetName(recommendSubnetName *string) *NetworkIPInterfacesGetParams {
+	o.SetRecommendSubnetName(recommendSubnetName)
+	return o
+}
+
+// SetRecommendSubnetName adds the recommendSubnetName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetRecommendSubnetName(recommendSubnetName *string) {
+	o.RecommendSubnetName = recommendSubnetName
+}
+
+// WithRecommendSubnetUUID adds the recommendSubnetUUID to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithRecommendSubnetUUID(recommendSubnetUUID *string) *NetworkIPInterfacesGetParams {
+	o.SetRecommendSubnetUUID(recommendSubnetUUID)
+	return o
+}
+
+// SetRecommendSubnetUUID adds the recommendSubnetUuid to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetRecommendSubnetUUID(recommendSubnetUUID *string) {
+	o.RecommendSubnetUUID = recommendSubnetUUID
+}
+
+// WithRecommendSvmName adds the recommendSvmName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithRecommendSvmName(recommendSvmName *string) *NetworkIPInterfacesGetParams {
+	o.SetRecommendSvmName(recommendSvmName)
+	return o
+}
+
+// SetRecommendSvmName adds the recommendSvmName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetRecommendSvmName(recommendSvmName *string) {
+	o.RecommendSvmName = recommendSvmName
+}
+
+// WithRecommendSvmUUID adds the recommendSvmUUID to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithRecommendSvmUUID(recommendSvmUUID *string) *NetworkIPInterfacesGetParams {
+	o.SetRecommendSvmUUID(recommendSvmUUID)
+	return o
+}
+
+// SetRecommendSvmUUID adds the recommendSvmUuid to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetRecommendSvmUUID(recommendSvmUUID *string) {
+	o.RecommendSvmUUID = recommendSvmUUID
 }
 
 // WithReturnRecords adds the returnRecords to the network ip interfaces get params
@@ -1552,6 +1773,210 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qRdmaProtocols != "" {
 
 			if err := r.SetQueryParam("rdma_protocols", qRdmaProtocols); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RecommendInterfacesPerNode != nil {
+
+		// query param recommend.interfaces_per_node
+		var qrRecommendInterfacesPerNode int64
+
+		if o.RecommendInterfacesPerNode != nil {
+			qrRecommendInterfacesPerNode = *o.RecommendInterfacesPerNode
+		}
+		qRecommendInterfacesPerNode := swag.FormatInt64(qrRecommendInterfacesPerNode)
+		if qRecommendInterfacesPerNode != "" {
+
+			if err := r.SetQueryParam("recommend.interfaces_per_node", qRecommendInterfacesPerNode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RecommendIPFamily != nil {
+
+		// query param recommend.ip.family
+		var qrRecommendIPFamily string
+
+		if o.RecommendIPFamily != nil {
+			qrRecommendIPFamily = *o.RecommendIPFamily
+		}
+		qRecommendIPFamily := qrRecommendIPFamily
+		if qRecommendIPFamily != "" {
+
+			if err := r.SetQueryParam("recommend.ip.family", qRecommendIPFamily); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RecommendIpspaceName != nil {
+
+		// query param recommend.ipspace.name
+		var qrRecommendIpspaceName string
+
+		if o.RecommendIpspaceName != nil {
+			qrRecommendIpspaceName = *o.RecommendIpspaceName
+		}
+		qRecommendIpspaceName := qrRecommendIpspaceName
+		if qRecommendIpspaceName != "" {
+
+			if err := r.SetQueryParam("recommend.ipspace.name", qRecommendIpspaceName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RecommendIpspaceUUID != nil {
+
+		// query param recommend.ipspace.uuid
+		var qrRecommendIpspaceUUID string
+
+		if o.RecommendIpspaceUUID != nil {
+			qrRecommendIpspaceUUID = *o.RecommendIpspaceUUID
+		}
+		qRecommendIpspaceUUID := qrRecommendIpspaceUUID
+		if qRecommendIpspaceUUID != "" {
+
+			if err := r.SetQueryParam("recommend.ipspace.uuid", qRecommendIpspaceUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RecommendLocationBroadcastDomainName != nil {
+
+		// query param recommend.location.broadcast_domain.name
+		var qrRecommendLocationBroadcastDomainName string
+
+		if o.RecommendLocationBroadcastDomainName != nil {
+			qrRecommendLocationBroadcastDomainName = *o.RecommendLocationBroadcastDomainName
+		}
+		qRecommendLocationBroadcastDomainName := qrRecommendLocationBroadcastDomainName
+		if qRecommendLocationBroadcastDomainName != "" {
+
+			if err := r.SetQueryParam("recommend.location.broadcast_domain.name", qRecommendLocationBroadcastDomainName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RecommendLocationBroadcastDomainUUID != nil {
+
+		// query param recommend.location.broadcast_domain.uuid
+		var qrRecommendLocationBroadcastDomainUUID string
+
+		if o.RecommendLocationBroadcastDomainUUID != nil {
+			qrRecommendLocationBroadcastDomainUUID = *o.RecommendLocationBroadcastDomainUUID
+		}
+		qRecommendLocationBroadcastDomainUUID := qrRecommendLocationBroadcastDomainUUID
+		if qRecommendLocationBroadcastDomainUUID != "" {
+
+			if err := r.SetQueryParam("recommend.location.broadcast_domain.uuid", qRecommendLocationBroadcastDomainUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RecommendServicePolicyName != nil {
+
+		// query param recommend.service_policy.name
+		var qrRecommendServicePolicyName string
+
+		if o.RecommendServicePolicyName != nil {
+			qrRecommendServicePolicyName = *o.RecommendServicePolicyName
+		}
+		qRecommendServicePolicyName := qrRecommendServicePolicyName
+		if qRecommendServicePolicyName != "" {
+
+			if err := r.SetQueryParam("recommend.service_policy.name", qRecommendServicePolicyName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RecommendServicePolicyUUID != nil {
+
+		// query param recommend.service_policy.uuid
+		var qrRecommendServicePolicyUUID string
+
+		if o.RecommendServicePolicyUUID != nil {
+			qrRecommendServicePolicyUUID = *o.RecommendServicePolicyUUID
+		}
+		qRecommendServicePolicyUUID := qrRecommendServicePolicyUUID
+		if qRecommendServicePolicyUUID != "" {
+
+			if err := r.SetQueryParam("recommend.service_policy.uuid", qRecommendServicePolicyUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RecommendSubnetName != nil {
+
+		// query param recommend.subnet.name
+		var qrRecommendSubnetName string
+
+		if o.RecommendSubnetName != nil {
+			qrRecommendSubnetName = *o.RecommendSubnetName
+		}
+		qRecommendSubnetName := qrRecommendSubnetName
+		if qRecommendSubnetName != "" {
+
+			if err := r.SetQueryParam("recommend.subnet.name", qRecommendSubnetName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RecommendSubnetUUID != nil {
+
+		// query param recommend.subnet.uuid
+		var qrRecommendSubnetUUID string
+
+		if o.RecommendSubnetUUID != nil {
+			qrRecommendSubnetUUID = *o.RecommendSubnetUUID
+		}
+		qRecommendSubnetUUID := qrRecommendSubnetUUID
+		if qRecommendSubnetUUID != "" {
+
+			if err := r.SetQueryParam("recommend.subnet.uuid", qRecommendSubnetUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RecommendSvmName != nil {
+
+		// query param recommend.svm.name
+		var qrRecommendSvmName string
+
+		if o.RecommendSvmName != nil {
+			qrRecommendSvmName = *o.RecommendSvmName
+		}
+		qRecommendSvmName := qrRecommendSvmName
+		if qRecommendSvmName != "" {
+
+			if err := r.SetQueryParam("recommend.svm.name", qRecommendSvmName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RecommendSvmUUID != nil {
+
+		// query param recommend.svm.uuid
+		var qrRecommendSvmUUID string
+
+		if o.RecommendSvmUUID != nil {
+			qrRecommendSvmUUID = *o.RecommendSvmUUID
+		}
+		qRecommendSvmUUID := qrRecommendSvmUUID
+		if qRecommendSvmUUID != "" {
+
+			if err := r.SetQueryParam("recommend.svm.uuid", qRecommendSvmUUID); err != nil {
 				return err
 			}
 		}

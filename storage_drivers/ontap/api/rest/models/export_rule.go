@@ -34,7 +34,7 @@ type ExportRule struct {
 	AnonymousUser *string `json:"anonymous_user,omitempty"`
 
 	// Specifies who is authorized to change the ownership mode of a file.
-	// Enum: [restricted unrestricted]
+	// Enum: ["restricted","unrestricted"]
 	ChownMode *string `json:"chown_mode,omitempty"`
 
 	// Array of client matches
@@ -54,11 +54,10 @@ type ExportRule struct {
 
 	// Index of the rule within the export policy.
 	//
-	// Read Only: true
 	Index *int64 `json:"index,omitempty"`
 
 	// NTFS export UNIX security options.
-	// Enum: [fail ignore]
+	// Enum: ["fail","ignore"]
 	NtfsUnixSecurity *string `json:"ntfs_unix_security,omitempty"`
 
 	// policy
@@ -443,10 +442,6 @@ func (m *ExportRule) ContextValidate(ctx context.Context, formats strfmt.Registr
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateIndex(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidatePolicy(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -542,15 +537,6 @@ func (m *ExportRule) contextValidateExportRuleInlineSuperuser(ctx context.Contex
 			}
 		}
 
-	}
-
-	return nil
-}
-
-func (m *ExportRule) contextValidateIndex(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "index", "body", m.Index); err != nil {
-		return err
 	}
 
 	return nil
@@ -733,7 +719,7 @@ func (m *ExportRuleInlinePolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ExportRuleInlineSvm export rule inline svm
+// ExportRuleInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model export_rule_inline_svm
 type ExportRuleInlineSvm struct {
@@ -741,12 +727,12 @@ type ExportRuleInlineSvm struct {
 	// links
 	Links *ExportRuleInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

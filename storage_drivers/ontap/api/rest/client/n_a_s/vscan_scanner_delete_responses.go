@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *VscanScannerDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the vscan scanner delete o k response
+func (o *VscanScannerDeleteOK) Code() int {
+	return 200
+}
+
 func (o *VscanScannerDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscanScannerDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscanScannerDeleteOK", 200)
 }
 
 func (o *VscanScannerDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscanScannerDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscanScannerDeleteOK", 200)
 }
 
 func (o *VscanScannerDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,17 +113,12 @@ func NewVscanScannerDeleteDefault(code int) *VscanScannerDeleteDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 10027070   | Attempting to delete a scanner-pool but it is the only active scanner-pool for a Vscan enabled on the SVM
-| 10027064   | Attempting to delete a scanner-pool with a data SVM which was created with an administrative SVM
+| 10027064   | Attempting to delete a scanner-pool with a data SVM which was created by the SVM owned by the cluster
 */
 type VscanScannerDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the vscan scanner delete default response
-func (o *VscanScannerDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this vscan scanner delete default response has a 2xx status code
@@ -145,12 +146,19 @@ func (o *VscanScannerDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the vscan scanner delete default response
+func (o *VscanScannerDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VscanScannerDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscan_scanner_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscan_scanner_delete default %s", o._statusCode, payload)
 }
 
 func (o *VscanScannerDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscan_scanner_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscan_scanner_delete default %s", o._statusCode, payload)
 }
 
 func (o *VscanScannerDeleteDefault) GetPayload() *models.ErrorResponse {

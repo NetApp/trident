@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NfsClientsCacheGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nfs clients cache get o k response
+func (o *NfsClientsCacheGetOK) Code() int {
+	return 200
+}
+
 func (o *NfsClientsCacheGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/connected-client-settings][%d] nfsClientsCacheGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/connected-client-settings][%d] nfsClientsCacheGetOK %s", 200, payload)
 }
 
 func (o *NfsClientsCacheGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/connected-client-settings][%d] nfsClientsCacheGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/connected-client-settings][%d] nfsClientsCacheGetOK %s", 200, payload)
 }
 
 func (o *NfsClientsCacheGetOK) GetPayload() *models.NfsClientsCache {
@@ -122,11 +130,6 @@ type NfsClientsCacheGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the nfs clients cache get default response
-func (o *NfsClientsCacheGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this nfs clients cache get default response has a 2xx status code
 func (o *NfsClientsCacheGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NfsClientsCacheGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nfs clients cache get default response
+func (o *NfsClientsCacheGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NfsClientsCacheGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/connected-client-settings][%d] nfs_clients_cache_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/connected-client-settings][%d] nfs_clients_cache_get default %s", o._statusCode, payload)
 }
 
 func (o *NfsClientsCacheGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/connected-client-settings][%d] nfs_clients_cache_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/connected-client-settings][%d] nfs_clients_cache_get default %s", o._statusCode, payload)
 }
 
 func (o *NfsClientsCacheGetDefault) GetPayload() *models.ErrorResponse {

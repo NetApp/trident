@@ -92,6 +92,12 @@ type SnapshotPolicyCollectionGetParams struct {
 	*/
 	CopiesScheduleName *string
 
+	/* CopiesScheduleUUID.
+
+	   Filter by copies.schedule.uuid
+	*/
+	CopiesScheduleUUID *string
+
 	/* CopiesSnapmirrorLabel.
 
 	   Filter by copies.snapmirror_label
@@ -288,6 +294,17 @@ func (o *SnapshotPolicyCollectionGetParams) WithCopiesScheduleName(copiesSchedul
 // SetCopiesScheduleName adds the copiesScheduleName to the snapshot policy collection get params
 func (o *SnapshotPolicyCollectionGetParams) SetCopiesScheduleName(copiesScheduleName *string) {
 	o.CopiesScheduleName = copiesScheduleName
+}
+
+// WithCopiesScheduleUUID adds the copiesScheduleUUID to the snapshot policy collection get params
+func (o *SnapshotPolicyCollectionGetParams) WithCopiesScheduleUUID(copiesScheduleUUID *string) *SnapshotPolicyCollectionGetParams {
+	o.SetCopiesScheduleUUID(copiesScheduleUUID)
+	return o
+}
+
+// SetCopiesScheduleUUID adds the copiesScheduleUuid to the snapshot policy collection get params
+func (o *SnapshotPolicyCollectionGetParams) SetCopiesScheduleUUID(copiesScheduleUUID *string) {
+	o.CopiesScheduleUUID = copiesScheduleUUID
 }
 
 // WithCopiesSnapmirrorLabel adds the copiesSnapmirrorLabel to the snapshot policy collection get params
@@ -510,6 +527,23 @@ func (o *SnapshotPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		if qCopiesScheduleName != "" {
 
 			if err := r.SetQueryParam("copies.schedule.name", qCopiesScheduleName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopiesScheduleUUID != nil {
+
+		// query param copies.schedule.uuid
+		var qrCopiesScheduleUUID string
+
+		if o.CopiesScheduleUUID != nil {
+			qrCopiesScheduleUUID = *o.CopiesScheduleUUID
+		}
+		qCopiesScheduleUUID := qrCopiesScheduleUUID
+		if qCopiesScheduleUUID != "" {
+
+			if err := r.SetQueryParam("copies.schedule.uuid", qCopiesScheduleUUID); err != nil {
 				return err
 			}
 		}

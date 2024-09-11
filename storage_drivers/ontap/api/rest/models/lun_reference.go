@@ -21,7 +21,13 @@ type LunReference struct {
 	// links
 	Links *LunReferenceInlineLinks `json:"_links,omitempty"`
 
-	// The fully qualified path name of the LUN composed of the "/vol" prefix, the volume name, the (optional) qtree name, and base name of the LUN. Valid in POST and PATCH.
+	// The name of a LUN.
+	// ### Platform Specifics
+	// * **Unified ONTAP**:
+	// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.
+	// * **ASA r2**:
+	// LUN names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.
 	//
 	// Example: /vol/volume1/lun1
 	Name *string `json:"name,omitempty"`

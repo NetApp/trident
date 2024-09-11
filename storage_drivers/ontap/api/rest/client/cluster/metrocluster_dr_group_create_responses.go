@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type MetroclusterDrGroupCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *MetroclusterDrGroupCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewMetroclusterDrGroupCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewMetroclusterDrGroupCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *MetroclusterDrGroupCreateReader) ReadResponse(response runtime.ClientRe
 	}
 }
 
+// NewMetroclusterDrGroupCreateCreated creates a MetroclusterDrGroupCreateCreated with default headers values
+func NewMetroclusterDrGroupCreateCreated() *MetroclusterDrGroupCreateCreated {
+	return &MetroclusterDrGroupCreateCreated{}
+}
+
+/*
+MetroclusterDrGroupCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type MetroclusterDrGroupCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.MetroclusterDrGroupJobLinkResponse
+}
+
+// IsSuccess returns true when this metrocluster dr group create created response has a 2xx status code
+func (o *MetroclusterDrGroupCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this metrocluster dr group create created response has a 3xx status code
+func (o *MetroclusterDrGroupCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this metrocluster dr group create created response has a 4xx status code
+func (o *MetroclusterDrGroupCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this metrocluster dr group create created response has a 5xx status code
+func (o *MetroclusterDrGroupCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this metrocluster dr group create created response a status code equal to that given
+func (o *MetroclusterDrGroupCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the metrocluster dr group create created response
+func (o *MetroclusterDrGroupCreateCreated) Code() int {
+	return 201
+}
+
+func (o *MetroclusterDrGroupCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/metrocluster/dr-groups][%d] metroclusterDrGroupCreateCreated %s", 201, payload)
+}
+
+func (o *MetroclusterDrGroupCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/metrocluster/dr-groups][%d] metroclusterDrGroupCreateCreated %s", 201, payload)
+}
+
+func (o *MetroclusterDrGroupCreateCreated) GetPayload() *models.MetroclusterDrGroupJobLinkResponse {
+	return o.Payload
+}
+
+func (o *MetroclusterDrGroupCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.MetroclusterDrGroupJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewMetroclusterDrGroupCreateAccepted creates a MetroclusterDrGroupCreateAccepted with default headers values
 func NewMetroclusterDrGroupCreateAccepted() *MetroclusterDrGroupCreateAccepted {
 	return &MetroclusterDrGroupCreateAccepted{}
@@ -57,7 +146,7 @@ type MetroclusterDrGroupCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.MetroclusterDrGroupJobLinkResponse
 }
 
 // IsSuccess returns true when this metrocluster dr group create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *MetroclusterDrGroupCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the metrocluster dr group create accepted response
+func (o *MetroclusterDrGroupCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *MetroclusterDrGroupCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /cluster/metrocluster/dr-groups][%d] metroclusterDrGroupCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/metrocluster/dr-groups][%d] metroclusterDrGroupCreateAccepted %s", 202, payload)
 }
 
 func (o *MetroclusterDrGroupCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /cluster/metrocluster/dr-groups][%d] metroclusterDrGroupCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/metrocluster/dr-groups][%d] metroclusterDrGroupCreateAccepted %s", 202, payload)
 }
 
-func (o *MetroclusterDrGroupCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *MetroclusterDrGroupCreateAccepted) GetPayload() *models.MetroclusterDrGroupJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *MetroclusterDrGroupCreateAccepted) readResponse(response runtime.Client
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.MetroclusterDrGroupJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -131,6 +227,8 @@ func NewMetroclusterDrGroupCreateDefault(code int) *MetroclusterDrGroupCreateDef
 | Error Code | Description |
 | ---------- | ----------- |
 | 2425734 | An internal error occurred. Wait a few minutes, and try the operation again. For further assistance, contact technical support. |
+| 2430034 | Node "node" is not found in partner cluster "cluster". Use the "cluster show" command on the partner cluster to see the list of valid node names. |
+| 2430060 | The DR group cannot be created while node "node" on cluster "cluster" is configured for MetroCluster. |
 | 2432833 | Operation is already running. |
 | 2432836 | There are not enough disks in Pool1. Wait a few minutes, and try the operation again. For further assistance, contact technical support. |
 | 2432840 | Configuring DR Groups |
@@ -140,16 +238,12 @@ func NewMetroclusterDrGroupCreateDefault(code int) *MetroclusterDrGroupCreateDef
 | 2432846 | Configuring MetroCluster and DR mirroring |
 | 2432857 | Adding new MetroCluster DR Group |
 | 2432858 | MetroCluster DR Group setup done |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type MetroclusterDrGroupCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the metrocluster dr group create default response
-func (o *MetroclusterDrGroupCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this metrocluster dr group create default response has a 2xx status code
@@ -177,12 +271,19 @@ func (o *MetroclusterDrGroupCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the metrocluster dr group create default response
+func (o *MetroclusterDrGroupCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MetroclusterDrGroupCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /cluster/metrocluster/dr-groups][%d] metrocluster_dr_group_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/metrocluster/dr-groups][%d] metrocluster_dr_group_create default %s", o._statusCode, payload)
 }
 
 func (o *MetroclusterDrGroupCreateDefault) String() string {
-	return fmt.Sprintf("[POST /cluster/metrocluster/dr-groups][%d] metrocluster_dr_group_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/metrocluster/dr-groups][%d] metrocluster_dr_group_create default %s", o._statusCode, payload)
 }
 
 func (o *MetroclusterDrGroupCreateDefault) GetPayload() *models.ErrorResponse {

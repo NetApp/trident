@@ -22,7 +22,7 @@ type S3BucketPolicyCondition struct {
 
 	// Condition operator that is applied to the specified condition key.
 	// Example: ip_address
-	// Enum: [ip_address not_ip_address string_equals string_not_equals string_equals_ignore_case string_not_equals_ignore_case string_like string_not_like numeric_equals numeric_not_equals numeric_greater_than numeric_greater_than_equals numeric_less_than numeric_less_than_equals]
+	// Enum: ["ip_address","not_ip_address","string_equals","string_not_equals","string_equals_ignore_case","string_not_equals_ignore_case","string_like","string_not_like","numeric_equals","numeric_not_equals","numeric_greater_than","numeric_greater_than_equals","numeric_less_than","numeric_less_than_equals"]
 	Operator *string `json:"operator,omitempty"`
 
 	// An array of delimiters that are compared with the delimiter value specified at the time of execution of an S3-based command, using the condition operator specified.

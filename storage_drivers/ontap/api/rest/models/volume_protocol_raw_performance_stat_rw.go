@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -63,6 +64,22 @@ func (m *VolumeProtocolRawPerformanceStatRw) ContextValidate(ctx context.Context
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateVolumeProtocolRawPerformanceStatRwInlineVolumeProtocolLatencyHistogramCounts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeProtocolRawPerformanceStatRwInlineVolumeProtocolLatencyHistogramLabels(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeProtocolRawPerformanceStatRwInlineVolumeProtocolSizeHistogramCounts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeProtocolRawPerformanceStatRwInlineVolumeProtocolSizeHistogramLabels(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -82,6 +99,58 @@ func (m *VolumeProtocolRawPerformanceStatRw) contextValidateTotalTime(ctx contex
 
 	if err := validate.ReadOnly(ctx, "total_time", "body", m.TotalTime); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeProtocolRawPerformanceStatRw) contextValidateVolumeProtocolRawPerformanceStatRwInlineVolumeProtocolLatencyHistogramCounts(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolRawPerformanceStatRwInlineVolumeProtocolLatencyHistogramCounts); i++ {
+
+		if err := validate.ReadOnly(ctx, "volume_protocol_latency_histogram_counts"+"."+strconv.Itoa(i), "body", m.VolumeProtocolRawPerformanceStatRwInlineVolumeProtocolLatencyHistogramCounts[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VolumeProtocolRawPerformanceStatRw) contextValidateVolumeProtocolRawPerformanceStatRwInlineVolumeProtocolLatencyHistogramLabels(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolRawPerformanceStatRwInlineVolumeProtocolLatencyHistogramLabels); i++ {
+
+		if err := validate.ReadOnly(ctx, "volume_protocol_latency_histogram_labels"+"."+strconv.Itoa(i), "body", m.VolumeProtocolRawPerformanceStatRwInlineVolumeProtocolLatencyHistogramLabels[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VolumeProtocolRawPerformanceStatRw) contextValidateVolumeProtocolRawPerformanceStatRwInlineVolumeProtocolSizeHistogramCounts(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolRawPerformanceStatRwInlineVolumeProtocolSizeHistogramCounts); i++ {
+
+		if err := validate.ReadOnly(ctx, "volume_protocol_size_histogram_counts"+"."+strconv.Itoa(i), "body", m.VolumeProtocolRawPerformanceStatRwInlineVolumeProtocolSizeHistogramCounts[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VolumeProtocolRawPerformanceStatRw) contextValidateVolumeProtocolRawPerformanceStatRwInlineVolumeProtocolSizeHistogramLabels(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolRawPerformanceStatRwInlineVolumeProtocolSizeHistogramLabels); i++ {
+
+		if err := validate.ReadOnly(ctx, "volume_protocol_size_histogram_labels"+"."+strconv.Itoa(i), "body", m.VolumeProtocolRawPerformanceStatRwInlineVolumeProtocolSizeHistogramLabels[i]); err != nil {
+			return err
+		}
+
 	}
 
 	return nil

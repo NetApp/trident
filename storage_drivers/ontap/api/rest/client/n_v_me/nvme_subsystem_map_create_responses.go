@@ -6,6 +6,7 @@ package n_v_me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *NvmeSubsystemMapCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the nvme subsystem map create created response
+func (o *NvmeSubsystemMapCreateCreated) Code() int {
+	return 201
+}
+
 func (o *NvmeSubsystemMapCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/nvme/subsystem-maps][%d] nvmeSubsystemMapCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nvme/subsystem-maps][%d] nvmeSubsystemMapCreateCreated %s", 201, payload)
 }
 
 func (o *NvmeSubsystemMapCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/nvme/subsystem-maps][%d] nvmeSubsystemMapCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nvme/subsystem-maps][%d] nvmeSubsystemMapCreateCreated %s", 201, payload)
 }
 
 func (o *NvmeSubsystemMapCreateCreated) GetPayload() *models.NvmeSubsystemMapResponse {
@@ -130,8 +138,12 @@ func NewNvmeSubsystemMapCreateDefault(code int) *NvmeSubsystemMapCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 5374127 | The specified namespace name is invalid. |
+| 5376461 | The specified namespace name is invalid. |
+| 5376462 | The specified namespace name is too long. |
+| 72089731 | The specified NVMe namespace does not exist. |
 | 72089790 | The supplied NVMe namespace is already mapped to the supplied NVMe subsystem. |
-| 72089793 | An NVMe namespace in a Snapshot copy cannot be mapped. |
+| 72089793 | An NVMe namespace in a snapshot cannot be mapped. |
 | 72089799 | The NVMe namespace is the destination of an ongoing restore operation and is inaccessible for I/O and management. |
 | 72089902 | A node does not have an NVMe interface configured. |
 | 72089903 | Multiple nodes do not have an NVMe interface configured. |
@@ -142,16 +154,12 @@ func NewNvmeSubsystemMapCreateDefault(code int) *NvmeSubsystemMapCreateDefault {
 | 72090007 | The NVMe namespace specified by `namespace.name` was not found. |
 | 72090020 | The specified `subsystem.uuid` and `subsystem.name` refer to different NVMe subsystems. |
 | 72090021 | The NVMe subsystem specified by `subsystem.name` was not found. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NvmeSubsystemMapCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nvme subsystem map create default response
-func (o *NvmeSubsystemMapCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nvme subsystem map create default response has a 2xx status code
@@ -179,12 +187,19 @@ func (o *NvmeSubsystemMapCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nvme subsystem map create default response
+func (o *NvmeSubsystemMapCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NvmeSubsystemMapCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/nvme/subsystem-maps][%d] nvme_subsystem_map_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nvme/subsystem-maps][%d] nvme_subsystem_map_create default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemMapCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/nvme/subsystem-maps][%d] nvme_subsystem_map_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nvme/subsystem-maps][%d] nvme_subsystem_map_create default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemMapCreateDefault) GetPayload() *models.ErrorResponse {

@@ -78,7 +78,7 @@ type SvmPeerInstanceGetParams struct {
 
 	/* UUID.
 
-	   SVM peer relation UUID
+	   SVM peer relationship UUID
 	*/
 	UUID string
 

@@ -6,6 +6,7 @@ package object_store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type S3BucketCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *S3BucketCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewS3BucketCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewS3BucketCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *S3BucketCreateReader) ReadResponse(response runtime.ClientResponse, con
 	}
 }
 
+// NewS3BucketCreateCreated creates a S3BucketCreateCreated with default headers values
+func NewS3BucketCreateCreated() *S3BucketCreateCreated {
+	return &S3BucketCreateCreated{}
+}
+
+/*
+S3BucketCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type S3BucketCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.S3BucketJobLinkResponse
+}
+
+// IsSuccess returns true when this s3 bucket create created response has a 2xx status code
+func (o *S3BucketCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 bucket create created response has a 3xx status code
+func (o *S3BucketCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 bucket create created response has a 4xx status code
+func (o *S3BucketCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 bucket create created response has a 5xx status code
+func (o *S3BucketCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 bucket create created response a status code equal to that given
+func (o *S3BucketCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the s3 bucket create created response
+func (o *S3BucketCreateCreated) Code() int {
+	return 201
+}
+
+func (o *S3BucketCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/buckets][%d] s3BucketCreateCreated %s", 201, payload)
+}
+
+func (o *S3BucketCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/buckets][%d] s3BucketCreateCreated %s", 201, payload)
+}
+
+func (o *S3BucketCreateCreated) GetPayload() *models.S3BucketJobLinkResponse {
+	return o.Payload
+}
+
+func (o *S3BucketCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.S3BucketJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewS3BucketCreateAccepted creates a S3BucketCreateAccepted with default headers values
 func NewS3BucketCreateAccepted() *S3BucketCreateAccepted {
 	return &S3BucketCreateAccepted{}
@@ -57,7 +146,7 @@ type S3BucketCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.S3BucketJobLinkResponse
 }
 
 // IsSuccess returns true when this s3 bucket create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *S3BucketCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the s3 bucket create accepted response
+func (o *S3BucketCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *S3BucketCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /protocols/s3/buckets][%d] s3BucketCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/buckets][%d] s3BucketCreateAccepted %s", 202, payload)
 }
 
 func (o *S3BucketCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /protocols/s3/buckets][%d] s3BucketCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/buckets][%d] s3BucketCreateAccepted %s", 202, payload)
 }
 
-func (o *S3BucketCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *S3BucketCreateAccepted) GetPayload() *models.S3BucketJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *S3BucketCreateAccepted) readResponse(response runtime.ClientResponse, c
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.S3BucketJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -131,7 +227,7 @@ func NewS3BucketCreateDefault(code int) *S3BucketCreateDefault {
 | Error code | Message |
 | ---------- | ------- |
 | 92405777   | "Failed to create bucket \\\"{bucket name}\\\" for SVM \\\"{svm.name}\\\". Reason: {Reason of failure}. ";
-| 92405785   | "Bucket name \\\"{bucket name}\\\" contains invalid characters. Valid characters for a bucket name are 0-9, a-z, \\\".\\\", and \\\"-\\\". ";
+| 92405785   | "Bucket name \\\"{bucket name}\\\" contains invalid characters or invalid character combinations. Valid characters for a bucket name are 0-9, a-z, \\\".\\\", and \\\"-\\\". Invalid character combinations are \\\".-\\\", \\\"-.\\\", and \\\"..\\\". ";
 | 92405786   | "Bucket name \\\"{bucket name}\\\" is not valid. Bucket names must have between 3 and 63 characters. ";
 | 92405811   | "Failed to create bucket \\\"{bucket name}\\\" for SVM \\\"{svm.name}\\\". Wait a few minutes and try the operation again.";
 | 92405812   | "Failed to create the object store volume. Reason: {Reason for failure}.";
@@ -145,20 +241,36 @@ func NewS3BucketCreateDefault(code int) *S3BucketCreateDefault {
 | 92405860   | "The specified \\\"aggregates.name\\\" \\\"{aggregates.name}\\\" and \\\"aggregates.uuid\\\" \\\"{aggregates.uuid}\\\" refer to different aggregates.";
 | 92405861   | "The specified SVM UUID or bucket UUID does not exist.";
 | 92405863   | "An error occurs when creating an access policy. The reason for failure is detailed in the error message.";
+| 92405863   | "Failed to create lifecycle management rules for bucket "s3bucket1". Reason: {Reason of failure}. ";
 | 92405891   | "The resources specified in the access policy are not valid. Valid ways to specify a resource are \\\"*\\\", \\\"<bucket-name>\\\", \\\"<bucket-name>/.../...\\\". Valid characters for a resource are 0-9, A-Z, a-z, \\\"_\\\", \\\"+\\\", \\\",\\\", \\\";\\\", \\\":\\\", \\\";\\\", \\\"=\\\", \\\".\\\", \\\"&\\\", \\\"@\\\", \\\"?\\\", \\\"(\\\", \\\")\\\", \\\"'\\\", \\\"*\\\", \\\"!\\\", \\\"-\\\" and \\\"\\$\\\".";
 | 92405894   | "Statements, principals and resources list can have a maximum of 10 entries.";
 | 92405897   | "The principals specified in the access policy are not in the correct format. User name must be between 1 and 64 characters. Valid characters for a user name are 0-9, A-Z, a-z, \\\"_\\\", \\\"+\\\", \\\"=\\\", \\\",\\\", \\\".\\\", \\\"@\\\", and \\\"-\\\". ";
 | 92405898   | "The SID specified in the access policy is not valid. Valid characters for a SID are 0-9, A-Z and a-z.";
+| 92406013   | "Failed to create event selector for bucket \\\"{bucket name}\\\". If the value of either access or permission is set to none, they both must be set to none.";
+| 92406025   | "Parameter "{parameter name}" is not supported for a "{bucket type}" bucket.";
+| 92733688   | "[Job job_number] Job failed: Failed to create bucket "s3bucket1" for SVM "vs1". Reason: {Reason of failure}. ";
+| 92406161   | "Failed to enable locking on bucket \\\"{bucket name}\\\" in Vserver \\\"{vserver name}\\\". Enabling locking on a bucket requires an effective cluster version of 9.14.1 or later.";
+| 92406164   | "Initializing system clock for the purpose of locking an S3 bucket.";
+| 92406165   | "Setting \\\"-default-retention-period\\\" on an S3 bucket requires \\\"-retention-mode\\\" to be set to \\\"compliance\\\" or \\\"governance\\\".";
+| 92406166   | "Cannot enable locking on a NAS bucket.";
+| 92406170   | "Cannot set \\\"-default-retention-period\\\" on object store bucket \\\"{0}\\\" in Vserver \\\"{1}\\\". Setting the default retention period on an object store bucket requires an effective cluster version of 9.14.1 or later.";
+| 92406171   | "Cannot set \\\"{retention_mode}\\\" to \\\"compliance\\\" in a MetroCluster configuration";
+| 92406174   | "Internal error. Failed to complete bucket create workflow with \\\"-retention-mode\\\" set to \\\"compliance\\\" or \\\"governance\\\". Reason: {0}";
+| 92406175   | "The SnapLock compliance clock is not running. Use the \\\"snaplock compliance-clock initialize\\\" command to initialize the compliance clock, and then try the operation again.";
+| 92406176   | "The SnapLock compliance clock is not running on the MetroCluster partner cluster. Use the \\\"snaplock compliance-clock initialize\\\" command to initialize the compliance clock on the MetroCluster partner cluster, and then try the operation again.";
+| 92406230   | "The value for \\\"retention.default_period\\\" parameter for object store bucket \\\"<bucket>\\\" cannot be greater than the maximum lock retention period set in the object store server for SVM \\\"<SVM>\\\". Check the maximum allowed lock retention period present in the object store server for SVM \\\"<SVM>\\\" and try the operation again.";
+| 92406236   | "The value for \\\"retention.default_period\\\" parameter for object store bucket \\\"<bucket>\\\" cannot be less than the minimum lock retention period set in the object store server for SVM \\\"<SVM>\\\". Check the minimum allowed lock retention period present in the object store server for SVM \\\"<SVM>\\\" and try the operation again.";
+| 92406217   | "The specified \"allowed_headers\" is not valid because it contains more than one wild card (\"*\") character.";
+| 92406224   | "A Cross-Origin Resource Sharing (CORS) rule must have an origin and HTTP method specified.";
+| 92406222   | "Cannot specify Cross-Origin Resource Sharing (CORS) configuration for object store bucket \\\"<bucket>\\\" on SVM \\\"<SVM>\\\". Specifying such configuration is supported on object store volumes created in ONTAP 9.8 or later releases only.";
+| 92406211   | "The specified method \"DONE\" is not valid. Valid methods are GET, PUT, DELETE, HEAD, and POST.";
+| 92405863   | "Failed to create CORS rules for bucket \"bb1\". Reason: \"Field \"index\" cannot be specified for this operation.\". Resolve all the issues and retry the operation.";
+| 92406228   | "Cannot exceed the maximum limit of 100 Cross-Origin Resource Sharing (CORS) rules per S3 bucket \\\"{0}\\\" in SVM \\\"{1}\\\".";;
 */
 type S3BucketCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the s3 bucket create default response
-func (o *S3BucketCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this s3 bucket create default response has a 2xx status code
@@ -186,12 +298,19 @@ func (o *S3BucketCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the s3 bucket create default response
+func (o *S3BucketCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *S3BucketCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/s3/buckets][%d] s3_bucket_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/buckets][%d] s3_bucket_create default %s", o._statusCode, payload)
 }
 
 func (o *S3BucketCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/s3/buckets][%d] s3_bucket_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/buckets][%d] s3_bucket_create default %s", o._statusCode, payload)
 }
 
 func (o *S3BucketCreateDefault) GetPayload() *models.ErrorResponse {

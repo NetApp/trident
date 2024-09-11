@@ -41,7 +41,7 @@ type RaidGroup struct {
 	// RAID type of the raid group.
 	// Example: raid_dp
 	// Read Only: true
-	// Enum: [raid_dp raid_tec raid0 raid4 raid_ep]
+	// Enum: ["raid_dp","raid_tec","raid0","raid4"]
 	RaidType *string `json:"raid_type,omitempty"`
 
 	// recomputing parity
@@ -105,7 +105,7 @@ var raidGroupTypeRaidTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["raid_dp","raid_tec","raid0","raid4","raid_ep"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["raid_dp","raid_tec","raid0","raid4"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -154,16 +154,6 @@ const (
 	// END DEBUGGING
 	// RaidGroupRaidTypeRaid4 captures enum value "raid4"
 	RaidGroupRaidTypeRaid4 string = "raid4"
-
-	// BEGIN DEBUGGING
-	// raid_group
-	// RaidGroup
-	// raid_type
-	// RaidType
-	// raid_ep
-	// END DEBUGGING
-	// RaidGroupRaidTypeRaidEp captures enum value "raid_ep"
-	RaidGroupRaidTypeRaidEp string = "raid_ep"
 )
 
 // prop value enum

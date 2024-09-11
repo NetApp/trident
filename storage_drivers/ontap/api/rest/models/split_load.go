@@ -26,7 +26,7 @@ type SplitLoad struct {
 	Load *SplitLoadInlineLoad `json:"load,omitempty"`
 
 	// node
-	Node *NodeReference `json:"node,omitempty"`
+	Node *SplitLoadInlineNode `json:"node,omitempty"`
 }
 
 // Validate validates this split load
@@ -190,6 +190,7 @@ func (m *SplitLoad) UnmarshalBinary(b []byte) error {
 type SplitLoadInlineLoad struct {
 
 	// Specifies the available file clone split load on the node.
+	// Example: 4KB
 	// Read Only: true
 	Allowable *int64 `json:"allowable,omitempty"`
 
@@ -197,7 +198,8 @@ type SplitLoadInlineLoad struct {
 	// Read Only: true
 	Current *int64 `json:"current,omitempty"`
 
-	// Specifies the maximum allowable file clone split load on the node at any point in time.
+	// Specifies the maximum allowable file clone split load on the node at any point in time. The least allowable file clone split load is 4KB and the maximum is 675TB. The default value is 4KB for the maximum split load when unit is not specified. The default file clone split load is set based on the system configuration.
+	// Example: 4KB
 	Maximum *int64 `json:"maximum,omitempty"`
 
 	// Specifies the file clone split load on the node reserved for tokens.
@@ -270,6 +272,186 @@ func (m *SplitLoadInlineLoad) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *SplitLoadInlineLoad) UnmarshalBinary(b []byte) error {
 	var res SplitLoadInlineLoad
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SplitLoadInlineNode split load inline node
+//
+// swagger:model split_load_inline_node
+type SplitLoadInlineNode struct {
+
+	// links
+	Links *SplitLoadInlineNodeInlineLinks `json:"_links,omitempty"`
+
+	// name
+	// Example: node1
+	Name *string `json:"name,omitempty"`
+
+	// uuid
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this split load inline node
+func (m *SplitLoadInlineNode) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SplitLoadInlineNode) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this split load inline node based on the context it is used
+func (m *SplitLoadInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SplitLoadInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SplitLoadInlineNode) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SplitLoadInlineNode) UnmarshalBinary(b []byte) error {
+	var res SplitLoadInlineNode
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SplitLoadInlineNodeInlineLinks split load inline node inline links
+//
+// swagger:model split_load_inline_node_inline__links
+type SplitLoadInlineNodeInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this split load inline node inline links
+func (m *SplitLoadInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SplitLoadInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this split load inline node inline links based on the context it is used
+func (m *SplitLoadInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SplitLoadInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SplitLoadInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SplitLoadInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SplitLoadInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

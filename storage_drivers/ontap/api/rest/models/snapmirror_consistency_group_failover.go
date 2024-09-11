@@ -7,10 +7,13 @@ package models
 
 import (
 	"context"
+	"encoding/json"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // SnapmirrorConsistencyGroupFailover SnapMirror Consistency Group failover information. The SnapMirror Consistency Group failover can be a planned or an unplanned operation. Only active SnapMirror Consistency Group failover operation progress can be monitored using this object. In case of an error during the failover operation, the property "consistency_group_failover.error" holds the reason for the error. ONTAP automatically retries any failed SnapMirror Consistency Group failover operation.
@@ -19,10 +22,18 @@ import (
 type SnapmirrorConsistencyGroupFailover struct {
 
 	// error
-	Error *Error `json:"error,omitempty"`
+	Error *SnapmirrorConsistencyGroupFailoverInlineError `json:"error,omitempty"`
+
+	// SnapMirror Consistency Group failover state.
+	// Enum: ["started","failed","completed","completed_with_warnings","vetoed"]
+	State *string `json:"state,omitempty"`
 
 	// status
 	Status *SnapmirrorConsistencyGroupFailoverInlineStatus `json:"status,omitempty"`
+
+	// SnapMirror Consistency Group failover type.
+	// Enum: ["planned","unplanned","incapable"]
+	Type *string `json:"type,omitempty"`
 }
 
 // Validate validates this snapmirror consistency group failover
@@ -33,7 +44,15 @@ func (m *SnapmirrorConsistencyGroupFailover) Validate(formats strfmt.Registry) e
 		res = append(res, err)
 	}
 
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -60,6 +79,92 @@ func (m *SnapmirrorConsistencyGroupFailover) validateError(formats strfmt.Regist
 	return nil
 }
 
+var snapmirrorConsistencyGroupFailoverTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["started","failed","completed","completed_with_warnings","vetoed"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		snapmirrorConsistencyGroupFailoverTypeStatePropEnum = append(snapmirrorConsistencyGroupFailoverTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// snapmirror_consistency_group_failover
+	// SnapmirrorConsistencyGroupFailover
+	// state
+	// State
+	// started
+	// END DEBUGGING
+	// SnapmirrorConsistencyGroupFailoverStateStarted captures enum value "started"
+	SnapmirrorConsistencyGroupFailoverStateStarted string = "started"
+
+	// BEGIN DEBUGGING
+	// snapmirror_consistency_group_failover
+	// SnapmirrorConsistencyGroupFailover
+	// state
+	// State
+	// failed
+	// END DEBUGGING
+	// SnapmirrorConsistencyGroupFailoverStateFailed captures enum value "failed"
+	SnapmirrorConsistencyGroupFailoverStateFailed string = "failed"
+
+	// BEGIN DEBUGGING
+	// snapmirror_consistency_group_failover
+	// SnapmirrorConsistencyGroupFailover
+	// state
+	// State
+	// completed
+	// END DEBUGGING
+	// SnapmirrorConsistencyGroupFailoverStateCompleted captures enum value "completed"
+	SnapmirrorConsistencyGroupFailoverStateCompleted string = "completed"
+
+	// BEGIN DEBUGGING
+	// snapmirror_consistency_group_failover
+	// SnapmirrorConsistencyGroupFailover
+	// state
+	// State
+	// completed_with_warnings
+	// END DEBUGGING
+	// SnapmirrorConsistencyGroupFailoverStateCompletedWithWarnings captures enum value "completed_with_warnings"
+	SnapmirrorConsistencyGroupFailoverStateCompletedWithWarnings string = "completed_with_warnings"
+
+	// BEGIN DEBUGGING
+	// snapmirror_consistency_group_failover
+	// SnapmirrorConsistencyGroupFailover
+	// state
+	// State
+	// vetoed
+	// END DEBUGGING
+	// SnapmirrorConsistencyGroupFailoverStateVetoed captures enum value "vetoed"
+	SnapmirrorConsistencyGroupFailoverStateVetoed string = "vetoed"
+)
+
+// prop value enum
+func (m *SnapmirrorConsistencyGroupFailover) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, snapmirrorConsistencyGroupFailoverTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SnapmirrorConsistencyGroupFailover) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *SnapmirrorConsistencyGroupFailover) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
@@ -72,6 +177,72 @@ func (m *SnapmirrorConsistencyGroupFailover) validateStatus(formats strfmt.Regis
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var snapmirrorConsistencyGroupFailoverTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["planned","unplanned","incapable"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		snapmirrorConsistencyGroupFailoverTypeTypePropEnum = append(snapmirrorConsistencyGroupFailoverTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// snapmirror_consistency_group_failover
+	// SnapmirrorConsistencyGroupFailover
+	// type
+	// Type
+	// planned
+	// END DEBUGGING
+	// SnapmirrorConsistencyGroupFailoverTypePlanned captures enum value "planned"
+	SnapmirrorConsistencyGroupFailoverTypePlanned string = "planned"
+
+	// BEGIN DEBUGGING
+	// snapmirror_consistency_group_failover
+	// SnapmirrorConsistencyGroupFailover
+	// type
+	// Type
+	// unplanned
+	// END DEBUGGING
+	// SnapmirrorConsistencyGroupFailoverTypeUnplanned captures enum value "unplanned"
+	SnapmirrorConsistencyGroupFailoverTypeUnplanned string = "unplanned"
+
+	// BEGIN DEBUGGING
+	// snapmirror_consistency_group_failover
+	// SnapmirrorConsistencyGroupFailover
+	// type
+	// Type
+	// incapable
+	// END DEBUGGING
+	// SnapmirrorConsistencyGroupFailoverTypeIncapable captures enum value "incapable"
+	SnapmirrorConsistencyGroupFailoverTypeIncapable string = "incapable"
+)
+
+// prop value enum
+func (m *SnapmirrorConsistencyGroupFailover) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, snapmirrorConsistencyGroupFailoverTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SnapmirrorConsistencyGroupFailover) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
+		return err
 	}
 
 	return nil
@@ -134,6 +305,144 @@ func (m *SnapmirrorConsistencyGroupFailover) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *SnapmirrorConsistencyGroupFailover) UnmarshalBinary(b []byte) error {
 	var res SnapmirrorConsistencyGroupFailover
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SnapmirrorConsistencyGroupFailoverInlineError SnapMirror Consistency Group failover error message.
+//
+// swagger:model snapmirror_consistency_group_failover_inline_error
+type SnapmirrorConsistencyGroupFailoverInlineError struct {
+
+	// Message arguments
+	// Read Only: true
+	Arguments []*ErrorArguments `json:"arguments,omitempty"`
+
+	// Error code
+	// Example: 4
+	// Read Only: true
+	Code *string `json:"code,omitempty"`
+
+	// Error message
+	// Example: entry doesn't exist
+	// Read Only: true
+	Message *string `json:"message,omitempty"`
+}
+
+// Validate validates this snapmirror consistency group failover inline error
+func (m *SnapmirrorConsistencyGroupFailoverInlineError) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateArguments(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SnapmirrorConsistencyGroupFailoverInlineError) validateArguments(formats strfmt.Registry) error {
+	if swag.IsZero(m.Arguments) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Arguments); i++ {
+		if swag.IsZero(m.Arguments[i]) { // not required
+			continue
+		}
+
+		if m.Arguments[i] != nil {
+			if err := m.Arguments[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("error" + "." + "arguments" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this snapmirror consistency group failover inline error based on the context it is used
+func (m *SnapmirrorConsistencyGroupFailoverInlineError) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateArguments(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SnapmirrorConsistencyGroupFailoverInlineError) contextValidateArguments(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "error"+"."+"arguments", "body", []*ErrorArguments(m.Arguments)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Arguments); i++ {
+
+		if m.Arguments[i] != nil {
+			if err := m.Arguments[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("error" + "." + "arguments" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *SnapmirrorConsistencyGroupFailoverInlineError) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "error"+"."+"code", "body", m.Code); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SnapmirrorConsistencyGroupFailoverInlineError) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "error"+"."+"message", "body", m.Message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SnapmirrorConsistencyGroupFailoverInlineError) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SnapmirrorConsistencyGroupFailoverInlineError) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorConsistencyGroupFailoverInlineError
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

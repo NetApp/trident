@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *PortsetCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the portset collection get o k response
+func (o *PortsetCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *PortsetCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/portsets][%d] portsetCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/portsets][%d] portsetCollectionGetOK %s", 200, payload)
 }
 
 func (o *PortsetCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/san/portsets][%d] portsetCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/portsets][%d] portsetCollectionGetOK %s", 200, payload)
 }
 
 func (o *PortsetCollectionGetOK) GetPayload() *models.PortsetResponse {
@@ -122,11 +130,6 @@ type PortsetCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the portset collection get default response
-func (o *PortsetCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this portset collection get default response has a 2xx status code
 func (o *PortsetCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *PortsetCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the portset collection get default response
+func (o *PortsetCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *PortsetCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/portsets][%d] portset_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/portsets][%d] portset_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PortsetCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/san/portsets][%d] portset_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/portsets][%d] portset_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PortsetCollectionGetDefault) GetPayload() *models.ErrorResponse {

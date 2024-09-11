@@ -51,7 +51,7 @@ type FpolicyConnection struct {
 	// * disconnected              - Disconnected
 	//
 	// Example: connected
-	// Enum: [connected disconnected]
+	// Enum: ["connected","disconnected"]
 	State *string `json:"state,omitempty"`
 
 	// svm
@@ -63,11 +63,11 @@ type FpolicyConnection struct {
 	//
 	// Example: primary
 	// Read Only: true
-	// Enum: [primary secondary]
+	// Enum: ["primary","secondary"]
 	Type *string `json:"type,omitempty"`
 
 	// Specifies the time at which FPolicy server is connected or disconnected.
-	// Example: 2019-06-12T11:00:16-04:00
+	// Example: 2019-06-12 15:00:16
 	// Read Only: true
 	// Format: date-time
 	UpdateTime *strfmt.DateTime `json:"update_time,omitempty"`
@@ -500,7 +500,7 @@ func (m *FpolicyConnection) UnmarshalBinary(b []byte) error {
 type FpolicyConnectionInlineDisconnectedReason struct {
 
 	// Reason ID for the FPolicy Server disconnection.
-	// Example: 9370
+	// Example: 9307
 	Code *int64 `json:"code,omitempty"`
 
 	// FPolicy server reason for disconnection message.
@@ -807,7 +807,7 @@ func (m *FpolicyConnectionInlineNodeInlineLinks) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// FpolicyConnectionInlineSvm fpolicy connection inline svm
+// FpolicyConnectionInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model fpolicy_connection_inline_svm
 type FpolicyConnectionInlineSvm struct {
@@ -815,12 +815,12 @@ type FpolicyConnectionInlineSvm struct {
 	// links
 	Links *FpolicyConnectionInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

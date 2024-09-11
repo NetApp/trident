@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ExportPolicyCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the export policy collection get o k response
+func (o *ExportPolicyCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *ExportPolicyCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies][%d] exportPolicyCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies][%d] exportPolicyCollectionGetOK %s", 200, payload)
 }
 
 func (o *ExportPolicyCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies][%d] exportPolicyCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies][%d] exportPolicyCollectionGetOK %s", 200, payload)
 }
 
 func (o *ExportPolicyCollectionGetOK) GetPayload() *models.ExportPolicyResponse {
@@ -112,19 +120,24 @@ func NewExportPolicyCollectionGetDefault(code int) *ExportPolicyCollectionGetDef
 }
 
 /*
-ExportPolicyCollectionGetDefault describes a response with status code -1, with default header values.
+	ExportPolicyCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 262197     | The value provided is invalid for the field |
+| 2621462    | The specified SVM name does not exist |
+| 2621519    | SVM name is invalid. The SVM name must begin with a letter or an underscore. If the SVM is of type \"sync-source\", the maximum supported length is 41. Otherwise, the maximum supported length is 47 |
+| 2621643    | The specified SVM name is too long |
+| 2621685    | SVM name length cannot be zero |
+| 2621706    | The specified SVM UUID is incorrect for the specified SVM name |
+| 6691623    | User is not authorized |
 */
 type ExportPolicyCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the export policy collection get default response
-func (o *ExportPolicyCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this export policy collection get default response has a 2xx status code
@@ -152,12 +165,19 @@ func (o *ExportPolicyCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the export policy collection get default response
+func (o *ExportPolicyCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ExportPolicyCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies][%d] export_policy_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies][%d] export_policy_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ExportPolicyCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies][%d] export_policy_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies][%d] export_policy_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ExportPolicyCollectionGetDefault) GetPayload() *models.ErrorResponse {

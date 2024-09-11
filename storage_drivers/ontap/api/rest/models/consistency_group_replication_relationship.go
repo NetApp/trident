@@ -11,6 +11,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // ConsistencyGroupReplicationRelationship consistency group replication relationship
@@ -23,11 +24,13 @@ type ConsistencyGroupReplicationRelationship struct {
 
 	// Indicates whether or not this consistency group is the source for replication.
 	//
+	// Read Only: true
 	IsSource *bool `json:"is_source,omitempty"`
 
 	// The unique identifier of the SnapMirror relationship.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
+	// Read Only: true
 	UUID *string `json:"uuid,omitempty"`
 }
 
@@ -70,6 +73,14 @@ func (m *ConsistencyGroupReplicationRelationship) ContextValidate(ctx context.Co
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateIsSource(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -85,6 +96,24 @@ func (m *ConsistencyGroupReplicationRelationship) contextValidateLinks(ctx conte
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupReplicationRelationship) contextValidateIsSource(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "is_source", "body", m.IsSource); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupReplicationRelationship) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
+		return err
 	}
 
 	return nil

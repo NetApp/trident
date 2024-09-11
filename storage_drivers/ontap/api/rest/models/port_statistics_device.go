@@ -27,7 +27,7 @@ type PortStatisticsDevice struct {
 	ReceiveRaw *PortStatisticsDeviceInlineReceiveRaw `json:"receive_raw,omitempty"`
 
 	// The timestamp when the device specific counters were collected.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 

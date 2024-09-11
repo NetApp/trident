@@ -13,7 +13,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// SnapshotPolicySchedule The Snapshot copy policy schedule object is associated with a Snapshot copy policy and it defines the interval at which Snapshot copies are created and deleted.
+// SnapshotPolicySchedule The snapshot policy schedule object is associated with a snapshot policy and it defines the interval at which snapshots are created and deleted.
 //
 // swagger:model snapshot_policy_schedule
 type SnapshotPolicySchedule struct {
@@ -21,13 +21,13 @@ type SnapshotPolicySchedule struct {
 	// links
 	Links *SnapshotPolicyScheduleInlineLinks `json:"_links,omitempty"`
 
-	// The number of Snapshot copies to maintain for this schedule.
+	// The number of snapshots to maintain for this schedule.
 	Count *int64 `json:"count,omitempty"`
 
-	// The prefix to use while creating Snapshot copies at regular intervals.
+	// The prefix to use while creating snapshots at regular intervals.
 	Prefix *string `json:"prefix,omitempty"`
 
-	// The retention period of Snapshot copies for this schedule.
+	// The retention period of snapshots for this schedule.
 	RetentionPeriod *string `json:"retention_period,omitempty"`
 
 	// schedule
@@ -461,7 +461,7 @@ func (m *SnapshotPolicyScheduleInlineScheduleInlineLinks) UnmarshalBinary(b []by
 	return nil
 }
 
-// SnapshotPolicyScheduleInlineSnapshotPolicy This is a reference to the Snapshot copy policy.
+// SnapshotPolicyScheduleInlineSnapshotPolicy This is a reference to the snapshot policy.
 //
 // swagger:model snapshot_policy_schedule_inline_snapshot_policy
 type SnapshotPolicyScheduleInlineSnapshotPolicy struct {

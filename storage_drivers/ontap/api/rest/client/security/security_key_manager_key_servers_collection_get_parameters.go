@@ -62,6 +62,36 @@ SecurityKeyManagerKeyServersCollectionGetParams contains all the parameters to s
 */
 type SecurityKeyManagerKeyServersCollectionGetParams struct {
 
+	/* ConnectivityClusterAvailability.
+
+	   Filter by connectivity.cluster_availability
+	*/
+	ConnectivityClusterAvailability *bool
+
+	/* ConnectivityNodeStatesNodeName.
+
+	   Filter by connectivity.node_states.node.name
+	*/
+	ConnectivityNodeStatesNodeName *string
+
+	/* ConnectivityNodeStatesNodeUUID.
+
+	   Filter by connectivity.node_states.node.uuid
+	*/
+	ConnectivityNodeStatesNodeUUID *string
+
+	/* ConnectivityNodeStatesState.
+
+	   Filter by connectivity.node_states.state
+	*/
+	ConnectivityNodeStatesState *string
+
+	/* CreateRemoveTimeout.
+
+	   Filter by create_remove_timeout
+	*/
+	CreateRemoveTimeout *int64
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -193,6 +223,61 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetHTTPClient(client *
 	o.HTTPClient = client
 }
 
+// WithConnectivityClusterAvailability adds the connectivityClusterAvailability to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithConnectivityClusterAvailability(connectivityClusterAvailability *bool) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetConnectivityClusterAvailability(connectivityClusterAvailability)
+	return o
+}
+
+// SetConnectivityClusterAvailability adds the connectivityClusterAvailability to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetConnectivityClusterAvailability(connectivityClusterAvailability *bool) {
+	o.ConnectivityClusterAvailability = connectivityClusterAvailability
+}
+
+// WithConnectivityNodeStatesNodeName adds the connectivityNodeStatesNodeName to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithConnectivityNodeStatesNodeName(connectivityNodeStatesNodeName *string) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetConnectivityNodeStatesNodeName(connectivityNodeStatesNodeName)
+	return o
+}
+
+// SetConnectivityNodeStatesNodeName adds the connectivityNodeStatesNodeName to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetConnectivityNodeStatesNodeName(connectivityNodeStatesNodeName *string) {
+	o.ConnectivityNodeStatesNodeName = connectivityNodeStatesNodeName
+}
+
+// WithConnectivityNodeStatesNodeUUID adds the connectivityNodeStatesNodeUUID to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithConnectivityNodeStatesNodeUUID(connectivityNodeStatesNodeUUID *string) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetConnectivityNodeStatesNodeUUID(connectivityNodeStatesNodeUUID)
+	return o
+}
+
+// SetConnectivityNodeStatesNodeUUID adds the connectivityNodeStatesNodeUuid to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetConnectivityNodeStatesNodeUUID(connectivityNodeStatesNodeUUID *string) {
+	o.ConnectivityNodeStatesNodeUUID = connectivityNodeStatesNodeUUID
+}
+
+// WithConnectivityNodeStatesState adds the connectivityNodeStatesState to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithConnectivityNodeStatesState(connectivityNodeStatesState *string) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetConnectivityNodeStatesState(connectivityNodeStatesState)
+	return o
+}
+
+// SetConnectivityNodeStatesState adds the connectivityNodeStatesState to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetConnectivityNodeStatesState(connectivityNodeStatesState *string) {
+	o.ConnectivityNodeStatesState = connectivityNodeStatesState
+}
+
+// WithCreateRemoveTimeout adds the createRemoveTimeout to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithCreateRemoveTimeout(createRemoveTimeout *int64) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetCreateRemoveTimeout(createRemoveTimeout)
+	return o
+}
+
+// SetCreateRemoveTimeout adds the createRemoveTimeout to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetCreateRemoveTimeout(createRemoveTimeout *int64) {
+	o.CreateRemoveTimeout = createRemoveTimeout
+}
+
 // WithFields adds the fields to the security key manager key servers collection get params
 func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithFields(fields []string) *SecurityKeyManagerKeyServersCollectionGetParams {
 	o.SetFields(fields)
@@ -310,6 +395,91 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 		return err
 	}
 	var res []error
+
+	if o.ConnectivityClusterAvailability != nil {
+
+		// query param connectivity.cluster_availability
+		var qrConnectivityClusterAvailability bool
+
+		if o.ConnectivityClusterAvailability != nil {
+			qrConnectivityClusterAvailability = *o.ConnectivityClusterAvailability
+		}
+		qConnectivityClusterAvailability := swag.FormatBool(qrConnectivityClusterAvailability)
+		if qConnectivityClusterAvailability != "" {
+
+			if err := r.SetQueryParam("connectivity.cluster_availability", qConnectivityClusterAvailability); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityNodeStatesNodeName != nil {
+
+		// query param connectivity.node_states.node.name
+		var qrConnectivityNodeStatesNodeName string
+
+		if o.ConnectivityNodeStatesNodeName != nil {
+			qrConnectivityNodeStatesNodeName = *o.ConnectivityNodeStatesNodeName
+		}
+		qConnectivityNodeStatesNodeName := qrConnectivityNodeStatesNodeName
+		if qConnectivityNodeStatesNodeName != "" {
+
+			if err := r.SetQueryParam("connectivity.node_states.node.name", qConnectivityNodeStatesNodeName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityNodeStatesNodeUUID != nil {
+
+		// query param connectivity.node_states.node.uuid
+		var qrConnectivityNodeStatesNodeUUID string
+
+		if o.ConnectivityNodeStatesNodeUUID != nil {
+			qrConnectivityNodeStatesNodeUUID = *o.ConnectivityNodeStatesNodeUUID
+		}
+		qConnectivityNodeStatesNodeUUID := qrConnectivityNodeStatesNodeUUID
+		if qConnectivityNodeStatesNodeUUID != "" {
+
+			if err := r.SetQueryParam("connectivity.node_states.node.uuid", qConnectivityNodeStatesNodeUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityNodeStatesState != nil {
+
+		// query param connectivity.node_states.state
+		var qrConnectivityNodeStatesState string
+
+		if o.ConnectivityNodeStatesState != nil {
+			qrConnectivityNodeStatesState = *o.ConnectivityNodeStatesState
+		}
+		qConnectivityNodeStatesState := qrConnectivityNodeStatesState
+		if qConnectivityNodeStatesState != "" {
+
+			if err := r.SetQueryParam("connectivity.node_states.state", qConnectivityNodeStatesState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CreateRemoveTimeout != nil {
+
+		// query param create_remove_timeout
+		var qrCreateRemoveTimeout int64
+
+		if o.CreateRemoveTimeout != nil {
+			qrCreateRemoveTimeout = *o.CreateRemoveTimeout
+		}
+		qCreateRemoveTimeout := swag.FormatInt64(qrCreateRemoveTimeout)
+		if qCreateRemoveTimeout != "" {
+
+			if err := r.SetQueryParam("create_remove_timeout", qCreateRemoveTimeout); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.Fields != nil {
 

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *FpolicyPolicyCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the fpolicy policy create created response
+func (o *FpolicyPolicyCreateCreated) Code() int {
+	return 201
+}
+
 func (o *FpolicyPolicyCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/policies][%d] fpolicyPolicyCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/policies][%d] fpolicyPolicyCreateCreated %s", 201, payload)
 }
 
 func (o *FpolicyPolicyCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/policies][%d] fpolicyPolicyCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/policies][%d] fpolicyPolicyCreateCreated %s", 201, payload)
 }
 
 func (o *FpolicyPolicyCreateCreated) GetPayload() *models.FpolicyPolicyResponse {
@@ -130,19 +138,23 @@ func NewFpolicyPolicyCreateDefault(code int) *FpolicyPolicyCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 9765027    | FPolicy creation is successful but it cannot be enabled as the priority is already in use by another policy |
+| 9764875    | An FPolicy event does not exist |
+| 9764888    | An FPolicy engine does not exist |
 | 9764898    | An FPolicy policy cannot be created without defining its scope |
+| 9765027    | FPolicy creation is successful but it cannot be enabled as the priority is already in use by another policy |
 | 9765037    | FPolicy creation failed as passthrough-read cannot be enabled for policy without privileged user |
+| 9765038    | Passthrough-read policies are not supported with asynchronous external engine |
+| 9765056    | The specified Persistent Store does not exist |
+| 9765059    | Persistent Store feature is not supported with native engine |
+| 9765060    | Persistent Store feature is not supported with synchronous engine |
+| 9765061    | Persistent Store feature is not supported with mandatory screening |
+| 9765065    | A valid privileged user name must be in the form "domain-name\\user-name" |
+| 9765066    | The privileged user contains characters that are not allowed |
 */
 type FpolicyPolicyCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the fpolicy policy create default response
-func (o *FpolicyPolicyCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this fpolicy policy create default response has a 2xx status code
@@ -170,12 +182,19 @@ func (o *FpolicyPolicyCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fpolicy policy create default response
+func (o *FpolicyPolicyCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FpolicyPolicyCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/policies][%d] fpolicy_policy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/policies][%d] fpolicy_policy_create default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyPolicyCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/policies][%d] fpolicy_policy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/policies][%d] fpolicy_policy_create default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyPolicyCreateDefault) GetPayload() *models.ErrorResponse {

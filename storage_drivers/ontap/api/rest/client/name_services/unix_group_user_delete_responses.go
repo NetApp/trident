@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *UnixGroupUserDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the unix group user delete o k response
+func (o *UnixGroupUserDeleteOK) Code() int {
+	return 200
+}
+
 func (o *UnixGroupUserDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users/{name}][%d] unixGroupUserDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users/{name}][%d] unixGroupUserDeleteOK", 200)
 }
 
 func (o *UnixGroupUserDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users/{name}][%d] unixGroupUserDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users/{name}][%d] unixGroupUserDeleteOK", 200)
 }
 
 func (o *UnixGroupUserDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -114,11 +120,6 @@ type UnixGroupUserDeleteDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the unix group user delete default response
-func (o *UnixGroupUserDeleteDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this unix group user delete default response has a 2xx status code
 func (o *UnixGroupUserDeleteDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -144,12 +145,19 @@ func (o *UnixGroupUserDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the unix group user delete default response
+func (o *UnixGroupUserDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *UnixGroupUserDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users/{name}][%d] unix_group_user_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users/{name}][%d] unix_group_user_delete default %s", o._statusCode, payload)
 }
 
 func (o *UnixGroupUserDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users/{name}][%d] unix_group_user_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users/{name}][%d] unix_group_user_delete default %s", o._statusCode, payload)
 }
 
 func (o *UnixGroupUserDeleteDefault) GetPayload() *models.ErrorResponse {

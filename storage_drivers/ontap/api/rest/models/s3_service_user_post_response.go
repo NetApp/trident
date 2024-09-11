@@ -23,9 +23,15 @@ type S3ServiceUserPostResponse struct {
 	Links *CollectionLinks `json:"_links,omitempty"`
 
 	// Specifies the access key for the user.
-	// Example: Pz3SB54G2B_6dsXQPrA5HrTPcf478qoAW6_Xx6qyqZ948AgZ_7YfCf_9nO87YoZmskxx3cq41U2JAH2M3_fs321B4rkzS3a_oC5_8u7D8j_45N8OsBCBPWGD_1d_ccfq
+	// Example: HJAKU28M3SXTE2UXUACV
 	// Read Only: true
 	AccessKey *string `json:"access_key,omitempty"`
+
+	// Specifies the date and time after which the keys expire and are no longer valid.
+	// Example: 2024-01-01 00:00:00
+	// Read Only: true
+	// Format: date-time
+	KeyExpiryTime *strfmt.DateTime `json:"key_expiry_time,omitempty"`
 
 	// The name of the user.
 	// Example: user-1
@@ -33,7 +39,7 @@ type S3ServiceUserPostResponse struct {
 	Name *string `json:"name,omitempty"`
 
 	// Specifies the secret key for the user.
-	// Example: A20_tDhC_cux2C2BmtL45bXB_a_Q65c_96FsAcOdo14Az8V31jBKDTc0uCL62Bh559gPB8s9rrn0868QrF38_1dsV2u1_9H2tSf3qQ5xp9NT259C6z_GiZQ883Qn63X1
+	// Example: BcA_HX6If458llhnx3n1TCO3mg4roCXG0ddYf_cJ
 	// Read Only: true
 	SecretKey *string `json:"secret_key,omitempty"`
 }
@@ -43,6 +49,10 @@ func (m *S3ServiceUserPostResponse) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateKeyExpiryTime(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -69,6 +79,18 @@ func (m *S3ServiceUserPostResponse) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
+func (m *S3ServiceUserPostResponse) validateKeyExpiryTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.KeyExpiryTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("key_expiry_time", "body", "date-time", m.KeyExpiryTime.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this s3 service user post response based on the context it is used
 func (m *S3ServiceUserPostResponse) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -78,6 +100,10 @@ func (m *S3ServiceUserPostResponse) ContextValidate(ctx context.Context, formats
 	}
 
 	if err := m.contextValidateAccessKey(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateKeyExpiryTime(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -112,6 +138,15 @@ func (m *S3ServiceUserPostResponse) contextValidateLinks(ctx context.Context, fo
 func (m *S3ServiceUserPostResponse) contextValidateAccessKey(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "access_key", "body", m.AccessKey); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *S3ServiceUserPostResponse) contextValidateKeyExpiryTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "key_expiry_time", "body", m.KeyExpiryTime); err != nil {
 		return err
 	}
 

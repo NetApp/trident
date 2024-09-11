@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ConfigurationBackupFileDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the configuration backup file delete o k response
+func (o *ConfigurationBackupFileDeleteOK) Code() int {
+	return 200
+}
+
 func (o *ConfigurationBackupFileDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /support/configuration-backup/backups/{node.uuid}/{name}][%d] configurationBackupFileDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /support/configuration-backup/backups/{node.uuid}/{name}][%d] configurationBackupFileDeleteOK", 200)
 }
 
 func (o *ConfigurationBackupFileDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /support/configuration-backup/backups/{node.uuid}/{name}][%d] configurationBackupFileDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /support/configuration-backup/backups/{node.uuid}/{name}][%d] configurationBackupFileDeleteOK", 200)
 }
 
 func (o *ConfigurationBackupFileDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,16 +113,12 @@ func NewConfigurationBackupFileDeleteDefault(code int) *ConfigurationBackupFileD
 | Error Code | Description |
 | ---------- | ----------- |
 | 5963826 | Failed to delete backup file. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ConfigurationBackupFileDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the configuration backup file delete default response
-func (o *ConfigurationBackupFileDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this configuration backup file delete default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *ConfigurationBackupFileDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the configuration backup file delete default response
+func (o *ConfigurationBackupFileDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ConfigurationBackupFileDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /support/configuration-backup/backups/{node.uuid}/{name}][%d] configuration_backup_file_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /support/configuration-backup/backups/{node.uuid}/{name}][%d] configuration_backup_file_delete default %s", o._statusCode, payload)
 }
 
 func (o *ConfigurationBackupFileDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /support/configuration-backup/backups/{node.uuid}/{name}][%d] configuration_backup_file_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /support/configuration-backup/backups/{node.uuid}/{name}][%d] configuration_backup_file_delete default %s", o._statusCode, payload)
 }
 
 func (o *ConfigurationBackupFileDeleteDefault) GetPayload() *models.ErrorResponse {

@@ -34,7 +34,7 @@ type MetroclusterDiagDetails struct {
 	Node *MetroclusterDiagDetailsInlineNode `json:"node,omitempty"`
 
 	// Time check was done.
-	// Example: 2016-03-10T14:35:16-08:00
+	// Example: 2016-03-10 22:35:16
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -320,7 +320,7 @@ func (m *MetroclusterDiagDetails) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDiagDetailsInlineAggregate metrocluster diag details inline aggregate
+// MetroclusterDiagDetailsInlineAggregate Aggregate
 //
 // swagger:model metrocluster_diag_details_inline_aggregate
 type MetroclusterDiagDetailsInlineAggregate struct {
@@ -885,7 +885,7 @@ type MetroclusterDiagDetailsInlineVolume struct {
 	// links
 	Links *MetroclusterDiagDetailsInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

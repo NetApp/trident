@@ -6,6 +6,7 @@ package snaplock
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SnaplockComplianceClockGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snaplock compliance clock get o k response
+func (o *SnaplockComplianceClockGetOK) Code() int {
+	return 200
+}
+
 func (o *SnaplockComplianceClockGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/snaplock/compliance-clocks/{node.uuid}][%d] snaplockComplianceClockGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/compliance-clocks/{node.uuid}][%d] snaplockComplianceClockGetOK %s", 200, payload)
 }
 
 func (o *SnaplockComplianceClockGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/snaplock/compliance-clocks/{node.uuid}][%d] snaplockComplianceClockGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/compliance-clocks/{node.uuid}][%d] snaplockComplianceClockGetOK %s", 200, payload)
 }
 
 func (o *SnaplockComplianceClockGetOK) GetPayload() *models.SnaplockComplianceClock {
@@ -112,19 +120,19 @@ func NewSnaplockComplianceClockGetDefault(code int) *SnaplockComplianceClockGetD
 }
 
 /*
-SnaplockComplianceClockGetDefault describes a response with status code -1, with default header values.
+	SnaplockComplianceClockGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response codes
+
+| Error code  |  Description |
+|-------------|--------------|
+|  14090240   | A node with the specified UUID does not exist  |
+|  14090446   | Invalid session ID |
 */
 type SnaplockComplianceClockGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snaplock compliance clock get default response
-func (o *SnaplockComplianceClockGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snaplock compliance clock get default response has a 2xx status code
@@ -152,12 +160,19 @@ func (o *SnaplockComplianceClockGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snaplock compliance clock get default response
+func (o *SnaplockComplianceClockGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnaplockComplianceClockGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/snaplock/compliance-clocks/{node.uuid}][%d] snaplock_compliance_clock_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/compliance-clocks/{node.uuid}][%d] snaplock_compliance_clock_get default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockComplianceClockGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/snaplock/compliance-clocks/{node.uuid}][%d] snaplock_compliance_clock_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/compliance-clocks/{node.uuid}][%d] snaplock_compliance_clock_get default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockComplianceClockGetDefault) GetPayload() *models.ErrorResponse {

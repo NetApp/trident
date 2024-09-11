@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *PortsetInterfaceCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the portset interface create created response
+func (o *PortsetInterfaceCreateCreated) Code() int {
+	return 201
+}
+
 func (o *PortsetInterfaceCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/portsets/{portset.uuid}/interfaces][%d] portsetInterfaceCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/portsets/{portset.uuid}/interfaces][%d] portsetInterfaceCreateCreated %s", 201, payload)
 }
 
 func (o *PortsetInterfaceCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/san/portsets/{portset.uuid}/interfaces][%d] portsetInterfaceCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/portsets/{portset.uuid}/interfaces][%d] portsetInterfaceCreateCreated %s", 201, payload)
 }
 
 func (o *PortsetInterfaceCreateCreated) GetPayload() *models.PortsetInterfaceResponse {
@@ -136,16 +144,12 @@ func NewPortsetInterfaceCreateDefault(code int) *PortsetInterfaceCreateDefault {
 | 5374910 | An incomplete set of network interface properties was specified. |
 | 5374914 | An attempt was made to add a network interface of an incompatible protocol to a portset. |
 | 5374915 | An attempt was made to add a duplicate network interface to a portset. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type PortsetInterfaceCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the portset interface create default response
-func (o *PortsetInterfaceCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this portset interface create default response has a 2xx status code
@@ -173,12 +177,19 @@ func (o *PortsetInterfaceCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the portset interface create default response
+func (o *PortsetInterfaceCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *PortsetInterfaceCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/portsets/{portset.uuid}/interfaces][%d] portset_interface_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/portsets/{portset.uuid}/interfaces][%d] portset_interface_create default %s", o._statusCode, payload)
 }
 
 func (o *PortsetInterfaceCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/san/portsets/{portset.uuid}/interfaces][%d] portset_interface_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/portsets/{portset.uuid}/interfaces][%d] portset_interface_create default %s", o._statusCode, payload)
 }
 
 func (o *PortsetInterfaceCreateDefault) GetPayload() *models.ErrorResponse {

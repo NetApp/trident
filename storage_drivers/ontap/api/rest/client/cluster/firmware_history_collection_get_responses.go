@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *FirmwareHistoryCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the firmware history collection get o k response
+func (o *FirmwareHistoryCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *FirmwareHistoryCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/firmware/history][%d] firmwareHistoryCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/firmware/history][%d] firmwareHistoryCollectionGetOK %s", 200, payload)
 }
 
 func (o *FirmwareHistoryCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/firmware/history][%d] firmwareHistoryCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/firmware/history][%d] firmwareHistoryCollectionGetOK %s", 200, payload)
 }
 
 func (o *FirmwareHistoryCollectionGetOK) GetPayload() *models.FirmwareHistoryResponse {
@@ -122,11 +130,6 @@ type FirmwareHistoryCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the firmware history collection get default response
-func (o *FirmwareHistoryCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this firmware history collection get default response has a 2xx status code
 func (o *FirmwareHistoryCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *FirmwareHistoryCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the firmware history collection get default response
+func (o *FirmwareHistoryCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FirmwareHistoryCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/firmware/history][%d] firmware_history_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/firmware/history][%d] firmware_history_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *FirmwareHistoryCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/firmware/history][%d] firmware_history_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/firmware/history][%d] firmware_history_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *FirmwareHistoryCollectionGetDefault) GetPayload() *models.ErrorResponse {

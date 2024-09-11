@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *GroupMembershipSettingsGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the group membership settings get o k response
+func (o *GroupMembershipSettingsGetOK) Code() int {
+	return 200
+}
+
 func (o *GroupMembershipSettingsGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/cache/group-membership/settings/{svm.uuid}][%d] groupMembershipSettingsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/group-membership/settings/{svm.uuid}][%d] groupMembershipSettingsGetOK %s", 200, payload)
 }
 
 func (o *GroupMembershipSettingsGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/cache/group-membership/settings/{svm.uuid}][%d] groupMembershipSettingsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/group-membership/settings/{svm.uuid}][%d] groupMembershipSettingsGetOK %s", 200, payload)
 }
 
 func (o *GroupMembershipSettingsGetOK) GetPayload() *models.GroupMembershipSettings {
@@ -122,11 +130,6 @@ type GroupMembershipSettingsGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the group membership settings get default response
-func (o *GroupMembershipSettingsGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this group membership settings get default response has a 2xx status code
 func (o *GroupMembershipSettingsGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *GroupMembershipSettingsGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the group membership settings get default response
+func (o *GroupMembershipSettingsGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *GroupMembershipSettingsGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/cache/group-membership/settings/{svm.uuid}][%d] group_membership_settings_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/group-membership/settings/{svm.uuid}][%d] group_membership_settings_get default %s", o._statusCode, payload)
 }
 
 func (o *GroupMembershipSettingsGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/cache/group-membership/settings/{svm.uuid}][%d] group_membership_settings_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/group-membership/settings/{svm.uuid}][%d] group_membership_settings_get default %s", o._statusCode, payload)
 }
 
 func (o *GroupMembershipSettingsGetDefault) GetPayload() *models.ErrorResponse {

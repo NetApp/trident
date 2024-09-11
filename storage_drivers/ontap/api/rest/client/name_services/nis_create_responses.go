@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *NisCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the nis create created response
+func (o *NisCreateCreated) Code() int {
+	return 201
+}
+
 func (o *NisCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /name-services/nis][%d] nisCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/nis][%d] nisCreateCreated %s", 201, payload)
 }
 
 func (o *NisCreateCreated) String() string {
-	return fmt.Sprintf("[POST /name-services/nis][%d] nisCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/nis][%d] nisCreateCreated %s", 201, payload)
 }
 
 func (o *NisCreateCreated) GetPayload() *models.NisServiceResponse {
@@ -137,6 +145,7 @@ func NewNisCreateDefault(code int) *NisCreateDefault {
 | 3276933    | A maximum of 10 NIS servers can be configured per SVM |
 | 13434916   | The SVM is in the process of being created. Wait a few minutes, and then try the command again. |
 | 23724109   | DNS resolution failed for one or more specified servers  |
+| 23724111   | Empty NIS servers cannot be specified.  |
 | 23724112   | DNS resolution failed due to an internal error. Contact technical support if this issue persists  |
 | 23724132   | DNS resolution failed for all the specified servers  |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
@@ -145,11 +154,6 @@ type NisCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nis create default response
-func (o *NisCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nis create default response has a 2xx status code
@@ -177,12 +181,19 @@ func (o *NisCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nis create default response
+func (o *NisCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NisCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /name-services/nis][%d] nis_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/nis][%d] nis_create default %s", o._statusCode, payload)
 }
 
 func (o *NisCreateDefault) String() string {
-	return fmt.Sprintf("[POST /name-services/nis][%d] nis_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/nis][%d] nis_create default %s", o._statusCode, payload)
 }
 
 func (o *NisCreateDefault) GetPayload() *models.ErrorResponse {

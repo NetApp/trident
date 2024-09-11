@@ -63,7 +63,7 @@ type SnapshotPolicyDeleteParams struct {
 
 	/* UUID.
 
-	   Snapshot copy policy UUID
+	   Snapshot policy UUID
 	*/
 	UUID string
 

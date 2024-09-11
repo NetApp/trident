@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *NetworkEthernetBroadcastDomainModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the network ethernet broadcast domain modify o k response
+func (o *NetworkEthernetBroadcastDomainModifyOK) Code() int {
+	return 200
+}
+
 func (o *NetworkEthernetBroadcastDomainModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /network/ethernet/broadcast-domains/{uuid}][%d] networkEthernetBroadcastDomainModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/ethernet/broadcast-domains/{uuid}][%d] networkEthernetBroadcastDomainModifyOK", 200)
 }
 
 func (o *NetworkEthernetBroadcastDomainModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /network/ethernet/broadcast-domains/{uuid}][%d] networkEthernetBroadcastDomainModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/ethernet/broadcast-domains/{uuid}][%d] networkEthernetBroadcastDomainModifyOK", 200)
 }
 
 func (o *NetworkEthernetBroadcastDomainModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,25 +112,26 @@ func NewNetworkEthernetBroadcastDomainModifyDefault(code int) *NetworkEthernetBr
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 1376484 | Cannot change the MTU of a VLAN to be greater than the MTU of the port hosting it. |
 | 1377267 | The specified IPspace does not exist. |
 | 1377269 | Failed to lookup the specified IPspace. |
 | 1377560 | Broadcast domain already exists in specified IPspace. |
+| 1377575 | Remove associated subnets before deleting this broadcast domain. |
 | 1377605 | Moving the system-generated broadcast domain to another IPspace is not supported. |
+| 1377609 | Updates are partially complete. Updating broadcast domain attributes on some or all of the ports in the broadcast domain have failed. |
+| 1966460 | The specified MTU is either too large or too small. |
 | 1967082 | The specified ipspace.name does not match the IPspace name of ipspace.uuid. |
 | 1967150 | The specified ipspace.uuid is not valid. |
 | 1967151 | The specified ipspace.uuid and ipspace.name do not match. |
 | 1967152 | Patching IPspace for a broadcast domain requires an effective cluster version of 9.7 or later. |
 | 53280884 | The MTU of the broadcast domain cannot be modified on this platform. |
+| 53282013 | Broadcast domain cannot be renamed because the name is reserved by the system. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NetworkEthernetBroadcastDomainModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the network ethernet broadcast domain modify default response
-func (o *NetworkEthernetBroadcastDomainModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this network ethernet broadcast domain modify default response has a 2xx status code
@@ -152,12 +159,19 @@ func (o *NetworkEthernetBroadcastDomainModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the network ethernet broadcast domain modify default response
+func (o *NetworkEthernetBroadcastDomainModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetworkEthernetBroadcastDomainModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /network/ethernet/broadcast-domains/{uuid}][%d] network_ethernet_broadcast_domain_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/ethernet/broadcast-domains/{uuid}][%d] network_ethernet_broadcast_domain_modify default %s", o._statusCode, payload)
 }
 
 func (o *NetworkEthernetBroadcastDomainModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /network/ethernet/broadcast-domains/{uuid}][%d] network_ethernet_broadcast_domain_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/ethernet/broadcast-domains/{uuid}][%d] network_ethernet_broadcast_domain_modify default %s", o._statusCode, payload)
 }
 
 func (o *NetworkEthernetBroadcastDomainModifyDefault) GetPayload() *models.ErrorResponse {

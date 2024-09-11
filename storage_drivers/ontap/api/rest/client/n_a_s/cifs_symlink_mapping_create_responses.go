@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *CifsSymlinkMappingCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the cifs symlink mapping create created response
+func (o *CifsSymlinkMappingCreateCreated) Code() int {
+	return 201
+}
+
 func (o *CifsSymlinkMappingCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/unix-symlink-mapping][%d] cifsSymlinkMappingCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/unix-symlink-mapping][%d] cifsSymlinkMappingCreateCreated %s", 201, payload)
 }
 
 func (o *CifsSymlinkMappingCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/unix-symlink-mapping][%d] cifsSymlinkMappingCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/unix-symlink-mapping][%d] cifsSymlinkMappingCreateCreated %s", 201, payload)
 }
 
 func (o *CifsSymlinkMappingCreateCreated) GetPayload() *models.CifsSymlinkMappingResponse {
@@ -135,21 +143,17 @@ func NewCifsSymlinkMappingCreateDefault(code int) *CifsSymlinkMappingCreateDefau
 | 655574     | The target server contains illegal characters or is too long |
 | 655436     | If the locality is "local", the target server must be blank or must match the CIFS NetBIOS name for given SVM |
 | 655439     | The Specified target server is local CIFS server for given SVM but the locality is specified as "widelink" |
-| 655546     | Failed to create symlink mapping becasue administrative share cannot be used as target share |
-| 655437     | Failed to create the symlink mapping with locality "local" because the target share does not exist for specified SVM |
+| 655546     | Failed to create symlink mapping because administrative share cannot be used as target share |
+| 655437     | Failed to create the symlink mapping with locality "local" because the target share does not exist for the specified SVM |
 | 655429     | UNIX path must begin and end with a "/" |
 | 655430     | Target path must begin and end with a "/" |
 | 655399     | Failed to get the CIFS server for specified SVM |
+| 656481     | Failed to create the widelink because the target share does not exist for the specified SVM |
 */
 type CifsSymlinkMappingCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cifs symlink mapping create default response
-func (o *CifsSymlinkMappingCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cifs symlink mapping create default response has a 2xx status code
@@ -177,12 +181,19 @@ func (o *CifsSymlinkMappingCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs symlink mapping create default response
+func (o *CifsSymlinkMappingCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsSymlinkMappingCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/unix-symlink-mapping][%d] cifs_symlink_mapping_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/unix-symlink-mapping][%d] cifs_symlink_mapping_create default %s", o._statusCode, payload)
 }
 
 func (o *CifsSymlinkMappingCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/unix-symlink-mapping][%d] cifs_symlink_mapping_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/unix-symlink-mapping][%d] cifs_symlink_mapping_create default %s", o._statusCode, payload)
 }
 
 func (o *CifsSymlinkMappingCreateDefault) GetPayload() *models.ErrorResponse {

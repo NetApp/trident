@@ -40,18 +40,6 @@ const (
 	// CipherAes128Ctr captures enum value "aes128_ctr"
 	CipherAes128Ctr Cipher = "aes128_ctr"
 
-	// CipherAes256Cbc captures enum value "aes256_cbc"
-	CipherAes256Cbc Cipher = "aes256_cbc"
-
-	// CipherAes192Cbc captures enum value "aes192_cbc"
-	CipherAes192Cbc Cipher = "aes192_cbc"
-
-	// CipherAes128Cbc captures enum value "aes128_cbc"
-	CipherAes128Cbc Cipher = "aes128_cbc"
-
-	// CipherNr3desCbc captures enum value "3des_cbc"
-	CipherNr3desCbc Cipher = "3des_cbc"
-
 	// CipherAes128Gcm captures enum value "aes128_gcm"
 	CipherAes128Gcm Cipher = "aes128_gcm"
 
@@ -64,7 +52,7 @@ var cipherEnum []interface{}
 
 func init() {
 	var res []Cipher
-	if err := json.Unmarshal([]byte(`["aes256_ctr","aes192_ctr","aes128_ctr","aes256_cbc","aes192_cbc","aes128_cbc","3des_cbc","aes128_gcm","aes256_gcm"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["aes256_ctr","aes192_ctr","aes128_ctr","aes128_gcm","aes256_gcm"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

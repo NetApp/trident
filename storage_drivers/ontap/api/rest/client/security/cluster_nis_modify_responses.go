@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ClusterNisModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cluster nis modify o k response
+func (o *ClusterNisModifyOK) Code() int {
+	return 200
+}
+
 func (o *ClusterNisModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/authentication/cluster/nis][%d] clusterNisModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/nis][%d] clusterNisModifyOK", 200)
 }
 
 func (o *ClusterNisModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/authentication/cluster/nis][%d] clusterNisModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/nis][%d] clusterNisModifyOK", 200)
 }
 
 func (o *ClusterNisModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -120,11 +126,6 @@ type ClusterNisModifyDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cluster nis modify default response
-func (o *ClusterNisModifyDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cluster nis modify default response has a 2xx status code
 func (o *ClusterNisModifyDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -150,12 +151,19 @@ func (o *ClusterNisModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster nis modify default response
+func (o *ClusterNisModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterNisModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/authentication/cluster/nis][%d] cluster_nis_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/nis][%d] cluster_nis_modify default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNisModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/authentication/cluster/nis][%d] cluster_nis_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/nis][%d] cluster_nis_modify default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNisModifyDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *MultiAdminVerifyRuleCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the multi admin verify rule collection get o k response
+func (o *MultiAdminVerifyRuleCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *MultiAdminVerifyRuleCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/multi-admin-verify/rules][%d] multiAdminVerifyRuleCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/multi-admin-verify/rules][%d] multiAdminVerifyRuleCollectionGetOK %s", 200, payload)
 }
 
 func (o *MultiAdminVerifyRuleCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /security/multi-admin-verify/rules][%d] multiAdminVerifyRuleCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/multi-admin-verify/rules][%d] multiAdminVerifyRuleCollectionGetOK %s", 200, payload)
 }
 
 func (o *MultiAdminVerifyRuleCollectionGetOK) GetPayload() *models.MultiAdminVerifyRuleResponse {
@@ -122,11 +130,6 @@ type MultiAdminVerifyRuleCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the multi admin verify rule collection get default response
-func (o *MultiAdminVerifyRuleCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this multi admin verify rule collection get default response has a 2xx status code
 func (o *MultiAdminVerifyRuleCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *MultiAdminVerifyRuleCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the multi admin verify rule collection get default response
+func (o *MultiAdminVerifyRuleCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MultiAdminVerifyRuleCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/multi-admin-verify/rules][%d] multi_admin_verify_rule_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/multi-admin-verify/rules][%d] multi_admin_verify_rule_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyRuleCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/multi-admin-verify/rules][%d] multi_admin_verify_rule_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/multi-admin-verify/rules][%d] multi_admin_verify_rule_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyRuleCollectionGetDefault) GetPayload() *models.ErrorResponse {

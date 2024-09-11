@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ClusterPeerDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cluster peer delete o k response
+func (o *ClusterPeerDeleteOK) Code() int {
+	return 200
+}
+
 func (o *ClusterPeerDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /cluster/peers/{uuid}][%d] clusterPeerDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /cluster/peers/{uuid}][%d] clusterPeerDeleteOK", 200)
 }
 
 func (o *ClusterPeerDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /cluster/peers/{uuid}][%d] clusterPeerDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /cluster/peers/{uuid}][%d] clusterPeerDeleteOK", 200)
 }
 
 func (o *ClusterPeerDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,17 +112,14 @@ func NewClusterPeerDeleteDefault(code int) *ClusterPeerDeleteDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 4653079 | Unable to delete peer relationship. |
 | 4663070 | Unable to delete cluster peer relationship due to an ongoing Vserver migration. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ClusterPeerDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cluster peer delete default response
-func (o *ClusterPeerDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cluster peer delete default response has a 2xx status code
@@ -144,12 +147,19 @@ func (o *ClusterPeerDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster peer delete default response
+func (o *ClusterPeerDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterPeerDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /cluster/peers/{uuid}][%d] cluster_peer_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/peers/{uuid}][%d] cluster_peer_delete default %s", o._statusCode, payload)
 }
 
 func (o *ClusterPeerDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /cluster/peers/{uuid}][%d] cluster_peer_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/peers/{uuid}][%d] cluster_peer_delete default %s", o._statusCode, payload)
 }
 
 func (o *ClusterPeerDeleteDefault) GetPayload() *models.ErrorResponse {

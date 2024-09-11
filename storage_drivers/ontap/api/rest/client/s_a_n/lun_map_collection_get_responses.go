@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *LunMapCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the lun map collection get o k response
+func (o *LunMapCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *LunMapCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/lun-maps][%d] lunMapCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/lun-maps][%d] lunMapCollectionGetOK %s", 200, payload)
 }
 
 func (o *LunMapCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/san/lun-maps][%d] lunMapCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/lun-maps][%d] lunMapCollectionGetOK %s", 200, payload)
 }
 
 func (o *LunMapCollectionGetOK) GetPayload() *models.LunMapResponse {
@@ -122,11 +130,6 @@ type LunMapCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the lun map collection get default response
-func (o *LunMapCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this lun map collection get default response has a 2xx status code
 func (o *LunMapCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *LunMapCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the lun map collection get default response
+func (o *LunMapCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LunMapCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/lun-maps][%d] lun_map_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/lun-maps][%d] lun_map_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *LunMapCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/san/lun-maps][%d] lun_map_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/lun-maps][%d] lun_map_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *LunMapCollectionGetDefault) GetPayload() *models.ErrorResponse {

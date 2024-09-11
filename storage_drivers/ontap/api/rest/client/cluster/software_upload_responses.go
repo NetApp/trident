@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type SoftwareUploadReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *SoftwareUploadReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewSoftwareUploadCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewSoftwareUploadAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *SoftwareUploadReader) ReadResponse(response runtime.ClientResponse, con
 	}
 }
 
+// NewSoftwareUploadCreated creates a SoftwareUploadCreated with default headers values
+func NewSoftwareUploadCreated() *SoftwareUploadCreated {
+	return &SoftwareUploadCreated{}
+}
+
+/*
+SoftwareUploadCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type SoftwareUploadCreated struct {
+	Payload *models.SoftwarePackageJobLinkResponse
+}
+
+// IsSuccess returns true when this software upload created response has a 2xx status code
+func (o *SoftwareUploadCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this software upload created response has a 3xx status code
+func (o *SoftwareUploadCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this software upload created response has a 4xx status code
+func (o *SoftwareUploadCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this software upload created response has a 5xx status code
+func (o *SoftwareUploadCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this software upload created response a status code equal to that given
+func (o *SoftwareUploadCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the software upload created response
+func (o *SoftwareUploadCreated) Code() int {
+	return 201
+}
+
+func (o *SoftwareUploadCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/software/upload][%d] softwareUploadCreated %s", 201, payload)
+}
+
+func (o *SoftwareUploadCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/software/upload][%d] softwareUploadCreated %s", 201, payload)
+}
+
+func (o *SoftwareUploadCreated) GetPayload() *models.SoftwarePackageJobLinkResponse {
+	return o.Payload
+}
+
+func (o *SoftwareUploadCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.SoftwarePackageJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewSoftwareUploadAccepted creates a SoftwareUploadAccepted with default headers values
 func NewSoftwareUploadAccepted() *SoftwareUploadAccepted {
 	return &SoftwareUploadAccepted{}
@@ -52,7 +129,7 @@ SoftwareUploadAccepted describes a response with status code 202, with default h
 Accepted
 */
 type SoftwareUploadAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.SoftwarePackageJobLinkResponse
 }
 
 // IsSuccess returns true when this software upload accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *SoftwareUploadAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the software upload accepted response
+func (o *SoftwareUploadAccepted) Code() int {
+	return 202
+}
+
 func (o *SoftwareUploadAccepted) Error() string {
-	return fmt.Sprintf("[POST /cluster/software/upload][%d] softwareUploadAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/software/upload][%d] softwareUploadAccepted %s", 202, payload)
 }
 
 func (o *SoftwareUploadAccepted) String() string {
-	return fmt.Sprintf("[POST /cluster/software/upload][%d] softwareUploadAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/software/upload][%d] softwareUploadAccepted %s", 202, payload)
 }
 
-func (o *SoftwareUploadAccepted) GetPayload() *models.JobLinkResponse {
+func (o *SoftwareUploadAccepted) GetPayload() *models.SoftwarePackageJobLinkResponse {
 	return o.Payload
 }
 
 func (o *SoftwareUploadAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.SoftwarePackageJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -112,19 +196,35 @@ func NewSoftwareUploadDefault(code int) *SoftwareUploadDefault {
 }
 
 /*
-SoftwareUploadDefault describes a response with status code -1, with default header values.
+	SoftwareUploadDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 10551359 | Internal error. Failed to process the package after download completed. Try uploading the file again or contact technical support for assistance. |
+| 10551373 | Operation took longer than the maximum 1 hour time limit. |
+| 10551391 | Internal error. Contact technical support for assistance. |
+| 10551392 | Internal error. Contact technical support for assistance. |
+| 10551496 | Firmware file already exists. |
+| 10551797 | Internal error. Failed to check if file upload is enabled. |
+| 10551798 | File upload is disabled. Enable file upload by setting "ApacheUploadEnabled 1" in the web services configuration file or contact technical support for assistance. |
+| 10551799 | The requested filename exceeds the max path length. Rename using a shorter name. |
+| 10551800 | Internal error. Access permissions restrict file upload. This is likely due to a bad web jail setup. Contact technical support for assistance. |
+| 10551801 | Internal error. A read/write error occurred when uploading this file. Contact technical support for assistance |
+| 10551802 | An invalid argument was supplied to create a file handle. Try uploading the file again or contact technical support for assistance. |
+| 10551803 | An unknown error occurred. Retry file upload operation again or contact technical support for assistance. |
+| 10551804 | Internal error. There is not sufficient space in the file upload directory to upload this file. Contact technical support for assistance. |
+| 10551805 | Internal error in JAIL setup. Contact technical support for assistance. |
+| 10551806 | Internal error. Failed to write to file in the webjail directory. Contact technical support for assistance. |
+| 10551807 | The request must only contain a single file. More than one file per request is not supported. |
+| 10551808 | The request must be of type multipart/form-data. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SoftwareUploadDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the software upload default response
-func (o *SoftwareUploadDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this software upload default response has a 2xx status code
@@ -152,12 +252,19 @@ func (o *SoftwareUploadDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the software upload default response
+func (o *SoftwareUploadDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SoftwareUploadDefault) Error() string {
-	return fmt.Sprintf("[POST /cluster/software/upload][%d] software_upload default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/software/upload][%d] software_upload default %s", o._statusCode, payload)
 }
 
 func (o *SoftwareUploadDefault) String() string {
-	return fmt.Sprintf("[POST /cluster/software/upload][%d] software_upload default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/software/upload][%d] software_upload default %s", o._statusCode, payload)
 }
 
 func (o *SoftwareUploadDefault) GetPayload() *models.ErrorResponse {

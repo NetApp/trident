@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ScheduleModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the schedule modify o k response
+func (o *ScheduleModifyOK) Code() int {
+	return 200
+}
+
 func (o *ScheduleModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /cluster/schedules/{uuid}][%d] scheduleModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /cluster/schedules/{uuid}][%d] scheduleModifyOK", 200)
 }
 
 func (o *ScheduleModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /cluster/schedules/{uuid}][%d] scheduleModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /cluster/schedules/{uuid}][%d] scheduleModifyOK", 200)
 }
 
 func (o *ScheduleModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -110,16 +116,14 @@ func NewScheduleModifyDefault(code int) *ScheduleModifyDefault {
 | 459760 | The schedule specified is not a valid schedule. |
 | 459761 | Schedule cannot be modified on this cluster because it is replicated from the remote cluster. |
 | 460783 | As this is a MetroCluster configuration and the local cluster is waiting for switchback, changes to non-system schedules are not allowed. |
+| 461785 | A cron schedule cannot have an interval field. |
+| 461786 | An interval schedule cannot have a cron field. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ScheduleModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the schedule modify default response
-func (o *ScheduleModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this schedule modify default response has a 2xx status code
@@ -147,12 +151,19 @@ func (o *ScheduleModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the schedule modify default response
+func (o *ScheduleModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ScheduleModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /cluster/schedules/{uuid}][%d] schedule_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/schedules/{uuid}][%d] schedule_modify default %s", o._statusCode, payload)
 }
 
 func (o *ScheduleModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /cluster/schedules/{uuid}][%d] schedule_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/schedules/{uuid}][%d] schedule_modify default %s", o._statusCode, payload)
 }
 
 func (o *ScheduleModifyDefault) GetPayload() *models.ErrorResponse {

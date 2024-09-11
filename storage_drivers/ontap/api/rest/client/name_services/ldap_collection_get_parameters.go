@@ -200,6 +200,12 @@ type LdapCollectionGetParams struct {
 	*/
 	ReferralEnabled *bool
 
+	/* RestrictDiscoveryToSite.
+
+	   Filter by restrict_discovery_to_site
+	*/
+	RestrictDiscoveryToSite *bool
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -245,6 +251,54 @@ type LdapCollectionGetParams struct {
 	   Filter by status.dn_message
 	*/
 	StatusDnMessage *string
+
+	/* StatusIPV4Code.
+
+	   Filter by status.ipv4.code
+	*/
+	StatusIPV4Code *int64
+
+	/* StatusIPV4DnMessages.
+
+	   Filter by status.ipv4.dn_messages
+	*/
+	StatusIPV4DnMessages *string
+
+	/* StatusIPV4Message.
+
+	   Filter by status.ipv4.message
+	*/
+	StatusIPV4Message *string
+
+	/* StatusIPV4State.
+
+	   Filter by status.ipv4.state
+	*/
+	StatusIPV4State *string
+
+	/* StatusIPV6Code.
+
+	   Filter by status.ipv6.code
+	*/
+	StatusIPV6Code *int64
+
+	/* StatusIPV6DnMessages.
+
+	   Filter by status.ipv6.dn_messages
+	*/
+	StatusIPV6DnMessages *string
+
+	/* StatusIPV6Message.
+
+	   Filter by status.ipv6.message
+	*/
+	StatusIPV6Message *string
+
+	/* StatusIPV6State.
+
+	   Filter by status.ipv6.state
+	*/
+	StatusIPV6State *string
 
 	/* StatusMessage.
 
@@ -614,6 +668,17 @@ func (o *LdapCollectionGetParams) SetReferralEnabled(referralEnabled *bool) {
 	o.ReferralEnabled = referralEnabled
 }
 
+// WithRestrictDiscoveryToSite adds the restrictDiscoveryToSite to the ldap collection get params
+func (o *LdapCollectionGetParams) WithRestrictDiscoveryToSite(restrictDiscoveryToSite *bool) *LdapCollectionGetParams {
+	o.SetRestrictDiscoveryToSite(restrictDiscoveryToSite)
+	return o
+}
+
+// SetRestrictDiscoveryToSite adds the restrictDiscoveryToSite to the ldap collection get params
+func (o *LdapCollectionGetParams) SetRestrictDiscoveryToSite(restrictDiscoveryToSite *bool) {
+	o.RestrictDiscoveryToSite = restrictDiscoveryToSite
+}
+
 // WithReturnRecords adds the returnRecords to the ldap collection get params
 func (o *LdapCollectionGetParams) WithReturnRecords(returnRecords *bool) *LdapCollectionGetParams {
 	o.SetReturnRecords(returnRecords)
@@ -689,6 +754,94 @@ func (o *LdapCollectionGetParams) WithStatusDnMessage(statusDnMessage *string) *
 // SetStatusDnMessage adds the statusDnMessage to the ldap collection get params
 func (o *LdapCollectionGetParams) SetStatusDnMessage(statusDnMessage *string) {
 	o.StatusDnMessage = statusDnMessage
+}
+
+// WithStatusIPV4Code adds the statusIPV4Code to the ldap collection get params
+func (o *LdapCollectionGetParams) WithStatusIPV4Code(statusIPV4Code *int64) *LdapCollectionGetParams {
+	o.SetStatusIPV4Code(statusIPV4Code)
+	return o
+}
+
+// SetStatusIPV4Code adds the statusIpv4Code to the ldap collection get params
+func (o *LdapCollectionGetParams) SetStatusIPV4Code(statusIPV4Code *int64) {
+	o.StatusIPV4Code = statusIPV4Code
+}
+
+// WithStatusIPV4DnMessages adds the statusIPV4DnMessages to the ldap collection get params
+func (o *LdapCollectionGetParams) WithStatusIPV4DnMessages(statusIPV4DnMessages *string) *LdapCollectionGetParams {
+	o.SetStatusIPV4DnMessages(statusIPV4DnMessages)
+	return o
+}
+
+// SetStatusIPV4DnMessages adds the statusIpv4DnMessages to the ldap collection get params
+func (o *LdapCollectionGetParams) SetStatusIPV4DnMessages(statusIPV4DnMessages *string) {
+	o.StatusIPV4DnMessages = statusIPV4DnMessages
+}
+
+// WithStatusIPV4Message adds the statusIPV4Message to the ldap collection get params
+func (o *LdapCollectionGetParams) WithStatusIPV4Message(statusIPV4Message *string) *LdapCollectionGetParams {
+	o.SetStatusIPV4Message(statusIPV4Message)
+	return o
+}
+
+// SetStatusIPV4Message adds the statusIpv4Message to the ldap collection get params
+func (o *LdapCollectionGetParams) SetStatusIPV4Message(statusIPV4Message *string) {
+	o.StatusIPV4Message = statusIPV4Message
+}
+
+// WithStatusIPV4State adds the statusIPV4State to the ldap collection get params
+func (o *LdapCollectionGetParams) WithStatusIPV4State(statusIPV4State *string) *LdapCollectionGetParams {
+	o.SetStatusIPV4State(statusIPV4State)
+	return o
+}
+
+// SetStatusIPV4State adds the statusIpv4State to the ldap collection get params
+func (o *LdapCollectionGetParams) SetStatusIPV4State(statusIPV4State *string) {
+	o.StatusIPV4State = statusIPV4State
+}
+
+// WithStatusIPV6Code adds the statusIPV6Code to the ldap collection get params
+func (o *LdapCollectionGetParams) WithStatusIPV6Code(statusIPV6Code *int64) *LdapCollectionGetParams {
+	o.SetStatusIPV6Code(statusIPV6Code)
+	return o
+}
+
+// SetStatusIPV6Code adds the statusIpv6Code to the ldap collection get params
+func (o *LdapCollectionGetParams) SetStatusIPV6Code(statusIPV6Code *int64) {
+	o.StatusIPV6Code = statusIPV6Code
+}
+
+// WithStatusIPV6DnMessages adds the statusIPV6DnMessages to the ldap collection get params
+func (o *LdapCollectionGetParams) WithStatusIPV6DnMessages(statusIPV6DnMessages *string) *LdapCollectionGetParams {
+	o.SetStatusIPV6DnMessages(statusIPV6DnMessages)
+	return o
+}
+
+// SetStatusIPV6DnMessages adds the statusIpv6DnMessages to the ldap collection get params
+func (o *LdapCollectionGetParams) SetStatusIPV6DnMessages(statusIPV6DnMessages *string) {
+	o.StatusIPV6DnMessages = statusIPV6DnMessages
+}
+
+// WithStatusIPV6Message adds the statusIPV6Message to the ldap collection get params
+func (o *LdapCollectionGetParams) WithStatusIPV6Message(statusIPV6Message *string) *LdapCollectionGetParams {
+	o.SetStatusIPV6Message(statusIPV6Message)
+	return o
+}
+
+// SetStatusIPV6Message adds the statusIpv6Message to the ldap collection get params
+func (o *LdapCollectionGetParams) SetStatusIPV6Message(statusIPV6Message *string) {
+	o.StatusIPV6Message = statusIPV6Message
+}
+
+// WithStatusIPV6State adds the statusIPV6State to the ldap collection get params
+func (o *LdapCollectionGetParams) WithStatusIPV6State(statusIPV6State *string) *LdapCollectionGetParams {
+	o.SetStatusIPV6State(statusIPV6State)
+	return o
+}
+
+// SetStatusIPV6State adds the statusIpv6State to the ldap collection get params
+func (o *LdapCollectionGetParams) SetStatusIPV6State(statusIPV6State *string) {
+	o.StatusIPV6State = statusIPV6State
 }
 
 // WithStatusMessage adds the statusMessage to the ldap collection get params
@@ -1166,6 +1319,23 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
+	if o.RestrictDiscoveryToSite != nil {
+
+		// query param restrict_discovery_to_site
+		var qrRestrictDiscoveryToSite bool
+
+		if o.RestrictDiscoveryToSite != nil {
+			qrRestrictDiscoveryToSite = *o.RestrictDiscoveryToSite
+		}
+		qRestrictDiscoveryToSite := swag.FormatBool(qrRestrictDiscoveryToSite)
+		if qRestrictDiscoveryToSite != "" {
+
+			if err := r.SetQueryParam("restrict_discovery_to_site", qRestrictDiscoveryToSite); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ReturnRecords != nil {
 
 		// query param return_records
@@ -1280,6 +1450,142 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qStatusDnMessage != "" {
 
 			if err := r.SetQueryParam("status.dn_message", qStatusDnMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatusIPV4Code != nil {
+
+		// query param status.ipv4.code
+		var qrStatusIPV4Code int64
+
+		if o.StatusIPV4Code != nil {
+			qrStatusIPV4Code = *o.StatusIPV4Code
+		}
+		qStatusIPV4Code := swag.FormatInt64(qrStatusIPV4Code)
+		if qStatusIPV4Code != "" {
+
+			if err := r.SetQueryParam("status.ipv4.code", qStatusIPV4Code); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatusIPV4DnMessages != nil {
+
+		// query param status.ipv4.dn_messages
+		var qrStatusIPV4DnMessages string
+
+		if o.StatusIPV4DnMessages != nil {
+			qrStatusIPV4DnMessages = *o.StatusIPV4DnMessages
+		}
+		qStatusIPV4DnMessages := qrStatusIPV4DnMessages
+		if qStatusIPV4DnMessages != "" {
+
+			if err := r.SetQueryParam("status.ipv4.dn_messages", qStatusIPV4DnMessages); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatusIPV4Message != nil {
+
+		// query param status.ipv4.message
+		var qrStatusIPV4Message string
+
+		if o.StatusIPV4Message != nil {
+			qrStatusIPV4Message = *o.StatusIPV4Message
+		}
+		qStatusIPV4Message := qrStatusIPV4Message
+		if qStatusIPV4Message != "" {
+
+			if err := r.SetQueryParam("status.ipv4.message", qStatusIPV4Message); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatusIPV4State != nil {
+
+		// query param status.ipv4.state
+		var qrStatusIPV4State string
+
+		if o.StatusIPV4State != nil {
+			qrStatusIPV4State = *o.StatusIPV4State
+		}
+		qStatusIPV4State := qrStatusIPV4State
+		if qStatusIPV4State != "" {
+
+			if err := r.SetQueryParam("status.ipv4.state", qStatusIPV4State); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatusIPV6Code != nil {
+
+		// query param status.ipv6.code
+		var qrStatusIPV6Code int64
+
+		if o.StatusIPV6Code != nil {
+			qrStatusIPV6Code = *o.StatusIPV6Code
+		}
+		qStatusIPV6Code := swag.FormatInt64(qrStatusIPV6Code)
+		if qStatusIPV6Code != "" {
+
+			if err := r.SetQueryParam("status.ipv6.code", qStatusIPV6Code); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatusIPV6DnMessages != nil {
+
+		// query param status.ipv6.dn_messages
+		var qrStatusIPV6DnMessages string
+
+		if o.StatusIPV6DnMessages != nil {
+			qrStatusIPV6DnMessages = *o.StatusIPV6DnMessages
+		}
+		qStatusIPV6DnMessages := qrStatusIPV6DnMessages
+		if qStatusIPV6DnMessages != "" {
+
+			if err := r.SetQueryParam("status.ipv6.dn_messages", qStatusIPV6DnMessages); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatusIPV6Message != nil {
+
+		// query param status.ipv6.message
+		var qrStatusIPV6Message string
+
+		if o.StatusIPV6Message != nil {
+			qrStatusIPV6Message = *o.StatusIPV6Message
+		}
+		qStatusIPV6Message := qrStatusIPV6Message
+		if qStatusIPV6Message != "" {
+
+			if err := r.SetQueryParam("status.ipv6.message", qStatusIPV6Message); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatusIPV6State != nil {
+
+		// query param status.ipv6.state
+		var qrStatusIPV6State string
+
+		if o.StatusIPV6State != nil {
+			qrStatusIPV6State = *o.StatusIPV6State
+		}
+		qStatusIPV6State := qrStatusIPV6State
+		if qStatusIPV6State != "" {
+
+			if err := r.SetQueryParam("status.ipv6.state", qStatusIPV6State); err != nil {
 				return err
 			}
 		}

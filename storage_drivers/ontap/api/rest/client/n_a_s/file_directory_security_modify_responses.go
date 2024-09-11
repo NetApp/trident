@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type FileDirectorySecurityModifyReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *FileDirectorySecurityModifyReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewFileDirectorySecurityModifyOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewFileDirectorySecurityModifyAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *FileDirectorySecurityModifyReader) ReadResponse(response runtime.Client
 	}
 }
 
+// NewFileDirectorySecurityModifyOK creates a FileDirectorySecurityModifyOK with default headers values
+func NewFileDirectorySecurityModifyOK() *FileDirectorySecurityModifyOK {
+	return &FileDirectorySecurityModifyOK{}
+}
+
+/*
+FileDirectorySecurityModifyOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type FileDirectorySecurityModifyOK struct {
+	Payload *models.FileDirectorySecurityJobLinkResponse
+}
+
+// IsSuccess returns true when this file directory security modify o k response has a 2xx status code
+func (o *FileDirectorySecurityModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this file directory security modify o k response has a 3xx status code
+func (o *FileDirectorySecurityModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this file directory security modify o k response has a 4xx status code
+func (o *FileDirectorySecurityModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this file directory security modify o k response has a 5xx status code
+func (o *FileDirectorySecurityModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this file directory security modify o k response a status code equal to that given
+func (o *FileDirectorySecurityModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the file directory security modify o k response
+func (o *FileDirectorySecurityModifyOK) Code() int {
+	return 200
+}
+
+func (o *FileDirectorySecurityModifyOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityModifyOK %s", 200, payload)
+}
+
+func (o *FileDirectorySecurityModifyOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityModifyOK %s", 200, payload)
+}
+
+func (o *FileDirectorySecurityModifyOK) GetPayload() *models.FileDirectorySecurityJobLinkResponse {
+	return o.Payload
+}
+
+func (o *FileDirectorySecurityModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.FileDirectorySecurityJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewFileDirectorySecurityModifyAccepted creates a FileDirectorySecurityModifyAccepted with default headers values
 func NewFileDirectorySecurityModifyAccepted() *FileDirectorySecurityModifyAccepted {
 	return &FileDirectorySecurityModifyAccepted{}
@@ -52,7 +129,7 @@ FileDirectorySecurityModifyAccepted describes a response with status code 202, w
 Accepted
 */
 type FileDirectorySecurityModifyAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.FileDirectorySecurityJobLinkResponse
 }
 
 // IsSuccess returns true when this file directory security modify accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *FileDirectorySecurityModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the file directory security modify accepted response
+func (o *FileDirectorySecurityModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *FileDirectorySecurityModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityModifyAccepted %s", 202, payload)
 }
 
 func (o *FileDirectorySecurityModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityModifyAccepted %s", 202, payload)
 }
 
-func (o *FileDirectorySecurityModifyAccepted) GetPayload() *models.JobLinkResponse {
+func (o *FileDirectorySecurityModifyAccepted) GetPayload() *models.FileDirectorySecurityJobLinkResponse {
 	return o.Payload
 }
 
 func (o *FileDirectorySecurityModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.FileDirectorySecurityJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -112,19 +196,22 @@ func NewFileDirectorySecurityModifyDefault(code int) *FileDirectorySecurityModif
 }
 
 /*
-FileDirectorySecurityModifyDefault describes a response with status code -1, with default header values.
+	FileDirectorySecurityModifyDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 655865     | The specified file or directory does not exist.|
+| 1260882    | Specified SVM not found.|
+| 6691623    | User is not authorized.|
+| 4849676    | The specified Windows user or group does not exist.|
+| 10485814   | The value provided for field control_flags is invalid.|
 */
 type FileDirectorySecurityModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the file directory security modify default response
-func (o *FileDirectorySecurityModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this file directory security modify default response has a 2xx status code
@@ -152,12 +239,19 @@ func (o *FileDirectorySecurityModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the file directory security modify default response
+func (o *FileDirectorySecurityModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FileDirectorySecurityModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_modify default %s", o._statusCode, payload)
 }
 
 func (o *FileDirectorySecurityModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_modify default %s", o._statusCode, payload)
 }
 
 func (o *FileDirectorySecurityModifyDefault) GetPayload() *models.ErrorResponse {

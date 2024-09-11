@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type ApplicationComponentSnapshotCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *ApplicationComponentSnapshotCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewApplicationComponentSnapshotCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewApplicationComponentSnapshotCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *ApplicationComponentSnapshotCreateReader) ReadResponse(response runtime
 	}
 }
 
+// NewApplicationComponentSnapshotCreateCreated creates a ApplicationComponentSnapshotCreateCreated with default headers values
+func NewApplicationComponentSnapshotCreateCreated() *ApplicationComponentSnapshotCreateCreated {
+	return &ApplicationComponentSnapshotCreateCreated{}
+}
+
+/*
+ApplicationComponentSnapshotCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type ApplicationComponentSnapshotCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.ApplicationComponentSnapshotJobLinkResponse
+}
+
+// IsSuccess returns true when this application component snapshot create created response has a 2xx status code
+func (o *ApplicationComponentSnapshotCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this application component snapshot create created response has a 3xx status code
+func (o *ApplicationComponentSnapshotCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this application component snapshot create created response has a 4xx status code
+func (o *ApplicationComponentSnapshotCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this application component snapshot create created response has a 5xx status code
+func (o *ApplicationComponentSnapshotCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this application component snapshot create created response a status code equal to that given
+func (o *ApplicationComponentSnapshotCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the application component snapshot create created response
+func (o *ApplicationComponentSnapshotCreateCreated) Code() int {
+	return 201
+}
+
+func (o *ApplicationComponentSnapshotCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] applicationComponentSnapshotCreateCreated %s", 201, payload)
+}
+
+func (o *ApplicationComponentSnapshotCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] applicationComponentSnapshotCreateCreated %s", 201, payload)
+}
+
+func (o *ApplicationComponentSnapshotCreateCreated) GetPayload() *models.ApplicationComponentSnapshotJobLinkResponse {
+	return o.Payload
+}
+
+func (o *ApplicationComponentSnapshotCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.ApplicationComponentSnapshotJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewApplicationComponentSnapshotCreateAccepted creates a ApplicationComponentSnapshotCreateAccepted with default headers values
 func NewApplicationComponentSnapshotCreateAccepted() *ApplicationComponentSnapshotCreateAccepted {
 	return &ApplicationComponentSnapshotCreateAccepted{}
@@ -57,7 +146,7 @@ type ApplicationComponentSnapshotCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.ApplicationComponentSnapshotJobLinkResponse
 }
 
 // IsSuccess returns true when this application component snapshot create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *ApplicationComponentSnapshotCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the application component snapshot create accepted response
+func (o *ApplicationComponentSnapshotCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *ApplicationComponentSnapshotCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] applicationComponentSnapshotCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] applicationComponentSnapshotCreateAccepted %s", 202, payload)
 }
 
 func (o *ApplicationComponentSnapshotCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] applicationComponentSnapshotCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] applicationComponentSnapshotCreateAccepted %s", 202, payload)
 }
 
-func (o *ApplicationComponentSnapshotCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *ApplicationComponentSnapshotCreateAccepted) GetPayload() *models.ApplicationComponentSnapshotJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *ApplicationComponentSnapshotCreateAccepted) readResponse(response runti
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.ApplicationComponentSnapshotJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -134,11 +230,6 @@ type ApplicationComponentSnapshotCreateDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the application component snapshot create default response
-func (o *ApplicationComponentSnapshotCreateDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this application component snapshot create default response has a 2xx status code
 func (o *ApplicationComponentSnapshotCreateDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -164,12 +255,19 @@ func (o *ApplicationComponentSnapshotCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the application component snapshot create default response
+func (o *ApplicationComponentSnapshotCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ApplicationComponentSnapshotCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] application_component_snapshot_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] application_component_snapshot_create default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationComponentSnapshotCreateDefault) String() string {
-	return fmt.Sprintf("[POST /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] application_component_snapshot_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] application_component_snapshot_create default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationComponentSnapshotCreateDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *CifsSearchPathModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs search path modify o k response
+func (o *CifsSearchPathModifyOK) Code() int {
+	return 200
+}
+
 func (o *CifsSearchPathModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifsSearchPathModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifsSearchPathModifyOK", 200)
 }
 
 func (o *CifsSearchPathModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifsSearchPathModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifsSearchPathModifyOK", 200)
 }
 
 func (o *CifsSearchPathModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -114,11 +120,6 @@ type CifsSearchPathModifyDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cifs search path modify default response
-func (o *CifsSearchPathModifyDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cifs search path modify default response has a 2xx status code
 func (o *CifsSearchPathModifyDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -144,12 +145,19 @@ func (o *CifsSearchPathModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs search path modify default response
+func (o *CifsSearchPathModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsSearchPathModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifs_search_path_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifs_search_path_modify default %s", o._statusCode, payload)
 }
 
 func (o *CifsSearchPathModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifs_search_path_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifs_search_path_modify default %s", o._statusCode, payload)
 }
 
 func (o *CifsSearchPathModifyDefault) GetPayload() *models.ErrorResponse {

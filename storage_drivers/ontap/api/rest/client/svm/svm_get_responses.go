@@ -6,6 +6,7 @@ package svm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SvmGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the svm get o k response
+func (o *SvmGetOK) Code() int {
+	return 200
+}
+
 func (o *SvmGetOK) Error() string {
-	return fmt.Sprintf("[GET /svm/svms/{uuid}][%d] svmGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/svms/{uuid}][%d] svmGetOK %s", 200, payload)
 }
 
 func (o *SvmGetOK) String() string {
-	return fmt.Sprintf("[GET /svm/svms/{uuid}][%d] svmGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/svms/{uuid}][%d] svmGetOK %s", 200, payload)
 }
 
 func (o *SvmGetOK) GetPayload() *models.Svm {
@@ -112,19 +120,22 @@ func NewSvmGetDefault(code int) *SvmGetDefault {
 }
 
 /*
-SvmGetDefault describes a response with status code -1, with default header values.
+	SvmGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+<br/>
+```
+| Error codes | Description |
+| ----------- | ----------- |
+| 262188      | Field \"top_metric\" was specified twice (to \"iops.read\" and \"throughput.read\"). |
+```
+<br/>
 */
 type SvmGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the svm get default response
-func (o *SvmGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this svm get default response has a 2xx status code
@@ -152,12 +163,19 @@ func (o *SvmGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the svm get default response
+func (o *SvmGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SvmGetDefault) Error() string {
-	return fmt.Sprintf("[GET /svm/svms/{uuid}][%d] svm_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/svms/{uuid}][%d] svm_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmGetDefault) String() string {
-	return fmt.Sprintf("[GET /svm/svms/{uuid}][%d] svm_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/svms/{uuid}][%d] svm_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmGetDefault) GetPayload() *models.ErrorResponse {

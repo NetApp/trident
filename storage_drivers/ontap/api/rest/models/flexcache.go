@@ -24,6 +24,12 @@ type Flexcache struct {
 	// links
 	Links *FlexcacheInlineLinks `json:"_links,omitempty"`
 
+	// atime scrub
+	AtimeScrub *FlexcacheInlineAtimeScrub `json:"atime_scrub,omitempty"`
+
+	// cifs change notify
+	CifsChangeNotify *FlexcacheInlineCifsChangeNotify `json:"cifs_change_notify,omitempty"`
+
 	// Number of FlexCache constituents per aggregate when the 'aggregates' field is mentioned.
 	ConstituentsPerAggregate *int64 `json:"constituents_per_aggregate,omitempty"`
 
@@ -48,12 +54,18 @@ type Flexcache struct {
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
 
+	// If set to true, a plaintext FlexCache volume for an encrypted origin volume is created.
+	OverrideEncryption *bool `json:"override_encryption,omitempty"`
+
 	// The fully-qualified path in the owning SVM's namespace at which the FlexCache is mounted. The path is case insensitive and must be unique within a SVM's namespace. Path must begin with '/' and must not end with '/'. Only one FlexCache be mounted at any given junction path.
 	// Example: /user/my_fc
 	Path *string `json:"path,omitempty"`
 
 	// prepopulate
 	Prepopulate *FlexcacheInlinePrepopulate `json:"prepopulate,omitempty"`
+
+	// relative size
+	RelativeSize *FlexcacheInlineRelativeSize `json:"relative_size,omitempty"`
 
 	// Physical size of the FlexCache. The recommended size for a FlexCache is 10% of the origin volume. The minimum FlexCache constituent size is 1GB.
 	Size *int64 `json:"size,omitempty"`
@@ -81,6 +93,14 @@ func (m *Flexcache) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateAtimeScrub(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCifsChangeNotify(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateFlexcacheInlineAggregates(formats); err != nil {
 		res = append(res, err)
 	}
@@ -98,6 +118,10 @@ func (m *Flexcache) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePrepopulate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRelativeSize(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -124,6 +148,40 @@ func (m *Flexcache) validateLinks(formats strfmt.Registry) error {
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Flexcache) validateAtimeScrub(formats strfmt.Registry) error {
+	if swag.IsZero(m.AtimeScrub) { // not required
+		return nil
+	}
+
+	if m.AtimeScrub != nil {
+		if err := m.AtimeScrub.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("atime_scrub")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Flexcache) validateCifsChangeNotify(formats strfmt.Registry) error {
+	if swag.IsZero(m.CifsChangeNotify) { // not required
+		return nil
+	}
+
+	if m.CifsChangeNotify != nil {
+		if err := m.CifsChangeNotify.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("cifs_change_notify")
 			}
 			return err
 		}
@@ -230,6 +288,23 @@ func (m *Flexcache) validatePrepopulate(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Flexcache) validateRelativeSize(formats strfmt.Registry) error {
+	if swag.IsZero(m.RelativeSize) { // not required
+		return nil
+	}
+
+	if m.RelativeSize != nil {
+		if err := m.RelativeSize.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("relative_size")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Flexcache) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
@@ -272,6 +347,14 @@ func (m *Flexcache) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAtimeScrub(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCifsChangeNotify(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateFlexcacheInlineAggregates(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -285,6 +368,10 @@ func (m *Flexcache) ContextValidate(ctx context.Context, formats strfmt.Registry
 	}
 
 	if err := m.contextValidatePrepopulate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRelativeSize(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -312,6 +399,34 @@ func (m *Flexcache) contextValidateLinks(ctx context.Context, formats strfmt.Reg
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Flexcache) contextValidateAtimeScrub(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AtimeScrub != nil {
+		if err := m.AtimeScrub.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("atime_scrub")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Flexcache) contextValidateCifsChangeNotify(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.CifsChangeNotify != nil {
+		if err := m.CifsChangeNotify.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("cifs_change_notify")
 			}
 			return err
 		}
@@ -384,6 +499,20 @@ func (m *Flexcache) contextValidatePrepopulate(ctx context.Context, formats strf
 	return nil
 }
 
+func (m *Flexcache) contextValidateRelativeSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.RelativeSize != nil {
+		if err := m.RelativeSize.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("relative_size")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Flexcache) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
@@ -439,7 +568,7 @@ func (m *Flexcache) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FlexcacheInlineAggregatesInlineArrayItem flexcache inline aggregates inline array item
+// FlexcacheInlineAggregatesInlineArrayItem Aggregate
 //
 // swagger:model flexcache_inline_aggregates_inline_array_item
 type FlexcacheInlineAggregatesInlineArrayItem struct {
@@ -619,13 +748,90 @@ func (m *FlexcacheInlineAggregatesInlineArrayItemInlineLinks) UnmarshalBinary(b 
 	return nil
 }
 
+// FlexcacheInlineAtimeScrub FlexCache volume atime-based scrub
+//
+// swagger:model flexcache_inline_atime_scrub
+type FlexcacheInlineAtimeScrub struct {
+
+	// Specifies whether scrubbing of inactive files based on atime is enabled for the FlexCache volume. When scrubbing is enabled, files whose atime is older than the specified duration are evicted from the cache volume. The scrubber runs once a day and looks for files whose atime has exceeded the provisioned value.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Specifies the atime duration in days after which a cached file is considered inactive. Inactive files are purged from the FlexCache volumes when the scrubber runs once a day.
+	Period *int16 `json:"period,omitempty"`
+}
+
+// Validate validates this flexcache inline atime scrub
+func (m *FlexcacheInlineAtimeScrub) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this flexcache inline atime scrub based on context it is used
+func (m *FlexcacheInlineAtimeScrub) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FlexcacheInlineAtimeScrub) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FlexcacheInlineAtimeScrub) UnmarshalBinary(b []byte) error {
+	var res FlexcacheInlineAtimeScrub
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FlexcacheInlineCifsChangeNotify Notifies that a change has been made to the FlexCache volume CIFS.
+//
+// swagger:model flexcache_inline_cifs_change_notify
+type FlexcacheInlineCifsChangeNotify struct {
+
+	// Specifies whether a CIFS change notification is enabled for the FlexCache volume.
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// Validate validates this flexcache inline cifs change notify
+func (m *FlexcacheInlineCifsChangeNotify) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this flexcache inline cifs change notify based on context it is used
+func (m *FlexcacheInlineCifsChangeNotify) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FlexcacheInlineCifsChangeNotify) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FlexcacheInlineCifsChangeNotify) UnmarshalBinary(b []byte) error {
+	var res FlexcacheInlineCifsChangeNotify
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // FlexcacheInlineGuarantee flexcache inline guarantee
 //
 // swagger:model flexcache_inline_guarantee
 type FlexcacheInlineGuarantee struct {
 
 	// The type of space guarantee of this volume in the aggregate.
-	// Enum: [volume none]
+	// Enum: ["volume","none"]
 	Type *string `json:"type,omitempty"`
 }
 
@@ -851,6 +1057,46 @@ func (m *FlexcacheInlinePrepopulate) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// FlexcacheInlineRelativeSize FlexCache Relative Size
+//
+// swagger:model flexcache_inline_relative_size
+type FlexcacheInlineRelativeSize struct {
+
+	// Specifies whether the relative sizing is enabled for the FlexCache volume. Relative sizing is introduced as a part of follow the origin feature. When relative sizing is enabled, it blocks any modifications done manually in the absolute size of the FlexCache volume. The size of the FlexCache volume is calculated and entered automatically based on the size of the origin volume.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Specifies the percent size the FlexCache volume should have relative to the total size of the origin volume. This property is only relevant to a FlexCache volume that has the relative size property enabled.
+	Percentage *int16 `json:"percentage,omitempty"`
+}
+
+// Validate validates this flexcache inline relative size
+func (m *FlexcacheInlineRelativeSize) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this flexcache inline relative size based on context it is used
+func (m *FlexcacheInlineRelativeSize) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FlexcacheInlineRelativeSize) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FlexcacheInlineRelativeSize) UnmarshalBinary(b []byte) error {
+	var res FlexcacheInlineRelativeSize
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // FlexcacheInlineSvm FlexCache SVM
 //
 // swagger:model flexcache_inline_svm
@@ -859,12 +1105,12 @@ type FlexcacheInlineSvm struct {
 	// links
 	Links *FlexcacheInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -1040,15 +1286,6 @@ type FlexcacheInlineWriteback struct {
 
 	// Indicates whether or not writeback is enabled for the FlexCache volume. Writeback is a storage method where data is first written to the FlexCache volume and then written to the origin of a FlexCache volume.
 	Enabled *bool `json:"enabled,omitempty"`
-
-	// Specifies the amount of data in 4KB blocks that the system can write per inode in a FlexCache volume before a writeback is initiated for that inode. This property is only relevant to a FlexCache Volume with the writeback property enabled.
-	PerInodeDirtyLimit *int64 `json:"per_inode_dirty_limit,omitempty"`
-
-	// Specifies the threshold value in 4KB data blocks which when hit will trigger a scrub that will initiate writeback for all dirty inodes on the FlexCache volume. This property is only relevant to a FlexCache Volume with the writeback property enabled.
-	ScrubThreshold *int64 `json:"scrub_threshold,omitempty"`
-
-	// Specifies the maximum number of 4KB data blocks the system can transfer, at one time, from the cache to the origin. This process will keep on recurring until all the dirty blocks for the inode are transferred to the origin volume. This property is only relevant to a FlexCache Volume with the writeback property enabled.
-	TransferLimit *int64 `json:"transfer_limit,omitempty"`
 }
 
 // Validate validates this flexcache inline writeback

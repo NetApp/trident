@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SvmSSHServerGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the svm Ssh server get o k response
+func (o *SvmSSHServerGetOK) Code() int {
+	return 200
+}
+
 func (o *SvmSSHServerGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/ssh/svms/{svm.uuid}][%d] svmSshServerGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ssh/svms/{svm.uuid}][%d] svmSshServerGetOK %s", 200, payload)
 }
 
 func (o *SvmSSHServerGetOK) String() string {
-	return fmt.Sprintf("[GET /security/ssh/svms/{svm.uuid}][%d] svmSshServerGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ssh/svms/{svm.uuid}][%d] svmSshServerGetOK %s", 200, payload)
 }
 
 func (o *SvmSSHServerGetOK) GetPayload() *models.SvmSSHServer {
@@ -122,11 +130,6 @@ type SvmSSHServerGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the svm ssh server get default response
-func (o *SvmSSHServerGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this svm ssh server get default response has a 2xx status code
 func (o *SvmSSHServerGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SvmSSHServerGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the svm ssh server get default response
+func (o *SvmSSHServerGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SvmSSHServerGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/ssh/svms/{svm.uuid}][%d] svm_ssh_server_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ssh/svms/{svm.uuid}][%d] svm_ssh_server_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmSSHServerGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/ssh/svms/{svm.uuid}][%d] svm_ssh_server_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ssh/svms/{svm.uuid}][%d] svm_ssh_server_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmSSHServerGetDefault) GetPayload() *models.ErrorResponse {

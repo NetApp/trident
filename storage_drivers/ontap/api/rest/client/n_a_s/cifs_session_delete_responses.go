@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *CifsSessionDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs session delete o k response
+func (o *CifsSessionDeleteOK) Code() int {
+	return 200
+}
+
 func (o *CifsSessionDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/sessions/{node.uuid}/{svm.uuid}/{identifier}/{connection_id}][%d] cifsSessionDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/cifs/sessions/{node.uuid}/{svm.uuid}/{identifier}/{connection_id}][%d] cifsSessionDeleteOK", 200)
 }
 
 func (o *CifsSessionDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/sessions/{node.uuid}/{svm.uuid}/{identifier}/{connection_id}][%d] cifsSessionDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/cifs/sessions/{node.uuid}/{svm.uuid}/{identifier}/{connection_id}][%d] cifsSessionDeleteOK", 200)
 }
 
 func (o *CifsSessionDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -114,11 +120,6 @@ type CifsSessionDeleteDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cifs session delete default response
-func (o *CifsSessionDeleteDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cifs session delete default response has a 2xx status code
 func (o *CifsSessionDeleteDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -144,12 +145,19 @@ func (o *CifsSessionDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs session delete default response
+func (o *CifsSessionDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsSessionDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/sessions/{node.uuid}/{svm.uuid}/{identifier}/{connection_id}][%d] cifs_session_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/cifs/sessions/{node.uuid}/{svm.uuid}/{identifier}/{connection_id}][%d] cifs_session_delete default %s", o._statusCode, payload)
 }
 
 func (o *CifsSessionDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/sessions/{node.uuid}/{svm.uuid}/{identifier}/{connection_id}][%d] cifs_session_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/cifs/sessions/{node.uuid}/{svm.uuid}/{identifier}/{connection_id}][%d] cifs_session_delete default %s", o._statusCode, payload)
 }
 
 func (o *CifsSessionDeleteDefault) GetPayload() *models.ErrorResponse {

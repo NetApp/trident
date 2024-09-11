@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *GcpKmsCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the gcp kms collection get o k response
+func (o *GcpKmsCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *GcpKmsCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/gcp-kms][%d] gcpKmsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/gcp-kms][%d] gcpKmsCollectionGetOK %s", 200, payload)
 }
 
 func (o *GcpKmsCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /security/gcp-kms][%d] gcpKmsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/gcp-kms][%d] gcpKmsCollectionGetOK %s", 200, payload)
 }
 
 func (o *GcpKmsCollectionGetOK) GetPayload() *models.GcpKmsResponse {
@@ -121,16 +129,12 @@ func NewGcpKmsCollectionGetDefault(code int) *GcpKmsCollectionGetDefault {
 | 65537551 | Top-level internal key protection key (KEK) unavailable on one or more nodes. |
 | 65537552 | Embedded KMIP server status not available. |
 | 65537730 | The Google Cloud Key Management Service is unreachable from one or more nodes. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type GcpKmsCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the gcp kms collection get default response
-func (o *GcpKmsCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this gcp kms collection get default response has a 2xx status code
@@ -158,12 +162,19 @@ func (o *GcpKmsCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the gcp kms collection get default response
+func (o *GcpKmsCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *GcpKmsCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/gcp-kms][%d] gcp_kms_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/gcp-kms][%d] gcp_kms_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *GcpKmsCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/gcp-kms][%d] gcp_kms_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/gcp-kms][%d] gcp_kms_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *GcpKmsCollectionGetDefault) GetPayload() *models.ErrorResponse {

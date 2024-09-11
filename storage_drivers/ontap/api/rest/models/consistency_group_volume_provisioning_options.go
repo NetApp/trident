@@ -21,7 +21,7 @@ import (
 type ConsistencyGroupVolumeProvisioningOptions struct {
 
 	// Operation to perform
-	// Enum: [create add remove]
+	// Enum: ["create","add","remove","reassign"]
 	Action *string `json:"action,omitempty"`
 
 	// Number of elements to perform the operation on.
@@ -53,7 +53,7 @@ var consistencyGroupVolumeProvisioningOptionsTypeActionPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["create","add","remove"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["create","add","remove","reassign"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -92,6 +92,16 @@ const (
 	// END DEBUGGING
 	// ConsistencyGroupVolumeProvisioningOptionsActionRemove captures enum value "remove"
 	ConsistencyGroupVolumeProvisioningOptionsActionRemove string = "remove"
+
+	// BEGIN DEBUGGING
+	// consistency_group_volume_provisioning_options
+	// ConsistencyGroupVolumeProvisioningOptions
+	// action
+	// Action
+	// reassign
+	// END DEBUGGING
+	// ConsistencyGroupVolumeProvisioningOptionsActionReassign captures enum value "reassign"
+	ConsistencyGroupVolumeProvisioningOptionsActionReassign string = "reassign"
 )
 
 // prop value enum
@@ -185,7 +195,7 @@ type ConsistencyGroupVolumeProvisioningOptionsInlineStorageService struct {
 
 	// Storage service name. If not specified, the default value is the most performant for the platform.
 	//
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 

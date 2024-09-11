@@ -32,7 +32,7 @@ type TapeDevice struct {
 	// Density.
 	// Example: low
 	// Read Only: true
-	// Enum: [low medium high extended]
+	// Enum: ["low","medium","high","extended"]
 	Density *string `json:"density,omitempty"`
 
 	// description
@@ -48,7 +48,7 @@ type TapeDevice struct {
 	// Operational state of the device.
 	// Example: read_write_enabled
 	// Read Only: true
-	// Enum: [unknown available ready_write_enabled ready_write_protected offline in_use error reserved_by_another_host normal rewinding erasing]
+	// Enum: ["unknown","available","ready_write_enabled","ready_write_protected","offline","in_use","error","reserved_by_another_host","normal","rewinding","erasing"]
 	DeviceState *string `json:"device_state,omitempty"`
 
 	// File number.
@@ -59,7 +59,7 @@ type TapeDevice struct {
 	// Device interface type.
 	// Example: sas
 	// Read Only: true
-	// Enum: [unknown fibre_channel sas pscsi]
+	// Enum: ["unknown","fibre_channel","sas","pscsi"]
 	Interface *string `json:"interface,omitempty"`
 
 	// node
@@ -74,7 +74,7 @@ type TapeDevice struct {
 	// reservation type
 	// Example: off
 	// Read Only: true
-	// Enum: [off persistent scsi]
+	// Enum: ["off","persistent","scsi"]
 	ReservationType *string `json:"reservation_type,omitempty"`
 
 	// Residual count of the last I/O operation.
@@ -94,16 +94,18 @@ type TapeDevice struct {
 	TapeDeviceInlineAliases []*TapeDeviceInlineAliasesInlineArrayItem `json:"aliases,omitempty"`
 
 	// tape device inline device names
+	// Read Only: true
 	TapeDeviceInlineDeviceNames []*TapeDeviceInlineDeviceNamesInlineArrayItem `json:"device_names,omitempty"`
 
 	// Tape cartridge format.
 	// Example: ["LTO-7 6TB","LTO-7 15TB Compressed","LTO-8 12TB","LTO-8 30TB Compressed"]
+	// Read Only: true
 	TapeDeviceInlineFormats []*string `json:"formats,omitempty"`
 
 	// Device type.
 	// Example: tape
 	// Read Only: true
-	// Enum: [unknown tape media_changer]
+	// Enum: ["unknown","tape","media_changer"]
 	Type *string `json:"type,omitempty"`
 
 	// World Wide Node Name.
@@ -785,6 +787,10 @@ func (m *TapeDevice) ContextValidate(ctx context.Context, formats strfmt.Registr
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateTapeDeviceInlineFormats(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -969,6 +975,10 @@ func (m *TapeDevice) contextValidateTapeDeviceInlineAliases(ctx context.Context,
 
 func (m *TapeDevice) contextValidateTapeDeviceInlineDeviceNames(ctx context.Context, formats strfmt.Registry) error {
 
+	if err := validate.ReadOnly(ctx, "device_names", "body", []*TapeDeviceInlineDeviceNamesInlineArrayItem(m.TapeDeviceInlineDeviceNames)); err != nil {
+		return err
+	}
+
 	for i := 0; i < len(m.TapeDeviceInlineDeviceNames); i++ {
 
 		if m.TapeDeviceInlineDeviceNames[i] != nil {
@@ -980,6 +990,15 @@ func (m *TapeDevice) contextValidateTapeDeviceInlineDeviceNames(ctx context.Cont
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *TapeDevice) contextValidateTapeDeviceInlineFormats(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "formats", "body", []*string(m.TapeDeviceInlineFormats)); err != nil {
+		return err
 	}
 
 	return nil
@@ -1049,8 +1068,13 @@ func (m *TapeDeviceInlineAlias) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this tape device inline alias based on context it is used
+// ContextValidate validate this tape device inline alias based on the context it is used
 func (m *TapeDeviceInlineAlias) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -1370,7 +1394,7 @@ type TapeDeviceInlinePosition struct {
 
 	// Position operation.
 	// Example: rewind
-	// Enum: [weof fsf bsf fsr bsr rewind erase eom]
+	// Enum: ["weof","fsf","bsf","fsr","bsr","rewind","erase","eom"]
 	Operation *string `json:"operation,omitempty"`
 }
 
@@ -1542,8 +1566,13 @@ func (m *TapeDeviceInlineStoragePort) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this tape device inline storage port based on context it is used
+// ContextValidate validate this tape device inline storage port based on the context it is used
 func (m *TapeDeviceInlineStoragePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 

@@ -6,10 +6,14 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
+
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
 
 // IPSubnetDeleteReader is a Reader for the IPSubnetDelete structure.
@@ -27,7 +31,14 @@ func (o *IPSubnetDeleteReader) ReadResponse(response runtime.ClientResponse, con
 		}
 		return result, nil
 	default:
-		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+		result := NewIPSubnetDeleteDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -69,15 +80,100 @@ func (o *IPSubnetDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ip subnet delete o k response
+func (o *IPSubnetDeleteOK) Code() int {
+	return 200
+}
+
 func (o *IPSubnetDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /network/ip/subnets/{uuid}][%d] ipSubnetDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /network/ip/subnets/{uuid}][%d] ipSubnetDeleteOK", 200)
 }
 
 func (o *IPSubnetDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /network/ip/subnets/{uuid}][%d] ipSubnetDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /network/ip/subnets/{uuid}][%d] ipSubnetDeleteOK", 200)
 }
 
 func (o *IPSubnetDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	return nil
+}
+
+// NewIPSubnetDeleteDefault creates a IPSubnetDeleteDefault with default headers values
+func NewIPSubnetDeleteDefault(code int) *IPSubnetDeleteDefault {
+	return &IPSubnetDeleteDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+	IPSubnetDeleteDefault describes a response with status code -1, with default header values.
+
+	Fill error codes below.
+
+ONTAP Error Response Codes
+| Error Code | Description |
+| ---------- | ----------- |
+| 1377663 | The specified IP address range of subnet in IPspace contains an address already in use by a LIF. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
+*/
+type IPSubnetDeleteDefault struct {
+	_statusCode int
+
+	Payload *models.ErrorResponse
+}
+
+// IsSuccess returns true when this ip subnet delete default response has a 2xx status code
+func (o *IPSubnetDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ip subnet delete default response has a 3xx status code
+func (o *IPSubnetDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ip subnet delete default response has a 4xx status code
+func (o *IPSubnetDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ip subnet delete default response has a 5xx status code
+func (o *IPSubnetDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ip subnet delete default response a status code equal to that given
+func (o *IPSubnetDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the ip subnet delete default response
+func (o *IPSubnetDeleteDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *IPSubnetDeleteDefault) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/ip/subnets/{uuid}][%d] ip_subnet_delete default %s", o._statusCode, payload)
+}
+
+func (o *IPSubnetDeleteDefault) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/ip/subnets/{uuid}][%d] ip_subnet_delete default %s", o._statusCode, payload)
+}
+
+func (o *IPSubnetDeleteDefault) GetPayload() *models.ErrorResponse {
+	return o.Payload
+}
+
+func (o *IPSubnetDeleteDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ErrorResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }

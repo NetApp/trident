@@ -62,7 +62,7 @@ type Application struct {
 
 	// Protection granularity determines the scope of Snapshot copy operations for the application. Possible values are "application" and "component". If the value is "application", Snapshot copy operations are performed on the entire application. If the value is "component", Snapshot copy operations are performed separately on the application components.
 	// Read Only: true
-	// Enum: [application component]
+	// Enum: ["application","component"]
 	ProtectionGranularity *string `json:"protection_granularity,omitempty"`
 
 	// rpo
@@ -85,7 +85,7 @@ type Application struct {
 
 	// The state of the application. For full functionality, applications must be in the online state. Other states indicate that the application is in a transient state and not all operations are supported.
 	// Read Only: true
-	// Enum: [creating deleting modifying online restoring]
+	// Enum: ["creating","deleting","modifying","online","restoring"]
 	State *string `json:"state,omitempty"`
 
 	// statistics
@@ -1750,7 +1750,7 @@ type ApplicationRpoComponentsItems0RpoLocal struct {
 
 	// The local RPO of the component. This indicates how often component Snapshot copies are automatically created.
 	// Read Only: true
-	// Enum: [6_hourly 15_minutely hourly none]
+	// Enum: ["6_hourly","15_minutely","hourly","none"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -1909,7 +1909,7 @@ type ApplicationRpoComponentsItems0RpoRemote struct {
 
 	// The remote RPO of the component. A remote RPO of zero indicates that the component is synchronously replicated to another cluster.
 	// Read Only: true
-	// Enum: [6_hourly 15_minutely hourly none zero]
+	// Enum: ["6_hourly","15_minutely","hourly","none","zero"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -2078,7 +2078,7 @@ type ApplicationInlineRpoInlineLocal struct {
 
 	// The local RPO of the application. This indicates how often application Snapshot copies are automatically created.
 	// Read Only: true
-	// Enum: [6_hourly 15_minutely hourly none]
+	// Enum: ["6_hourly","15_minutely","hourly","none"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -2237,7 +2237,7 @@ type ApplicationInlineRpoInlineRemote struct {
 
 	// The remote RPO of the application. A remote RPO of zero indicates that the application is synchronously replicated to another cluster.
 	// Read Only: true
-	// Enum: [6_hourly 15_minutely hourly none zero]
+	// Enum: ["6_hourly","15_minutely","hourly","none","zero"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -3935,7 +3935,7 @@ type ApplicationInlineTemplate struct {
 
 	// The protocol access of the template that was used to provision this application.
 	// Read Only: true
-	// Enum: [nas nvme s3 san]
+	// Enum: ["nas","nvme","s3","san"]
 	Protocol *string `json:"protocol,omitempty"`
 
 	// The version of the template that was used to provision this application. The template version changes only if the layout of the application changes over time. For example, redo logs in Oracle RAC templates were updated and provisioned differently in DATA ONTAP 9.3.0 compared to prior releases, so the version number was increased. If layouts change in the future, the changes will be documented along with the corresponding version numbers.

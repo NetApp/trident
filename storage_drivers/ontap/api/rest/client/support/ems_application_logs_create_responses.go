@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *EmsApplicationLogsCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the ems application logs create created response
+func (o *EmsApplicationLogsCreateCreated) Code() int {
+	return 201
+}
+
 func (o *EmsApplicationLogsCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /support/ems/application-logs][%d] emsApplicationLogsCreateCreated ", 201)
+	return fmt.Sprintf("[POST /support/ems/application-logs][%d] emsApplicationLogsCreateCreated", 201)
 }
 
 func (o *EmsApplicationLogsCreateCreated) String() string {
-	return fmt.Sprintf("[POST /support/ems/application-logs][%d] emsApplicationLogsCreateCreated ", 201)
+	return fmt.Sprintf("[POST /support/ems/application-logs][%d] emsApplicationLogsCreateCreated", 201)
 }
 
 func (o *EmsApplicationLogsCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -117,18 +123,13 @@ func NewEmsApplicationLogsCreateDefault(code int) *EmsApplicationLogsCreateDefau
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 983146 | Invalid value specified for the field "severity". |
 | 983173 | Application log event generation failed. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type EmsApplicationLogsCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ems application logs create default response
-func (o *EmsApplicationLogsCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ems application logs create default response has a 2xx status code
@@ -156,12 +157,19 @@ func (o *EmsApplicationLogsCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ems application logs create default response
+func (o *EmsApplicationLogsCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *EmsApplicationLogsCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /support/ems/application-logs][%d] ems_application_logs_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/ems/application-logs][%d] ems_application_logs_create default %s", o._statusCode, payload)
 }
 
 func (o *EmsApplicationLogsCreateDefault) String() string {
-	return fmt.Sprintf("[POST /support/ems/application-logs][%d] ems_application_logs_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/ems/application-logs][%d] ems_application_logs_create default %s", o._statusCode, payload)
 }
 
 func (o *EmsApplicationLogsCreateDefault) GetPayload() *models.ErrorResponse {

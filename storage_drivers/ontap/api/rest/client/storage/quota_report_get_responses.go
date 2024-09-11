@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *QuotaReportGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the quota report get o k response
+func (o *QuotaReportGetOK) Code() int {
+	return 200
+}
+
 func (o *QuotaReportGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/quota/reports/{volume.uuid}/{index}][%d] quotaReportGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/quota/reports/{volume.uuid}/{index}][%d] quotaReportGetOK %s", 200, payload)
 }
 
 func (o *QuotaReportGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/quota/reports/{volume.uuid}/{index}][%d] quotaReportGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/quota/reports/{volume.uuid}/{index}][%d] quotaReportGetOK %s", 200, payload)
 }
 
 func (o *QuotaReportGetOK) GetPayload() *models.QuotaReport {
@@ -119,16 +127,12 @@ func NewQuotaReportGetDefault(code int) *QuotaReportGetDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 918235 | A volume with UUID was not found. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type QuotaReportGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the quota report get default response
-func (o *QuotaReportGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this quota report get default response has a 2xx status code
@@ -156,12 +160,19 @@ func (o *QuotaReportGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the quota report get default response
+func (o *QuotaReportGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *QuotaReportGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/quota/reports/{volume.uuid}/{index}][%d] quota_report_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/quota/reports/{volume.uuid}/{index}][%d] quota_report_get default %s", o._statusCode, payload)
 }
 
 func (o *QuotaReportGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/quota/reports/{volume.uuid}/{index}][%d] quota_report_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/quota/reports/{volume.uuid}/{index}][%d] quota_report_get default %s", o._statusCode, payload)
 }
 
 func (o *QuotaReportGetDefault) GetPayload() *models.ErrorResponse {

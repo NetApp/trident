@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *PublickeyModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the publickey modify o k response
+func (o *PublickeyModifyOK) Code() int {
+	return 200
+}
+
 func (o *PublickeyModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] publickeyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] publickeyModifyOK", 200)
 }
 
 func (o *PublickeyModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] publickeyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] publickeyModifyOK", 200)
 }
 
 func (o *PublickeyModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -100,19 +106,19 @@ func NewPublickeyModifyDefault(code int) *PublickeyModifyDefault {
 }
 
 /*
-PublickeyModifyDefault describes a response with status code -1, with default header values.
+	PublickeyModifyDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 5832707 | Failed to generate fingerprint for the public key. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type PublickeyModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the publickey modify default response
-func (o *PublickeyModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this publickey modify default response has a 2xx status code
@@ -140,12 +146,19 @@ func (o *PublickeyModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the publickey modify default response
+func (o *PublickeyModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *PublickeyModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] publickey_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] publickey_modify default %s", o._statusCode, payload)
 }
 
 func (o *PublickeyModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] publickey_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] publickey_modify default %s", o._statusCode, payload)
 }
 
 func (o *PublickeyModifyDefault) GetPayload() *models.ErrorResponse {

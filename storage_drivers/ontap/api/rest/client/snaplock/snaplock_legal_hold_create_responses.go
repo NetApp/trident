@@ -6,6 +6,7 @@ package snaplock
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *SnaplockLegalHoldCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the snaplock legal hold create created response
+func (o *SnaplockLegalHoldCreateCreated) Code() int {
+	return 201
+}
+
 func (o *SnaplockLegalHoldCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /storage/snaplock/litigations/{litigation.id}/operations][%d] snaplockLegalHoldCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/snaplock/litigations/{litigation.id}/operations][%d] snaplockLegalHoldCreateCreated %s", 201, payload)
 }
 
 func (o *SnaplockLegalHoldCreateCreated) String() string {
-	return fmt.Sprintf("[POST /storage/snaplock/litigations/{litigation.id}/operations][%d] snaplockLegalHoldCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/snaplock/litigations/{litigation.id}/operations][%d] snaplockLegalHoldCreateCreated %s", 201, payload)
 }
 
 func (o *SnaplockLegalHoldCreateCreated) GetPayload() *models.SnaplockLegalHoldOperation {
@@ -130,18 +138,14 @@ func NewSnaplockLegalHoldCreateDefault(code int) *SnaplockLegalHoldCreateDefault
 
 | Error code  |  Description |
 |-------------|--------------|
-| 14090346    | Internal Error. Wait a few minutes, then try the command again  |
+| 13763280    | Only a user with security login role \"vsadmin-snaplock\" is allowed to perform this operation.  |
 | 14090343    | Invalid Field  |
+| 14090346    | Internal Error. Wait a few minutes, then try the command again  |
 */
 type SnaplockLegalHoldCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snaplock legal hold create default response
-func (o *SnaplockLegalHoldCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snaplock legal hold create default response has a 2xx status code
@@ -169,12 +173,19 @@ func (o *SnaplockLegalHoldCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snaplock legal hold create default response
+func (o *SnaplockLegalHoldCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnaplockLegalHoldCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/snaplock/litigations/{litigation.id}/operations][%d] snaplock_legal_hold_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/snaplock/litigations/{litigation.id}/operations][%d] snaplock_legal_hold_create default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockLegalHoldCreateDefault) String() string {
-	return fmt.Sprintf("[POST /storage/snaplock/litigations/{litigation.id}/operations][%d] snaplock_legal_hold_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/snaplock/litigations/{litigation.id}/operations][%d] snaplock_legal_hold_create default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockLegalHoldCreateDefault) GetPayload() *models.ErrorResponse {

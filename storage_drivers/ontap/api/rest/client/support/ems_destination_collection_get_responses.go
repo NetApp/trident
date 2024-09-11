@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *EmsDestinationCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ems destination collection get o k response
+func (o *EmsDestinationCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *EmsDestinationCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /support/ems/destinations][%d] emsDestinationCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems/destinations][%d] emsDestinationCollectionGetOK %s", 200, payload)
 }
 
 func (o *EmsDestinationCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /support/ems/destinations][%d] emsDestinationCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems/destinations][%d] emsDestinationCollectionGetOK %s", 200, payload)
 }
 
 func (o *EmsDestinationCollectionGetOK) GetPayload() *models.EmsDestinationResponse {
@@ -122,11 +130,6 @@ type EmsDestinationCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the ems destination collection get default response
-func (o *EmsDestinationCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this ems destination collection get default response has a 2xx status code
 func (o *EmsDestinationCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *EmsDestinationCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ems destination collection get default response
+func (o *EmsDestinationCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *EmsDestinationCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /support/ems/destinations][%d] ems_destination_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems/destinations][%d] ems_destination_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *EmsDestinationCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /support/ems/destinations][%d] ems_destination_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems/destinations][%d] ems_destination_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *EmsDestinationCollectionGetDefault) GetPayload() *models.ErrorResponse {

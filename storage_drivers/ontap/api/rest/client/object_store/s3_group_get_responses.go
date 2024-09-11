@@ -6,6 +6,7 @@ package object_store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *S3GroupGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the s3 group get o k response
+func (o *S3GroupGetOK) Code() int {
+	return 200
+}
+
 func (o *S3GroupGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3GroupGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3GroupGetOK %s", 200, payload)
 }
 
 func (o *S3GroupGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3GroupGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3GroupGetOK %s", 200, payload)
 }
 
 func (o *S3GroupGetOK) GetPayload() *models.S3Group {
@@ -122,11 +130,6 @@ type S3GroupGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the s3 group get default response
-func (o *S3GroupGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this s3 group get default response has a 2xx status code
 func (o *S3GroupGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *S3GroupGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the s3 group get default response
+func (o *S3GroupGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *S3GroupGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3_group_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3_group_get default %s", o._statusCode, payload)
 }
 
 func (o *S3GroupGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3_group_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3_group_get default %s", o._statusCode, payload)
 }
 
 func (o *S3GroupGetDefault) GetPayload() *models.ErrorResponse {

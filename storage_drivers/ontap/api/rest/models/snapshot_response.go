@@ -29,7 +29,7 @@ type SnapshotResponse struct {
 	// Example: 1
 	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// Space reclaimed when the Snapshot copy is deleted, in bytes.
+	// Space reclaimed when the snapshot is deleted, in bytes.
 	ReclaimableSpace *int64 `json:"reclaimable_space,omitempty"`
 
 	// snapshot response inline records

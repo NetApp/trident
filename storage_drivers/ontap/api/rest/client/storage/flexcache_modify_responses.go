@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type FlexcacheModifyReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *FlexcacheModifyReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewFlexcacheModifyOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewFlexcacheModifyAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *FlexcacheModifyReader) ReadResponse(response runtime.ClientResponse, co
 	}
 }
 
+// NewFlexcacheModifyOK creates a FlexcacheModifyOK with default headers values
+func NewFlexcacheModifyOK() *FlexcacheModifyOK {
+	return &FlexcacheModifyOK{}
+}
+
+/*
+FlexcacheModifyOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type FlexcacheModifyOK struct {
+	Payload *models.FlexcacheJobLinkResponse
+}
+
+// IsSuccess returns true when this flexcache modify o k response has a 2xx status code
+func (o *FlexcacheModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this flexcache modify o k response has a 3xx status code
+func (o *FlexcacheModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this flexcache modify o k response has a 4xx status code
+func (o *FlexcacheModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this flexcache modify o k response has a 5xx status code
+func (o *FlexcacheModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this flexcache modify o k response a status code equal to that given
+func (o *FlexcacheModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the flexcache modify o k response
+func (o *FlexcacheModifyOK) Code() int {
+	return 200
+}
+
+func (o *FlexcacheModifyOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/flexcache/flexcaches/{uuid}][%d] flexcacheModifyOK %s", 200, payload)
+}
+
+func (o *FlexcacheModifyOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/flexcache/flexcaches/{uuid}][%d] flexcacheModifyOK %s", 200, payload)
+}
+
+func (o *FlexcacheModifyOK) GetPayload() *models.FlexcacheJobLinkResponse {
+	return o.Payload
+}
+
+func (o *FlexcacheModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.FlexcacheJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewFlexcacheModifyAccepted creates a FlexcacheModifyAccepted with default headers values
 func NewFlexcacheModifyAccepted() *FlexcacheModifyAccepted {
 	return &FlexcacheModifyAccepted{}
@@ -52,7 +129,7 @@ FlexcacheModifyAccepted describes a response with status code 202, with default 
 Accepted
 */
 type FlexcacheModifyAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.FlexcacheJobLinkResponse
 }
 
 // IsSuccess returns true when this flexcache modify accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *FlexcacheModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the flexcache modify accepted response
+func (o *FlexcacheModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *FlexcacheModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /storage/flexcache/flexcaches/{uuid}][%d] flexcacheModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/flexcache/flexcaches/{uuid}][%d] flexcacheModifyAccepted %s", 202, payload)
 }
 
 func (o *FlexcacheModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /storage/flexcache/flexcaches/{uuid}][%d] flexcacheModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/flexcache/flexcaches/{uuid}][%d] flexcacheModifyAccepted %s", 202, payload)
 }
 
-func (o *FlexcacheModifyAccepted) GetPayload() *models.JobLinkResponse {
+func (o *FlexcacheModifyAccepted) GetPayload() *models.FlexcacheJobLinkResponse {
 	return o.Payload
 }
 
 func (o *FlexcacheModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.FlexcacheJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -118,6 +202,7 @@ func NewFlexcacheModifyDefault(code int) *FlexcacheModifyDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 66846921   | Failed to prepopulate. Empty path list |
 | 66846922   | FlexCache volume does not exist in the SVM |
 | 66846923   | Failed to prepopulate FlexCache volume because the origin volume is not reachable |
 | 66846924   | FlexCache volume is offline |
@@ -137,16 +222,20 @@ func NewFlexcacheModifyDefault(code int) *FlexcacheModifyDefault {
 | 66846946   | The junction-path of origin of FlexCache volume is not active |
 | 66846947   | FlexCache prepopulate job for FlexCache volume already exists |
 | 66846948   | FlexCache prepopulate job for FlexCache volume could not be queued because the node is offline |
+| 66846958   | Exclude path(s) does not exist in origin volume |
+| 66846988   | Cannot enable writeback for FlexCache volume because the origin is a data protection volume. Writeback is only supported on FlexCache volumes with origins that are read-write volumes |
+| 66846995   | Using FlexCache relative-size requires an effective cluster version of 9.13.1 or later |
+| 66846997   | Failed to modify the relative-size-percentage property of the FlexCache volume because the used size of the FlexCache Volume is greater than the newly calculated size based on the value of the relative-size-percentage property |
+| 66846997   | Failed to modify the relative-size-percentage property of FlexCache volume because the relative-size-percentage property is not valid |
+| 66846998   | Failed to modify the relative-size-percentage property of FlexCache volume because the is-relative-size-enabled property is false |
+| 66847010   | Failed to modify the relative-size-percentage property of FlexCache volume because autosize is enabled on the FlexCache volume |
+| 66847026   | Failed to enable the atime-scrub-enabled property for the FlexCache volume because the atime-update-property is false |
+| 66847027   | Failed to modify atime-scrub-period property of the FlexCache volume because the atime-scrub-enabled property is false |
 */
 type FlexcacheModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the flexcache modify default response
-func (o *FlexcacheModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this flexcache modify default response has a 2xx status code
@@ -174,12 +263,19 @@ func (o *FlexcacheModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the flexcache modify default response
+func (o *FlexcacheModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FlexcacheModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/flexcache/flexcaches/{uuid}][%d] flexcache_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/flexcache/flexcaches/{uuid}][%d] flexcache_modify default %s", o._statusCode, payload)
 }
 
 func (o *FlexcacheModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /storage/flexcache/flexcaches/{uuid}][%d] flexcache_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/flexcache/flexcaches/{uuid}][%d] flexcache_modify default %s", o._statusCode, payload)
 }
 
 func (o *FlexcacheModifyDefault) GetPayload() *models.ErrorResponse {

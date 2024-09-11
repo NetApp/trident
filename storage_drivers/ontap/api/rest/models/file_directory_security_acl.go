@@ -20,7 +20,7 @@ import (
 // swagger:model file_directory_security_acl
 type FileDirectorySecurityACL struct {
 
-	// Specifies whether the ACL is for DACL or SACL.
+	// Specifies whether the ACL is for DACL or SACL. It is a required field.
 	// The available values are:
 	// * access_allow                     - DACL for allow access
 	// * access_deny                      - DACL for deny access
@@ -28,17 +28,18 @@ type FileDirectorySecurityACL struct {
 	// * audit_failure                    - SACL for failure access
 	//
 	// Example: access_allow
-	// Enum: [access_allow access_deny audit_failure audit_success]
+	// Enum: ["access_allow","access_deny","audit_failure","audit_success"]
 	Access *string `json:"access,omitempty"`
 
 	// Access Control Level specifies the access control of the task to be applied. Valid values
 	// are "file-directory" or "Storage-Level Access Guard (SLAG)". SLAG is used to apply the
 	// specified security descriptors with the task for the volume or qtree. Otherwise, the
 	// security descriptors are applied on files and directories at the specified path. The
-	// value slag is not supported on FlexGroups volumes. The default value is "file-directory".
+	// value SLAG is not supported on FlexGroups volumes. The default value is "file-directory"
+	// ('-' and '_' are interchangeable).
 	//
 	// Example: file_directory
-	// Enum: [file_directory slag]
+	// Enum: ["file_directory","slag"]
 	AccessControl *string `json:"access_control,omitempty"`
 
 	// advanced rights
@@ -56,20 +57,15 @@ type FileDirectorySecurityACL struct {
 	// This setting determines how child files/folders contained within a parent
 	// folder inherit access control and audit information from the parent folder.
 	// The available values are:
-	// * propogate    - propagate inheritable permissions to all subfolders and files
+	// * propagate    - propagate inheritable permissions to all subfolders and files
+	// * ignore       - ignore inheritable permissions
 	// * replace      - replace existing permissions on all subfolders and files with inheritable permissions
 	//
-	// Enum: [propagate replace]
+	// Enum: ["propagate","ignore","replace"]
 	PropagationMode *string `json:"propagation_mode,omitempty"`
 
-	// Specifies the access right controlled by the ACE for the account specified.
-	// The "rights" parameter is mutually exclusive with the "advanced_rights"
-	// parameter. If you specify the "rights" parameter, you can specify one
-	// of the following "rights" values:
-	//
-	// Example: full_control
-	// Enum: [no_access full_control modify read_and_execute read write]
-	Rights *string `json:"rights,omitempty"`
+	// rights
+	Rights *Rights `json:"rights,omitempty"`
 
 	// Specifies the account to which the ACE applies.
 	// You can specify either name or SID.
@@ -282,7 +278,7 @@ var fileDirectorySecurityAclTypePropagationModePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["propagate","replace"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["propagate","ignore","replace"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -301,6 +297,16 @@ const (
 	// END DEBUGGING
 	// FileDirectorySecurityACLPropagationModePropagate captures enum value "propagate"
 	FileDirectorySecurityACLPropagationModePropagate string = "propagate"
+
+	// BEGIN DEBUGGING
+	// file_directory_security_acl
+	// FileDirectorySecurityACL
+	// propagation_mode
+	// PropagationMode
+	// ignore
+	// END DEBUGGING
+	// FileDirectorySecurityACLPropagationModeIgnore captures enum value "ignore"
+	FileDirectorySecurityACLPropagationModeIgnore string = "ignore"
 
 	// BEGIN DEBUGGING
 	// file_directory_security_acl
@@ -334,97 +340,18 @@ func (m *FileDirectorySecurityACL) validatePropagationMode(formats strfmt.Regist
 	return nil
 }
 
-var fileDirectorySecurityAclTypeRightsPropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["no_access","full_control","modify","read_and_execute","read","write"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		fileDirectorySecurityAclTypeRightsPropEnum = append(fileDirectorySecurityAclTypeRightsPropEnum, v)
-	}
-}
-
-const (
-
-	// BEGIN DEBUGGING
-	// file_directory_security_acl
-	// FileDirectorySecurityACL
-	// rights
-	// Rights
-	// no_access
-	// END DEBUGGING
-	// FileDirectorySecurityACLRightsNoAccess captures enum value "no_access"
-	FileDirectorySecurityACLRightsNoAccess string = "no_access"
-
-	// BEGIN DEBUGGING
-	// file_directory_security_acl
-	// FileDirectorySecurityACL
-	// rights
-	// Rights
-	// full_control
-	// END DEBUGGING
-	// FileDirectorySecurityACLRightsFullControl captures enum value "full_control"
-	FileDirectorySecurityACLRightsFullControl string = "full_control"
-
-	// BEGIN DEBUGGING
-	// file_directory_security_acl
-	// FileDirectorySecurityACL
-	// rights
-	// Rights
-	// modify
-	// END DEBUGGING
-	// FileDirectorySecurityACLRightsModify captures enum value "modify"
-	FileDirectorySecurityACLRightsModify string = "modify"
-
-	// BEGIN DEBUGGING
-	// file_directory_security_acl
-	// FileDirectorySecurityACL
-	// rights
-	// Rights
-	// read_and_execute
-	// END DEBUGGING
-	// FileDirectorySecurityACLRightsReadAndExecute captures enum value "read_and_execute"
-	FileDirectorySecurityACLRightsReadAndExecute string = "read_and_execute"
-
-	// BEGIN DEBUGGING
-	// file_directory_security_acl
-	// FileDirectorySecurityACL
-	// rights
-	// Rights
-	// read
-	// END DEBUGGING
-	// FileDirectorySecurityACLRightsRead captures enum value "read"
-	FileDirectorySecurityACLRightsRead string = "read"
-
-	// BEGIN DEBUGGING
-	// file_directory_security_acl
-	// FileDirectorySecurityACL
-	// rights
-	// Rights
-	// write
-	// END DEBUGGING
-	// FileDirectorySecurityACLRightsWrite captures enum value "write"
-	FileDirectorySecurityACLRightsWrite string = "write"
-)
-
-// prop value enum
-func (m *FileDirectorySecurityACL) validateRightsEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, fileDirectorySecurityAclTypeRightsPropEnum, true); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (m *FileDirectorySecurityACL) validateRights(formats strfmt.Registry) error {
 	if swag.IsZero(m.Rights) { // not required
 		return nil
 	}
 
-	// value enum
-	if err := m.validateRightsEnum("rights", "body", *m.Rights); err != nil {
-		return err
+	if m.Rights != nil {
+		if err := m.Rights.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("rights")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -439,6 +366,10 @@ func (m *FileDirectorySecurityACL) ContextValidate(ctx context.Context, formats 
 	}
 
 	if err := m.contextValidateApplyTo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRights(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -468,6 +399,20 @@ func (m *FileDirectorySecurityACL) contextValidateApplyTo(ctx context.Context, f
 		if err := m.ApplyTo.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("apply_to")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *FileDirectorySecurityACL) contextValidateRights(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Rights != nil {
+		if err := m.Rights.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("rights")
 			}
 			return err
 		}

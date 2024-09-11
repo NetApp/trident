@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *MultiAdminVerifyRequestModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the multi admin verify request modify o k response
+func (o *MultiAdminVerifyRequestModifyOK) Code() int {
+	return 200
+}
+
 func (o *MultiAdminVerifyRequestModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/multi-admin-verify/requests/{index}][%d] multiAdminVerifyRequestModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/requests/{index}][%d] multiAdminVerifyRequestModifyOK", 200)
 }
 
 func (o *MultiAdminVerifyRequestModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/multi-admin-verify/requests/{index}][%d] multiAdminVerifyRequestModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/requests/{index}][%d] multiAdminVerifyRequestModifyOK", 200)
 }
 
 func (o *MultiAdminVerifyRequestModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,17 +113,14 @@ func NewMultiAdminVerifyRequestModifyDefault(code int) *MultiAdminVerifyRequestM
 | Error Code | Description |
 | ---------- | ----------- |
 | 262309 | The feature must be enabled first. |
-| 262329 | Invalid state for PATCH. |
+| 262329 | Invalid state. State can be modified to approved, vetoed, or executed. |
+| 262337 | User not eligible to approve the request. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type MultiAdminVerifyRequestModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the multi admin verify request modify default response
-func (o *MultiAdminVerifyRequestModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this multi admin verify request modify default response has a 2xx status code
@@ -145,12 +148,19 @@ func (o *MultiAdminVerifyRequestModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the multi admin verify request modify default response
+func (o *MultiAdminVerifyRequestModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MultiAdminVerifyRequestModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/multi-admin-verify/requests/{index}][%d] multi_admin_verify_request_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/requests/{index}][%d] multi_admin_verify_request_modify default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyRequestModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/multi-admin-verify/requests/{index}][%d] multi_admin_verify_request_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/requests/{index}][%d] multi_admin_verify_request_modify default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyRequestModifyDefault) GetPayload() *models.ErrorResponse {

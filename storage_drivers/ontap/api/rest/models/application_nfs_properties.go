@@ -246,7 +246,7 @@ type ApplicationNfsPropertiesInlineBackingStorage struct {
 
 	// Backing storage type
 	// Read Only: true
-	// Enum: [volume]
+	// Enum: ["volume"]
 	Type *string `json:"type,omitempty"`
 
 	// Backing storage UUID

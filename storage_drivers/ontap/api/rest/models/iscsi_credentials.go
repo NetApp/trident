@@ -26,7 +26,7 @@ type IscsiCredentials struct {
 
 	// The iSCSI authentication type. Required in POST; optional in PATCH.
 	//
-	// Enum: [chap none deny]
+	// Enum: ["chap","none","deny"]
 	AuthenticationType *string `json:"authentication_type,omitempty"`
 
 	// chap
@@ -443,6 +443,7 @@ type IscsiCredentialsInlineChapInlineInbound struct {
 
 	// The inbound CHAP password. Write-only; optional in POST and PATCH.
 	//
+	// Max Length: 512
 	// Min Length: 1
 	Password *string `json:"password,omitempty"`
 
@@ -477,6 +478,10 @@ func (m *IscsiCredentialsInlineChapInlineInbound) validatePassword(formats strfm
 	}
 
 	if err := validate.MinLength("chap"+"."+"inbound"+"."+"password", "body", *m.Password, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("chap"+"."+"inbound"+"."+"password", "body", *m.Password, 512); err != nil {
 		return err
 	}
 
@@ -530,6 +535,7 @@ type IscsiCredentialsInlineChapInlineOutbound struct {
 
 	// The outbound CHAP password. Write-only; optional in POST and PATCH.
 	//
+	// Max Length: 512
 	// Min Length: 1
 	Password *string `json:"password,omitempty"`
 
@@ -565,6 +571,10 @@ func (m *IscsiCredentialsInlineChapInlineOutbound) validatePassword(formats strf
 	}
 
 	if err := validate.MinLength("chap"+"."+"outbound"+"."+"password", "body", *m.Password, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("chap"+"."+"outbound"+"."+"password", "body", *m.Password, 512); err != nil {
 		return err
 	}
 
@@ -846,7 +856,7 @@ func (m *IscsiCredentialsInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiCredentialsInlineSvm iscsi credentials inline svm
+// IscsiCredentialsInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model iscsi_credentials_inline_svm
 type IscsiCredentialsInlineSvm struct {
@@ -854,12 +864,12 @@ type IscsiCredentialsInlineSvm struct {
 	// links
 	Links *IscsiCredentialsInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

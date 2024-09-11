@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *LunAttributeModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the lun attribute modify o k response
+func (o *LunAttributeModifyOK) Code() int {
+	return 200
+}
+
 func (o *LunAttributeModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/luns/{lun.uuid}/attributes/{name}][%d] lunAttributeModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/luns/{lun.uuid}/attributes/{name}][%d] lunAttributeModifyOK", 200)
 }
 
 func (o *LunAttributeModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /storage/luns/{lun.uuid}/attributes/{name}][%d] lunAttributeModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/luns/{lun.uuid}/attributes/{name}][%d] lunAttributeModifyOK", 200)
 }
 
 func (o *LunAttributeModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,16 +115,13 @@ func NewLunAttributeModifyDefault(code int) *LunAttributeModifyDefault {
 | 5374875 | The specified LUN was not found. |
 | 5374929 | The combined sizes of an attribute name and value are too large. |
 | 5374931 | The specified attribute was not found. |
+| 5375060 | The move start operation failed. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type LunAttributeModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the lun attribute modify default response
-func (o *LunAttributeModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this lun attribute modify default response has a 2xx status code
@@ -146,12 +149,19 @@ func (o *LunAttributeModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the lun attribute modify default response
+func (o *LunAttributeModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LunAttributeModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/luns/{lun.uuid}/attributes/{name}][%d] lun_attribute_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/luns/{lun.uuid}/attributes/{name}][%d] lun_attribute_modify default %s", o._statusCode, payload)
 }
 
 func (o *LunAttributeModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /storage/luns/{lun.uuid}/attributes/{name}][%d] lun_attribute_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/luns/{lun.uuid}/attributes/{name}][%d] lun_attribute_modify default %s", o._statusCode, payload)
 }
 
 func (o *LunAttributeModifyDefault) GetPayload() *models.ErrorResponse {

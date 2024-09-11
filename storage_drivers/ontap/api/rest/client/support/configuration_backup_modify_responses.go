@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ConfigurationBackupModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the configuration backup modify o k response
+func (o *ConfigurationBackupModifyOK) Code() int {
+	return 200
+}
+
 func (o *ConfigurationBackupModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /support/configuration-backup][%d] configurationBackupModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /support/configuration-backup][%d] configurationBackupModifyOK", 200)
 }
 
 func (o *ConfigurationBackupModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /support/configuration-backup][%d] configurationBackupModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /support/configuration-backup][%d] configurationBackupModifyOK", 200)
 }
 
 func (o *ConfigurationBackupModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -117,11 +123,6 @@ type ConfigurationBackupModifyDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the configuration backup modify default response
-func (o *ConfigurationBackupModifyDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this configuration backup modify default response has a 2xx status code
 func (o *ConfigurationBackupModifyDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -147,12 +148,19 @@ func (o *ConfigurationBackupModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the configuration backup modify default response
+func (o *ConfigurationBackupModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ConfigurationBackupModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /support/configuration-backup][%d] configuration_backup_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/configuration-backup][%d] configuration_backup_modify default %s", o._statusCode, payload)
 }
 
 func (o *ConfigurationBackupModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /support/configuration-backup][%d] configuration_backup_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/configuration-backup][%d] configuration_backup_modify default %s", o._statusCode, payload)
 }
 
 func (o *ConfigurationBackupModifyDefault) GetPayload() *models.ErrorResponse {

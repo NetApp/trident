@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NetworkIPRouteGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the network Ip route get o k response
+func (o *NetworkIPRouteGetOK) Code() int {
+	return 200
+}
+
 func (o *NetworkIPRouteGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/ip/routes/{uuid}][%d] networkIpRouteGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/routes/{uuid}][%d] networkIpRouteGetOK %s", 200, payload)
 }
 
 func (o *NetworkIPRouteGetOK) String() string {
-	return fmt.Sprintf("[GET /network/ip/routes/{uuid}][%d] networkIpRouteGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/routes/{uuid}][%d] networkIpRouteGetOK %s", 200, payload)
 }
 
 func (o *NetworkIPRouteGetOK) GetPayload() *models.NetworkRoute {
@@ -122,11 +130,6 @@ type NetworkIPRouteGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the network ip route get default response
-func (o *NetworkIPRouteGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this network ip route get default response has a 2xx status code
 func (o *NetworkIPRouteGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NetworkIPRouteGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the network ip route get default response
+func (o *NetworkIPRouteGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetworkIPRouteGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/ip/routes/{uuid}][%d] network_ip_route_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/routes/{uuid}][%d] network_ip_route_get default %s", o._statusCode, payload)
 }
 
 func (o *NetworkIPRouteGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/ip/routes/{uuid}][%d] network_ip_route_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/routes/{uuid}][%d] network_ip_route_get default %s", o._statusCode, payload)
 }
 
 func (o *NetworkIPRouteGetDefault) GetPayload() *models.ErrorResponse {

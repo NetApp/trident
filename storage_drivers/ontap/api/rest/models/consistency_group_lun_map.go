@@ -118,7 +118,11 @@ type ConsistencyGroupLunMapInlineIgroup struct {
 	// Min Length: 0
 	Comment *string `json:"comment,omitempty"`
 
-	// Separate igroup definitions to include in this igroup.
+	// The existing initiator groups that are members of the group. Optional in POST.<br/>
+	// This property is mutually exclusive with the _initiators_ property during POST.<br/>
+	// This array contains only the direct children of the initiator group. If the member initiator groups have further nested initiator groups, those are reported in the `igroups` property of the child initiator group.<br/>
+	// Zero or more nested initiator groups can be supplied when the initiator group is created. The initiator group will act as if it contains the aggregation of all initiators in any nested initiator groups.<br/>
+	// After creation, nested initiator groups can be added or removed from the initiator group using the `/protocols/san/igroups/{igroup.uuid}/igroups` endpoint. See [`POST /protocols/san/igroups/{igroup.uuid}/igroups`](#/SAN/igroup_nested_create) and [`DELETE /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}`](#/SAN/igroup_nested_delete) for more details.
 	//
 	Igroups []*ConsistencyGroupLunMapIgroupIgroupsItems0 `json:"igroups,omitempty"`
 
@@ -135,13 +139,13 @@ type ConsistencyGroupLunMapInlineIgroup struct {
 
 	// The host operating system of the initiator group. All initiators in the group should be hosts of the same operating system. Required in POST; optional in PATCH.
 	//
-	// Enum: [aix hpux hyper_v linux netware openvms solaris vmware windows xen]
+	// Enum: ["aix","hpux","hyper_v","linux","netware","openvms","solaris","vmware","windows","xen"]
 	OsType *string `json:"os_type,omitempty"`
 
 	// The protocols supported by the initiator group. This restricts the type of initiators that can be added to the initiator group. Optional in POST; if not supplied, this defaults to _mixed_.<br/>
 	// The protocol of an initiator group cannot be changed after creation of the group.
 	//
-	// Enum: [fcp iscsi mixed]
+	// Enum: ["fcp","iscsi","mixed"]
 	Protocol *string `json:"protocol,omitempty"`
 
 	// The unique identifier of the initiator group.

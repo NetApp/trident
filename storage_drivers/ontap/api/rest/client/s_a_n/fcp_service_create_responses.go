@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *FcpServiceCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the fcp service create created response
+func (o *FcpServiceCreateCreated) Code() int {
+	return 201
+}
+
 func (o *FcpServiceCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/fcp/services][%d] fcpServiceCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/fcp/services][%d] fcpServiceCreateCreated %s", 201, payload)
 }
 
 func (o *FcpServiceCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/san/fcp/services][%d] fcpServiceCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/fcp/services][%d] fcpServiceCreateCreated %s", 201, payload)
 }
 
 func (o *FcpServiceCreateCreated) GetPayload() *models.FcpServiceResponse {
@@ -130,24 +138,21 @@ func NewFcpServiceCreateDefault(code int) *FcpServiceCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 1115127 | The cluster lacks a valid FCP license. |
+| 1115127 | The cluster lacks a valid FC Protocol license. |
 | 2621462 | The supplied SVM does not exist. |
 | 2621507 | The Fibre Channel Protocol is not allowed for the specified SVM. |
 | 2621706 | The specified `svm.uuid` and `svm.name` do not refer to the same SVM. |
 | 2621707 | No SVM was specified. Either `svm.name` or `svm.uuid` must be supplied. |
 | 5374082 | The Fibre Channel Protocol service already exists for the SVM. |
-| 5374092 | The Fibre Channel Procotol is not supported on the cluster hardware configuration; there are no Fibre Channel adapters. |
+| 5374092 | The Fibre Channel Protocol is not supported on the cluster hardware configuration; there are no Fibre Channel adapters. |
 | 5374893 | The SVM is stopped. The SVM must be running to create a Fibre Channel Protocol service. |
+| 5376452 | Service POST and DELETE are not supported on ASA r2. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type FcpServiceCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the fcp service create default response
-func (o *FcpServiceCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this fcp service create default response has a 2xx status code
@@ -175,12 +180,19 @@ func (o *FcpServiceCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fcp service create default response
+func (o *FcpServiceCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FcpServiceCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/fcp/services][%d] fcp_service_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/fcp/services][%d] fcp_service_create default %s", o._statusCode, payload)
 }
 
 func (o *FcpServiceCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/san/fcp/services][%d] fcp_service_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/fcp/services][%d] fcp_service_create default %s", o._statusCode, payload)
 }
 
 func (o *FcpServiceCreateDefault) GetPayload() *models.ErrorResponse {

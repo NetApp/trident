@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ApplicationTemplateCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the application template collection get o k response
+func (o *ApplicationTemplateCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *ApplicationTemplateCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /application/templates][%d] applicationTemplateCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/templates][%d] applicationTemplateCollectionGetOK %s", 200, payload)
 }
 
 func (o *ApplicationTemplateCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /application/templates][%d] applicationTemplateCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/templates][%d] applicationTemplateCollectionGetOK %s", 200, payload)
 }
 
 func (o *ApplicationTemplateCollectionGetOK) GetPayload() *models.ApplicationTemplateResponse {
@@ -122,11 +130,6 @@ type ApplicationTemplateCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the application template collection get default response
-func (o *ApplicationTemplateCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this application template collection get default response has a 2xx status code
 func (o *ApplicationTemplateCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *ApplicationTemplateCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the application template collection get default response
+func (o *ApplicationTemplateCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ApplicationTemplateCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /application/templates][%d] application_template_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/templates][%d] application_template_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationTemplateCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /application/templates][%d] application_template_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/templates][%d] application_template_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationTemplateCollectionGetDefault) GetPayload() *models.ErrorResponse {

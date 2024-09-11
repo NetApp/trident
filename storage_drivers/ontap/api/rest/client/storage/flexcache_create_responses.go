@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type FlexcacheCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *FlexcacheCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewFlexcacheCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewFlexcacheCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *FlexcacheCreateReader) ReadResponse(response runtime.ClientResponse, co
 	}
 }
 
+// NewFlexcacheCreateCreated creates a FlexcacheCreateCreated with default headers values
+func NewFlexcacheCreateCreated() *FlexcacheCreateCreated {
+	return &FlexcacheCreateCreated{}
+}
+
+/*
+FlexcacheCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type FlexcacheCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.FlexcacheJobLinkResponse
+}
+
+// IsSuccess returns true when this flexcache create created response has a 2xx status code
+func (o *FlexcacheCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this flexcache create created response has a 3xx status code
+func (o *FlexcacheCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this flexcache create created response has a 4xx status code
+func (o *FlexcacheCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this flexcache create created response has a 5xx status code
+func (o *FlexcacheCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this flexcache create created response a status code equal to that given
+func (o *FlexcacheCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the flexcache create created response
+func (o *FlexcacheCreateCreated) Code() int {
+	return 201
+}
+
+func (o *FlexcacheCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/flexcache/flexcaches][%d] flexcacheCreateCreated %s", 201, payload)
+}
+
+func (o *FlexcacheCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/flexcache/flexcaches][%d] flexcacheCreateCreated %s", 201, payload)
+}
+
+func (o *FlexcacheCreateCreated) GetPayload() *models.FlexcacheJobLinkResponse {
+	return o.Payload
+}
+
+func (o *FlexcacheCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.FlexcacheJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewFlexcacheCreateAccepted creates a FlexcacheCreateAccepted with default headers values
 func NewFlexcacheCreateAccepted() *FlexcacheCreateAccepted {
 	return &FlexcacheCreateAccepted{}
@@ -57,7 +146,7 @@ type FlexcacheCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.FlexcacheJobLinkResponse
 }
 
 // IsSuccess returns true when this flexcache create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *FlexcacheCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the flexcache create accepted response
+func (o *FlexcacheCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *FlexcacheCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /storage/flexcache/flexcaches][%d] flexcacheCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/flexcache/flexcaches][%d] flexcacheCreateAccepted %s", 202, payload)
 }
 
 func (o *FlexcacheCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /storage/flexcache/flexcaches][%d] flexcacheCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/flexcache/flexcaches][%d] flexcacheCreateAccepted %s", 202, payload)
 }
 
-func (o *FlexcacheCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *FlexcacheCreateAccepted) GetPayload() *models.FlexcacheJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *FlexcacheCreateAccepted) readResponse(response runtime.ClientResponse, 
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.FlexcacheJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -130,15 +226,24 @@ func NewFlexcacheCreateDefault(code int) *FlexcacheCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 11         | Provided value is smaller than the required minimum flexvolume size. |
+| 917937     | The root path "/" is an invalid value for the field "path". |
+| 66846735   | The peer state of the relationship is not peered or the FlexCache application is not supported by the relationship |
+| 66846762   | The origin volume in the SVM is offline |
+| 66846767   | Volume does not exist in SVM. |
+| 66846867   | Global file locking (GFL) mode is already disabled for origin of a FlexCache volume in SVM. Enabling GFL is only supported when the first FlexCache volume is created for an origin. Set is_global_file_locking_enabled" to "false". |
+| 66846768   | Volume already exists in SVM. |
+| 66846863   | The "preserve-msid" parameter is not supported when creating the FlexCache volume in the same SVM as the origin of a FlexCache volume |
 | 66846870   | Either the SVM name or origin volume name is missing |
 | 66846871   | Constituents per aggregate are specified but aggregate name is missing |
 | 66846872   | More than one origin volume is specified |
 | 66846873   | The specified SVM UUID is incorrect for the specified SVM name |
-| 66846874   | The specified aggregate UUID is incorrect for the specified aggregate name |
+| 66846874   | The specified name and SVM uuid refer to different aggregates. |
 | 66846875   | The specified aggregate name does not exist |
 | 66846876   | The specified SVM does not exist or is not peered |
 | 66846877   | The specified origin SVM name is of zero length  |
 | 66846878   | The specified SVM UUID is invalid |
+| 66846998   | Failed to modify the "relative_size_percentage" property of volume in SVM because the "relative_size_enabled" property is false. |
 | 66846730   | Failed to create a FlexCache volume |
 | 66846760   | The specified SVM is not a data Vserver |
 | 66846787   | The specified aggregate is a SnapLock aggregate |
@@ -146,16 +251,14 @@ func NewFlexcacheCreateDefault(code int) *FlexcacheCreateDefault {
 | 66846812   | The specified junction path is under a FlexCache volume |
 | 66846834   | FlexCache encryption requires a cluster version of 9.6 or higher |
 | 66846835   | A volume encryption license is not found |
+| 66847013   | Creating a FlexCache volume with override-encryption property set to true requires an effective cluster version of 9.14.0 or later on both origin and cache clusters |
+| 66846844   | An object store server volume cannot be the origin of a FlexCache volume |
+| 66846915   | The "use_tiered_aggregate" option is only supported when auto provisioning the FlexCache volume. |
 */
 type FlexcacheCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the flexcache create default response
-func (o *FlexcacheCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this flexcache create default response has a 2xx status code
@@ -183,12 +286,19 @@ func (o *FlexcacheCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the flexcache create default response
+func (o *FlexcacheCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FlexcacheCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/flexcache/flexcaches][%d] flexcache_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/flexcache/flexcaches][%d] flexcache_create default %s", o._statusCode, payload)
 }
 
 func (o *FlexcacheCreateDefault) String() string {
-	return fmt.Sprintf("[POST /storage/flexcache/flexcaches][%d] flexcache_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/flexcache/flexcaches][%d] flexcache_create default %s", o._statusCode, payload)
 }
 
 func (o *FlexcacheCreateDefault) GetPayload() *models.ErrorResponse {

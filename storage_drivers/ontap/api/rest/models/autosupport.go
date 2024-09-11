@@ -21,7 +21,7 @@ import (
 // swagger:model autosupport
 type Autosupport struct {
 
-	// A list of nodes in the cluster with connectivity issues to HTTP/SMTP/AOD AutoSupport destinations along with the corresponding error descriptions and corrective actions.
+	// A list of connectivity issues to the HTTPS/SMTP/AOD AutoSupport destinations on the nodes in the cluster along with the corrective actions.
 	// Read Only: true
 	AutosupportInlineIssues []*AutosupportIssues `json:"issues,omitempty"`
 
@@ -57,15 +57,26 @@ type Autosupport struct {
 	// Example: true
 	IsMinimal *bool `json:"is_minimal,omitempty"`
 
-	// Proxy server for AutoSupport message delivery via HTTP/S. Optionally specify a username/password for authentication with the proxy server.
-	// Example: https://proxy.company.com
+	// Specifies whether the AutoSupport OnDemand feature is enabled. When AutoSupport OnDemand is enabled, support personnel can remotely trigger new AutoSupport messages, resend existing AutoSupport messages, and decline the delivery of unwanted AutoSupport messages. When this option is disabled, the cluster does not respond to any AutoSupport OnDemand requests from support personnel.
+	//
+	// Example: true
+	OndemandEnabled *bool `json:"ondemand_enabled,omitempty"`
+
+	// Proxy server for AutoSupport message delivery via HTTPS. Optionally specify a username/password for authentication with the proxy server.
+	// Example: proxy.company.com
 	// Format: uri
 	ProxyURL *strfmt.URI `json:"proxy_url,omitempty"`
 
-	// The name of the transport protocol used to deliver AutoSupport messages. Note: Support for 'http' transport has been deprecated and might be removed in a future version of ONTAP.
+	// The encryption protocol used to deliver AutoSupport messages via SMTP to the configured mail_hosts.
+	//
+	// Example: none
+	// Enum: ["none","start_tls"]
+	SMTPEncryption *string `json:"smtp_encryption,omitempty"`
+
+	// The name of the transport protocol used to deliver AutoSupport messages. Note: 'http' transport is no longer supported by AutoSupport servers.
 	//
 	// Example: smtp
-	// Enum: [smtp http https]
+	// Enum: ["smtp","https"]
 	Transport *string `json:"transport,omitempty"`
 }
 
@@ -94,6 +105,10 @@ func (m *Autosupport) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateProxyURL(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSMTPEncryption(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -230,11 +245,67 @@ func (m *Autosupport) validateProxyURL(formats strfmt.Registry) error {
 	return nil
 }
 
+var autosupportTypeSMTPEncryptionPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["none","start_tls"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		autosupportTypeSMTPEncryptionPropEnum = append(autosupportTypeSMTPEncryptionPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// autosupport
+	// Autosupport
+	// smtp_encryption
+	// SMTPEncryption
+	// none
+	// END DEBUGGING
+	// AutosupportSMTPEncryptionNone captures enum value "none"
+	AutosupportSMTPEncryptionNone string = "none"
+
+	// BEGIN DEBUGGING
+	// autosupport
+	// Autosupport
+	// smtp_encryption
+	// SMTPEncryption
+	// start_tls
+	// END DEBUGGING
+	// AutosupportSMTPEncryptionStartTLS captures enum value "start_tls"
+	AutosupportSMTPEncryptionStartTLS string = "start_tls"
+)
+
+// prop value enum
+func (m *Autosupport) validateSMTPEncryptionEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, autosupportTypeSMTPEncryptionPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Autosupport) validateSMTPEncryption(formats strfmt.Registry) error {
+	if swag.IsZero(m.SMTPEncryption) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateSMTPEncryptionEnum("smtp_encryption", "body", *m.SMTPEncryption); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 var autosupportTypeTransportPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["smtp","http","https"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["smtp","https"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -253,16 +324,6 @@ const (
 	// END DEBUGGING
 	// AutosupportTransportSMTP captures enum value "smtp"
 	AutosupportTransportSMTP string = "smtp"
-
-	// BEGIN DEBUGGING
-	// autosupport
-	// Autosupport
-	// transport
-	// Transport
-	// http
-	// END DEBUGGING
-	// AutosupportTransportHTTP captures enum value "http"
-	AutosupportTransportHTTP string = "http"
 
 	// BEGIN DEBUGGING
 	// autosupport

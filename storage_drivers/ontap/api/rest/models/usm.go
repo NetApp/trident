@@ -30,7 +30,7 @@ type Usm struct {
 
 	// Authentication protocol.
 	// Example: sha2_256
-	// Enum: [none md5 sha sha2_256]
+	// Enum: ["none","md5","sha","sha2_256"]
 	AuthenticationProtocol *string `json:"authentication_protocol,omitempty"`
 
 	// Privacy protocol password.
@@ -40,7 +40,7 @@ type Usm struct {
 
 	// Privacy protocol.
 	// Example: aes128
-	// Enum: [none des aes128]
+	// Enum: ["none","des","aes128"]
 	PrivacyProtocol *string `json:"privacy_protocol,omitempty"`
 }
 

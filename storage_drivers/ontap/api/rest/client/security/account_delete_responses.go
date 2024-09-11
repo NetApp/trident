@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *AccountDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the account delete o k response
+func (o *AccountDeleteOK) Code() int {
+	return 200
+}
+
 func (o *AccountDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /security/accounts/{owner.uuid}/{name}][%d] accountDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/accounts/{owner.uuid}/{name}][%d] accountDeleteOK", 200)
 }
 
 func (o *AccountDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /security/accounts/{owner.uuid}/{name}][%d] accountDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/accounts/{owner.uuid}/{name}][%d] accountDeleteOK", 200)
 }
 
 func (o *AccountDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,16 +115,12 @@ func NewAccountDeleteDefault(code int) *AccountDeleteDefault {
 | 5636098 | Last unlocked account that has an admin role cannot be deleted. |
 | 5636125 | The operation is not supported on system accounts. |
 | 5636146 | Cannot delete the last console account with admin role. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AccountDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the account delete default response
-func (o *AccountDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this account delete default response has a 2xx status code
@@ -146,12 +148,19 @@ func (o *AccountDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the account delete default response
+func (o *AccountDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AccountDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /security/accounts/{owner.uuid}/{name}][%d] account_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/accounts/{owner.uuid}/{name}][%d] account_delete default %s", o._statusCode, payload)
 }
 
 func (o *AccountDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /security/accounts/{owner.uuid}/{name}][%d] account_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/accounts/{owner.uuid}/{name}][%d] account_delete default %s", o._statusCode, payload)
 }
 
 func (o *AccountDeleteDefault) GetPayload() *models.ErrorResponse {

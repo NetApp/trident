@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *EmsDestinationDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ems destination delete o k response
+func (o *EmsDestinationDeleteOK) Code() int {
+	return 200
+}
+
 func (o *EmsDestinationDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /support/ems/destinations/{name}][%d] emsDestinationDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /support/ems/destinations/{name}][%d] emsDestinationDeleteOK", 200)
 }
 
 func (o *EmsDestinationDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /support/ems/destinations/{name}][%d] emsDestinationDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /support/ems/destinations/{name}][%d] emsDestinationDeleteOK", 200)
 }
 
 func (o *EmsDestinationDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,17 +112,13 @@ func NewEmsDestinationDeleteDefault(code int) *EmsDestinationDeleteDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 983152     | Default destinations cannot be modified or removed |
+| 983152 | Default destinations cannot be modified or removed |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type EmsDestinationDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ems destination delete default response
-func (o *EmsDestinationDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ems destination delete default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *EmsDestinationDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ems destination delete default response
+func (o *EmsDestinationDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *EmsDestinationDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /support/ems/destinations/{name}][%d] ems_destination_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /support/ems/destinations/{name}][%d] ems_destination_delete default %s", o._statusCode, payload)
 }
 
 func (o *EmsDestinationDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /support/ems/destinations/{name}][%d] ems_destination_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /support/ems/destinations/{name}][%d] ems_destination_delete default %s", o._statusCode, payload)
 }
 
 func (o *EmsDestinationDeleteDefault) GetPayload() *models.ErrorResponse {

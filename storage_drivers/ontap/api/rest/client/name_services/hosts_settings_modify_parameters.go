@@ -69,11 +69,11 @@ type HostsSettingsModifyParams struct {
 	*/
 	Info *models.HostsSettings
 
-	/* SvmUUID.
+	/* UUID.
 
-	   SVM UUID.
+	   UUID for the host record.
 	*/
-	SvmUUID string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *HostsSettingsModifyParams) SetInfo(info *models.HostsSettings) {
 	o.Info = info
 }
 
-// WithSvmUUID adds the svmUUID to the hosts settings modify params
-func (o *HostsSettingsModifyParams) WithSvmUUID(svmUUID string) *HostsSettingsModifyParams {
-	o.SetSvmUUID(svmUUID)
+// WithUUID adds the uuid to the hosts settings modify params
+func (o *HostsSettingsModifyParams) WithUUID(uuid string) *HostsSettingsModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the hosts settings modify params
-func (o *HostsSettingsModifyParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetUUID adds the uuid to the hosts settings modify params
+func (o *HostsSettingsModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -163,8 +163,8 @@ func (o *HostsSettingsModifyParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	// path param uuid
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *MultiAdminVerifyRequestCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the multi admin verify request create created response
+func (o *MultiAdminVerifyRequestCreateCreated) Code() int {
+	return 201
+}
+
 func (o *MultiAdminVerifyRequestCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/multi-admin-verify/requests][%d] multiAdminVerifyRequestCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/multi-admin-verify/requests][%d] multiAdminVerifyRequestCreateCreated %s", 201, payload)
 }
 
 func (o *MultiAdminVerifyRequestCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/multi-admin-verify/requests][%d] multiAdminVerifyRequestCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/multi-admin-verify/requests][%d] multiAdminVerifyRequestCreateCreated %s", 201, payload)
 }
 
 func (o *MultiAdminVerifyRequestCreateCreated) GetPayload() *models.MultiAdminVerifyRequestResponse {
@@ -131,6 +139,7 @@ func NewMultiAdminVerifyRequestCreateDefault(code int) *MultiAdminVerifyRequestC
 | Error Code | Description |
 | ---------- | ----------- |
 | 262148 | The specified command is not recognized. |
+| 262279 | Invalid field set. |
 | 262304 | Too many requests. Delete one before creating another. |
 | 262305 | Can't approve non-pending request. |
 | 262306 | Can't veto an expired request. |
@@ -145,16 +154,12 @@ func NewMultiAdminVerifyRequestCreateDefault(code int) *MultiAdminVerifyRequestC
 | 262330 | Cannot approve/veto a request multiple times. |
 | 262334 | The parameter specified in the command is not supported. |
 | 262337 | Cannot approve/veto the user's own request. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type MultiAdminVerifyRequestCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the multi admin verify request create default response
-func (o *MultiAdminVerifyRequestCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this multi admin verify request create default response has a 2xx status code
@@ -182,12 +187,19 @@ func (o *MultiAdminVerifyRequestCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the multi admin verify request create default response
+func (o *MultiAdminVerifyRequestCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MultiAdminVerifyRequestCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/multi-admin-verify/requests][%d] multi_admin_verify_request_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/multi-admin-verify/requests][%d] multi_admin_verify_request_create default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyRequestCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/multi-admin-verify/requests][%d] multi_admin_verify_request_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/multi-admin-verify/requests][%d] multi_admin_verify_request_create default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyRequestCreateDefault) GetPayload() *models.ErrorResponse {

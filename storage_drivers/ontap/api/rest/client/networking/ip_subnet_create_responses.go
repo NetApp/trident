@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -56,6 +57,8 @@ type IPSubnetCreateCreated struct {
 	/* Useful for tracking the resource location
 	 */
 	Location string
+
+	Payload *models.IPSubnetResponse
 }
 
 // IsSuccess returns true when this ip subnet create created response has a 2xx status code
@@ -83,12 +86,23 @@ func (o *IPSubnetCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the ip subnet create created response
+func (o *IPSubnetCreateCreated) Code() int {
+	return 201
+}
+
 func (o *IPSubnetCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /network/ip/subnets][%d] ipSubnetCreateCreated ", 201)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ip/subnets][%d] ipSubnetCreateCreated %s", 201, payload)
 }
 
 func (o *IPSubnetCreateCreated) String() string {
-	return fmt.Sprintf("[POST /network/ip/subnets][%d] ipSubnetCreateCreated ", 201)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ip/subnets][%d] ipSubnetCreateCreated %s", 201, payload)
+}
+
+func (o *IPSubnetCreateCreated) GetPayload() *models.IPSubnetResponse {
+	return o.Payload
 }
 
 func (o *IPSubnetCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -98,6 +112,13 @@ func (o *IPSubnetCreateCreated) readResponse(response runtime.ClientResponse, co
 
 	if hdrLocation != "" {
 		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.IPSubnetResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
 	}
 
 	return nil
@@ -117,13 +138,18 @@ func NewIPSubnetCreateDefault(code int) *IPSubnetCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 1377658 | Invalid gateway for subnet in IPspace. |
+| 1377659 | Subnet would overlap with existing subnet named in IPspace. |
 | 1377660 | A subnet with the name already exists in the IPspace. |
 | 1377661 | Subnet in IPspace cannot use subnet address because that address is already used by another subnet in the same IPspace. |
 | 1377662 | The IP range address is not within the subnet in IPspace. |
 | 1377663 | The specified IP address range of subnet in IPspace contains an address already in use by a LIF. |
 | 1377664 | The specified IP address range of subnet in IPspace contains an address already in use by the Service Processor. |
 | 1377673 | The addresses provided must have the same address family. |
+| 1377675 | The netmask of the interface did not match the netmask of the subnet. |
 | 1377681 | Cannot update LIF associations for LIF. The broadcast domain of the LIF does not match the broadcast domain of the subnet. |
+| 1377682 | IPv6 is not enabled in the cluster. |
+| 1966269 | IPv4 Addresses must have a prefix length between 1 and 32. |
 | 1967082 | The specified ipspace.name does not match the IPspace name of specified ipspace.uuid |
 | 53282568 | The subnet.address must be specified together with subnet.netmask. |
 | 53282569 | The specified subnet.netmask is not valid. |
@@ -136,16 +162,12 @@ func NewIPSubnetCreateDefault(code int) *IPSubnetCreateDefault {
 | 53282577 | The specified broadcast_domain.uuid is invalid. |
 | 53282578 | The specified broadcast_domain.name does not match the IPspace name of specified broadcast_domain.uuid |
 | 53282579 | Missing the ipspace.name or ipspace.uuid parameter. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IPSubnetCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ip subnet create default response
-func (o *IPSubnetCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ip subnet create default response has a 2xx status code
@@ -173,12 +195,19 @@ func (o *IPSubnetCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ip subnet create default response
+func (o *IPSubnetCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IPSubnetCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /network/ip/subnets][%d] ip_subnet_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ip/subnets][%d] ip_subnet_create default %s", o._statusCode, payload)
 }
 
 func (o *IPSubnetCreateDefault) String() string {
-	return fmt.Sprintf("[POST /network/ip/subnets][%d] ip_subnet_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ip/subnets][%d] ip_subnet_create default %s", o._statusCode, payload)
 }
 
 func (o *IPSubnetCreateDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package snaplock
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SnaplockFingerprintOperationDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snaplock fingerprint operation delete o k response
+func (o *SnaplockFingerprintOperationDeleteOK) Code() int {
+	return 200
+}
+
 func (o *SnaplockFingerprintOperationDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /storage/snaplock/file-fingerprints/{id}][%d] snaplockFingerprintOperationDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/snaplock/file-fingerprints/{id}][%d] snaplockFingerprintOperationDeleteOK", 200)
 }
 
 func (o *SnaplockFingerprintOperationDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /storage/snaplock/file-fingerprints/{id}][%d] snaplockFingerprintOperationDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/snaplock/file-fingerprints/{id}][%d] snaplockFingerprintOperationDeleteOK", 200)
 }
 
 func (o *SnaplockFingerprintOperationDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -115,11 +121,6 @@ type SnaplockFingerprintOperationDeleteDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the snaplock fingerprint operation delete default response
-func (o *SnaplockFingerprintOperationDeleteDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this snaplock fingerprint operation delete default response has a 2xx status code
 func (o *SnaplockFingerprintOperationDeleteDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -145,12 +146,19 @@ func (o *SnaplockFingerprintOperationDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snaplock fingerprint operation delete default response
+func (o *SnaplockFingerprintOperationDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnaplockFingerprintOperationDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /storage/snaplock/file-fingerprints/{id}][%d] snaplock_fingerprint_operation_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/snaplock/file-fingerprints/{id}][%d] snaplock_fingerprint_operation_delete default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockFingerprintOperationDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /storage/snaplock/file-fingerprints/{id}][%d] snaplock_fingerprint_operation_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/snaplock/file-fingerprints/{id}][%d] snaplock_fingerprint_operation_delete default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockFingerprintOperationDeleteDefault) GetPayload() *models.ErrorResponse {

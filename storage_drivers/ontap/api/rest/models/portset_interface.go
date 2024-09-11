@@ -501,7 +501,7 @@ func (m *PortsetInterfaceInlineFcInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetInterfaceInlineIP portset interface inline ip
+// PortsetInterfaceInlineIP A network interface. Either UUID or name may be supplied on input.
 //
 // swagger:model portset_interface_inline_ip
 type PortsetInterfaceInlineIP struct {
@@ -1479,7 +1479,7 @@ func (m *PortsetInterfaceInlineRecordsInlineArrayItemInlineFcInlineLinks) Unmars
 	return nil
 }
 
-// PortsetInterfaceInlineRecordsInlineArrayItemInlineIP portset interface inline records inline array item inline ip
+// PortsetInterfaceInlineRecordsInlineArrayItemInlineIP A network interface. Either UUID or name may be supplied on input.
 //
 // swagger:model portset_interface_inline_records_inline_array_item_inline_ip
 type PortsetInterfaceInlineRecordsInlineArrayItemInlineIP struct {

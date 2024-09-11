@@ -6,6 +6,7 @@ package svm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SvmPeerPermissionCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the svm peer permission collection get o k response
+func (o *SvmPeerPermissionCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *SvmPeerPermissionCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /svm/peer-permissions][%d] svmPeerPermissionCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/peer-permissions][%d] svmPeerPermissionCollectionGetOK %s", 200, payload)
 }
 
 func (o *SvmPeerPermissionCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /svm/peer-permissions][%d] svmPeerPermissionCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/peer-permissions][%d] svmPeerPermissionCollectionGetOK %s", 200, payload)
 }
 
 func (o *SvmPeerPermissionCollectionGetOK) GetPayload() *models.SvmPeerPermissionResponse {
@@ -130,11 +138,6 @@ type SvmPeerPermissionCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the svm peer permission collection get default response
-func (o *SvmPeerPermissionCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this svm peer permission collection get default response has a 2xx status code
 func (o *SvmPeerPermissionCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -160,12 +163,19 @@ func (o *SvmPeerPermissionCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the svm peer permission collection get default response
+func (o *SvmPeerPermissionCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SvmPeerPermissionCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /svm/peer-permissions][%d] svm_peer_permission_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/peer-permissions][%d] svm_peer_permission_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmPeerPermissionCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /svm/peer-permissions][%d] svm_peer_permission_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/peer-permissions][%d] svm_peer_permission_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmPeerPermissionCollectionGetDefault) GetPayload() *models.ErrorResponse {

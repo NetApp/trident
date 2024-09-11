@@ -38,11 +38,11 @@ type ClientService interface {
 
 	ClusterCollectionPerformanceMetricsGet(params *ClusterCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterCollectionPerformanceMetricsGetOK, error)
 
-	ClusterCreate(params *ClusterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterCreateAccepted, error)
+	ClusterCreate(params *ClusterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterCreateCreated, *ClusterCreateAccepted, error)
 
 	ClusterGet(params *ClusterGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterGetOK, error)
 
-	ClusterModify(params *ClusterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterModifyAccepted, error)
+	ClusterModify(params *ClusterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterModifyOK, *ClusterModifyAccepted, error)
 
 	ClusterNtpKeysCollectionGet(params *ClusterNtpKeysCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpKeysCollectionGetOK, error)
 
@@ -50,19 +50,27 @@ type ClientService interface {
 
 	ClusterNtpKeysDelete(params *ClusterNtpKeysDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpKeysDeleteOK, error)
 
+	ClusterNtpKeysDeleteCollection(params *ClusterNtpKeysDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpKeysDeleteCollectionOK, error)
+
 	ClusterNtpKeysGet(params *ClusterNtpKeysGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpKeysGetOK, error)
 
 	ClusterNtpKeysModify(params *ClusterNtpKeysModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpKeysModifyOK, error)
 
+	ClusterNtpKeysModifyCollection(params *ClusterNtpKeysModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpKeysModifyCollectionOK, error)
+
 	ClusterNtpServersCollectionGet(params *ClusterNtpServersCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersCollectionGetOK, error)
 
-	ClusterNtpServersCreate(params *ClusterNtpServersCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersCreateAccepted, error)
+	ClusterNtpServersCreate(params *ClusterNtpServersCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersCreateCreated, *ClusterNtpServersCreateAccepted, error)
 
-	ClusterNtpServersDelete(params *ClusterNtpServersDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersDeleteAccepted, error)
+	ClusterNtpServersDelete(params *ClusterNtpServersDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersDeleteOK, *ClusterNtpServersDeleteAccepted, error)
+
+	ClusterNtpServersDeleteCollection(params *ClusterNtpServersDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersDeleteCollectionOK, *ClusterNtpServersDeleteCollectionAccepted, error)
 
 	ClusterNtpServersGet(params *ClusterNtpServersGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersGetOK, error)
 
-	ClusterNtpServersModify(params *ClusterNtpServersModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersModifyAccepted, error)
+	ClusterNtpServersModify(params *ClusterNtpServersModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersModifyOK, *ClusterNtpServersModifyAccepted, error)
+
+	ClusterNtpServersModifyCollection(params *ClusterNtpServersModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersModifyCollectionOK, *ClusterNtpServersModifyCollectionAccepted, error)
 
 	ClusterPeerCollectionGet(params *ClusterPeerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerCollectionGetOK, error)
 
@@ -70,9 +78,13 @@ type ClientService interface {
 
 	ClusterPeerDelete(params *ClusterPeerDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerDeleteOK, error)
 
+	ClusterPeerDeleteCollection(params *ClusterPeerDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerDeleteCollectionOK, error)
+
 	ClusterPeerGet(params *ClusterPeerGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerGetOK, error)
 
 	ClusterPeerModify(params *ClusterPeerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerModifyOK, error)
+
+	ClusterPeerModifyCollection(params *ClusterPeerModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerModifyCollectionOK, error)
 
 	CounterRowCollectionGet(params *CounterRowCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterRowCollectionGetOK, error)
 
@@ -90,9 +102,13 @@ type ClientService interface {
 
 	JobModify(params *JobModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*JobModifyOK, error)
 
+	JobModifyCollection(params *JobModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*JobModifyCollectionOK, error)
+
 	LicenseCreate(params *LicenseCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseCreateCreated, error)
 
 	LicenseDelete(params *LicenseDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseDeleteOK, error)
+
+	LicenseDeleteCollection(params *LicenseDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseDeleteCollectionOK, error)
 
 	LicenseGet(params *LicenseGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseGetOK, error)
 
@@ -100,29 +116,35 @@ type ClientService interface {
 
 	LicenseManagerGet(params *LicenseManagerGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseManagerGetOK, error)
 
-	LicenseManagerModify(params *LicenseManagerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseManagerModifyAccepted, error)
+	LicenseManagerModify(params *LicenseManagerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseManagerModifyOK, *LicenseManagerModifyAccepted, error)
+
+	LicenseManagerModifyCollection(params *LicenseManagerModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseManagerModifyCollectionOK, *LicenseManagerModifyCollectionAccepted, error)
 
 	LicensesGet(params *LicensesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicensesGetOK, error)
 
 	MediatorCollectionGet(params *MediatorCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorCollectionGetOK, error)
 
-	MediatorCreate(params *MediatorCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorCreateAccepted, error)
+	MediatorCreate(params *MediatorCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorCreateCreated, *MediatorCreateAccepted, error)
 
-	MediatorDelete(params *MediatorDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorDeleteAccepted, error)
+	MediatorDelete(params *MediatorDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorDeleteOK, *MediatorDeleteAccepted, error)
+
+	MediatorDeleteCollection(params *MediatorDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorDeleteCollectionOK, *MediatorDeleteCollectionAccepted, error)
 
 	MediatorGet(params *MediatorGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorGetOK, error)
 
-	MetroclusterCreate(params *MetroclusterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterCreateAccepted, error)
+	MetroclusterCreate(params *MetroclusterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterCreateCreated, *MetroclusterCreateAccepted, error)
 
-	MetroclusterDiagnosticsCreate(params *MetroclusterDiagnosticsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDiagnosticsCreateAccepted, error)
+	MetroclusterDiagnosticsCreate(params *MetroclusterDiagnosticsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDiagnosticsCreateCreated, *MetroclusterDiagnosticsCreateAccepted, error)
 
 	MetroclusterDiagnosticsGet(params *MetroclusterDiagnosticsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDiagnosticsGetOK, error)
 
 	MetroclusterDrGroupCollectionGet(params *MetroclusterDrGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupCollectionGetOK, error)
 
-	MetroclusterDrGroupCreate(params *MetroclusterDrGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupCreateAccepted, error)
+	MetroclusterDrGroupCreate(params *MetroclusterDrGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupCreateCreated, *MetroclusterDrGroupCreateAccepted, error)
 
-	MetroclusterDrGroupDelete(params *MetroclusterDrGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupDeleteAccepted, error)
+	MetroclusterDrGroupDelete(params *MetroclusterDrGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupDeleteOK, *MetroclusterDrGroupDeleteAccepted, error)
+
+	MetroclusterDrGroupDeleteCollection(params *MetroclusterDrGroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupDeleteCollectionOK, *MetroclusterDrGroupDeleteCollectionAccepted, error)
 
 	MetroclusterDrGroupGet(params *MetroclusterDrGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupGetOK, error)
 
@@ -132,9 +154,11 @@ type ClientService interface {
 
 	MetroclusterInterconnectGet(params *MetroclusterInterconnectGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterInterconnectGetOK, error)
 
-	MetroclusterInterconnectModify(params *MetroclusterInterconnectModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterInterconnectModifyAccepted, error)
+	MetroclusterInterconnectModify(params *MetroclusterInterconnectModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterInterconnectModifyOK, *MetroclusterInterconnectModifyAccepted, error)
 
-	MetroclusterModify(params *MetroclusterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterModifyAccepted, error)
+	MetroclusterInterconnectModifyCollection(params *MetroclusterInterconnectModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterInterconnectModifyCollectionOK, *MetroclusterInterconnectModifyCollectionAccepted, error)
+
+	MetroclusterModify(params *MetroclusterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterModifyOK, *MetroclusterModifyAccepted, error)
 
 	MetroclusterNodeCollectionGet(params *MetroclusterNodeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterNodeCollectionGetOK, error)
 
@@ -148,17 +172,35 @@ type ClientService interface {
 
 	MetroclusterSvmGet(params *MetroclusterSvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterSvmGetOK, error)
 
-	NodeDelete(params *NodeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeDeleteAccepted, error)
+	NodeDelete(params *NodeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeDeleteOK, *NodeDeleteAccepted, error)
+
+	NodeDeleteCollection(params *NodeDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeDeleteCollectionOK, *NodeDeleteCollectionAccepted, error)
 
 	NodeGet(params *NodeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeGetOK, error)
 
 	NodeMetricsCollectionGet(params *NodeMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeMetricsCollectionGetOK, error)
 
-	NodeModify(params *NodeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeModifyAccepted, error)
+	NodeModify(params *NodeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeModifyOK, *NodeModifyAccepted, error)
 
-	NodesCreate(params *NodesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodesCreateAccepted, error)
+	NodeModifyCollection(params *NodeModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeModifyCollectionOK, *NodeModifyCollectionAccepted, error)
+
+	NodesCreate(params *NodesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodesCreateCreated, *NodesCreateAccepted, error)
 
 	NodesGet(params *NodesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodesGetOK, error)
+
+	ResourceTagCollectionGet(params *ResourceTagCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ResourceTagCollectionGetOK, error)
+
+	ResourceTagGet(params *ResourceTagGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ResourceTagGetOK, error)
+
+	ResourceTagResourceCollectionGet(params *ResourceTagResourceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ResourceTagResourceCollectionGetOK, error)
+
+	ResourceTagResourceCreate(params *ResourceTagResourceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ResourceTagResourceCreateCreated, error)
+
+	ResourceTagResourceDelete(params *ResourceTagResourceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ResourceTagResourceDeleteOK, error)
+
+	ResourceTagResourceDeleteCollection(params *ResourceTagResourceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ResourceTagResourceDeleteCollectionOK, error)
+
+	ResourceTagResourceGet(params *ResourceTagResourceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ResourceTagResourceGetOK, error)
 
 	ScheduleCollectionGet(params *ScheduleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleCollectionGetOK, error)
 
@@ -166,9 +208,13 @@ type ClientService interface {
 
 	ScheduleDelete(params *ScheduleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleDeleteOK, error)
 
+	ScheduleDeleteCollection(params *ScheduleDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleDeleteCollectionOK, error)
+
 	ScheduleGet(params *ScheduleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleGetOK, error)
 
 	ScheduleModify(params *ScheduleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleModifyOK, error)
+
+	ScheduleModifyCollection(params *ScheduleModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleModifyCollectionOK, error)
 
 	SensorsCollectionGet(params *SensorsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SensorsCollectionGetOK, error)
 
@@ -180,17 +226,19 @@ type ClientService interface {
 
 	SoftwareHistoryCollectionGet(params *SoftwareHistoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareHistoryCollectionGetOK, error)
 
-	SoftwareModify(params *SoftwareModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareModifyAccepted, error)
+	SoftwareModify(params *SoftwareModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareModifyOK, *SoftwareModifyAccepted, error)
 
-	SoftwarePackageCreate(params *SoftwarePackageCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackageCreateAccepted, error)
+	SoftwarePackageCreate(params *SoftwarePackageCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackageCreateCreated, *SoftwarePackageCreateAccepted, error)
 
-	SoftwarePackageDelete(params *SoftwarePackageDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackageDeleteAccepted, error)
+	SoftwarePackageDelete(params *SoftwarePackageDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackageDeleteOK, *SoftwarePackageDeleteAccepted, error)
+
+	SoftwarePackageDeleteCollection(params *SoftwarePackageDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackageDeleteCollectionOK, *SoftwarePackageDeleteCollectionAccepted, error)
 
 	SoftwarePackageGet(params *SoftwarePackageGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackageGetOK, error)
 
 	SoftwarePackagesCollectionGet(params *SoftwarePackagesCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackagesCollectionGetOK, error)
 
-	SoftwareUpload(params *SoftwareUploadParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareUploadAccepted, error)
+	SoftwareUpload(params *SoftwareUploadParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareUploadCreated, *SoftwareUploadAccepted, error)
 
 	WebGet(params *WebGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebGetOK, error)
 
@@ -217,8 +265,8 @@ func (a *Client) CapacityPoolCollectionGet(params *CapacityPoolCollectionGetPara
 		ID:                 "capacity_pool_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/licensing/capacity-pools",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CapacityPoolCollectionGetReader{formats: a.formats},
@@ -261,8 +309,8 @@ func (a *Client) CapacityPoolGet(params *CapacityPoolGetParams, authInfo runtime
 		ID:                 "capacity_pool_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/licensing/capacity-pools/{serial_number}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CapacityPoolGetReader{formats: a.formats},
@@ -305,8 +353,8 @@ func (a *Client) ChassisCollectionGet(params *ChassisCollectionGetParams, authIn
 		ID:                 "chassis_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/chassis",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ChassisCollectionGetReader{formats: a.formats},
@@ -349,8 +397,8 @@ func (a *Client) ChassisGet(params *ChassisGetParams, authInfo runtime.ClientAut
 		ID:                 "chassis_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/chassis/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ChassisGetReader{formats: a.formats},
@@ -387,8 +435,8 @@ func (a *Client) ClusterCollectionPerformanceMetricsGet(params *ClusterCollectio
 		ID:                 "cluster_collection_performance_metrics_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/metrics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterCollectionPerformanceMetricsGetReader{formats: a.formats},
@@ -433,7 +481,7 @@ func (a *Client) ClusterCollectionPerformanceMetricsGet(params *ClusterCollectio
 ### Learn more
 * [`DOC /cluster`](#docs-cluster-cluster)
 */
-func (a *Client) ClusterCreate(params *ClusterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterCreateAccepted, error) {
+func (a *Client) ClusterCreate(params *ClusterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterCreateCreated, *ClusterCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewClusterCreateParams()
@@ -442,8 +490,8 @@ func (a *Client) ClusterCreate(params *ClusterCreateParams, authInfo runtime.Cli
 		ID:                 "cluster_create",
 		Method:             "POST",
 		PathPattern:        "/cluster",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterCreateReader{formats: a.formats},
@@ -457,15 +505,17 @@ func (a *Client) ClusterCreate(params *ClusterCreateParams, authInfo runtime.Cli
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*ClusterCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *ClusterCreateCreated:
+		return value, nil, nil
+	case *ClusterCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ClusterCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -480,8 +530,8 @@ func (a *Client) ClusterGet(params *ClusterGetParams, authInfo runtime.ClientAut
 		ID:                 "cluster_get",
 		Method:             "GET",
 		PathPattern:        "/cluster",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterGetReader{formats: a.formats},
@@ -516,8 +566,11 @@ func (a *Client) ClusterGet(params *ClusterGetParams, authInfo runtime.ClientAut
 * `vserver services name-service dns modify`
 * `timezone`
 * `security ssl modify`
+* `vserver active-directory create`
+* `vserver active-directory modify`
+* `vserver active-directory delete`
 */
-func (a *Client) ClusterModify(params *ClusterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterModifyAccepted, error) {
+func (a *Client) ClusterModify(params *ClusterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterModifyOK, *ClusterModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewClusterModifyParams()
@@ -526,8 +579,8 @@ func (a *Client) ClusterModify(params *ClusterModifyParams, authInfo runtime.Cli
 		ID:                 "cluster_modify",
 		Method:             "PATCH",
 		PathPattern:        "/cluster",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterModifyReader{formats: a.formats},
@@ -541,15 +594,17 @@ func (a *Client) ClusterModify(params *ClusterModifyParams, authInfo runtime.Cli
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*ClusterModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *ClusterModifyOK:
+		return value, nil, nil
+	case *ClusterModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ClusterModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -570,8 +625,8 @@ func (a *Client) ClusterNtpKeysCollectionGet(params *ClusterNtpKeysCollectionGet
 		ID:                 "cluster_ntp_keys_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/ntp/keys",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterNtpKeysCollectionGetReader{formats: a.formats},
@@ -618,8 +673,8 @@ func (a *Client) ClusterNtpKeysCreate(params *ClusterNtpKeysCreateParams, authIn
 		ID:                 "cluster_ntp_keys_create",
 		Method:             "POST",
 		PathPattern:        "/cluster/ntp/keys",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterNtpKeysCreateReader{formats: a.formats},
@@ -661,8 +716,8 @@ func (a *Client) ClusterNtpKeysDelete(params *ClusterNtpKeysDeleteParams, authIn
 		ID:                 "cluster_ntp_keys_delete",
 		Method:             "DELETE",
 		PathPattern:        "/cluster/ntp/keys/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterNtpKeysDeleteReader{formats: a.formats},
@@ -688,6 +743,44 @@ func (a *Client) ClusterNtpKeysDelete(params *ClusterNtpKeysDeleteParams, authIn
 }
 
 /*
+ClusterNtpKeysDeleteCollection cluster ntp keys delete collection API
+*/
+func (a *Client) ClusterNtpKeysDeleteCollection(params *ClusterNtpKeysDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpKeysDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewClusterNtpKeysDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cluster_ntp_keys_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/cluster/ntp/keys",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ClusterNtpKeysDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ClusterNtpKeysDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ClusterNtpKeysDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	ClusterNtpKeysGet Retrieves the details of a specific NTP symmetric authentication key by numeric identifier or index (ID).
 
 ### Related ONTAP commands
@@ -704,8 +797,8 @@ func (a *Client) ClusterNtpKeysGet(params *ClusterNtpKeysGetParams, authInfo run
 		ID:                 "cluster_ntp_keys_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/ntp/keys/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterNtpKeysGetReader{formats: a.formats},
@@ -751,8 +844,8 @@ func (a *Client) ClusterNtpKeysModify(params *ClusterNtpKeysModifyParams, authIn
 		ID:                 "cluster_ntp_keys_modify",
 		Method:             "PATCH",
 		PathPattern:        "/cluster/ntp/keys/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterNtpKeysModifyReader{formats: a.formats},
@@ -778,6 +871,44 @@ func (a *Client) ClusterNtpKeysModify(params *ClusterNtpKeysModifyParams, authIn
 }
 
 /*
+ClusterNtpKeysModifyCollection cluster ntp keys modify collection API
+*/
+func (a *Client) ClusterNtpKeysModifyCollection(params *ClusterNtpKeysModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpKeysModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewClusterNtpKeysModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cluster_ntp_keys_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/cluster/ntp/keys",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ClusterNtpKeysModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ClusterNtpKeysModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ClusterNtpKeysModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	ClusterNtpServersCollectionGet Retrieves the collection of external NTP time servers ONTAP uses for time adjustment and correction.
 
 ### Related ONTAP commands
@@ -794,8 +925,8 @@ func (a *Client) ClusterNtpServersCollectionGet(params *ClusterNtpServersCollect
 		ID:                 "cluster_ntp_servers_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/ntp/servers",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterNtpServersCollectionGetReader{formats: a.formats},
@@ -836,7 +967,7 @@ If the key is provided in POST, `authentication_enabled` is set to `true` by def
 ### Learn more
 * [`DOC /cluster/ntp/servers`](#docs-cluster-cluster_ntp_servers)
 */
-func (a *Client) ClusterNtpServersCreate(params *ClusterNtpServersCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersCreateAccepted, error) {
+func (a *Client) ClusterNtpServersCreate(params *ClusterNtpServersCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersCreateCreated, *ClusterNtpServersCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewClusterNtpServersCreateParams()
@@ -845,8 +976,8 @@ func (a *Client) ClusterNtpServersCreate(params *ClusterNtpServersCreateParams, 
 		ID:                 "cluster_ntp_servers_create",
 		Method:             "POST",
 		PathPattern:        "/cluster/ntp/servers",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterNtpServersCreateReader{formats: a.formats},
@@ -860,15 +991,17 @@ func (a *Client) ClusterNtpServersCreate(params *ClusterNtpServersCreateParams, 
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*ClusterNtpServersCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *ClusterNtpServersCreateCreated:
+		return value, nil, nil
+	case *ClusterNtpServersCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ClusterNtpServersCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -879,7 +1012,7 @@ func (a *Client) ClusterNtpServersCreate(params *ClusterNtpServersCreateParams, 
 ### Learn more
 * [`DOC /cluster/ntp/servers`](#docs-cluster-cluster_ntp_servers)
 */
-func (a *Client) ClusterNtpServersDelete(params *ClusterNtpServersDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersDeleteAccepted, error) {
+func (a *Client) ClusterNtpServersDelete(params *ClusterNtpServersDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersDeleteOK, *ClusterNtpServersDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewClusterNtpServersDeleteParams()
@@ -888,8 +1021,8 @@ func (a *Client) ClusterNtpServersDelete(params *ClusterNtpServersDeleteParams, 
 		ID:                 "cluster_ntp_servers_delete",
 		Method:             "DELETE",
 		PathPattern:        "/cluster/ntp/servers/{server}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterNtpServersDeleteReader{formats: a.formats},
@@ -903,15 +1036,57 @@ func (a *Client) ClusterNtpServersDelete(params *ClusterNtpServersDeleteParams, 
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*ClusterNtpServersDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *ClusterNtpServersDeleteOK:
+		return value, nil, nil
+	case *ClusterNtpServersDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ClusterNtpServersDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+ClusterNtpServersDeleteCollection cluster ntp servers delete collection API
+*/
+func (a *Client) ClusterNtpServersDeleteCollection(params *ClusterNtpServersDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersDeleteCollectionOK, *ClusterNtpServersDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewClusterNtpServersDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cluster_ntp_servers_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/cluster/ntp/servers",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ClusterNtpServersDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *ClusterNtpServersDeleteCollectionOK:
+		return value, nil, nil
+	case *ClusterNtpServersDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ClusterNtpServersDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -931,8 +1106,8 @@ func (a *Client) ClusterNtpServersGet(params *ClusterNtpServersGetParams, authIn
 		ID:                 "cluster_ntp_servers_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/ntp/servers/{server}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterNtpServersGetReader{formats: a.formats},
@@ -972,7 +1147,7 @@ If `authentication_enabled` is modified to `true`, you must provide an NTP key I
 ### Learn more
 * [`DOC /cluster/ntp/servers`](#docs-cluster-cluster_ntp_servers)
 */
-func (a *Client) ClusterNtpServersModify(params *ClusterNtpServersModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersModifyAccepted, error) {
+func (a *Client) ClusterNtpServersModify(params *ClusterNtpServersModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersModifyOK, *ClusterNtpServersModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewClusterNtpServersModifyParams()
@@ -981,8 +1156,8 @@ func (a *Client) ClusterNtpServersModify(params *ClusterNtpServersModifyParams, 
 		ID:                 "cluster_ntp_servers_modify",
 		Method:             "PATCH",
 		PathPattern:        "/cluster/ntp/servers/{server}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterNtpServersModifyReader{formats: a.formats},
@@ -996,15 +1171,57 @@ func (a *Client) ClusterNtpServersModify(params *ClusterNtpServersModifyParams, 
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*ClusterNtpServersModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *ClusterNtpServersModifyOK:
+		return value, nil, nil
+	case *ClusterNtpServersModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ClusterNtpServersModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+ClusterNtpServersModifyCollection cluster ntp servers modify collection API
+*/
+func (a *Client) ClusterNtpServersModifyCollection(params *ClusterNtpServersModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersModifyCollectionOK, *ClusterNtpServersModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewClusterNtpServersModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cluster_ntp_servers_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/cluster/ntp/servers",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ClusterNtpServersModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *ClusterNtpServersModifyCollectionOK:
+		return value, nil, nil
+	case *ClusterNtpServersModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ClusterNtpServersModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1019,8 +1236,8 @@ func (a *Client) ClusterPeerCollectionGet(params *ClusterPeerCollectionGetParams
 		ID:                 "cluster_peer_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/peers",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterPeerCollectionGetReader{formats: a.formats},
@@ -1084,8 +1301,8 @@ func (a *Client) ClusterPeerCreate(params *ClusterPeerCreateParams, authInfo run
 		ID:                 "cluster_peer_create",
 		Method:             "POST",
 		PathPattern:        "/cluster/peers",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterPeerCreateReader{formats: a.formats},
@@ -1122,8 +1339,8 @@ func (a *Client) ClusterPeerDelete(params *ClusterPeerDeleteParams, authInfo run
 		ID:                 "cluster_peer_delete",
 		Method:             "DELETE",
 		PathPattern:        "/cluster/peers/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterPeerDeleteReader{formats: a.formats},
@@ -1149,6 +1366,44 @@ func (a *Client) ClusterPeerDelete(params *ClusterPeerDeleteParams, authInfo run
 }
 
 /*
+ClusterPeerDeleteCollection cluster peer delete collection API
+*/
+func (a *Client) ClusterPeerDeleteCollection(params *ClusterPeerDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewClusterPeerDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cluster_peer_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/cluster/peers",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ClusterPeerDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ClusterPeerDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ClusterPeerDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 ClusterPeerGet Retrieves a specific cluster peer instance.
 */
 func (a *Client) ClusterPeerGet(params *ClusterPeerGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerGetOK, error) {
@@ -1160,8 +1415,8 @@ func (a *Client) ClusterPeerGet(params *ClusterPeerGetParams, authInfo runtime.C
 		ID:                 "cluster_peer_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/peers/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterPeerGetReader{formats: a.formats},
@@ -1198,8 +1453,8 @@ func (a *Client) ClusterPeerModify(params *ClusterPeerModifyParams, authInfo run
 		ID:                 "cluster_peer_modify",
 		Method:             "PATCH",
 		PathPattern:        "/cluster/peers/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterPeerModifyReader{formats: a.formats},
@@ -1225,6 +1480,44 @@ func (a *Client) ClusterPeerModify(params *ClusterPeerModifyParams, authInfo run
 }
 
 /*
+ClusterPeerModifyCollection cluster peer modify collection API
+*/
+func (a *Client) ClusterPeerModifyCollection(params *ClusterPeerModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewClusterPeerModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cluster_peer_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/cluster/peers",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ClusterPeerModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ClusterPeerModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ClusterPeerModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 CounterRowCollectionGet Returns a collection of counter rows.
 */
 func (a *Client) CounterRowCollectionGet(params *CounterRowCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterRowCollectionGetOK, error) {
@@ -1236,8 +1529,8 @@ func (a *Client) CounterRowCollectionGet(params *CounterRowCollectionGetParams, 
 		ID:                 "counter_row_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/counter/tables/{counter_table.name}/rows",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CounterRowCollectionGetReader{formats: a.formats},
@@ -1274,8 +1567,8 @@ func (a *Client) CounterRowGet(params *CounterRowGetParams, authInfo runtime.Cli
 		ID:                 "counter_row_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/counter/tables/{counter_table.name}/rows/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CounterRowGetReader{formats: a.formats},
@@ -1312,8 +1605,8 @@ func (a *Client) CounterTableCollectionGet(params *CounterTableCollectionGetPara
 		ID:                 "counter_table_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/counter/tables",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CounterTableCollectionGetReader{formats: a.formats},
@@ -1350,8 +1643,8 @@ func (a *Client) CounterTableGet(params *CounterTableGetParams, authInfo runtime
 		ID:                 "counter_table_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/counter/tables/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CounterTableGetReader{formats: a.formats},
@@ -1391,8 +1684,8 @@ func (a *Client) FirmwareHistoryCollectionGet(params *FirmwareHistoryCollectionG
 		ID:                 "firmware_history_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/firmware/history",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FirmwareHistoryCollectionGetReader{formats: a.formats},
@@ -1429,8 +1722,8 @@ func (a *Client) JobCollectionGet(params *JobCollectionGetParams, authInfo runti
 		ID:                 "job_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/jobs",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &JobCollectionGetReader{formats: a.formats},
@@ -1467,8 +1760,8 @@ func (a *Client) JobGet(params *JobGetParams, authInfo runtime.ClientAuthInfoWri
 		ID:                 "job_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/jobs/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &JobGetReader{formats: a.formats},
@@ -1505,8 +1798,8 @@ func (a *Client) JobModify(params *JobModifyParams, authInfo runtime.ClientAuthI
 		ID:                 "job_modify",
 		Method:             "PATCH",
 		PathPattern:        "/cluster/jobs/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &JobModifyReader{formats: a.formats},
@@ -1532,6 +1825,44 @@ func (a *Client) JobModify(params *JobModifyParams, authInfo runtime.ClientAuthI
 }
 
 /*
+JobModifyCollection job modify collection API
+*/
+func (a *Client) JobModifyCollection(params *JobModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*JobModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewJobModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "job_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/cluster/jobs",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &JobModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*JobModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*JobModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	LicenseCreate Installs one or more feature licenses.
 
 ### Required properties
@@ -1548,8 +1879,8 @@ func (a *Client) LicenseCreate(params *LicenseCreateParams, authInfo runtime.Cli
 		ID:                 "license_create",
 		Method:             "POST",
 		PathPattern:        "/cluster/licensing/licenses",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LicenseCreateReader{formats: a.formats},
@@ -1589,8 +1920,8 @@ func (a *Client) LicenseDelete(params *LicenseDeleteParams, authInfo runtime.Cli
 		ID:                 "license_delete",
 		Method:             "DELETE",
 		PathPattern:        "/cluster/licensing/licenses/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LicenseDeleteReader{formats: a.formats},
@@ -1616,6 +1947,44 @@ func (a *Client) LicenseDelete(params *LicenseDeleteParams, authInfo runtime.Cli
 }
 
 /*
+LicenseDeleteCollection license delete collection API
+*/
+func (a *Client) LicenseDeleteCollection(params *LicenseDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLicenseDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "license_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/cluster/licensing/licenses",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LicenseDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LicenseDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LicenseDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	LicenseGet Retrieves a specific license package.
 
 ####
@@ -1633,8 +2002,8 @@ func (a *Client) LicenseGet(params *LicenseGetParams, authInfo runtime.ClientAut
 		ID:                 "license_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/licensing/licenses/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LicenseGetReader{formats: a.formats},
@@ -1676,8 +2045,8 @@ func (a *Client) LicenseManagerCollectionGet(params *LicenseManagerCollectionGet
 		ID:                 "license_manager_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/licensing/license-managers",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LicenseManagerCollectionGetReader{formats: a.formats},
@@ -1719,8 +2088,8 @@ func (a *Client) LicenseManagerGet(params *LicenseManagerGetParams, authInfo run
 		ID:                 "license_manager_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/licensing/license-managers/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LicenseManagerGetReader{formats: a.formats},
@@ -1753,7 +2122,7 @@ func (a *Client) LicenseManagerGet(params *LicenseManagerGetParams, authInfo run
 ### Related ONTAP commands
 * `system license license-manager modify`
 */
-func (a *Client) LicenseManagerModify(params *LicenseManagerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseManagerModifyAccepted, error) {
+func (a *Client) LicenseManagerModify(params *LicenseManagerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseManagerModifyOK, *LicenseManagerModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewLicenseManagerModifyParams()
@@ -1762,8 +2131,8 @@ func (a *Client) LicenseManagerModify(params *LicenseManagerModifyParams, authIn
 		ID:                 "license_manager_modify",
 		Method:             "PATCH",
 		PathPattern:        "/cluster/licensing/license-managers/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LicenseManagerModifyReader{formats: a.formats},
@@ -1777,15 +2146,57 @@ func (a *Client) LicenseManagerModify(params *LicenseManagerModifyParams, authIn
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*LicenseManagerModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *LicenseManagerModifyOK:
+		return value, nil, nil
+	case *LicenseManagerModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*LicenseManagerModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+LicenseManagerModifyCollection license manager modify collection API
+*/
+func (a *Client) LicenseManagerModifyCollection(params *LicenseManagerModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseManagerModifyCollectionOK, *LicenseManagerModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLicenseManagerModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "license_manager_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/cluster/licensing/license-managers",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LicenseManagerModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *LicenseManagerModifyCollectionOK:
+		return value, nil, nil
+	case *LicenseManagerModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LicenseManagerModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1807,8 +2218,8 @@ func (a *Client) LicensesGet(params *LicensesGetParams, authInfo runtime.ClientA
 		ID:                 "licenses_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/licensing/licenses",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LicensesGetReader{formats: a.formats},
@@ -1834,7 +2245,10 @@ func (a *Client) LicensesGet(params *LicensesGetParams, authInfo runtime.ClientA
 }
 
 /*
-MediatorCollectionGet Retrieves mediators configured in the cluster.
+	MediatorCollectionGet "Retrieves a Mediator configured in the cluster."
+
+### Related ONTAP commands
+* `storage iscsi-initiator show`
 */
 func (a *Client) MediatorCollectionGet(params *MediatorCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1845,8 +2259,8 @@ func (a *Client) MediatorCollectionGet(params *MediatorCollectionGetParams, auth
 		ID:                 "mediator_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/mediators",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MediatorCollectionGetReader{formats: a.formats},
@@ -1874,7 +2288,7 @@ func (a *Client) MediatorCollectionGet(params *MediatorCollectionGetParams, auth
 /*
 MediatorCreate Creates and connect a mediator.
 */
-func (a *Client) MediatorCreate(params *MediatorCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorCreateAccepted, error) {
+func (a *Client) MediatorCreate(params *MediatorCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorCreateCreated, *MediatorCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewMediatorCreateParams()
@@ -1883,8 +2297,8 @@ func (a *Client) MediatorCreate(params *MediatorCreateParams, authInfo runtime.C
 		ID:                 "mediator_create",
 		Method:             "POST",
 		PathPattern:        "/cluster/mediators",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MediatorCreateReader{formats: a.formats},
@@ -1898,21 +2312,23 @@ func (a *Client) MediatorCreate(params *MediatorCreateParams, authInfo runtime.C
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*MediatorCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *MediatorCreateCreated:
+		return value, nil, nil
+	case *MediatorCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*MediatorCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
 MediatorDelete Deletes the mediator.
 */
-func (a *Client) MediatorDelete(params *MediatorDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorDeleteAccepted, error) {
+func (a *Client) MediatorDelete(params *MediatorDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorDeleteOK, *MediatorDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewMediatorDeleteParams()
@@ -1921,8 +2337,8 @@ func (a *Client) MediatorDelete(params *MediatorDeleteParams, authInfo runtime.C
 		ID:                 "mediator_delete",
 		Method:             "DELETE",
 		PathPattern:        "/cluster/mediators/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MediatorDeleteReader{formats: a.formats},
@@ -1936,19 +2352,64 @@ func (a *Client) MediatorDelete(params *MediatorDeleteParams, authInfo runtime.C
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*MediatorDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *MediatorDeleteOK:
+		return value, nil, nil
+	case *MediatorDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*MediatorDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-MediatorGet Retrieves the mediator state and configuration.
+MediatorDeleteCollection mediator delete collection API
+*/
+func (a *Client) MediatorDeleteCollection(params *MediatorDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorDeleteCollectionOK, *MediatorDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMediatorDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "mediator_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/cluster/mediators",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MediatorDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *MediatorDeleteCollectionOK:
+		return value, nil, nil
+	case *MediatorDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MediatorDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	MediatorGet "Retrieves the Mediator state and configuration."
+
+### Related ONTAP commands
+* `storage iscsi-initiator show`
 */
 func (a *Client) MediatorGet(params *MediatorGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1959,8 +2420,8 @@ func (a *Client) MediatorGet(params *MediatorGetParams, authInfo runtime.ClientA
 		ID:                 "mediator_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/mediators/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MediatorGetReader{formats: a.formats},
@@ -2005,7 +2466,7 @@ func (a *Client) MediatorGet(params *MediatorGetParams, authInfo runtime.ClientA
 * `storage aggregate mirror`
 * `metrocluster configure`
 */
-func (a *Client) MetroclusterCreate(params *MetroclusterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterCreateAccepted, error) {
+func (a *Client) MetroclusterCreate(params *MetroclusterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterCreateCreated, *MetroclusterCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewMetroclusterCreateParams()
@@ -2014,8 +2475,8 @@ func (a *Client) MetroclusterCreate(params *MetroclusterCreateParams, authInfo r
 		ID:                 "metrocluster_create",
 		Method:             "POST",
 		PathPattern:        "/cluster/metrocluster",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterCreateReader{formats: a.formats},
@@ -2029,21 +2490,23 @@ func (a *Client) MetroclusterCreate(params *MetroclusterCreateParams, authInfo r
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*MetroclusterCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *MetroclusterCreateCreated:
+		return value, nil, nil
+	case *MetroclusterCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*MetroclusterCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
 MetroclusterDiagnosticsCreate Start a MetroCluster diagnostic operation or set up a schedule for the diagnostics to be run periodically.
 */
-func (a *Client) MetroclusterDiagnosticsCreate(params *MetroclusterDiagnosticsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDiagnosticsCreateAccepted, error) {
+func (a *Client) MetroclusterDiagnosticsCreate(params *MetroclusterDiagnosticsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDiagnosticsCreateCreated, *MetroclusterDiagnosticsCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewMetroclusterDiagnosticsCreateParams()
@@ -2052,8 +2515,8 @@ func (a *Client) MetroclusterDiagnosticsCreate(params *MetroclusterDiagnosticsCr
 		ID:                 "metrocluster_diagnostics_create",
 		Method:             "POST",
 		PathPattern:        "/cluster/metrocluster/diagnostics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterDiagnosticsCreateReader{formats: a.formats},
@@ -2067,15 +2530,17 @@ func (a *Client) MetroclusterDiagnosticsCreate(params *MetroclusterDiagnosticsCr
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*MetroclusterDiagnosticsCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *MetroclusterDiagnosticsCreateCreated:
+		return value, nil, nil
+	case *MetroclusterDiagnosticsCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*MetroclusterDiagnosticsCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -2090,8 +2555,8 @@ func (a *Client) MetroclusterDiagnosticsGet(params *MetroclusterDiagnosticsGetPa
 		ID:                 "metrocluster_diagnostics_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/metrocluster/diagnostics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterDiagnosticsGetReader{formats: a.formats},
@@ -2117,7 +2582,10 @@ func (a *Client) MetroclusterDiagnosticsGet(params *MetroclusterDiagnosticsGetPa
 }
 
 /*
-MetroclusterDrGroupCollectionGet Retrieves all the DR group in the MetroCluster over IP configuration.
+	MetroclusterDrGroupCollectionGet Retrieves all the DR group in the MetroCluster over IP configuration.
+
+### Related ONTAP commands
+* `metrocluster configuration-settings dr-group show`
 */
 func (a *Client) MetroclusterDrGroupCollectionGet(params *MetroclusterDrGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2128,8 +2596,8 @@ func (a *Client) MetroclusterDrGroupCollectionGet(params *MetroclusterDrGroupCol
 		ID:                 "metrocluster_dr_group_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/metrocluster/dr-groups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterDrGroupCollectionGetReader{formats: a.formats},
@@ -2167,7 +2635,7 @@ func (a *Client) MetroclusterDrGroupCollectionGet(params *MetroclusterDrGroupCol
 ### Related ONTAP commands
 * `metrocluster configuration-settings dr-group create`
 */
-func (a *Client) MetroclusterDrGroupCreate(params *MetroclusterDrGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupCreateAccepted, error) {
+func (a *Client) MetroclusterDrGroupCreate(params *MetroclusterDrGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupCreateCreated, *MetroclusterDrGroupCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewMetroclusterDrGroupCreateParams()
@@ -2176,8 +2644,8 @@ func (a *Client) MetroclusterDrGroupCreate(params *MetroclusterDrGroupCreatePara
 		ID:                 "metrocluster_dr_group_create",
 		Method:             "POST",
 		PathPattern:        "/cluster/metrocluster/dr-groups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterDrGroupCreateReader{formats: a.formats},
@@ -2191,21 +2659,26 @@ func (a *Client) MetroclusterDrGroupCreate(params *MetroclusterDrGroupCreatePara
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*MetroclusterDrGroupCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *MetroclusterDrGroupCreateCreated:
+		return value, nil, nil
+	case *MetroclusterDrGroupCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*MetroclusterDrGroupCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-MetroclusterDrGroupDelete Remove the DR group from the current MetroCluster over IP configuration specified by the DR group id.
+	MetroclusterDrGroupDelete Remove the DR group from the current MetroCluster over IP configuration specified by the DR group id.
+
+### Related ONTAP commands
+* `metrocluster configuration-settings dr-group delete`
 */
-func (a *Client) MetroclusterDrGroupDelete(params *MetroclusterDrGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupDeleteAccepted, error) {
+func (a *Client) MetroclusterDrGroupDelete(params *MetroclusterDrGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupDeleteOK, *MetroclusterDrGroupDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewMetroclusterDrGroupDeleteParams()
@@ -2214,8 +2687,8 @@ func (a *Client) MetroclusterDrGroupDelete(params *MetroclusterDrGroupDeletePara
 		ID:                 "metrocluster_dr_group_delete",
 		Method:             "DELETE",
 		PathPattern:        "/cluster/metrocluster/dr-groups/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterDrGroupDeleteReader{formats: a.formats},
@@ -2229,19 +2702,64 @@ func (a *Client) MetroclusterDrGroupDelete(params *MetroclusterDrGroupDeletePara
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*MetroclusterDrGroupDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *MetroclusterDrGroupDeleteOK:
+		return value, nil, nil
+	case *MetroclusterDrGroupDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*MetroclusterDrGroupDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-MetroclusterDrGroupGet Retrieves the DR group information specified by the DR group id.
+MetroclusterDrGroupDeleteCollection metrocluster dr group delete collection API
+*/
+func (a *Client) MetroclusterDrGroupDeleteCollection(params *MetroclusterDrGroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupDeleteCollectionOK, *MetroclusterDrGroupDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterDrGroupDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_dr_group_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/cluster/metrocluster/dr-groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterDrGroupDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *MetroclusterDrGroupDeleteCollectionOK:
+		return value, nil, nil
+	case *MetroclusterDrGroupDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterDrGroupDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	MetroclusterDrGroupGet Retrieves the DR group information specified by the DR group id.
+
+### Related ONTAP commands
+* `metrocluster configuration-settings dr-group show`
 */
 func (a *Client) MetroclusterDrGroupGet(params *MetroclusterDrGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2252,8 +2770,8 @@ func (a *Client) MetroclusterDrGroupGet(params *MetroclusterDrGroupGetParams, au
 		ID:                 "metrocluster_dr_group_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/metrocluster/dr-groups/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterDrGroupGetReader{formats: a.formats},
@@ -2281,7 +2799,9 @@ func (a *Client) MetroclusterDrGroupGet(params *MetroclusterDrGroupGetParams, au
 /*
 	MetroclusterGet Retrieves MetroCluster status and configuration details.
 
-### Related ONTAP commands * `metrocluster show` * `metrocluster node show`
+### Related ONTAP commands
+* `metrocluster show`
+* `metrocluster node show`
 */
 func (a *Client) MetroclusterGet(params *MetroclusterGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2292,8 +2812,8 @@ func (a *Client) MetroclusterGet(params *MetroclusterGetParams, authInfo runtime
 		ID:                 "metrocluster_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/metrocluster",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterGetReader{formats: a.formats},
@@ -2335,8 +2855,8 @@ func (a *Client) MetroclusterInterconnectCollectionGet(params *MetroclusterInter
 		ID:                 "metrocluster_interconnect_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/metrocluster/interconnects",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterInterconnectCollectionGetReader{formats: a.formats},
@@ -2376,8 +2896,8 @@ func (a *Client) MetroclusterInterconnectGet(params *MetroclusterInterconnectGet
 		ID:                 "metrocluster_interconnect_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterInterconnectGetReader{formats: a.formats},
@@ -2405,9 +2925,10 @@ func (a *Client) MetroclusterInterconnectGet(params *MetroclusterInterconnectGet
 /*
 	MetroclusterInterconnectModify Updates a MetroCluster interconnect interface.
 
-### Related ONTAP commands * `metrocluster configuration-settings interface modify`
+### Related ONTAP commands
+* `metrocluster configuration-settings interface modify`
 */
-func (a *Client) MetroclusterInterconnectModify(params *MetroclusterInterconnectModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterInterconnectModifyAccepted, error) {
+func (a *Client) MetroclusterInterconnectModify(params *MetroclusterInterconnectModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterInterconnectModifyOK, *MetroclusterInterconnectModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewMetroclusterInterconnectModifyParams()
@@ -2416,8 +2937,8 @@ func (a *Client) MetroclusterInterconnectModify(params *MetroclusterInterconnect
 		ID:                 "metrocluster_interconnect_modify",
 		Method:             "PATCH",
 		PathPattern:        "/cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterInterconnectModifyReader{formats: a.formats},
@@ -2431,23 +2952,69 @@ func (a *Client) MetroclusterInterconnectModify(params *MetroclusterInterconnect
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*MetroclusterInterconnectModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *MetroclusterInterconnectModifyOK:
+		return value, nil, nil
+	case *MetroclusterInterconnectModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*MetroclusterInterconnectModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+MetroclusterInterconnectModifyCollection metrocluster interconnect modify collection API
+*/
+func (a *Client) MetroclusterInterconnectModifyCollection(params *MetroclusterInterconnectModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterInterconnectModifyCollectionOK, *MetroclusterInterconnectModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterInterconnectModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_interconnect_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/cluster/metrocluster/interconnects",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterInterconnectModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *MetroclusterInterconnectModifyCollectionOK:
+		return value, nil, nil
+	case *MetroclusterInterconnectModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterInterconnectModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
 	MetroclusterModify Initiates a switchover, heal or switchback operation.
 
-### Related ONTAP commands * `metrocluster switchover` * `metrocluster switchback` * `metrocluster heal`
+### Related ONTAP commands
+* `metrocluster switchover`
+* `metrocluster switchback`
+* `metrocluster heal`
+* `metrocluster modify`
 */
-func (a *Client) MetroclusterModify(params *MetroclusterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterModifyAccepted, error) {
+func (a *Client) MetroclusterModify(params *MetroclusterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterModifyOK, *MetroclusterModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewMetroclusterModifyParams()
@@ -2456,8 +3023,8 @@ func (a *Client) MetroclusterModify(params *MetroclusterModifyParams, authInfo r
 		ID:                 "metrocluster_modify",
 		Method:             "PATCH",
 		PathPattern:        "/cluster/metrocluster",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterModifyReader{formats: a.formats},
@@ -2471,15 +3038,17 @@ func (a *Client) MetroclusterModify(params *MetroclusterModifyParams, authInfo r
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*MetroclusterModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *MetroclusterModifyOK:
+		return value, nil, nil
+	case *MetroclusterModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*MetroclusterModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -2499,8 +3068,8 @@ func (a *Client) MetroclusterNodeCollectionGet(params *MetroclusterNodeCollectio
 		ID:                 "metrocluster_node_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/metrocluster/nodes",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterNodeCollectionGetReader{formats: a.formats},
@@ -2540,8 +3109,8 @@ func (a *Client) MetroclusterNodeGet(params *MetroclusterNodeGetParams, authInfo
 		ID:                 "metrocluster_node_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/metrocluster/nodes/{node.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterNodeGetReader{formats: a.formats},
@@ -2583,8 +3152,8 @@ func (a *Client) MetroclusterOperationCollectionGet(params *MetroclusterOperatio
 		ID:                 "metrocluster_operation_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/metrocluster/operations",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterOperationCollectionGetReader{formats: a.formats},
@@ -2624,8 +3193,8 @@ func (a *Client) MetroclusterOperationGet(params *MetroclusterOperationGetParams
 		ID:                 "metrocluster_operation_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/metrocluster/operations/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterOperationGetReader{formats: a.formats},
@@ -2662,8 +3231,8 @@ func (a *Client) MetroclusterSvmCollectionGet(params *MetroclusterSvmCollectionG
 		ID:                 "metrocluster_svm_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/metrocluster/svms",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterSvmCollectionGetReader{formats: a.formats},
@@ -2700,8 +3269,8 @@ func (a *Client) MetroclusterSvmGet(params *MetroclusterSvmGetParams, authInfo r
 		ID:                 "metrocluster_svm_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/metrocluster/svms/{cluster.uuid}/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MetroclusterSvmGetReader{formats: a.formats},
@@ -2737,7 +3306,7 @@ Note that before deleting a node from the cluster, you must shut down all of the
 ### Learn more
 * [`DOC /cluster/nodes`](#docs-cluster-cluster_nodes)
 */
-func (a *Client) NodeDelete(params *NodeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeDeleteAccepted, error) {
+func (a *Client) NodeDelete(params *NodeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeDeleteOK, *NodeDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewNodeDeleteParams()
@@ -2746,8 +3315,8 @@ func (a *Client) NodeDelete(params *NodeDeleteParams, authInfo runtime.ClientAut
 		ID:                 "node_delete",
 		Method:             "DELETE",
 		PathPattern:        "/cluster/nodes/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NodeDeleteReader{formats: a.formats},
@@ -2761,15 +3330,57 @@ func (a *Client) NodeDelete(params *NodeDeleteParams, authInfo runtime.ClientAut
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*NodeDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *NodeDeleteOK:
+		return value, nil, nil
+	case *NodeDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*NodeDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+NodeDeleteCollection node delete collection API
+*/
+func (a *Client) NodeDeleteCollection(params *NodeDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeDeleteCollectionOK, *NodeDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNodeDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "node_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/cluster/nodes",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NodeDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *NodeDeleteCollectionOK:
+		return value, nil, nil
+	case *NodeDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NodeDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -2802,8 +3413,8 @@ func (a *Client) NodeGet(params *NodeGetParams, authInfo runtime.ClientAuthInfoW
 		ID:                 "node_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/nodes/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NodeGetReader{formats: a.formats},
@@ -2840,8 +3451,8 @@ func (a *Client) NodeMetricsCollectionGet(params *NodeMetricsCollectionGetParams
 		ID:                 "node_metrics_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/nodes/{uuid}/metrics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NodeMetricsCollectionGetReader{formats: a.formats},
@@ -2882,7 +3493,7 @@ func (a *Client) NodeMetricsCollectionGet(params *NodeMetricsCollectionGetParams
 * `system service-processor network auto-configuration enable`
 * `system service-processor network auto-configuration disable`
 */
-func (a *Client) NodeModify(params *NodeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeModifyAccepted, error) {
+func (a *Client) NodeModify(params *NodeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeModifyOK, *NodeModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewNodeModifyParams()
@@ -2891,8 +3502,8 @@ func (a *Client) NodeModify(params *NodeModifyParams, authInfo runtime.ClientAut
 		ID:                 "node_modify",
 		Method:             "PATCH",
 		PathPattern:        "/cluster/nodes/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NodeModifyReader{formats: a.formats},
@@ -2906,15 +3517,57 @@ func (a *Client) NodeModify(params *NodeModifyParams, authInfo runtime.ClientAut
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*NodeModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *NodeModifyOK:
+		return value, nil, nil
+	case *NodeModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*NodeModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+NodeModifyCollection node modify collection API
+*/
+func (a *Client) NodeModifyCollection(params *NodeModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeModifyCollectionOK, *NodeModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNodeModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "node_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/cluster/nodes",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NodeModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *NodeModifyCollectionOK:
+		return value, nil, nil
+	case *NodeModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NodeModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -2929,7 +3582,7 @@ func (a *Client) NodeModify(params *NodeModifyParams, authInfo runtime.ClientAut
 * `system node modify`
 * `system service-processor network modify`
 */
-func (a *Client) NodesCreate(params *NodesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodesCreateAccepted, error) {
+func (a *Client) NodesCreate(params *NodesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodesCreateCreated, *NodesCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewNodesCreateParams()
@@ -2938,8 +3591,8 @@ func (a *Client) NodesCreate(params *NodesCreateParams, authInfo runtime.ClientA
 		ID:                 "nodes_create",
 		Method:             "POST",
 		PathPattern:        "/cluster/nodes",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NodesCreateReader{formats: a.formats},
@@ -2953,15 +3606,17 @@ func (a *Client) NodesCreate(params *NodesCreateParams, authInfo runtime.ClientA
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*NodesCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *NodesCreateCreated:
+		return value, nil, nil
+	case *NodesCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*NodesCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -2983,8 +3638,8 @@ func (a *Client) NodesGet(params *NodesGetParams, authInfo runtime.ClientAuthInf
 		ID:                 "nodes_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/nodes",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NodesGetReader{formats: a.formats},
@@ -3010,6 +3665,272 @@ func (a *Client) NodesGet(params *NodesGetParams, authInfo runtime.ClientAuthInf
 }
 
 /*
+ResourceTagCollectionGet Retrieves the tags currently being used for resources in the API.
+*/
+func (a *Client) ResourceTagCollectionGet(params *ResourceTagCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ResourceTagCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewResourceTagCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "resource_tag_collection_get",
+		Method:             "GET",
+		PathPattern:        "/resource-tags",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ResourceTagCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ResourceTagCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ResourceTagCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+ResourceTagGet Retrieves a specific resource tag.
+*/
+func (a *Client) ResourceTagGet(params *ResourceTagGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ResourceTagGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewResourceTagGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "resource_tag_get",
+		Method:             "GET",
+		PathPattern:        "/resource-tags/{value}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ResourceTagGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ResourceTagGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ResourceTagGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+ResourceTagResourceCollectionGet Retrieves the resources for a specific tag
+*/
+func (a *Client) ResourceTagResourceCollectionGet(params *ResourceTagResourceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ResourceTagResourceCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewResourceTagResourceCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "resource_tag_resource_collection_get",
+		Method:             "GET",
+		PathPattern:        "/resource-tags/{resource_tag.value}/resources",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ResourceTagResourceCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ResourceTagResourceCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ResourceTagResourceCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+ResourceTagResourceCreate Creates a new tag on a specific resource.
+*/
+func (a *Client) ResourceTagResourceCreate(params *ResourceTagResourceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ResourceTagResourceCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewResourceTagResourceCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "resource_tag_resource_create",
+		Method:             "POST",
+		PathPattern:        "/resource-tags/{resource_tag.value}/resources",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ResourceTagResourceCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ResourceTagResourceCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ResourceTagResourceCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+ResourceTagResourceDelete Deletes a specific tag on a specific resource.
+*/
+func (a *Client) ResourceTagResourceDelete(params *ResourceTagResourceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ResourceTagResourceDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewResourceTagResourceDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "resource_tag_resource_delete",
+		Method:             "DELETE",
+		PathPattern:        "/resource-tags/{resource_tag.value}/resources/{href}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ResourceTagResourceDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ResourceTagResourceDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ResourceTagResourceDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+ResourceTagResourceDeleteCollection resource tag resource delete collection API
+*/
+func (a *Client) ResourceTagResourceDeleteCollection(params *ResourceTagResourceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ResourceTagResourceDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewResourceTagResourceDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "resource_tag_resource_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/resource-tags/{resource_tag.value}/resources",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ResourceTagResourceDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ResourceTagResourceDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ResourceTagResourceDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+ResourceTagResourceGet Retrieves a specific resource for a specific tag.
+*/
+func (a *Client) ResourceTagResourceGet(params *ResourceTagResourceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ResourceTagResourceGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewResourceTagResourceGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "resource_tag_resource_get",
+		Method:             "GET",
+		PathPattern:        "/resource-tags/{resource_tag.value}/resources/{href}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ResourceTagResourceGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ResourceTagResourceGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ResourceTagResourceGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 ScheduleCollectionGet Retrieves a schedule.
 */
 func (a *Client) ScheduleCollectionGet(params *ScheduleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleCollectionGetOK, error) {
@@ -3021,8 +3942,8 @@ func (a *Client) ScheduleCollectionGet(params *ScheduleCollectionGetParams, auth
 		ID:                 "schedule_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/schedules",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ScheduleCollectionGetReader{formats: a.formats},
@@ -3063,8 +3984,8 @@ func (a *Client) ScheduleCreate(params *ScheduleCreateParams, authInfo runtime.C
 		ID:                 "schedule_create",
 		Method:             "POST",
 		PathPattern:        "/cluster/schedules",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ScheduleCreateReader{formats: a.formats},
@@ -3101,8 +4022,8 @@ func (a *Client) ScheduleDelete(params *ScheduleDeleteParams, authInfo runtime.C
 		ID:                 "schedule_delete",
 		Method:             "DELETE",
 		PathPattern:        "/cluster/schedules/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ScheduleDeleteReader{formats: a.formats},
@@ -3128,6 +4049,44 @@ func (a *Client) ScheduleDelete(params *ScheduleDeleteParams, authInfo runtime.C
 }
 
 /*
+ScheduleDeleteCollection schedule delete collection API
+*/
+func (a *Client) ScheduleDeleteCollection(params *ScheduleDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewScheduleDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "schedule_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/cluster/schedules",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ScheduleDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ScheduleDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ScheduleDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 ScheduleGet Retrieves a schedule.
 */
 func (a *Client) ScheduleGet(params *ScheduleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleGetOK, error) {
@@ -3139,8 +4098,8 @@ func (a *Client) ScheduleGet(params *ScheduleGetParams, authInfo runtime.ClientA
 		ID:                 "schedule_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/schedules/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ScheduleGetReader{formats: a.formats},
@@ -3177,8 +4136,8 @@ func (a *Client) ScheduleModify(params *ScheduleModifyParams, authInfo runtime.C
 		ID:                 "schedule_modify",
 		Method:             "PATCH",
 		PathPattern:        "/cluster/schedules/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ScheduleModifyReader{formats: a.formats},
@@ -3204,7 +4163,48 @@ func (a *Client) ScheduleModify(params *ScheduleModifyParams, authInfo runtime.C
 }
 
 /*
-SensorsCollectionGet Retrieve Environment Sensors
+ScheduleModifyCollection schedule modify collection API
+*/
+func (a *Client) ScheduleModifyCollection(params *ScheduleModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewScheduleModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "schedule_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/cluster/schedules",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ScheduleModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ScheduleModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ScheduleModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SensorsCollectionGet Retrieves Environment Sensors
+
+### Related ONTAP commands
+* `system node environment sensors show`
 */
 func (a *Client) SensorsCollectionGet(params *SensorsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SensorsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3215,8 +4215,8 @@ func (a *Client) SensorsCollectionGet(params *SensorsCollectionGetParams, authIn
 		ID:                 "sensors_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/sensors",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SensorsCollectionGetReader{formats: a.formats},
@@ -3253,8 +4253,8 @@ func (a *Client) SensorsGet(params *SensorsGetParams, authInfo runtime.ClientAut
 		ID:                 "sensors_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/sensors/{node.uuid}/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SensorsGetReader{formats: a.formats},
@@ -3296,8 +4296,8 @@ func (a *Client) SoftwareDownloadGet(params *SoftwareDownloadGetParams, authInfo
 		ID:                 "software_download_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/software/download",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SoftwareDownloadGetReader{formats: a.formats},
@@ -3341,8 +4341,8 @@ func (a *Client) SoftwareGet(params *SoftwareGetParams, authInfo runtime.ClientA
 		ID:                 "software_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/software",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SoftwareGetReader{formats: a.formats},
@@ -3384,8 +4384,8 @@ func (a *Client) SoftwareHistoryCollectionGet(params *SoftwareHistoryCollectionG
 		ID:                 "software_history_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/software/history",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SoftwareHistoryCollectionGetReader{formats: a.formats},
@@ -3427,6 +4427,7 @@ Important note:
 * `estimate_only` - Estimates the time duration; does not perform any update.
 * `nodes_to_update` - Specifies a subset of the cluster's nodes for update.
 * `show_validation_details` - If the value is set to true, then all validation details will be shown in the output.
+* `skip_nodes_at_target_version` - If the value is set to true, then nodes already at the target version will not be upgraded. Defaults to true in non-MetroCluster configurations. Setting this option to false will force all the selected nodes of the cluster to undergo upgrade.
 ### Related ONTAP commands
 * `cluster image validate`
 * `cluster image update`
@@ -3436,7 +4437,7 @@ Important note:
 ### Learn more
 * [`DOC /cluster/software`](#docs-cluster-cluster_software)
 */
-func (a *Client) SoftwareModify(params *SoftwareModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareModifyAccepted, error) {
+func (a *Client) SoftwareModify(params *SoftwareModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareModifyOK, *SoftwareModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSoftwareModifyParams()
@@ -3445,8 +4446,8 @@ func (a *Client) SoftwareModify(params *SoftwareModifyParams, authInfo runtime.C
 		ID:                 "software_modify",
 		Method:             "PATCH",
 		PathPattern:        "/cluster/software",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SoftwareModifyReader{formats: a.formats},
@@ -3460,15 +4461,17 @@ func (a *Client) SoftwareModify(params *SoftwareModifyParams, authInfo runtime.C
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SoftwareModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SoftwareModifyOK:
+		return value, nil, nil
+	case *SoftwareModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SoftwareModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -3484,7 +4487,7 @@ func (a *Client) SoftwareModify(params *SoftwareModifyParams, authInfo runtime.C
 ### Learn more
 * [`DOC /cluster/software`](#docs-cluster-cluster_software)
 */
-func (a *Client) SoftwarePackageCreate(params *SoftwarePackageCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackageCreateAccepted, error) {
+func (a *Client) SoftwarePackageCreate(params *SoftwarePackageCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackageCreateCreated, *SoftwarePackageCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSoftwarePackageCreateParams()
@@ -3493,8 +4496,8 @@ func (a *Client) SoftwarePackageCreate(params *SoftwarePackageCreateParams, auth
 		ID:                 "software_package_create",
 		Method:             "POST",
 		PathPattern:        "/cluster/software/download",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SoftwarePackageCreateReader{formats: a.formats},
@@ -3508,15 +4511,17 @@ func (a *Client) SoftwarePackageCreate(params *SoftwarePackageCreateParams, auth
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SoftwarePackageCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SoftwarePackageCreateCreated:
+		return value, nil, nil
+	case *SoftwarePackageCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SoftwarePackageCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -3527,7 +4532,7 @@ func (a *Client) SoftwarePackageCreate(params *SoftwarePackageCreateParams, auth
 ### Learn more
 * [`DOC /cluster/software`](#docs-cluster-cluster_software)
 */
-func (a *Client) SoftwarePackageDelete(params *SoftwarePackageDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackageDeleteAccepted, error) {
+func (a *Client) SoftwarePackageDelete(params *SoftwarePackageDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackageDeleteOK, *SoftwarePackageDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSoftwarePackageDeleteParams()
@@ -3536,8 +4541,8 @@ func (a *Client) SoftwarePackageDelete(params *SoftwarePackageDeleteParams, auth
 		ID:                 "software_package_delete",
 		Method:             "DELETE",
 		PathPattern:        "/cluster/software/packages/{version}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SoftwarePackageDeleteReader{formats: a.formats},
@@ -3551,15 +4556,57 @@ func (a *Client) SoftwarePackageDelete(params *SoftwarePackageDeleteParams, auth
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SoftwarePackageDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SoftwarePackageDeleteOK:
+		return value, nil, nil
+	case *SoftwarePackageDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SoftwarePackageDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SoftwarePackageDeleteCollection software package delete collection API
+*/
+func (a *Client) SoftwarePackageDeleteCollection(params *SoftwarePackageDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackageDeleteCollectionOK, *SoftwarePackageDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSoftwarePackageDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "software_package_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/cluster/software/packages",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SoftwarePackageDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SoftwarePackageDeleteCollectionOK:
+		return value, nil, nil
+	case *SoftwarePackageDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SoftwarePackageDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -3579,8 +4626,8 @@ func (a *Client) SoftwarePackageGet(params *SoftwarePackageGetParams, authInfo r
 		ID:                 "software_package_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/software/packages/{version}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SoftwarePackageGetReader{formats: a.formats},
@@ -3622,8 +4669,8 @@ func (a *Client) SoftwarePackagesCollectionGet(params *SoftwarePackagesCollectio
 		ID:                 "software_packages_collection_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/software/packages",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SoftwarePackagesCollectionGetReader{formats: a.formats},
@@ -3656,7 +4703,7 @@ func (a *Client) SoftwarePackagesCollectionGet(params *SoftwarePackagesCollectio
 ### Learn more
 * [`DOC /cluster/software`](#docs-cluster-cluster_software)
 */
-func (a *Client) SoftwareUpload(params *SoftwareUploadParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareUploadAccepted, error) {
+func (a *Client) SoftwareUpload(params *SoftwareUploadParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareUploadCreated, *SoftwareUploadAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSoftwareUploadParams()
@@ -3665,7 +4712,7 @@ func (a *Client) SoftwareUpload(params *SoftwareUploadParams, authInfo runtime.C
 		ID:                 "software_upload",
 		Method:             "POST",
 		PathPattern:        "/cluster/software/upload",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
 		ConsumesMediaTypes: []string{"multipart/form-data"},
 		Schemes:            []string{"https"},
 		Params:             params,
@@ -3680,15 +4727,17 @@ func (a *Client) SoftwareUpload(params *SoftwareUploadParams, authInfo runtime.C
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SoftwareUploadAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SoftwareUploadCreated:
+		return value, nil, nil
+	case *SoftwareUploadAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SoftwareUploadDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -3703,8 +4752,8 @@ func (a *Client) WebGet(params *WebGetParams, authInfo runtime.ClientAuthInfoWri
 		ID:                 "web_get",
 		Method:             "GET",
 		PathPattern:        "/cluster/web",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &WebGetReader{formats: a.formats},
@@ -3744,8 +4793,8 @@ func (a *Client) WebModify(params *WebModifyParams, authInfo runtime.ClientAuthI
 		ID:                 "web_modify",
 		Method:             "PATCH",
 		PathPattern:        "/cluster/web",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &WebModifyReader{formats: a.formats},

@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type ApplicationSnapshotRestoreReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *ApplicationSnapshotRestoreReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewApplicationSnapshotRestoreCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewApplicationSnapshotRestoreAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *ApplicationSnapshotRestoreReader) ReadResponse(response runtime.ClientR
 	}
 }
 
+// NewApplicationSnapshotRestoreCreated creates a ApplicationSnapshotRestoreCreated with default headers values
+func NewApplicationSnapshotRestoreCreated() *ApplicationSnapshotRestoreCreated {
+	return &ApplicationSnapshotRestoreCreated{}
+}
+
+/*
+ApplicationSnapshotRestoreCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type ApplicationSnapshotRestoreCreated struct {
+	Payload *models.ApplicationSnapshotJobLinkResponse
+}
+
+// IsSuccess returns true when this application snapshot restore created response has a 2xx status code
+func (o *ApplicationSnapshotRestoreCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this application snapshot restore created response has a 3xx status code
+func (o *ApplicationSnapshotRestoreCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this application snapshot restore created response has a 4xx status code
+func (o *ApplicationSnapshotRestoreCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this application snapshot restore created response has a 5xx status code
+func (o *ApplicationSnapshotRestoreCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this application snapshot restore created response a status code equal to that given
+func (o *ApplicationSnapshotRestoreCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the application snapshot restore created response
+func (o *ApplicationSnapshotRestoreCreated) Code() int {
+	return 201
+}
+
+func (o *ApplicationSnapshotRestoreCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots/{uuid}/restore][%d] applicationSnapshotRestoreCreated %s", 201, payload)
+}
+
+func (o *ApplicationSnapshotRestoreCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots/{uuid}/restore][%d] applicationSnapshotRestoreCreated %s", 201, payload)
+}
+
+func (o *ApplicationSnapshotRestoreCreated) GetPayload() *models.ApplicationSnapshotJobLinkResponse {
+	return o.Payload
+}
+
+func (o *ApplicationSnapshotRestoreCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ApplicationSnapshotJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewApplicationSnapshotRestoreAccepted creates a ApplicationSnapshotRestoreAccepted with default headers values
 func NewApplicationSnapshotRestoreAccepted() *ApplicationSnapshotRestoreAccepted {
 	return &ApplicationSnapshotRestoreAccepted{}
@@ -52,7 +129,7 @@ ApplicationSnapshotRestoreAccepted describes a response with status code 202, wi
 Accepted
 */
 type ApplicationSnapshotRestoreAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.ApplicationSnapshotJobLinkResponse
 }
 
 // IsSuccess returns true when this application snapshot restore accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *ApplicationSnapshotRestoreAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the application snapshot restore accepted response
+func (o *ApplicationSnapshotRestoreAccepted) Code() int {
+	return 202
+}
+
 func (o *ApplicationSnapshotRestoreAccepted) Error() string {
-	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots/{uuid}/restore][%d] applicationSnapshotRestoreAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots/{uuid}/restore][%d] applicationSnapshotRestoreAccepted %s", 202, payload)
 }
 
 func (o *ApplicationSnapshotRestoreAccepted) String() string {
-	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots/{uuid}/restore][%d] applicationSnapshotRestoreAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots/{uuid}/restore][%d] applicationSnapshotRestoreAccepted %s", 202, payload)
 }
 
-func (o *ApplicationSnapshotRestoreAccepted) GetPayload() *models.JobLinkResponse {
+func (o *ApplicationSnapshotRestoreAccepted) GetPayload() *models.ApplicationSnapshotJobLinkResponse {
 	return o.Payload
 }
 
 func (o *ApplicationSnapshotRestoreAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.ApplicationSnapshotJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -122,11 +206,6 @@ type ApplicationSnapshotRestoreDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the application snapshot restore default response
-func (o *ApplicationSnapshotRestoreDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this application snapshot restore default response has a 2xx status code
 func (o *ApplicationSnapshotRestoreDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +231,19 @@ func (o *ApplicationSnapshotRestoreDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the application snapshot restore default response
+func (o *ApplicationSnapshotRestoreDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ApplicationSnapshotRestoreDefault) Error() string {
-	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots/{uuid}/restore][%d] application_snapshot_restore default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots/{uuid}/restore][%d] application_snapshot_restore default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationSnapshotRestoreDefault) String() string {
-	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots/{uuid}/restore][%d] application_snapshot_restore default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots/{uuid}/restore][%d] application_snapshot_restore default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationSnapshotRestoreDefault) GetPayload() *models.ErrorResponse {

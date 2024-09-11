@@ -26,7 +26,7 @@ type AutoUpdateStatus struct {
 
 	// Action to be applied to the automatic update.
 	// Example: schedule_now
-	// Enum: [cancel_schedule dismiss schedule schedule_now abort undismiss]
+	// Enum: ["cancel_schedule","dismiss","schedule","schedule_now","abort","undismiss"]
 	Action *string `json:"action,omitempty"`
 
 	// Category of the update
@@ -40,7 +40,7 @@ type AutoUpdateStatus struct {
 	ContentType *string `json:"content_type,omitempty"`
 
 	// The date and time at which the update request was received.
-	// Example: 2020-12-01T09:12:23Z
+	// Example: 2020-12-01 09:12:23
 	// Read Only: true
 	// Format: date-time
 	CreationTime *strfmt.DateTime `json:"creation_time,omitempty"`
@@ -51,19 +51,19 @@ type AutoUpdateStatus struct {
 	Description *string `json:"description,omitempty"`
 
 	// The date and time at which the update request processing ended.
-	// Example: 2020-12-01T09:12:23Z
+	// Example: 2020-12-01 09:12:23
 	// Read Only: true
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
 
 	// The date and time at which the update request will expire.
-	// Example: 2021-06-01T09:12:23Z
+	// Example: 2021-06-01 09:12:23
 	// Read Only: true
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
 
 	// The date and time at which the state of the update changed last.
-	// Example: 2020-12-01T09:12:23Z
+	// Example: 2020-12-01 09:12:23
 	// Read Only: true
 	// Format: date-time
 	LastStateChangeTime *strfmt.DateTime `json:"last_state_change_time,omitempty"`
@@ -86,18 +86,18 @@ type AutoUpdateStatus struct {
 	// Date and time when an automatic update action is scheduled.
 	// This field is required when the action field is set to "schedule".
 	//
-	// Example: 2020-12-20T21:00:00Z
+	// Example: 2020-12-20 21:00:00
 	// Format: date-time
 	ScheduleTime *strfmt.DateTime `json:"schedule_time,omitempty"`
 
 	// The date and time at which the update request is currently scheduled for.
-	// Example: 2020-12-05T09:12:23Z
+	// Example: 2020-12-05 09:12:23
 	// Read Only: true
 	// Format: date-time
 	ScheduledTime *strfmt.DateTime `json:"scheduled_time,omitempty"`
 
 	// The date and time at which the update request processing started.
-	// Example: 2020-12-01T09:12:23Z
+	// Example: 2020-12-01 09:12:23
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
@@ -105,7 +105,7 @@ type AutoUpdateStatus struct {
 	// Current state of the update.
 	// Example: pending_confirmation
 	// Read Only: true
-	// Enum: [pending_confirmation downloading applying applied dismissed scheduled failed aborted]
+	// Enum: ["pending_confirmation","downloading","applying","applied","dismissed","scheduled","failed","aborted"]
 	State *string `json:"state,omitempty"`
 
 	// status
@@ -986,11 +986,6 @@ type AutoUpdateStatusInlineStatus struct {
 	// Example: entry doesn't exist
 	// Read Only: true
 	Message *string `json:"message,omitempty"`
-
-	// The target parameter that caused the error.
-	// Example: uuid
-	// Read Only: true
-	Target *string `json:"target,omitempty"`
 }
 
 // Validate validates this auto update status inline status
@@ -1047,10 +1042,6 @@ func (m *AutoUpdateStatusInlineStatus) ContextValidate(ctx context.Context, form
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateTarget(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -1091,15 +1082,6 @@ func (m *AutoUpdateStatusInlineStatus) contextValidateCode(ctx context.Context, 
 func (m *AutoUpdateStatusInlineStatus) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "status"+"."+"message", "body", m.Message); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *AutoUpdateStatusInlineStatus) contextValidateTarget(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "status"+"."+"target", "body", m.Target); err != nil {
 		return err
 	}
 

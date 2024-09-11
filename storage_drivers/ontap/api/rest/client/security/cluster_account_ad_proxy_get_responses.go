@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ClusterAccountAdProxyGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cluster account ad proxy get o k response
+func (o *ClusterAccountAdProxyGetOK) Code() int {
+	return 200
+}
+
 func (o *ClusterAccountAdProxyGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyGetOK %s", 200, payload)
 }
 
 func (o *ClusterAccountAdProxyGetOK) String() string {
-	return fmt.Sprintf("[GET /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyGetOK %s", 200, payload)
 }
 
 func (o *ClusterAccountAdProxyGetOK) GetPayload() *models.ClusterAdProxy {
@@ -122,11 +130,6 @@ type ClusterAccountAdProxyGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cluster account ad proxy get default response
-func (o *ClusterAccountAdProxyGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cluster account ad proxy get default response has a 2xx status code
 func (o *ClusterAccountAdProxyGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *ClusterAccountAdProxyGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster account ad proxy get default response
+func (o *ClusterAccountAdProxyGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterAccountAdProxyGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_get default %s", o._statusCode, payload)
 }
 
 func (o *ClusterAccountAdProxyGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_get default %s", o._statusCode, payload)
 }
 
 func (o *ClusterAccountAdProxyGetDefault) GetPayload() *models.ErrorResponse {

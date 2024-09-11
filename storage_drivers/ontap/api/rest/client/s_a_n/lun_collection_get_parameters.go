@@ -116,6 +116,18 @@ type LunCollectionGetParams struct {
 	*/
 	CopyDestinationsName *string
 
+	/* CopyDestinationsPeerName.
+
+	   Filter by copy.destinations.peer.name
+	*/
+	CopyDestinationsPeerName *string
+
+	/* CopyDestinationsPeerUUID.
+
+	   Filter by copy.destinations.peer.uuid
+	*/
+	CopyDestinationsPeerUUID *string
+
 	/* CopyDestinationsProgressElapsed.
 
 	   Filter by copy.destinations.progress.elapsed
@@ -145,12 +157,6 @@ type LunCollectionGetParams struct {
 	   Filter by copy.destinations.progress.failure.message
 	*/
 	CopyDestinationsProgressFailureMessage *string
-
-	/* CopyDestinationsProgressFailureTarget.
-
-	   Filter by copy.destinations.progress.failure.target
-	*/
-	CopyDestinationsProgressFailureTarget *string
 
 	/* CopyDestinationsProgressPercentComplete.
 
@@ -188,6 +194,18 @@ type LunCollectionGetParams struct {
 	*/
 	CopySourceName *string
 
+	/* CopySourcePeerName.
+
+	   Filter by copy.source.peer.name
+	*/
+	CopySourcePeerName *string
+
+	/* CopySourcePeerUUID.
+
+	   Filter by copy.source.peer.uuid
+	*/
+	CopySourcePeerUUID *string
+
 	/* CopySourceProgressElapsed.
 
 	   Filter by copy.source.progress.elapsed
@@ -217,12 +235,6 @@ type LunCollectionGetParams struct {
 	   Filter by copy.source.progress.failure.message
 	*/
 	CopySourceProgressFailureMessage *string
-
-	/* CopySourceProgressFailureTarget.
-
-	   Filter by copy.source.progress.failure.target
-	*/
-	CopySourceProgressFailureTarget *string
 
 	/* CopySourceProgressPercentComplete.
 
@@ -259,6 +271,12 @@ type LunCollectionGetParams struct {
 	   Filter by enabled
 	*/
 	Enabled *bool
+
+	/* EncryptionState.
+
+	   Filter by encryption.state
+	*/
+	EncryptionState *string
 
 	/* Fields.
 
@@ -308,11 +326,53 @@ type LunCollectionGetParams struct {
 	*/
 	LocationVolumeUUID *string
 
+	/* LunMapsIgroupComment.
+
+	   Filter by lun_maps.igroup.comment
+	*/
+	LunMapsIgroupComment *string
+
+	/* LunMapsIgroupIgroupsName.
+
+	   Filter by lun_maps.igroup.igroups.name
+	*/
+	LunMapsIgroupIgroupsName *string
+
+	/* LunMapsIgroupIgroupsUUID.
+
+	   Filter by lun_maps.igroup.igroups.uuid
+	*/
+	LunMapsIgroupIgroupsUUID *string
+
+	/* LunMapsIgroupInitiatorsComment.
+
+	   Filter by lun_maps.igroup.initiators.comment
+	*/
+	LunMapsIgroupInitiatorsComment *string
+
+	/* LunMapsIgroupInitiatorsName.
+
+	   Filter by lun_maps.igroup.initiators.name
+	*/
+	LunMapsIgroupInitiatorsName *string
+
 	/* LunMapsIgroupName.
 
 	   Filter by lun_maps.igroup.name
 	*/
 	LunMapsIgroupName *string
+
+	/* LunMapsIgroupOsType.
+
+	   Filter by lun_maps.igroup.os_type
+	*/
+	LunMapsIgroupOsType *string
+
+	/* LunMapsIgroupProtocol.
+
+	   Filter by lun_maps.igroup.protocol
+	*/
+	LunMapsIgroupProtocol *string
 
 	/* LunMapsIgroupUUID.
 
@@ -470,12 +530,6 @@ type LunCollectionGetParams struct {
 	*/
 	MovementProgressFailureMessage *string
 
-	/* MovementProgressFailureTarget.
-
-	   Filter by movement.progress.failure.target
-	*/
-	MovementProgressFailureTarget *string
-
 	/* MovementProgressPercentComplete.
 
 	   Filter by movement.progress.percent_complete
@@ -546,6 +600,12 @@ type LunCollectionGetParams struct {
 	*/
 	SerialNumber *string
 
+	/* SpaceEfficiencyRatio.
+
+	   Filter by space.efficiency_ratio
+	*/
+	SpaceEfficiencyRatio *float64
+
 	/* SpaceGuaranteeRequested.
 
 	   Filter by space.guarantee.requested
@@ -557,6 +617,18 @@ type LunCollectionGetParams struct {
 	   Filter by space.guarantee.reserved
 	*/
 	SpaceGuaranteeReserved *bool
+
+	/* SpacePhysicalUsed.
+
+	   Filter by space.physical_used
+	*/
+	SpacePhysicalUsed *int64
+
+	/* SpacePhysicalUsedBySnapshots.
+
+	   Filter by space.physical_used_by_snapshots
+	*/
+	SpacePhysicalUsedBySnapshots *int64
 
 	/* SpaceScsiThinProvisioningSupportEnabled.
 
@@ -719,6 +791,12 @@ type LunCollectionGetParams struct {
 	   Filter by vvol.bindings.partner.uuid
 	*/
 	VvolBindingsPartnerUUID *string
+
+	/* VvolBindingsSecondaryID.
+
+	   Filter by vvol.bindings.secondary_id
+	*/
+	VvolBindingsSecondaryID *string
 
 	/* VvolIsBound.
 
@@ -892,6 +970,28 @@ func (o *LunCollectionGetParams) SetCopyDestinationsName(copyDestinationsName *s
 	o.CopyDestinationsName = copyDestinationsName
 }
 
+// WithCopyDestinationsPeerName adds the copyDestinationsPeerName to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsPeerName(copyDestinationsPeerName *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsPeerName(copyDestinationsPeerName)
+	return o
+}
+
+// SetCopyDestinationsPeerName adds the copyDestinationsPeerName to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsPeerName(copyDestinationsPeerName *string) {
+	o.CopyDestinationsPeerName = copyDestinationsPeerName
+}
+
+// WithCopyDestinationsPeerUUID adds the copyDestinationsPeerUUID to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsPeerUUID(copyDestinationsPeerUUID *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsPeerUUID(copyDestinationsPeerUUID)
+	return o
+}
+
+// SetCopyDestinationsPeerUUID adds the copyDestinationsPeerUuid to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsPeerUUID(copyDestinationsPeerUUID *string) {
+	o.CopyDestinationsPeerUUID = copyDestinationsPeerUUID
+}
+
 // WithCopyDestinationsProgressElapsed adds the copyDestinationsProgressElapsed to the lun collection get params
 func (o *LunCollectionGetParams) WithCopyDestinationsProgressElapsed(copyDestinationsProgressElapsed *int64) *LunCollectionGetParams {
 	o.SetCopyDestinationsProgressElapsed(copyDestinationsProgressElapsed)
@@ -945,17 +1045,6 @@ func (o *LunCollectionGetParams) WithCopyDestinationsProgressFailureMessage(copy
 // SetCopyDestinationsProgressFailureMessage adds the copyDestinationsProgressFailureMessage to the lun collection get params
 func (o *LunCollectionGetParams) SetCopyDestinationsProgressFailureMessage(copyDestinationsProgressFailureMessage *string) {
 	o.CopyDestinationsProgressFailureMessage = copyDestinationsProgressFailureMessage
-}
-
-// WithCopyDestinationsProgressFailureTarget adds the copyDestinationsProgressFailureTarget to the lun collection get params
-func (o *LunCollectionGetParams) WithCopyDestinationsProgressFailureTarget(copyDestinationsProgressFailureTarget *string) *LunCollectionGetParams {
-	o.SetCopyDestinationsProgressFailureTarget(copyDestinationsProgressFailureTarget)
-	return o
-}
-
-// SetCopyDestinationsProgressFailureTarget adds the copyDestinationsProgressFailureTarget to the lun collection get params
-func (o *LunCollectionGetParams) SetCopyDestinationsProgressFailureTarget(copyDestinationsProgressFailureTarget *string) {
-	o.CopyDestinationsProgressFailureTarget = copyDestinationsProgressFailureTarget
 }
 
 // WithCopyDestinationsProgressPercentComplete adds the copyDestinationsProgressPercentComplete to the lun collection get params
@@ -1024,6 +1113,28 @@ func (o *LunCollectionGetParams) SetCopySourceName(copySourceName *string) {
 	o.CopySourceName = copySourceName
 }
 
+// WithCopySourcePeerName adds the copySourcePeerName to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourcePeerName(copySourcePeerName *string) *LunCollectionGetParams {
+	o.SetCopySourcePeerName(copySourcePeerName)
+	return o
+}
+
+// SetCopySourcePeerName adds the copySourcePeerName to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourcePeerName(copySourcePeerName *string) {
+	o.CopySourcePeerName = copySourcePeerName
+}
+
+// WithCopySourcePeerUUID adds the copySourcePeerUUID to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourcePeerUUID(copySourcePeerUUID *string) *LunCollectionGetParams {
+	o.SetCopySourcePeerUUID(copySourcePeerUUID)
+	return o
+}
+
+// SetCopySourcePeerUUID adds the copySourcePeerUuid to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourcePeerUUID(copySourcePeerUUID *string) {
+	o.CopySourcePeerUUID = copySourcePeerUUID
+}
+
 // WithCopySourceProgressElapsed adds the copySourceProgressElapsed to the lun collection get params
 func (o *LunCollectionGetParams) WithCopySourceProgressElapsed(copySourceProgressElapsed *int64) *LunCollectionGetParams {
 	o.SetCopySourceProgressElapsed(copySourceProgressElapsed)
@@ -1077,17 +1188,6 @@ func (o *LunCollectionGetParams) WithCopySourceProgressFailureMessage(copySource
 // SetCopySourceProgressFailureMessage adds the copySourceProgressFailureMessage to the lun collection get params
 func (o *LunCollectionGetParams) SetCopySourceProgressFailureMessage(copySourceProgressFailureMessage *string) {
 	o.CopySourceProgressFailureMessage = copySourceProgressFailureMessage
-}
-
-// WithCopySourceProgressFailureTarget adds the copySourceProgressFailureTarget to the lun collection get params
-func (o *LunCollectionGetParams) WithCopySourceProgressFailureTarget(copySourceProgressFailureTarget *string) *LunCollectionGetParams {
-	o.SetCopySourceProgressFailureTarget(copySourceProgressFailureTarget)
-	return o
-}
-
-// SetCopySourceProgressFailureTarget adds the copySourceProgressFailureTarget to the lun collection get params
-func (o *LunCollectionGetParams) SetCopySourceProgressFailureTarget(copySourceProgressFailureTarget *string) {
-	o.CopySourceProgressFailureTarget = copySourceProgressFailureTarget
 }
 
 // WithCopySourceProgressPercentComplete adds the copySourceProgressPercentComplete to the lun collection get params
@@ -1154,6 +1254,17 @@ func (o *LunCollectionGetParams) WithEnabled(enabled *bool) *LunCollectionGetPar
 // SetEnabled adds the enabled to the lun collection get params
 func (o *LunCollectionGetParams) SetEnabled(enabled *bool) {
 	o.Enabled = enabled
+}
+
+// WithEncryptionState adds the encryptionState to the lun collection get params
+func (o *LunCollectionGetParams) WithEncryptionState(encryptionState *string) *LunCollectionGetParams {
+	o.SetEncryptionState(encryptionState)
+	return o
+}
+
+// SetEncryptionState adds the encryptionState to the lun collection get params
+func (o *LunCollectionGetParams) SetEncryptionState(encryptionState *string) {
+	o.EncryptionState = encryptionState
 }
 
 // WithFields adds the fields to the lun collection get params
@@ -1244,6 +1355,61 @@ func (o *LunCollectionGetParams) SetLocationVolumeUUID(locationVolumeUUID *strin
 	o.LocationVolumeUUID = locationVolumeUUID
 }
 
+// WithLunMapsIgroupComment adds the lunMapsIgroupComment to the lun collection get params
+func (o *LunCollectionGetParams) WithLunMapsIgroupComment(lunMapsIgroupComment *string) *LunCollectionGetParams {
+	o.SetLunMapsIgroupComment(lunMapsIgroupComment)
+	return o
+}
+
+// SetLunMapsIgroupComment adds the lunMapsIgroupComment to the lun collection get params
+func (o *LunCollectionGetParams) SetLunMapsIgroupComment(lunMapsIgroupComment *string) {
+	o.LunMapsIgroupComment = lunMapsIgroupComment
+}
+
+// WithLunMapsIgroupIgroupsName adds the lunMapsIgroupIgroupsName to the lun collection get params
+func (o *LunCollectionGetParams) WithLunMapsIgroupIgroupsName(lunMapsIgroupIgroupsName *string) *LunCollectionGetParams {
+	o.SetLunMapsIgroupIgroupsName(lunMapsIgroupIgroupsName)
+	return o
+}
+
+// SetLunMapsIgroupIgroupsName adds the lunMapsIgroupIgroupsName to the lun collection get params
+func (o *LunCollectionGetParams) SetLunMapsIgroupIgroupsName(lunMapsIgroupIgroupsName *string) {
+	o.LunMapsIgroupIgroupsName = lunMapsIgroupIgroupsName
+}
+
+// WithLunMapsIgroupIgroupsUUID adds the lunMapsIgroupIgroupsUUID to the lun collection get params
+func (o *LunCollectionGetParams) WithLunMapsIgroupIgroupsUUID(lunMapsIgroupIgroupsUUID *string) *LunCollectionGetParams {
+	o.SetLunMapsIgroupIgroupsUUID(lunMapsIgroupIgroupsUUID)
+	return o
+}
+
+// SetLunMapsIgroupIgroupsUUID adds the lunMapsIgroupIgroupsUuid to the lun collection get params
+func (o *LunCollectionGetParams) SetLunMapsIgroupIgroupsUUID(lunMapsIgroupIgroupsUUID *string) {
+	o.LunMapsIgroupIgroupsUUID = lunMapsIgroupIgroupsUUID
+}
+
+// WithLunMapsIgroupInitiatorsComment adds the lunMapsIgroupInitiatorsComment to the lun collection get params
+func (o *LunCollectionGetParams) WithLunMapsIgroupInitiatorsComment(lunMapsIgroupInitiatorsComment *string) *LunCollectionGetParams {
+	o.SetLunMapsIgroupInitiatorsComment(lunMapsIgroupInitiatorsComment)
+	return o
+}
+
+// SetLunMapsIgroupInitiatorsComment adds the lunMapsIgroupInitiatorsComment to the lun collection get params
+func (o *LunCollectionGetParams) SetLunMapsIgroupInitiatorsComment(lunMapsIgroupInitiatorsComment *string) {
+	o.LunMapsIgroupInitiatorsComment = lunMapsIgroupInitiatorsComment
+}
+
+// WithLunMapsIgroupInitiatorsName adds the lunMapsIgroupInitiatorsName to the lun collection get params
+func (o *LunCollectionGetParams) WithLunMapsIgroupInitiatorsName(lunMapsIgroupInitiatorsName *string) *LunCollectionGetParams {
+	o.SetLunMapsIgroupInitiatorsName(lunMapsIgroupInitiatorsName)
+	return o
+}
+
+// SetLunMapsIgroupInitiatorsName adds the lunMapsIgroupInitiatorsName to the lun collection get params
+func (o *LunCollectionGetParams) SetLunMapsIgroupInitiatorsName(lunMapsIgroupInitiatorsName *string) {
+	o.LunMapsIgroupInitiatorsName = lunMapsIgroupInitiatorsName
+}
+
 // WithLunMapsIgroupName adds the lunMapsIgroupName to the lun collection get params
 func (o *LunCollectionGetParams) WithLunMapsIgroupName(lunMapsIgroupName *string) *LunCollectionGetParams {
 	o.SetLunMapsIgroupName(lunMapsIgroupName)
@@ -1253,6 +1419,28 @@ func (o *LunCollectionGetParams) WithLunMapsIgroupName(lunMapsIgroupName *string
 // SetLunMapsIgroupName adds the lunMapsIgroupName to the lun collection get params
 func (o *LunCollectionGetParams) SetLunMapsIgroupName(lunMapsIgroupName *string) {
 	o.LunMapsIgroupName = lunMapsIgroupName
+}
+
+// WithLunMapsIgroupOsType adds the lunMapsIgroupOsType to the lun collection get params
+func (o *LunCollectionGetParams) WithLunMapsIgroupOsType(lunMapsIgroupOsType *string) *LunCollectionGetParams {
+	o.SetLunMapsIgroupOsType(lunMapsIgroupOsType)
+	return o
+}
+
+// SetLunMapsIgroupOsType adds the lunMapsIgroupOsType to the lun collection get params
+func (o *LunCollectionGetParams) SetLunMapsIgroupOsType(lunMapsIgroupOsType *string) {
+	o.LunMapsIgroupOsType = lunMapsIgroupOsType
+}
+
+// WithLunMapsIgroupProtocol adds the lunMapsIgroupProtocol to the lun collection get params
+func (o *LunCollectionGetParams) WithLunMapsIgroupProtocol(lunMapsIgroupProtocol *string) *LunCollectionGetParams {
+	o.SetLunMapsIgroupProtocol(lunMapsIgroupProtocol)
+	return o
+}
+
+// SetLunMapsIgroupProtocol adds the lunMapsIgroupProtocol to the lun collection get params
+func (o *LunCollectionGetParams) SetLunMapsIgroupProtocol(lunMapsIgroupProtocol *string) {
+	o.LunMapsIgroupProtocol = lunMapsIgroupProtocol
 }
 
 // WithLunMapsIgroupUUID adds the lunMapsIgroupUUID to the lun collection get params
@@ -1541,17 +1729,6 @@ func (o *LunCollectionGetParams) SetMovementProgressFailureMessage(movementProgr
 	o.MovementProgressFailureMessage = movementProgressFailureMessage
 }
 
-// WithMovementProgressFailureTarget adds the movementProgressFailureTarget to the lun collection get params
-func (o *LunCollectionGetParams) WithMovementProgressFailureTarget(movementProgressFailureTarget *string) *LunCollectionGetParams {
-	o.SetMovementProgressFailureTarget(movementProgressFailureTarget)
-	return o
-}
-
-// SetMovementProgressFailureTarget adds the movementProgressFailureTarget to the lun collection get params
-func (o *LunCollectionGetParams) SetMovementProgressFailureTarget(movementProgressFailureTarget *string) {
-	o.MovementProgressFailureTarget = movementProgressFailureTarget
-}
-
 // WithMovementProgressPercentComplete adds the movementProgressPercentComplete to the lun collection get params
 func (o *LunCollectionGetParams) WithMovementProgressPercentComplete(movementProgressPercentComplete *int64) *LunCollectionGetParams {
 	o.SetMovementProgressPercentComplete(movementProgressPercentComplete)
@@ -1673,6 +1850,17 @@ func (o *LunCollectionGetParams) SetSerialNumber(serialNumber *string) {
 	o.SerialNumber = serialNumber
 }
 
+// WithSpaceEfficiencyRatio adds the spaceEfficiencyRatio to the lun collection get params
+func (o *LunCollectionGetParams) WithSpaceEfficiencyRatio(spaceEfficiencyRatio *float64) *LunCollectionGetParams {
+	o.SetSpaceEfficiencyRatio(spaceEfficiencyRatio)
+	return o
+}
+
+// SetSpaceEfficiencyRatio adds the spaceEfficiencyRatio to the lun collection get params
+func (o *LunCollectionGetParams) SetSpaceEfficiencyRatio(spaceEfficiencyRatio *float64) {
+	o.SpaceEfficiencyRatio = spaceEfficiencyRatio
+}
+
 // WithSpaceGuaranteeRequested adds the spaceGuaranteeRequested to the lun collection get params
 func (o *LunCollectionGetParams) WithSpaceGuaranteeRequested(spaceGuaranteeRequested *bool) *LunCollectionGetParams {
 	o.SetSpaceGuaranteeRequested(spaceGuaranteeRequested)
@@ -1693,6 +1881,28 @@ func (o *LunCollectionGetParams) WithSpaceGuaranteeReserved(spaceGuaranteeReserv
 // SetSpaceGuaranteeReserved adds the spaceGuaranteeReserved to the lun collection get params
 func (o *LunCollectionGetParams) SetSpaceGuaranteeReserved(spaceGuaranteeReserved *bool) {
 	o.SpaceGuaranteeReserved = spaceGuaranteeReserved
+}
+
+// WithSpacePhysicalUsed adds the spacePhysicalUsed to the lun collection get params
+func (o *LunCollectionGetParams) WithSpacePhysicalUsed(spacePhysicalUsed *int64) *LunCollectionGetParams {
+	o.SetSpacePhysicalUsed(spacePhysicalUsed)
+	return o
+}
+
+// SetSpacePhysicalUsed adds the spacePhysicalUsed to the lun collection get params
+func (o *LunCollectionGetParams) SetSpacePhysicalUsed(spacePhysicalUsed *int64) {
+	o.SpacePhysicalUsed = spacePhysicalUsed
+}
+
+// WithSpacePhysicalUsedBySnapshots adds the spacePhysicalUsedBySnapshots to the lun collection get params
+func (o *LunCollectionGetParams) WithSpacePhysicalUsedBySnapshots(spacePhysicalUsedBySnapshots *int64) *LunCollectionGetParams {
+	o.SetSpacePhysicalUsedBySnapshots(spacePhysicalUsedBySnapshots)
+	return o
+}
+
+// SetSpacePhysicalUsedBySnapshots adds the spacePhysicalUsedBySnapshots to the lun collection get params
+func (o *LunCollectionGetParams) SetSpacePhysicalUsedBySnapshots(spacePhysicalUsedBySnapshots *int64) {
+	o.SpacePhysicalUsedBySnapshots = spacePhysicalUsedBySnapshots
 }
 
 // WithSpaceScsiThinProvisioningSupportEnabled adds the spaceScsiThinProvisioningSupportEnabled to the lun collection get params
@@ -1992,6 +2202,17 @@ func (o *LunCollectionGetParams) SetVvolBindingsPartnerUUID(vvolBindingsPartnerU
 	o.VvolBindingsPartnerUUID = vvolBindingsPartnerUUID
 }
 
+// WithVvolBindingsSecondaryID adds the vvolBindingsSecondaryID to the lun collection get params
+func (o *LunCollectionGetParams) WithVvolBindingsSecondaryID(vvolBindingsSecondaryID *string) *LunCollectionGetParams {
+	o.SetVvolBindingsSecondaryID(vvolBindingsSecondaryID)
+	return o
+}
+
+// SetVvolBindingsSecondaryID adds the vvolBindingsSecondaryId to the lun collection get params
+func (o *LunCollectionGetParams) SetVvolBindingsSecondaryID(vvolBindingsSecondaryID *string) {
+	o.VvolBindingsSecondaryID = vvolBindingsSecondaryID
+}
+
 // WithVvolIsBound adds the vvolIsBound to the lun collection get params
 func (o *LunCollectionGetParams) WithVvolIsBound(vvolIsBound *bool) *LunCollectionGetParams {
 	o.SetVvolIsBound(vvolIsBound)
@@ -2164,6 +2385,40 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.CopyDestinationsPeerName != nil {
+
+		// query param copy.destinations.peer.name
+		var qrCopyDestinationsPeerName string
+
+		if o.CopyDestinationsPeerName != nil {
+			qrCopyDestinationsPeerName = *o.CopyDestinationsPeerName
+		}
+		qCopyDestinationsPeerName := qrCopyDestinationsPeerName
+		if qCopyDestinationsPeerName != "" {
+
+			if err := r.SetQueryParam("copy.destinations.peer.name", qCopyDestinationsPeerName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopyDestinationsPeerUUID != nil {
+
+		// query param copy.destinations.peer.uuid
+		var qrCopyDestinationsPeerUUID string
+
+		if o.CopyDestinationsPeerUUID != nil {
+			qrCopyDestinationsPeerUUID = *o.CopyDestinationsPeerUUID
+		}
+		qCopyDestinationsPeerUUID := qrCopyDestinationsPeerUUID
+		if qCopyDestinationsPeerUUID != "" {
+
+			if err := r.SetQueryParam("copy.destinations.peer.uuid", qCopyDestinationsPeerUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CopyDestinationsProgressElapsed != nil {
 
 		// query param copy.destinations.progress.elapsed
@@ -2244,23 +2499,6 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qCopyDestinationsProgressFailureMessage != "" {
 
 			if err := r.SetQueryParam("copy.destinations.progress.failure.message", qCopyDestinationsProgressFailureMessage); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.CopyDestinationsProgressFailureTarget != nil {
-
-		// query param copy.destinations.progress.failure.target
-		var qrCopyDestinationsProgressFailureTarget string
-
-		if o.CopyDestinationsProgressFailureTarget != nil {
-			qrCopyDestinationsProgressFailureTarget = *o.CopyDestinationsProgressFailureTarget
-		}
-		qCopyDestinationsProgressFailureTarget := qrCopyDestinationsProgressFailureTarget
-		if qCopyDestinationsProgressFailureTarget != "" {
-
-			if err := r.SetQueryParam("copy.destinations.progress.failure.target", qCopyDestinationsProgressFailureTarget); err != nil {
 				return err
 			}
 		}
@@ -2368,6 +2606,40 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.CopySourcePeerName != nil {
+
+		// query param copy.source.peer.name
+		var qrCopySourcePeerName string
+
+		if o.CopySourcePeerName != nil {
+			qrCopySourcePeerName = *o.CopySourcePeerName
+		}
+		qCopySourcePeerName := qrCopySourcePeerName
+		if qCopySourcePeerName != "" {
+
+			if err := r.SetQueryParam("copy.source.peer.name", qCopySourcePeerName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopySourcePeerUUID != nil {
+
+		// query param copy.source.peer.uuid
+		var qrCopySourcePeerUUID string
+
+		if o.CopySourcePeerUUID != nil {
+			qrCopySourcePeerUUID = *o.CopySourcePeerUUID
+		}
+		qCopySourcePeerUUID := qrCopySourcePeerUUID
+		if qCopySourcePeerUUID != "" {
+
+			if err := r.SetQueryParam("copy.source.peer.uuid", qCopySourcePeerUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CopySourceProgressElapsed != nil {
 
 		// query param copy.source.progress.elapsed
@@ -2448,23 +2720,6 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qCopySourceProgressFailureMessage != "" {
 
 			if err := r.SetQueryParam("copy.source.progress.failure.message", qCopySourceProgressFailureMessage); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.CopySourceProgressFailureTarget != nil {
-
-		// query param copy.source.progress.failure.target
-		var qrCopySourceProgressFailureTarget string
-
-		if o.CopySourceProgressFailureTarget != nil {
-			qrCopySourceProgressFailureTarget = *o.CopySourceProgressFailureTarget
-		}
-		qCopySourceProgressFailureTarget := qrCopySourceProgressFailureTarget
-		if qCopySourceProgressFailureTarget != "" {
-
-			if err := r.SetQueryParam("copy.source.progress.failure.target", qCopySourceProgressFailureTarget); err != nil {
 				return err
 			}
 		}
@@ -2567,6 +2822,23 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qEnabled != "" {
 
 			if err := r.SetQueryParam("enabled", qEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EncryptionState != nil {
+
+		// query param encryption.state
+		var qrEncryptionState string
+
+		if o.EncryptionState != nil {
+			qrEncryptionState = *o.EncryptionState
+		}
+		qEncryptionState := qrEncryptionState
+		if qEncryptionState != "" {
+
+			if err := r.SetQueryParam("encryption.state", qEncryptionState); err != nil {
 				return err
 			}
 		}
@@ -2702,6 +2974,91 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.LunMapsIgroupComment != nil {
+
+		// query param lun_maps.igroup.comment
+		var qrLunMapsIgroupComment string
+
+		if o.LunMapsIgroupComment != nil {
+			qrLunMapsIgroupComment = *o.LunMapsIgroupComment
+		}
+		qLunMapsIgroupComment := qrLunMapsIgroupComment
+		if qLunMapsIgroupComment != "" {
+
+			if err := r.SetQueryParam("lun_maps.igroup.comment", qLunMapsIgroupComment); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LunMapsIgroupIgroupsName != nil {
+
+		// query param lun_maps.igroup.igroups.name
+		var qrLunMapsIgroupIgroupsName string
+
+		if o.LunMapsIgroupIgroupsName != nil {
+			qrLunMapsIgroupIgroupsName = *o.LunMapsIgroupIgroupsName
+		}
+		qLunMapsIgroupIgroupsName := qrLunMapsIgroupIgroupsName
+		if qLunMapsIgroupIgroupsName != "" {
+
+			if err := r.SetQueryParam("lun_maps.igroup.igroups.name", qLunMapsIgroupIgroupsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LunMapsIgroupIgroupsUUID != nil {
+
+		// query param lun_maps.igroup.igroups.uuid
+		var qrLunMapsIgroupIgroupsUUID string
+
+		if o.LunMapsIgroupIgroupsUUID != nil {
+			qrLunMapsIgroupIgroupsUUID = *o.LunMapsIgroupIgroupsUUID
+		}
+		qLunMapsIgroupIgroupsUUID := qrLunMapsIgroupIgroupsUUID
+		if qLunMapsIgroupIgroupsUUID != "" {
+
+			if err := r.SetQueryParam("lun_maps.igroup.igroups.uuid", qLunMapsIgroupIgroupsUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LunMapsIgroupInitiatorsComment != nil {
+
+		// query param lun_maps.igroup.initiators.comment
+		var qrLunMapsIgroupInitiatorsComment string
+
+		if o.LunMapsIgroupInitiatorsComment != nil {
+			qrLunMapsIgroupInitiatorsComment = *o.LunMapsIgroupInitiatorsComment
+		}
+		qLunMapsIgroupInitiatorsComment := qrLunMapsIgroupInitiatorsComment
+		if qLunMapsIgroupInitiatorsComment != "" {
+
+			if err := r.SetQueryParam("lun_maps.igroup.initiators.comment", qLunMapsIgroupInitiatorsComment); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LunMapsIgroupInitiatorsName != nil {
+
+		// query param lun_maps.igroup.initiators.name
+		var qrLunMapsIgroupInitiatorsName string
+
+		if o.LunMapsIgroupInitiatorsName != nil {
+			qrLunMapsIgroupInitiatorsName = *o.LunMapsIgroupInitiatorsName
+		}
+		qLunMapsIgroupInitiatorsName := qrLunMapsIgroupInitiatorsName
+		if qLunMapsIgroupInitiatorsName != "" {
+
+			if err := r.SetQueryParam("lun_maps.igroup.initiators.name", qLunMapsIgroupInitiatorsName); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.LunMapsIgroupName != nil {
 
 		// query param lun_maps.igroup.name
@@ -2714,6 +3071,40 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qLunMapsIgroupName != "" {
 
 			if err := r.SetQueryParam("lun_maps.igroup.name", qLunMapsIgroupName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LunMapsIgroupOsType != nil {
+
+		// query param lun_maps.igroup.os_type
+		var qrLunMapsIgroupOsType string
+
+		if o.LunMapsIgroupOsType != nil {
+			qrLunMapsIgroupOsType = *o.LunMapsIgroupOsType
+		}
+		qLunMapsIgroupOsType := qrLunMapsIgroupOsType
+		if qLunMapsIgroupOsType != "" {
+
+			if err := r.SetQueryParam("lun_maps.igroup.os_type", qLunMapsIgroupOsType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LunMapsIgroupProtocol != nil {
+
+		// query param lun_maps.igroup.protocol
+		var qrLunMapsIgroupProtocol string
+
+		if o.LunMapsIgroupProtocol != nil {
+			qrLunMapsIgroupProtocol = *o.LunMapsIgroupProtocol
+		}
+		qLunMapsIgroupProtocol := qrLunMapsIgroupProtocol
+		if qLunMapsIgroupProtocol != "" {
+
+			if err := r.SetQueryParam("lun_maps.igroup.protocol", qLunMapsIgroupProtocol); err != nil {
 				return err
 			}
 		}
@@ -3161,23 +3552,6 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MovementProgressFailureTarget != nil {
-
-		// query param movement.progress.failure.target
-		var qrMovementProgressFailureTarget string
-
-		if o.MovementProgressFailureTarget != nil {
-			qrMovementProgressFailureTarget = *o.MovementProgressFailureTarget
-		}
-		qMovementProgressFailureTarget := qrMovementProgressFailureTarget
-		if qMovementProgressFailureTarget != "" {
-
-			if err := r.SetQueryParam("movement.progress.failure.target", qMovementProgressFailureTarget); err != nil {
-				return err
-			}
-		}
-	}
-
 	if o.MovementProgressPercentComplete != nil {
 
 		// query param movement.progress.percent_complete
@@ -3359,6 +3733,23 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.SpaceEfficiencyRatio != nil {
+
+		// query param space.efficiency_ratio
+		var qrSpaceEfficiencyRatio float64
+
+		if o.SpaceEfficiencyRatio != nil {
+			qrSpaceEfficiencyRatio = *o.SpaceEfficiencyRatio
+		}
+		qSpaceEfficiencyRatio := swag.FormatFloat64(qrSpaceEfficiencyRatio)
+		if qSpaceEfficiencyRatio != "" {
+
+			if err := r.SetQueryParam("space.efficiency_ratio", qSpaceEfficiencyRatio); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SpaceGuaranteeRequested != nil {
 
 		// query param space.guarantee.requested
@@ -3388,6 +3779,40 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qSpaceGuaranteeReserved != "" {
 
 			if err := r.SetQueryParam("space.guarantee.reserved", qSpaceGuaranteeReserved); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpacePhysicalUsed != nil {
+
+		// query param space.physical_used
+		var qrSpacePhysicalUsed int64
+
+		if o.SpacePhysicalUsed != nil {
+			qrSpacePhysicalUsed = *o.SpacePhysicalUsed
+		}
+		qSpacePhysicalUsed := swag.FormatInt64(qrSpacePhysicalUsed)
+		if qSpacePhysicalUsed != "" {
+
+			if err := r.SetQueryParam("space.physical_used", qSpacePhysicalUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpacePhysicalUsedBySnapshots != nil {
+
+		// query param space.physical_used_by_snapshots
+		var qrSpacePhysicalUsedBySnapshots int64
+
+		if o.SpacePhysicalUsedBySnapshots != nil {
+			qrSpacePhysicalUsedBySnapshots = *o.SpacePhysicalUsedBySnapshots
+		}
+		qSpacePhysicalUsedBySnapshots := swag.FormatInt64(qrSpacePhysicalUsedBySnapshots)
+		if qSpacePhysicalUsedBySnapshots != "" {
+
+			if err := r.SetQueryParam("space.physical_used_by_snapshots", qSpacePhysicalUsedBySnapshots); err != nil {
 				return err
 			}
 		}
@@ -3847,6 +4272,23 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qVvolBindingsPartnerUUID != "" {
 
 			if err := r.SetQueryParam("vvol.bindings.partner.uuid", qVvolBindingsPartnerUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VvolBindingsSecondaryID != nil {
+
+		// query param vvol.bindings.secondary_id
+		var qrVvolBindingsSecondaryID string
+
+		if o.VvolBindingsSecondaryID != nil {
+			qrVvolBindingsSecondaryID = *o.VvolBindingsSecondaryID
+		}
+		qVvolBindingsSecondaryID := qrVvolBindingsSecondaryID
+		if qVvolBindingsSecondaryID != "" {
+
+			if err := r.SetQueryParam("vvol.bindings.secondary_id", qVvolBindingsSecondaryID); err != nil {
 				return err
 			}
 		}

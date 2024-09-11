@@ -27,7 +27,7 @@ type EmsEventUpdate struct {
 	// State of the event instance when the update is raised.
 	// Example: resolving
 	// Read Only: true
-	// Enum: [opened resolving resolved closed]
+	// Enum: ["opened","resolving","resolved","closed"]
 	State *string `json:"state,omitempty"`
 
 	// Timestamp of the update.

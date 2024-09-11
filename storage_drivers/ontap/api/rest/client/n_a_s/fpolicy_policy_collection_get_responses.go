@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *FpolicyPolicyCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fpolicy policy collection get o k response
+func (o *FpolicyPolicyCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *FpolicyPolicyCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/policies][%d] fpolicyPolicyCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/policies][%d] fpolicyPolicyCollectionGetOK %s", 200, payload)
 }
 
 func (o *FpolicyPolicyCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/policies][%d] fpolicyPolicyCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/policies][%d] fpolicyPolicyCollectionGetOK %s", 200, payload)
 }
 
 func (o *FpolicyPolicyCollectionGetOK) GetPayload() *models.FpolicyPolicyResponse {
@@ -122,11 +130,6 @@ type FpolicyPolicyCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the fpolicy policy collection get default response
-func (o *FpolicyPolicyCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this fpolicy policy collection get default response has a 2xx status code
 func (o *FpolicyPolicyCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *FpolicyPolicyCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fpolicy policy collection get default response
+func (o *FpolicyPolicyCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FpolicyPolicyCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/policies][%d] fpolicy_policy_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/policies][%d] fpolicy_policy_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyPolicyCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/policies][%d] fpolicy_policy_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/policies][%d] fpolicy_policy_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyPolicyCollectionGetDefault) GetPayload() *models.ErrorResponse {

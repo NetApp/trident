@@ -33,13 +33,13 @@ type FcSwitchPort struct {
 	//
 	// Example: online
 	// Read Only: true
-	// Enum: [unknown online offline testing fault]
+	// Enum: ["unknown","online","offline","testing","fault"]
 	State *string `json:"state,omitempty"`
 
 	// The type of the Fibre Channel switch port.
 	//
 	// Read Only: true
-	// Enum: [b_port e_port f_port fl_port fnl_port fv_port n_port nl_port nv_port nx_port sd_port te_port tf_port tl_port tnp_port none]
+	// Enum: ["b_port","e_port","f_port","fl_port","fnl_port","fv_port","n_port","nl_port","nv_port","nx_port","sd_port","te_port","tf_port","tl_port","tnp_port","none"]
 	Type *string `json:"type,omitempty"`
 
 	// The world wide port name (WWPN) of the Fibre Channel switch port.
@@ -475,7 +475,7 @@ type FcSwitchPortInlineAttachedDevice struct {
 
 	// The Fibre Channel port identifier of the attach device.
 	//
-	// Example: 0x011300
+	// Example: 70400
 	// Read Only: true
 	PortID *string `json:"port_id,omitempty"`
 

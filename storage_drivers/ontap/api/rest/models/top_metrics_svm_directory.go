@@ -15,7 +15,7 @@ import (
 )
 
 // TopMetricsSvmDirectory Information about a directory's IO activity.
-// Example: {"_links":{"directory":{"href":"/api/storage/volumes/02178914-5f67-11eb-b987-005056ac5da5/files/dir_1%2fdir_2"},"metadata":{"href":"/api/storage/volumes/02178914-5f67-11eb-b987-005056ac5da5/files/dir_1%2fdir_2?return_metadata=true"}},"iops":{"error":{"lower_bound":"2","upper_bound":"5"},"read":"2","write":"3"},"junction-path":"/fv","path":"/vol/fv/dir1_/dir_2","svm":{"name":"vserver_2","uuid":"42ee3002-67dd-11ea-8508-005056a7b8ac"},"throughput":{"error":{"lower_bound":"3","upper_bound":"6"},"read":"3","write":"5"},"volume":{"name":"vol_8","uuid":"02178914-5f67-11eb-b987-005056ac5da5"}}
+// Example: {"_links":{"directory":{"href":"/api/storage/volumes/02178914-5f67-11eb-b987-005056ac5da5/files/dir_1%2fdir_2"},"metadata":{"href":"/api/storage/volumes/02178914-5f67-11eb-b987-005056ac5da5/files/dir_1%2fdir_2?return_metadata=true"}},"iops":{"error":{"lower_bound":2,"upper_bound":5},"read":2,"write":3},"junction-path":"/fv","path":"/vol/fv/dir1_/dir_2","svm":{"name":"vserver_2","uuid":"42ee3002-67dd-11ea-8508-005056a7b8ac"},"throughput":{"error":{"lower_bound":3,"upper_bound":6},"read":3,"write":5},"volume":{"name":"vol_8","uuid":"02178914-5f67-11eb-b987-005056ac5da5"}}
 //
 // swagger:model top_metrics_svm_directory
 type TopMetricsSvmDirectory struct {
@@ -555,7 +555,7 @@ func (m *TopMetricsSvmDirectoryInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsSvmDirectoryInlineSvm top metrics svm directory inline svm
+// TopMetricsSvmDirectoryInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model top_metrics_svm_directory_inline_svm
 type TopMetricsSvmDirectoryInlineSvm struct {
@@ -563,12 +563,12 @@ type TopMetricsSvmDirectoryInlineSvm struct {
 	// links
 	Links *TopMetricsSvmDirectoryInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -867,7 +867,7 @@ type TopMetricsSvmDirectoryInlineVolume struct {
 	// links
 	Links *TopMetricsSvmDirectoryInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

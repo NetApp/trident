@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *InterfacesMetricsCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the interfaces metrics collection get o k response
+func (o *InterfacesMetricsCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *InterfacesMetricsCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/ip/interfaces/{uuid}/metrics][%d] interfacesMetricsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/interfaces/{uuid}/metrics][%d] interfacesMetricsCollectionGetOK %s", 200, payload)
 }
 
 func (o *InterfacesMetricsCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /network/ip/interfaces/{uuid}/metrics][%d] interfacesMetricsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/interfaces/{uuid}/metrics][%d] interfacesMetricsCollectionGetOK %s", 200, payload)
 }
 
 func (o *InterfacesMetricsCollectionGetOK) GetPayload() *models.InterfaceMetricsResponse {
@@ -112,19 +120,20 @@ func NewInterfacesMetricsCollectionGetDefault(code int) *InterfacesMetricsCollec
 }
 
 /*
-InterfacesMetricsCollectionGetDefault describes a response with status code -1, with default header values.
+	InterfacesMetricsCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 8585947 | No metrics are available for the requested object. |
+| 8586225 | An unexpected error occurred retrieving metrics for the requested object. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type InterfacesMetricsCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the interfaces metrics collection get default response
-func (o *InterfacesMetricsCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this interfaces metrics collection get default response has a 2xx status code
@@ -152,12 +161,19 @@ func (o *InterfacesMetricsCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the interfaces metrics collection get default response
+func (o *InterfacesMetricsCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *InterfacesMetricsCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/ip/interfaces/{uuid}/metrics][%d] interfaces_metrics_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/interfaces/{uuid}/metrics][%d] interfaces_metrics_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *InterfacesMetricsCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/ip/interfaces/{uuid}/metrics][%d] interfaces_metrics_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/interfaces/{uuid}/metrics][%d] interfaces_metrics_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *InterfacesMetricsCollectionGetDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SecurityAssociationCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the security association collection get o k response
+func (o *SecurityAssociationCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *SecurityAssociationCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/ipsec/security-associations][%d] securityAssociationCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/security-associations][%d] securityAssociationCollectionGetOK %s", 200, payload)
 }
 
 func (o *SecurityAssociationCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /security/ipsec/security-associations][%d] securityAssociationCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/security-associations][%d] securityAssociationCollectionGetOK %s", 200, payload)
 }
 
 func (o *SecurityAssociationCollectionGetOK) GetPayload() *models.SecurityAssociationResponse {
@@ -122,11 +130,6 @@ type SecurityAssociationCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the security association collection get default response
-func (o *SecurityAssociationCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this security association collection get default response has a 2xx status code
 func (o *SecurityAssociationCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SecurityAssociationCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security association collection get default response
+func (o *SecurityAssociationCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityAssociationCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/ipsec/security-associations][%d] security_association_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/security-associations][%d] security_association_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SecurityAssociationCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/ipsec/security-associations][%d] security_association_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/security-associations][%d] security_association_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SecurityAssociationCollectionGetDefault) GetPayload() *models.ErrorResponse {

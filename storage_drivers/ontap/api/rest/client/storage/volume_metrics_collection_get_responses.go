@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *VolumeMetricsCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the volume metrics collection get o k response
+func (o *VolumeMetricsCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *VolumeMetricsCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/metrics][%d] volumeMetricsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/metrics][%d] volumeMetricsCollectionGetOK %s", 200, payload)
 }
 
 func (o *VolumeMetricsCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/metrics][%d] volumeMetricsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/metrics][%d] volumeMetricsCollectionGetOK %s", 200, payload)
 }
 
 func (o *VolumeMetricsCollectionGetOK) GetPayload() *models.VolumeMetricsResponse {
@@ -122,11 +130,6 @@ type VolumeMetricsCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the volume metrics collection get default response
-func (o *VolumeMetricsCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this volume metrics collection get default response has a 2xx status code
 func (o *VolumeMetricsCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *VolumeMetricsCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the volume metrics collection get default response
+func (o *VolumeMetricsCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VolumeMetricsCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/metrics][%d] volume_metrics_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/metrics][%d] volume_metrics_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *VolumeMetricsCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/metrics][%d] volume_metrics_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/metrics][%d] volume_metrics_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *VolumeMetricsCollectionGetDefault) GetPayload() *models.ErrorResponse {

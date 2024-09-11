@@ -164,6 +164,12 @@ type MetroclusterNodeCollectionGetParams struct {
 	*/
 	DrPartnerClusterUUID *string
 
+	/* EncryptionEnabled.
+
+	   Filter by encryption_enabled
+	*/
+	EncryptionEnabled *bool
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -510,6 +516,17 @@ func (o *MetroclusterNodeCollectionGetParams) WithDrPartnerClusterUUID(drPartner
 // SetDrPartnerClusterUUID adds the drPartnerClusterUuid to the metrocluster node collection get params
 func (o *MetroclusterNodeCollectionGetParams) SetDrPartnerClusterUUID(drPartnerClusterUUID *string) {
 	o.DrPartnerClusterUUID = drPartnerClusterUUID
+}
+
+// WithEncryptionEnabled adds the encryptionEnabled to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithEncryptionEnabled(encryptionEnabled *bool) *MetroclusterNodeCollectionGetParams {
+	o.SetEncryptionEnabled(encryptionEnabled)
+	return o
+}
+
+// SetEncryptionEnabled adds the encryptionEnabled to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetEncryptionEnabled(encryptionEnabled *bool) {
+	o.EncryptionEnabled = encryptionEnabled
 }
 
 // WithFields adds the fields to the metrocluster node collection get params
@@ -969,6 +986,23 @@ func (o *MetroclusterNodeCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qDrPartnerClusterUUID != "" {
 
 			if err := r.SetQueryParam("dr_partner_cluster.uuid", qDrPartnerClusterUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EncryptionEnabled != nil {
+
+		// query param encryption_enabled
+		var qrEncryptionEnabled bool
+
+		if o.EncryptionEnabled != nil {
+			qrEncryptionEnabled = *o.EncryptionEnabled
+		}
+		qEncryptionEnabled := swag.FormatBool(qrEncryptionEnabled)
+		if qEncryptionEnabled != "" {
+
+			if err := r.SetQueryParam("encryption_enabled", qEncryptionEnabled); err != nil {
 				return err
 			}
 		}

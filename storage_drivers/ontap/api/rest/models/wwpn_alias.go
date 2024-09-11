@@ -237,7 +237,7 @@ func (m *WwpnAliasInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// WwpnAliasInlineSvm wwpn alias inline svm
+// WwpnAliasInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model wwpn_alias_inline_svm
 type WwpnAliasInlineSvm struct {
@@ -245,12 +245,12 @@ type WwpnAliasInlineSvm struct {
 	// links
 	Links *WwpnAliasInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

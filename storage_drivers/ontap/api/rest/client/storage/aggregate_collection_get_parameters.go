@@ -62,6 +62,12 @@ AggregateCollectionGetParams contains all the parameters to send to the API endp
 */
 type AggregateCollectionGetParams struct {
 
+	/* Tags.
+
+	   Filter by _tags
+	*/
+	Tags *string
+
 	/* BlockStorageHybridCacheDiskCount.
 
 	   Filter by block_storage.hybrid_cache.disk_count
@@ -289,6 +295,30 @@ type AggregateCollectionGetParams struct {
 	   Filter by block_storage.uses_partitions
 	*/
 	BlockStorageUsesPartitions *bool
+
+	/* CloudStorageAttachEligible.
+
+	   Filter by cloud_storage.attach_eligible
+	*/
+	CloudStorageAttachEligible *bool
+
+	/* CloudStorageStoresCloudStoreName.
+
+	   Filter by cloud_storage.stores.cloud_store.name
+	*/
+	CloudStorageStoresCloudStoreName *string
+
+	/* CloudStorageStoresCloudStoreUUID.
+
+	   Filter by cloud_storage.stores.cloud_store.uuid
+	*/
+	CloudStorageStoresCloudStoreUUID *string
+
+	/* CloudStorageStoresUsed.
+
+	   Filter by cloud_storage.stores.used
+	*/
+	CloudStorageStoresUsed *int64
 
 	/* CreateTime.
 
@@ -548,102 +578,6 @@ type AggregateCollectionGetParams struct {
 	*/
 	Recommend *bool
 
-	/* RecommendationSparesChecksumStyle.
-
-	   Filter by recommendation_spares.checksum_style
-	*/
-	RecommendationSparesChecksumStyle *string
-
-	/* RecommendationSparesDiskClass.
-
-	   Filter by recommendation_spares.disk_class
-	*/
-	RecommendationSparesDiskClass *string
-
-	/* RecommendationSparesDiskType.
-
-	   Filter by recommendation_spares.disk_type
-	*/
-	RecommendationSparesDiskType *string
-
-	/* RecommendationSparesIsPartition.
-
-	   Filter by recommendation_spares.is_partition
-	*/
-	RecommendationSparesIsPartition *bool
-
-	/* RecommendationSparesLayoutRequirementsAggregateMinDisks.
-
-	   Filter by recommendation_spares.layout_requirements.aggregate_min_disks
-	*/
-	RecommendationSparesLayoutRequirementsAggregateMinDisks *int64
-
-	/* RecommendationSparesLayoutRequirementsDefault.
-
-	   Filter by recommendation_spares.layout_requirements.default
-	*/
-	RecommendationSparesLayoutRequirementsDefault *bool
-
-	/* RecommendationSparesLayoutRequirementsRaidGroupDefault.
-
-	   Filter by recommendation_spares.layout_requirements.raid_group.default
-	*/
-	RecommendationSparesLayoutRequirementsRaidGroupDefault *int64
-
-	/* RecommendationSparesLayoutRequirementsRaidGroupMax.
-
-	   Filter by recommendation_spares.layout_requirements.raid_group.max
-	*/
-	RecommendationSparesLayoutRequirementsRaidGroupMax *int64
-
-	/* RecommendationSparesLayoutRequirementsRaidGroupMin.
-
-	   Filter by recommendation_spares.layout_requirements.raid_group.min
-	*/
-	RecommendationSparesLayoutRequirementsRaidGroupMin *int64
-
-	/* RecommendationSparesLayoutRequirementsRaidType.
-
-	   Filter by recommendation_spares.layout_requirements.raid_type
-	*/
-	RecommendationSparesLayoutRequirementsRaidType *string
-
-	/* RecommendationSparesNodeName.
-
-	   Filter by recommendation_spares.node.name
-	*/
-	RecommendationSparesNodeName *string
-
-	/* RecommendationSparesNodeUUID.
-
-	   Filter by recommendation_spares.node.uuid
-	*/
-	RecommendationSparesNodeUUID *string
-
-	/* RecommendationSparesSize.
-
-	   Filter by recommendation_spares.size
-	*/
-	RecommendationSparesSize *int64
-
-	/* RecommendationSparesSyncmirrorPool.
-
-	   Filter by recommendation_spares.syncmirror_pool
-	*/
-	RecommendationSparesSyncmirrorPool *string
-
-	/* RecommendationSparesTotal.
-
-	   Filter by recommendation_spares.total
-	*/
-	RecommendationSparesTotal *int64
-
-	/* RecommendationSparesUsable.
-
-	   Filter by recommendation_spares.usable
-	*/
-	RecommendationSparesUsable *int64
-
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -792,6 +726,12 @@ type AggregateCollectionGetParams struct {
 	*/
 	SpaceBlockStorageUsedIncludingSnapshotReservePercent *int64
 
+	/* SpaceBlockStorageUsedPercent.
+
+	   Filter by space.block_storage.used_percent
+	*/
+	SpaceBlockStorageUsedPercent *int64
+
 	/* SpaceBlockStorageVolumeDeduplicationSharedCount.
 
 	   Filter by space.block_storage.volume_deduplication_shared_count
@@ -846,6 +786,12 @@ type AggregateCollectionGetParams struct {
 	*/
 	SpaceEfficiencyCrossVolumeInlineDedupe *bool
 
+	/* SpaceEfficiencyEnableWorkloadInformedTsse.
+
+	   Filter by space.efficiency.enable_workload_informed_tsse
+	*/
+	SpaceEfficiencyEnableWorkloadInformedTsse *bool
+
 	/* SpaceEfficiencyLogicalUsed.
 
 	   Filter by space.efficiency.logical_used
@@ -863,6 +809,12 @@ type AggregateCollectionGetParams struct {
 	   Filter by space.efficiency.savings
 	*/
 	SpaceEfficiencySavings *int64
+
+	/* SpaceEfficiencyWiseTsseMinUsedCapacityPct.
+
+	   Filter by space.efficiency.wise_tsse_min_used_capacity_pct
+	*/
+	SpaceEfficiencyWiseTsseMinUsedCapacityPct *int64
 
 	/* SpaceEfficiencyWithoutSnapshotsLogicalUsed.
 
@@ -1103,6 +1055,17 @@ func (o *AggregateCollectionGetParams) WithHTTPClient(client *http.Client) *Aggr
 // SetHTTPClient adds the HTTPClient to the aggregate collection get params
 func (o *AggregateCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithTags adds the tags to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithTags(tags *string) *AggregateCollectionGetParams {
+	o.SetTags(tags)
+	return o
+}
+
+// SetTags adds the tags to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetTags(tags *string) {
+	o.Tags = tags
 }
 
 // WithBlockStorageHybridCacheDiskCount adds the blockStorageHybridCacheDiskCount to the aggregate collection get params
@@ -1521,6 +1484,50 @@ func (o *AggregateCollectionGetParams) WithBlockStorageUsesPartitions(blockStora
 // SetBlockStorageUsesPartitions adds the blockStorageUsesPartitions to the aggregate collection get params
 func (o *AggregateCollectionGetParams) SetBlockStorageUsesPartitions(blockStorageUsesPartitions *bool) {
 	o.BlockStorageUsesPartitions = blockStorageUsesPartitions
+}
+
+// WithCloudStorageAttachEligible adds the cloudStorageAttachEligible to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithCloudStorageAttachEligible(cloudStorageAttachEligible *bool) *AggregateCollectionGetParams {
+	o.SetCloudStorageAttachEligible(cloudStorageAttachEligible)
+	return o
+}
+
+// SetCloudStorageAttachEligible adds the cloudStorageAttachEligible to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetCloudStorageAttachEligible(cloudStorageAttachEligible *bool) {
+	o.CloudStorageAttachEligible = cloudStorageAttachEligible
+}
+
+// WithCloudStorageStoresCloudStoreName adds the cloudStorageStoresCloudStoreName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithCloudStorageStoresCloudStoreName(cloudStorageStoresCloudStoreName *string) *AggregateCollectionGetParams {
+	o.SetCloudStorageStoresCloudStoreName(cloudStorageStoresCloudStoreName)
+	return o
+}
+
+// SetCloudStorageStoresCloudStoreName adds the cloudStorageStoresCloudStoreName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetCloudStorageStoresCloudStoreName(cloudStorageStoresCloudStoreName *string) {
+	o.CloudStorageStoresCloudStoreName = cloudStorageStoresCloudStoreName
+}
+
+// WithCloudStorageStoresCloudStoreUUID adds the cloudStorageStoresCloudStoreUUID to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithCloudStorageStoresCloudStoreUUID(cloudStorageStoresCloudStoreUUID *string) *AggregateCollectionGetParams {
+	o.SetCloudStorageStoresCloudStoreUUID(cloudStorageStoresCloudStoreUUID)
+	return o
+}
+
+// SetCloudStorageStoresCloudStoreUUID adds the cloudStorageStoresCloudStoreUuid to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetCloudStorageStoresCloudStoreUUID(cloudStorageStoresCloudStoreUUID *string) {
+	o.CloudStorageStoresCloudStoreUUID = cloudStorageStoresCloudStoreUUID
+}
+
+// WithCloudStorageStoresUsed adds the cloudStorageStoresUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithCloudStorageStoresUsed(cloudStorageStoresUsed *int64) *AggregateCollectionGetParams {
+	o.SetCloudStorageStoresUsed(cloudStorageStoresUsed)
+	return o
+}
+
+// SetCloudStorageStoresUsed adds the cloudStorageStoresUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetCloudStorageStoresUsed(cloudStorageStoresUsed *int64) {
+	o.CloudStorageStoresUsed = cloudStorageStoresUsed
 }
 
 // WithCreateTime adds the createTime to the aggregate collection get params
@@ -1996,182 +2003,6 @@ func (o *AggregateCollectionGetParams) SetRecommend(recommend *bool) {
 	o.Recommend = recommend
 }
 
-// WithRecommendationSparesChecksumStyle adds the recommendationSparesChecksumStyle to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesChecksumStyle(recommendationSparesChecksumStyle *string) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesChecksumStyle(recommendationSparesChecksumStyle)
-	return o
-}
-
-// SetRecommendationSparesChecksumStyle adds the recommendationSparesChecksumStyle to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesChecksumStyle(recommendationSparesChecksumStyle *string) {
-	o.RecommendationSparesChecksumStyle = recommendationSparesChecksumStyle
-}
-
-// WithRecommendationSparesDiskClass adds the recommendationSparesDiskClass to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesDiskClass(recommendationSparesDiskClass *string) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesDiskClass(recommendationSparesDiskClass)
-	return o
-}
-
-// SetRecommendationSparesDiskClass adds the recommendationSparesDiskClass to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesDiskClass(recommendationSparesDiskClass *string) {
-	o.RecommendationSparesDiskClass = recommendationSparesDiskClass
-}
-
-// WithRecommendationSparesDiskType adds the recommendationSparesDiskType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesDiskType(recommendationSparesDiskType *string) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesDiskType(recommendationSparesDiskType)
-	return o
-}
-
-// SetRecommendationSparesDiskType adds the recommendationSparesDiskType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesDiskType(recommendationSparesDiskType *string) {
-	o.RecommendationSparesDiskType = recommendationSparesDiskType
-}
-
-// WithRecommendationSparesIsPartition adds the recommendationSparesIsPartition to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesIsPartition(recommendationSparesIsPartition *bool) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesIsPartition(recommendationSparesIsPartition)
-	return o
-}
-
-// SetRecommendationSparesIsPartition adds the recommendationSparesIsPartition to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesIsPartition(recommendationSparesIsPartition *bool) {
-	o.RecommendationSparesIsPartition = recommendationSparesIsPartition
-}
-
-// WithRecommendationSparesLayoutRequirementsAggregateMinDisks adds the recommendationSparesLayoutRequirementsAggregateMinDisks to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsAggregateMinDisks(recommendationSparesLayoutRequirementsAggregateMinDisks *int64) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesLayoutRequirementsAggregateMinDisks(recommendationSparesLayoutRequirementsAggregateMinDisks)
-	return o
-}
-
-// SetRecommendationSparesLayoutRequirementsAggregateMinDisks adds the recommendationSparesLayoutRequirementsAggregateMinDisks to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsAggregateMinDisks(recommendationSparesLayoutRequirementsAggregateMinDisks *int64) {
-	o.RecommendationSparesLayoutRequirementsAggregateMinDisks = recommendationSparesLayoutRequirementsAggregateMinDisks
-}
-
-// WithRecommendationSparesLayoutRequirementsDefault adds the recommendationSparesLayoutRequirementsDefault to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsDefault(recommendationSparesLayoutRequirementsDefault *bool) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesLayoutRequirementsDefault(recommendationSparesLayoutRequirementsDefault)
-	return o
-}
-
-// SetRecommendationSparesLayoutRequirementsDefault adds the recommendationSparesLayoutRequirementsDefault to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsDefault(recommendationSparesLayoutRequirementsDefault *bool) {
-	o.RecommendationSparesLayoutRequirementsDefault = recommendationSparesLayoutRequirementsDefault
-}
-
-// WithRecommendationSparesLayoutRequirementsRaidGroupDefault adds the recommendationSparesLayoutRequirementsRaidGroupDefault to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsRaidGroupDefault(recommendationSparesLayoutRequirementsRaidGroupDefault *int64) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesLayoutRequirementsRaidGroupDefault(recommendationSparesLayoutRequirementsRaidGroupDefault)
-	return o
-}
-
-// SetRecommendationSparesLayoutRequirementsRaidGroupDefault adds the recommendationSparesLayoutRequirementsRaidGroupDefault to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsRaidGroupDefault(recommendationSparesLayoutRequirementsRaidGroupDefault *int64) {
-	o.RecommendationSparesLayoutRequirementsRaidGroupDefault = recommendationSparesLayoutRequirementsRaidGroupDefault
-}
-
-// WithRecommendationSparesLayoutRequirementsRaidGroupMax adds the recommendationSparesLayoutRequirementsRaidGroupMax to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsRaidGroupMax(recommendationSparesLayoutRequirementsRaidGroupMax *int64) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesLayoutRequirementsRaidGroupMax(recommendationSparesLayoutRequirementsRaidGroupMax)
-	return o
-}
-
-// SetRecommendationSparesLayoutRequirementsRaidGroupMax adds the recommendationSparesLayoutRequirementsRaidGroupMax to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsRaidGroupMax(recommendationSparesLayoutRequirementsRaidGroupMax *int64) {
-	o.RecommendationSparesLayoutRequirementsRaidGroupMax = recommendationSparesLayoutRequirementsRaidGroupMax
-}
-
-// WithRecommendationSparesLayoutRequirementsRaidGroupMin adds the recommendationSparesLayoutRequirementsRaidGroupMin to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsRaidGroupMin(recommendationSparesLayoutRequirementsRaidGroupMin *int64) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesLayoutRequirementsRaidGroupMin(recommendationSparesLayoutRequirementsRaidGroupMin)
-	return o
-}
-
-// SetRecommendationSparesLayoutRequirementsRaidGroupMin adds the recommendationSparesLayoutRequirementsRaidGroupMin to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsRaidGroupMin(recommendationSparesLayoutRequirementsRaidGroupMin *int64) {
-	o.RecommendationSparesLayoutRequirementsRaidGroupMin = recommendationSparesLayoutRequirementsRaidGroupMin
-}
-
-// WithRecommendationSparesLayoutRequirementsRaidType adds the recommendationSparesLayoutRequirementsRaidType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsRaidType(recommendationSparesLayoutRequirementsRaidType *string) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesLayoutRequirementsRaidType(recommendationSparesLayoutRequirementsRaidType)
-	return o
-}
-
-// SetRecommendationSparesLayoutRequirementsRaidType adds the recommendationSparesLayoutRequirementsRaidType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsRaidType(recommendationSparesLayoutRequirementsRaidType *string) {
-	o.RecommendationSparesLayoutRequirementsRaidType = recommendationSparesLayoutRequirementsRaidType
-}
-
-// WithRecommendationSparesNodeName adds the recommendationSparesNodeName to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesNodeName(recommendationSparesNodeName *string) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesNodeName(recommendationSparesNodeName)
-	return o
-}
-
-// SetRecommendationSparesNodeName adds the recommendationSparesNodeName to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesNodeName(recommendationSparesNodeName *string) {
-	o.RecommendationSparesNodeName = recommendationSparesNodeName
-}
-
-// WithRecommendationSparesNodeUUID adds the recommendationSparesNodeUUID to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesNodeUUID(recommendationSparesNodeUUID *string) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesNodeUUID(recommendationSparesNodeUUID)
-	return o
-}
-
-// SetRecommendationSparesNodeUUID adds the recommendationSparesNodeUuid to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesNodeUUID(recommendationSparesNodeUUID *string) {
-	o.RecommendationSparesNodeUUID = recommendationSparesNodeUUID
-}
-
-// WithRecommendationSparesSize adds the recommendationSparesSize to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesSize(recommendationSparesSize *int64) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesSize(recommendationSparesSize)
-	return o
-}
-
-// SetRecommendationSparesSize adds the recommendationSparesSize to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesSize(recommendationSparesSize *int64) {
-	o.RecommendationSparesSize = recommendationSparesSize
-}
-
-// WithRecommendationSparesSyncmirrorPool adds the recommendationSparesSyncmirrorPool to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesSyncmirrorPool(recommendationSparesSyncmirrorPool *string) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesSyncmirrorPool(recommendationSparesSyncmirrorPool)
-	return o
-}
-
-// SetRecommendationSparesSyncmirrorPool adds the recommendationSparesSyncmirrorPool to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesSyncmirrorPool(recommendationSparesSyncmirrorPool *string) {
-	o.RecommendationSparesSyncmirrorPool = recommendationSparesSyncmirrorPool
-}
-
-// WithRecommendationSparesTotal adds the recommendationSparesTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesTotal(recommendationSparesTotal *int64) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesTotal(recommendationSparesTotal)
-	return o
-}
-
-// SetRecommendationSparesTotal adds the recommendationSparesTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesTotal(recommendationSparesTotal *int64) {
-	o.RecommendationSparesTotal = recommendationSparesTotal
-}
-
-// WithRecommendationSparesUsable adds the recommendationSparesUsable to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesUsable(recommendationSparesUsable *int64) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesUsable(recommendationSparesUsable)
-	return o
-}
-
-// SetRecommendationSparesUsable adds the recommendationSparesUsable to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesUsable(recommendationSparesUsable *int64) {
-	o.RecommendationSparesUsable = recommendationSparesUsable
-}
-
 // WithReturnRecords adds the returnRecords to the aggregate collection get params
 func (o *AggregateCollectionGetParams) WithReturnRecords(returnRecords *bool) *AggregateCollectionGetParams {
 	o.SetReturnRecords(returnRecords)
@@ -2436,6 +2267,17 @@ func (o *AggregateCollectionGetParams) SetSpaceBlockStorageUsedIncludingSnapshot
 	o.SpaceBlockStorageUsedIncludingSnapshotReservePercent = spaceBlockStorageUsedIncludingSnapshotReservePercent
 }
 
+// WithSpaceBlockStorageUsedPercent adds the spaceBlockStorageUsedPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageUsedPercent(spaceBlockStorageUsedPercent *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageUsedPercent(spaceBlockStorageUsedPercent)
+	return o
+}
+
+// SetSpaceBlockStorageUsedPercent adds the spaceBlockStorageUsedPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageUsedPercent(spaceBlockStorageUsedPercent *int64) {
+	o.SpaceBlockStorageUsedPercent = spaceBlockStorageUsedPercent
+}
+
 // WithSpaceBlockStorageVolumeDeduplicationSharedCount adds the spaceBlockStorageVolumeDeduplicationSharedCount to the aggregate collection get params
 func (o *AggregateCollectionGetParams) WithSpaceBlockStorageVolumeDeduplicationSharedCount(spaceBlockStorageVolumeDeduplicationSharedCount *int64) *AggregateCollectionGetParams {
 	o.SetSpaceBlockStorageVolumeDeduplicationSharedCount(spaceBlockStorageVolumeDeduplicationSharedCount)
@@ -2535,6 +2377,17 @@ func (o *AggregateCollectionGetParams) SetSpaceEfficiencyCrossVolumeInlineDedupe
 	o.SpaceEfficiencyCrossVolumeInlineDedupe = spaceEfficiencyCrossVolumeInlineDedupe
 }
 
+// WithSpaceEfficiencyEnableWorkloadInformedTsse adds the spaceEfficiencyEnableWorkloadInformedTsse to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencyEnableWorkloadInformedTsse(spaceEfficiencyEnableWorkloadInformedTsse *bool) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencyEnableWorkloadInformedTsse(spaceEfficiencyEnableWorkloadInformedTsse)
+	return o
+}
+
+// SetSpaceEfficiencyEnableWorkloadInformedTsse adds the spaceEfficiencyEnableWorkloadInformedTsse to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencyEnableWorkloadInformedTsse(spaceEfficiencyEnableWorkloadInformedTsse *bool) {
+	o.SpaceEfficiencyEnableWorkloadInformedTsse = spaceEfficiencyEnableWorkloadInformedTsse
+}
+
 // WithSpaceEfficiencyLogicalUsed adds the spaceEfficiencyLogicalUsed to the aggregate collection get params
 func (o *AggregateCollectionGetParams) WithSpaceEfficiencyLogicalUsed(spaceEfficiencyLogicalUsed *int64) *AggregateCollectionGetParams {
 	o.SetSpaceEfficiencyLogicalUsed(spaceEfficiencyLogicalUsed)
@@ -2566,6 +2419,17 @@ func (o *AggregateCollectionGetParams) WithSpaceEfficiencySavings(spaceEfficienc
 // SetSpaceEfficiencySavings adds the spaceEfficiencySavings to the aggregate collection get params
 func (o *AggregateCollectionGetParams) SetSpaceEfficiencySavings(spaceEfficiencySavings *int64) {
 	o.SpaceEfficiencySavings = spaceEfficiencySavings
+}
+
+// WithSpaceEfficiencyWiseTsseMinUsedCapacityPct adds the spaceEfficiencyWiseTsseMinUsedCapacityPct to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencyWiseTsseMinUsedCapacityPct(spaceEfficiencyWiseTsseMinUsedCapacityPct *int64) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencyWiseTsseMinUsedCapacityPct(spaceEfficiencyWiseTsseMinUsedCapacityPct)
+	return o
+}
+
+// SetSpaceEfficiencyWiseTsseMinUsedCapacityPct adds the spaceEfficiencyWiseTsseMinUsedCapacityPct to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencyWiseTsseMinUsedCapacityPct(spaceEfficiencyWiseTsseMinUsedCapacityPct *int64) {
+	o.SpaceEfficiencyWiseTsseMinUsedCapacityPct = spaceEfficiencyWiseTsseMinUsedCapacityPct
 }
 
 // WithSpaceEfficiencyWithoutSnapshotsLogicalUsed adds the spaceEfficiencyWithoutSnapshotsLogicalUsed to the aggregate collection get params
@@ -2894,6 +2758,23 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		return err
 	}
 	var res []error
+
+	if o.Tags != nil {
+
+		// query param _tags
+		var qrTags string
+
+		if o.Tags != nil {
+			qrTags = *o.Tags
+		}
+		qTags := qrTags
+		if qTags != "" {
+
+			if err := r.SetQueryParam("_tags", qTags); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.BlockStorageHybridCacheDiskCount != nil {
 
@@ -3536,6 +3417,74 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qBlockStorageUsesPartitions != "" {
 
 			if err := r.SetQueryParam("block_storage.uses_partitions", qBlockStorageUsesPartitions); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloudStorageAttachEligible != nil {
+
+		// query param cloud_storage.attach_eligible
+		var qrCloudStorageAttachEligible bool
+
+		if o.CloudStorageAttachEligible != nil {
+			qrCloudStorageAttachEligible = *o.CloudStorageAttachEligible
+		}
+		qCloudStorageAttachEligible := swag.FormatBool(qrCloudStorageAttachEligible)
+		if qCloudStorageAttachEligible != "" {
+
+			if err := r.SetQueryParam("cloud_storage.attach_eligible", qCloudStorageAttachEligible); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloudStorageStoresCloudStoreName != nil {
+
+		// query param cloud_storage.stores.cloud_store.name
+		var qrCloudStorageStoresCloudStoreName string
+
+		if o.CloudStorageStoresCloudStoreName != nil {
+			qrCloudStorageStoresCloudStoreName = *o.CloudStorageStoresCloudStoreName
+		}
+		qCloudStorageStoresCloudStoreName := qrCloudStorageStoresCloudStoreName
+		if qCloudStorageStoresCloudStoreName != "" {
+
+			if err := r.SetQueryParam("cloud_storage.stores.cloud_store.name", qCloudStorageStoresCloudStoreName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloudStorageStoresCloudStoreUUID != nil {
+
+		// query param cloud_storage.stores.cloud_store.uuid
+		var qrCloudStorageStoresCloudStoreUUID string
+
+		if o.CloudStorageStoresCloudStoreUUID != nil {
+			qrCloudStorageStoresCloudStoreUUID = *o.CloudStorageStoresCloudStoreUUID
+		}
+		qCloudStorageStoresCloudStoreUUID := qrCloudStorageStoresCloudStoreUUID
+		if qCloudStorageStoresCloudStoreUUID != "" {
+
+			if err := r.SetQueryParam("cloud_storage.stores.cloud_store.uuid", qCloudStorageStoresCloudStoreUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloudStorageStoresUsed != nil {
+
+		// query param cloud_storage.stores.used
+		var qrCloudStorageStoresUsed int64
+
+		if o.CloudStorageStoresUsed != nil {
+			qrCloudStorageStoresUsed = *o.CloudStorageStoresUsed
+		}
+		qCloudStorageStoresUsed := swag.FormatInt64(qrCloudStorageStoresUsed)
+		if qCloudStorageStoresUsed != "" {
+
+			if err := r.SetQueryParam("cloud_storage.stores.used", qCloudStorageStoresUsed); err != nil {
 				return err
 			}
 		}
@@ -4260,278 +4209,6 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendationSparesChecksumStyle != nil {
-
-		// query param recommendation_spares.checksum_style
-		var qrRecommendationSparesChecksumStyle string
-
-		if o.RecommendationSparesChecksumStyle != nil {
-			qrRecommendationSparesChecksumStyle = *o.RecommendationSparesChecksumStyle
-		}
-		qRecommendationSparesChecksumStyle := qrRecommendationSparesChecksumStyle
-		if qRecommendationSparesChecksumStyle != "" {
-
-			if err := r.SetQueryParam("recommendation_spares.checksum_style", qRecommendationSparesChecksumStyle); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.RecommendationSparesDiskClass != nil {
-
-		// query param recommendation_spares.disk_class
-		var qrRecommendationSparesDiskClass string
-
-		if o.RecommendationSparesDiskClass != nil {
-			qrRecommendationSparesDiskClass = *o.RecommendationSparesDiskClass
-		}
-		qRecommendationSparesDiskClass := qrRecommendationSparesDiskClass
-		if qRecommendationSparesDiskClass != "" {
-
-			if err := r.SetQueryParam("recommendation_spares.disk_class", qRecommendationSparesDiskClass); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.RecommendationSparesDiskType != nil {
-
-		// query param recommendation_spares.disk_type
-		var qrRecommendationSparesDiskType string
-
-		if o.RecommendationSparesDiskType != nil {
-			qrRecommendationSparesDiskType = *o.RecommendationSparesDiskType
-		}
-		qRecommendationSparesDiskType := qrRecommendationSparesDiskType
-		if qRecommendationSparesDiskType != "" {
-
-			if err := r.SetQueryParam("recommendation_spares.disk_type", qRecommendationSparesDiskType); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.RecommendationSparesIsPartition != nil {
-
-		// query param recommendation_spares.is_partition
-		var qrRecommendationSparesIsPartition bool
-
-		if o.RecommendationSparesIsPartition != nil {
-			qrRecommendationSparesIsPartition = *o.RecommendationSparesIsPartition
-		}
-		qRecommendationSparesIsPartition := swag.FormatBool(qrRecommendationSparesIsPartition)
-		if qRecommendationSparesIsPartition != "" {
-
-			if err := r.SetQueryParam("recommendation_spares.is_partition", qRecommendationSparesIsPartition); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.RecommendationSparesLayoutRequirementsAggregateMinDisks != nil {
-
-		// query param recommendation_spares.layout_requirements.aggregate_min_disks
-		var qrRecommendationSparesLayoutRequirementsAggregateMinDisks int64
-
-		if o.RecommendationSparesLayoutRequirementsAggregateMinDisks != nil {
-			qrRecommendationSparesLayoutRequirementsAggregateMinDisks = *o.RecommendationSparesLayoutRequirementsAggregateMinDisks
-		}
-		qRecommendationSparesLayoutRequirementsAggregateMinDisks := swag.FormatInt64(qrRecommendationSparesLayoutRequirementsAggregateMinDisks)
-		if qRecommendationSparesLayoutRequirementsAggregateMinDisks != "" {
-
-			if err := r.SetQueryParam("recommendation_spares.layout_requirements.aggregate_min_disks", qRecommendationSparesLayoutRequirementsAggregateMinDisks); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.RecommendationSparesLayoutRequirementsDefault != nil {
-
-		// query param recommendation_spares.layout_requirements.default
-		var qrRecommendationSparesLayoutRequirementsDefault bool
-
-		if o.RecommendationSparesLayoutRequirementsDefault != nil {
-			qrRecommendationSparesLayoutRequirementsDefault = *o.RecommendationSparesLayoutRequirementsDefault
-		}
-		qRecommendationSparesLayoutRequirementsDefault := swag.FormatBool(qrRecommendationSparesLayoutRequirementsDefault)
-		if qRecommendationSparesLayoutRequirementsDefault != "" {
-
-			if err := r.SetQueryParam("recommendation_spares.layout_requirements.default", qRecommendationSparesLayoutRequirementsDefault); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.RecommendationSparesLayoutRequirementsRaidGroupDefault != nil {
-
-		// query param recommendation_spares.layout_requirements.raid_group.default
-		var qrRecommendationSparesLayoutRequirementsRaidGroupDefault int64
-
-		if o.RecommendationSparesLayoutRequirementsRaidGroupDefault != nil {
-			qrRecommendationSparesLayoutRequirementsRaidGroupDefault = *o.RecommendationSparesLayoutRequirementsRaidGroupDefault
-		}
-		qRecommendationSparesLayoutRequirementsRaidGroupDefault := swag.FormatInt64(qrRecommendationSparesLayoutRequirementsRaidGroupDefault)
-		if qRecommendationSparesLayoutRequirementsRaidGroupDefault != "" {
-
-			if err := r.SetQueryParam("recommendation_spares.layout_requirements.raid_group.default", qRecommendationSparesLayoutRequirementsRaidGroupDefault); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.RecommendationSparesLayoutRequirementsRaidGroupMax != nil {
-
-		// query param recommendation_spares.layout_requirements.raid_group.max
-		var qrRecommendationSparesLayoutRequirementsRaidGroupMax int64
-
-		if o.RecommendationSparesLayoutRequirementsRaidGroupMax != nil {
-			qrRecommendationSparesLayoutRequirementsRaidGroupMax = *o.RecommendationSparesLayoutRequirementsRaidGroupMax
-		}
-		qRecommendationSparesLayoutRequirementsRaidGroupMax := swag.FormatInt64(qrRecommendationSparesLayoutRequirementsRaidGroupMax)
-		if qRecommendationSparesLayoutRequirementsRaidGroupMax != "" {
-
-			if err := r.SetQueryParam("recommendation_spares.layout_requirements.raid_group.max", qRecommendationSparesLayoutRequirementsRaidGroupMax); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.RecommendationSparesLayoutRequirementsRaidGroupMin != nil {
-
-		// query param recommendation_spares.layout_requirements.raid_group.min
-		var qrRecommendationSparesLayoutRequirementsRaidGroupMin int64
-
-		if o.RecommendationSparesLayoutRequirementsRaidGroupMin != nil {
-			qrRecommendationSparesLayoutRequirementsRaidGroupMin = *o.RecommendationSparesLayoutRequirementsRaidGroupMin
-		}
-		qRecommendationSparesLayoutRequirementsRaidGroupMin := swag.FormatInt64(qrRecommendationSparesLayoutRequirementsRaidGroupMin)
-		if qRecommendationSparesLayoutRequirementsRaidGroupMin != "" {
-
-			if err := r.SetQueryParam("recommendation_spares.layout_requirements.raid_group.min", qRecommendationSparesLayoutRequirementsRaidGroupMin); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.RecommendationSparesLayoutRequirementsRaidType != nil {
-
-		// query param recommendation_spares.layout_requirements.raid_type
-		var qrRecommendationSparesLayoutRequirementsRaidType string
-
-		if o.RecommendationSparesLayoutRequirementsRaidType != nil {
-			qrRecommendationSparesLayoutRequirementsRaidType = *o.RecommendationSparesLayoutRequirementsRaidType
-		}
-		qRecommendationSparesLayoutRequirementsRaidType := qrRecommendationSparesLayoutRequirementsRaidType
-		if qRecommendationSparesLayoutRequirementsRaidType != "" {
-
-			if err := r.SetQueryParam("recommendation_spares.layout_requirements.raid_type", qRecommendationSparesLayoutRequirementsRaidType); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.RecommendationSparesNodeName != nil {
-
-		// query param recommendation_spares.node.name
-		var qrRecommendationSparesNodeName string
-
-		if o.RecommendationSparesNodeName != nil {
-			qrRecommendationSparesNodeName = *o.RecommendationSparesNodeName
-		}
-		qRecommendationSparesNodeName := qrRecommendationSparesNodeName
-		if qRecommendationSparesNodeName != "" {
-
-			if err := r.SetQueryParam("recommendation_spares.node.name", qRecommendationSparesNodeName); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.RecommendationSparesNodeUUID != nil {
-
-		// query param recommendation_spares.node.uuid
-		var qrRecommendationSparesNodeUUID string
-
-		if o.RecommendationSparesNodeUUID != nil {
-			qrRecommendationSparesNodeUUID = *o.RecommendationSparesNodeUUID
-		}
-		qRecommendationSparesNodeUUID := qrRecommendationSparesNodeUUID
-		if qRecommendationSparesNodeUUID != "" {
-
-			if err := r.SetQueryParam("recommendation_spares.node.uuid", qRecommendationSparesNodeUUID); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.RecommendationSparesSize != nil {
-
-		// query param recommendation_spares.size
-		var qrRecommendationSparesSize int64
-
-		if o.RecommendationSparesSize != nil {
-			qrRecommendationSparesSize = *o.RecommendationSparesSize
-		}
-		qRecommendationSparesSize := swag.FormatInt64(qrRecommendationSparesSize)
-		if qRecommendationSparesSize != "" {
-
-			if err := r.SetQueryParam("recommendation_spares.size", qRecommendationSparesSize); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.RecommendationSparesSyncmirrorPool != nil {
-
-		// query param recommendation_spares.syncmirror_pool
-		var qrRecommendationSparesSyncmirrorPool string
-
-		if o.RecommendationSparesSyncmirrorPool != nil {
-			qrRecommendationSparesSyncmirrorPool = *o.RecommendationSparesSyncmirrorPool
-		}
-		qRecommendationSparesSyncmirrorPool := qrRecommendationSparesSyncmirrorPool
-		if qRecommendationSparesSyncmirrorPool != "" {
-
-			if err := r.SetQueryParam("recommendation_spares.syncmirror_pool", qRecommendationSparesSyncmirrorPool); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.RecommendationSparesTotal != nil {
-
-		// query param recommendation_spares.total
-		var qrRecommendationSparesTotal int64
-
-		if o.RecommendationSparesTotal != nil {
-			qrRecommendationSparesTotal = *o.RecommendationSparesTotal
-		}
-		qRecommendationSparesTotal := swag.FormatInt64(qrRecommendationSparesTotal)
-		if qRecommendationSparesTotal != "" {
-
-			if err := r.SetQueryParam("recommendation_spares.total", qRecommendationSparesTotal); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.RecommendationSparesUsable != nil {
-
-		// query param recommendation_spares.usable
-		var qrRecommendationSparesUsable int64
-
-		if o.RecommendationSparesUsable != nil {
-			qrRecommendationSparesUsable = *o.RecommendationSparesUsable
-		}
-		qRecommendationSparesUsable := swag.FormatInt64(qrRecommendationSparesUsable)
-		if qRecommendationSparesUsable != "" {
-
-			if err := r.SetQueryParam("recommendation_spares.usable", qRecommendationSparesUsable); err != nil {
-				return err
-			}
-		}
-	}
-
 	if o.ReturnRecords != nil {
 
 		// query param return_records
@@ -4940,6 +4617,23 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.SpaceBlockStorageUsedPercent != nil {
+
+		// query param space.block_storage.used_percent
+		var qrSpaceBlockStorageUsedPercent int64
+
+		if o.SpaceBlockStorageUsedPercent != nil {
+			qrSpaceBlockStorageUsedPercent = *o.SpaceBlockStorageUsedPercent
+		}
+		qSpaceBlockStorageUsedPercent := swag.FormatInt64(qrSpaceBlockStorageUsedPercent)
+		if qSpaceBlockStorageUsedPercent != "" {
+
+			if err := r.SetQueryParam("space.block_storage.used_percent", qSpaceBlockStorageUsedPercent); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SpaceBlockStorageVolumeDeduplicationSharedCount != nil {
 
 		// query param space.block_storage.volume_deduplication_shared_count
@@ -5093,6 +4787,23 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.SpaceEfficiencyEnableWorkloadInformedTsse != nil {
+
+		// query param space.efficiency.enable_workload_informed_tsse
+		var qrSpaceEfficiencyEnableWorkloadInformedTsse bool
+
+		if o.SpaceEfficiencyEnableWorkloadInformedTsse != nil {
+			qrSpaceEfficiencyEnableWorkloadInformedTsse = *o.SpaceEfficiencyEnableWorkloadInformedTsse
+		}
+		qSpaceEfficiencyEnableWorkloadInformedTsse := swag.FormatBool(qrSpaceEfficiencyEnableWorkloadInformedTsse)
+		if qSpaceEfficiencyEnableWorkloadInformedTsse != "" {
+
+			if err := r.SetQueryParam("space.efficiency.enable_workload_informed_tsse", qSpaceEfficiencyEnableWorkloadInformedTsse); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SpaceEfficiencyLogicalUsed != nil {
 
 		// query param space.efficiency.logical_used
@@ -5139,6 +4850,23 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qSpaceEfficiencySavings != "" {
 
 			if err := r.SetQueryParam("space.efficiency.savings", qSpaceEfficiencySavings); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceEfficiencyWiseTsseMinUsedCapacityPct != nil {
+
+		// query param space.efficiency.wise_tsse_min_used_capacity_pct
+		var qrSpaceEfficiencyWiseTsseMinUsedCapacityPct int64
+
+		if o.SpaceEfficiencyWiseTsseMinUsedCapacityPct != nil {
+			qrSpaceEfficiencyWiseTsseMinUsedCapacityPct = *o.SpaceEfficiencyWiseTsseMinUsedCapacityPct
+		}
+		qSpaceEfficiencyWiseTsseMinUsedCapacityPct := swag.FormatInt64(qrSpaceEfficiencyWiseTsseMinUsedCapacityPct)
+		if qSpaceEfficiencyWiseTsseMinUsedCapacityPct != "" {
+
+			if err := r.SetQueryParam("space.efficiency.wise_tsse_min_used_capacity_pct", qSpaceEfficiencyWiseTsseMinUsedCapacityPct); err != nil {
 				return err
 			}
 		}

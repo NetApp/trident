@@ -21,7 +21,7 @@ import (
 type SoftwareHistory struct {
 
 	// Completion time of this installation request.
-	// Example: 2019-02-02T20:00:00Z
+	// Example: 2019-02-02 20:00:00
 	// Read Only: true
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
@@ -35,7 +35,7 @@ type SoftwareHistory struct {
 	Node *SoftwareHistoryInlineNode `json:"node,omitempty"`
 
 	// Start time of this installation request.
-	// Example: 2019-02-02T19:00:00Z
+	// Example: 2019-02-02 19:00:00
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
@@ -43,7 +43,7 @@ type SoftwareHistory struct {
 	// Status of this installation request.
 	// Example: successful
 	// Read Only: true
-	// Enum: [successful canceled]
+	// Enum: ["successful","canceled","skip_upgrade"]
 	State *string `json:"state,omitempty"`
 
 	// Updated version of node
@@ -123,7 +123,7 @@ var softwareHistoryTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["successful","canceled"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["successful","canceled","skip_upgrade"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -152,6 +152,16 @@ const (
 	// END DEBUGGING
 	// SoftwareHistoryStateCanceled captures enum value "canceled"
 	SoftwareHistoryStateCanceled string = "canceled"
+
+	// BEGIN DEBUGGING
+	// software_history
+	// SoftwareHistory
+	// state
+	// State
+	// skip_upgrade
+	// END DEBUGGING
+	// SoftwareHistoryStateSkipUpgrade captures enum value "skip_upgrade"
+	SoftwareHistoryStateSkipUpgrade string = "skip_upgrade"
 )
 
 // prop value enum

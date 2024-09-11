@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -25,6 +26,12 @@ func (o *LunAttributeCreateReader) ReadResponse(response runtime.ClientResponse,
 	switch response.Code() {
 	case 201:
 		result := NewLunAttributeCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
+	case 202:
+		result := NewLunAttributeCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -85,12 +92,19 @@ func (o *LunAttributeCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the lun attribute create created response
+func (o *LunAttributeCreateCreated) Code() int {
+	return 201
+}
+
 func (o *LunAttributeCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /storage/luns/{lun.uuid}/attributes][%d] lunAttributeCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/luns/{lun.uuid}/attributes][%d] lunAttributeCreateCreated %s", 201, payload)
 }
 
 func (o *LunAttributeCreateCreated) String() string {
-	return fmt.Sprintf("[POST /storage/luns/{lun.uuid}/attributes][%d] lunAttributeCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/luns/{lun.uuid}/attributes][%d] lunAttributeCreateCreated %s", 201, payload)
 }
 
 func (o *LunAttributeCreateCreated) GetPayload() *models.LunAttributeResponse {
@@ -107,6 +121,88 @@ func (o *LunAttributeCreateCreated) readResponse(response runtime.ClientResponse
 	}
 
 	o.Payload = new(models.LunAttributeResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewLunAttributeCreateAccepted creates a LunAttributeCreateAccepted with default headers values
+func NewLunAttributeCreateAccepted() *LunAttributeCreateAccepted {
+	return &LunAttributeCreateAccepted{}
+}
+
+/*
+LunAttributeCreateAccepted describes a response with status code 202, with default header values.
+
+Accepted
+*/
+type LunAttributeCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.LunAttributeJobLinkResponse
+}
+
+// IsSuccess returns true when this lun attribute create accepted response has a 2xx status code
+func (o *LunAttributeCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this lun attribute create accepted response has a 3xx status code
+func (o *LunAttributeCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this lun attribute create accepted response has a 4xx status code
+func (o *LunAttributeCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this lun attribute create accepted response has a 5xx status code
+func (o *LunAttributeCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this lun attribute create accepted response a status code equal to that given
+func (o *LunAttributeCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
+// Code gets the status code for the lun attribute create accepted response
+func (o *LunAttributeCreateAccepted) Code() int {
+	return 202
+}
+
+func (o *LunAttributeCreateAccepted) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/luns/{lun.uuid}/attributes][%d] lunAttributeCreateAccepted %s", 202, payload)
+}
+
+func (o *LunAttributeCreateAccepted) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/luns/{lun.uuid}/attributes][%d] lunAttributeCreateAccepted %s", 202, payload)
+}
+
+func (o *LunAttributeCreateAccepted) GetPayload() *models.LunAttributeJobLinkResponse {
+	return o.Payload
+}
+
+func (o *LunAttributeCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.LunAttributeJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -134,16 +230,13 @@ func NewLunAttributeCreateDefault(code int) *LunAttributeCreateDefault {
 | 5374928 | An incomplete attribute name/value pair was supplied. |
 | 5374929 | The combined sizes of an attribute name and value are too large. |
 | 5374930 | The attribute already exists for the LUN. |
+| 5375060 | The copy start operation failed. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type LunAttributeCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the lun attribute create default response
-func (o *LunAttributeCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this lun attribute create default response has a 2xx status code
@@ -171,12 +264,19 @@ func (o *LunAttributeCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the lun attribute create default response
+func (o *LunAttributeCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LunAttributeCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/luns/{lun.uuid}/attributes][%d] lun_attribute_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/luns/{lun.uuid}/attributes][%d] lun_attribute_create default %s", o._statusCode, payload)
 }
 
 func (o *LunAttributeCreateDefault) String() string {
-	return fmt.Sprintf("[POST /storage/luns/{lun.uuid}/attributes][%d] lun_attribute_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/luns/{lun.uuid}/attributes][%d] lun_attribute_create default %s", o._statusCode, payload)
 }
 
 func (o *LunAttributeCreateDefault) GetPayload() *models.ErrorResponse {

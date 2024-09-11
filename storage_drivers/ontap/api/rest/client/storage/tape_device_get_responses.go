@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *TapeDeviceGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the tape device get o k response
+func (o *TapeDeviceGetOK) Code() int {
+	return 200
+}
+
 func (o *TapeDeviceGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceGetOK %s", 200, payload)
 }
 
 func (o *TapeDeviceGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceGetOK %s", 200, payload)
 }
 
 func (o *TapeDeviceGetOK) GetPayload() *models.TapeDevice {
@@ -122,11 +130,6 @@ type TapeDeviceGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the tape device get default response
-func (o *TapeDeviceGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this tape device get default response has a 2xx status code
 func (o *TapeDeviceGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *TapeDeviceGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the tape device get default response
+func (o *TapeDeviceGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *TapeDeviceGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/tape-devices/{node.uuid}/{device_id}][%d] tape_device_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/tape-devices/{node.uuid}/{device_id}][%d] tape_device_get default %s", o._statusCode, payload)
 }
 
 func (o *TapeDeviceGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/tape-devices/{node.uuid}/{device_id}][%d] tape_device_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/tape-devices/{node.uuid}/{device_id}][%d] tape_device_get default %s", o._statusCode, payload)
 }
 
 func (o *TapeDeviceGetDefault) GetPayload() *models.ErrorResponse {

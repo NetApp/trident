@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *VscanOnAccessGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the vscan on access get o k response
+func (o *VscanOnAccessGetOK) Code() int {
+	return 200
+}
+
 func (o *VscanOnAccessGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessGetOK %s", 200, payload)
 }
 
 func (o *VscanOnAccessGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessGetOK %s", 200, payload)
 }
 
 func (o *VscanOnAccessGetOK) GetPayload() *models.VscanOnAccess {
@@ -122,11 +130,6 @@ type VscanOnAccessGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the vscan on access get default response
-func (o *VscanOnAccessGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this vscan on access get default response has a 2xx status code
 func (o *VscanOnAccessGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *VscanOnAccessGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the vscan on access get default response
+func (o *VscanOnAccessGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VscanOnAccessGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_get default %s", o._statusCode, payload)
 }
 
 func (o *VscanOnAccessGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_get default %s", o._statusCode, payload)
 }
 
 func (o *VscanOnAccessGetDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *LdapCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ldap collection get o k response
+func (o *LdapCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *LdapCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/ldap][%d] ldapCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/ldap][%d] ldapCollectionGetOK %s", 200, payload)
 }
 
 func (o *LdapCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/ldap][%d] ldapCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/ldap][%d] ldapCollectionGetOK %s", 200, payload)
 }
 
 func (o *LdapCollectionGetOK) GetPayload() *models.LdapServiceResponse {
@@ -133,11 +141,6 @@ type LdapCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the ldap collection get default response
-func (o *LdapCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this ldap collection get default response has a 2xx status code
 func (o *LdapCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -163,12 +166,19 @@ func (o *LdapCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ldap collection get default response
+func (o *LdapCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LdapCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/ldap][%d] ldap_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/ldap][%d] ldap_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *LdapCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/ldap][%d] ldap_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/ldap][%d] ldap_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *LdapCollectionGetDefault) GetPayload() *models.ErrorResponse {

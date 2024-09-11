@@ -92,12 +92,6 @@ type IgroupCollectionGetParams struct {
 	*/
 	ConnectivityTrackingAlertsSummaryMessage *string
 
-	/* ConnectivityTrackingAlertsSummaryTarget.
-
-	   Filter by connectivity_tracking.alerts.summary.target
-	*/
-	ConnectivityTrackingAlertsSummaryTarget *string
-
 	/* ConnectivityTrackingConnectionState.
 
 	   Filter by connectivity_tracking.connection_state
@@ -175,6 +169,24 @@ type IgroupCollectionGetParams struct {
 	   Filter by initiators.name
 	*/
 	InitiatorsName *string
+
+	/* InitiatorsProximityLocalSvm.
+
+	   Filter by initiators.proximity.local_svm
+	*/
+	InitiatorsProximityLocalSvm *bool
+
+	/* InitiatorsProximityPeerSvmsName.
+
+	   Filter by initiators.proximity.peer_svms.name
+	*/
+	InitiatorsProximityPeerSvmsName *string
+
+	/* InitiatorsProximityPeerSvmsUUID.
+
+	   Filter by initiators.proximity.peer_svms.uuid
+	*/
+	InitiatorsProximityPeerSvmsUUID *string
 
 	/* LunMapsLogicalUnitNumber.
 
@@ -265,6 +277,66 @@ type IgroupCollectionGetParams struct {
 	   Filter by protocol
 	*/
 	Protocol *string
+
+	/* ReplicationErrorIgroupLocalSvm.
+
+	   Filter by replication.error.igroup.local_svm
+	*/
+	ReplicationErrorIgroupLocalSvm *bool
+
+	/* ReplicationErrorIgroupName.
+
+	   Filter by replication.error.igroup.name
+	*/
+	ReplicationErrorIgroupName *string
+
+	/* ReplicationErrorIgroupUUID.
+
+	   Filter by replication.error.igroup.uuid
+	*/
+	ReplicationErrorIgroupUUID *string
+
+	/* ReplicationErrorSummaryArgumentsCode.
+
+	   Filter by replication.error.summary.arguments.code
+	*/
+	ReplicationErrorSummaryArgumentsCode *string
+
+	/* ReplicationErrorSummaryArgumentsMessage.
+
+	   Filter by replication.error.summary.arguments.message
+	*/
+	ReplicationErrorSummaryArgumentsMessage *string
+
+	/* ReplicationErrorSummaryCode.
+
+	   Filter by replication.error.summary.code
+	*/
+	ReplicationErrorSummaryCode *string
+
+	/* ReplicationErrorSummaryMessage.
+
+	   Filter by replication.error.summary.message
+	*/
+	ReplicationErrorSummaryMessage *string
+
+	/* ReplicationPeerSvmName.
+
+	   Filter by replication.peer_svm.name
+	*/
+	ReplicationPeerSvmName *string
+
+	/* ReplicationPeerSvmUUID.
+
+	   Filter by replication.peer_svm.uuid
+	*/
+	ReplicationPeerSvmUUID *string
+
+	/* ReplicationState.
+
+	   Filter by replication.state
+	*/
+	ReplicationState *string
 
 	/* ReturnRecords.
 
@@ -446,17 +518,6 @@ func (o *IgroupCollectionGetParams) SetConnectivityTrackingAlertsSummaryMessage(
 	o.ConnectivityTrackingAlertsSummaryMessage = connectivityTrackingAlertsSummaryMessage
 }
 
-// WithConnectivityTrackingAlertsSummaryTarget adds the connectivityTrackingAlertsSummaryTarget to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithConnectivityTrackingAlertsSummaryTarget(connectivityTrackingAlertsSummaryTarget *string) *IgroupCollectionGetParams {
-	o.SetConnectivityTrackingAlertsSummaryTarget(connectivityTrackingAlertsSummaryTarget)
-	return o
-}
-
-// SetConnectivityTrackingAlertsSummaryTarget adds the connectivityTrackingAlertsSummaryTarget to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetConnectivityTrackingAlertsSummaryTarget(connectivityTrackingAlertsSummaryTarget *string) {
-	o.ConnectivityTrackingAlertsSummaryTarget = connectivityTrackingAlertsSummaryTarget
-}
-
 // WithConnectivityTrackingConnectionState adds the connectivityTrackingConnectionState to the igroup collection get params
 func (o *IgroupCollectionGetParams) WithConnectivityTrackingConnectionState(connectivityTrackingConnectionState *string) *IgroupCollectionGetParams {
 	o.SetConnectivityTrackingConnectionState(connectivityTrackingConnectionState)
@@ -598,6 +659,39 @@ func (o *IgroupCollectionGetParams) WithInitiatorsName(initiatorsName *string) *
 // SetInitiatorsName adds the initiatorsName to the igroup collection get params
 func (o *IgroupCollectionGetParams) SetInitiatorsName(initiatorsName *string) {
 	o.InitiatorsName = initiatorsName
+}
+
+// WithInitiatorsProximityLocalSvm adds the initiatorsProximityLocalSvm to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithInitiatorsProximityLocalSvm(initiatorsProximityLocalSvm *bool) *IgroupCollectionGetParams {
+	o.SetInitiatorsProximityLocalSvm(initiatorsProximityLocalSvm)
+	return o
+}
+
+// SetInitiatorsProximityLocalSvm adds the initiatorsProximityLocalSvm to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetInitiatorsProximityLocalSvm(initiatorsProximityLocalSvm *bool) {
+	o.InitiatorsProximityLocalSvm = initiatorsProximityLocalSvm
+}
+
+// WithInitiatorsProximityPeerSvmsName adds the initiatorsProximityPeerSvmsName to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithInitiatorsProximityPeerSvmsName(initiatorsProximityPeerSvmsName *string) *IgroupCollectionGetParams {
+	o.SetInitiatorsProximityPeerSvmsName(initiatorsProximityPeerSvmsName)
+	return o
+}
+
+// SetInitiatorsProximityPeerSvmsName adds the initiatorsProximityPeerSvmsName to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetInitiatorsProximityPeerSvmsName(initiatorsProximityPeerSvmsName *string) {
+	o.InitiatorsProximityPeerSvmsName = initiatorsProximityPeerSvmsName
+}
+
+// WithInitiatorsProximityPeerSvmsUUID adds the initiatorsProximityPeerSvmsUUID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithInitiatorsProximityPeerSvmsUUID(initiatorsProximityPeerSvmsUUID *string) *IgroupCollectionGetParams {
+	o.SetInitiatorsProximityPeerSvmsUUID(initiatorsProximityPeerSvmsUUID)
+	return o
+}
+
+// SetInitiatorsProximityPeerSvmsUUID adds the initiatorsProximityPeerSvmsUuid to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetInitiatorsProximityPeerSvmsUUID(initiatorsProximityPeerSvmsUUID *string) {
+	o.InitiatorsProximityPeerSvmsUUID = initiatorsProximityPeerSvmsUUID
 }
 
 // WithLunMapsLogicalUnitNumber adds the lunMapsLogicalUnitNumber to the igroup collection get params
@@ -763,6 +857,116 @@ func (o *IgroupCollectionGetParams) WithProtocol(protocol *string) *IgroupCollec
 // SetProtocol adds the protocol to the igroup collection get params
 func (o *IgroupCollectionGetParams) SetProtocol(protocol *string) {
 	o.Protocol = protocol
+}
+
+// WithReplicationErrorIgroupLocalSvm adds the replicationErrorIgroupLocalSvm to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithReplicationErrorIgroupLocalSvm(replicationErrorIgroupLocalSvm *bool) *IgroupCollectionGetParams {
+	o.SetReplicationErrorIgroupLocalSvm(replicationErrorIgroupLocalSvm)
+	return o
+}
+
+// SetReplicationErrorIgroupLocalSvm adds the replicationErrorIgroupLocalSvm to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetReplicationErrorIgroupLocalSvm(replicationErrorIgroupLocalSvm *bool) {
+	o.ReplicationErrorIgroupLocalSvm = replicationErrorIgroupLocalSvm
+}
+
+// WithReplicationErrorIgroupName adds the replicationErrorIgroupName to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithReplicationErrorIgroupName(replicationErrorIgroupName *string) *IgroupCollectionGetParams {
+	o.SetReplicationErrorIgroupName(replicationErrorIgroupName)
+	return o
+}
+
+// SetReplicationErrorIgroupName adds the replicationErrorIgroupName to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetReplicationErrorIgroupName(replicationErrorIgroupName *string) {
+	o.ReplicationErrorIgroupName = replicationErrorIgroupName
+}
+
+// WithReplicationErrorIgroupUUID adds the replicationErrorIgroupUUID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithReplicationErrorIgroupUUID(replicationErrorIgroupUUID *string) *IgroupCollectionGetParams {
+	o.SetReplicationErrorIgroupUUID(replicationErrorIgroupUUID)
+	return o
+}
+
+// SetReplicationErrorIgroupUUID adds the replicationErrorIgroupUuid to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetReplicationErrorIgroupUUID(replicationErrorIgroupUUID *string) {
+	o.ReplicationErrorIgroupUUID = replicationErrorIgroupUUID
+}
+
+// WithReplicationErrorSummaryArgumentsCode adds the replicationErrorSummaryArgumentsCode to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithReplicationErrorSummaryArgumentsCode(replicationErrorSummaryArgumentsCode *string) *IgroupCollectionGetParams {
+	o.SetReplicationErrorSummaryArgumentsCode(replicationErrorSummaryArgumentsCode)
+	return o
+}
+
+// SetReplicationErrorSummaryArgumentsCode adds the replicationErrorSummaryArgumentsCode to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetReplicationErrorSummaryArgumentsCode(replicationErrorSummaryArgumentsCode *string) {
+	o.ReplicationErrorSummaryArgumentsCode = replicationErrorSummaryArgumentsCode
+}
+
+// WithReplicationErrorSummaryArgumentsMessage adds the replicationErrorSummaryArgumentsMessage to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithReplicationErrorSummaryArgumentsMessage(replicationErrorSummaryArgumentsMessage *string) *IgroupCollectionGetParams {
+	o.SetReplicationErrorSummaryArgumentsMessage(replicationErrorSummaryArgumentsMessage)
+	return o
+}
+
+// SetReplicationErrorSummaryArgumentsMessage adds the replicationErrorSummaryArgumentsMessage to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetReplicationErrorSummaryArgumentsMessage(replicationErrorSummaryArgumentsMessage *string) {
+	o.ReplicationErrorSummaryArgumentsMessage = replicationErrorSummaryArgumentsMessage
+}
+
+// WithReplicationErrorSummaryCode adds the replicationErrorSummaryCode to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithReplicationErrorSummaryCode(replicationErrorSummaryCode *string) *IgroupCollectionGetParams {
+	o.SetReplicationErrorSummaryCode(replicationErrorSummaryCode)
+	return o
+}
+
+// SetReplicationErrorSummaryCode adds the replicationErrorSummaryCode to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetReplicationErrorSummaryCode(replicationErrorSummaryCode *string) {
+	o.ReplicationErrorSummaryCode = replicationErrorSummaryCode
+}
+
+// WithReplicationErrorSummaryMessage adds the replicationErrorSummaryMessage to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithReplicationErrorSummaryMessage(replicationErrorSummaryMessage *string) *IgroupCollectionGetParams {
+	o.SetReplicationErrorSummaryMessage(replicationErrorSummaryMessage)
+	return o
+}
+
+// SetReplicationErrorSummaryMessage adds the replicationErrorSummaryMessage to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetReplicationErrorSummaryMessage(replicationErrorSummaryMessage *string) {
+	o.ReplicationErrorSummaryMessage = replicationErrorSummaryMessage
+}
+
+// WithReplicationPeerSvmName adds the replicationPeerSvmName to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithReplicationPeerSvmName(replicationPeerSvmName *string) *IgroupCollectionGetParams {
+	o.SetReplicationPeerSvmName(replicationPeerSvmName)
+	return o
+}
+
+// SetReplicationPeerSvmName adds the replicationPeerSvmName to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetReplicationPeerSvmName(replicationPeerSvmName *string) {
+	o.ReplicationPeerSvmName = replicationPeerSvmName
+}
+
+// WithReplicationPeerSvmUUID adds the replicationPeerSvmUUID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithReplicationPeerSvmUUID(replicationPeerSvmUUID *string) *IgroupCollectionGetParams {
+	o.SetReplicationPeerSvmUUID(replicationPeerSvmUUID)
+	return o
+}
+
+// SetReplicationPeerSvmUUID adds the replicationPeerSvmUuid to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetReplicationPeerSvmUUID(replicationPeerSvmUUID *string) {
+	o.ReplicationPeerSvmUUID = replicationPeerSvmUUID
+}
+
+// WithReplicationState adds the replicationState to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithReplicationState(replicationState *string) *IgroupCollectionGetParams {
+	o.SetReplicationState(replicationState)
+	return o
+}
+
+// SetReplicationState adds the replicationState to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetReplicationState(replicationState *string) {
+	o.ReplicationState = replicationState
 }
 
 // WithReturnRecords adds the returnRecords to the igroup collection get params
@@ -952,23 +1156,6 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qConnectivityTrackingAlertsSummaryMessage != "" {
 
 			if err := r.SetQueryParam("connectivity_tracking.alerts.summary.message", qConnectivityTrackingAlertsSummaryMessage); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ConnectivityTrackingAlertsSummaryTarget != nil {
-
-		// query param connectivity_tracking.alerts.summary.target
-		var qrConnectivityTrackingAlertsSummaryTarget string
-
-		if o.ConnectivityTrackingAlertsSummaryTarget != nil {
-			qrConnectivityTrackingAlertsSummaryTarget = *o.ConnectivityTrackingAlertsSummaryTarget
-		}
-		qConnectivityTrackingAlertsSummaryTarget := qrConnectivityTrackingAlertsSummaryTarget
-		if qConnectivityTrackingAlertsSummaryTarget != "" {
-
-			if err := r.SetQueryParam("connectivity_tracking.alerts.summary.target", qConnectivityTrackingAlertsSummaryTarget); err != nil {
 				return err
 			}
 		}
@@ -1184,6 +1371,57 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qInitiatorsName != "" {
 
 			if err := r.SetQueryParam("initiators.name", qInitiatorsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.InitiatorsProximityLocalSvm != nil {
+
+		// query param initiators.proximity.local_svm
+		var qrInitiatorsProximityLocalSvm bool
+
+		if o.InitiatorsProximityLocalSvm != nil {
+			qrInitiatorsProximityLocalSvm = *o.InitiatorsProximityLocalSvm
+		}
+		qInitiatorsProximityLocalSvm := swag.FormatBool(qrInitiatorsProximityLocalSvm)
+		if qInitiatorsProximityLocalSvm != "" {
+
+			if err := r.SetQueryParam("initiators.proximity.local_svm", qInitiatorsProximityLocalSvm); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.InitiatorsProximityPeerSvmsName != nil {
+
+		// query param initiators.proximity.peer_svms.name
+		var qrInitiatorsProximityPeerSvmsName string
+
+		if o.InitiatorsProximityPeerSvmsName != nil {
+			qrInitiatorsProximityPeerSvmsName = *o.InitiatorsProximityPeerSvmsName
+		}
+		qInitiatorsProximityPeerSvmsName := qrInitiatorsProximityPeerSvmsName
+		if qInitiatorsProximityPeerSvmsName != "" {
+
+			if err := r.SetQueryParam("initiators.proximity.peer_svms.name", qInitiatorsProximityPeerSvmsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.InitiatorsProximityPeerSvmsUUID != nil {
+
+		// query param initiators.proximity.peer_svms.uuid
+		var qrInitiatorsProximityPeerSvmsUUID string
+
+		if o.InitiatorsProximityPeerSvmsUUID != nil {
+			qrInitiatorsProximityPeerSvmsUUID = *o.InitiatorsProximityPeerSvmsUUID
+		}
+		qInitiatorsProximityPeerSvmsUUID := qrInitiatorsProximityPeerSvmsUUID
+		if qInitiatorsProximityPeerSvmsUUID != "" {
+
+			if err := r.SetQueryParam("initiators.proximity.peer_svms.uuid", qInitiatorsProximityPeerSvmsUUID); err != nil {
 				return err
 			}
 		}
@@ -1433,6 +1671,176 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qProtocol != "" {
 
 			if err := r.SetQueryParam("protocol", qProtocol); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorIgroupLocalSvm != nil {
+
+		// query param replication.error.igroup.local_svm
+		var qrReplicationErrorIgroupLocalSvm bool
+
+		if o.ReplicationErrorIgroupLocalSvm != nil {
+			qrReplicationErrorIgroupLocalSvm = *o.ReplicationErrorIgroupLocalSvm
+		}
+		qReplicationErrorIgroupLocalSvm := swag.FormatBool(qrReplicationErrorIgroupLocalSvm)
+		if qReplicationErrorIgroupLocalSvm != "" {
+
+			if err := r.SetQueryParam("replication.error.igroup.local_svm", qReplicationErrorIgroupLocalSvm); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorIgroupName != nil {
+
+		// query param replication.error.igroup.name
+		var qrReplicationErrorIgroupName string
+
+		if o.ReplicationErrorIgroupName != nil {
+			qrReplicationErrorIgroupName = *o.ReplicationErrorIgroupName
+		}
+		qReplicationErrorIgroupName := qrReplicationErrorIgroupName
+		if qReplicationErrorIgroupName != "" {
+
+			if err := r.SetQueryParam("replication.error.igroup.name", qReplicationErrorIgroupName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorIgroupUUID != nil {
+
+		// query param replication.error.igroup.uuid
+		var qrReplicationErrorIgroupUUID string
+
+		if o.ReplicationErrorIgroupUUID != nil {
+			qrReplicationErrorIgroupUUID = *o.ReplicationErrorIgroupUUID
+		}
+		qReplicationErrorIgroupUUID := qrReplicationErrorIgroupUUID
+		if qReplicationErrorIgroupUUID != "" {
+
+			if err := r.SetQueryParam("replication.error.igroup.uuid", qReplicationErrorIgroupUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSummaryArgumentsCode != nil {
+
+		// query param replication.error.summary.arguments.code
+		var qrReplicationErrorSummaryArgumentsCode string
+
+		if o.ReplicationErrorSummaryArgumentsCode != nil {
+			qrReplicationErrorSummaryArgumentsCode = *o.ReplicationErrorSummaryArgumentsCode
+		}
+		qReplicationErrorSummaryArgumentsCode := qrReplicationErrorSummaryArgumentsCode
+		if qReplicationErrorSummaryArgumentsCode != "" {
+
+			if err := r.SetQueryParam("replication.error.summary.arguments.code", qReplicationErrorSummaryArgumentsCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSummaryArgumentsMessage != nil {
+
+		// query param replication.error.summary.arguments.message
+		var qrReplicationErrorSummaryArgumentsMessage string
+
+		if o.ReplicationErrorSummaryArgumentsMessage != nil {
+			qrReplicationErrorSummaryArgumentsMessage = *o.ReplicationErrorSummaryArgumentsMessage
+		}
+		qReplicationErrorSummaryArgumentsMessage := qrReplicationErrorSummaryArgumentsMessage
+		if qReplicationErrorSummaryArgumentsMessage != "" {
+
+			if err := r.SetQueryParam("replication.error.summary.arguments.message", qReplicationErrorSummaryArgumentsMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSummaryCode != nil {
+
+		// query param replication.error.summary.code
+		var qrReplicationErrorSummaryCode string
+
+		if o.ReplicationErrorSummaryCode != nil {
+			qrReplicationErrorSummaryCode = *o.ReplicationErrorSummaryCode
+		}
+		qReplicationErrorSummaryCode := qrReplicationErrorSummaryCode
+		if qReplicationErrorSummaryCode != "" {
+
+			if err := r.SetQueryParam("replication.error.summary.code", qReplicationErrorSummaryCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSummaryMessage != nil {
+
+		// query param replication.error.summary.message
+		var qrReplicationErrorSummaryMessage string
+
+		if o.ReplicationErrorSummaryMessage != nil {
+			qrReplicationErrorSummaryMessage = *o.ReplicationErrorSummaryMessage
+		}
+		qReplicationErrorSummaryMessage := qrReplicationErrorSummaryMessage
+		if qReplicationErrorSummaryMessage != "" {
+
+			if err := r.SetQueryParam("replication.error.summary.message", qReplicationErrorSummaryMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationPeerSvmName != nil {
+
+		// query param replication.peer_svm.name
+		var qrReplicationPeerSvmName string
+
+		if o.ReplicationPeerSvmName != nil {
+			qrReplicationPeerSvmName = *o.ReplicationPeerSvmName
+		}
+		qReplicationPeerSvmName := qrReplicationPeerSvmName
+		if qReplicationPeerSvmName != "" {
+
+			if err := r.SetQueryParam("replication.peer_svm.name", qReplicationPeerSvmName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationPeerSvmUUID != nil {
+
+		// query param replication.peer_svm.uuid
+		var qrReplicationPeerSvmUUID string
+
+		if o.ReplicationPeerSvmUUID != nil {
+			qrReplicationPeerSvmUUID = *o.ReplicationPeerSvmUUID
+		}
+		qReplicationPeerSvmUUID := qrReplicationPeerSvmUUID
+		if qReplicationPeerSvmUUID != "" {
+
+			if err := r.SetQueryParam("replication.peer_svm.uuid", qReplicationPeerSvmUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationState != nil {
+
+		// query param replication.state
+		var qrReplicationState string
+
+		if o.ReplicationState != nil {
+			qrReplicationState = *o.ReplicationState
+		}
+		qReplicationState := qrReplicationState
+		if qReplicationState != "" {
+
+			if err := r.SetQueryParam("replication.state", qReplicationState); err != nil {
 				return err
 			}
 		}

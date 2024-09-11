@@ -31,7 +31,7 @@ type VdiOnSanNewIgroups struct {
 	Name *string `json:"name"`
 
 	// The protocol of the new initiator group.
-	// Enum: [fcp iscsi mixed]
+	// Enum: ["fcp","iscsi","mixed"]
 	Protocol *string `json:"protocol,omitempty"`
 
 	// vdi on san new igroups inline igroups

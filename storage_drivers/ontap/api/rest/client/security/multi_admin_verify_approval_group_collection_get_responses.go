@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *MultiAdminVerifyApprovalGroupCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the multi admin verify approval group collection get o k response
+func (o *MultiAdminVerifyApprovalGroupCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *MultiAdminVerifyApprovalGroupCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/multi-admin-verify/approval-groups][%d] multiAdminVerifyApprovalGroupCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/multi-admin-verify/approval-groups][%d] multiAdminVerifyApprovalGroupCollectionGetOK %s", 200, payload)
 }
 
 func (o *MultiAdminVerifyApprovalGroupCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /security/multi-admin-verify/approval-groups][%d] multiAdminVerifyApprovalGroupCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/multi-admin-verify/approval-groups][%d] multiAdminVerifyApprovalGroupCollectionGetOK %s", 200, payload)
 }
 
 func (o *MultiAdminVerifyApprovalGroupCollectionGetOK) GetPayload() *models.MultiAdminVerifyApprovalGroupResponse {
@@ -122,11 +130,6 @@ type MultiAdminVerifyApprovalGroupCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the multi admin verify approval group collection get default response
-func (o *MultiAdminVerifyApprovalGroupCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this multi admin verify approval group collection get default response has a 2xx status code
 func (o *MultiAdminVerifyApprovalGroupCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *MultiAdminVerifyApprovalGroupCollectionGetDefault) IsCode(code int) boo
 	return o._statusCode == code
 }
 
+// Code gets the status code for the multi admin verify approval group collection get default response
+func (o *MultiAdminVerifyApprovalGroupCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MultiAdminVerifyApprovalGroupCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/multi-admin-verify/approval-groups][%d] multi_admin_verify_approval_group_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/multi-admin-verify/approval-groups][%d] multi_admin_verify_approval_group_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyApprovalGroupCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/multi-admin-verify/approval-groups][%d] multi_admin_verify_approval_group_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/multi-admin-verify/approval-groups][%d] multi_admin_verify_approval_group_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyApprovalGroupCollectionGetDefault) GetPayload() *models.ErrorResponse {

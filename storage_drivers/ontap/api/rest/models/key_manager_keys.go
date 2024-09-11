@@ -32,7 +32,7 @@ type KeyManagerKeys struct {
 	EncryptionAlgorithm *string `json:"encryption_algorithm,omitempty"`
 
 	// Key identifier.
-	// Example: 00000000000000000100000000000123456789asdfghjklqwertyuio123456780000000000000090
+	// Example: 000000000000000002000000000001008963c9213194c59555c1bec8db3603c800000000
 	KeyID *string `json:"key_id,omitempty"`
 
 	// Key manager key server managing the key. Indicates the external key server when external key manager is configured.
@@ -44,11 +44,11 @@ type KeyManagerKeys struct {
 	KeyServer *string `json:"key_server,omitempty"`
 
 	// Security key manager configured for the given key manager UUID. Key manager keystore value can be onboard or external.
-	// Enum: [onboard external]
+	// Enum: ["onboard","external"]
 	KeyStore *string `json:"key_store,omitempty"`
 
 	// Security key manager keystore type. Keystore type can be onboard, external, or supported cloud key manager.
-	// Enum: [okm kmip akv unset gcp aws ikp]
+	// Enum: ["okm","kmip","akv","unset","gcp","aws","ikp"]
 	KeyStoreType *string `json:"key_store_type,omitempty"`
 
 	// Additional information associated with the key.
@@ -56,7 +56,7 @@ type KeyManagerKeys struct {
 	KeyTag *string `json:"key_tag,omitempty"`
 
 	// Encryption Key type.
-	// Enum: [nse_ak aek vek nek svm_kek]
+	// Enum: ["nse_ak","aek","vek","nek","svm_kek"]
 	KeyType *string `json:"key_type,omitempty"`
 
 	// SVM associated with the key.
@@ -73,6 +73,15 @@ type KeyManagerKeys struct {
 	// Indicates whether the key is present locally on the node.
 	// Example: true
 	Restored *bool `json:"restored,omitempty"`
+
+	// scope
+	Scope *NetworkScopeReadonly `json:"scope,omitempty"`
+
+	// security key manager
+	SecurityKeyManager *KeyManagerKeysInlineSecurityKeyManager `json:"security_key_manager,omitempty"`
+
+	// svm
+	Svm *KeyManagerKeysInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this key manager keys
@@ -96,6 +105,18 @@ func (m *KeyManagerKeys) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScope(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSecurityKeyManager(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSvm(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -387,6 +408,57 @@ func (m *KeyManagerKeys) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *KeyManagerKeys) validateScope(formats strfmt.Registry) error {
+	if swag.IsZero(m.Scope) { // not required
+		return nil
+	}
+
+	if m.Scope != nil {
+		if err := m.Scope.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("scope")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyManagerKeys) validateSecurityKeyManager(formats strfmt.Registry) error {
+	if swag.IsZero(m.SecurityKeyManager) { // not required
+		return nil
+	}
+
+	if m.SecurityKeyManager != nil {
+		if err := m.SecurityKeyManager.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("security_key_manager")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyManagerKeys) validateSvm(formats strfmt.Registry) error {
+	if swag.IsZero(m.Svm) { // not required
+		return nil
+	}
+
+	if m.Svm != nil {
+		if err := m.Svm.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this key manager keys based on the context it is used
 func (m *KeyManagerKeys) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -396,6 +468,18 @@ func (m *KeyManagerKeys) ContextValidate(ctx context.Context, formats strfmt.Reg
 	}
 
 	if err := m.contextValidateNode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateScope(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSecurityKeyManager(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -425,6 +509,48 @@ func (m *KeyManagerKeys) contextValidateNode(ctx context.Context, formats strfmt
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("node")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyManagerKeys) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Scope != nil {
+		if err := m.Scope.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("scope")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyManagerKeys) contextValidateSecurityKeyManager(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.SecurityKeyManager != nil {
+		if err := m.SecurityKeyManager.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("security_key_manager")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyManagerKeys) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Svm != nil {
+		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
 			}
 			return err
 		}
@@ -624,6 +750,364 @@ func (m *KeyManagerKeysInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *KeyManagerKeysInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
 	var res KeyManagerKeysInlineNodeInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// KeyManagerKeysInlineSecurityKeyManager Security key manager object reference.
+//
+// swagger:model key_manager_keys_inline_security_key_manager
+type KeyManagerKeysInlineSecurityKeyManager struct {
+
+	// links
+	Links *KeyManagerKeysInlineSecurityKeyManagerInlineLinks `json:"_links,omitempty"`
+
+	// Key manager UUID
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563434
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this key manager keys inline security key manager
+func (m *KeyManagerKeysInlineSecurityKeyManager) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *KeyManagerKeysInlineSecurityKeyManager) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("security_key_manager" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this key manager keys inline security key manager based on the context it is used
+func (m *KeyManagerKeysInlineSecurityKeyManager) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *KeyManagerKeysInlineSecurityKeyManager) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("security_key_manager" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *KeyManagerKeysInlineSecurityKeyManager) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *KeyManagerKeysInlineSecurityKeyManager) UnmarshalBinary(b []byte) error {
+	var res KeyManagerKeysInlineSecurityKeyManager
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// KeyManagerKeysInlineSecurityKeyManagerInlineLinks key manager keys inline security key manager inline links
+//
+// swagger:model key_manager_keys_inline_security_key_manager_inline__links
+type KeyManagerKeysInlineSecurityKeyManagerInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this key manager keys inline security key manager inline links
+func (m *KeyManagerKeysInlineSecurityKeyManagerInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *KeyManagerKeysInlineSecurityKeyManagerInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("security_key_manager" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this key manager keys inline security key manager inline links based on the context it is used
+func (m *KeyManagerKeysInlineSecurityKeyManagerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *KeyManagerKeysInlineSecurityKeyManagerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("security_key_manager" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *KeyManagerKeysInlineSecurityKeyManagerInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *KeyManagerKeysInlineSecurityKeyManagerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res KeyManagerKeysInlineSecurityKeyManagerInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// KeyManagerKeysInlineSvm SVM, applies only to SVM-scoped objects.
+//
+// swagger:model key_manager_keys_inline_svm
+type KeyManagerKeysInlineSvm struct {
+
+	// links
+	Links *KeyManagerKeysInlineSvmInlineLinks `json:"_links,omitempty"`
+
+	// The name of the SVM. This field cannot be specified in a PATCH method.
+	//
+	// Example: svm1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
+	//
+	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this key manager keys inline svm
+func (m *KeyManagerKeysInlineSvm) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *KeyManagerKeysInlineSvm) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this key manager keys inline svm based on the context it is used
+func (m *KeyManagerKeysInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *KeyManagerKeysInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *KeyManagerKeysInlineSvm) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *KeyManagerKeysInlineSvm) UnmarshalBinary(b []byte) error {
+	var res KeyManagerKeysInlineSvm
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// KeyManagerKeysInlineSvmInlineLinks key manager keys inline svm inline links
+//
+// swagger:model key_manager_keys_inline_svm_inline__links
+type KeyManagerKeysInlineSvmInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this key manager keys inline svm inline links
+func (m *KeyManagerKeysInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *KeyManagerKeysInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this key manager keys inline svm inline links based on the context it is used
+func (m *KeyManagerKeysInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *KeyManagerKeysInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *KeyManagerKeysInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *KeyManagerKeysInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res KeyManagerKeysInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

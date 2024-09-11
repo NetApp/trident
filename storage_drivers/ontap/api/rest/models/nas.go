@@ -352,7 +352,7 @@ type NasInlineApplicationComponentsInlineArrayItem struct {
 	Qos *NasInlineApplicationComponentsInlineArrayItemInlineQos `json:"qos,omitempty"`
 
 	// Denotes a Flexgroup.
-	// Enum: [false true]
+	// Enum: [false,true]
 	ScaleOut *bool `json:"scale_out,omitempty"`
 
 	// The number of shares in the application component.
@@ -363,6 +363,10 @@ type NasInlineApplicationComponentsInlineArrayItem struct {
 
 	// snaplock
 	Snaplock *NasInlineApplicationComponentsInlineArrayItemInlineSnaplock `json:"snaplock,omitempty"`
+
+	// Indicates whether Snapshot copy locking is enabled on the volume.
+	// Enum: [false,true]
+	SnapshotLockingEnabled *bool `json:"snapshot_locking_enabled,omitempty"`
 
 	// storage service
 	StorageService *NasInlineApplicationComponentsInlineArrayItemInlineStorageService `json:"storage_service,omitempty"`
@@ -404,6 +408,10 @@ func (m *NasInlineApplicationComponentsInlineArrayItem) Validate(formats strfmt.
 	}
 
 	if err := m.validateSnaplock(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnapshotLockingEnabled(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -555,6 +563,39 @@ func (m *NasInlineApplicationComponentsInlineArrayItem) validateSnaplock(formats
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var nasInlineApplicationComponentsInlineArrayItemTypeSnapshotLockingEnabledPropEnum []interface{}
+
+func init() {
+	var res []bool
+	if err := json.Unmarshal([]byte(`[false,true]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nasInlineApplicationComponentsInlineArrayItemTypeSnapshotLockingEnabledPropEnum = append(nasInlineApplicationComponentsInlineArrayItemTypeSnapshotLockingEnabledPropEnum, v)
+	}
+}
+
+// prop value enum
+func (m *NasInlineApplicationComponentsInlineArrayItem) validateSnapshotLockingEnabledEnum(path, location string, value bool) error {
+	if err := validate.EnumCase(path, location, value, nasInlineApplicationComponentsInlineArrayItemTypeSnapshotLockingEnabledPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NasInlineApplicationComponentsInlineArrayItem) validateSnapshotLockingEnabled(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnapshotLockingEnabled) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateSnapshotLockingEnabledEnum("snapshot_locking_enabled", "body", *m.SnapshotLockingEnabled); err != nil {
+		return err
 	}
 
 	return nil
@@ -785,7 +826,7 @@ func (m *NasInlineApplicationComponentsInlineArrayItemInlineExportPolicy) Unmars
 type NasInlineApplicationComponentsInlineArrayItemInlineFlexcache struct {
 
 	// Dr-cache is a FlexCache volume create time option that has the same flexgroup-msid as that of the origin of a FlexCache volume. By default, dr-cache is disabled. The flexgroup-msid of the FlexCache volume does not need to be same as that of the origin of a FlexCache volume.
-	// Enum: [false true]
+	// Enum: [false,true]
 	DrCache *bool `json:"dr_cache,omitempty"`
 
 	// origin
@@ -1282,7 +1323,7 @@ func (m *NasInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy) Unm
 type NasInlineApplicationComponentsInlineArrayItemInlineSnaplock struct {
 
 	// Specifies if the volume append mode is enabled or disabled. When it is enabled, all the files created with write permissions on the volume are, by default, WORM appendable files. The user can append the data to a WORM appendable file but cannot modify the existing contents of the file nor delete the file until it expires.
-	// Enum: [false true]
+	// Enum: [false,true]
 	AppendModeEnabled *bool `json:"append_mode_enabled,omitempty"`
 
 	// Specifies the autocommit period for SnapLock volume. All files which are not modified for a period greater than the autocommit period of the volume are committed to the WORM state. The autocommit period value represents a duration and must be specified in the ISO-8601 duration format. The autocommit period can be in years, months, days, hours, and minutes. A period specified for years, months, and days is represented in the ISO-8601 format as &quot;P&lt;num&gt;Y&quot;, &quot;P&lt;num&gt;M&quot;, &quot;P&lt;num&gt;D&quot; respectively, for example &quot;P10Y&quot; represents a duration of 10 years. A duration in hours and minutes is represented by &quot;PT&lt;num&gt;H&quot; and &quot;PT&lt;num&gt;M&quot; respectively. The period string must contain only a single time element that is, either years, months, days, hours, or minutes. A duration which combines different periods is not supported, for example &quot;P1Y10M&quot; is not supported. Apart from the duration specified in the ISO-8601 format, the autocommit field also accepts the string &quot;none&quot;.
@@ -1292,7 +1333,7 @@ type NasInlineApplicationComponentsInlineArrayItemInlineSnaplock struct {
 	Retention *NasInlineApplicationComponentsInlineArrayItemInlineSnaplockInlineRetention `json:"retention,omitempty"`
 
 	// The SnapLock type of the smart container.
-	// Enum: [compliance enterprise non_snaplock]
+	// Enum: ["compliance","enterprise","non_snaplock"]
 	SnaplockType *string `json:"snaplock_type,omitempty"`
 }
 
@@ -1529,7 +1570,7 @@ func (m *NasInlineApplicationComponentsInlineArrayItemInlineSnaplockInlineRetent
 type NasInlineApplicationComponentsInlineArrayItemInlineStorageService struct {
 
 	// The storage service of the application component.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -1685,11 +1726,11 @@ type NasInlineProtectionType struct {
 	LocalPolicy *string `json:"local_policy,omitempty"`
 
 	// The local RPO of the application.
-	// Enum: [hourly none]
+	// Enum: ["hourly","none"]
 	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
-	// Enum: [none zero]
+	// Enum: ["none","zero"]
 	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 

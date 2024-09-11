@@ -25,10 +25,11 @@ type FileDirectorySecurity struct {
 	// are "file-directory" or "Storage-Level Access Guard (SLAG)". SLAG is used to apply the
 	// specified security descriptors with the task for the volume or qtree. Otherwise, the
 	// security descriptors are applied on files and directories at the specified path.
-	// The value slag is not supported on FlexGroups volumes. The default value is "file-directory".
+	// The value SLAG is not supported on FlexGroups volumes. The default value is "file-directory"
+	// ('-' and '_' are interchangeable).
 	//
 	// Example: file_directory
-	// Enum: [file_directory slag]
+	// Enum: ["file_directory","slag"]
 	AccessControl *string `json:"access_control,omitempty"`
 
 	// Specifies the control flags in the SD. It is a Hexadecimal Value.
@@ -50,7 +51,7 @@ type FileDirectorySecurity struct {
 	//
 	// Example: mixed
 	// Read Only: true
-	// Enum: [unix ntfs mixed unified]
+	// Enum: ["unix","ntfs","mixed","unified"]
 	EffectiveStyle *string `json:"effective_style,omitempty"`
 
 	// A discretionary access security list (DACL) identifies the trustees that are allowed or denied access
@@ -103,11 +104,12 @@ type FileDirectorySecurity struct {
 	// This setting determines how child files/folders contained within a parent
 	// folder inherit access control and audit information from the parent folder.
 	// The available values are:
-	// * propogate    - propagate inheritable permissions to all subfolders and files
+	// * propagate    - propagate inheritable permissions to all subfolders and files
+	// * ignore       - ignore inheritable permissions
 	// * replace      - replace existing permissions on all subfolders and files with inheritable permissions
 	//
 	// Example: propagate
-	// Enum: [propagate replace]
+	// Enum: ["propagate","ignore","replace"]
 	PropagationMode *string `json:"propagation_mode,omitempty"`
 
 	// Specifies the security style of the SD. The following values are supported:
@@ -118,7 +120,7 @@ type FileDirectorySecurity struct {
 	//
 	// Example: ntfs
 	// Read Only: true
-	// Enum: [unix ntfs mixed unified]
+	// Enum: ["unix","ntfs","mixed","unified"]
 	SecurityStyle *string `json:"security_style,omitempty"`
 
 	// Specifies the textual format of file attributes on this file or directory.
@@ -330,7 +332,7 @@ var fileDirectorySecurityTypePropagationModePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["propagate","replace"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["propagate","ignore","replace"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -349,6 +351,16 @@ const (
 	// END DEBUGGING
 	// FileDirectorySecurityPropagationModePropagate captures enum value "propagate"
 	FileDirectorySecurityPropagationModePropagate string = "propagate"
+
+	// BEGIN DEBUGGING
+	// file_directory_security
+	// FileDirectorySecurity
+	// propagation_mode
+	// PropagationMode
+	// ignore
+	// END DEBUGGING
+	// FileDirectorySecurityPropagationModeIgnore captures enum value "ignore"
+	FileDirectorySecurityPropagationModeIgnore string = "ignore"
 
 	// BEGIN DEBUGGING
 	// file_directory_security

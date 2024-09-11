@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *EmsFiltersRulesCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the ems filters rules create created response
+func (o *EmsFiltersRulesCreateCreated) Code() int {
+	return 201
+}
+
 func (o *EmsFiltersRulesCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /support/ems/filters/{name}/rules][%d] emsFiltersRulesCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/ems/filters/{name}/rules][%d] emsFiltersRulesCreateCreated %s", 201, payload)
 }
 
 func (o *EmsFiltersRulesCreateCreated) String() string {
-	return fmt.Sprintf("[POST /support/ems/filters/{name}/rules][%d] emsFiltersRulesCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/ems/filters/{name}/rules][%d] emsFiltersRulesCreateCreated %s", 201, payload)
 }
 
 func (o *EmsFiltersRulesCreateCreated) GetPayload() *models.EmsFilterRuleResponse {
@@ -130,29 +138,28 @@ func NewEmsFiltersRulesCreateDefault(code int) *EmsFiltersRulesCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 983092     | The index of the rule provided is outside the allowed range for the filter provided |
-| 983095     | The rule index provided is invalid for the filter provided |
-| 983113     | Default filters cannot be modified or removed |
-| 983115     | The maximum number of filter rules is reached |
-| 983126     | A rule requires at least one name_pattern, severities, or snmp_trap_types to be defined |
-| 983127     | A property cannot contain a combination of the wildcard characters and other values |
-| 983128     | An invalid value is provided for the property 'snmp_trap_types' |
-| 983146     | An invalid value is provided for the property 'severities' |
-| 983147     | The severity levels provided are not supported |
-| 983155     | The provided severities property does not match that of the name_pattern |
-| 983156     | The provided snmp_trap_types property does not match that of the name_pattern |
-| 983157     | The provided severities and snmp_trap_types do not match those of the name_pattern |
-| 983158     | The name_pattern provided does not exist |
+| 983092 | The index of the rule provided is outside the allowed range for the filter provided |
+| 983095 | The rule index provided is invalid for the filter provided |
+| 983113 | Default filters cannot be modified or removed |
+| 983115 | The maximum number of filter rules is reached |
+| 983126 | A rule requires at least one name_pattern, severities, snmp_trap_types, or parameter pattern to be defined |
+| 983127 | A property cannot contain a combination of the wildcard characters and other values |
+| 983128 | An invalid value is provided for the property 'snmp_trap_types' |
+| 983146 | An invalid value is provided for the property 'severities' |
+| 983147 | The severities provided are not supported |
+| 983155 | The provided severities property does not match that of the name_pattern |
+| 983156 | The provided snmp_trap_types property does not match that of the name_pattern |
+| 983157 | The provided severities and snmp_trap_types properties do not match those of the name_pattern |
+| 983158 | The name_pattern provided does not exist |
+| 983195 | Empty field in parameter_criteria. Both name and value patterns must be specified |
+| 983196 | name_pattern and value_pattern fields in parameter_criteria are empty |
+| 983211 | Parameter criteria based filtering is not supported in this version of ONTAP |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type EmsFiltersRulesCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ems filters rules create default response
-func (o *EmsFiltersRulesCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ems filters rules create default response has a 2xx status code
@@ -180,12 +187,19 @@ func (o *EmsFiltersRulesCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ems filters rules create default response
+func (o *EmsFiltersRulesCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *EmsFiltersRulesCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /support/ems/filters/{name}/rules][%d] ems_filters_rules_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/ems/filters/{name}/rules][%d] ems_filters_rules_create default %s", o._statusCode, payload)
 }
 
 func (o *EmsFiltersRulesCreateDefault) String() string {
-	return fmt.Sprintf("[POST /support/ems/filters/{name}/rules][%d] ems_filters_rules_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/ems/filters/{name}/rules][%d] ems_filters_rules_create default %s", o._statusCode, payload)
 }
 
 func (o *EmsFiltersRulesCreateDefault) GetPayload() *models.ErrorResponse {

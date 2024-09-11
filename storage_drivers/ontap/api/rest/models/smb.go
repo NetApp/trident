@@ -22,7 +22,7 @@ type Smb struct {
 
 	// SMB connection state.
 	// Read Only: true
-	// Enum: [connected disconnected reconnecting timedout]
+	// Enum: ["connected","disconnected","reconnecting","timedout"]
 	ConnectState *string `json:"connect_state,omitempty"`
 
 	// SMB open group ID.
@@ -31,7 +31,7 @@ type Smb struct {
 
 	// SMB open type.
 	// Read Only: true
-	// Enum: [none durable persistent]
+	// Enum: ["none","durable","persistent"]
 	OpenType *string `json:"open_type,omitempty"`
 }
 

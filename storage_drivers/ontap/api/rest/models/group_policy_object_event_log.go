@@ -26,7 +26,7 @@ type GroupPolicyObjectEventLog struct {
 
 	// Audit log retention method.
 	// Example: do_not_overwrite
-	// Enum: [overwrite_as_needed overwrite_by_days do_not_overwrite]
+	// Enum: ["overwrite_as_needed","overwrite_by_days","do_not_overwrite"]
 	RetentionMethod *string `json:"retention_method,omitempty"`
 }
 

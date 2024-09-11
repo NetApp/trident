@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *NfsCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the nfs create created response
+func (o *NfsCreateCreated) Code() int {
+	return 201
+}
+
 func (o *NfsCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/nfs/services][%d] nfsCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nfs/services][%d] nfsCreateCreated %s", 201, payload)
 }
 
 func (o *NfsCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/nfs/services][%d] nfsCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nfs/services][%d] nfsCreateCreated %s", 201, payload)
 }
 
 func (o *NfsCreateCreated) GetPayload() *models.NfsServiceResponse {
@@ -130,24 +138,30 @@ func NewNfsCreateDefault(code int) *NfsCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 1534829    | The port numbers allowed are 635 (the default) and 1024 through 9999 |
+| 2621516    | This operation is only supported on a data SVM |
+| 2621574    | This operation is not permitted on a SVM that is configured as the destination of a MetroCluster SVM relationship |
+| 2621706    | The specified SVM UUID is incorrect for the specified SVM name |
+| 3276900    | NFSv4.1 implementation name cannot be an empty string |
 | 3276916    | Vserver is not running |
 | 3276994    | Kerberos must be disabled on all LIFs on Vserver before adding or removing AES encryption. Disable Kerberos on the LIF and try again |
 | 3277038    | Cannot enable \\\"showmount\\\" feature because it requires an effective cluster version of Data ONTAP 8.3.0 or later |
+| 3277048    | The port numbers allowed are 635 (the default) and 1024 through 9999 |
 | 3277049    | Cannot enable \\\"showmount\\\" feature on ID-Discard Vserver. Ensure that the Vserver is initialized and retry the command |
 | 3277052    | NFSv4.x access to transitioned volumes in this Vserver could trigger conversion of non-Unicode directories to Unicode, which might impact data-serving performance. Before enabling NFSv4.x for this Vserver, refer to the Data and Configuration Transition Guide |
 | 3277069    | Cannot disable TCP because the SnapDiff RPC server is in the \\\"on\\\" state |
+| 3277085    | The port numbers allowed are 1024 through 9999 |
 | 3277089    | Attempting to create an NFS server using 64-bits for NFSv3 FSIDs and File IDs on Vserver. Older client software might not work with 64-bit identifiers|
 | 3277099    | Domain name contains invalid characters or it is too short. Allowed characters are: alphabetical characters (A-Za-z), numeric characters (0-9), minus sign (-), and the period (.). The first character must be alphabetical or numeric, last character must not be a minus sign or a period. Minimum supported length: 2 characters, maximum of 256 characters |
+| 3277140    | Cannot set \"transport.tcp_max_transfer_size\" to a value other than multiples of 4096 |
+| 2621507    | The NFS protocol is not allowed for the specified SVM.|
+| 2621519    | SVM name is invalid. The SVM name must begin with a letter or an underscore. If the SVM is of type \"sync-source\", the maximum supported length is 41. Otherwise, the maximum supported length is 47.|
+| 262196     | Field \"access_cache_config.harvest_timeout\" cannot be set in this operation.|
 */
 type NfsCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nfs create default response
-func (o *NfsCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nfs create default response has a 2xx status code
@@ -175,12 +189,19 @@ func (o *NfsCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nfs create default response
+func (o *NfsCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NfsCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/nfs/services][%d] nfs_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nfs/services][%d] nfs_create default %s", o._statusCode, payload)
 }
 
 func (o *NfsCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/nfs/services][%d] nfs_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nfs/services][%d] nfs_create default %s", o._statusCode, payload)
 }
 
 func (o *NfsCreateDefault) GetPayload() *models.ErrorResponse {

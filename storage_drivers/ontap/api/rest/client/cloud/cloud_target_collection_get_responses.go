@@ -6,6 +6,7 @@ package cloud
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CloudTargetCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cloud target collection get o k response
+func (o *CloudTargetCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *CloudTargetCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /cloud/targets][%d] cloudTargetCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cloud/targets][%d] cloudTargetCollectionGetOK %s", 200, payload)
 }
 
 func (o *CloudTargetCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /cloud/targets][%d] cloudTargetCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cloud/targets][%d] cloudTargetCollectionGetOK %s", 200, payload)
 }
 
 func (o *CloudTargetCollectionGetOK) GetPayload() *models.CloudTargetResponse {
@@ -122,11 +130,6 @@ type CloudTargetCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cloud target collection get default response
-func (o *CloudTargetCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cloud target collection get default response has a 2xx status code
 func (o *CloudTargetCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *CloudTargetCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cloud target collection get default response
+func (o *CloudTargetCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CloudTargetCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cloud/targets][%d] cloud_target_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cloud/targets][%d] cloud_target_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *CloudTargetCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /cloud/targets][%d] cloud_target_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cloud/targets][%d] cloud_target_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *CloudTargetCollectionGetDefault) GetPayload() *models.ErrorResponse {

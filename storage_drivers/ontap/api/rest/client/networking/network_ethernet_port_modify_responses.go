@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *NetworkEthernetPortModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the network ethernet port modify o k response
+func (o *NetworkEthernetPortModifyOK) Code() int {
+	return 200
+}
+
 func (o *NetworkEthernetPortModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /network/ethernet/ports/{uuid}][%d] networkEthernetPortModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/ethernet/ports/{uuid}][%d] networkEthernetPortModifyOK", 200)
 }
 
 func (o *NetworkEthernetPortModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /network/ethernet/ports/{uuid}][%d] networkEthernetPortModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/ethernet/ports/{uuid}][%d] networkEthernetPortModifyOK", 200)
 }
 
 func (o *NetworkEthernetPortModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,9 +113,11 @@ func NewNetworkEthernetPortModifyDefault(code int) *NetworkEthernetPortModifyDef
 | Error Code | Description |
 | ---------- | ----------- |
 | 1376361 | Port is already a member of a LAG. |
+| 1376369 | Cannot add port to the interface group because the port hosts one or more VLANs. |
 | 1376488 | Disabling the last operational cluster port on a node is not allowed. |
-| 1377562 | Port cannot be used because it is currently the home port or current port of an interface. |
+| 1376492 | Cannot change the MTU of a VLAN to be greater than the MTU of the port hosting it. |
 | 1377563 | Port is already a member of a LAG. |
+| 1377608 | Port cannot be used because it is currently the home port or current port of an interface. |
 | 1966288 | Disabling the cluster ports can only be done on the local node. |
 | 1967087 | The specified broadcast domain UUID is not valid. |
 | 1967088 | The specified broadcast domain name does not exist in the specified IPspace. |
@@ -118,23 +126,21 @@ func NewNetworkEthernetPortModifyDefault(code int) *NetworkEthernetPortModifyDef
 | 1967095 | The specified LAG member port name and node name combination is not valid. |
 | 1967096 | The specified node does not match the specified LAG member port node. |
 | 1967097 | The specified LAG member ports UUID, name, and node name do not match. |
+| 1967126 | A LAG requires at least one member port. |
 | 1967148 | Failure to remove port from broadcast domain. |
 | 1967149 | Failure to add port to broadcast domain. |
 | 1967184 | The reachability parameter cannot be patched in the same request as other parameters that might affect the target port's reachability status. |
 | 1967185 | The port cannot be repaired because the port is deemed as non-repairable. |
 | 1967186 | Invalid value for the reachability parameter. |
+| 1967195 | Missing or incomplete name retrieval for specified port UUID. |
 | 1967580 | This command is not supported as the effective cluster version is earlier than 9.8. |
 | 1967582 | The reachability parameter is not supported on this cluster. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NetworkEthernetPortModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the network ethernet port modify default response
-func (o *NetworkEthernetPortModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this network ethernet port modify default response has a 2xx status code
@@ -162,12 +168,19 @@ func (o *NetworkEthernetPortModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the network ethernet port modify default response
+func (o *NetworkEthernetPortModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetworkEthernetPortModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /network/ethernet/ports/{uuid}][%d] network_ethernet_port_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/ethernet/ports/{uuid}][%d] network_ethernet_port_modify default %s", o._statusCode, payload)
 }
 
 func (o *NetworkEthernetPortModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /network/ethernet/ports/{uuid}][%d] network_ethernet_port_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/ethernet/ports/{uuid}][%d] network_ethernet_port_modify default %s", o._statusCode, payload)
 }
 
 func (o *NetworkEthernetPortModifyDefault) GetPayload() *models.ErrorResponse {

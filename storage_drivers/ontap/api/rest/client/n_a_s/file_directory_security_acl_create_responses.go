@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type FileDirectorySecurityACLCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *FileDirectorySecurityACLCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewFileDirectorySecurityACLCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewFileDirectorySecurityACLCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *FileDirectorySecurityACLCreateReader) ReadResponse(response runtime.Cli
 	}
 }
 
+// NewFileDirectorySecurityACLCreateCreated creates a FileDirectorySecurityACLCreateCreated with default headers values
+func NewFileDirectorySecurityACLCreateCreated() *FileDirectorySecurityACLCreateCreated {
+	return &FileDirectorySecurityACLCreateCreated{}
+}
+
+/*
+FileDirectorySecurityACLCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type FileDirectorySecurityACLCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.FileDirectorySecurityACLJobLinkResponse
+}
+
+// IsSuccess returns true when this file directory security Acl create created response has a 2xx status code
+func (o *FileDirectorySecurityACLCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this file directory security Acl create created response has a 3xx status code
+func (o *FileDirectorySecurityACLCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this file directory security Acl create created response has a 4xx status code
+func (o *FileDirectorySecurityACLCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this file directory security Acl create created response has a 5xx status code
+func (o *FileDirectorySecurityACLCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this file directory security Acl create created response a status code equal to that given
+func (o *FileDirectorySecurityACLCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the file directory security Acl create created response
+func (o *FileDirectorySecurityACLCreateCreated) Code() int {
+	return 201
+}
+
+func (o *FileDirectorySecurityACLCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}/acl][%d] fileDirectorySecurityAclCreateCreated %s", 201, payload)
+}
+
+func (o *FileDirectorySecurityACLCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}/acl][%d] fileDirectorySecurityAclCreateCreated %s", 201, payload)
+}
+
+func (o *FileDirectorySecurityACLCreateCreated) GetPayload() *models.FileDirectorySecurityACLJobLinkResponse {
+	return o.Payload
+}
+
+func (o *FileDirectorySecurityACLCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.FileDirectorySecurityACLJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewFileDirectorySecurityACLCreateAccepted creates a FileDirectorySecurityACLCreateAccepted with default headers values
 func NewFileDirectorySecurityACLCreateAccepted() *FileDirectorySecurityACLCreateAccepted {
 	return &FileDirectorySecurityACLCreateAccepted{}
@@ -57,7 +146,7 @@ type FileDirectorySecurityACLCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.FileDirectorySecurityACLJobLinkResponse
 }
 
 // IsSuccess returns true when this file directory security Acl create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *FileDirectorySecurityACLCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the file directory security Acl create accepted response
+func (o *FileDirectorySecurityACLCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *FileDirectorySecurityACLCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}/acl][%d] fileDirectorySecurityAclCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}/acl][%d] fileDirectorySecurityAclCreateAccepted %s", 202, payload)
 }
 
 func (o *FileDirectorySecurityACLCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}/acl][%d] fileDirectorySecurityAclCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}/acl][%d] fileDirectorySecurityAclCreateAccepted %s", 202, payload)
 }
 
-func (o *FileDirectorySecurityACLCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *FileDirectorySecurityACLCreateAccepted) GetPayload() *models.FileDirectorySecurityACLJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *FileDirectorySecurityACLCreateAccepted) readResponse(response runtime.C
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.FileDirectorySecurityACLJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -124,19 +220,24 @@ func NewFileDirectorySecurityACLCreateDefault(code int) *FileDirectorySecurityAC
 }
 
 /*
-FileDirectorySecurityACLCreateDefault describes a response with status code -1, with default header values.
+	FileDirectorySecurityACLCreateDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 655865     | The specified file or directory does not exist.|
+| 10485811   | Access is a required field.|
+| 1260882    | Specified SVM not found.|
+| 6691623    | User is not authorized.|
+| 4849676    | The specified Windows user or group does not exist.|
+| 10485810   | User is a required field.|
+| 10485813   | All values cannot be false.|
 */
 type FileDirectorySecurityACLCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the file directory security acl create default response
-func (o *FileDirectorySecurityACLCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this file directory security acl create default response has a 2xx status code
@@ -164,12 +265,19 @@ func (o *FileDirectorySecurityACLCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the file directory security acl create default response
+func (o *FileDirectorySecurityACLCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FileDirectorySecurityACLCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}/acl][%d] file_directory_security_acl_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}/acl][%d] file_directory_security_acl_create default %s", o._statusCode, payload)
 }
 
 func (o *FileDirectorySecurityACLCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}/acl][%d] file_directory_security_acl_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}/acl][%d] file_directory_security_acl_create default %s", o._statusCode, payload)
 }
 
 func (o *FileDirectorySecurityACLCreateDefault) GetPayload() *models.ErrorResponse {

@@ -14,7 +14,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// SvmPeerApplications Applications for an SVM peer relation.
+// SvmPeerApplications Applications for an SVM peer relationship.
 //
 // swagger:model svm_peer_applications
 type SvmPeerApplications string

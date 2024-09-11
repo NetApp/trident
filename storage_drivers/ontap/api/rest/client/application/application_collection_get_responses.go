@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ApplicationCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the application collection get o k response
+func (o *ApplicationCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *ApplicationCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /application/applications][%d] applicationCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/applications][%d] applicationCollectionGetOK %s", 200, payload)
 }
 
 func (o *ApplicationCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /application/applications][%d] applicationCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/applications][%d] applicationCollectionGetOK %s", 200, payload)
 }
 
 func (o *ApplicationCollectionGetOK) GetPayload() *models.ApplicationResponse {
@@ -122,11 +130,6 @@ type ApplicationCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the application collection get default response
-func (o *ApplicationCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this application collection get default response has a 2xx status code
 func (o *ApplicationCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *ApplicationCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the application collection get default response
+func (o *ApplicationCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ApplicationCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /application/applications][%d] application_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/applications][%d] application_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /application/applications][%d] application_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/applications][%d] application_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationCollectionGetDefault) GetPayload() *models.ErrorResponse {

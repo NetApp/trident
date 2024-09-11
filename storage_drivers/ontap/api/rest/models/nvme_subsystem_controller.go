@@ -31,6 +31,9 @@ type NvmeSubsystemController struct {
 	// dh hmac chap
 	DhHmacChap *NvmeSubsystemControllerInlineDhHmacChap `json:"dh_hmac_chap,omitempty"`
 
+	// digest
+	Digest *NvmeSubsystemControllerInlineDigest `json:"digest,omitempty"`
+
 	// host
 	Host *NvmeSubsystemControllerInlineHost `json:"host,omitempty"`
 
@@ -46,6 +49,13 @@ type NvmeSubsystemController struct {
 	// io queue
 	IoQueue *NvmeSubsystemControllerInlineIoQueue `json:"io_queue,omitempty"`
 
+	// The keep-alive timeout value for the controller and all of its host connections, in milliseconds. <br/>
+	// If the NVMe controller does not receive a keep-alive request or an I/O request within the timeout window, the NVMe controller terminates its admin queue and I/O queue connections leading to NVMe controller teardown. If the NVMe host does not receive a response to a keep-alive request or an I/O request within the timeout window, the NVMe host initiates a connection disconnect.
+	//
+	// Example: 1500
+	// Read Only: true
+	KeepAliveTimeout *int64 `json:"keep_alive_timeout,omitempty"`
+
 	// node
 	Node *NvmeSubsystemControllerInlineNode `json:"node,omitempty"`
 
@@ -54,6 +64,14 @@ type NvmeSubsystemController struct {
 
 	// svm
 	Svm *NvmeSubsystemControllerInlineSvm `json:"svm,omitempty"`
+
+	// tls
+	TLS *NvmeSubsystemControllerInlineTLS `json:"tls,omitempty"`
+
+	// Transport Protocol
+	// Read Only: true
+	// Enum: ["fc_nvme","nvme_tcp"]
+	TransportProtocol *string `json:"transport_protocol,omitempty"`
 }
 
 // Validate validates this nvme subsystem controller
@@ -69,6 +87,10 @@ func (m *NvmeSubsystemController) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateDhHmacChap(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDigest(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -93,6 +115,14 @@ func (m *NvmeSubsystemController) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSvm(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTLS(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTransportProtocol(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -145,6 +175,23 @@ func (m *NvmeSubsystemController) validateDhHmacChap(formats strfmt.Registry) er
 		if err := m.DhHmacChap.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("dh_hmac_chap")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeSubsystemController) validateDigest(formats strfmt.Registry) error {
+	if swag.IsZero(m.Digest) { // not required
+		return nil
+	}
+
+	if m.Digest != nil {
+		if err := m.Digest.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("digest")
 			}
 			return err
 		}
@@ -255,6 +302,79 @@ func (m *NvmeSubsystemController) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *NvmeSubsystemController) validateTLS(formats strfmt.Registry) error {
+	if swag.IsZero(m.TLS) { // not required
+		return nil
+	}
+
+	if m.TLS != nil {
+		if err := m.TLS.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("tls")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var nvmeSubsystemControllerTypeTransportProtocolPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["fc_nvme","nvme_tcp"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nvmeSubsystemControllerTypeTransportProtocolPropEnum = append(nvmeSubsystemControllerTypeTransportProtocolPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_controller
+	// NvmeSubsystemController
+	// transport_protocol
+	// TransportProtocol
+	// fc_nvme
+	// END DEBUGGING
+	// NvmeSubsystemControllerTransportProtocolFcNvme captures enum value "fc_nvme"
+	NvmeSubsystemControllerTransportProtocolFcNvme string = "fc_nvme"
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_controller
+	// NvmeSubsystemController
+	// transport_protocol
+	// TransportProtocol
+	// nvme_tcp
+	// END DEBUGGING
+	// NvmeSubsystemControllerTransportProtocolNvmeTCP captures enum value "nvme_tcp"
+	NvmeSubsystemControllerTransportProtocolNvmeTCP string = "nvme_tcp"
+)
+
+// prop value enum
+func (m *NvmeSubsystemController) validateTransportProtocolEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeSubsystemControllerTypeTransportProtocolPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemController) validateTransportProtocol(formats strfmt.Registry) error {
+	if swag.IsZero(m.TransportProtocol) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTransportProtocolEnum("transport_protocol", "body", *m.TransportProtocol); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this nvme subsystem controller based on the context it is used
 func (m *NvmeSubsystemController) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -268,6 +388,10 @@ func (m *NvmeSubsystemController) ContextValidate(ctx context.Context, formats s
 	}
 
 	if err := m.contextValidateDhHmacChap(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDigest(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -287,6 +411,10 @@ func (m *NvmeSubsystemController) ContextValidate(ctx context.Context, formats s
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateKeepAliveTimeout(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateNode(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -296,6 +424,14 @@ func (m *NvmeSubsystemController) ContextValidate(ctx context.Context, formats s
 	}
 
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTLS(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTransportProtocol(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -339,6 +475,20 @@ func (m *NvmeSubsystemController) contextValidateDhHmacChap(ctx context.Context,
 		if err := m.DhHmacChap.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("dh_hmac_chap")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeSubsystemController) contextValidateDigest(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Digest != nil {
+		if err := m.Digest.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("digest")
 			}
 			return err
 		}
@@ -398,6 +548,15 @@ func (m *NvmeSubsystemController) contextValidateIoQueue(ctx context.Context, fo
 	return nil
 }
 
+func (m *NvmeSubsystemController) contextValidateKeepAliveTimeout(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "keep_alive_timeout", "body", m.KeepAliveTimeout); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *NvmeSubsystemController) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
@@ -435,6 +594,29 @@ func (m *NvmeSubsystemController) contextValidateSvm(ctx context.Context, format
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *NvmeSubsystemController) contextValidateTLS(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.TLS != nil {
+		if err := m.TLS.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("tls")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeSubsystemController) contextValidateTransportProtocol(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "transport_protocol", "body", m.TransportProtocol); err != nil {
+		return err
 	}
 
 	return nil
@@ -520,16 +702,16 @@ func (m *NvmeSubsystemControllerInlineAdminQueue) UnmarshalBinary(b []byte) erro
 // swagger:model nvme_subsystem_controller_inline_dh_hmac_chap
 type NvmeSubsystemControllerInlineDhHmacChap struct {
 
-	// The Diffie-Hellman group size used for NVMe in-band authentication.
+	// The Diffie-Hellman group size used for NVMe in-band authentication. This property is populated only when NVMe in-band authentication was performed for the NVMe-oF transport connection.
 	//
 	// Read Only: true
-	// Enum: [none 2048_bit 3072_bit 4096_bit 6144_bit 8192_bit]
+	// Enum: ["none","2048_bit","3072_bit","4096_bit","6144_bit","8192_bit"]
 	GroupSize *string `json:"group_size,omitempty"`
 
-	// The hash function used for NVMe in-band authentication.
+	// The hash function used for NVMe in-band authentication. This property is populated only when NVMe in-band authentication was performed for the NVMe-oF transport connection.
 	//
 	// Read Only: true
-	// Enum: [sha_256 sha_512]
+	// Enum: ["sha_256","sha_512"]
 	HashFunction *string `json:"hash_function,omitempty"`
 
 	// The NVMe in-band authentication mode used for the host connection. When set to:
@@ -539,7 +721,7 @@ type NvmeSubsystemControllerInlineDhHmacChap struct {
 	//
 	// Example: bidirectional
 	// Read Only: true
-	// Enum: [none unidirectional bidirectional]
+	// Enum: ["none","unidirectional","bidirectional"]
 	Mode *string `json:"mode,omitempty"`
 }
 
@@ -843,6 +1025,82 @@ func (m *NvmeSubsystemControllerInlineDhHmacChap) MarshalBinary() ([]byte, error
 // UnmarshalBinary interface implementation
 func (m *NvmeSubsystemControllerInlineDhHmacChap) UnmarshalBinary(b []byte) error {
 	var res NvmeSubsystemControllerInlineDhHmacChap
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeSubsystemControllerInlineDigest Digests are properties of NVMe controllers created over the NVMe/TCP transport protocol. The usage of digests is negotiated between the host and the controller during connection setup. ONTAP enables digests only if the host requests them. The header digest is the crc32 checksum of the header portion of the NVMe/TCP PDU. The data digest is the crc32 checksum of the data portion of the NVMe/TCP PDU.<br/>
+// If a digest is enabled, upon receiving an NVMe/TCP PDU, ONTAP calculates the crc32 checksum of the associated portion of the PDU and compares it with the digest value present in the transmitted PDU. If there is a mismatch, ONTAP returns an error and destroys the controller.
+//
+// swagger:model nvme_subsystem_controller_inline_digest
+type NvmeSubsystemControllerInlineDigest struct {
+
+	// Reports if digests are enabled for the data portion of the PDU.
+	//
+	// Read Only: true
+	Data *bool `json:"data,omitempty"`
+
+	// Reports if digests are enabled for the header portion of the PDU.
+	//
+	// Read Only: true
+	Header *bool `json:"header,omitempty"`
+}
+
+// Validate validates this nvme subsystem controller inline digest
+func (m *NvmeSubsystemControllerInlineDigest) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nvme subsystem controller inline digest based on the context it is used
+func (m *NvmeSubsystemControllerInlineDigest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateData(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateHeader(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemControllerInlineDigest) contextValidateData(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "digest"+"."+"data", "body", m.Data); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NvmeSubsystemControllerInlineDigest) contextValidateHeader(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "digest"+"."+"header", "body", m.Header); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeSubsystemControllerInlineDigest) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeSubsystemControllerInlineDigest) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemControllerInlineDigest
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1413,7 +1671,7 @@ func (m *NvmeSubsystemControllerInlineNodeInlineLinks) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// NvmeSubsystemControllerInlineSubsystem nvme subsystem controller inline subsystem
+// NvmeSubsystemControllerInlineSubsystem An NVMe subsystem maintains configuration state and NVMe namespace access control for a set of NVMe-connected hosts.
 //
 // swagger:model nvme_subsystem_controller_inline_subsystem
 type NvmeSubsystemControllerInlineSubsystem struct {
@@ -1424,7 +1682,7 @@ type NvmeSubsystemControllerInlineSubsystem struct {
 	// The name of the NVMe subsystem.
 	//
 	// Example: subsystem1
-	// Max Length: 96
+	// Max Length: 64
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
 
@@ -1478,7 +1736,7 @@ func (m *NvmeSubsystemControllerInlineSubsystem) validateName(formats strfmt.Reg
 		return err
 	}
 
-	if err := validate.MaxLength("subsystem"+"."+"name", "body", *m.Name, 96); err != nil {
+	if err := validate.MaxLength("subsystem"+"."+"name", "body", *m.Name, 64); err != nil {
 		return err
 	}
 
@@ -1617,7 +1875,7 @@ func (m *NvmeSubsystemControllerInlineSubsystemInlineLinks) UnmarshalBinary(b []
 	return nil
 }
 
-// NvmeSubsystemControllerInlineSvm nvme subsystem controller inline svm
+// NvmeSubsystemControllerInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model nvme_subsystem_controller_inline_svm
 type NvmeSubsystemControllerInlineSvm struct {
@@ -1625,12 +1883,12 @@ type NvmeSubsystemControllerInlineSvm struct {
 	// links
 	Links *NvmeSubsystemControllerInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -1792,6 +2050,232 @@ func (m *NvmeSubsystemControllerInlineSvmInlineLinks) MarshalBinary() ([]byte, e
 // UnmarshalBinary interface implementation
 func (m *NvmeSubsystemControllerInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
 	var res NvmeSubsystemControllerInlineSvmInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeSubsystemControllerInlineTLS A container for properties that describe the encrypted NVMe/TCP transport connection between the host and the NVMe subsystem.
+//
+// swagger:model nvme_subsystem_controller_inline_tls
+type NvmeSubsystemControllerInlineTLS struct {
+
+	// The cipher suite used for the transport by the encrypted NVMe/TCP transport connection between the host and the NVMe subsystem. This property is populated only when encryption is in use for the transport connection.
+	//
+	// Example: tls_aes_128_gcm_sha256
+	// Read Only: true
+	// Enum: ["tls_aes_128_gcm_sha256","tls_aes_256_gcm_sha384"]
+	Cipher *string `json:"cipher,omitempty"`
+
+	// The method by which the TLS pre-shared key (PSK) was obtained when establishing the encrypted NVMe/TCP transport connection between the host and the NVMe subsystem.
+	// Possible values:
+	//   - `none` - TLS encryption is not configured for the host connection.
+	//   - `configured` - A user supplied PSK was used for the encrypted NVMe/TCP-TLS transport connection between the host and the NVMe subsystem.
+	//
+	// Example: configured
+	// Read Only: true
+	// Enum: ["none","configured"]
+	KeyType *string `json:"key_type,omitempty"`
+
+	// The TLS PSK identity supplied by the host when establishing the encrypted NVMe/TCP transport connection between the host and the NVMe subsystem. This property is populated only when encryption is in use for the transport connection.
+	//
+	// Example: NVMe1R01 nqn.2014-08.org.nvmexpress:uuid:713b3816-f9bf-ba43-b95a-5e4bf8c726e9 nqn.1992-08.com.netapp:sn.76f9d9bfb96511eea95e005056bb72b2:subsystem.ss1 mS1A7nrooevA9ZqAM09fQzWQlB2UZRt0BE1X4vINjY0=:
+	// Read Only: true
+	PskIdentity *string `json:"psk_identity,omitempty"`
+}
+
+// Validate validates this nvme subsystem controller inline tls
+func (m *NvmeSubsystemControllerInlineTLS) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateCipher(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateKeyType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var nvmeSubsystemControllerInlineTlsTypeCipherPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["tls_aes_128_gcm_sha256","tls_aes_256_gcm_sha384"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nvmeSubsystemControllerInlineTlsTypeCipherPropEnum = append(nvmeSubsystemControllerInlineTlsTypeCipherPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_controller_inline_tls
+	// NvmeSubsystemControllerInlineTLS
+	// cipher
+	// Cipher
+	// tls_aes_128_gcm_sha256
+	// END DEBUGGING
+	// NvmeSubsystemControllerInlineTLSCipherTLSAes128GcmSha256 captures enum value "tls_aes_128_gcm_sha256"
+	NvmeSubsystemControllerInlineTLSCipherTLSAes128GcmSha256 string = "tls_aes_128_gcm_sha256"
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_controller_inline_tls
+	// NvmeSubsystemControllerInlineTLS
+	// cipher
+	// Cipher
+	// tls_aes_256_gcm_sha384
+	// END DEBUGGING
+	// NvmeSubsystemControllerInlineTLSCipherTLSAes256GcmSha384 captures enum value "tls_aes_256_gcm_sha384"
+	NvmeSubsystemControllerInlineTLSCipherTLSAes256GcmSha384 string = "tls_aes_256_gcm_sha384"
+)
+
+// prop value enum
+func (m *NvmeSubsystemControllerInlineTLS) validateCipherEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeSubsystemControllerInlineTlsTypeCipherPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemControllerInlineTLS) validateCipher(formats strfmt.Registry) error {
+	if swag.IsZero(m.Cipher) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateCipherEnum("tls"+"."+"cipher", "body", *m.Cipher); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var nvmeSubsystemControllerInlineTlsTypeKeyTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["none","configured"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nvmeSubsystemControllerInlineTlsTypeKeyTypePropEnum = append(nvmeSubsystemControllerInlineTlsTypeKeyTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_controller_inline_tls
+	// NvmeSubsystemControllerInlineTLS
+	// key_type
+	// KeyType
+	// none
+	// END DEBUGGING
+	// NvmeSubsystemControllerInlineTLSKeyTypeNone captures enum value "none"
+	NvmeSubsystemControllerInlineTLSKeyTypeNone string = "none"
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_controller_inline_tls
+	// NvmeSubsystemControllerInlineTLS
+	// key_type
+	// KeyType
+	// configured
+	// END DEBUGGING
+	// NvmeSubsystemControllerInlineTLSKeyTypeConfigured captures enum value "configured"
+	NvmeSubsystemControllerInlineTLSKeyTypeConfigured string = "configured"
+)
+
+// prop value enum
+func (m *NvmeSubsystemControllerInlineTLS) validateKeyTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeSubsystemControllerInlineTlsTypeKeyTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemControllerInlineTLS) validateKeyType(formats strfmt.Registry) error {
+	if swag.IsZero(m.KeyType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateKeyTypeEnum("tls"+"."+"key_type", "body", *m.KeyType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme subsystem controller inline tls based on the context it is used
+func (m *NvmeSubsystemControllerInlineTLS) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCipher(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateKeyType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePskIdentity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemControllerInlineTLS) contextValidateCipher(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "tls"+"."+"cipher", "body", m.Cipher); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NvmeSubsystemControllerInlineTLS) contextValidateKeyType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "tls"+"."+"key_type", "body", m.KeyType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NvmeSubsystemControllerInlineTLS) contextValidatePskIdentity(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "tls"+"."+"psk_identity", "body", m.PskIdentity); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeSubsystemControllerInlineTLS) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeSubsystemControllerInlineTLS) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemControllerInlineTLS
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

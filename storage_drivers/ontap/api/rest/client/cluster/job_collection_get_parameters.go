@@ -104,12 +104,6 @@ type JobCollectionGetParams struct {
 	*/
 	ErrorMessage *string
 
-	/* ErrorTarget.
-
-	   Filter by error.target
-	*/
-	ErrorTarget *string
-
 	/* Fields.
 
 	   Specify the fields to return.
@@ -328,17 +322,6 @@ func (o *JobCollectionGetParams) WithErrorMessage(errorMessage *string) *JobColl
 // SetErrorMessage adds the errorMessage to the job collection get params
 func (o *JobCollectionGetParams) SetErrorMessage(errorMessage *string) {
 	o.ErrorMessage = errorMessage
-}
-
-// WithErrorTarget adds the errorTarget to the job collection get params
-func (o *JobCollectionGetParams) WithErrorTarget(errorTarget *string) *JobCollectionGetParams {
-	o.SetErrorTarget(errorTarget)
-	return o
-}
-
-// SetErrorTarget adds the errorTarget to the job collection get params
-func (o *JobCollectionGetParams) SetErrorTarget(errorTarget *string) {
-	o.ErrorTarget = errorTarget
 }
 
 // WithFields adds the fields to the job collection get params
@@ -595,23 +578,6 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qErrorMessage != "" {
 
 			if err := r.SetQueryParam("error.message", qErrorMessage); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ErrorTarget != nil {
-
-		// query param error.target
-		var qrErrorTarget string
-
-		if o.ErrorTarget != nil {
-			qrErrorTarget = *o.ErrorTarget
-		}
-		qErrorTarget := qrErrorTarget
-		if qErrorTarget != "" {
-
-			if err := r.SetQueryParam("error.target", qErrorTarget); err != nil {
 				return err
 			}
 		}

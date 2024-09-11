@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SnapshotPolicyScheduleDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snapshot policy schedule delete o k response
+func (o *SnapshotPolicyScheduleDeleteOK) Code() int {
+	return 200
+}
+
 func (o *SnapshotPolicyScheduleDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshotPolicyScheduleDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshotPolicyScheduleDeleteOK", 200)
 }
 
 func (o *SnapshotPolicyScheduleDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshotPolicyScheduleDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshotPolicyScheduleDeleteOK", 200)
 }
 
 func (o *SnapshotPolicyScheduleDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,17 +112,13 @@ func NewSnapshotPolicyScheduleDeleteDefault(code int) *SnapshotPolicyScheduleDel
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 1638412    | Schedule does not exist in Snapshot policy. |
+| 1638411    | At least minimum number of schedule must be specified for the policy. |
+| 1638412    | Schedule does not exist in snapshot policy. |
 */
 type SnapshotPolicyScheduleDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snapshot policy schedule delete default response
-func (o *SnapshotPolicyScheduleDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snapshot policy schedule delete default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *SnapshotPolicyScheduleDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snapshot policy schedule delete default response
+func (o *SnapshotPolicyScheduleDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnapshotPolicyScheduleDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshot_policy_schedule_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshot_policy_schedule_delete default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotPolicyScheduleDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshot_policy_schedule_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshot_policy_schedule_delete default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotPolicyScheduleDeleteDefault) GetPayload() *models.ErrorResponse {

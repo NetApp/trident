@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *PerformanceFcPortMetricCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the performance fc port metric collection get o k response
+func (o *PerformanceFcPortMetricCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *PerformanceFcPortMetricCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/fc/ports/{uuid}/metrics][%d] performanceFcPortMetricCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/ports/{fc_port.uuid}/metrics][%d] performanceFcPortMetricCollectionGetOK %s", 200, payload)
 }
 
 func (o *PerformanceFcPortMetricCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /network/fc/ports/{uuid}/metrics][%d] performanceFcPortMetricCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/ports/{fc_port.uuid}/metrics][%d] performanceFcPortMetricCollectionGetOK %s", 200, payload)
 }
 
 func (o *PerformanceFcPortMetricCollectionGetOK) GetPayload() *models.PerformanceFcPortMetricResponse {
@@ -112,19 +120,20 @@ func NewPerformanceFcPortMetricCollectionGetDefault(code int) *PerformanceFcPort
 }
 
 /*
-PerformanceFcPortMetricCollectionGetDefault describes a response with status code -1, with default header values.
+	PerformanceFcPortMetricCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 8585947 | No metrics are available for the requested object. |
+| 8586225 | An unexpected error occurred retrieving metrics for the requested object. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type PerformanceFcPortMetricCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the performance fc port metric collection get default response
-func (o *PerformanceFcPortMetricCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this performance fc port metric collection get default response has a 2xx status code
@@ -152,12 +161,19 @@ func (o *PerformanceFcPortMetricCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the performance fc port metric collection get default response
+func (o *PerformanceFcPortMetricCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *PerformanceFcPortMetricCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/fc/ports/{uuid}/metrics][%d] performance_fc_port_metric_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/ports/{fc_port.uuid}/metrics][%d] performance_fc_port_metric_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PerformanceFcPortMetricCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/fc/ports/{uuid}/metrics][%d] performance_fc_port_metric_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/ports/{fc_port.uuid}/metrics][%d] performance_fc_port_metric_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PerformanceFcPortMetricCollectionGetDefault) GetPayload() *models.ErrorResponse {

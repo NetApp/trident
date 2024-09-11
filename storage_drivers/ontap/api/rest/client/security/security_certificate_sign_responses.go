@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SecurityCertificateSignOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the security certificate sign o k response
+func (o *SecurityCertificateSignOK) Code() int {
+	return 200
+}
+
 func (o *SecurityCertificateSignOK) Error() string {
-	return fmt.Sprintf("[POST /security/certificates/{ca.uuid}/sign][%d] securityCertificateSignOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/certificates/{ca.uuid}/sign][%d] securityCertificateSignOK %s", 200, payload)
 }
 
 func (o *SecurityCertificateSignOK) String() string {
-	return fmt.Sprintf("[POST /security/certificates/{ca.uuid}/sign][%d] securityCertificateSignOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/certificates/{ca.uuid}/sign][%d] securityCertificateSignOK %s", 200, payload)
 }
 
 func (o *SecurityCertificateSignOK) GetPayload() *models.SecurityCertificateSignResponse {
@@ -127,16 +135,12 @@ func NewSecurityCertificateSignDefault(code int) *SecurityCertificateSignDefault
 | 3735632    | Failed to extract Certificate Authority Information from the certificate. |
 | 3735629    | Failed to sign the certificate because Common Name of signing certificate and Common Name of CA certificate are same. |
 | 3735630    | Failed to sign the certificate because expiry date of signing certificate exceeds the expiry date of CA certificate. |
+| 3735701    | Invalid expiration period. The allowed range for expiration time is between 1 and 3652 days. |
 */
 type SecurityCertificateSignDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security certificate sign default response
-func (o *SecurityCertificateSignDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security certificate sign default response has a 2xx status code
@@ -164,12 +168,19 @@ func (o *SecurityCertificateSignDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security certificate sign default response
+func (o *SecurityCertificateSignDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityCertificateSignDefault) Error() string {
-	return fmt.Sprintf("[POST /security/certificates/{ca.uuid}/sign][%d] security_certificate_sign default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/certificates/{ca.uuid}/sign][%d] security_certificate_sign default %s", o._statusCode, payload)
 }
 
 func (o *SecurityCertificateSignDefault) String() string {
-	return fmt.Sprintf("[POST /security/certificates/{ca.uuid}/sign][%d] security_certificate_sign default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/certificates/{ca.uuid}/sign][%d] security_certificate_sign default %s", o._statusCode, payload)
 }
 
 func (o *SecurityCertificateSignDefault) GetPayload() *models.ErrorResponse {

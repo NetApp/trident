@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *RoleCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the role create created response
+func (o *RoleCreateCreated) Code() int {
+	return 201
+}
+
 func (o *RoleCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/roles][%d] roleCreateCreated ", 201)
+	return fmt.Sprintf("[POST /security/roles][%d] roleCreateCreated", 201)
 }
 
 func (o *RoleCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/roles][%d] roleCreateCreated ", 201)
+	return fmt.Sprintf("[POST /security/roles][%d] roleCreateCreated", 201)
 }
 
 func (o *RoleCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -117,29 +123,30 @@ func NewRoleCreateDefault(code int) *RoleCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 1263347 | Cannot modify pre-defined roles |
 | 2621462 | The supplied SVM does not exist. |
 | 5636129 | Role with given name has not been defined. |
 | 5636143 | Vserver admin cannot use the API with this access level. |
 | 5636144 | Invalid value specified for access level. |
+| 5636168 | This role is mapped to a rest-role and cannot be modified directly. Modifications must be done with rest-role. |
 | 5636169 | Invalid character in URI. |
 | 5636170 | URI does not exist. |
 | 5636171 | Role already exists in legacy role table. |
 | 5636184 | Expanded REST roles for granular resource control feature is currently disabled. |
 | 5636185 | The specified UUID was not found. |
 | 5636186 | Expanded REST roles for granular resource control requires an effective cluster version of 9.10.1 or later. |
+| 5636191 | The "path" parameter in a "privileges" tuple can contain only API endpoint entries or only command and command directory entries. |
+| 5636192 | The query parameter cannot be specified for the privileges tuple with API endpoint entries. |
+| 5636200 | The specified value of the access parameter is invalid, if a command or command directory is specified in the path parameter. |
 | 13434890 | Vserver-ID failed for Vserver roles. |
 | 13434891 | UUID lookup failed for Vserver roles. |
 | 13434892 | Roles is a required field. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type RoleCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the role create default response
-func (o *RoleCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this role create default response has a 2xx status code
@@ -167,12 +174,19 @@ func (o *RoleCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the role create default response
+func (o *RoleCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *RoleCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/roles][%d] role_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/roles][%d] role_create default %s", o._statusCode, payload)
 }
 
 func (o *RoleCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/roles][%d] role_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/roles][%d] role_create default %s", o._statusCode, payload)
 }
 
 func (o *RoleCreateDefault) GetPayload() *models.ErrorResponse {

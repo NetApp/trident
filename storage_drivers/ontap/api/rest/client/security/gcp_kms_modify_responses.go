@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,17 @@ func (o *GcpKmsModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the gcp kms modify o k response
+func (o *GcpKmsModifyOK) Code() int {
+	return 200
+}
+
 func (o *GcpKmsModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcpKmsModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcpKmsModifyOK", 200)
 }
 
 func (o *GcpKmsModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcpKmsModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcpKmsModifyOK", 200)
 }
 
 func (o *GcpKmsModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,6 +115,7 @@ GcpKmsModifyAccepted describes a response with status code 202, with default hea
 Accepted
 */
 type GcpKmsModifyAccepted struct {
+	Payload *models.GcpKmsJobLinkResponse
 }
 
 // IsSuccess returns true when this gcp kms modify accepted response has a 2xx status code
@@ -136,15 +143,33 @@ func (o *GcpKmsModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the gcp kms modify accepted response
+func (o *GcpKmsModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *GcpKmsModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcpKmsModifyAccepted ", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcpKmsModifyAccepted %s", 202, payload)
 }
 
 func (o *GcpKmsModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcpKmsModifyAccepted ", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcpKmsModifyAccepted %s", 202, payload)
+}
+
+func (o *GcpKmsModifyAccepted) GetPayload() *models.GcpKmsJobLinkResponse {
+	return o.Payload
 }
 
 func (o *GcpKmsModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.GcpKmsJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }
@@ -165,21 +190,18 @@ func NewGcpKmsModifyDefault(code int) *GcpKmsModifyDefault {
 | ---------- | ----------- |
 | 65537541 | No inputs were provided for the patch request. |
 | 65537547 | One or more volume encryption keys for encrypted volumes of this data SVM are stored in the key manager configured for the admin SVM. Use the REST API POST method to migrate this data SVM's keys from the admin SVM's key manager to this data SVM's key manager before running the rekey operation. |
+| 65537605 | Failed to establish connectivity with the cloud key management service. |
 | 65537713 | Internal Error. Failed to store the application credentials. |
 | 65537714 | The \"application_credentials\" field must be specified. |
 | 65537721 | The Google Cloud Key Management Service is not configured for the SVM. |
 | 65537724 | Failed to update the Google Cloud Key Management Service because invalid application credentials were provided. |
 | 65537732 | ONTAP 9.9.1 does not allow modification of the following fields, \"project_id\", \"key_ring_name\" and \"key_ring_location\". |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type GcpKmsModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the gcp kms modify default response
-func (o *GcpKmsModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this gcp kms modify default response has a 2xx status code
@@ -207,12 +229,19 @@ func (o *GcpKmsModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the gcp kms modify default response
+func (o *GcpKmsModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *GcpKmsModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcp_kms_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcp_kms_modify default %s", o._statusCode, payload)
 }
 
 func (o *GcpKmsModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcp_kms_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcp_kms_modify default %s", o._statusCode, payload)
 }
 
 func (o *GcpKmsModifyDefault) GetPayload() *models.ErrorResponse {

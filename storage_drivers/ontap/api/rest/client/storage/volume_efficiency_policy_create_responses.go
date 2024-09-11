@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *VolumeEfficiencyPolicyCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the volume efficiency policy create created response
+func (o *VolumeEfficiencyPolicyCreateCreated) Code() int {
+	return 201
+}
+
 func (o *VolumeEfficiencyPolicyCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /storage/volume-efficiency-policies][%d] volumeEfficiencyPolicyCreateCreated ", 201)
+	return fmt.Sprintf("[POST /storage/volume-efficiency-policies][%d] volumeEfficiencyPolicyCreateCreated", 201)
 }
 
 func (o *VolumeEfficiencyPolicyCreateCreated) String() string {
-	return fmt.Sprintf("[POST /storage/volume-efficiency-policies][%d] volumeEfficiencyPolicyCreateCreated ", 201)
+	return fmt.Sprintf("[POST /storage/volume-efficiency-policies][%d] volumeEfficiencyPolicyCreateCreated", 201)
 }
 
 func (o *VolumeEfficiencyPolicyCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -117,29 +123,23 @@ func NewVolumeEfficiencyPolicyCreateDefault(code int) *VolumeEfficiencyPolicyCre
 
 | Error Code | Description |
 | ---------- | ----------- |
-|  6881341   | Specified schedule not found. |
-|  6881344   | Failed to queue specified job. |
-|  6881345   | This operation is not permitted on a node SVM. |
-|  6881349   | Policy name is not valid. |
-|  6881362   | Threshold percentage cannot be less than 1 percent. |
-|  6881433   | For \"{{0}}\" type policy, attribute \"{{1}}\" is not supported. |
-|  6881435   | Only a policy of type "threshold" can set the "start-threshold-percent" attribute. |
-|  6881436   | For a policy of type "scheduled", a valid "schedule" is a required attribute. |
-|  6881454   | An efficiency policy of type "threshold" requires an effective cluster version of ONTAP 8.3 or later. |
-|  6881474   | Duration cannot be null. |
-|  6881475   | Duration is not valid. |
-|  6881476   | Duration cannot be less than 1 hour. |
-|  6881477   | Duration cannot be more than 999 hours. |
+| 918702 | The specified operation on the volume efficiency policies endpoint is not supported on this platform. |
+| 6881341 | Specified schedule not found. |
+| 6881344 | Failed to queue specified job. |
+| 6881345 | This operation is not permitted on a node SVM. |
+| 6881349 | Policy name is not valid. |
+| 6881351 | Policy name is too long. |
+| 6881352 | Policy name is not valid. |
+| 6881362 | Threshold percentage cannot be less than 1 percent. |
+| 6881433 | For \"threshold\" type policy, \"schedule and duration\" is not supported. |
+| 6881435 | Only a policy of type "threshold" can set the "start-threshold-percent" attribute. |
+| 6881454 | An efficiency policy of type "threshold" requires an effective cluster version of ONTAP 8.3 or later. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type VolumeEfficiencyPolicyCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the volume efficiency policy create default response
-func (o *VolumeEfficiencyPolicyCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this volume efficiency policy create default response has a 2xx status code
@@ -167,12 +167,19 @@ func (o *VolumeEfficiencyPolicyCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the volume efficiency policy create default response
+func (o *VolumeEfficiencyPolicyCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VolumeEfficiencyPolicyCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/volume-efficiency-policies][%d] volume_efficiency_policy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/volume-efficiency-policies][%d] volume_efficiency_policy_create default %s", o._statusCode, payload)
 }
 
 func (o *VolumeEfficiencyPolicyCreateDefault) String() string {
-	return fmt.Sprintf("[POST /storage/volume-efficiency-policies][%d] volume_efficiency_policy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/volume-efficiency-policies][%d] volume_efficiency_policy_create default %s", o._statusCode, payload)
 }
 
 func (o *VolumeEfficiencyPolicyCreateDefault) GetPayload() *models.ErrorResponse {

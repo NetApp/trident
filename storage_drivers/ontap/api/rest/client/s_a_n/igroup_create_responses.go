@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *IgroupCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the igroup create created response
+func (o *IgroupCreateCreated) Code() int {
+	return 201
+}
+
 func (o *IgroupCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/igroups][%d] igroupCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/igroups][%d] igroupCreateCreated %s", 201, payload)
 }
 
 func (o *IgroupCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/san/igroups][%d] igroupCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/igroups][%d] igroupCreateCreated %s", 201, payload)
 }
 
 func (o *IgroupCreateCreated) GetPayload() *models.IgroupResponse {
@@ -140,6 +148,8 @@ func NewIgroupCreateDefault(code int) *IgroupCreateDefault {
 | 5373972 | A supplied initiator name looks like an iSCSI IQN initiator, but the naming authority portion is invalid. |
 | 5373977 | A supplied initiator name looks like an iSCSI EUI initiator, but the length is invalid. |
 | 5373978 | A supplied initiator name looks like an iSCSI EUI initiator, but the format is invalid. |
+| 5373982 | An invalid WWN was specified. The length is incorrect. |
+| 5373983 | An invalid WWN was specified. The format is incorrect. |
 | 5373992 | A supplied initiator name was too long to be valid. |
 | 5373993 | A supplied initiator name did not match any valid format. |
 | 5374023 | An initiator group with the same name already exists. |
@@ -155,19 +165,34 @@ func NewIgroupCreateDefault(code int) *IgroupCreateDefault {
 | 5374740 | A supplied child initiator group has an protocol that differs from the parent initiator group. |
 | 5374741 | A supplied child initiator group is already owned by a different child in the initiator group's hierarchy. |
 | 5374742 | A supplied child initiator group contains an initiator that is already owned by another initiator group in the hierarchy. |
+| 5374745 | Initiator group cannot be added as a child to itself. |
 | 5374746 | The cluster is currently running in a mixed version and nested initiator groups cannot be created until the effective cluster version reaches 9.9.1. |
 | 5374747 | The cluster is currently running in a mixed version and initiator group comments cannot be created until the effective cluster version reaches 9.9.1. |
-| 5374917 | Multiple matching initiators have been supplied with conflicting comments. |
+| 5374758 | An error was reported by the peer cluster while creating a replicated initiator group. The specific error will be included as a nested error. |
+| 5374878 | The supplied child initiator group does not exist. |
+| 5374911 | The supplied portset does not exist. |
+| 5374917 | Duplicated initiators have conflicting property values. |
+| 5375055 | The `local_svm` property of an initiator proximity was not specified. |
+| 5375056 | An SVM peering relationship that does not have the initiator group's SVM as the local SVM was specified. |
+| 5375258 | The igroup is already replicated to a different peer SVM. |
+| 5375261 | Setting initiator proximity is not supported for the SVM type. |
+| 5376057 | Setting initiator proximity is not supported for the ONTAP version. |
+| 5376059 | Setting initiator proximity to a peer that is either the destination of an SVM DR relationship or in a Metrocluster configuration is not supported. |
+| 5376253 | Initiator group replication requires an effective cluster version of 9.15.1. |
+| 5376255 | Initiator group replication requires the peer cluster to have an effective cluster version of 9.15.1. |
+| 5376488 | An NVMe over Fabrics subsystem already exists with the requested name. |
+| 6620376 | SVM peering information is unavailable. |
+| 6620384 | The supplied SVMs are not peered. |
+| 26345672 | The specified SVM peering relationship was not found. |
+| 26345673 | An SVM peering relationship between the initiator group's SVM and specified peer SVM was not found. |
+| 26345675 | An SVM peering relationship UUID and name were specified and they do not refer to the same SVM peering relationship. |
+| 26345680 | Supplied SVM peer is on the local cluster. The operation requires a peer on a remote cluster. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IgroupCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the igroup create default response
-func (o *IgroupCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this igroup create default response has a 2xx status code
@@ -195,12 +220,19 @@ func (o *IgroupCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the igroup create default response
+func (o *IgroupCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IgroupCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/igroups][%d] igroup_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/igroups][%d] igroup_create default %s", o._statusCode, payload)
 }
 
 func (o *IgroupCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/san/igroups][%d] igroup_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/igroups][%d] igroup_create default %s", o._statusCode, payload)
 }
 
 func (o *IgroupCreateDefault) GetPayload() *models.ErrorResponse {

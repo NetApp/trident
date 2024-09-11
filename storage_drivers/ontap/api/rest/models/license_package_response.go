@@ -317,13 +317,13 @@ type LicensePackageResponseInlineRecordsInlineArrayItem struct {
 
 	// Scope of the license.
 	// Read Only: true
-	// Enum: [not_available site cluster node]
+	// Enum: ["not_available","site","cluster","node"]
 	Scope *string `json:"scope,omitempty"`
 
 	// Summary state of package based on all installed licenses.
 	// Example: compliant
 	// Read Only: true
-	// Enum: [compliant noncompliant unlicensed unknown]
+	// Enum: ["compliant","noncompliant","unlicensed","unknown"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -716,12 +716,12 @@ type LicensePackageResponseInlineRecordsInlineArrayItemInlineEntitlement struct 
 
 	// Entitlement action to be taken to mitigate the risk
 	// Read Only: true
-	// Enum: [acquire_license adjust_capacity verify_entitlement verify_system_health none]
+	// Enum: ["acquire_license","adjust_capacity","verify_entitlement","verify_system_health","none"]
 	Action *string `json:"action,omitempty"`
 
 	// Entitlement risk of the package
 	// Read Only: true
-	// Enum: [high medium low unlicensed unknown]
+	// Enum: ["high","medium","low","unlicensed","unknown"]
 	Risk *string `json:"risk,omitempty"`
 }
 
@@ -989,7 +989,7 @@ type LicensePackageResponseRecordsItems0LicensesItems0 struct {
 	Evaluation *bool `json:"evaluation,omitempty"`
 
 	// Date and time when the license expires.
-	// Example: 2019-03-02T19:00:00Z
+	// Example: 2019-03-02 19:00:00
 	// Read Only: true
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
@@ -1019,7 +1019,7 @@ type LicensePackageResponseRecordsItems0LicensesItems0 struct {
 	ShutdownImminent *bool `json:"shutdown_imminent,omitempty"`
 
 	// Date and time when the license starts.
-	// Example: 2019-02-02T19:00:00Z
+	// Example: 2019-02-02 19:00:00
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
@@ -1371,7 +1371,7 @@ type LicensePackageResponseRecordsItems0LicensesItems0Compliance struct {
 	// Compliance state of the license.
 	// Example: compliant
 	// Read Only: true
-	// Enum: [compliant noncompliant unlicensed unknown]
+	// Enum: ["compliant","noncompliant","unlicensed","unknown"]
 	State *string `json:"state,omitempty"`
 }
 

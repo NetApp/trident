@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *LicenseManagerGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the license manager get o k response
+func (o *LicenseManagerGetOK) Code() int {
+	return 200
+}
+
 func (o *LicenseManagerGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/licensing/license-managers/{uuid}][%d] licenseManagerGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/licensing/license-managers/{uuid}][%d] licenseManagerGetOK %s", 200, payload)
 }
 
 func (o *LicenseManagerGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/licensing/license-managers/{uuid}][%d] licenseManagerGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/licensing/license-managers/{uuid}][%d] licenseManagerGetOK %s", 200, payload)
 }
 
 func (o *LicenseManagerGetOK) GetPayload() *models.LicenseManager {
@@ -122,11 +130,6 @@ type LicenseManagerGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the license manager get default response
-func (o *LicenseManagerGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this license manager get default response has a 2xx status code
 func (o *LicenseManagerGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *LicenseManagerGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the license manager get default response
+func (o *LicenseManagerGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LicenseManagerGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/licensing/license-managers/{uuid}][%d] license_manager_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/licensing/license-managers/{uuid}][%d] license_manager_get default %s", o._statusCode, payload)
 }
 
 func (o *LicenseManagerGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/licensing/license-managers/{uuid}][%d] license_manager_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/licensing/license-managers/{uuid}][%d] license_manager_get default %s", o._statusCode, payload)
 }
 
 func (o *LicenseManagerGetDefault) GetPayload() *models.ErrorResponse {

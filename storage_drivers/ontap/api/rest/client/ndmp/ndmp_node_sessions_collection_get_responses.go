@@ -6,6 +6,7 @@ package ndmp
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NdmpNodeSessionsCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ndmp node sessions collection get o k response
+func (o *NdmpNodeSessionsCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *NdmpNodeSessionsCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/sessions][%d] ndmpNodeSessionsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/sessions][%d] ndmpNodeSessionsCollectionGetOK %s", 200, payload)
 }
 
 func (o *NdmpNodeSessionsCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/sessions][%d] ndmpNodeSessionsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/sessions][%d] ndmpNodeSessionsCollectionGetOK %s", 200, payload)
 }
 
 func (o *NdmpNodeSessionsCollectionGetOK) GetPayload() *models.NdmpSessionResponse {
@@ -126,11 +134,6 @@ type NdmpNodeSessionsCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the ndmp node sessions collection get default response
-func (o *NdmpNodeSessionsCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this ndmp node sessions collection get default response has a 2xx status code
 func (o *NdmpNodeSessionsCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -156,12 +159,19 @@ func (o *NdmpNodeSessionsCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ndmp node sessions collection get default response
+func (o *NdmpNodeSessionsCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NdmpNodeSessionsCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/sessions][%d] ndmp_node_sessions_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/sessions][%d] ndmp_node_sessions_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *NdmpNodeSessionsCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/sessions][%d] ndmp_node_sessions_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/sessions][%d] ndmp_node_sessions_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *NdmpNodeSessionsCollectionGetDefault) GetPayload() *models.ErrorResponse {

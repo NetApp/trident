@@ -66,7 +66,7 @@ type FileInfoModifyParams struct {
 
 	/* ByteOffset.
 
-	   How many bytes into the file to begin writing. Use -1 to append (default).
+	   Indicates the number of bytes into the file to begin writing. Use "-1" to append (default). Note that the byte-offset field is only supported for writing to a new or existing file, which requires specifying the Content-Type as 'multipart/form-data'.
 	*/
 	ByteOffset *int64
 
@@ -75,12 +75,6 @@ type FileInfoModifyParams struct {
 	   Info specification
 	*/
 	Info *models.FileInfo
-
-	/* Overwrite.
-
-	   If false, and the file exists, the write will fail. Default is false.
-	*/
-	Overwrite *bool
 
 	/* Path.
 
@@ -192,17 +186,6 @@ func (o *FileInfoModifyParams) SetInfo(info *models.FileInfo) {
 	o.Info = info
 }
 
-// WithOverwrite adds the overwrite to the file info modify params
-func (o *FileInfoModifyParams) WithOverwrite(overwrite *bool) *FileInfoModifyParams {
-	o.SetOverwrite(overwrite)
-	return o
-}
-
-// SetOverwrite adds the overwrite to the file info modify params
-func (o *FileInfoModifyParams) SetOverwrite(overwrite *bool) {
-	o.Overwrite = overwrite
-}
-
 // WithPath adds the path to the file info modify params
 func (o *FileInfoModifyParams) WithPath(path string) *FileInfoModifyParams {
 	o.SetPath(path)
@@ -274,23 +257,6 @@ func (o *FileInfoModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err
-		}
-	}
-
-	if o.Overwrite != nil {
-
-		// query param overwrite
-		var qrOverwrite bool
-
-		if o.Overwrite != nil {
-			qrOverwrite = *o.Overwrite
-		}
-		qOverwrite := swag.FormatBool(qrOverwrite)
-		if qOverwrite != "" {
-
-			if err := r.SetQueryParam("overwrite", qOverwrite); err != nil {
-				return err
-			}
 		}
 	}
 

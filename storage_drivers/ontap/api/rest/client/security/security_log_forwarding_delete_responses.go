@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SecurityLogForwardingDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the security log forwarding delete o k response
+func (o *SecurityLogForwardingDeleteOK) Code() int {
+	return 200
+}
+
 func (o *SecurityLogForwardingDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /security/audit/destinations/{address}/{port}][%d] securityLogForwardingDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/audit/destinations/{address}/{port}][%d] securityLogForwardingDeleteOK", 200)
 }
 
 func (o *SecurityLogForwardingDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /security/audit/destinations/{address}/{port}][%d] securityLogForwardingDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/audit/destinations/{address}/{port}][%d] securityLogForwardingDeleteOK", 200)
 }
 
 func (o *SecurityLogForwardingDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type SecurityLogForwardingDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security log forwarding delete default response
-func (o *SecurityLogForwardingDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security log forwarding delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *SecurityLogForwardingDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security log forwarding delete default response
+func (o *SecurityLogForwardingDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityLogForwardingDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /security/audit/destinations/{address}/{port}][%d] security_log_forwarding_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/audit/destinations/{address}/{port}][%d] security_log_forwarding_delete default %s", o._statusCode, payload)
 }
 
 func (o *SecurityLogForwardingDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /security/audit/destinations/{address}/{port}][%d] security_log_forwarding_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/audit/destinations/{address}/{port}][%d] security_log_forwarding_delete default %s", o._statusCode, payload)
 }
 
 func (o *SecurityLogForwardingDeleteDefault) GetPayload() *models.ErrorResponse {

@@ -76,7 +76,7 @@ type SnapmirrorRelationshipGetParams struct {
 
 	/* UUID.
 
-	   Relationship UUID
+	   SnapMirror relationship UUID
 	*/
 	UUID string
 

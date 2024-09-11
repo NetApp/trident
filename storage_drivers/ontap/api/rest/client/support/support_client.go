@@ -34,6 +34,8 @@ type ClientService interface {
 
 	AutoUpdateConfigurationModify(params *AutoUpdateConfigurationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateConfigurationModifyOK, error)
 
+	AutoUpdateConfigurationModifyCollection(params *AutoUpdateConfigurationModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateConfigurationModifyCollectionOK, error)
+
 	AutoUpdateInfoGet(params *AutoUpdateInfoGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateInfoGetOK, error)
 
 	AutoUpdateInfoModify(params *AutoUpdateInfoModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateInfoModifyOK, error)
@@ -44,19 +46,25 @@ type ClientService interface {
 
 	AutoUpdateStatusModify(params *AutoUpdateStatusModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateStatusModifyOK, error)
 
+	AutoUpdateStatusModifyCollection(params *AutoUpdateStatusModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateStatusModifyCollectionOK, error)
+
 	AutosupportCreate(params *AutosupportCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutosupportCreateCreated, error)
 
 	AutosupportGet(params *AutosupportGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutosupportGetOK, error)
 
 	AutosupportMessageCollectionGet(params *AutosupportMessageCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutosupportMessageCollectionGetOK, error)
 
+	AutosupportMessageGet(params *AutosupportMessageGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutosupportMessageGetOK, error)
+
 	AutosupportModify(params *AutosupportModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutosupportModifyOK, error)
 
 	ConfigurationBackupFileCollectionGet(params *ConfigurationBackupFileCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupFileCollectionGetOK, error)
 
-	ConfigurationBackupFileCreate(params *ConfigurationBackupFileCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupFileCreateAccepted, error)
+	ConfigurationBackupFileCreate(params *ConfigurationBackupFileCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupFileCreateCreated, *ConfigurationBackupFileCreateAccepted, error)
 
 	ConfigurationBackupFileDelete(params *ConfigurationBackupFileDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupFileDeleteOK, error)
+
+	ConfigurationBackupFileDeleteCollection(params *ConfigurationBackupFileDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupFileDeleteCollectionOK, error)
 
 	ConfigurationBackupFileGet(params *ConfigurationBackupFileGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupFileGetOK, error)
 
@@ -67,6 +75,8 @@ type ClientService interface {
 	CoredumpCollectionGet(params *CoredumpCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CoredumpCollectionGetOK, error)
 
 	CoredumpDelete(params *CoredumpDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CoredumpDeleteOK, error)
+
+	CoredumpDeleteCollection(params *CoredumpDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CoredumpDeleteCollectionOK, error)
 
 	CoredumpGet(params *CoredumpGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CoredumpGetOK, error)
 
@@ -82,9 +92,13 @@ type ClientService interface {
 
 	EmsDestinationDelete(params *EmsDestinationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsDestinationDeleteOK, error)
 
+	EmsDestinationDeleteCollection(params *EmsDestinationDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsDestinationDeleteCollectionOK, error)
+
 	EmsDestinationGet(params *EmsDestinationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsDestinationGetOK, error)
 
 	EmsDestinationModify(params *EmsDestinationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsDestinationModifyOK, error)
+
+	EmsDestinationModifyCollection(params *EmsDestinationModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsDestinationModifyCollectionOK, error)
 
 	EmsEventCollectionGet(params *EmsEventCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsEventCollectionGetOK, error)
 
@@ -94,21 +108,43 @@ type ClientService interface {
 
 	EmsFilterDelete(params *EmsFilterDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterDeleteOK, error)
 
+	EmsFilterDeleteCollection(params *EmsFilterDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterDeleteCollectionOK, error)
+
 	EmsFilterGet(params *EmsFilterGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterGetOK, error)
 
 	EmsFilterModify(params *EmsFilterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterModifyOK, error)
+
+	EmsFilterModifyCollection(params *EmsFilterModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterModifyCollectionOK, error)
 
 	EmsFilterRuleCollectionGet(params *EmsFilterRuleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterRuleCollectionGetOK, error)
 
 	EmsFilterRuleDelete(params *EmsFilterRuleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterRuleDeleteOK, error)
 
+	EmsFilterRuleDeleteCollection(params *EmsFilterRuleDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterRuleDeleteCollectionOK, error)
+
 	EmsFilterRuleGet(params *EmsFilterRuleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterRuleGetOK, error)
 
 	EmsFilterRuleModify(params *EmsFilterRuleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterRuleModifyOK, error)
 
+	EmsFilterRuleModifyCollection(params *EmsFilterRuleModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterRuleModifyCollectionOK, error)
+
 	EmsFiltersRulesCreate(params *EmsFiltersRulesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFiltersRulesCreateCreated, error)
 
 	EmsMessageCollectionGet(params *EmsMessageCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsMessageCollectionGetOK, error)
+
+	EmsRoleConfigCollectionGet(params *EmsRoleConfigCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsRoleConfigCollectionGetOK, error)
+
+	EmsRoleConfigCreate(params *EmsRoleConfigCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsRoleConfigCreateCreated, error)
+
+	EmsRoleConfigDelete(params *EmsRoleConfigDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsRoleConfigDeleteOK, error)
+
+	EmsRoleConfigDeleteCollection(params *EmsRoleConfigDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsRoleConfigDeleteCollectionOK, error)
+
+	EmsRoleConfigGet(params *EmsRoleConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsRoleConfigGetOK, error)
+
+	EmsRoleConfigModify(params *EmsRoleConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsRoleConfigModifyOK, error)
+
+	EmsRoleConfigModifyCollection(params *EmsRoleConfigModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsRoleConfigModifyCollectionOK, error)
 
 	SnmpGet(params *SnmpGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpGetOK, error)
 
@@ -120,6 +156,8 @@ type ClientService interface {
 
 	SnmpTraphostsDelete(params *SnmpTraphostsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpTraphostsDeleteOK, error)
 
+	SnmpTraphostsDeleteCollection(params *SnmpTraphostsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpTraphostsDeleteCollectionOK, error)
+
 	SnmpTraphostsGet(params *SnmpTraphostsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpTraphostsGetOK, error)
 
 	SnmpUsersCollectionGet(params *SnmpUsersCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpUsersCollectionGetOK, error)
@@ -128,9 +166,13 @@ type ClientService interface {
 
 	SnmpUsersDelete(params *SnmpUsersDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpUsersDeleteOK, error)
 
+	SnmpUsersDeleteCollection(params *SnmpUsersDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpUsersDeleteCollectionOK, error)
+
 	SnmpUsersGet(params *SnmpUsersGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpUsersGetOK, error)
 
 	SnmpUsersModify(params *SnmpUsersModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpUsersModifyOK, error)
+
+	SnmpUsersModifyCollection(params *SnmpUsersModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpUsersModifyCollectionOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -147,8 +189,8 @@ func (a *Client) AutoUpdateConfigurationCollectionGet(params *AutoUpdateConfigur
 		ID:                 "auto_update_configuration_collection_get",
 		Method:             "GET",
 		PathPattern:        "/support/auto-update/configurations",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AutoUpdateConfigurationCollectionGetReader{formats: a.formats},
@@ -185,8 +227,8 @@ func (a *Client) AutoUpdateConfigurationGet(params *AutoUpdateConfigurationGetPa
 		ID:                 "auto_update_configuration_get",
 		Method:             "GET",
 		PathPattern:        "/support/auto-update/configurations/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AutoUpdateConfigurationGetReader{formats: a.formats},
@@ -223,8 +265,8 @@ func (a *Client) AutoUpdateConfigurationModify(params *AutoUpdateConfigurationMo
 		ID:                 "auto_update_configuration_modify",
 		Method:             "PATCH",
 		PathPattern:        "/support/auto-update/configurations/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AutoUpdateConfigurationModifyReader{formats: a.formats},
@@ -250,6 +292,44 @@ func (a *Client) AutoUpdateConfigurationModify(params *AutoUpdateConfigurationMo
 }
 
 /*
+AutoUpdateConfigurationModifyCollection auto update configuration modify collection API
+*/
+func (a *Client) AutoUpdateConfigurationModifyCollection(params *AutoUpdateConfigurationModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateConfigurationModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAutoUpdateConfigurationModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "auto_update_configuration_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/support/auto-update/configurations",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AutoUpdateConfigurationModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AutoUpdateConfigurationModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AutoUpdateConfigurationModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 AutoUpdateInfoGet Retrieves the current status of the automatic update feature and the End User License Agreement (EULA).
 */
 func (a *Client) AutoUpdateInfoGet(params *AutoUpdateInfoGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateInfoGetOK, error) {
@@ -261,8 +341,8 @@ func (a *Client) AutoUpdateInfoGet(params *AutoUpdateInfoGetParams, authInfo run
 		ID:                 "auto_update_info_get",
 		Method:             "GET",
 		PathPattern:        "/support/auto-update",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AutoUpdateInfoGetReader{formats: a.formats},
@@ -299,8 +379,8 @@ func (a *Client) AutoUpdateInfoModify(params *AutoUpdateInfoModifyParams, authIn
 		ID:                 "auto_update_info_modify",
 		Method:             "PATCH",
 		PathPattern:        "/support/auto-update",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AutoUpdateInfoModifyReader{formats: a.formats},
@@ -337,8 +417,8 @@ func (a *Client) AutoUpdateStatusCollectionGet(params *AutoUpdateStatusCollectio
 		ID:                 "auto_update_status_collection_get",
 		Method:             "GET",
 		PathPattern:        "/support/auto-update/updates",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AutoUpdateStatusCollectionGetReader{formats: a.formats},
@@ -375,8 +455,8 @@ func (a *Client) AutoUpdateStatusGet(params *AutoUpdateStatusGetParams, authInfo
 		ID:                 "auto_update_status_get",
 		Method:             "GET",
 		PathPattern:        "/support/auto-update/updates/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AutoUpdateStatusGetReader{formats: a.formats},
@@ -413,8 +493,8 @@ func (a *Client) AutoUpdateStatusModify(params *AutoUpdateStatusModifyParams, au
 		ID:                 "auto_update_status_modify",
 		Method:             "PATCH",
 		PathPattern:        "/support/auto-update/updates/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AutoUpdateStatusModifyReader{formats: a.formats},
@@ -436,6 +516,44 @@ func (a *Client) AutoUpdateStatusModify(params *AutoUpdateStatusModifyParams, au
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AutoUpdateStatusModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+AutoUpdateStatusModifyCollection auto update status modify collection API
+*/
+func (a *Client) AutoUpdateStatusModifyCollection(params *AutoUpdateStatusModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateStatusModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAutoUpdateStatusModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "auto_update_status_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/support/auto-update/updates",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AutoUpdateStatusModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AutoUpdateStatusModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AutoUpdateStatusModifyCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -464,8 +582,8 @@ func (a *Client) AutosupportCreate(params *AutosupportCreateParams, authInfo run
 		ID:                 "autosupport_create",
 		Method:             "POST",
 		PathPattern:        "/support/autosupport/messages",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AutosupportCreateReader{formats: a.formats},
@@ -494,7 +612,7 @@ func (a *Client) AutosupportCreate(params *AutosupportCreateParams, authInfo run
 	AutosupportGet Retrieves the AutoSupport configuration of the cluster and if requested, returns connectivity issues with the AutoSupport configuration.<p/>
 
 </br>Important note:
-* The **issues** field consists of a list of objects containing details of the node that has a connectivity issue, the issue description, and corrective action you can take to address the issue. When not empty, this indicates a connection issue to the **HTTP/S**, **SMTP**, or **AutoSupport On Demand** server.
+* The **issues** field consists of a list of objects containing details of the node that has a connectivity issue, the issue description, and corrective action you can take to address the issue. When not empty, this indicates a connection issue to the **HTTPS**, **SMTP**, or **AutoSupport On Demand** server.
 ### Expensive properties
 There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `issues`
@@ -513,8 +631,8 @@ func (a *Client) AutosupportGet(params *AutosupportGetParams, authInfo runtime.C
 		ID:                 "autosupport_get",
 		Method:             "GET",
 		PathPattern:        "/support/autosupport",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AutosupportGetReader{formats: a.formats},
@@ -557,8 +675,8 @@ func (a *Client) AutosupportMessageCollectionGet(params *AutosupportMessageColle
 		ID:                 "autosupport_message_collection_get",
 		Method:             "GET",
 		PathPattern:        "/support/autosupport/messages",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AutosupportMessageCollectionGetReader{formats: a.formats},
@@ -584,6 +702,44 @@ func (a *Client) AutosupportMessageCollectionGet(params *AutosupportMessageColle
 }
 
 /*
+AutosupportMessageGet Retrieves information about a single Autosupport message.
+*/
+func (a *Client) AutosupportMessageGet(params *AutosupportMessageGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutosupportMessageGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAutosupportMessageGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "autosupport_message_get",
+		Method:             "GET",
+		PathPattern:        "/support/autosupport/messages/{node.uuid}/{index}/{destination}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AutosupportMessageGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AutosupportMessageGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AutosupportMessageGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	AutosupportModify Updates the AutoSupport configuration for the entire cluster.
 
 ### Related ONTAP commands
@@ -600,8 +756,8 @@ func (a *Client) AutosupportModify(params *AutosupportModifyParams, authInfo run
 		ID:                 "autosupport_modify",
 		Method:             "PATCH",
 		PathPattern:        "/support/autosupport",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AutosupportModifyReader{formats: a.formats},
@@ -641,8 +797,8 @@ func (a *Client) ConfigurationBackupFileCollectionGet(params *ConfigurationBacku
 		ID:                 "configuration_backup_file_collection_get",
 		Method:             "GET",
 		PathPattern:        "/support/configuration-backup/backups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ConfigurationBackupFileCollectionGetReader{formats: a.formats},
@@ -676,7 +832,7 @@ func (a *Client) ConfigurationBackupFileCollectionGet(params *ConfigurationBacku
 ### Related ONTAP commands
 * `system configuration backup create`
 */
-func (a *Client) ConfigurationBackupFileCreate(params *ConfigurationBackupFileCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupFileCreateAccepted, error) {
+func (a *Client) ConfigurationBackupFileCreate(params *ConfigurationBackupFileCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupFileCreateCreated, *ConfigurationBackupFileCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewConfigurationBackupFileCreateParams()
@@ -685,8 +841,8 @@ func (a *Client) ConfigurationBackupFileCreate(params *ConfigurationBackupFileCr
 		ID:                 "configuration_backup_file_create",
 		Method:             "POST",
 		PathPattern:        "/support/configuration-backup/backups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ConfigurationBackupFileCreateReader{formats: a.formats},
@@ -700,15 +856,17 @@ func (a *Client) ConfigurationBackupFileCreate(params *ConfigurationBackupFileCr
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*ConfigurationBackupFileCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *ConfigurationBackupFileCreateCreated:
+		return value, nil, nil
+	case *ConfigurationBackupFileCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ConfigurationBackupFileCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -726,8 +884,8 @@ func (a *Client) ConfigurationBackupFileDelete(params *ConfigurationBackupFileDe
 		ID:                 "configuration_backup_file_delete",
 		Method:             "DELETE",
 		PathPattern:        "/support/configuration-backup/backups/{node.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ConfigurationBackupFileDeleteReader{formats: a.formats},
@@ -753,6 +911,44 @@ func (a *Client) ConfigurationBackupFileDelete(params *ConfigurationBackupFileDe
 }
 
 /*
+ConfigurationBackupFileDeleteCollection configuration backup file delete collection API
+*/
+func (a *Client) ConfigurationBackupFileDeleteCollection(params *ConfigurationBackupFileDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupFileDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewConfigurationBackupFileDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "configuration_backup_file_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/support/configuration-backup/backups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ConfigurationBackupFileDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ConfigurationBackupFileDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ConfigurationBackupFileDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	ConfigurationBackupFileGet Retrieves details of the specified configuration backup file.
 
 ### Related ONTAP commands
@@ -767,8 +963,8 @@ func (a *Client) ConfigurationBackupFileGet(params *ConfigurationBackupFileGetPa
 		ID:                 "configuration_backup_file_get",
 		Method:             "GET",
 		PathPattern:        "/support/configuration-backup/backups/{node.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ConfigurationBackupFileGetReader{formats: a.formats},
@@ -805,8 +1001,8 @@ func (a *Client) ConfigurationBackupGet(params *ConfigurationBackupGetParams, au
 		ID:                 "configuration_backup_get",
 		Method:             "GET",
 		PathPattern:        "/support/configuration-backup",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ConfigurationBackupGetReader{formats: a.formats},
@@ -843,8 +1039,8 @@ func (a *Client) ConfigurationBackupModify(params *ConfigurationBackupModifyPara
 		ID:                 "configuration_backup_modify",
 		Method:             "PATCH",
 		PathPattern:        "/support/configuration-backup",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ConfigurationBackupModifyReader{formats: a.formats},
@@ -884,8 +1080,8 @@ func (a *Client) CoredumpCollectionGet(params *CoredumpCollectionGetParams, auth
 		ID:                 "coredump_collection_get",
 		Method:             "GET",
 		PathPattern:        "/support/coredump/coredumps",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CoredumpCollectionGetReader{formats: a.formats},
@@ -925,8 +1121,8 @@ func (a *Client) CoredumpDelete(params *CoredumpDeleteParams, authInfo runtime.C
 		ID:                 "coredump_delete",
 		Method:             "DELETE",
 		PathPattern:        "/support/coredump/coredumps/{node.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CoredumpDeleteReader{formats: a.formats},
@@ -952,6 +1148,44 @@ func (a *Client) CoredumpDelete(params *CoredumpDeleteParams, authInfo runtime.C
 }
 
 /*
+CoredumpDeleteCollection coredump delete collection API
+*/
+func (a *Client) CoredumpDeleteCollection(params *CoredumpDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CoredumpDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCoredumpDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "coredump_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/support/coredump/coredumps",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CoredumpDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CoredumpDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CoredumpDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	CoredumpGet Retrieves a specific core dump.
 
 ### Related ONTAP commands
@@ -966,8 +1200,8 @@ func (a *Client) CoredumpGet(params *CoredumpGetParams, authInfo runtime.ClientA
 		ID:                 "coredump_get",
 		Method:             "GET",
 		PathPattern:        "/support/coredump/coredumps/{node.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CoredumpGetReader{formats: a.formats},
@@ -1014,8 +1248,8 @@ func (a *Client) EmsApplicationLogsCreate(params *EmsApplicationLogsCreateParams
 		ID:                 "ems_application_logs_create",
 		Method:             "POST",
 		PathPattern:        "/support/ems/application-logs",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsApplicationLogsCreateReader{formats: a.formats},
@@ -1055,8 +1289,8 @@ func (a *Client) EmsConfigGet(params *EmsConfigGetParams, authInfo runtime.Clien
 		ID:                 "ems_config_get",
 		Method:             "GET",
 		PathPattern:        "/support/ems",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsConfigGetReader{formats: a.formats},
@@ -1096,8 +1330,8 @@ func (a *Client) EmsConfigModify(params *EmsConfigModifyParams, authInfo runtime
 		ID:                 "ems_config_modify",
 		Method:             "PATCH",
 		PathPattern:        "/support/ems",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsConfigModifyReader{formats: a.formats},
@@ -1138,8 +1372,8 @@ func (a *Client) EmsDestinationCollectionGet(params *EmsDestinationCollectionGet
 		ID:                 "ems_destination_collection_get",
 		Method:             "GET",
 		PathPattern:        "/support/ems/destinations",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsDestinationCollectionGetReader{formats: a.formats},
@@ -1188,8 +1422,8 @@ func (a *Client) EmsDestinationCreate(params *EmsDestinationCreateParams, authIn
 		ID:                 "ems_destination_create",
 		Method:             "POST",
 		PathPattern:        "/support/ems/destinations",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsDestinationCreateReader{formats: a.formats},
@@ -1230,8 +1464,8 @@ func (a *Client) EmsDestinationDelete(params *EmsDestinationDeleteParams, authIn
 		ID:                 "ems_destination_delete",
 		Method:             "DELETE",
 		PathPattern:        "/support/ems/destinations/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsDestinationDeleteReader{formats: a.formats},
@@ -1257,6 +1491,44 @@ func (a *Client) EmsDestinationDelete(params *EmsDestinationDeleteParams, authIn
 }
 
 /*
+EmsDestinationDeleteCollection ems destination delete collection API
+*/
+func (a *Client) EmsDestinationDeleteCollection(params *EmsDestinationDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsDestinationDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewEmsDestinationDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ems_destination_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/support/ems/destinations",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &EmsDestinationDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*EmsDestinationDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*EmsDestinationDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	EmsDestinationGet Retrieves event destinations.
 
 ### Expensive properties
@@ -1275,8 +1547,8 @@ func (a *Client) EmsDestinationGet(params *EmsDestinationGetParams, authInfo run
 		ID:                 "ems_destination_get",
 		Method:             "GET",
 		PathPattern:        "/support/ems/destinations/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsDestinationGetReader{formats: a.formats},
@@ -1320,8 +1592,8 @@ func (a *Client) EmsDestinationModify(params *EmsDestinationModifyParams, authIn
 		ID:                 "ems_destination_modify",
 		Method:             "PATCH",
 		PathPattern:        "/support/ems/destinations/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsDestinationModifyReader{formats: a.formats},
@@ -1347,6 +1619,44 @@ func (a *Client) EmsDestinationModify(params *EmsDestinationModifyParams, authIn
 }
 
 /*
+EmsDestinationModifyCollection ems destination modify collection API
+*/
+func (a *Client) EmsDestinationModifyCollection(params *EmsDestinationModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsDestinationModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewEmsDestinationModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ems_destination_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/support/ems/destinations",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &EmsDestinationModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*EmsDestinationModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*EmsDestinationModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	EmsEventCollectionGet Retrieves a collection of observed events.
 
 ### Related ONTAP commands
@@ -1361,8 +1671,8 @@ func (a *Client) EmsEventCollectionGet(params *EmsEventCollectionGetParams, auth
 		ID:                 "ems_event_collection_get",
 		Method:             "GET",
 		PathPattern:        "/support/ems/events",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsEventCollectionGetReader{formats: a.formats},
@@ -1402,8 +1712,8 @@ func (a *Client) EmsFilterCollectionGet(params *EmsFilterCollectionGetParams, au
 		ID:                 "ems_filter_collection_get",
 		Method:             "GET",
 		PathPattern:        "/support/ems/filters",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsFilterCollectionGetReader{formats: a.formats},
@@ -1447,8 +1757,8 @@ func (a *Client) EmsFilterCreate(params *EmsFilterCreateParams, authInfo runtime
 		ID:                 "ems_filter_create",
 		Method:             "POST",
 		PathPattern:        "/support/ems/filters",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsFilterCreateReader{formats: a.formats},
@@ -1488,8 +1798,8 @@ func (a *Client) EmsFilterDelete(params *EmsFilterDeleteParams, authInfo runtime
 		ID:                 "ems_filter_delete",
 		Method:             "DELETE",
 		PathPattern:        "/support/ems/filters/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsFilterDeleteReader{formats: a.formats},
@@ -1515,6 +1825,44 @@ func (a *Client) EmsFilterDelete(params *EmsFilterDeleteParams, authInfo runtime
 }
 
 /*
+EmsFilterDeleteCollection ems filter delete collection API
+*/
+func (a *Client) EmsFilterDeleteCollection(params *EmsFilterDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewEmsFilterDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ems_filter_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/support/ems/filters",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &EmsFilterDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*EmsFilterDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*EmsFilterDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	EmsFilterGet Retrieves an event filter.
 
 ### Related ONTAP commands
@@ -1529,8 +1877,8 @@ func (a *Client) EmsFilterGet(params *EmsFilterGetParams, authInfo runtime.Clien
 		ID:                 "ems_filter_get",
 		Method:             "GET",
 		PathPattern:        "/support/ems/filters/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsFilterGetReader{formats: a.formats},
@@ -1576,8 +1924,8 @@ func (a *Client) EmsFilterModify(params *EmsFilterModifyParams, authInfo runtime
 		ID:                 "ems_filter_modify",
 		Method:             "PATCH",
 		PathPattern:        "/support/ems/filters/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsFilterModifyReader{formats: a.formats},
@@ -1603,6 +1951,44 @@ func (a *Client) EmsFilterModify(params *EmsFilterModifyParams, authInfo runtime
 }
 
 /*
+EmsFilterModifyCollection ems filter modify collection API
+*/
+func (a *Client) EmsFilterModifyCollection(params *EmsFilterModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewEmsFilterModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ems_filter_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/support/ems/filters",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &EmsFilterModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*EmsFilterModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*EmsFilterModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	EmsFilterRuleCollectionGet Retrieves event filter rules.
 
 ### Related ONTAP commands
@@ -1617,8 +2003,8 @@ func (a *Client) EmsFilterRuleCollectionGet(params *EmsFilterRuleCollectionGetPa
 		ID:                 "ems_filter_rule_collection_get",
 		Method:             "GET",
 		PathPattern:        "/support/ems/filters/{name}/rules",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsFilterRuleCollectionGetReader{formats: a.formats},
@@ -1658,8 +2044,8 @@ func (a *Client) EmsFilterRuleDelete(params *EmsFilterRuleDeleteParams, authInfo
 		ID:                 "ems_filter_rule_delete",
 		Method:             "DELETE",
 		PathPattern:        "/support/ems/filters/{name}/rules/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsFilterRuleDeleteReader{formats: a.formats},
@@ -1685,6 +2071,44 @@ func (a *Client) EmsFilterRuleDelete(params *EmsFilterRuleDeleteParams, authInfo
 }
 
 /*
+EmsFilterRuleDeleteCollection ems filter rule delete collection API
+*/
+func (a *Client) EmsFilterRuleDeleteCollection(params *EmsFilterRuleDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterRuleDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewEmsFilterRuleDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ems_filter_rule_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/support/ems/filters/{name}/rules",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &EmsFilterRuleDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*EmsFilterRuleDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*EmsFilterRuleDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	EmsFilterRuleGet Retrieves an event filter rule.
 
 ### Related ONTAP commands
@@ -1699,8 +2123,8 @@ func (a *Client) EmsFilterRuleGet(params *EmsFilterRuleGetParams, authInfo runti
 		ID:                 "ems_filter_rule_get",
 		Method:             "GET",
 		PathPattern:        "/support/ems/filters/{name}/rules/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsFilterRuleGetReader{formats: a.formats},
@@ -1729,7 +2153,8 @@ func (a *Client) EmsFilterRuleGet(params *EmsFilterRuleGetParams, authInfo runti
 	EmsFilterRuleModify Updates an event filter rule.
 
 ### Recommended optional properties
-* `message_criteria` - New criteria on which a rule is to match an event.
+* `message_criteria` - Message criteria used by a rule to match an event.
+* `parameter_criteria` - Parameter criteria used by a rule to match an event.
 ### Related ONTAP commands
 * `event filter rule add`
 * `event filter rule delete`
@@ -1743,8 +2168,8 @@ func (a *Client) EmsFilterRuleModify(params *EmsFilterRuleModifyParams, authInfo
 		ID:                 "ems_filter_rule_modify",
 		Method:             "PATCH",
 		PathPattern:        "/support/ems/filters/{name}/rules/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsFilterRuleModifyReader{formats: a.formats},
@@ -1770,10 +2195,52 @@ func (a *Client) EmsFilterRuleModify(params *EmsFilterRuleModifyParams, authInfo
 }
 
 /*
+EmsFilterRuleModifyCollection ems filter rule modify collection API
+*/
+func (a *Client) EmsFilterRuleModifyCollection(params *EmsFilterRuleModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterRuleModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewEmsFilterRuleModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ems_filter_rule_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/support/ems/filters/{name}/rules",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &EmsFilterRuleModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*EmsFilterRuleModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*EmsFilterRuleModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	EmsFiltersRulesCreate Creates an event filter rule.
 
 ### Required properties
-* `message_criteria` - Criteria on which a rule is to match an event.
+* `type` - Enumeration indicating whether the rule is for include or exclude.
+* `message_criteria` - Message criteria used by a rule to match an event.
+* `parameter_criteria` - Parameter criteria used by a rule to match an event.
+Note: At least one pattern needs to be provided for message_criteria and / or
+parameter_criteria.
 ### Recommended optional properties
 * `index` - One-based position index of the new rule.
 ### Related ONTAP commands
@@ -1788,8 +2255,8 @@ func (a *Client) EmsFiltersRulesCreate(params *EmsFiltersRulesCreateParams, auth
 		ID:                 "ems_filters_rules_create",
 		Method:             "POST",
 		PathPattern:        "/support/ems/filters/{name}/rules",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsFiltersRulesCreateReader{formats: a.formats},
@@ -1829,8 +2296,8 @@ func (a *Client) EmsMessageCollectionGet(params *EmsMessageCollectionGetParams, 
 		ID:                 "ems_message_collection_get",
 		Method:             "GET",
 		PathPattern:        "/support/ems/messages",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EmsMessageCollectionGetReader{formats: a.formats},
@@ -1856,6 +2323,295 @@ func (a *Client) EmsMessageCollectionGet(params *EmsMessageCollectionGetParams, 
 }
 
 /*
+	EmsRoleConfigCollectionGet Retrieves a collection of the EMS role-based configurations.
+
+### Related ONTAP commands
+* `event role-config show`
+*/
+func (a *Client) EmsRoleConfigCollectionGet(params *EmsRoleConfigCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsRoleConfigCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewEmsRoleConfigCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ems_role_config_collection_get",
+		Method:             "GET",
+		PathPattern:        "/support/ems/role-configs",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &EmsRoleConfigCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*EmsRoleConfigCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*EmsRoleConfigCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	EmsRoleConfigCreate Creates an EMS role-based configuration for an access control role.
+
+### Required properties
+* `access_control_role` - Uniquely identifies the access control role.
+### Recommended optional properties
+* `event_filter` - Identifies the event filter.
+* `limit_access_to_global_configs` - Indicates whether the access control role has limited access to global EMS configurations.
+### Related ONTAP commands
+* `event role-config create`
+*/
+func (a *Client) EmsRoleConfigCreate(params *EmsRoleConfigCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsRoleConfigCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewEmsRoleConfigCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ems_role_config_create",
+		Method:             "POST",
+		PathPattern:        "/support/ems/role-configs",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &EmsRoleConfigCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*EmsRoleConfigCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*EmsRoleConfigCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	EmsRoleConfigDelete Removes the EMS role-based configuration of the access control role.
+
+### Related ONTAP commands
+* `event role-config delete`
+*/
+func (a *Client) EmsRoleConfigDelete(params *EmsRoleConfigDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsRoleConfigDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewEmsRoleConfigDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ems_role_config_delete",
+		Method:             "DELETE",
+		PathPattern:        "/support/ems/role-configs/{access_control_role.name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &EmsRoleConfigDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*EmsRoleConfigDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*EmsRoleConfigDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+EmsRoleConfigDeleteCollection ems role config delete collection API
+*/
+func (a *Client) EmsRoleConfigDeleteCollection(params *EmsRoleConfigDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsRoleConfigDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewEmsRoleConfigDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ems_role_config_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/support/ems/role-configs",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &EmsRoleConfigDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*EmsRoleConfigDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*EmsRoleConfigDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	EmsRoleConfigGet Retrieves the EMS role-based configuration of the access control role.
+
+### Related ONTAP commands
+* `event role-config show`
+*/
+func (a *Client) EmsRoleConfigGet(params *EmsRoleConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsRoleConfigGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewEmsRoleConfigGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ems_role_config_get",
+		Method:             "GET",
+		PathPattern:        "/support/ems/role-configs/{access_control_role.name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &EmsRoleConfigGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*EmsRoleConfigGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*EmsRoleConfigGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	EmsRoleConfigModify Updates the EMS role-based configuration of the access control role.
+
+### Recommended optional properties
+* `event_filter` - Identifies the event filter.
+* `limit_access_to_global_configs` - Indicates whether the access control role has limited access to global EMS configurations.
+### Related ONTAP commands
+* `event role-config modify`
+*/
+func (a *Client) EmsRoleConfigModify(params *EmsRoleConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsRoleConfigModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewEmsRoleConfigModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ems_role_config_modify",
+		Method:             "PATCH",
+		PathPattern:        "/support/ems/role-configs/{access_control_role.name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &EmsRoleConfigModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*EmsRoleConfigModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*EmsRoleConfigModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+EmsRoleConfigModifyCollection ems role config modify collection API
+*/
+func (a *Client) EmsRoleConfigModifyCollection(params *EmsRoleConfigModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsRoleConfigModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewEmsRoleConfigModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ems_role_config_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/support/ems/role-configs",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &EmsRoleConfigModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*EmsRoleConfigModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*EmsRoleConfigModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	SnmpGet Retrieves the cluster wide SNMP configuration.
 
 ### Related ONTAP commands
@@ -1873,8 +2629,8 @@ func (a *Client) SnmpGet(params *SnmpGetParams, authInfo runtime.ClientAuthInfoW
 		ID:                 "snmp_get",
 		Method:             "GET",
 		PathPattern:        "/support/snmp",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnmpGetReader{formats: a.formats},
@@ -1900,8 +2656,13 @@ func (a *Client) SnmpGet(params *SnmpGetParams, authInfo runtime.ClientAuthInfoW
 }
 
 /*
-	SnmpModify Updates the cluster wide SNMP configuration, such as, enabling or disabling SNMP, enabling or disabling SNMP traps, and enabling or disabling authentication traps. It can also be used to trigger an SNMP test trap.
+	SnmpModify Updates the cluster wide SNMP configuration, such as:
 
+* enabling or disabling SNMP
+* enabling or disabling SNMP traps
+* enabling or disabling authentication traps
+* setting the contact and location information for the SNMP server
+* triggering an SNMP test trap
 ### Related ONTAP commands
 * `options snmp.enable`
 * `system snmp authtrap`
@@ -1918,8 +2679,8 @@ func (a *Client) SnmpModify(params *SnmpModifyParams, authInfo runtime.ClientAut
 		ID:                 "snmp_modify",
 		Method:             "PATCH",
 		PathPattern:        "/support/snmp",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnmpModifyReader{formats: a.formats},
@@ -1961,8 +2722,8 @@ func (a *Client) SnmpTraphostsCollectionGet(params *SnmpTraphostsCollectionGetPa
 		ID:                 "snmp_traphosts_collection_get",
 		Method:             "GET",
 		PathPattern:        "/support/snmp/traphosts",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnmpTraphostsCollectionGetReader{formats: a.formats},
@@ -2011,8 +2772,8 @@ func (a *Client) SnmpTraphostsCreate(params *SnmpTraphostsCreateParams, authInfo
 		ID:                 "snmp_traphosts_create",
 		Method:             "POST",
 		PathPattern:        "/support/snmp/traphosts",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnmpTraphostsCreateReader{formats: a.formats},
@@ -2052,8 +2813,8 @@ func (a *Client) SnmpTraphostsDelete(params *SnmpTraphostsDeleteParams, authInfo
 		ID:                 "snmp_traphosts_delete",
 		Method:             "DELETE",
 		PathPattern:        "/support/snmp/traphosts/{host}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnmpTraphostsDeleteReader{formats: a.formats},
@@ -2079,6 +2840,44 @@ func (a *Client) SnmpTraphostsDelete(params *SnmpTraphostsDeleteParams, authInfo
 }
 
 /*
+SnmpTraphostsDeleteCollection snmp traphosts delete collection API
+*/
+func (a *Client) SnmpTraphostsDeleteCollection(params *SnmpTraphostsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpTraphostsDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSnmpTraphostsDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "snmp_traphosts_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/support/snmp/traphosts",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SnmpTraphostsDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SnmpTraphostsDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SnmpTraphostsDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	SnmpTraphostsGet Retrieves the details of an SNMP traphost along with the SNMP user configured for that traphost.
 
 ### Learn more
@@ -2093,8 +2892,8 @@ func (a *Client) SnmpTraphostsGet(params *SnmpTraphostsGetParams, authInfo runti
 		ID:                 "snmp_traphosts_get",
 		Method:             "GET",
 		PathPattern:        "/support/snmp/traphosts/{host}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnmpTraphostsGetReader{formats: a.formats},
@@ -2137,8 +2936,8 @@ func (a *Client) SnmpUsersCollectionGet(params *SnmpUsersCollectionGetParams, au
 		ID:                 "snmp_users_collection_get",
 		Method:             "GET",
 		PathPattern:        "/support/snmp/users",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnmpUsersCollectionGetReader{formats: a.formats},
@@ -2193,8 +2992,8 @@ func (a *Client) SnmpUsersCreate(params *SnmpUsersCreateParams, authInfo runtime
 		ID:                 "snmp_users_create",
 		Method:             "POST",
 		PathPattern:        "/support/snmp/users",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnmpUsersCreateReader{formats: a.formats},
@@ -2237,8 +3036,8 @@ func (a *Client) SnmpUsersDelete(params *SnmpUsersDeleteParams, authInfo runtime
 		ID:                 "snmp_users_delete",
 		Method:             "DELETE",
 		PathPattern:        "/support/snmp/users/{engine_id}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnmpUsersDeleteReader{formats: a.formats},
@@ -2264,6 +3063,44 @@ func (a *Client) SnmpUsersDelete(params *SnmpUsersDeleteParams, authInfo runtime
 }
 
 /*
+SnmpUsersDeleteCollection snmp users delete collection API
+*/
+func (a *Client) SnmpUsersDeleteCollection(params *SnmpUsersDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpUsersDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSnmpUsersDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "snmp_users_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/support/snmp/users",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SnmpUsersDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SnmpUsersDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SnmpUsersDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	SnmpUsersGet Retrieves the details of an SNMP user. The engine ID can be the engine ID of the administrative SVM or a data SVM. It can also be the SNMPv3 engine ID of a remote switch.
 
 ### Related ONTAP commands
@@ -2281,8 +3118,8 @@ func (a *Client) SnmpUsersGet(params *SnmpUsersGetParams, authInfo runtime.Clien
 		ID:                 "snmp_users_get",
 		Method:             "GET",
 		PathPattern:        "/support/snmp/users/{engine_id}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnmpUsersGetReader{formats: a.formats},
@@ -2326,8 +3163,8 @@ func (a *Client) SnmpUsersModify(params *SnmpUsersModifyParams, authInfo runtime
 		ID:                 "snmp_users_modify",
 		Method:             "PATCH",
 		PathPattern:        "/support/snmp/users/{engine_id}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SnmpUsersModifyReader{formats: a.formats},
@@ -2349,6 +3186,44 @@ func (a *Client) SnmpUsersModify(params *SnmpUsersModifyParams, authInfo runtime
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SnmpUsersModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SnmpUsersModifyCollection snmp users modify collection API
+*/
+func (a *Client) SnmpUsersModifyCollection(params *SnmpUsersModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpUsersModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSnmpUsersModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "snmp_users_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/support/snmp/users",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SnmpUsersModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SnmpUsersModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SnmpUsersModifyCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

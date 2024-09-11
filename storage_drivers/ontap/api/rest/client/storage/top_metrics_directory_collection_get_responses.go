@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *TopMetricsDirectoryCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the top metrics directory collection get o k response
+func (o *TopMetricsDirectoryCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *TopMetricsDirectoryCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/directories][%d] topMetricsDirectoryCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/directories][%d] topMetricsDirectoryCollectionGetOK %s", 200, payload)
 }
 
 func (o *TopMetricsDirectoryCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/directories][%d] topMetricsDirectoryCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/directories][%d] topMetricsDirectoryCollectionGetOK %s", 200, payload)
 }
 
 func (o *TopMetricsDirectoryCollectionGetOK) GetPayload() *models.TopMetricsDirectoryResponse {
@@ -118,21 +126,27 @@ func NewTopMetricsDirectoryCollectionGetDefault(code int) *TopMetricsDirectoryCo
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 124518415 | Failed to get the volume activity tracking report on volume volume.name in Vserver svm.name. Reason:<Reason for failure>. |
+| 124518405 | Volume activity tracking is not supported on volumes that contain LUNs. |
+| 124518407 | Volume activity tracking is not supported on FlexCache volumes. |
+| 124518408 | Volume activity tracking is not supported on audit staging volumes. |
+| 124518409 | Volume activity tracking is not supported on object store server volumes. |
+| 124518410 | Volume activity tracking is not supported on SnapMirror destination volumes. |
+| 124518411 | Enabling or disabling volume activity tracking is not supported on individual FlexGroup constituents. |
+| 124518412 | Volume activity tracking is not supported on SnapLock volumes. |
+| 124518414 | Volume activity tracking is not supported on volumes that contain NVMe namespaces. |
+| 124518415 | Failed to get the volume activity tracking report on volume volume.name in SVM svm.name. |
 | 124518416 | Internal error. Volume activity tracking report timed out for volume volume.name in SVM svm.name. |
 | 124518417 | Volume wildcard queries are not supported for activity tracking reports. |
-| 124518418 | The activity tracking report for volume volume.name in Vserver svm.name returned zero records. Check whether the volume has read/write traffic. Refer to the REST API documentation for more information on why there might be no records. |
-| 124519410 | The large directory report for volume volume.name in Vserver svm.name is not available because the file system analytics database version doesn\'t support this report. Use the \"volume analytics off\" command to disable analytics on the volume, then use the \"volume analytics on\" command to re-enable analytics. |
+| 124518418 | The activity tracking report for volume volume.name in SVM svm.name returned zero records. Check whether the volume has read/write traffic. Refer to the REST API documentation for more information. |
+| 124518422 | Volume activity tracking is not supported on All SAN Array clusters. |
+| 124519410 | The large directory report for volume volume.name in SVM svm.name is not available because the file system analytics database version doesn't support this report. |
+| 124519411 | Volume activity tracking is not enabled on the volume. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type TopMetricsDirectoryCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the top metrics directory collection get default response
-func (o *TopMetricsDirectoryCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this top metrics directory collection get default response has a 2xx status code
@@ -160,12 +174,19 @@ func (o *TopMetricsDirectoryCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the top metrics directory collection get default response
+func (o *TopMetricsDirectoryCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *TopMetricsDirectoryCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/directories][%d] top_metrics_directory_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/directories][%d] top_metrics_directory_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *TopMetricsDirectoryCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/directories][%d] top_metrics_directory_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/directories][%d] top_metrics_directory_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *TopMetricsDirectoryCollectionGetDefault) GetPayload() *models.ErrorResponse {

@@ -31,6 +31,7 @@ type SnaplockLog struct {
 	LogVolume *SnaplockLogVolume `json:"log_volume,omitempty"`
 
 	// snaplock log inline log files
+	// Read Only: true
 	SnaplockLogInlineLogFiles []*SnaplockLogFile `json:"log_files,omitempty"`
 
 	// svm
@@ -233,6 +234,10 @@ func (m *SnaplockLog) contextValidateLogVolume(ctx context.Context, formats strf
 
 func (m *SnaplockLog) contextValidateSnaplockLogInlineLogFiles(ctx context.Context, formats strfmt.Registry) error {
 
+	if err := validate.ReadOnly(ctx, "log_files", "body", []*SnaplockLogFile(m.SnaplockLogInlineLogFiles)); err != nil {
+		return err
+	}
+
 	for i := 0; i < len(m.SnaplockLogInlineLogFiles); i++ {
 
 		if m.SnaplockLogInlineLogFiles[i] != nil {
@@ -378,25 +383,9 @@ type SnaplockLogInlineLogArchive struct {
 	// Archive the specified SnapLock log file for the given base_name, and create a new log file. If base_name is not mentioned, archive all log files.
 	Archive *bool `json:"archive,omitempty"`
 
-	// Base name of log file
-	// Enum: [legal_hold privileged_delete system]
+	// Base name of log archive
+	// Enum: ["legal_hold","privileged_delete","system"]
 	BaseName *string `json:"base_name,omitempty"`
-
-	// Expiry time of the log file in date-time format. Value '9999-12-31T00:00:00Z' indicates infinite expiry time.
-	// Example: 2058-06-04T19:00:00Z
-	// Read Only: true
-	// Format: date-time
-	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
-
-	// Absolute path of the log file in the volume
-	// Example: /snaplock_log/system_logs/20180822_005947_GMT-present
-	// Read Only: true
-	Path *string `json:"path,omitempty"`
-
-	// Size of the log file in bytes
-	// Example: 20000
-	// Read Only: true
-	Size *int64 `json:"size,omitempty"`
 }
 
 // Validate validates this snaplock log inline log archive
@@ -408,10 +397,6 @@ func (m *SnaplockLogInlineLogArchive) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateBaseName(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateExpiryTime(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -504,35 +489,11 @@ func (m *SnaplockLogInlineLogArchive) validateBaseName(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *SnaplockLogInlineLogArchive) validateExpiryTime(formats strfmt.Registry) error {
-	if swag.IsZero(m.ExpiryTime) { // not required
-		return nil
-	}
-
-	if err := validate.FormatOf("log_archive"+"."+"expiry_time", "body", "date-time", m.ExpiryTime.String(), formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // ContextValidate validate this snaplock log inline log archive based on the context it is used
 func (m *SnaplockLogInlineLogArchive) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateExpiryTime(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidatePath(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateSize(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -551,33 +512,6 @@ func (m *SnaplockLogInlineLogArchive) contextValidateLinks(ctx context.Context, 
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *SnaplockLogInlineLogArchive) contextValidateExpiryTime(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "log_archive"+"."+"expiry_time", "body", m.ExpiryTime); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *SnaplockLogInlineLogArchive) contextValidatePath(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "log_archive"+"."+"path", "body", m.Path); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *SnaplockLogInlineLogArchive) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "log_archive"+"."+"size", "body", m.Size); err != nil {
-		return err
 	}
 
 	return nil
@@ -687,7 +621,7 @@ func (m *SnaplockLogInlineLogArchiveInlineLinks) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// SnaplockLogInlineSvm snaplock log inline svm
+// SnaplockLogInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model snaplock_log_inline_svm
 type SnaplockLogInlineSvm struct {
@@ -695,12 +629,12 @@ type SnaplockLogInlineSvm struct {
 	// links
 	Links *SnaplockLogInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

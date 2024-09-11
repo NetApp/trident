@@ -15,7 +15,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// NvmeDhHmacChapAuthentication A container for properties of NVMe in-band authentication with the DH-HMAC-CHAP protocol.
+// NvmeDhHmacChapAuthentication A container for the configuration of NVMe in-band authentication using the DH-HMAC-CHAP protocol for a host.
 //
 // swagger:model nvme_dh_hmac_chap_authentication
 type NvmeDhHmacChapAuthentication struct {
@@ -28,12 +28,12 @@ type NvmeDhHmacChapAuthentication struct {
 
 	// The Diffie-Hellman group size for NVMe in-band authentication. When property `host_secret_key` is provided, this property defaults to `2048_bit`. When supplied, the property `host_secret_key` must also be supplied. Optional in POST.
 	//
-	// Enum: [none 2048_bit 3072_bit 4096_bit 6144_bit 8192_bit]
+	// Enum: ["none","2048_bit","3072_bit","4096_bit","6144_bit","8192_bit"]
 	GroupSize *string `json:"group_size,omitempty"`
 
 	// The hash function for NVMe in-band authentication. When property `host_secret_key` is provided, this property defaults to `sha_256`. When supplied, the property `host_secret_key` must also be supplied. Optional in POST.
 	//
-	// Enum: [sha_256 sha_512]
+	// Enum: ["sha_256","sha_512"]
 	HashFunction *string `json:"hash_function,omitempty"`
 
 	// The host secret for NVMe in-band authentication. The value of this property is used by the NVMe controller to authenticate the NVMe host while establishing a connection. If unset, no authentication is performed by the host or controller. This property must be supplied if any other NVMe in-band authentication properties are supplied. Optional in POST.<br/>
@@ -49,7 +49,7 @@ type NvmeDhHmacChapAuthentication struct {
 	//
 	// Example: bidirectional
 	// Read Only: true
-	// Enum: [none unidirectional bidirectional]
+	// Enum: ["none","unidirectional","bidirectional"]
 	Mode *string `json:"mode,omitempty"`
 }
 

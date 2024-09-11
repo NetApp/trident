@@ -23,14 +23,14 @@ type AutosupportMessage struct {
 	// Destination for the AutoSupport
 	// Example: http
 	// Read Only: true
-	// Enum: [smtp http noteto retransmit]
+	// Enum: ["smtp","http","noteto","retransmit"]
 	Destination *string `json:"destination,omitempty"`
 
 	// error
 	Error *AutosupportMessageInlineError `json:"error,omitempty"`
 
 	// Date and Time of AutoSupport generation in ISO-8601 format
-	// Example: 2019-03-25T17:30:04-04:00
+	// Example: 2019-03-25 21:30:04
 	// Read Only: true
 	// Format: date-time
 	GeneratedOn *strfmt.DateTime `json:"generated_on,omitempty"`
@@ -50,7 +50,7 @@ type AutosupportMessage struct {
 	// State of AutoSupport delivery
 	// Example: sent_successful
 	// Read Only: true
-	// Enum: [initializing collection_failed collection_in_progress queued transmitting sent_successful ignore re_queued transmission_failed ondemand_ignore cancelled]
+	// Enum: ["initializing","collection_failed","collection_in_progress","queued","transmitting","sent_successful","ignore","re_queued","transmission_failed","ondemand_ignore","cancelled"]
 	State *string `json:"state,omitempty"`
 
 	// Subject line for the AutoSupport
@@ -60,11 +60,11 @@ type AutosupportMessage struct {
 
 	// Type of AutoSupport collection to issue
 	// Example: test
-	// Enum: [test performance all]
+	// Enum: ["test","performance","all"]
 	Type *string `json:"type,omitempty"`
 
 	// Alternate destination for the AutoSupport
-	// Example: http://1.2.3.4/delivery_uri
+	// Example: https://1.2.3.4/delivery_uri
 	// Format: uri
 	URI *strfmt.URI `json:"uri,omitempty"`
 }

@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *LunMapReportingNodeDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the lun map reporting node delete o k response
+func (o *LunMapReportingNodeDeleteOK) Code() int {
+	return 200
+}
+
 func (o *LunMapReportingNodeDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes/{uuid}][%d] lunMapReportingNodeDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes/{uuid}][%d] lunMapReportingNodeDeleteOK", 200)
 }
 
 func (o *LunMapReportingNodeDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes/{uuid}][%d] lunMapReportingNodeDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes/{uuid}][%d] lunMapReportingNodeDeleteOK", 200)
 }
 
 func (o *LunMapReportingNodeDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -110,16 +116,12 @@ func NewLunMapReportingNodeDeleteDefault(code int) *LunMapReportingNodeDeleteDef
 | 5374875 | The specified LUN does not exist or is not accessible to the caller. |
 | 5374878 | The specified initiator group does not exist, is not accessible to the caller, or is not in the same SVM as the specified LUN. |
 | 5374922 | The specified LUN map does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type LunMapReportingNodeDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the lun map reporting node delete default response
-func (o *LunMapReportingNodeDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this lun map reporting node delete default response has a 2xx status code
@@ -147,12 +149,19 @@ func (o *LunMapReportingNodeDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the lun map reporting node delete default response
+func (o *LunMapReportingNodeDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LunMapReportingNodeDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes/{uuid}][%d] lun_map_reporting_node_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes/{uuid}][%d] lun_map_reporting_node_delete default %s", o._statusCode, payload)
 }
 
 func (o *LunMapReportingNodeDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes/{uuid}][%d] lun_map_reporting_node_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes/{uuid}][%d] lun_map_reporting_node_delete default %s", o._statusCode, payload)
 }
 
 func (o *LunMapReportingNodeDeleteDefault) GetPayload() *models.ErrorResponse {

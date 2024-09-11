@@ -6,10 +6,14 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
+
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
 
 // IPSubnetModifyReader is a Reader for the IPSubnetModify structure.
@@ -76,12 +80,17 @@ func (o *IPSubnetModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ip subnet modify o k response
+func (o *IPSubnetModifyOK) Code() int {
+	return 200
+}
+
 func (o *IPSubnetModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /network/ip/subnets/{uuid}][%d] ipSubnetModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/ip/subnets/{uuid}][%d] ipSubnetModifyOK", 200)
 }
 
 func (o *IPSubnetModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /network/ip/subnets/{uuid}][%d] ipSubnetModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/ip/subnets/{uuid}][%d] ipSubnetModifyOK", 200)
 }
 
 func (o *IPSubnetModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -111,21 +120,24 @@ ONTAP Error Response Codes
 | 1377662 | The IP range address is not within the subnet in IPspace. |
 | 1377663 | The specified IP address range of subnet in IPspace contains an address already in use by a LIF. |
 | 1377664 | The specified IP address range of subnet in IPspace contains an address already in use by the Service Processor. |
+| 1377669 | The specified gateway address exists in a configured range. |
 | 1377673 | The addresses provided must have the same address family. |
+| 1377674 | Modifying the netmask is not supported because the subnet has one or more interfaces associated with it. |
+| 1377675 | The netmask of the interface did not match the netmask of the subnet. |
 | 1377681 | Cannot update LIF associations for LIF. The broadcast domain of the LIF does not match the broadcast domain of the subnet. |
+| 1966269 | IPv4 Addresses must have a prefix length between 1 and 32. |
+| 1966778 | IPv6 addresses must have a prefix length between 1 and 127. |
 | 53282568 | The subnet.address must be specified together with subnet.netmask. |
 | 53282569 | The specified subnet.netmask is not valid. |
 | 53282570 | Each pair of ranges must have ip_ranges.start less than or equal to ip_ranges.end. |
 | 53282571 | The ip_ranges.start and ip_ranges.end fields must have the same number of items. |
 | 53282572 | PATCH partially succeeded with error. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IPSubnetModifyDefault struct {
 	_statusCode int
-}
 
-// Code gets the status code for the ip subnet modify default response
-func (o *IPSubnetModifyDefault) Code() int {
-	return o._statusCode
+	Payload *models.ErrorResponse
 }
 
 // IsSuccess returns true when this ip subnet modify default response has a 2xx status code
@@ -153,15 +165,33 @@ func (o *IPSubnetModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ip subnet modify default response
+func (o *IPSubnetModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IPSubnetModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /network/ip/subnets/{uuid}][%d] ip_subnet_modify default ", o._statusCode)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/ip/subnets/{uuid}][%d] ip_subnet_modify default %s", o._statusCode, payload)
 }
 
 func (o *IPSubnetModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /network/ip/subnets/{uuid}][%d] ip_subnet_modify default ", o._statusCode)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/ip/subnets/{uuid}][%d] ip_subnet_modify default %s", o._statusCode, payload)
+}
+
+func (o *IPSubnetModifyDefault) GetPayload() *models.ErrorResponse {
+	return o.Payload
 }
 
 func (o *IPSubnetModifyDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ErrorResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }

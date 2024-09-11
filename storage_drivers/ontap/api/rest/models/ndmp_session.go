@@ -24,7 +24,7 @@ type NdmpSession struct {
 	Links *NdmpSessionInlineLinks `json:"_links,omitempty"`
 
 	// Indicates the NDMP backup engine.
-	// Enum: [dump smtape]
+	// Enum: ["dump","smtape"]
 	BackupEngine *string `json:"backup_engine,omitempty"`
 
 	// Indicates the NDMP client address.
@@ -707,7 +707,7 @@ func (m *NdmpSessionInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NdmpSessionInlineSvm ndmp session inline svm
+// NdmpSessionInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model ndmp_session_inline_svm
 type NdmpSessionInlineSvm struct {
@@ -715,12 +715,12 @@ type NdmpSessionInlineSvm struct {
 	// links
 	Links *NdmpSessionInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

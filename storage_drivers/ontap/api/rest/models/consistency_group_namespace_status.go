@@ -22,7 +22,7 @@ type ConsistencyGroupNamespaceStatus struct {
 
 	// The state of the volume and aggregate that contain the NVMe namespace. Namespaces are only available when their containers are available.
 	//
-	// Enum: [online aggregate_offline volume_offline]
+	// Enum: ["online","aggregate_offline","volume_offline"]
 	ContainerState *string `json:"container_state,omitempty"`
 
 	// Reports if the NVMe namespace is mapped to an NVMe subsystem.<br/>
@@ -37,7 +37,7 @@ type ConsistencyGroupNamespaceStatus struct {
 	// The state of the NVMe namespace. Normal states for a namespace are _online_ and _offline_. Other states indicate errors.
 	//
 	// Example: online
-	// Enum: [nvfail offline online space_error]
+	// Enum: ["nvfail","offline","online","space_error"]
 	State *string `json:"state,omitempty"`
 }
 

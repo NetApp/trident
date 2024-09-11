@@ -25,9 +25,17 @@ type Snmp struct {
 	// Example: true
 	AuthTrapsEnabled *bool `json:"auth_traps_enabled,omitempty"`
 
+	// Specifies the contact person for the SNMP server
+	// Example: support@company.com
+	Contact *string `json:"contact,omitempty"`
+
 	// Specifies whether to enable or disable SNMP.
 	// Example: true
 	Enabled *bool `json:"enabled,omitempty"`
+
+	// Specifies the location of the SNMP server
+	// Example: Building 1
+	Location *string `json:"location,omitempty"`
 
 	// Specifies whether to enable or disable SNMP traps.
 	// Example: true

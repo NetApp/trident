@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NameMappingPositionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the name mapping position get o k response
+func (o *NameMappingPositionGetOK) Code() int {
+	return 200
+}
+
 func (o *NameMappingPositionGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingPositionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingPositionGetOK %s", 200, payload)
 }
 
 func (o *NameMappingPositionGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingPositionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingPositionGetOK %s", 200, payload)
 }
 
 func (o *NameMappingPositionGetOK) GetPayload() *models.NameMapping {
@@ -122,11 +130,6 @@ type NameMappingPositionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the name mapping position get default response
-func (o *NameMappingPositionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this name mapping position get default response has a 2xx status code
 func (o *NameMappingPositionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NameMappingPositionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the name mapping position get default response
+func (o *NameMappingPositionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NameMappingPositionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_position_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_position_get default %s", o._statusCode, payload)
 }
 
 func (o *NameMappingPositionGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_position_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_position_get default %s", o._statusCode, payload)
 }
 
 func (o *NameMappingPositionGetDefault) GetPayload() *models.ErrorResponse {

@@ -38,14 +38,14 @@ type ConsistencyGroupNas struct {
 	Path *string `json:"path,omitempty"`
 
 	// Security style associated with the volume. Valid in POST or PATCH.<br>mixed &dash; Mixed-style security<br>ntfs &dash; NTFS/WIndows-style security<br>unified &dash; Unified-style security, unified UNIX, NFS and CIFS permissions<br>unix &dash; UNIX-style security.
-	// Enum: [mixed ntfs unified unix]
+	// Enum: ["mixed","ntfs","unified","unix"]
 	SecurityStyle *string `json:"security_style,omitempty"`
 
 	// The UNIX user ID of the volume. Valid in POST or PATCH.
 	UID *int64 `json:"uid,omitempty"`
 
 	// UNIX permissions to be viewed as an octal number, consisting of 4 digits derived by adding up bits 4 (read), 2 (write), and 1 (execute). First digit selects the set user ID (4), set group ID (2), and sticky (1) attributes. Second digit selects permission for the owner of the file. Third selects permissions for other users in the same group while the fourth selects permissions for other users not in the group. Valid in POST or PATCH. For security style "mixed" or "unix", the default setting is 0755 in octal (493 in decimal) and for security style "ntfs", the default setting is 0000. In cases where only owner, group, and other permissions are given (as in 755, representing the second, third and fourth digit), the first digit is assumed to be zero.
-	// Example: 755
+	// Example: 493
 	UnixPermissions *int64 `json:"unix_permissions,omitempty"`
 }
 
@@ -389,15 +389,15 @@ type ConsistencyGroupNasInlineExportPolicy struct {
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
+	// Identifier for the export policy.
+	// Read Only: true
+	ID *int64 `json:"id,omitempty"`
+
 	// Name of the export policy.
 	Name *string `json:"name,omitempty"`
 
 	// The set of rules that govern the export policy.
 	Rules []*ExportRules `json:"rules,omitempty"`
-
-	// Identifier for the export policy.
-	// Read Only: true
-	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this consistency group nas inline export policy
@@ -467,11 +467,11 @@ func (m *ConsistencyGroupNasInlineExportPolicy) ContextValidate(ctx context.Cont
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRules(ctx, formats); err != nil {
+	if err := m.contextValidateID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateUUID(ctx, formats); err != nil {
+	if err := m.contextValidateRules(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -495,6 +495,15 @@ func (m *ConsistencyGroupNasInlineExportPolicy) contextValidateLinks(ctx context
 	return nil
 }
 
+func (m *ConsistencyGroupNasInlineExportPolicy) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "export_policy"+"."+"id", "body", m.ID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *ConsistencyGroupNasInlineExportPolicy) contextValidateRules(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Rules); i++ {
@@ -508,15 +517,6 @@ func (m *ConsistencyGroupNasInlineExportPolicy) contextValidateRules(ctx context
 			}
 		}
 
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupNasInlineExportPolicy) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "export_policy"+"."+"uuid", "body", m.UUID); err != nil {
-		return err
 	}
 
 	return nil

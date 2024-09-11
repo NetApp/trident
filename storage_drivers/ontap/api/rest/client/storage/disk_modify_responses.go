@@ -6,10 +6,14 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
+
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
 
 // DiskModifyReader is a Reader for the DiskModify structure.
@@ -76,12 +80,17 @@ func (o *DiskModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the disk modify o k response
+func (o *DiskModifyOK) Code() int {
+	return 200
+}
+
 func (o *DiskModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/disks][%d] diskModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/disks][%d] diskModifyOK", 200)
 }
 
 func (o *DiskModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /storage/disks][%d] diskModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/disks][%d] diskModifyOK", 200)
 }
 
 func (o *DiskModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -104,20 +113,25 @@ func NewDiskModifyDefault(code int) *DiskModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 720951 | Unable to unfail the disk. |
+| 720968 | Quiet mode is applicable only when disk unfail is sparing the drive. |
+| 721029 | Failed to assign disks to a pool. |
 | 721066 | Node is outside the list of controllers for disk. |
+| 721084 | An invalid pool name was specified. |
+| 721085 | The node name was not specified. |
+| 721093 | Operation not supported on this platform. |
+| 721095 | Failed to sanitize the spare disk (non-cryptographically). |
 | 1441795 | Setting the data key ID to the manufacture secure ID is not allowed when in FIPS-compliance mode. |
+| 1441825 | The system does not support maintenance of the controls of encrypting disks. |
 | 14155777 | The operation failed on one or more disks. |
 | 14155778 | No self-encrypting disks were specified. |
 | 14155779 | Status from a node shows that a conflicting operation has occurred. Some disk controls might have changed. |
 | 14155780 | Could not retrieve the required key ID from the key manager. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type DiskModifyDefault struct {
 	_statusCode int
-}
 
-// Code gets the status code for the disk modify default response
-func (o *DiskModifyDefault) Code() int {
-	return o._statusCode
+	Payload *models.ErrorResponse
 }
 
 // IsSuccess returns true when this disk modify default response has a 2xx status code
@@ -145,15 +159,33 @@ func (o *DiskModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the disk modify default response
+func (o *DiskModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *DiskModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/disks][%d] disk_modify default ", o._statusCode)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/disks][%d] disk_modify default %s", o._statusCode, payload)
 }
 
 func (o *DiskModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /storage/disks][%d] disk_modify default ", o._statusCode)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/disks][%d] disk_modify default %s", o._statusCode, payload)
+}
+
+func (o *DiskModifyDefault) GetPayload() *models.ErrorResponse {
+	return o.Payload
 }
 
 func (o *DiskModifyDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ErrorResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }

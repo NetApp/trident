@@ -352,7 +352,7 @@ func (m *NetworkRoute) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkRouteInlineInterfacesInlineArrayItem network route inline interfaces inline array item
+// NetworkRouteInlineInterfacesInlineArrayItem A network interface. Either UUID or name may be supplied on input.
 //
 // swagger:model network_route_inline_interfaces_inline_array_item
 type NetworkRouteInlineInterfacesInlineArrayItem struct {
@@ -671,7 +671,7 @@ type NetworkRouteInlineIpspace struct {
 	Links *NetworkRouteInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
-	// Example: exchange
+	// Example: Default
 	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
@@ -928,7 +928,7 @@ func (m *NetworkRouteInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkRouteInlineSvm network route inline svm
+// NetworkRouteInlineSvm Applies only to SVM-scoped objects. Either the UUID or name must be supplied.
 //
 // swagger:model network_route_inline_svm
 type NetworkRouteInlineSvm struct {
@@ -936,12 +936,12 @@ type NetworkRouteInlineSvm struct {
 	// links
 	Links *NetworkRouteInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

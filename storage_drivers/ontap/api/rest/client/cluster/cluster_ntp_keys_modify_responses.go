@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ClusterNtpKeysModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cluster ntp keys modify o k response
+func (o *ClusterNtpKeysModifyOK) Code() int {
+	return 200
+}
+
 func (o *ClusterNtpKeysModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /cluster/ntp/keys/{id}][%d] clusterNtpKeysModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /cluster/ntp/keys/{id}][%d] clusterNtpKeysModifyOK", 200)
 }
 
 func (o *ClusterNtpKeysModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /cluster/ntp/keys/{id}][%d] clusterNtpKeysModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /cluster/ntp/keys/{id}][%d] clusterNtpKeysModifyOK", 200)
 }
 
 func (o *ClusterNtpKeysModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,16 +113,12 @@ func NewClusterNtpKeysModifyDefault(code int) *ClusterNtpKeysModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 2097187 | An invalid SHA1 key was provided. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ClusterNtpKeysModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cluster ntp keys modify default response
-func (o *ClusterNtpKeysModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cluster ntp keys modify default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *ClusterNtpKeysModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster ntp keys modify default response
+func (o *ClusterNtpKeysModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterNtpKeysModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /cluster/ntp/keys/{id}][%d] cluster_ntp_keys_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/ntp/keys/{id}][%d] cluster_ntp_keys_modify default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNtpKeysModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /cluster/ntp/keys/{id}][%d] cluster_ntp_keys_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/ntp/keys/{id}][%d] cluster_ntp_keys_modify default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNtpKeysModifyDefault) GetPayload() *models.ErrorResponse {

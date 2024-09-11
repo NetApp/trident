@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *LocalCifsGroupMembersDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the local cifs group members delete o k response
+func (o *LocalCifsGroupMembersDeleteOK) Code() int {
+	return 200
+}
+
 func (o *LocalCifsGroupMembersDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] localCifsGroupMembersDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] localCifsGroupMembersDeleteOK", 200)
 }
 
 func (o *LocalCifsGroupMembersDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] localCifsGroupMembersDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] localCifsGroupMembersDeleteOK", 200)
 }
 
 func (o *LocalCifsGroupMembersDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type LocalCifsGroupMembersDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the local cifs group members delete default response
-func (o *LocalCifsGroupMembersDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this local cifs group members delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *LocalCifsGroupMembersDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the local cifs group members delete default response
+func (o *LocalCifsGroupMembersDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LocalCifsGroupMembersDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] local_cifs_group_members_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] local_cifs_group_members_delete default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsGroupMembersDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] local_cifs_group_members_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] local_cifs_group_members_delete default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsGroupMembersDeleteDefault) GetPayload() *models.ErrorResponse {

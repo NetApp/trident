@@ -33,7 +33,7 @@ type MetroclusterDiagConnection struct {
 
 	// Result of the diagnostic operation on this component.
 	// Read Only: true
-	// Enum: [ok warning not_run not_applicable]
+	// Enum: ["ok","warning","not_run","not_applicable"]
 	Result *string `json:"result,omitempty"`
 
 	// source address
@@ -42,7 +42,7 @@ type MetroclusterDiagConnection struct {
 
 	// state
 	// Read Only: true
-	// Enum: [disconnected completed pinging_partner_nodes enabling_ip_ports connecting_to_storage disconnecting_from_storage disabling_ip_ports configuring_ip_addresses updating_node_roles connecting_to_mediator disconnecting_from_mediator]
+	// Enum: ["disconnected","completed","pinging_partner_nodes","enabling_ip_ports","connecting_to_storage","disconnecting_from_storage","disabling_ip_ports","configuring_ip_addresses","updating_node_roles","connecting_to_mediator","disconnecting_from_mediator"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -427,7 +427,7 @@ type MetroclusterDiagConnectionInlinePartner struct {
 	Node *MetroclusterDiagConnectionInlinePartnerInlineNode `json:"node,omitempty"`
 
 	// type
-	// Enum: [ha dr aux]
+	// Enum: ["ha","dr","aux"]
 	Type *string `json:"type,omitempty"`
 }
 

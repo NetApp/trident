@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *KerberosInterfaceGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the kerberos interface get o k response
+func (o *KerberosInterfaceGetOK) Code() int {
+	return 200
+}
+
 func (o *KerberosInterfaceGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberosInterfaceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberosInterfaceGetOK %s", 200, payload)
 }
 
 func (o *KerberosInterfaceGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberosInterfaceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberosInterfaceGetOK %s", 200, payload)
 }
 
 func (o *KerberosInterfaceGetOK) GetPayload() *models.KerberosInterface {
@@ -122,11 +130,6 @@ type KerberosInterfaceGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the kerberos interface get default response
-func (o *KerberosInterfaceGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this kerberos interface get default response has a 2xx status code
 func (o *KerberosInterfaceGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *KerberosInterfaceGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the kerberos interface get default response
+func (o *KerberosInterfaceGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *KerberosInterfaceGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberos_interface_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberos_interface_get default %s", o._statusCode, payload)
 }
 
 func (o *KerberosInterfaceGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberos_interface_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberos_interface_get default %s", o._statusCode, payload)
 }
 
 func (o *KerberosInterfaceGetDefault) GetPayload() *models.ErrorResponse {

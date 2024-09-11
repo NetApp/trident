@@ -31,6 +31,7 @@ type ExportPolicy struct {
 	ID *int64 `json:"id,omitempty"`
 
 	// Export Policy Name
+	// Max Length: 256
 	Name *string `json:"name,omitempty"`
 
 	// svm
@@ -46,6 +47,10 @@ func (m *ExportPolicy) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateExportPolicyInlineRules(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -95,6 +100,18 @@ func (m *ExportPolicy) validateExportPolicyInlineRules(formats strfmt.Registry) 
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *ExportPolicy) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.MaxLength("name", "body", *m.Name, 256); err != nil {
+		return err
 	}
 
 	return nil
@@ -302,7 +319,7 @@ func (m *ExportPolicyInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ExportPolicyInlineSvm export policy inline svm
+// ExportPolicyInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model export_policy_inline_svm
 type ExportPolicyInlineSvm struct {
@@ -310,12 +327,12 @@ type ExportPolicyInlineSvm struct {
 	// links
 	Links *ExportPolicyInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

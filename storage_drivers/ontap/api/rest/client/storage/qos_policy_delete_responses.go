@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,8 +24,8 @@ type QosPolicyDeleteReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *QosPolicyDeleteReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-	case 202:
-		result := NewQosPolicyDeleteAccepted()
+	case 200:
+		result := NewQosPolicyDeleteOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -41,65 +42,58 @@ func (o *QosPolicyDeleteReader) ReadResponse(response runtime.ClientResponse, co
 	}
 }
 
-// NewQosPolicyDeleteAccepted creates a QosPolicyDeleteAccepted with default headers values
-func NewQosPolicyDeleteAccepted() *QosPolicyDeleteAccepted {
-	return &QosPolicyDeleteAccepted{}
+// NewQosPolicyDeleteOK creates a QosPolicyDeleteOK with default headers values
+func NewQosPolicyDeleteOK() *QosPolicyDeleteOK {
+	return &QosPolicyDeleteOK{}
 }
 
 /*
-QosPolicyDeleteAccepted describes a response with status code 202, with default header values.
+QosPolicyDeleteOK describes a response with status code 200, with default header values.
 
-Accepted
+OK
 */
-type QosPolicyDeleteAccepted struct {
-	Payload *models.JobLinkResponse
+type QosPolicyDeleteOK struct {
 }
 
-// IsSuccess returns true when this qos policy delete accepted response has a 2xx status code
-func (o *QosPolicyDeleteAccepted) IsSuccess() bool {
+// IsSuccess returns true when this qos policy delete o k response has a 2xx status code
+func (o *QosPolicyDeleteOK) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this qos policy delete accepted response has a 3xx status code
-func (o *QosPolicyDeleteAccepted) IsRedirect() bool {
+// IsRedirect returns true when this qos policy delete o k response has a 3xx status code
+func (o *QosPolicyDeleteOK) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this qos policy delete accepted response has a 4xx status code
-func (o *QosPolicyDeleteAccepted) IsClientError() bool {
+// IsClientError returns true when this qos policy delete o k response has a 4xx status code
+func (o *QosPolicyDeleteOK) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this qos policy delete accepted response has a 5xx status code
-func (o *QosPolicyDeleteAccepted) IsServerError() bool {
+// IsServerError returns true when this qos policy delete o k response has a 5xx status code
+func (o *QosPolicyDeleteOK) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this qos policy delete accepted response a status code equal to that given
-func (o *QosPolicyDeleteAccepted) IsCode(code int) bool {
-	return code == 202
+// IsCode returns true when this qos policy delete o k response a status code equal to that given
+func (o *QosPolicyDeleteOK) IsCode(code int) bool {
+	return code == 200
 }
 
-func (o *QosPolicyDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /storage/qos/policies/{uuid}][%d] qosPolicyDeleteAccepted  %+v", 202, o.Payload)
+// Code gets the status code for the qos policy delete o k response
+func (o *QosPolicyDeleteOK) Code() int {
+	return 200
 }
 
-func (o *QosPolicyDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /storage/qos/policies/{uuid}][%d] qosPolicyDeleteAccepted  %+v", 202, o.Payload)
+func (o *QosPolicyDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /storage/qos/policies/{uuid}][%d] qosPolicyDeleteOK", 200)
 }
 
-func (o *QosPolicyDeleteAccepted) GetPayload() *models.JobLinkResponse {
-	return o.Payload
+func (o *QosPolicyDeleteOK) String() string {
+	return fmt.Sprintf("[DELETE /storage/qos/policies/{uuid}][%d] qosPolicyDeleteOK", 200)
 }
 
-func (o *QosPolicyDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	o.Payload = new(models.JobLinkResponse)
-
-	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
-		return err
-	}
+func (o *QosPolicyDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	return nil
 }
@@ -120,11 +114,6 @@ type QosPolicyDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the qos policy delete default response
-func (o *QosPolicyDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this qos policy delete default response has a 2xx status code
@@ -152,12 +141,19 @@ func (o *QosPolicyDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the qos policy delete default response
+func (o *QosPolicyDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *QosPolicyDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /storage/qos/policies/{uuid}][%d] qos_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/qos/policies/{uuid}][%d] qos_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *QosPolicyDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /storage/qos/policies/{uuid}][%d] qos_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/qos/policies/{uuid}][%d] qos_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *QosPolicyDeleteDefault) GetPayload() *models.ErrorResponse {

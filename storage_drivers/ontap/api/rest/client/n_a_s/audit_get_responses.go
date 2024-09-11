@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *AuditGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the audit get o k response
+func (o *AuditGetOK) Code() int {
+	return 200
+}
+
 func (o *AuditGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/audit/{svm.uuid}][%d] auditGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/audit/{svm.uuid}][%d] auditGetOK %s", 200, payload)
 }
 
 func (o *AuditGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/audit/{svm.uuid}][%d] auditGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/audit/{svm.uuid}][%d] auditGetOK %s", 200, payload)
 }
 
 func (o *AuditGetOK) GetPayload() *models.Audit {
@@ -122,11 +130,6 @@ type AuditGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the audit get default response
-func (o *AuditGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this audit get default response has a 2xx status code
 func (o *AuditGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *AuditGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the audit get default response
+func (o *AuditGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AuditGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/audit/{svm.uuid}][%d] audit_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/audit/{svm.uuid}][%d] audit_get default %s", o._statusCode, payload)
 }
 
 func (o *AuditGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/audit/{svm.uuid}][%d] audit_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/audit/{svm.uuid}][%d] audit_get default %s", o._statusCode, payload)
 }
 
 func (o *AuditGetDefault) GetPayload() *models.ErrorResponse {

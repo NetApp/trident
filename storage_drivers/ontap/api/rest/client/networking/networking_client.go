@@ -6,8 +6,6 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"fmt"
-
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 )
@@ -40,15 +38,21 @@ type ClientService interface {
 
 	FcInterfaceDelete(params *FcInterfaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcInterfaceDeleteOK, error)
 
+	FcInterfaceDeleteCollection(params *FcInterfaceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcInterfaceDeleteCollectionOK, error)
+
 	FcInterfaceGet(params *FcInterfaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcInterfaceGetOK, error)
 
 	FcInterfaceModify(params *FcInterfaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcInterfaceModifyOK, error)
+
+	FcInterfaceModifyCollection(params *FcInterfaceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcInterfaceModifyCollectionOK, error)
 
 	FcPortCollectionGet(params *FcPortCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcPortCollectionGetOK, error)
 
 	FcPortGet(params *FcPortGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcPortGetOK, error)
 
 	FcPortModify(params *FcPortModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcPortModifyOK, error)
+
+	FcPortModifyCollection(params *FcPortModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcPortModifyCollectionOK, error)
 
 	FcSwitchCollectionGet(params *FcSwitchCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcSwitchCollectionGetOK, error)
 
@@ -64,17 +68,25 @@ type ClientService interface {
 
 	HTTPProxyDelete(params *HTTPProxyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyDeleteOK, error)
 
+	HTTPProxyDeleteCollection(params *HTTPProxyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyDeleteCollectionOK, error)
+
 	HTTPProxyGet(params *HTTPProxyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyGetOK, error)
 
 	HTTPProxyModify(params *HTTPProxyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyModifyOK, error)
 
+	HTTPProxyModifyCollection(params *HTTPProxyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyModifyCollectionOK, error)
+
 	InterfacesMetricsCollectionGet(params *InterfacesMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*InterfacesMetricsCollectionGetOK, error)
 
-	IPServicePolicyCreate(params *IPServicePolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyCreateOK, error)
+	IPServicePolicyCreate(params *IPServicePolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyCreateOK, *IPServicePolicyCreateCreated, error)
 
 	IPServicePolicyDelete(params *IPServicePolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyDeleteOK, error)
 
+	IPServicePolicyDeleteCollection(params *IPServicePolicyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyDeleteCollectionOK, error)
+
 	IPServicePolicyModify(params *IPServicePolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyModifyOK, error)
+
+	IPServicePolicyModifyCollection(params *IPServicePolicyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyModifyCollectionOK, error)
 
 	IPSubnetCollectionGet(params *IPSubnetCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetCollectionGetOK, error)
 
@@ -82,15 +94,23 @@ type ClientService interface {
 
 	IPSubnetDelete(params *IPSubnetDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetDeleteOK, error)
 
+	IPSubnetDeleteCollection(params *IPSubnetDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetDeleteCollectionOK, error)
+
 	IPSubnetGet(params *IPSubnetGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetGetOK, error)
 
 	IPSubnetModify(params *IPSubnetModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetModifyOK, error)
 
+	IPSubnetModifyCollection(params *IPSubnetModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetModifyCollectionOK, error)
+
 	IpspaceDelete(params *IpspaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspaceDeleteOK, error)
+
+	IpspaceDeleteCollection(params *IpspaceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspaceDeleteCollectionOK, error)
 
 	IpspaceGet(params *IpspaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspaceGetOK, error)
 
 	IpspaceModify(params *IpspaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspaceModifyOK, error)
+
+	IpspaceModifyCollection(params *IpspaceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspaceModifyCollectionOK, error)
 
 	IpspacesCreate(params *IpspacesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspacesCreateCreated, error)
 
@@ -98,9 +118,13 @@ type ClientService interface {
 
 	NetworkEthernetBroadcastDomainDelete(params *NetworkEthernetBroadcastDomainDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainDeleteOK, error)
 
+	NetworkEthernetBroadcastDomainDeleteCollection(params *NetworkEthernetBroadcastDomainDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainDeleteCollectionOK, error)
+
 	NetworkEthernetBroadcastDomainGet(params *NetworkEthernetBroadcastDomainGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainGetOK, error)
 
 	NetworkEthernetBroadcastDomainModify(params *NetworkEthernetBroadcastDomainModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainModifyOK, error)
+
+	NetworkEthernetBroadcastDomainModifyCollection(params *NetworkEthernetBroadcastDomainModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainModifyCollectionOK, error)
 
 	NetworkEthernetBroadcastDomainsCreate(params *NetworkEthernetBroadcastDomainsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainsCreateCreated, error)
 
@@ -108,9 +132,13 @@ type ClientService interface {
 
 	NetworkEthernetPortDelete(params *NetworkEthernetPortDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortDeleteOK, error)
 
+	NetworkEthernetPortDeleteCollection(params *NetworkEthernetPortDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortDeleteCollectionOK, error)
+
 	NetworkEthernetPortGet(params *NetworkEthernetPortGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortGetOK, error)
 
 	NetworkEthernetPortModify(params *NetworkEthernetPortModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortModifyOK, error)
+
+	NetworkEthernetPortModifyCollection(params *NetworkEthernetPortModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortModifyCollectionOK, error)
 
 	NetworkEthernetPortsCreate(params *NetworkEthernetPortsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortsCreateCreated, error)
 
@@ -118,9 +146,13 @@ type ClientService interface {
 
 	NetworkIPBgpPeerGroupDelete(params *NetworkIPBgpPeerGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupDeleteOK, error)
 
+	NetworkIPBgpPeerGroupDeleteCollection(params *NetworkIPBgpPeerGroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupDeleteCollectionOK, error)
+
 	NetworkIPBgpPeerGroupGet(params *NetworkIPBgpPeerGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupGetOK, error)
 
 	NetworkIPBgpPeerGroupModify(params *NetworkIPBgpPeerGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupModifyOK, error)
+
+	NetworkIPBgpPeerGroupModifyCollection(params *NetworkIPBgpPeerGroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupModifyCollectionOK, error)
 
 	NetworkIPBgpPeerGroupsCreate(params *NetworkIPBgpPeerGroupsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupsCreateCreated, error)
 
@@ -128,15 +160,21 @@ type ClientService interface {
 
 	NetworkIPInterfaceDelete(params *NetworkIPInterfaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfaceDeleteOK, error)
 
+	NetworkIPInterfaceDeleteCollection(params *NetworkIPInterfaceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfaceDeleteCollectionOK, error)
+
 	NetworkIPInterfaceGet(params *NetworkIPInterfaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfaceGetOK, error)
 
 	NetworkIPInterfaceModify(params *NetworkIPInterfaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfaceModifyOK, error)
+
+	NetworkIPInterfaceModifyCollection(params *NetworkIPInterfaceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfaceModifyCollectionOK, error)
 
 	NetworkIPInterfacesCreate(params *NetworkIPInterfacesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfacesCreateCreated, error)
 
 	NetworkIPInterfacesGet(params *NetworkIPInterfacesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfacesGetOK, error)
 
 	NetworkIPRouteDelete(params *NetworkIPRouteDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPRouteDeleteOK, error)
+
+	NetworkIPRouteDeleteCollection(params *NetworkIPRouteDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPRouteDeleteCollectionOK, error)
 
 	NetworkIPRouteGet(params *NetworkIPRouteGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPRouteGetOK, error)
 
@@ -150,19 +188,27 @@ type ClientService interface {
 
 	PerformanceFcInterfaceMetricCollectionGet(params *PerformanceFcInterfaceMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcInterfaceMetricCollectionGetOK, error)
 
+	PerformanceFcInterfaceMetricGet(params *PerformanceFcInterfaceMetricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcInterfaceMetricGetOK, error)
+
 	PerformanceFcPortMetricCollectionGet(params *PerformanceFcPortMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcPortMetricCollectionGetOK, error)
+
+	PerformanceFcPortMetricGet(params *PerformanceFcPortMetricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcPortMetricGetOK, error)
 
 	PortMetricsCollectionGet(params *PortMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortMetricsCollectionGetOK, error)
 
 	SwitchCollectionGet(params *SwitchCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchCollectionGetOK, error)
 
-	SwitchCreate(params *SwitchCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchCreateAccepted, error)
+	SwitchCreate(params *SwitchCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchCreateCreated, *SwitchCreateAccepted, error)
 
 	SwitchDelete(params *SwitchDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchDeleteOK, error)
 
+	SwitchDeleteCollection(params *SwitchDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchDeleteCollectionOK, error)
+
 	SwitchGet(params *SwitchGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchGetOK, error)
 
-	SwitchModify(params *SwitchModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchModifyAccepted, error)
+	SwitchModify(params *SwitchModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchModifyOK, *SwitchModifyAccepted, error)
+
+	SwitchModifyCollection(params *SwitchModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchModifyCollectionOK, *SwitchModifyCollectionAccepted, error)
 
 	SwitchPortCollectionGet(params *SwitchPortCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchPortCollectionGetOK, error)
 
@@ -193,8 +239,8 @@ func (a *Client) FabricCollectionGet(params *FabricCollectionGetParams, authInfo
 		ID:                 "fabric_collection_get",
 		Method:             "GET",
 		PathPattern:        "/network/fc/fabrics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FabricCollectionGetReader{formats: a.formats},
@@ -241,8 +287,8 @@ func (a *Client) FabricGet(params *FabricGetParams, authInfo runtime.ClientAuthI
 		ID:                 "fabric_get",
 		Method:             "GET",
 		PathPattern:        "/network/fc/fabrics/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FabricGetReader{formats: a.formats},
@@ -285,8 +331,8 @@ func (a *Client) FcInterfaceCollectionGet(params *FcInterfaceCollectionGetParams
 		ID:                 "fc_interface_collection_get",
 		Method:             "GET",
 		PathPattern:        "/network/fc/interfaces",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcInterfaceCollectionGetReader{formats: a.formats},
@@ -336,8 +382,8 @@ func (a *Client) FcInterfaceCreate(params *FcInterfaceCreateParams, authInfo run
 		ID:                 "fc_interface_create",
 		Method:             "POST",
 		PathPattern:        "/network/fc/interfaces",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcInterfaceCreateReader{formats: a.formats},
@@ -379,8 +425,8 @@ func (a *Client) FcInterfaceDelete(params *FcInterfaceDeleteParams, authInfo run
 		ID:                 "fc_interface_delete",
 		Method:             "DELETE",
 		PathPattern:        "/network/fc/interfaces/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcInterfaceDeleteReader{formats: a.formats},
@@ -406,6 +452,44 @@ func (a *Client) FcInterfaceDelete(params *FcInterfaceDeleteParams, authInfo run
 }
 
 /*
+FcInterfaceDeleteCollection fc interface delete collection API
+*/
+func (a *Client) FcInterfaceDeleteCollection(params *FcInterfaceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcInterfaceDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFcInterfaceDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fc_interface_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/network/fc/interfaces",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FcInterfaceDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FcInterfaceDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FcInterfaceDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	FcInterfaceGet Retrieves an FC interface.
 
 ### Expensive properties
@@ -427,8 +511,8 @@ func (a *Client) FcInterfaceGet(params *FcInterfaceGetParams, authInfo runtime.C
 		ID:                 "fc_interface_get",
 		Method:             "GET",
 		PathPattern:        "/network/fc/interfaces/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcInterfaceGetReader{formats: a.formats},
@@ -470,8 +554,8 @@ func (a *Client) FcInterfaceModify(params *FcInterfaceModifyParams, authInfo run
 		ID:                 "fc_interface_modify",
 		Method:             "PATCH",
 		PathPattern:        "/network/fc/interfaces/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcInterfaceModifyReader{formats: a.formats},
@@ -497,6 +581,44 @@ func (a *Client) FcInterfaceModify(params *FcInterfaceModifyParams, authInfo run
 }
 
 /*
+FcInterfaceModifyCollection fc interface modify collection API
+*/
+func (a *Client) FcInterfaceModifyCollection(params *FcInterfaceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcInterfaceModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFcInterfaceModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fc_interface_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/network/fc/interfaces",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FcInterfaceModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FcInterfaceModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FcInterfaceModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	FcPortCollectionGet Retrieves FC ports.<br/>
 
 ### Expensive properties
@@ -518,8 +640,8 @@ func (a *Client) FcPortCollectionGet(params *FcPortCollectionGetParams, authInfo
 		ID:                 "fc_port_collection_get",
 		Method:             "GET",
 		PathPattern:        "/network/fc/ports",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcPortCollectionGetReader{formats: a.formats},
@@ -566,8 +688,8 @@ func (a *Client) FcPortGet(params *FcPortGetParams, authInfo runtime.ClientAuthI
 		ID:                 "fc_port_get",
 		Method:             "GET",
 		PathPattern:        "/network/fc/ports/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcPortGetReader{formats: a.formats},
@@ -609,8 +731,8 @@ func (a *Client) FcPortModify(params *FcPortModifyParams, authInfo runtime.Clien
 		ID:                 "fc_port_modify",
 		Method:             "PATCH",
 		PathPattern:        "/network/fc/ports/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcPortModifyReader{formats: a.formats},
@@ -636,6 +758,44 @@ func (a *Client) FcPortModify(params *FcPortModifyParams, authInfo runtime.Clien
 }
 
 /*
+FcPortModifyCollection fc port modify collection API
+*/
+func (a *Client) FcPortModifyCollection(params *FcPortModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcPortModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFcPortModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fc_port_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/network/fc/ports",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FcPortModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FcPortModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FcPortModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	FcSwitchCollectionGet Retrieves the Fibre Channel switches of a Fibre Channel fabric.
 
 ### Expensive properties
@@ -655,8 +815,8 @@ func (a *Client) FcSwitchCollectionGet(params *FcSwitchCollectionGetParams, auth
 		ID:                 "fc_switch_collection_get",
 		Method:             "GET",
 		PathPattern:        "/network/fc/fabrics/{fabric.name}/switches",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcSwitchCollectionGetReader{formats: a.formats},
@@ -701,8 +861,8 @@ func (a *Client) FcSwitchGet(params *FcSwitchGetParams, authInfo runtime.ClientA
 		ID:                 "fc_switch_get",
 		Method:             "GET",
 		PathPattern:        "/network/fc/fabrics/{fabric.name}/switches/{wwn}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcSwitchGetReader{formats: a.formats},
@@ -747,8 +907,8 @@ func (a *Client) FcZoneCollectionGet(params *FcZoneCollectionGetParams, authInfo
 		ID:                 "fc_zone_collection_get",
 		Method:             "GET",
 		PathPattern:        "/network/fc/fabrics/{fabric.name}/zones",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcZoneCollectionGetReader{formats: a.formats},
@@ -793,8 +953,8 @@ func (a *Client) FcZoneGet(params *FcZoneGetParams, authInfo runtime.ClientAuthI
 		ID:                 "fc_zone_get",
 		Method:             "GET",
 		PathPattern:        "/network/fc/fabrics/{fabric.name}/zones/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcZoneGetReader{formats: a.formats},
@@ -834,8 +994,8 @@ func (a *Client) HTTPProxyCollectionGet(params *HTTPProxyCollectionGetParams, au
 		ID:                 "http_proxy_collection_get",
 		Method:             "GET",
 		PathPattern:        "/network/http-proxy",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &HTTPProxyCollectionGetReader{formats: a.formats},
@@ -875,7 +1035,7 @@ Important notes:
   - `svm.uuid` or `svm.name` - Existing SVM in which to create the HTTP proxy.
 
 * Cluster-scoped HTTP proxy
-  - `ipspace.uuid` or `ipspace.name` - Exisitng Cluster IPspace in which to create the HTTP proxy.
+  - `ipspace.uuid` or `ipspace.name` - Existing Cluster IPspace in which to create the HTTP proxy.
 
 * `server` - HTTP proxy server FQDN or IP address.
 * `port` - HTTP proxy server port.
@@ -895,8 +1055,8 @@ func (a *Client) HTTPProxyCreate(params *HTTPProxyCreateParams, authInfo runtime
 		ID:                 "http_proxy_create",
 		Method:             "POST",
 		PathPattern:        "/network/http-proxy",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &HTTPProxyCreateReader{formats: a.formats},
@@ -936,8 +1096,8 @@ func (a *Client) HTTPProxyDelete(params *HTTPProxyDeleteParams, authInfo runtime
 		ID:                 "http_proxy_delete",
 		Method:             "DELETE",
 		PathPattern:        "/network/http-proxy/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &HTTPProxyDeleteReader{formats: a.formats},
@@ -963,6 +1123,44 @@ func (a *Client) HTTPProxyDelete(params *HTTPProxyDeleteParams, authInfo runtime
 }
 
 /*
+HTTPProxyDeleteCollection http proxy delete collection API
+*/
+func (a *Client) HTTPProxyDeleteCollection(params *HTTPProxyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewHTTPProxyDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "http_proxy_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/network/http-proxy",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &HTTPProxyDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*HTTPProxyDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*HTTPProxyDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	HTTPProxyGet Displays the HTTP proxy server, port, and IPspace of the specified SVM or Cluster IPspace.
 
 ### Related ONTAP commands
@@ -977,8 +1175,8 @@ func (a *Client) HTTPProxyGet(params *HTTPProxyGetParams, authInfo runtime.Clien
 		ID:                 "http_proxy_get",
 		Method:             "GET",
 		PathPattern:        "/network/http-proxy/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &HTTPProxyGetReader{formats: a.formats},
@@ -1025,8 +1223,8 @@ func (a *Client) HTTPProxyModify(params *HTTPProxyModifyParams, authInfo runtime
 		ID:                 "http_proxy_modify",
 		Method:             "PATCH",
 		PathPattern:        "/network/http-proxy/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &HTTPProxyModifyReader{formats: a.formats},
@@ -1052,6 +1250,44 @@ func (a *Client) HTTPProxyModify(params *HTTPProxyModifyParams, authInfo runtime
 }
 
 /*
+HTTPProxyModifyCollection http proxy modify collection API
+*/
+func (a *Client) HTTPProxyModifyCollection(params *HTTPProxyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewHTTPProxyModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "http_proxy_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/network/http-proxy",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &HTTPProxyModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*HTTPProxyModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*HTTPProxyModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 InterfacesMetricsCollectionGet Retrieves historical performance metrics for an interface.
 */
 func (a *Client) InterfacesMetricsCollectionGet(params *InterfacesMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*InterfacesMetricsCollectionGetOK, error) {
@@ -1063,8 +1299,8 @@ func (a *Client) InterfacesMetricsCollectionGet(params *InterfacesMetricsCollect
 		ID:                 "interfaces_metrics_collection_get",
 		Method:             "GET",
 		PathPattern:        "/network/ip/interfaces/{uuid}/metrics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &InterfacesMetricsCollectionGetReader{formats: a.formats},
@@ -1090,8 +1326,10 @@ func (a *Client) InterfacesMetricsCollectionGet(params *InterfacesMetricsCollect
 }
 
 /*
-	IPServicePolicyCreate Creates a service policy for network interfaces. <br/>
+	IPServicePolicyCreate Creates a service policy for network interfaces.
 
+### Related ONTAP commands
+* `network interface service-policy create`
 ### Required properties
 * `name` - Name of the service policy to create.
 * `ipspace.name` or `ipspace.uuid`
@@ -1108,7 +1346,7 @@ If not specified in POST, the following default property values are assigned:
   - svm if the svm parameter is specified
   - cluster if the svm parameter is not specified
 */
-func (a *Client) IPServicePolicyCreate(params *IPServicePolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyCreateOK, error) {
+func (a *Client) IPServicePolicyCreate(params *IPServicePolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyCreateOK, *IPServicePolicyCreateCreated, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewIPServicePolicyCreateParams()
@@ -1117,8 +1355,8 @@ func (a *Client) IPServicePolicyCreate(params *IPServicePolicyCreateParams, auth
 		ID:                 "ip_service_policy_create",
 		Method:             "POST",
 		PathPattern:        "/network/ip/service-policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IPServicePolicyCreateReader{formats: a.formats},
@@ -1132,19 +1370,24 @@ func (a *Client) IPServicePolicyCreate(params *IPServicePolicyCreateParams, auth
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*IPServicePolicyCreateOK)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *IPServicePolicyCreateOK:
+		return value, nil, nil
+	case *IPServicePolicyCreateCreated:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*IPServicePolicyCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-IPServicePolicyDelete Deletes a service policy for network interfaces.
+	IPServicePolicyDelete Deletes a service policy for network interfaces.
+
+### Related ONTAP commands
+* `network interface service-policy delete`
 */
 func (a *Client) IPServicePolicyDelete(params *IPServicePolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1155,8 +1398,8 @@ func (a *Client) IPServicePolicyDelete(params *IPServicePolicyDeleteParams, auth
 		ID:                 "ip_service_policy_delete",
 		Method:             "DELETE",
 		PathPattern:        "/network/ip/service-policies/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IPServicePolicyDeleteReader{formats: a.formats},
@@ -1182,7 +1425,51 @@ func (a *Client) IPServicePolicyDelete(params *IPServicePolicyDeleteParams, auth
 }
 
 /*
-IPServicePolicyModify Updates a service policy for network interfaces.
+IPServicePolicyDeleteCollection ip service policy delete collection API
+*/
+func (a *Client) IPServicePolicyDeleteCollection(params *IPServicePolicyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIPServicePolicyDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ip_service_policy_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/network/ip/service-policies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IPServicePolicyDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IPServicePolicyDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IPServicePolicyDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	IPServicePolicyModify Updates a service policy for network interfaces.
+
+### Related ONTAP commands
+* `network interface service-policy add-service`
+* `network interface service-policy modify-service`
+* `network interface service-policy remove-service`
+* `network interface service-policy rename`
 */
 func (a *Client) IPServicePolicyModify(params *IPServicePolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1193,8 +1480,8 @@ func (a *Client) IPServicePolicyModify(params *IPServicePolicyModifyParams, auth
 		ID:                 "ip_service_policy_modify",
 		Method:             "PATCH",
 		PathPattern:        "/network/ip/service-policies/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IPServicePolicyModifyReader{formats: a.formats},
@@ -1220,6 +1507,44 @@ func (a *Client) IPServicePolicyModify(params *IPServicePolicyModifyParams, auth
 }
 
 /*
+IPServicePolicyModifyCollection ip service policy modify collection API
+*/
+func (a *Client) IPServicePolicyModifyCollection(params *IPServicePolicyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIPServicePolicyModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ip_service_policy_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/network/ip/service-policies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IPServicePolicyModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IPServicePolicyModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IPServicePolicyModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	IPSubnetCollectionGet Retrieves details for all subnets.
 
 ### Related ONTAP Commands
@@ -1234,8 +1559,8 @@ func (a *Client) IPSubnetCollectionGet(params *IPSubnetCollectionGetParams, auth
 		ID:                 "ip_subnet_collection_get",
 		Method:             "GET",
 		PathPattern:        "/network/ip/subnets",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IPSubnetCollectionGetReader{formats: a.formats},
@@ -1287,8 +1612,8 @@ func (a *Client) IPSubnetCreate(params *IPSubnetCreateParams, authInfo runtime.C
 		ID:                 "ip_subnet_create",
 		Method:             "POST",
 		PathPattern:        "/network/ip/subnets",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IPSubnetCreateReader{formats: a.formats},
@@ -1328,8 +1653,8 @@ func (a *Client) IPSubnetDelete(params *IPSubnetDeleteParams, authInfo runtime.C
 		ID:                 "ip_subnet_delete",
 		Method:             "DELETE",
 		PathPattern:        "/network/ip/subnets/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IPSubnetDeleteReader{formats: a.formats},
@@ -1350,9 +1675,46 @@ func (a *Client) IPSubnetDelete(params *IPSubnetDeleteParams, authInfo runtime.C
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for ip_subnet_delete: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*IPSubnetDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+IPSubnetDeleteCollection ip subnet delete collection API
+*/
+func (a *Client) IPSubnetDeleteCollection(params *IPSubnetDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIPSubnetDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ip_subnet_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/network/ip/subnets",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IPSubnetDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IPSubnetDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IPSubnetDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1370,8 +1732,8 @@ func (a *Client) IPSubnetGet(params *IPSubnetGetParams, authInfo runtime.ClientA
 		ID:                 "ip_subnet_get",
 		Method:             "GET",
 		PathPattern:        "/network/ip/subnets/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IPSubnetGetReader{formats: a.formats},
@@ -1414,8 +1776,8 @@ func (a *Client) IPSubnetModify(params *IPSubnetModifyParams, authInfo runtime.C
 		ID:                 "ip_subnet_modify",
 		Method:             "PATCH",
 		PathPattern:        "/network/ip/subnets/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IPSubnetModifyReader{formats: a.formats},
@@ -1441,6 +1803,44 @@ func (a *Client) IPSubnetModify(params *IPSubnetModifyParams, authInfo runtime.C
 }
 
 /*
+IPSubnetModifyCollection ip subnet modify collection API
+*/
+func (a *Client) IPSubnetModifyCollection(params *IPSubnetModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIPSubnetModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ip_subnet_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/network/ip/subnets",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IPSubnetModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IPSubnetModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IPSubnetModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	IpspaceDelete Deletes an IPspace object.
 
 ### Related ONTAP commands
@@ -1455,8 +1855,8 @@ func (a *Client) IpspaceDelete(params *IpspaceDeleteParams, authInfo runtime.Cli
 		ID:                 "ipspace_delete",
 		Method:             "DELETE",
 		PathPattern:        "/network/ipspaces/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IpspaceDeleteReader{formats: a.formats},
@@ -1477,9 +1877,46 @@ func (a *Client) IpspaceDelete(params *IpspaceDeleteParams, authInfo runtime.Cli
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for ipspace_delete: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*IpspaceDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+IpspaceDeleteCollection ipspace delete collection API
+*/
+func (a *Client) IpspaceDeleteCollection(params *IpspaceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspaceDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIpspaceDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ipspace_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/network/ipspaces",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IpspaceDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IpspaceDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IpspaceDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1497,8 +1934,8 @@ func (a *Client) IpspaceGet(params *IpspaceGetParams, authInfo runtime.ClientAut
 		ID:                 "ipspace_get",
 		Method:             "GET",
 		PathPattern:        "/network/ipspaces/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IpspaceGetReader{formats: a.formats},
@@ -1538,8 +1975,8 @@ func (a *Client) IpspaceModify(params *IpspaceModifyParams, authInfo runtime.Cli
 		ID:                 "ipspace_modify",
 		Method:             "PATCH",
 		PathPattern:        "/network/ipspaces/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IpspaceModifyReader{formats: a.formats},
@@ -1560,9 +1997,46 @@ func (a *Client) IpspaceModify(params *IpspaceModifyParams, authInfo runtime.Cli
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for ipspace_modify: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*IpspaceModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+IpspaceModifyCollection ipspace modify collection API
+*/
+func (a *Client) IpspaceModifyCollection(params *IpspaceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspaceModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIpspaceModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ipspace_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/network/ipspaces",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IpspaceModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IpspaceModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IpspaceModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1582,8 +2056,8 @@ func (a *Client) IpspacesCreate(params *IpspacesCreateParams, authInfo runtime.C
 		ID:                 "ipspaces_create",
 		Method:             "POST",
 		PathPattern:        "/network/ipspaces",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IpspacesCreateReader{formats: a.formats},
@@ -1623,8 +2097,8 @@ func (a *Client) IpspacesGet(params *IpspacesGetParams, authInfo runtime.ClientA
 		ID:                 "ipspaces_get",
 		Method:             "GET",
 		PathPattern:        "/network/ipspaces",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IpspacesGetReader{formats: a.formats},
@@ -1664,8 +2138,8 @@ func (a *Client) NetworkEthernetBroadcastDomainDelete(params *NetworkEthernetBro
 		ID:                 "network_ethernet_broadcast_domain_delete",
 		Method:             "DELETE",
 		PathPattern:        "/network/ethernet/broadcast-domains/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkEthernetBroadcastDomainDeleteReader{formats: a.formats},
@@ -1691,6 +2165,44 @@ func (a *Client) NetworkEthernetBroadcastDomainDelete(params *NetworkEthernetBro
 }
 
 /*
+NetworkEthernetBroadcastDomainDeleteCollection network ethernet broadcast domain delete collection API
+*/
+func (a *Client) NetworkEthernetBroadcastDomainDeleteCollection(params *NetworkEthernetBroadcastDomainDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNetworkEthernetBroadcastDomainDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "network_ethernet_broadcast_domain_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/network/ethernet/broadcast-domains",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NetworkEthernetBroadcastDomainDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NetworkEthernetBroadcastDomainDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NetworkEthernetBroadcastDomainDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NetworkEthernetBroadcastDomainGet Retrieves details of a broadcast domain.
 
 ### Related ONTAP commands
@@ -1705,8 +2217,8 @@ func (a *Client) NetworkEthernetBroadcastDomainGet(params *NetworkEthernetBroadc
 		ID:                 "network_ethernet_broadcast_domain_get",
 		Method:             "GET",
 		PathPattern:        "/network/ethernet/broadcast-domains/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkEthernetBroadcastDomainGetReader{formats: a.formats},
@@ -1748,8 +2260,8 @@ func (a *Client) NetworkEthernetBroadcastDomainModify(params *NetworkEthernetBro
 		ID:                 "network_ethernet_broadcast_domain_modify",
 		Method:             "PATCH",
 		PathPattern:        "/network/ethernet/broadcast-domains/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkEthernetBroadcastDomainModifyReader{formats: a.formats},
@@ -1771,6 +2283,44 @@ func (a *Client) NetworkEthernetBroadcastDomainModify(params *NetworkEthernetBro
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*NetworkEthernetBroadcastDomainModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+NetworkEthernetBroadcastDomainModifyCollection network ethernet broadcast domain modify collection API
+*/
+func (a *Client) NetworkEthernetBroadcastDomainModifyCollection(params *NetworkEthernetBroadcastDomainModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNetworkEthernetBroadcastDomainModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "network_ethernet_broadcast_domain_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/network/ethernet/broadcast-domains",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NetworkEthernetBroadcastDomainModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NetworkEthernetBroadcastDomainModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NetworkEthernetBroadcastDomainModifyCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -1797,8 +2347,8 @@ func (a *Client) NetworkEthernetBroadcastDomainsCreate(params *NetworkEthernetBr
 		ID:                 "network_ethernet_broadcast_domains_create",
 		Method:             "POST",
 		PathPattern:        "/network/ethernet/broadcast-domains",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkEthernetBroadcastDomainsCreateReader{formats: a.formats},
@@ -1838,8 +2388,8 @@ func (a *Client) NetworkEthernetBroadcastDomainsGet(params *NetworkEthernetBroad
 		ID:                 "network_ethernet_broadcast_domains_get",
 		Method:             "GET",
 		PathPattern:        "/network/ethernet/broadcast-domains",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkEthernetBroadcastDomainsGetReader{formats: a.formats},
@@ -1880,8 +2430,8 @@ func (a *Client) NetworkEthernetPortDelete(params *NetworkEthernetPortDeletePara
 		ID:                 "network_ethernet_port_delete",
 		Method:             "DELETE",
 		PathPattern:        "/network/ethernet/ports/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkEthernetPortDeleteReader{formats: a.formats},
@@ -1907,6 +2457,44 @@ func (a *Client) NetworkEthernetPortDelete(params *NetworkEthernetPortDeletePara
 }
 
 /*
+NetworkEthernetPortDeleteCollection network ethernet port delete collection API
+*/
+func (a *Client) NetworkEthernetPortDeleteCollection(params *NetworkEthernetPortDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNetworkEthernetPortDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "network_ethernet_port_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/network/ethernet/ports",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NetworkEthernetPortDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NetworkEthernetPortDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NetworkEthernetPortDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NetworkEthernetPortGet Retrieves the details of a physical port, VLAN, or LAG.
 
 ### Related ONTAP commands
@@ -1923,8 +2511,8 @@ func (a *Client) NetworkEthernetPortGet(params *NetworkEthernetPortGetParams, au
 		ID:                 "network_ethernet_port_get",
 		Method:             "GET",
 		PathPattern:        "/network/ethernet/ports/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkEthernetPortGetReader{formats: a.formats},
@@ -1955,9 +2543,9 @@ func (a *Client) NetworkEthernetPortGet(params *NetworkEthernetPortGetParams, au
 ### Related ONTAP commands
 * `network port broadcast-domain add-ports`
 * `network port broadcast-domain remove-ports`
-* `network port ifgrp modify`
 * `network port modify`
-* `network port vlan modify`
+* `network port ifgrp add-port`
+* `network port ifgrp remove-port`
 * `network port reachability repair`
 */
 func (a *Client) NetworkEthernetPortModify(params *NetworkEthernetPortModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortModifyOK, error) {
@@ -1969,8 +2557,8 @@ func (a *Client) NetworkEthernetPortModify(params *NetworkEthernetPortModifyPara
 		ID:                 "network_ethernet_port_modify",
 		Method:             "PATCH",
 		PathPattern:        "/network/ethernet/ports/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkEthernetPortModifyReader{formats: a.formats},
@@ -1996,20 +2584,59 @@ func (a *Client) NetworkEthernetPortModify(params *NetworkEthernetPortModifyPara
 }
 
 /*
+NetworkEthernetPortModifyCollection network ethernet port modify collection API
+*/
+func (a *Client) NetworkEthernetPortModifyCollection(params *NetworkEthernetPortModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNetworkEthernetPortModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "network_ethernet_port_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/network/ethernet/ports",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NetworkEthernetPortModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NetworkEthernetPortModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NetworkEthernetPortModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NetworkEthernetPortsCreate Creates a new VLAN (such as node1:e0a-100) or LAG (ifgrp, such as node2:a0a).
 
 ### Required properties
 * `node` - Node the port will be created on.
-* `type` - Defines if a VLAN or LAG will be created:
-  - VLAN
+* `vlan` - This field cannot be specified at the same time as `lag`.
   - `vlan.base_port` - Physical port or LAG the VLAN will be created on.
   - `vlan.tag` - Tag used to identify VLAN on the base port.
-  - LAG
+
+* `lag` - This field cannot be specified at the same time as `vlan`.
   - `lag.mode` - Policy for the LAG that will be created.
   - `lag.distribution_policy` - Indicates how the packets are distributed between ports.
   - `lag.member_ports` - Set of ports the LAG consists of.
 
 ### Optional properties
+* `type` - Defines if a VLAN or LAG will be created:
 * `broadcast_domain` - The layer-2 broadcast domain the port is associated with. The port will be placed in a broadcast domain if it is not specified.  It may take several minutes for the broadcast domain to be assigned.  During that period the port cannot host interfaces.
 ### Related ONTAP commands
 * `network port ifgrp create`
@@ -2024,8 +2651,8 @@ func (a *Client) NetworkEthernetPortsCreate(params *NetworkEthernetPortsCreatePa
 		ID:                 "network_ethernet_ports_create",
 		Method:             "POST",
 		PathPattern:        "/network/ethernet/ports",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkEthernetPortsCreateReader{formats: a.formats},
@@ -2067,8 +2694,8 @@ func (a *Client) NetworkEthernetPortsGet(params *NetworkEthernetPortsGetParams, 
 		ID:                 "network_ethernet_ports_get",
 		Method:             "GET",
 		PathPattern:        "/network/ethernet/ports",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkEthernetPortsGetReader{formats: a.formats},
@@ -2108,8 +2735,8 @@ func (a *Client) NetworkIPBgpPeerGroupDelete(params *NetworkIPBgpPeerGroupDelete
 		ID:                 "network_ip_bgp_peer_group_delete",
 		Method:             "DELETE",
 		PathPattern:        "/network/ip/bgp/peer-groups/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkIPBgpPeerGroupDeleteReader{formats: a.formats},
@@ -2135,6 +2762,44 @@ func (a *Client) NetworkIPBgpPeerGroupDelete(params *NetworkIPBgpPeerGroupDelete
 }
 
 /*
+NetworkIPBgpPeerGroupDeleteCollection network ip bgp peer group delete collection API
+*/
+func (a *Client) NetworkIPBgpPeerGroupDeleteCollection(params *NetworkIPBgpPeerGroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNetworkIPBgpPeerGroupDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "network_ip_bgp_peer_group_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/network/ip/bgp/peer-groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NetworkIPBgpPeerGroupDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NetworkIPBgpPeerGroupDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NetworkIPBgpPeerGroupDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NetworkIPBgpPeerGroupGet Retrieves details of a BGP peer group for VIP.
 
 ### Related ONTAP commands
@@ -2149,8 +2814,8 @@ func (a *Client) NetworkIPBgpPeerGroupGet(params *NetworkIPBgpPeerGroupGetParams
 		ID:                 "network_ip_bgp_peer_group_get",
 		Method:             "GET",
 		PathPattern:        "/network/ip/bgp/peer-groups/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkIPBgpPeerGroupGetReader{formats: a.formats},
@@ -2191,8 +2856,8 @@ func (a *Client) NetworkIPBgpPeerGroupModify(params *NetworkIPBgpPeerGroupModify
 		ID:                 "network_ip_bgp_peer_group_modify",
 		Method:             "PATCH",
 		PathPattern:        "/network/ip/bgp/peer-groups/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkIPBgpPeerGroupModifyReader{formats: a.formats},
@@ -2218,24 +2883,63 @@ func (a *Client) NetworkIPBgpPeerGroupModify(params *NetworkIPBgpPeerGroupModify
 }
 
 /*
+NetworkIPBgpPeerGroupModifyCollection network ip bgp peer group modify collection API
+*/
+func (a *Client) NetworkIPBgpPeerGroupModifyCollection(params *NetworkIPBgpPeerGroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNetworkIPBgpPeerGroupModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "network_ip_bgp_peer_group_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/network/ip/bgp/peer-groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NetworkIPBgpPeerGroupModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NetworkIPBgpPeerGroupModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NetworkIPBgpPeerGroupModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NetworkIPBgpPeerGroupsCreate Creates a new BGP peer group for VIP. Multipath-routing is turned on cluster-wide automatically if the peer group being created results in multiple paths being available for an existing or future VIP interface.<br/>
 
 ### Required properties
 * `name` - Name of the peer-group to create.
-* `ipspace.name` or `ipspace.uuid`
-  - Required with local.interface.name to identify a local interface
+* `ipspace.name` or `ipspace.uuid` or `local.port`
+  - Required with local.interface.name or local.ip.address to identify a local interface
   - Optional when local.interface.uuid is specified
 
-* `local.interface.uuid` or `local.interface.name`
+* `local.interface.uuid` or `local.interface.name` or `local.ip.address`
   - Required when specifying an existing local interface.
 
-* `local.interface.name`, `local.ip` and `local.port`
+* `local.ip` and `local.port`
   - Required to create a new local interface.
 
 * `peer.address` - IP address of the peer router
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `is_next_hop` - _false_
+* `peer.md5_enabled` - _false_
 ### Related ONTAP commands
 * `network bgp peer-group create`
 */
@@ -2248,8 +2952,8 @@ func (a *Client) NetworkIPBgpPeerGroupsCreate(params *NetworkIPBgpPeerGroupsCrea
 		ID:                 "network_ip_bgp_peer_groups_create",
 		Method:             "POST",
 		PathPattern:        "/network/ip/bgp/peer-groups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkIPBgpPeerGroupsCreateReader{formats: a.formats},
@@ -2289,8 +2993,8 @@ func (a *Client) NetworkIPBgpPeerGroupsGet(params *NetworkIPBgpPeerGroupsGetPara
 		ID:                 "network_ip_bgp_peer_groups_get",
 		Method:             "GET",
 		PathPattern:        "/network/ip/bgp/peer-groups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkIPBgpPeerGroupsGetReader{formats: a.formats},
@@ -2330,8 +3034,8 @@ func (a *Client) NetworkIPInterfaceDelete(params *NetworkIPInterfaceDeleteParams
 		ID:                 "network_ip_interface_delete",
 		Method:             "DELETE",
 		PathPattern:        "/network/ip/interfaces/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkIPInterfaceDeleteReader{formats: a.formats},
@@ -2352,9 +3056,46 @@ func (a *Client) NetworkIPInterfaceDelete(params *NetworkIPInterfaceDeleteParams
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for network_ip_interface_delete: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*NetworkIPInterfaceDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+NetworkIPInterfaceDeleteCollection network ip interface delete collection API
+*/
+func (a *Client) NetworkIPInterfaceDeleteCollection(params *NetworkIPInterfaceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfaceDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNetworkIPInterfaceDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "network_ip_interface_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/network/ip/interfaces",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NetworkIPInterfaceDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NetworkIPInterfaceDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NetworkIPInterfaceDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -2372,8 +3113,8 @@ func (a *Client) NetworkIPInterfaceGet(params *NetworkIPInterfaceGetParams, auth
 		ID:                 "network_ip_interface_get",
 		Method:             "GET",
 		PathPattern:        "/network/ip/interfaces/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkIPInterfaceGetReader{formats: a.formats},
@@ -2416,8 +3157,8 @@ func (a *Client) NetworkIPInterfaceModify(params *NetworkIPInterfaceModifyParams
 		ID:                 "network_ip_interface_modify",
 		Method:             "PATCH",
 		PathPattern:        "/network/ip/interfaces/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkIPInterfaceModifyReader{formats: a.formats},
@@ -2443,6 +3184,44 @@ func (a *Client) NetworkIPInterfaceModify(params *NetworkIPInterfaceModifyParams
 }
 
 /*
+NetworkIPInterfaceModifyCollection network ip interface modify collection API
+*/
+func (a *Client) NetworkIPInterfaceModifyCollection(params *NetworkIPInterfaceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfaceModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNetworkIPInterfaceModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "network_ip_interface_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/network/ip/interfaces",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NetworkIPInterfaceModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NetworkIPInterfaceModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NetworkIPInterfaceModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NetworkIPInterfacesCreate Creates a new Cluster-scoped or SVM-scoped interface.<br/>
 
 ### Required properties
@@ -2460,12 +3239,12 @@ func (a *Client) NetworkIPInterfaceModify(params *NetworkIPInterfaceModifyParams
   - Required for an SVM-scoped interface.
   - Invalid for a Cluster-scoped interface.
 
-* `location.home_port` or `location.home_node` or `location.broadcast_domain` - One of these properties must be set to a value to define where the interface will be located.
+* If a LIF in the subnet of the specified IP address does not already exist, a location.home_port, a location.home_node, or a location.broadcast_domain needs to be provided.
 ### Recommended property values
 * `service_policy`
   - `for SVM scoped interfaces`
   - _default-data-files_ for interfaces carrying file-oriented NAS data traffic
-  - (DEPRECATED) _default-data-blocks_ for interfaces carrying block-oriented SAN data traffic
+  - _default-data-blocks_ for interfaces carrying block-oriented SAN data traffic
   - _default-data-iscsi_ for interfaces carrying iSCSI data traffic
   - _default-management_ for interfaces carrying SVM management requests
   - `for Cluster scoped interfaces`
@@ -2482,7 +3261,8 @@ If not specified in POST, the following default property values are assigned:
 * `enabled` - _true_
 * `location.auto_revert` - _true_
 * `service_policy`
-  - _default-data-files_ if scope is `svm`
+  - **Unified ONTAP**: _default-data-files_ if scope is `svm`
+  - **ASA r2**: _default-data-blocks_ if scope is `svm`
   - _default-management_ if scope is `cluster` and IPspace is not `Cluster`
   - _default-cluster_ if scope is `cluster` and IPspace is `Cluster`
 
@@ -2504,8 +3284,8 @@ func (a *Client) NetworkIPInterfacesCreate(params *NetworkIPInterfacesCreatePara
 		ID:                 "network_ip_interfaces_create",
 		Method:             "POST",
 		PathPattern:        "/network/ip/interfaces",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkIPInterfacesCreateReader{formats: a.formats},
@@ -2545,8 +3325,8 @@ func (a *Client) NetworkIPInterfacesGet(params *NetworkIPInterfacesGetParams, au
 		ID:                 "network_ip_interfaces_get",
 		Method:             "GET",
 		PathPattern:        "/network/ip/interfaces",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkIPInterfacesGetReader{formats: a.formats},
@@ -2586,8 +3366,8 @@ func (a *Client) NetworkIPRouteDelete(params *NetworkIPRouteDeleteParams, authIn
 		ID:                 "network_ip_route_delete",
 		Method:             "DELETE",
 		PathPattern:        "/network/ip/routes/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkIPRouteDeleteReader{formats: a.formats},
@@ -2613,6 +3393,44 @@ func (a *Client) NetworkIPRouteDelete(params *NetworkIPRouteDeleteParams, authIn
 }
 
 /*
+NetworkIPRouteDeleteCollection network ip route delete collection API
+*/
+func (a *Client) NetworkIPRouteDeleteCollection(params *NetworkIPRouteDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPRouteDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNetworkIPRouteDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "network_ip_route_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/network/ip/routes",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NetworkIPRouteDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NetworkIPRouteDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NetworkIPRouteDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NetworkIPRouteGet Retrieves the details of a specific IP route.
 
 ### Related ONTAP commands
@@ -2628,8 +3446,8 @@ func (a *Client) NetworkIPRouteGet(params *NetworkIPRouteGetParams, authInfo run
 		ID:                 "network_ip_route_get",
 		Method:             "GET",
 		PathPattern:        "/network/ip/routes/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkIPRouteGetReader{formats: a.formats},
@@ -2685,8 +3503,8 @@ func (a *Client) NetworkIPRoutesCreate(params *NetworkIPRoutesCreateParams, auth
 		ID:                 "network_ip_routes_create",
 		Method:             "POST",
 		PathPattern:        "/network/ip/routes",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkIPRoutesCreateReader{formats: a.formats},
@@ -2730,8 +3548,8 @@ func (a *Client) NetworkIPRoutesGet(params *NetworkIPRoutesGetParams, authInfo r
 		ID:                 "network_ip_routes_get",
 		Method:             "GET",
 		PathPattern:        "/network/ip/routes",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkIPRoutesGetReader{formats: a.formats},
@@ -2771,8 +3589,8 @@ func (a *Client) NetworkIPServicePoliciesGet(params *NetworkIPServicePoliciesGet
 		ID:                 "network_ip_service_policies_get",
 		Method:             "GET",
 		PathPattern:        "/network/ip/service-policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkIPServicePoliciesGetReader{formats: a.formats},
@@ -2812,8 +3630,8 @@ func (a *Client) NetworkIPServicePolicyGet(params *NetworkIPServicePolicyGetPara
 		ID:                 "network_ip_service_policy_get",
 		Method:             "GET",
 		PathPattern:        "/network/ip/service-policies/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetworkIPServicePolicyGetReader{formats: a.formats},
@@ -2839,7 +3657,7 @@ func (a *Client) NetworkIPServicePolicyGet(params *NetworkIPServicePolicyGetPara
 }
 
 /*
-PerformanceFcInterfaceMetricCollectionGet Retrieves historical performance metrics for an FC interface.
+PerformanceFcInterfaceMetricCollectionGet Retrieves historical performance metrics for a Fibre Channel interface.
 */
 func (a *Client) PerformanceFcInterfaceMetricCollectionGet(params *PerformanceFcInterfaceMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcInterfaceMetricCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2849,9 +3667,9 @@ func (a *Client) PerformanceFcInterfaceMetricCollectionGet(params *PerformanceFc
 	op := &runtime.ClientOperation{
 		ID:                 "performance_fc_interface_metric_collection_get",
 		Method:             "GET",
-		PathPattern:        "/network/fc/interfaces/{uuid}/metrics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		PathPattern:        "/network/fc/interfaces/{fc_interface.uuid}/metrics",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PerformanceFcInterfaceMetricCollectionGetReader{formats: a.formats},
@@ -2877,7 +3695,45 @@ func (a *Client) PerformanceFcInterfaceMetricCollectionGet(params *PerformanceFc
 }
 
 /*
-PerformanceFcPortMetricCollectionGet Retrieves historical performance metrics for an FC port
+PerformanceFcInterfaceMetricGet Retrieves historical performance metrics for a Fibre Channel interface for a specific time.
+*/
+func (a *Client) PerformanceFcInterfaceMetricGet(params *PerformanceFcInterfaceMetricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcInterfaceMetricGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPerformanceFcInterfaceMetricGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "performance_fc_interface_metric_get",
+		Method:             "GET",
+		PathPattern:        "/network/fc/interfaces/{fc_interface.uuid}/metrics/{timestamp}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PerformanceFcInterfaceMetricGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PerformanceFcInterfaceMetricGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PerformanceFcInterfaceMetricGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+PerformanceFcPortMetricCollectionGet Retrieves historical performance metrics for a Fibre Channel port.
 */
 func (a *Client) PerformanceFcPortMetricCollectionGet(params *PerformanceFcPortMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcPortMetricCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2887,9 +3743,9 @@ func (a *Client) PerformanceFcPortMetricCollectionGet(params *PerformanceFcPortM
 	op := &runtime.ClientOperation{
 		ID:                 "performance_fc_port_metric_collection_get",
 		Method:             "GET",
-		PathPattern:        "/network/fc/ports/{uuid}/metrics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		PathPattern:        "/network/fc/ports/{fc_port.uuid}/metrics",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PerformanceFcPortMetricCollectionGetReader{formats: a.formats},
@@ -2915,6 +3771,44 @@ func (a *Client) PerformanceFcPortMetricCollectionGet(params *PerformanceFcPortM
 }
 
 /*
+PerformanceFcPortMetricGet Retrieves historical performance metrics for a Fibre Channel port for a specific time.
+*/
+func (a *Client) PerformanceFcPortMetricGet(params *PerformanceFcPortMetricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcPortMetricGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPerformanceFcPortMetricGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "performance_fc_port_metric_get",
+		Method:             "GET",
+		PathPattern:        "/network/fc/ports/{fc_port.uuid}/metrics/{timestamp}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PerformanceFcPortMetricGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PerformanceFcPortMetricGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PerformanceFcPortMetricGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 PortMetricsCollectionGet Retrieves historical performance metrics for a port.
 */
 func (a *Client) PortMetricsCollectionGet(params *PortMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortMetricsCollectionGetOK, error) {
@@ -2926,8 +3820,8 @@ func (a *Client) PortMetricsCollectionGet(params *PortMetricsCollectionGetParams
 		ID:                 "port_metrics_collection_get",
 		Method:             "GET",
 		PathPattern:        "/network/ethernet/ports/{uuid}/metrics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PortMetricsCollectionGetReader{formats: a.formats},
@@ -2969,8 +3863,8 @@ func (a *Client) SwitchCollectionGet(params *SwitchCollectionGetParams, authInfo
 		ID:                 "switch_collection_get",
 		Method:             "GET",
 		PathPattern:        "/network/ethernet/switches",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SwitchCollectionGetReader{formats: a.formats},
@@ -3006,7 +3900,6 @@ func (a *Client) SwitchCollectionGet(params *SwitchCollectionGetParams, authInfo
 * `network`
   - _cluster_ for cluster or shared switches.
   - _storage_ for storage switches.
-  - _management_ for management switches.
 
 * `snmp.version` - SNMP version.
 * `snmp.user` - SNMP user.
@@ -3015,7 +3908,7 @@ func (a *Client) SwitchCollectionGet(params *SwitchCollectionGetParams, authInfo
 ### Learn more
 * [`DOC /network/ethernet/switches`](#docs-networking-network_ethernet_switches)
 */
-func (a *Client) SwitchCreate(params *SwitchCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchCreateAccepted, error) {
+func (a *Client) SwitchCreate(params *SwitchCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchCreateCreated, *SwitchCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSwitchCreateParams()
@@ -3024,8 +3917,8 @@ func (a *Client) SwitchCreate(params *SwitchCreateParams, authInfo runtime.Clien
 		ID:                 "switch_create",
 		Method:             "POST",
 		PathPattern:        "/network/ethernet/switches",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SwitchCreateReader{formats: a.formats},
@@ -3039,15 +3932,17 @@ func (a *Client) SwitchCreate(params *SwitchCreateParams, authInfo runtime.Clien
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SwitchCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SwitchCreateCreated:
+		return value, nil, nil
+	case *SwitchCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SwitchCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -3067,8 +3962,8 @@ func (a *Client) SwitchDelete(params *SwitchDeleteParams, authInfo runtime.Clien
 		ID:                 "switch_delete",
 		Method:             "DELETE",
 		PathPattern:        "/network/ethernet/switches/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SwitchDeleteReader{formats: a.formats},
@@ -3094,6 +3989,44 @@ func (a *Client) SwitchDelete(params *SwitchDeleteParams, authInfo runtime.Clien
 }
 
 /*
+SwitchDeleteCollection switch delete collection API
+*/
+func (a *Client) SwitchDeleteCollection(params *SwitchDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSwitchDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "switch_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/network/ethernet/switches",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SwitchDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SwitchDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SwitchDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	SwitchGet Retrieves the details of an Ethernet switch.
 
 ### Related ONTAP commands
@@ -3110,8 +4043,8 @@ func (a *Client) SwitchGet(params *SwitchGetParams, authInfo runtime.ClientAuthI
 		ID:                 "switch_get",
 		Method:             "GET",
 		PathPattern:        "/network/ethernet/switches/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SwitchGetReader{formats: a.formats},
@@ -3137,9 +4070,14 @@ func (a *Client) SwitchGet(params *SwitchGetParams, authInfo runtime.ClientAuthI
 }
 
 /*
-SwitchModify Update Ethernet Switch REST API
+	SwitchModify Updates the switch state.
+
+### Related ONTAP commands
+* `system switch ethernet modify`
+### Learn more
+* [`DOC /network/ethernet/switches`](#docs-networking-network_ethernet_switches)
 */
-func (a *Client) SwitchModify(params *SwitchModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchModifyAccepted, error) {
+func (a *Client) SwitchModify(params *SwitchModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchModifyOK, *SwitchModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSwitchModifyParams()
@@ -3148,8 +4086,8 @@ func (a *Client) SwitchModify(params *SwitchModifyParams, authInfo runtime.Clien
 		ID:                 "switch_modify",
 		Method:             "PATCH",
 		PathPattern:        "/network/ethernet/switches/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SwitchModifyReader{formats: a.formats},
@@ -3163,15 +4101,57 @@ func (a *Client) SwitchModify(params *SwitchModifyParams, authInfo runtime.Clien
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SwitchModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SwitchModifyOK:
+		return value, nil, nil
+	case *SwitchModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SwitchModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SwitchModifyCollection switch modify collection API
+*/
+func (a *Client) SwitchModifyCollection(params *SwitchModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchModifyCollectionOK, *SwitchModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSwitchModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "switch_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/network/ethernet/switches",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SwitchModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SwitchModifyCollectionOK:
+		return value, nil, nil
+	case *SwitchModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SwitchModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -3191,8 +4171,8 @@ func (a *Client) SwitchPortCollectionGet(params *SwitchPortCollectionGetParams, 
 		ID:                 "switch_port_collection_get",
 		Method:             "GET",
 		PathPattern:        "/network/ethernet/switch/ports",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SwitchPortCollectionGetReader{formats: a.formats},
@@ -3232,8 +4212,8 @@ func (a *Client) SwitchPortGet(params *SwitchPortGetParams, authInfo runtime.Cli
 		ID:                 "switch_port_get",
 		Method:             "GET",
 		PathPattern:        "/network/ethernet/switch/ports/{switch}/{identity.name}/{identity.index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SwitchPortGetReader{formats: a.formats},

@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SnapshotPolicyScheduleModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snapshot policy schedule modify o k response
+func (o *SnapshotPolicyScheduleModifyOK) Code() int {
+	return 200
+}
+
 func (o *SnapshotPolicyScheduleModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshotPolicyScheduleModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshotPolicyScheduleModifyOK", 200)
 }
 
 func (o *SnapshotPolicyScheduleModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshotPolicyScheduleModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshotPolicyScheduleModifyOK", 200)
 }
 
 func (o *SnapshotPolicyScheduleModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,17 +112,13 @@ func NewSnapshotPolicyScheduleModifyDefault(code int) *SnapshotPolicyScheduleMod
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 1638451    | This operation would result in total Snapshot copy count for the policy to exceed maximum supported count. |
+| 1638451    | This operation would result in total snapshot count for the policy to exceed maximum supported count. |
+| 918253     | Incorrect format for the retention period, duration must be in the ISO-8601 format. |
 */
 type SnapshotPolicyScheduleModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snapshot policy schedule modify default response
-func (o *SnapshotPolicyScheduleModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snapshot policy schedule modify default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *SnapshotPolicyScheduleModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snapshot policy schedule modify default response
+func (o *SnapshotPolicyScheduleModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnapshotPolicyScheduleModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshot_policy_schedule_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshot_policy_schedule_modify default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotPolicyScheduleModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshot_policy_schedule_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshot_policy_schedule_modify default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotPolicyScheduleModifyDefault) GetPayload() *models.ErrorResponse {

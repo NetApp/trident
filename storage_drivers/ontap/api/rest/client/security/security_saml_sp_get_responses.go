@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SecuritySamlSpGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the security saml sp get o k response
+func (o *SecuritySamlSpGetOK) Code() int {
+	return 200
+}
+
 func (o *SecuritySamlSpGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/authentication/cluster/saml-sp][%d] securitySamlSpGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/cluster/saml-sp][%d] securitySamlSpGetOK %s", 200, payload)
 }
 
 func (o *SecuritySamlSpGetOK) String() string {
-	return fmt.Sprintf("[GET /security/authentication/cluster/saml-sp][%d] securitySamlSpGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/cluster/saml-sp][%d] securitySamlSpGetOK %s", 200, payload)
 }
 
 func (o *SecuritySamlSpGetOK) GetPayload() *models.SecuritySamlSp {
@@ -122,11 +130,6 @@ type SecuritySamlSpGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the security saml sp get default response
-func (o *SecuritySamlSpGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this security saml sp get default response has a 2xx status code
 func (o *SecuritySamlSpGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SecuritySamlSpGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security saml sp get default response
+func (o *SecuritySamlSpGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecuritySamlSpGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/authentication/cluster/saml-sp][%d] security_saml_sp_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/cluster/saml-sp][%d] security_saml_sp_get default %s", o._statusCode, payload)
 }
 
 func (o *SecuritySamlSpGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/authentication/cluster/saml-sp][%d] security_saml_sp_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/cluster/saml-sp][%d] security_saml_sp_get default %s", o._statusCode, payload)
 }
 
 func (o *SecuritySamlSpGetDefault) GetPayload() *models.ErrorResponse {

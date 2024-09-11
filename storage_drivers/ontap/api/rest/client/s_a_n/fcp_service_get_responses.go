@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *FcpServiceGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fcp service get o k response
+func (o *FcpServiceGetOK) Code() int {
+	return 200
+}
+
 func (o *FcpServiceGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/fcp/services/{svm.uuid}][%d] fcpServiceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/fcp/services/{svm.uuid}][%d] fcpServiceGetOK %s", 200, payload)
 }
 
 func (o *FcpServiceGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/san/fcp/services/{svm.uuid}][%d] fcpServiceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/fcp/services/{svm.uuid}][%d] fcpServiceGetOK %s", 200, payload)
 }
 
 func (o *FcpServiceGetOK) GetPayload() *models.FcpService {
@@ -120,16 +128,12 @@ func NewFcpServiceGetDefault(code int) *FcpServiceGetDefault {
 | ---------- | ----------- |
 | 2621462 | An SVM with the specified UUID does not exist. |
 | 5374083 | There is no Fibre Channel Protocol service for the specified SVM. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type FcpServiceGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the fcp service get default response
-func (o *FcpServiceGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this fcp service get default response has a 2xx status code
@@ -157,12 +161,19 @@ func (o *FcpServiceGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fcp service get default response
+func (o *FcpServiceGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FcpServiceGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/fcp/services/{svm.uuid}][%d] fcp_service_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/fcp/services/{svm.uuid}][%d] fcp_service_get default %s", o._statusCode, payload)
 }
 
 func (o *FcpServiceGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/san/fcp/services/{svm.uuid}][%d] fcp_service_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/fcp/services/{svm.uuid}][%d] fcp_service_get default %s", o._statusCode, payload)
 }
 
 func (o *FcpServiceGetDefault) GetPayload() *models.ErrorResponse {

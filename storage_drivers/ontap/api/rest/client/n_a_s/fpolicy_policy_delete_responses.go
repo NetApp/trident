@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *FpolicyPolicyDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fpolicy policy delete o k response
+func (o *FpolicyPolicyDeleteOK) Code() int {
+	return 200
+}
+
 func (o *FpolicyPolicyDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicyPolicyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicyPolicyDeleteOK", 200)
 }
 
 func (o *FpolicyPolicyDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicyPolicyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicyPolicyDeleteOK", 200)
 }
 
 func (o *FpolicyPolicyDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,17 +113,11 @@ func NewFpolicyPolicyDeleteDefault(code int) *FpolicyPolicyDeleteDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 9764900    | Deletion of a cluster level FPolicy policy is not supported |
-| 9764941    | Cannot delete an enabled FPolicy policy |
 */
 type FpolicyPolicyDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the fpolicy policy delete default response
-func (o *FpolicyPolicyDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this fpolicy policy delete default response has a 2xx status code
@@ -145,12 +145,19 @@ func (o *FpolicyPolicyDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fpolicy policy delete default response
+func (o *FpolicyPolicyDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FpolicyPolicyDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicy_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicy_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyPolicyDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicy_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicy_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyPolicyDeleteDefault) GetPayload() *models.ErrorResponse {

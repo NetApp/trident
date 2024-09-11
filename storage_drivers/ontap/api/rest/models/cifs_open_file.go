@@ -27,14 +27,14 @@ type CifsOpenFile struct {
 	Connection *CifsOpenFileInlineConnection `json:"connection,omitempty"`
 
 	// The type of continuous availability protection provided to the file.
-	// Opened files are continuously available if there are opened through a SMB3 client through a share with "continuously_avaliable" set to yes.
+	// Opened files are continuously available if there are opened through a SMB3 client through a share with "continuously_available" set to yes.
 	// These open files are capable of non-disruptively recovering from take over and giveback as well as general aggregate relocation.
 	// - no: the open file is not continuously available.
 	// - yes: the open file is continuously available.
 	//
 	// Example: no
 	// Read Only: true
-	// Enum: [no yes]
+	// Enum: ["no","yes"]
 	ContinuouslyAvailable *string `json:"continuously_available,omitempty"`
 
 	// The unique identifier for the opened file.
@@ -52,7 +52,7 @@ type CifsOpenFile struct {
 	//
 	// Example: r
 	// Read Only: true
-	// Enum: [r w d]
+	// Enum: ["r","w","d"]
 	OpenMode *string `json:"open_mode,omitempty"`
 
 	// Path from CIFS share.
@@ -80,7 +80,7 @@ type CifsOpenFile struct {
 	//
 	// Example: regular
 	// Read Only: true
-	// Enum: [directory regular stream symlink]
+	// Enum: ["directory","regular","stream","symlink"]
 	Type *string `json:"type,omitempty"`
 
 	// volume
@@ -972,7 +972,7 @@ type CifsOpenFileInlineShare struct {
 	//
 	// Example: r
 	// Read Only: true
-	// Enum: [r w d]
+	// Enum: ["r","w","d"]
 	Mode *string `json:"mode,omitempty"`
 
 	// CIFS share name where the file resides.
@@ -1115,7 +1115,7 @@ func (m *CifsOpenFileInlineShare) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsOpenFileInlineSvm cifs open file inline svm
+// CifsOpenFileInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model cifs_open_file_inline_svm
 type CifsOpenFileInlineSvm struct {
@@ -1123,12 +1123,12 @@ type CifsOpenFileInlineSvm struct {
 	// links
 	Links *CifsOpenFileInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -1305,7 +1305,7 @@ type CifsOpenFileInlineVolume struct {
 	// links
 	Links *CifsOpenFileInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

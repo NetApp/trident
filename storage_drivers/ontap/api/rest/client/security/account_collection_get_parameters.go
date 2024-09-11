@@ -74,6 +74,18 @@ type AccountCollectionGetParams struct {
 	*/
 	ApplicationsAuthenticationMethods *string
 
+	/* ApplicationsIsLdapFastbind.
+
+	   Filter by applications.is_ldap_fastbind
+	*/
+	ApplicationsIsLdapFastbind *bool
+
+	/* ApplicationsIsNsSwitchGroup.
+
+	   Filter by applications.is_ns_switch_group
+	*/
+	ApplicationsIsNsSwitchGroup *bool
+
 	/* ApplicationsSecondAuthenticationMethod.
 
 	   Filter by applications.second_authentication_method
@@ -91,12 +103,6 @@ type AccountCollectionGetParams struct {
 	   Specify the fields to return.
 	*/
 	Fields []string
-
-	/* LdapFastbind.
-
-	   Filter by ldap_fastbind
-	*/
-	LdapFastbind *bool
 
 	/* Locked.
 
@@ -257,6 +263,28 @@ func (o *AccountCollectionGetParams) SetApplicationsAuthenticationMethods(applic
 	o.ApplicationsAuthenticationMethods = applicationsAuthenticationMethods
 }
 
+// WithApplicationsIsLdapFastbind adds the applicationsIsLdapFastbind to the account collection get params
+func (o *AccountCollectionGetParams) WithApplicationsIsLdapFastbind(applicationsIsLdapFastbind *bool) *AccountCollectionGetParams {
+	o.SetApplicationsIsLdapFastbind(applicationsIsLdapFastbind)
+	return o
+}
+
+// SetApplicationsIsLdapFastbind adds the applicationsIsLdapFastbind to the account collection get params
+func (o *AccountCollectionGetParams) SetApplicationsIsLdapFastbind(applicationsIsLdapFastbind *bool) {
+	o.ApplicationsIsLdapFastbind = applicationsIsLdapFastbind
+}
+
+// WithApplicationsIsNsSwitchGroup adds the applicationsIsNsSwitchGroup to the account collection get params
+func (o *AccountCollectionGetParams) WithApplicationsIsNsSwitchGroup(applicationsIsNsSwitchGroup *bool) *AccountCollectionGetParams {
+	o.SetApplicationsIsNsSwitchGroup(applicationsIsNsSwitchGroup)
+	return o
+}
+
+// SetApplicationsIsNsSwitchGroup adds the applicationsIsNsSwitchGroup to the account collection get params
+func (o *AccountCollectionGetParams) SetApplicationsIsNsSwitchGroup(applicationsIsNsSwitchGroup *bool) {
+	o.ApplicationsIsNsSwitchGroup = applicationsIsNsSwitchGroup
+}
+
 // WithApplicationsSecondAuthenticationMethod adds the applicationsSecondAuthenticationMethod to the account collection get params
 func (o *AccountCollectionGetParams) WithApplicationsSecondAuthenticationMethod(applicationsSecondAuthenticationMethod *string) *AccountCollectionGetParams {
 	o.SetApplicationsSecondAuthenticationMethod(applicationsSecondAuthenticationMethod)
@@ -288,17 +316,6 @@ func (o *AccountCollectionGetParams) WithFields(fields []string) *AccountCollect
 // SetFields adds the fields to the account collection get params
 func (o *AccountCollectionGetParams) SetFields(fields []string) {
 	o.Fields = fields
-}
-
-// WithLdapFastbind adds the ldapFastbind to the account collection get params
-func (o *AccountCollectionGetParams) WithLdapFastbind(ldapFastbind *bool) *AccountCollectionGetParams {
-	o.SetLdapFastbind(ldapFastbind)
-	return o
-}
-
-// SetLdapFastbind adds the ldapFastbind to the account collection get params
-func (o *AccountCollectionGetParams) SetLdapFastbind(ldapFastbind *bool) {
-	o.LdapFastbind = ldapFastbind
 }
 
 // WithLocked adds the locked to the account collection get params
@@ -464,6 +481,40 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
+	if o.ApplicationsIsLdapFastbind != nil {
+
+		// query param applications.is_ldap_fastbind
+		var qrApplicationsIsLdapFastbind bool
+
+		if o.ApplicationsIsLdapFastbind != nil {
+			qrApplicationsIsLdapFastbind = *o.ApplicationsIsLdapFastbind
+		}
+		qApplicationsIsLdapFastbind := swag.FormatBool(qrApplicationsIsLdapFastbind)
+		if qApplicationsIsLdapFastbind != "" {
+
+			if err := r.SetQueryParam("applications.is_ldap_fastbind", qApplicationsIsLdapFastbind); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ApplicationsIsNsSwitchGroup != nil {
+
+		// query param applications.is_ns_switch_group
+		var qrApplicationsIsNsSwitchGroup bool
+
+		if o.ApplicationsIsNsSwitchGroup != nil {
+			qrApplicationsIsNsSwitchGroup = *o.ApplicationsIsNsSwitchGroup
+		}
+		qApplicationsIsNsSwitchGroup := swag.FormatBool(qrApplicationsIsNsSwitchGroup)
+		if qApplicationsIsNsSwitchGroup != "" {
+
+			if err := r.SetQueryParam("applications.is_ns_switch_group", qApplicationsIsNsSwitchGroup); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ApplicationsSecondAuthenticationMethod != nil {
 
 		// query param applications.second_authentication_method
@@ -506,23 +557,6 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
-		}
-	}
-
-	if o.LdapFastbind != nil {
-
-		// query param ldap_fastbind
-		var qrLdapFastbind bool
-
-		if o.LdapFastbind != nil {
-			qrLdapFastbind = *o.LdapFastbind
-		}
-		qLdapFastbind := swag.FormatBool(qrLdapFastbind)
-		if qLdapFastbind != "" {
-
-			if err := r.SetQueryParam("ldap_fastbind", qLdapFastbind); err != nil {
-				return err
-			}
 		}
 	}
 

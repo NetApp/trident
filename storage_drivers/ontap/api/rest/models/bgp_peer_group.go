@@ -35,7 +35,7 @@ type BgpPeerGroup struct {
 
 	// State of the peer group
 	// Read Only: true
-	// Enum: [up down]
+	// Enum: ["up","down"]
 	State *string `json:"state,omitempty"`
 
 	// UUID of the peer group
@@ -294,7 +294,7 @@ type BgpPeerGroupInlineIpspace struct {
 	Links *BgpPeerGroupInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
-	// Example: exchange
+	// Example: Default
 	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
@@ -763,7 +763,7 @@ func (m *BgpPeerGroupInlineLocalInlineIP) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BgpPeerGroupInlineLocalInlineInterface bgp peer group inline local inline interface
+// BgpPeerGroupInlineLocalInlineInterface A network interface. Either UUID or name may be supplied on input.
 //
 // swagger:model bgp_peer_group_inline_local_inline_interface
 type BgpPeerGroupInlineLocalInlineInterface struct {
@@ -1073,7 +1073,7 @@ func (m *BgpPeerGroupInlineLocalInlineInterfaceInlineLinks) UnmarshalBinary(b []
 	return nil
 }
 
-// BgpPeerGroupInlineLocalInlinePort bgp peer group inline local inline port
+// BgpPeerGroupInlineLocalInlinePort Port UUID along with readable names. Either the UUID or both names may be supplied on input.
 //
 // swagger:model bgp_peer_group_inline_local_inline_port
 type BgpPeerGroupInlineLocalInlinePort struct {
@@ -1347,10 +1347,45 @@ type BgpPeerGroupInlinePeer struct {
 
 	// Use peer address as next hop.
 	IsNextHop *bool `json:"is_next_hop,omitempty"`
+
+	// Enable or disable TCP MD5 signatures per RFC 2385.
+	// Example: true
+	Md5Enabled *bool `json:"md5_enabled,omitempty"`
+
+	// The shared TCP MD5 secret key. This can either be given as a password or hexadecimal key.
+	// Example: SECRET_WORD
+	// Max Length: 79
+	// Min Length: 1
+	Md5Secret *string `json:"md5_secret,omitempty"`
 }
 
 // Validate validates this bgp peer group inline peer
 func (m *BgpPeerGroupInlinePeer) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateMd5Secret(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *BgpPeerGroupInlinePeer) validateMd5Secret(formats strfmt.Registry) error {
+	if swag.IsZero(m.Md5Secret) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("peer"+"."+"md5_secret", "body", *m.Md5Secret, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("peer"+"."+"md5_secret", "body", *m.Md5Secret, 79); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -530,15 +530,156 @@ type SecurityConfigInlineSoftwareDataEncryption struct {
 
 	// Indicates whether or not default software data at rest encryption is disabled on the cluster.
 	DisabledByDefault *bool `json:"disabled_by_default,omitempty"`
+
+	// Software data encryption state.<br>encrypted &dash; All the volumes are encrypted.<br>encrypting &dash; Encryption conversion operation is in progress.<br>partial &dash; Some volumes are encrypted, and others remains in plain text.<br>rekeying &dash; All volumes are currently being encrypted with a new key.<br>unencrypted &dash; None of the volumes are encrypted.<br>conversion_paused &dash; Encryption conversion operation is paused on one or more volumes.<br>rekey_paused &dash; Encryption rekey operation is paused on one or more volumes.
+	// Read Only: true
+	// Enum: ["encrypted","encrypting","partial","rekeying","unencrypted","conversion_paused","rekey_paused"]
+	EncryptionState *string `json:"encryption_state,omitempty"`
+
+	// rekey
+	Rekey *bool `json:"rekey,omitempty"`
 }
 
 // Validate validates this security config inline software data encryption
 func (m *SecurityConfigInlineSoftwareDataEncryption) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateEncryptionState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this security config inline software data encryption based on context it is used
+var securityConfigInlineSoftwareDataEncryptionTypeEncryptionStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["encrypted","encrypting","partial","rekeying","unencrypted","conversion_paused","rekey_paused"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		securityConfigInlineSoftwareDataEncryptionTypeEncryptionStatePropEnum = append(securityConfigInlineSoftwareDataEncryptionTypeEncryptionStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// security_config_inline_software_data_encryption
+	// SecurityConfigInlineSoftwareDataEncryption
+	// encryption_state
+	// EncryptionState
+	// encrypted
+	// END DEBUGGING
+	// SecurityConfigInlineSoftwareDataEncryptionEncryptionStateEncrypted captures enum value "encrypted"
+	SecurityConfigInlineSoftwareDataEncryptionEncryptionStateEncrypted string = "encrypted"
+
+	// BEGIN DEBUGGING
+	// security_config_inline_software_data_encryption
+	// SecurityConfigInlineSoftwareDataEncryption
+	// encryption_state
+	// EncryptionState
+	// encrypting
+	// END DEBUGGING
+	// SecurityConfigInlineSoftwareDataEncryptionEncryptionStateEncrypting captures enum value "encrypting"
+	SecurityConfigInlineSoftwareDataEncryptionEncryptionStateEncrypting string = "encrypting"
+
+	// BEGIN DEBUGGING
+	// security_config_inline_software_data_encryption
+	// SecurityConfigInlineSoftwareDataEncryption
+	// encryption_state
+	// EncryptionState
+	// partial
+	// END DEBUGGING
+	// SecurityConfigInlineSoftwareDataEncryptionEncryptionStatePartial captures enum value "partial"
+	SecurityConfigInlineSoftwareDataEncryptionEncryptionStatePartial string = "partial"
+
+	// BEGIN DEBUGGING
+	// security_config_inline_software_data_encryption
+	// SecurityConfigInlineSoftwareDataEncryption
+	// encryption_state
+	// EncryptionState
+	// rekeying
+	// END DEBUGGING
+	// SecurityConfigInlineSoftwareDataEncryptionEncryptionStateRekeying captures enum value "rekeying"
+	SecurityConfigInlineSoftwareDataEncryptionEncryptionStateRekeying string = "rekeying"
+
+	// BEGIN DEBUGGING
+	// security_config_inline_software_data_encryption
+	// SecurityConfigInlineSoftwareDataEncryption
+	// encryption_state
+	// EncryptionState
+	// unencrypted
+	// END DEBUGGING
+	// SecurityConfigInlineSoftwareDataEncryptionEncryptionStateUnencrypted captures enum value "unencrypted"
+	SecurityConfigInlineSoftwareDataEncryptionEncryptionStateUnencrypted string = "unencrypted"
+
+	// BEGIN DEBUGGING
+	// security_config_inline_software_data_encryption
+	// SecurityConfigInlineSoftwareDataEncryption
+	// encryption_state
+	// EncryptionState
+	// conversion_paused
+	// END DEBUGGING
+	// SecurityConfigInlineSoftwareDataEncryptionEncryptionStateConversionPaused captures enum value "conversion_paused"
+	SecurityConfigInlineSoftwareDataEncryptionEncryptionStateConversionPaused string = "conversion_paused"
+
+	// BEGIN DEBUGGING
+	// security_config_inline_software_data_encryption
+	// SecurityConfigInlineSoftwareDataEncryption
+	// encryption_state
+	// EncryptionState
+	// rekey_paused
+	// END DEBUGGING
+	// SecurityConfigInlineSoftwareDataEncryptionEncryptionStateRekeyPaused captures enum value "rekey_paused"
+	SecurityConfigInlineSoftwareDataEncryptionEncryptionStateRekeyPaused string = "rekey_paused"
+)
+
+// prop value enum
+func (m *SecurityConfigInlineSoftwareDataEncryption) validateEncryptionStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, securityConfigInlineSoftwareDataEncryptionTypeEncryptionStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SecurityConfigInlineSoftwareDataEncryption) validateEncryptionState(formats strfmt.Registry) error {
+	if swag.IsZero(m.EncryptionState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateEncryptionStateEnum("software_data_encryption"+"."+"encryption_state", "body", *m.EncryptionState); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this security config inline software data encryption based on the context it is used
 func (m *SecurityConfigInlineSoftwareDataEncryption) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateEncryptionState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SecurityConfigInlineSoftwareDataEncryption) contextValidateEncryptionState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "software_data_encryption"+"."+"encryption_state", "body", m.EncryptionState); err != nil {
+		return err
+	}
+
 	return nil
 }
 

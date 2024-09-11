@@ -36,7 +36,7 @@ type MongoDbOnSan struct {
 	MongoDbOnSanInlineSecondaryIgroups []*MongoDbOnSanInlineSecondaryIgroupsInlineArrayItem `json:"secondary_igroups,omitempty"`
 
 	// The name of the host OS running the application.
-	// Enum: [hyper_v linux solaris solaris_efi vmware windows windows_2008 windows_gpt xen]
+	// Enum: ["hyper_v","linux","solaris","solaris_efi","vmware","windows","windows_2008","windows_gpt","xen"]
 	OsType *string `json:"os_type,omitempty"`
 
 	// The initiator group for the primary.
@@ -596,7 +596,7 @@ func (m *MongoDbOnSanInlineDataset) UnmarshalBinary(b []byte) error {
 type MongoDbOnSanInlineDatasetInlineStorageService struct {
 
 	// The storage service of the database.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -709,11 +709,11 @@ func (m *MongoDbOnSanInlineDatasetInlineStorageService) UnmarshalBinary(b []byte
 type MongoDbOnSanInlineProtectionType struct {
 
 	// The local RPO of the application.
-	// Enum: [hourly none]
+	// Enum: ["hourly","none"]
 	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
-	// Enum: [none zero]
+	// Enum: ["none","zero"]
 	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 

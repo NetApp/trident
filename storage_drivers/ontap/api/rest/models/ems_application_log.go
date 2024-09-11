@@ -50,7 +50,7 @@ type EmsApplicationLog struct {
 
 	// Severity
 	// Example: error
-	// Enum: [emergency alert error notice]
+	// Enum: ["emergency","alert","error","notice"]
 	Severity *string `json:"severity,omitempty"`
 }
 

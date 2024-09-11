@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CoredumpCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the coredump collection get o k response
+func (o *CoredumpCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *CoredumpCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /support/coredump/coredumps][%d] coredumpCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/coredump/coredumps][%d] coredumpCollectionGetOK %s", 200, payload)
 }
 
 func (o *CoredumpCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /support/coredump/coredumps][%d] coredumpCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/coredump/coredumps][%d] coredumpCollectionGetOK %s", 200, payload)
 }
 
 func (o *CoredumpCollectionGetOK) GetPayload() *models.CoredumpResponse {
@@ -122,11 +130,6 @@ type CoredumpCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the coredump collection get default response
-func (o *CoredumpCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this coredump collection get default response has a 2xx status code
 func (o *CoredumpCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *CoredumpCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the coredump collection get default response
+func (o *CoredumpCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CoredumpCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /support/coredump/coredumps][%d] coredump_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/coredump/coredumps][%d] coredump_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *CoredumpCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /support/coredump/coredumps][%d] coredump_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/coredump/coredumps][%d] coredump_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *CoredumpCollectionGetDefault) GetPayload() *models.ErrorResponse {

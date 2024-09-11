@@ -6,6 +6,7 @@ package n_v_me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *NvmeServiceModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nvme service modify o k response
+func (o *NvmeServiceModifyOK) Code() int {
+	return 200
+}
+
 func (o *NvmeServiceModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceModifyOK", 200)
 }
 
 func (o *NvmeServiceModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceModifyOK", 200)
 }
 
 func (o *NvmeServiceModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -110,16 +116,12 @@ func NewNvmeServiceModifyDefault(code int) *NvmeServiceModifyDefault {
 | 2621462 | The supplied SVM does not exist. |
 | 5374893 | The SVM is stopped. The SVM must be running to create an NVMe service. |
 | 72089651 | The supplied SVM does not have an NVMe service. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NvmeServiceModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nvme service modify default response
-func (o *NvmeServiceModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nvme service modify default response has a 2xx status code
@@ -147,12 +149,19 @@ func (o *NvmeServiceModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nvme service modify default response
+func (o *NvmeServiceModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NvmeServiceModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/nvme/services/{svm.uuid}][%d] nvme_service_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/nvme/services/{svm.uuid}][%d] nvme_service_modify default %s", o._statusCode, payload)
 }
 
 func (o *NvmeServiceModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/nvme/services/{svm.uuid}][%d] nvme_service_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/nvme/services/{svm.uuid}][%d] nvme_service_modify default %s", o._statusCode, payload)
 }
 
 func (o *NvmeServiceModifyDefault) GetPayload() *models.ErrorResponse {

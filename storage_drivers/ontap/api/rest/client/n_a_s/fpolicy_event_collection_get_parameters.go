@@ -68,6 +68,12 @@ type FpolicyEventCollectionGetParams struct {
 	*/
 	Fields []string
 
+	/* FileOperationsAccess.
+
+	   Filter by file_operations.access
+	*/
+	FileOperationsAccess *bool
+
 	/* FileOperationsClose.
 
 	   Filter by file_operations.close
@@ -290,6 +296,12 @@ type FpolicyEventCollectionGetParams struct {
 	*/
 	MaxRecords *int64
 
+	/* MonitorFileopFailure.
+
+	   Filter by monitor_fileop_failure
+	*/
+	MonitorFileopFailure *bool
+
 	/* Name.
 
 	   Filter by name
@@ -412,6 +424,17 @@ func (o *FpolicyEventCollectionGetParams) WithFields(fields []string) *FpolicyEv
 // SetFields adds the fields to the fpolicy event collection get params
 func (o *FpolicyEventCollectionGetParams) SetFields(fields []string) {
 	o.Fields = fields
+}
+
+// WithFileOperationsAccess adds the fileOperationsAccess to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsAccess(fileOperationsAccess *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsAccess(fileOperationsAccess)
+	return o
+}
+
+// SetFileOperationsAccess adds the fileOperationsAccess to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsAccess(fileOperationsAccess *bool) {
+	o.FileOperationsAccess = fileOperationsAccess
 }
 
 // WithFileOperationsClose adds the fileOperationsClose to the fpolicy event collection get params
@@ -821,6 +844,17 @@ func (o *FpolicyEventCollectionGetParams) SetMaxRecords(maxRecords *int64) {
 	o.MaxRecords = maxRecords
 }
 
+// WithMonitorFileopFailure adds the monitorFileopFailure to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithMonitorFileopFailure(monitorFileopFailure *bool) *FpolicyEventCollectionGetParams {
+	o.SetMonitorFileopFailure(monitorFileopFailure)
+	return o
+}
+
+// SetMonitorFileopFailure adds the monitorFileopFailure to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetMonitorFileopFailure(monitorFileopFailure *bool) {
+	o.MonitorFileopFailure = monitorFileopFailure
+}
+
 // WithName adds the name to the fpolicy event collection get params
 func (o *FpolicyEventCollectionGetParams) WithName(name *string) *FpolicyEventCollectionGetParams {
 	o.SetName(name)
@@ -914,6 +948,23 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.FileOperationsAccess != nil {
+
+		// query param file_operations.access
+		var qrFileOperationsAccess bool
+
+		if o.FileOperationsAccess != nil {
+			qrFileOperationsAccess = *o.FileOperationsAccess
+		}
+		qFileOperationsAccess := swag.FormatBool(qrFileOperationsAccess)
+		if qFileOperationsAccess != "" {
+
+			if err := r.SetQueryParam("file_operations.access", qFileOperationsAccess); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -1541,6 +1592,23 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		if qMaxRecords != "" {
 
 			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MonitorFileopFailure != nil {
+
+		// query param monitor_fileop_failure
+		var qrMonitorFileopFailure bool
+
+		if o.MonitorFileopFailure != nil {
+			qrMonitorFileopFailure = *o.MonitorFileopFailure
+		}
+		qMonitorFileopFailure := swag.FormatBool(qrMonitorFileopFailure)
+		if qMonitorFileopFailure != "" {
+
+			if err := r.SetQueryParam("monitor_fileop_failure", qMonitorFileopFailure); err != nil {
 				return err
 			}
 		}

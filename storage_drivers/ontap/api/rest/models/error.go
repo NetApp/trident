@@ -33,11 +33,6 @@ type Error struct {
 	// Example: entry doesn't exist
 	// Read Only: true
 	Message *string `json:"message,omitempty"`
-
-	// The target parameter that caused the error.
-	// Example: uuid
-	// Read Only: true
-	Target *string `json:"target,omitempty"`
 }
 
 // Validate validates this error
@@ -94,10 +89,6 @@ func (m *Error) ContextValidate(ctx context.Context, formats strfmt.Registry) er
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateTarget(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -138,15 +129,6 @@ func (m *Error) contextValidateErrorInlineArguments(ctx context.Context, formats
 func (m *Error) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "message", "body", m.Message); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Error) contextValidateTarget(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "target", "body", m.Target); err != nil {
 		return err
 	}
 

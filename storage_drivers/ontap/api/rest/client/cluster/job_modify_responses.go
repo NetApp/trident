@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *JobModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the job modify o k response
+func (o *JobModifyOK) Code() int {
+	return 200
+}
+
 func (o *JobModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /cluster/jobs/{uuid}][%d] jobModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /cluster/jobs/{uuid}][%d] jobModifyOK", 200)
 }
 
 func (o *JobModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /cluster/jobs/{uuid}][%d] jobModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /cluster/jobs/{uuid}][%d] jobModifyOK", 200)
 }
 
 func (o *JobModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,7 +112,6 @@ func NewJobModifyDefault(code int) *JobModifyDefault {
 
 | Error Code | Description                                                  |
 | ---------- | -----------                                                  |
-|     459753 | Command execution failed with custom error from the program. |
 |     458762 | Job is already in a terminal state.                          |
 |     458773 | The Job Manager is not initialized.                          |
 |     458771 | The specified job is running.                                |
@@ -118,11 +123,6 @@ type JobModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the job modify default response
-func (o *JobModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this job modify default response has a 2xx status code
@@ -150,12 +150,19 @@ func (o *JobModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the job modify default response
+func (o *JobModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *JobModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /cluster/jobs/{uuid}][%d] job_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/jobs/{uuid}][%d] job_modify default %s", o._statusCode, payload)
 }
 
 func (o *JobModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /cluster/jobs/{uuid}][%d] job_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/jobs/{uuid}][%d] job_modify default %s", o._statusCode, payload)
 }
 
 func (o *JobModifyDefault) GetPayload() *models.ErrorResponse {

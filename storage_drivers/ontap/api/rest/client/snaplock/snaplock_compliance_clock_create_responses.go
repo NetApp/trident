@@ -6,6 +6,7 @@ package snaplock
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -56,8 +57,6 @@ type SnaplockComplianceClockCreateCreated struct {
 	/* Useful for tracking the resource location
 	 */
 	Location string
-
-	Payload *models.SnaplockComplianceClock
 }
 
 // IsSuccess returns true when this snaplock compliance clock create created response has a 2xx status code
@@ -85,16 +84,17 @@ func (o *SnaplockComplianceClockCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the snaplock compliance clock create created response
+func (o *SnaplockComplianceClockCreateCreated) Code() int {
+	return 201
+}
+
 func (o *SnaplockComplianceClockCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /storage/snaplock/compliance-clocks][%d] snaplockComplianceClockCreateCreated  %+v", 201, o.Payload)
+	return fmt.Sprintf("[POST /storage/snaplock/compliance-clocks][%d] snaplockComplianceClockCreateCreated", 201)
 }
 
 func (o *SnaplockComplianceClockCreateCreated) String() string {
-	return fmt.Sprintf("[POST /storage/snaplock/compliance-clocks][%d] snaplockComplianceClockCreateCreated  %+v", 201, o.Payload)
-}
-
-func (o *SnaplockComplianceClockCreateCreated) GetPayload() *models.SnaplockComplianceClock {
-	return o.Payload
+	return fmt.Sprintf("[POST /storage/snaplock/compliance-clocks][%d] snaplockComplianceClockCreateCreated", 201)
 }
 
 func (o *SnaplockComplianceClockCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -104,13 +104,6 @@ func (o *SnaplockComplianceClockCreateCreated) readResponse(response runtime.Cli
 
 	if hdrLocation != "" {
 		o.Location = hdrLocation
-	}
-
-	o.Payload = new(models.SnaplockComplianceClock)
-
-	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
-		return err
 	}
 
 	return nil
@@ -124,19 +117,23 @@ func NewSnaplockComplianceClockCreateDefault(code int) *SnaplockComplianceClockC
 }
 
 /*
-SnaplockComplianceClockCreateDefault describes a response with status code -1, with default header values.
+	SnaplockComplianceClockCreateDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response codes
+
+| Error code  |  Description |
+|-------------|--------------|
+|  13763062   | Compliance Clock already initialized  |
+|  13763084   | ComplianceClock re-initialization failed as it requires that all nodes in the cluster are healthy, all volumes are in online state, no volumes are present in the volume recovery queue and there are no SnapLock volumes or volumes with \"snapshot-locking-enabled\" set to true or S3 buckets with object locking enabled.  |
+|  13763085   | ComplianceClock re-initialization supported on effective cluster version of ONTAP 9.14.1 or later. |
+|  14090240   | Node with the specified UUID does not exist |
+|  14090241   | The specified node name and node UUID refer to different nodes |
+|  14090343   | Invalid field |
 */
 type SnaplockComplianceClockCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snaplock compliance clock create default response
-func (o *SnaplockComplianceClockCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snaplock compliance clock create default response has a 2xx status code
@@ -164,12 +161,19 @@ func (o *SnaplockComplianceClockCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snaplock compliance clock create default response
+func (o *SnaplockComplianceClockCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnaplockComplianceClockCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/snaplock/compliance-clocks][%d] snaplock_compliance_clock_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/snaplock/compliance-clocks][%d] snaplock_compliance_clock_create default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockComplianceClockCreateDefault) String() string {
-	return fmt.Sprintf("[POST /storage/snaplock/compliance-clocks][%d] snaplock_compliance_clock_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/snaplock/compliance-clocks][%d] snaplock_compliance_clock_create default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockComplianceClockCreateDefault) GetPayload() *models.ErrorResponse {

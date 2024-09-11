@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type SecuritySamlSpCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *SecuritySamlSpCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewSecuritySamlSpCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewSecuritySamlSpCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *SecuritySamlSpCreateReader) ReadResponse(response runtime.ClientRespons
 	}
 }
 
+// NewSecuritySamlSpCreateCreated creates a SecuritySamlSpCreateCreated with default headers values
+func NewSecuritySamlSpCreateCreated() *SecuritySamlSpCreateCreated {
+	return &SecuritySamlSpCreateCreated{}
+}
+
+/*
+SecuritySamlSpCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type SecuritySamlSpCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.SecuritySamlSpJobLinkResponse
+}
+
+// IsSuccess returns true when this security saml sp create created response has a 2xx status code
+func (o *SecuritySamlSpCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security saml sp create created response has a 3xx status code
+func (o *SecuritySamlSpCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security saml sp create created response has a 4xx status code
+func (o *SecuritySamlSpCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security saml sp create created response has a 5xx status code
+func (o *SecuritySamlSpCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security saml sp create created response a status code equal to that given
+func (o *SecuritySamlSpCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the security saml sp create created response
+func (o *SecuritySamlSpCreateCreated) Code() int {
+	return 201
+}
+
+func (o *SecuritySamlSpCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/cluster/saml-sp][%d] securitySamlSpCreateCreated %s", 201, payload)
+}
+
+func (o *SecuritySamlSpCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/cluster/saml-sp][%d] securitySamlSpCreateCreated %s", 201, payload)
+}
+
+func (o *SecuritySamlSpCreateCreated) GetPayload() *models.SecuritySamlSpJobLinkResponse {
+	return o.Payload
+}
+
+func (o *SecuritySamlSpCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.SecuritySamlSpJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewSecuritySamlSpCreateAccepted creates a SecuritySamlSpCreateAccepted with default headers values
 func NewSecuritySamlSpCreateAccepted() *SecuritySamlSpCreateAccepted {
 	return &SecuritySamlSpCreateAccepted{}
@@ -57,7 +146,7 @@ type SecuritySamlSpCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.SecuritySamlSpJobLinkResponse
 }
 
 // IsSuccess returns true when this security saml sp create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *SecuritySamlSpCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the security saml sp create accepted response
+func (o *SecuritySamlSpCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *SecuritySamlSpCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /security/authentication/cluster/saml-sp][%d] securitySamlSpCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/cluster/saml-sp][%d] securitySamlSpCreateAccepted %s", 202, payload)
 }
 
 func (o *SecuritySamlSpCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /security/authentication/cluster/saml-sp][%d] securitySamlSpCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/cluster/saml-sp][%d] securitySamlSpCreateAccepted %s", 202, payload)
 }
 
-func (o *SecuritySamlSpCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *SecuritySamlSpCreateAccepted) GetPayload() *models.SecuritySamlSpJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *SecuritySamlSpCreateAccepted) readResponse(response runtime.ClientRespo
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.SecuritySamlSpJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -137,16 +233,16 @@ func NewSecuritySamlSpCreateDefault(code int) *SecuritySamlSpCreateDefault {
 | 12320806 | The certificate information entered does not match any installed certificates. |
 | 12320814 | An invalid IDP URI has been entered. |
 | 12320815 | An IDP URI must be an HTTPS or FTPS URI. |
+| 12320819 | Use the HTTPS scheme for the “idp_uri“ or set “verify_metadata_server“ to false. |
+| 12320820 | No certificate is installed with the specified “certificate.ca“ and “certificate.serial“. |
+| 12320821 | No certificate is installed with the specified “certificate.common_name“. |
+| 12320823 | The host parameter provided must be the cluster management interface's IP address. If the cluster management interface is not available, the node management interface's IP address must be used. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SecuritySamlSpCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security saml sp create default response
-func (o *SecuritySamlSpCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security saml sp create default response has a 2xx status code
@@ -174,12 +270,19 @@ func (o *SecuritySamlSpCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security saml sp create default response
+func (o *SecuritySamlSpCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecuritySamlSpCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/authentication/cluster/saml-sp][%d] security_saml_sp_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/cluster/saml-sp][%d] security_saml_sp_create default %s", o._statusCode, payload)
 }
 
 func (o *SecuritySamlSpCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/authentication/cluster/saml-sp][%d] security_saml_sp_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/cluster/saml-sp][%d] security_saml_sp_create default %s", o._statusCode, payload)
 }
 
 func (o *SecuritySamlSpCreateDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *ActiveDirectoryCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the active directory create created response
+func (o *ActiveDirectoryCreateCreated) Code() int {
+	return 201
+}
+
 func (o *ActiveDirectoryCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/active-directory][%d] activeDirectoryCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/active-directory][%d] activeDirectoryCreateCreated %s", 201, payload)
 }
 
 func (o *ActiveDirectoryCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/active-directory][%d] activeDirectoryCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/active-directory][%d] activeDirectoryCreateCreated %s", 201, payload)
 }
 
 func (o *ActiveDirectoryCreateCreated) GetPayload() *models.ActiveDirectory {
@@ -130,20 +138,19 @@ func NewActiveDirectoryCreateDefault(code int) *ActiveDirectoryCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 655562 | The NetBIOS name cannot be longer than 15 characters. |
+| 655915 | A CIFS server for this SVM already exists. Having both a CIFS server and an Active Directory account for the same SVM is not supported. Use the \\\"vserver cifs delete\\\" command to delete the existing CIFS server and try the command again. |
 | 656464 | Failed to create the Active Directory machine account. Reason: Invalid Credentials. |
-| 656465 | Failed to create the Active Directory machine account. Reason: Account with same name already exists. |
-| 656466 | Failed to create the Active Directory machine account. Reason: Domain Controller is not reachable or does not exist. |
+| 656465 | Failed to create the Active Directory machine account. Reason: An account with this name already exists. |
+| 656466 | Failed to create the Active Directory machine account. Reason: Unable to connect to any domain controllers. |
 | 656467 | Failed to create the Active Directory machine account. Reason: Organizational-Unit not found. |
+| 656490 | Unable to create the Active Directory account. The Active Directory account name is already used by another SVM. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ActiveDirectoryCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the active directory create default response
-func (o *ActiveDirectoryCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this active directory create default response has a 2xx status code
@@ -171,12 +178,19 @@ func (o *ActiveDirectoryCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the active directory create default response
+func (o *ActiveDirectoryCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ActiveDirectoryCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/active-directory][%d] active_directory_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/active-directory][%d] active_directory_create default %s", o._statusCode, payload)
 }
 
 func (o *ActiveDirectoryCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/active-directory][%d] active_directory_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/active-directory][%d] active_directory_create default %s", o._statusCode, payload)
 }
 
 func (o *ActiveDirectoryCreateDefault) GetPayload() *models.ErrorResponse {

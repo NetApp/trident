@@ -6,6 +6,7 @@ package object_store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *AllSvmBucketsCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the all svm buckets collection get o k response
+func (o *AllSvmBucketsCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *AllSvmBucketsCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/s3/buckets][%d] allSvmBucketsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/buckets][%d] allSvmBucketsCollectionGetOK %s", 200, payload)
 }
 
 func (o *AllSvmBucketsCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/s3/buckets][%d] allSvmBucketsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/buckets][%d] allSvmBucketsCollectionGetOK %s", 200, payload)
 }
 
 func (o *AllSvmBucketsCollectionGetOK) GetPayload() *models.S3BucketResponse {
@@ -122,11 +130,6 @@ type AllSvmBucketsCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the all svm buckets collection get default response
-func (o *AllSvmBucketsCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this all svm buckets collection get default response has a 2xx status code
 func (o *AllSvmBucketsCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *AllSvmBucketsCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the all svm buckets collection get default response
+func (o *AllSvmBucketsCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AllSvmBucketsCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/s3/buckets][%d] all_svm_buckets_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/buckets][%d] all_svm_buckets_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *AllSvmBucketsCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/s3/buckets][%d] all_svm_buckets_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/buckets][%d] all_svm_buckets_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *AllSvmBucketsCollectionGetDefault) GetPayload() *models.ErrorResponse {

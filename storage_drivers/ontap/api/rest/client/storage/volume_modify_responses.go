@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type VolumeModifyReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *VolumeModifyReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewVolumeModifyOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewVolumeModifyAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *VolumeModifyReader) ReadResponse(response runtime.ClientResponse, consu
 	}
 }
 
+// NewVolumeModifyOK creates a VolumeModifyOK with default headers values
+func NewVolumeModifyOK() *VolumeModifyOK {
+	return &VolumeModifyOK{}
+}
+
+/*
+VolumeModifyOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type VolumeModifyOK struct {
+	Payload *models.VolumeJobLinkResponse
+}
+
+// IsSuccess returns true when this volume modify o k response has a 2xx status code
+func (o *VolumeModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this volume modify o k response has a 3xx status code
+func (o *VolumeModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this volume modify o k response has a 4xx status code
+func (o *VolumeModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this volume modify o k response has a 5xx status code
+func (o *VolumeModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this volume modify o k response a status code equal to that given
+func (o *VolumeModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the volume modify o k response
+func (o *VolumeModifyOK) Code() int {
+	return 200
+}
+
+func (o *VolumeModifyOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/volumes/{uuid}][%d] volumeModifyOK %s", 200, payload)
+}
+
+func (o *VolumeModifyOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/volumes/{uuid}][%d] volumeModifyOK %s", 200, payload)
+}
+
+func (o *VolumeModifyOK) GetPayload() *models.VolumeJobLinkResponse {
+	return o.Payload
+}
+
+func (o *VolumeModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.VolumeJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewVolumeModifyAccepted creates a VolumeModifyAccepted with default headers values
 func NewVolumeModifyAccepted() *VolumeModifyAccepted {
 	return &VolumeModifyAccepted{}
@@ -52,7 +129,7 @@ VolumeModifyAccepted describes a response with status code 202, with default hea
 Accepted
 */
 type VolumeModifyAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.VolumeJobLinkResponse
 }
 
 // IsSuccess returns true when this volume modify accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *VolumeModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the volume modify accepted response
+func (o *VolumeModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *VolumeModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /storage/volumes/{uuid}][%d] volumeModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/volumes/{uuid}][%d] volumeModifyAccepted %s", 202, payload)
 }
 
 func (o *VolumeModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /storage/volumes/{uuid}][%d] volumeModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/volumes/{uuid}][%d] volumeModifyAccepted %s", 202, payload)
 }
 
-func (o *VolumeModifyAccepted) GetPayload() *models.JobLinkResponse {
+func (o *VolumeModifyAccepted) GetPayload() *models.VolumeJobLinkResponse {
 	return o.Payload
 }
 
 func (o *VolumeModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.VolumeJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -118,16 +202,26 @@ func NewVolumeModifyDefault(code int) *VolumeModifyDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 262256 | Tags cannot be modified for the volume because of the specified reason. |
+| 524511 | Failed to restore snapshot \"restore_to.snapshot.name\". |
+| 524849 | Attribute cannot be modified for the target volume because of the specified reason. |
 | 787141 | The specified \"aggregates.name\" and \"aggregates.uuid\" refer to different aggregates. |
+| 787144 | The volume is on an aggregate that is not part of a FabricPool. |
 | 917505 | SVM not found. |
+| 917534 | The value specified for field \"-size\" is too small. Update the field \"-size\" with the minimum size allowed and retry. |
+| 917597 | Provisioning a volume on a root aggregate is not supported. |
+| 917617 | Cannot modify snapshot policy on volumes of type DC, DP, LS or TMP. |
+| 917628 | Modification of the specified fields is not allowed for the target volume type. |
 | 917829 | Volume autosize grow threshold must be larger than autosize shrink threshold. |
 | 917831 | Volume minimum autosize must be smaller than the maximum autosize. |
+| 917888 | Invalid character in volume name. It can have '_' and alphanumeric characters.; |
+| 918183 | The specified tiering policy is not supported for the current system configuration. |
 | 918193 | Cannot modify tiering min cooling days when vol move is in progress. |
 | 918194 | Tiering min cooling days not supported for SVMDR. |
 | 918195 | Tiering min cooling days not supported for non data volumes. |
 | 918196 | Tiering min cooling days not allowed for the provided tiering policy. |
 | 918248 | Specifying a value is not valid for initiating volume FlexClone split operation. |
-| 918251 | Specifying a value is not valid for a Snapshot copy restore operation. |
+| 918251 | Specifying a value is not valid for a snapshot restore operation. |
 | 918252 | specified \"nas.path\" is invalid. |
 | 918265 | Volume is on the same aggregate. |
 | 918266 | \"movement.destination_aggregate\" and \"movement.state\" are mutually exclusive, unless the state is \"cutover-wait\". |
@@ -135,6 +229,7 @@ func NewVolumeModifyDefault(code int) *VolumeModifyDefault {
 | 918291 | Invalid volume cloud retrieval policy for the provided tiering policy. |
 | 918292 | cloud retrieval policy not supported for non data volume. |
 | 918293 | Cannot modify cloud retrieval policy when vol move is in progress. |
+| 918334 | Cache cloud retrieval policy requires an effective cluster version of 9.14 or later. |
 | 918521 | The volume maximum autosize must be smaller than or equal to the maximum volume size. |
 | 918532 | The FlexClone match-parent-storage-tier option requires an effective cluster version of 9.9.1 or later. |
 | 918533 | The FlexClone match-parent-storage-tier option not applicable for FlexClone volumes hosted on non-FabricPool storage. |
@@ -142,25 +237,91 @@ func NewVolumeModifyDefault(code int) *VolumeModifyDefault {
 | 918535 | The tiering minimum cooling day values are different for the FlexClone volume and its parent volume. The match-parent-storage-tier option cannot be set to true. |
 | 918537 | Could not get the FlexClone volume tiering policy or its parent volume tiering policy. Wait a minute and try again. |
 | 918538 | The match-parent-storage-tier option is not supported for clone creation. |
+| 918577 | Only FlexVol to FlexGroup conversions are currently supported. |
+| 918583 | Disabling large volume size is not supported because the volume contains files larger than 16TB or the volume size is larger than 100TB. |
+| 918599 | Cloud write requires an effective cluster version of 9.13.1 or later. |
+| 918600 | Cloud write is only supported for volumes in a FabricPool on FSx for ONTAP or Cloud Volumes ONTAP. |
+| 918601 | Only the \\\"all\\\" tiering policy is allowed on a volume with cloud write. |
+| 918602 | Cannot move volume when cloud write is enabled. |
+| 918603 | Cloud write is only supported on volumes with Read-Write access. |
+| 918604 | Cloud write is not supported because the volume is the destination or source endpoint of one or more SnapMirror relationships. |
+| 918605 | Cloud write cannot be enabled on a clone volume. |
+| 918606 | Cloud write cannot be enabled on a volume containing LUNs. |
+| 918607 | Cloud write is not supported because this volume belongs to an SVM that is the source of a DR relationship. |
+| 918624 | Tiering storage class requires an effective cluster version of ONTAP 9.13.1 or later. |
+| 918625 | Tiering storage class is only supported for volumes in a FabricPool on FSx for ONTAP or Cloud Volumes ONTAP for AWS. |
+| 918626 | Tiering storage class is not supported for volumes in a FlexGroup. |
+| 918627 | The specified value for \"tiering.storage_class\" is not supported. |
+| 918636 | Volume \"name\" in SVM \"svm.name\" is part of a Consistency Group. Snapshot locking cannot be enabled on a volume that is part of a Consistency Group. |
+| 918639 | One or more of the fields \"-max-size\",\"-max-autosize\",\"-size\" are being set or modified. Set the values so that \"-max-size\" is always greater than or equal to \"-max-autosize\" and \"-size\". |
+| 918641 | The value passed for \"-max-size\" is invalid. Valid values for the current platform are specified. |
+| 918647 | One or more of the fields \"-max-autosize\",\"-size\" are being set or modified. Set the values so that \"-max-autosize\" and \"-size\" are always less than or equal to the specified value. |
+| 918650 | The asynchronous directory delete trash bin name cannot be specified unless asynchronous directory delete from the client is being enabled. |
+| 918652 | \"error\" is an invalid value for field \"-state\". Valid values are \"online\", \"offline\" and \"restricted\". |
+| 918655 | Cloud write is not supported on the current configuration. |
+| 918658 | Volume is on a FabricPool-enabled aggregate. CIFS applications might time out when cloud write is enabled on a volume that is on a FabricPool-enabled aggregate. |
+| 918659 | Cloud write can only be enabled on FabricPool-enabled aggregates. |
+| 918660 | Cloud write enabled volumes can only be moved to FabricPool-enabled aggregates. Disable cloud write to move the volume to a non-FabricPool aggregates. |
+| 918703 | Modification of the specified volume properties are not supported on this platform. |
+| 1638480 | Failed to promote snapshot \"restore_to.snapshot.name\" because one or more newer snapshots are currently used as a reference snapshot for data protection operations. |
+| 1638590 | Promoting a \"-pre-conversion\" snapshot is not supported. |
 | 2424998 | Unable to determine whether MetroCluster is configured. |
+| 2621572 | Modification of the specified field is not permitted on an SVM that is configured as the destination for identity discard SVM DR. |
+| 6488103 | Async directory delete from the client is already enabled on volume \"name\" in SVM \"svm.name\". |
+| 6488104 | Async directory delete from the client is already disabled on volume \"name\" in SVM \"svm.name\". |
+| 6881612 | Cannot enable inline deduplication on a non AFF Platform or on non HYA aggregate. |
+| 6881640 | The \"efficiency.state\" field is only supported on read-write volumes on FSx for ONTAP and Cloud Volumes ONTAP. |
+| 6881651 | File compression is not supported on volumes with \"max-size > 300TB\". Modify the volume max-size, then retry. |
+| 6881659 | Changing \"storage-efficiency-mode\" from \"efficient\" to \"default\" is not supported. |
+| 6881661 | Volume efficiency scanner cannot be started on volume with efficiency policy set as inline-only. |
+| 8454210 | Failed to complete the operation because a QoS workload could not be created, modified or deleted. Wait a few seconds, and then try the operation again. |
 | 9437885 | The volume is not online. |
+| 9437886 | Volume snapshot restore failed because there are newer unexpired locked snapshots in the volume. |
 | 13107256 | Operation is only supported on FlexGroup volumes. |
+| 13107349 | Operation is only supported on flexible volumes and FlexGroup volumes. |
 | 13107371 | Operation is only supported on read-write FlexGroup volumes. |
 | 13107404 | When adding new resources to a FlexGroup by specifying \"aggregates.name\" or \"aggregates.uuid\", the FlexGroup cannot be resized using \"size\". These operations must be done separately. |
 | 13107415 | Failed to lookup a volume property. |
 | 13107431 | Failed to lookup an SVM property. |
-| 13107433 | A Snapshot copy is scheduled to be taken within the volume capacity rebalancing runtime. |
+| 13107433 | A snapshot is scheduled to be taken within the volume capacity rebalancing runtime. |
 | 13107434 | A SnapMirror update is scheduled within the volume capacity rebalancing runtime. |
 | 13109187 | When adding new resources to a FlexGroup using \"sizing_method\", \"size\" must be specified.  Neither \"aggregates.name\" nor \"aggregates.uuid\" are allowed to be specified, as the aggregates are selected automatically by the system. |
 | 13109198 | Resizing by adding new resources is only supported for FlexGroups. |
 | 13109258 | Cannot enable granular data on volume \"name\" in Vserver \"svm.name\". This setting can only be enabled on FlexGroups. |
-| 13109259 | Granular data cannot be disabled on volume \"name\" in Vserver \"svm.name\". This property can only be disabled by restoring a Snapshot copy. |
+| 13109259 | Granular data cannot be disabled on volume \"name\" in Vserver \"svm.name\". This property can only be disabled by restoring a snapshot. |
 | 13109260 | Failed to enable granular data on the volume. |
+| 13763477 | Cannot modify the SnapLock configuration on volume "name" in SVM "svm.name" because the volume is a part of a consistency group. |
+| 65536965 | The key manager on data Vserver \\\"{0}\\\" is in the blocked state due to key access errors. Possible reasons for a blocked state include the top-level external key protection key is disabled or not found or the current user does not have access to perform the requested action. Fix the issues with the key manager that manages the top-level external key protection key on data Vserver \\\"{0}\\\" to bring the key manager to the active state and then try to bring the volume online again. |
+| 65539432 | Cannot online volume \\\"{1}\\\" on Vserver \\\"{0}\\\" while the keystore is being initialized. Wait until the keystore is in the active state, and rerun the volume operation. |
+| 65539433 | Cannot online volume \\\"{1}\\\" on Vserver \\\"{0}\\\" while the keystore is being disabled. |
+| 66846758 | Modification of the specified fields is not allowed for FlexCache volumes. |
+| 66846772 | Modification of the specified fields is not allowed for origin of FlexCache volumes. |
 | 111411201 | File system analytics cannot be enabled on the target volume because of the specified reason. |
 | 111411202 | File system analytics cannot be disabled on the target volume because of the specified reason. |
 | 111411205 | File system analytics requires an effective cluster version of 9.8 or later. |
 | 111411206 | The specified \"analytics.state\" is invalid. |
 | 111411207 | File system analytics cannot be enabled on volumes that contain LUNs. |
+| 111411207 | Volume file system analytics is not supported on volumes that contain LUNs. |
+| 111411209 | Volume file system analytics is not supported on FlexCache volumes. |
+| 111411210 | Volume file system analytics is not supported on audit staging volumes. |
+| 111411211 | Volume file system analytics is not supported on object store server volumes. |
+| 111411212 | Volume file system analytics is not supported on SnapMirror destination volumes. |
+| 111411216 | Enabling or disabling volume file system analytics is not supported on individual FlexGroup constituents. |
+| 111411217 | Volume file system analytics is not supported on SnapLock volumes. |
+| 111411230 | Volume file system analytics is not supported on volumes that contain NVMe namespaces. |
+| 111411241 | Volume file system analytics is not supported for All SAN Array clusters. |
+| 111411252 | Failed to enable file system analytics on volume \"name\" in SVM \"svm.name\" because there is insufficient available space. Ensure there is at least \"space.available_percent`\" available space in the volume, then try the operation again. |
+| 111411253 | Failed to enable file system analytics on volume \"name\" in SVM \"svm.name\" because there is insufficient available space. Ensure there is at least \"space.available_percent\" available space in all constituents of the FlexGroup, then try the operation again." |
+| 111411257 | Failed to enable file system analytics on volume \"name\" in SVM \"svm.name\" because there is insufficient available space. Increase the volume size to \"size\", then try the operation again." |
+| 124518405 | Volume activity tracking is not supported on volumes that contain LUNs. |
+| 124518407 | Volume activity tracking is not supported on FlexCache volumes. |
+| 124518408 | Volume activity tracking is not supported on audit staging volumes. |
+| 124518409 | Volume activity tracking is not supported on object store server volumes. |
+| 124518410 | Volume activity tracking is not supported on SnapMirror destination volumes. |
+| 124518411 | Enabling or disabling volume activity tracking is not supported on individual FlexGroup constituents. |
+| 124518412 | Volume activity tracking is not supported on SnapLock volumes. |
+| 124518414 | Volume activity tracking is not supported on volumes that contain NVMe namespaces. |
+| 124518422 | Volume activity tracking is not supported on All SAN Array clusters. |
 | 144180203 | Volume capacity rebalancing is not supported on FlexCache volumes. |
 | 144180204 | Volume capacity rebalancing is not supported on object store volumes. |
 | 144180207 | Volume capacity rebalancing is not supported on inactive MetroCluster configurations. |
@@ -178,16 +339,25 @@ func NewVolumeModifyDefault(code int) *VolumeModifyDefault {
 | 144182223 | Volume capacity rebalancing is not running on the volume. |
 | 144182225 | Internal error in the data component. |
 | 144182226 | Failed to load the volume capacity rebalancing configuration for the volume. |
+| 144182233 | The specified rebalancing start time must be set to the current time or a later time. |
+| 144182235 | The \"-min-file-size\" value specified must be larger than or equal to 20MB. |
+| 196608022 | Failed to start rekey on volume \"name\" in SVM \"svm.name\" because of the specified reason. |
+| 196608023 | Failed to pause rekey on volume \"name\" because of the specified reason. |
+| 196608024 | Failed to resume rekey on volume \"name\" because of the specified reason. |
+| 196608038 | Failed to start conversion on volume \"name\" in SVM \"svm.name\" because of the specified reason. |
+| 196608039 | Failed to pause conversion on volume \"name\" because of the specified reason. |
+| 196608041 | Failed to resume conversion on volume \"name\" because of the specified reason. |
+| 196608207 | Rekey operation is already in progress on volume \"name\". |
+| 196608208 | Encryption conversion operation is already in progress on volume \"name\". |
+| 196608209 | Operation is already paused. |
+| 203161623 | Disabling anti-ransomware for volume \"volume_name\" in SVM \"vserver_name\" is in progress. Wait a few minutes, and try the operation again. |
+| 203161629 | Anti-ransomware is not supported on a volume with Snapshot autodelete commitment set to \"destroy\". |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type VolumeModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the volume modify default response
-func (o *VolumeModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this volume modify default response has a 2xx status code
@@ -215,12 +385,19 @@ func (o *VolumeModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the volume modify default response
+func (o *VolumeModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VolumeModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/volumes/{uuid}][%d] volume_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/volumes/{uuid}][%d] volume_modify default %s", o._statusCode, payload)
 }
 
 func (o *VolumeModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /storage/volumes/{uuid}][%d] volume_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/volumes/{uuid}][%d] volume_modify default %s", o._statusCode, payload)
 }
 
 func (o *VolumeModifyDefault) GetPayload() *models.ErrorResponse {

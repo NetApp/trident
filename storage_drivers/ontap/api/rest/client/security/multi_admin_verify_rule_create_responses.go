@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *MultiAdminVerifyRuleCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the multi admin verify rule create created response
+func (o *MultiAdminVerifyRuleCreateCreated) Code() int {
+	return 201
+}
+
 func (o *MultiAdminVerifyRuleCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/multi-admin-verify/rules][%d] multiAdminVerifyRuleCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/multi-admin-verify/rules][%d] multiAdminVerifyRuleCreateCreated %s", 201, payload)
 }
 
 func (o *MultiAdminVerifyRuleCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/multi-admin-verify/rules][%d] multiAdminVerifyRuleCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/multi-admin-verify/rules][%d] multiAdminVerifyRuleCreateCreated %s", 201, payload)
 }
 
 func (o *MultiAdminVerifyRuleCreateCreated) GetPayload() *models.MultiAdminVerifyRuleResponse {
@@ -140,16 +148,12 @@ func NewMultiAdminVerifyRuleCreateDefault(code int) *MultiAdminVerifyRuleCreateD
 | 262316 | Value must be in the range one second to two weeks. |
 | 262326 | Failed to parse query. |
 | 262335 | The query string must be contained in either the "operation" or "query" parameters but not in both. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type MultiAdminVerifyRuleCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the multi admin verify rule create default response
-func (o *MultiAdminVerifyRuleCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this multi admin verify rule create default response has a 2xx status code
@@ -177,12 +181,19 @@ func (o *MultiAdminVerifyRuleCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the multi admin verify rule create default response
+func (o *MultiAdminVerifyRuleCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MultiAdminVerifyRuleCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/multi-admin-verify/rules][%d] multi_admin_verify_rule_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/multi-admin-verify/rules][%d] multi_admin_verify_rule_create default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyRuleCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/multi-admin-verify/rules][%d] multi_admin_verify_rule_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/multi-admin-verify/rules][%d] multi_admin_verify_rule_create default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyRuleCreateDefault) GetPayload() *models.ErrorResponse {

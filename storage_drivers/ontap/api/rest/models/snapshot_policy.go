@@ -16,7 +16,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// SnapshotPolicy The Snapshot copy policy object is associated with a read-write volume used to create and delete Snapshot copies at regular intervals.
+// SnapshotPolicy The snapshot policy object is associated with a read-write volume used to create and delete snapshots at regular intervals.
 //
 // swagger:model snapshot_policy
 type SnapshotPolicy struct {
@@ -24,20 +24,20 @@ type SnapshotPolicy struct {
 	// links
 	Links *SnapshotPolicyInlineLinks `json:"_links,omitempty"`
 
-	// A comment associated with the Snapshot copy policy.
+	// A comment associated with the snapshot policy.
 	Comment *string `json:"comment,omitempty"`
 
-	// Is the Snapshot copy policy enabled?
+	// Is the snapshot policy enabled?
 	// Example: true
 	Enabled *bool `json:"enabled,omitempty"`
 
-	// Name of the Snapshot copy policy.
+	// Name of the snapshot policy.
 	// Example: default
 	Name *string `json:"name,omitempty"`
 
 	// Set to "svm" when the request is on a data SVM, otherwise set to "cluster".
 	// Read Only: true
-	// Enum: [svm cluster]
+	// Enum: ["svm","cluster"]
 	Scope *string `json:"scope,omitempty"`
 
 	// snapshot policy inline copies
@@ -309,13 +309,13 @@ func (m *SnapshotPolicy) UnmarshalBinary(b []byte) error {
 // swagger:model snapshot_policy_inline_copies_inline_array_item
 type SnapshotPolicyInlineCopiesInlineArrayItem struct {
 
-	// The number of Snapshot copies to maintain for this schedule.
+	// The number of snapshots to maintain for this schedule.
 	Count *int64 `json:"count,omitempty"`
 
-	// The prefix to use while creating Snapshot copies at regular intervals.
+	// The prefix to use while creating snapshots at regular intervals.
 	Prefix *string `json:"prefix,omitempty"`
 
-	// The retention period of Snapshot copies for this schedule. The retention period value represents a duration and must be specified in the ISO-8601 duration format. The retention period can be in years, months, days, hours, and minutes. A period specified for years, months, and days is represented in the ISO-8601 format as "P<num>Y", "P<num>M", "P<num>D" respectively, for example "P10Y" represents a duration of 10 years. A duration in hours and minutes is represented by "PT<num>H" and "PT<num>M" respectively. The period string must contain only a single time element that is, either years, months, days, hours, or minutes. A duration which combines different periods is not supported, for example "P1Y10M" is not supported.
+	// The retention period of snapshots for this schedule. The retention period value represents a duration and must be specified in the ISO-8601 duration format. The retention period can be in years, months, days, hours, and minutes. A period specified for years, months, and days is represented in the ISO-8601 format as "P<num>Y", "P<num>M", "P<num>D" respectively, for example "P10Y" represents a duration of 10 years. A duration in hours and minutes is represented by "PT<num>H" and "PT<num>M" respectively. The period string must contain only a single time element that is, either years, months, days, hours, or minutes. A duration which combines different periods is not supported, for example "P1Y10M" is not supported.
 	RetentionPeriod *string `json:"retention_period,omitempty"`
 
 	// schedule
@@ -407,18 +407,74 @@ func (m *SnapshotPolicyInlineCopiesInlineArrayItem) UnmarshalBinary(b []byte) er
 // swagger:model snapshot_policy_inline_copies_inline_array_item_inline_schedule
 type SnapshotPolicyInlineCopiesInlineArrayItemInlineSchedule struct {
 
-	// Schedule at which Snapshot copies are captured on the volume. Some common schedules already defined in the system are hourly, daily, weekly, at 15 minute intervals, and at 5 minute intervals. Snapshot copy policies with custom schedules can be referenced.
-	// Example: hourly
+	// links
+	Links *SnapshotPolicyInlineCopiesInlineArrayItemInlineScheduleInlineLinks `json:"_links,omitempty"`
+
+	// Job schedule name
+	// Example: weekly
 	Name *string `json:"name,omitempty"`
+
+	// Job schedule UUID
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this snapshot policy inline copies inline array item inline schedule
 func (m *SnapshotPolicyInlineCopiesInlineArrayItemInlineSchedule) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this snapshot policy inline copies inline array item inline schedule based on context it is used
+func (m *SnapshotPolicyInlineCopiesInlineArrayItemInlineSchedule) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("schedule" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this snapshot policy inline copies inline array item inline schedule based on the context it is used
 func (m *SnapshotPolicyInlineCopiesInlineArrayItemInlineSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SnapshotPolicyInlineCopiesInlineArrayItemInlineSchedule) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("schedule" + "." + "_links")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -433,6 +489,92 @@ func (m *SnapshotPolicyInlineCopiesInlineArrayItemInlineSchedule) MarshalBinary(
 // UnmarshalBinary interface implementation
 func (m *SnapshotPolicyInlineCopiesInlineArrayItemInlineSchedule) UnmarshalBinary(b []byte) error {
 	var res SnapshotPolicyInlineCopiesInlineArrayItemInlineSchedule
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SnapshotPolicyInlineCopiesInlineArrayItemInlineScheduleInlineLinks snapshot policy inline copies inline array item inline schedule inline links
+//
+// swagger:model snapshot_policy_inline_copies_inline_array_item_inline_schedule_inline__links
+type SnapshotPolicyInlineCopiesInlineArrayItemInlineScheduleInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this snapshot policy inline copies inline array item inline schedule inline links
+func (m *SnapshotPolicyInlineCopiesInlineArrayItemInlineScheduleInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SnapshotPolicyInlineCopiesInlineArrayItemInlineScheduleInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("schedule" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this snapshot policy inline copies inline array item inline schedule inline links based on the context it is used
+func (m *SnapshotPolicyInlineCopiesInlineArrayItemInlineScheduleInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SnapshotPolicyInlineCopiesInlineArrayItemInlineScheduleInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("schedule" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SnapshotPolicyInlineCopiesInlineArrayItemInlineScheduleInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SnapshotPolicyInlineCopiesInlineArrayItemInlineScheduleInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapshotPolicyInlineCopiesInlineArrayItemInlineScheduleInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -526,7 +668,7 @@ func (m *SnapshotPolicyInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotPolicyInlineSvm snapshot policy inline svm
+// SnapshotPolicyInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model snapshot_policy_inline_svm
 type SnapshotPolicyInlineSvm struct {
@@ -534,12 +676,12 @@ type SnapshotPolicyInlineSvm struct {
 	// links
 	Links *SnapshotPolicyInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

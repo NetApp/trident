@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *HTTPProxyModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the http proxy modify o k response
+func (o *HTTPProxyModifyOK) Code() int {
+	return 200
+}
+
 func (o *HTTPProxyModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /network/http-proxy/{uuid}][%d] httpProxyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/http-proxy/{uuid}][%d] httpProxyModifyOK", 200)
 }
 
 func (o *HTTPProxyModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /network/http-proxy/{uuid}][%d] httpProxyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/http-proxy/{uuid}][%d] httpProxyModifyOK", 200)
 }
 
 func (o *HTTPProxyModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -117,11 +123,6 @@ type HTTPProxyModifyDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the http proxy modify default response
-func (o *HTTPProxyModifyDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this http proxy modify default response has a 2xx status code
 func (o *HTTPProxyModifyDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -147,12 +148,19 @@ func (o *HTTPProxyModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the http proxy modify default response
+func (o *HTTPProxyModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *HTTPProxyModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /network/http-proxy/{uuid}][%d] http_proxy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/http-proxy/{uuid}][%d] http_proxy_modify default %s", o._statusCode, payload)
 }
 
 func (o *HTTPProxyModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /network/http-proxy/{uuid}][%d] http_proxy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/http-proxy/{uuid}][%d] http_proxy_modify default %s", o._statusCode, payload)
 }
 
 func (o *HTTPProxyModifyDefault) GetPayload() *models.ErrorResponse {

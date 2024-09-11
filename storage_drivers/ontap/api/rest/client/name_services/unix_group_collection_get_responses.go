@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *UnixGroupCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the unix group collection get o k response
+func (o *UnixGroupCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *UnixGroupCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/unix-groups][%d] unixGroupCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/unix-groups][%d] unixGroupCollectionGetOK %s", 200, payload)
 }
 
 func (o *UnixGroupCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/unix-groups][%d] unixGroupCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/unix-groups][%d] unixGroupCollectionGetOK %s", 200, payload)
 }
 
 func (o *UnixGroupCollectionGetOK) GetPayload() *models.UnixGroupResponse {
@@ -122,11 +130,6 @@ type UnixGroupCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the unix group collection get default response
-func (o *UnixGroupCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this unix group collection get default response has a 2xx status code
 func (o *UnixGroupCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *UnixGroupCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the unix group collection get default response
+func (o *UnixGroupCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *UnixGroupCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/unix-groups][%d] unix_group_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/unix-groups][%d] unix_group_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *UnixGroupCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/unix-groups][%d] unix_group_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/unix-groups][%d] unix_group_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *UnixGroupCollectionGetDefault) GetPayload() *models.ErrorResponse {

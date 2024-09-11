@@ -6,6 +6,7 @@ package object_store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *S3PolicyCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the s3 policy create created response
+func (o *S3PolicyCreateCreated) Code() int {
+	return 201
+}
+
 func (o *S3PolicyCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/policies][%d] s3PolicyCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/policies][%d] s3PolicyCreateCreated %s", 201, payload)
 }
 
 func (o *S3PolicyCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/policies][%d] s3PolicyCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/policies][%d] s3PolicyCreateCreated %s", 201, payload)
 }
 
 func (o *S3PolicyCreateCreated) GetPayload() *models.S3PolicyResponse {
@@ -137,16 +145,12 @@ func NewS3PolicyCreateDefault(code int) *S3PolicyCreateDefault {
 | 92405950   | Policy name already exists for SVM.
 | 92405954   | Policy name is reserved for read-only policies. Cannot be used for custom policy creation.
 | 92405963   | Failed to create policy statements for policy. Reason: "{reason of failure}". Resolve all issues and retry the operation.
+| 92405863   | Failed to create s3 policy statements. Reason: "{reason of failure}". Valid ways to specify a resource are \"*\", \"<bucket-name>\", \"<bucket-name>/.../...\".\". Resolve all the issues and retry the operation.
 */
 type S3PolicyCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the s3 policy create default response
-func (o *S3PolicyCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this s3 policy create default response has a 2xx status code
@@ -174,12 +178,19 @@ func (o *S3PolicyCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the s3 policy create default response
+func (o *S3PolicyCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *S3PolicyCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/policies][%d] s3_policy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/policies][%d] s3_policy_create default %s", o._statusCode, payload)
 }
 
 func (o *S3PolicyCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/policies][%d] s3_policy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/policies][%d] s3_policy_create default %s", o._statusCode, payload)
 }
 
 func (o *S3PolicyCreateDefault) GetPayload() *models.ErrorResponse {

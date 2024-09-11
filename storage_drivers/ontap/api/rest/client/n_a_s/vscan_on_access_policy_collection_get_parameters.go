@@ -156,6 +156,12 @@ type VscanOnAccessPolicyCollectionGetParams struct {
 	*/
 	ScopeScanWithoutExtension *bool
 
+	/* SvmName.
+
+	   Filter by svm.name
+	*/
+	SvmName *string
+
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
@@ -392,6 +398,17 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WithScopeScanWithoutExtension(s
 // SetScopeScanWithoutExtension adds the scopeScanWithoutExtension to the vscan on access policy collection get params
 func (o *VscanOnAccessPolicyCollectionGetParams) SetScopeScanWithoutExtension(scopeScanWithoutExtension *bool) {
 	o.ScopeScanWithoutExtension = scopeScanWithoutExtension
+}
+
+// WithSvmName adds the svmName to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) WithSvmName(svmName *string) *VscanOnAccessPolicyCollectionGetParams {
+	o.SetSvmName(svmName)
+	return o
+}
+
+// SetSvmName adds the svmName to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
 // WithSvmUUID adds the svmUUID to the vscan on access policy collection get params
@@ -651,6 +668,23 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		if qScopeScanWithoutExtension != "" {
 
 			if err := r.SetQueryParam("scope.scan_without_extension", qScopeScanWithoutExtension); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SvmName != nil {
+
+		// query param svm.name
+		var qrSvmName string
+
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
+		}
+		qSvmName := qrSvmName
+		if qSvmName != "" {
+
+			if err := r.SetQueryParam("svm.name", qSvmName); err != nil {
 				return err
 			}
 		}

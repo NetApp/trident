@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SecurityAuditLogCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the security audit log collection get o k response
+func (o *SecurityAuditLogCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *SecurityAuditLogCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/audit/messages][%d] securityAuditLogCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/audit/messages][%d] securityAuditLogCollectionGetOK %s", 200, payload)
 }
 
 func (o *SecurityAuditLogCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /security/audit/messages][%d] securityAuditLogCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/audit/messages][%d] securityAuditLogCollectionGetOK %s", 200, payload)
 }
 
 func (o *SecurityAuditLogCollectionGetOK) GetPayload() *models.SecurityAuditLogResponse {
@@ -122,11 +130,6 @@ type SecurityAuditLogCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the security audit log collection get default response
-func (o *SecurityAuditLogCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this security audit log collection get default response has a 2xx status code
 func (o *SecurityAuditLogCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SecurityAuditLogCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security audit log collection get default response
+func (o *SecurityAuditLogCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityAuditLogCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/audit/messages][%d] security_audit_log_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/audit/messages][%d] security_audit_log_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SecurityAuditLogCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/audit/messages][%d] security_audit_log_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/audit/messages][%d] security_audit_log_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SecurityAuditLogCollectionGetDefault) GetPayload() *models.ErrorResponse {

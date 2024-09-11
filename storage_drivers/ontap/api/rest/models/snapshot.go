@@ -16,7 +16,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// Snapshot The Snapshot copy object represents a point in time Snapshot copy of a volume.
+// Snapshot The snapshot object represents a point in time snapshot of a volume.
 //
 // swagger:model snapshot
 type Snapshot struct {
@@ -24,11 +24,11 @@ type Snapshot struct {
 	// links
 	Links *SnapshotInlineLinks `json:"_links,omitempty"`
 
-	// A comment associated with the Snapshot copy. This is an optional attribute for POST or PATCH.
+	// A comment associated with the snapshot. This is an optional attribute for POST or PATCH.
 	Comment *string `json:"comment,omitempty"`
 
-	// Creation time of the Snapshot copy. It is the volume access time when the Snapshot copy was created.
-	// Example: 2019-02-04T19:00:00Z
+	// Creation time of the snapshot. It is the volume access time when the snapshot was created.
+	// Example: 2019-02-04 19:00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -36,17 +36,17 @@ type Snapshot struct {
 	// delta
 	Delta *SnapshotDelta `json:"delta,omitempty"`
 
-	// The expiry time for the Snapshot copy. This is an optional attribute for POST or PATCH. Snapshot copies with an expiry time set are not allowed to be deleted until the retention time is reached.
-	// Example: 2019-02-04T19:00:00Z
+	// The expiry time for the snapshot. This is an optional attribute for POST or PATCH. Snapshots with an expiry time set are not allowed to be deleted until the retention time is reached.
+	// Example: 2019-02-04 19:00:00
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
 
-	// Size of the logical used file system at the time the Snapshot copy is captured.
+	// Size of the logical used file system at the time the snapshot is captured.
 	// Example: 1228800
 	// Read Only: true
 	LogicalSize *int64 `json:"logical_size,omitempty"`
 
-	// Snapshot copy. Valid in POST or PATCH.
+	// Snapshot. Valid in POST or PATCH.
 	// Example: this_snapshot
 	Name *string `json:"name,omitempty"`
 
@@ -57,31 +57,34 @@ type Snapshot struct {
 	// provenance volume
 	ProvenanceVolume *SnapshotInlineProvenanceVolume `json:"provenance_volume,omitempty"`
 
-	// Space reclaimed when the Snapshot copy is deleted, in bytes.
+	// Space reclaimed when the snapshot is deleted, in bytes.
 	ReclaimableSpace *int64 `json:"reclaimable_space,omitempty"`
 
-	// Size of the active file system at the time the Snapshot copy is captured. The actual size of the Snapshot copy also includes those blocks trapped by other Snapshot copies. On a Snapshot copy deletion, the "size" amount of blocks is the maximum number of blocks available. On a Snapshot copy restore, the "afs-used size" value will match the Snapshot copy "size" value.
+	// Size of the active file system at the time the snapshot is captured. The actual size of the snapshot also includes those blocks trapped by other snapshots. On a snapshot deletion, the "size" amount of blocks is the maximum number of blocks available. On a snapshot restore, the "afs-used size" value will match the snapshot "size" value.
 	// Example: 122880
 	// Read Only: true
 	Size *int64 `json:"size,omitempty"`
 
-	// SnapLock expiry time for the Snapshot copy, if the Snapshot copy is taken on a SnapLock volume. A Snapshot copy is not allowed to be deleted or renamed until the SnapLock ComplianceClock time goes beyond this retention time. This option can be set during Snapshot copy POST and Snapshot copy PATCH on Snapshot copy locking enabled volumes.
-	// Example: 2019-02-04T19:00:00Z
+	// snaplock
+	Snaplock *SnapshotInlineSnaplock `json:"snaplock,omitempty"`
+
+	// SnapLock expiry time for the snapshot, if the snapshot is taken on a SnapLock volume. A snapshot is not allowed to be deleted or renamed until the SnapLock ComplianceClock time goes beyond this retention time. This option can be set during snapshot POST and snapshot PATCH on snapshot locking enabled volumes. This field will no longer be supported in a future release. Use snaplock.expiry_time instead.
+	// Example: 2019-02-04 19:00:00
 	// Format: date-time
 	SnaplockExpiryTime *strfmt.DateTime `json:"snaplock_expiry_time,omitempty"`
 
 	// Label for SnapMirror operations
 	SnapmirrorLabel *string `json:"snapmirror_label,omitempty"`
 
-	// State of the Snapshot copy. There are cases where some Snapshot copies are not complete. In the "partial" state, the Snapshot copy is consistent but exists only on the subset of the constituents that existed prior to the FlexGroup's expansion. Partial Snapshot copies cannot be used for a Snapshot copy restore operation. A Snapshot copy is in an "invalid" state when it is present in some FlexGroup constituents but not in others. At all other times, a Snapshot copy is valid.
+	// State of the FlexGroup volume snapshot. In the "pre_conversion" state, the snapshot was created before converting the FlexVol to a FlexGroup volume. A recently created snapshot can be in the "unknown" state while the system is calculating the state. In the "partial" state, the snapshot is consistent but exists only on the subset of the constituents that existed prior to the FlexGroup's expansion. Partial snapshots cannot be used for a snapshot restore operation. A snapshot is in an "invalid" state when it is present in some FlexGroup constituents but not in others. At all other times, a snapshot is valid.
 	// Read Only: true
-	// Enum: [valid invalid partial]
+	// Enum: ["valid","invalid","partial","unknown","pre_conversion"]
 	State *string `json:"state,omitempty"`
 
 	// svm
 	Svm *SnapshotInlineSvm `json:"svm,omitempty"`
 
-	// The UUID of the Snapshot copy in the volume that uniquely identifies the Snapshot copy in that volume.
+	// The UUID of the snapshot in the volume that uniquely identifies the snapshot in that volume.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
 	UUID *string `json:"uuid,omitempty"`
@@ -120,6 +123,10 @@ func (m *Snapshot) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateProvenanceVolume(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnaplock(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -259,6 +266,23 @@ func (m *Snapshot) validateProvenanceVolume(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Snapshot) validateSnaplock(formats strfmt.Registry) error {
+	if swag.IsZero(m.Snaplock) { // not required
+		return nil
+	}
+
+	if m.Snaplock != nil {
+		if err := m.Snaplock.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snaplock")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Snapshot) validateSnaplockExpiryTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.SnaplockExpiryTime) { // not required
 		return nil
@@ -275,7 +299,7 @@ var snapshotTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["valid","invalid","partial"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["valid","invalid","partial","unknown","pre_conversion"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -314,6 +338,26 @@ const (
 	// END DEBUGGING
 	// SnapshotStatePartial captures enum value "partial"
 	SnapshotStatePartial string = "partial"
+
+	// BEGIN DEBUGGING
+	// snapshot
+	// Snapshot
+	// state
+	// State
+	// unknown
+	// END DEBUGGING
+	// SnapshotStateUnknown captures enum value "unknown"
+	SnapshotStateUnknown string = "unknown"
+
+	// BEGIN DEBUGGING
+	// snapshot
+	// Snapshot
+	// state
+	// State
+	// pre_conversion
+	// END DEBUGGING
+	// SnapshotStatePreConversion captures enum value "pre_conversion"
+	SnapshotStatePreConversion string = "pre_conversion"
 )
 
 // prop value enum
@@ -400,6 +444,10 @@ func (m *Snapshot) ContextValidate(ctx context.Context, formats strfmt.Registry)
 	}
 
 	if err := m.contextValidateSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSnaplock(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -502,6 +550,20 @@ func (m *Snapshot) contextValidateSize(ctx context.Context, formats strfmt.Regis
 
 	if err := validate.ReadOnly(ctx, "size", "body", m.Size); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Snapshot) contextValidateSnaplock(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Snaplock != nil {
+		if err := m.Snaplock.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snaplock")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -723,7 +785,108 @@ func (m *SnapshotInlineProvenanceVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotInlineSvm snapshot inline svm
+// SnapshotInlineSnaplock snapshot inline snaplock
+//
+// swagger:model snapshot_inline_snaplock
+type SnapshotInlineSnaplock struct {
+
+	// Indicates whether a SnapLock snapshot has expired.
+	// Example: true
+	// Read Only: true
+	Expired *bool `json:"expired,omitempty"`
+
+	// SnapLock expiry time for the snapshot, if the snapshot is taken on a SnapLock volume. A snapshot is not allowed to be deleted or renamed until the SnapLock ComplianceClock time goes beyond this retention time. This option can be set during snapshot POST and snapshot PATCH on snapshot locking enabled volumes. It can also be used to extend the expiry time of a locked snapshot on a SnapLock for SnapVault destination consistency-group.
+	// Example: 2019-02-04 19:00:00
+	// Format: date-time
+	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
+
+	// Indicates the remaining SnapLock expiry time of a locked snapshot, in seconds. This field is set only when the remaining time interval is less than 136 years.
+	// Example: PT3H27M45S
+	// Read Only: true
+	TimeUntilExpiry *string `json:"time_until_expiry,omitempty"`
+}
+
+// Validate validates this snapshot inline snaplock
+func (m *SnapshotInlineSnaplock) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateExpiryTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SnapshotInlineSnaplock) validateExpiryTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExpiryTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("snaplock"+"."+"expiry_time", "body", "date-time", m.ExpiryTime.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this snapshot inline snaplock based on the context it is used
+func (m *SnapshotInlineSnaplock) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateExpired(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimeUntilExpiry(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SnapshotInlineSnaplock) contextValidateExpired(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "snaplock"+"."+"expired", "body", m.Expired); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SnapshotInlineSnaplock) contextValidateTimeUntilExpiry(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "snaplock"+"."+"time_until_expiry", "body", m.TimeUntilExpiry); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SnapshotInlineSnaplock) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SnapshotInlineSnaplock) UnmarshalBinary(b []byte) error {
+	var res SnapshotInlineSnaplock
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SnapshotInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model snapshot_inline_svm
 type SnapshotInlineSvm struct {
@@ -731,12 +894,12 @@ type SnapshotInlineSvm struct {
 	// links
 	Links *SnapshotInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -913,7 +1076,7 @@ type SnapshotInlineVolume struct {
 	// links
 	Links *SnapshotInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

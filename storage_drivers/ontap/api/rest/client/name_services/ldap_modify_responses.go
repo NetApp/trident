@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *LdapModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ldap modify o k response
+func (o *LdapModifyOK) Code() int {
+	return 200
+}
+
 func (o *LdapModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /name-services/ldap/{svm.uuid}][%d] ldapModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /name-services/ldap/{svm.uuid}][%d] ldapModifyOK", 200)
 }
 
 func (o *LdapModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /name-services/ldap/{svm.uuid}][%d] ldapModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /name-services/ldap/{svm.uuid}][%d] ldapModifyOK", 200)
 }
 
 func (o *LdapModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -110,7 +116,7 @@ func NewLdapModifyDefault(code int) *LdapModifyDefault {
 | 2621488    | Invalid SVM context |
 | 2621706    | The specified SVM UUID is incorrect for the specified SVM name |
 | 4915203    | The specified LDAP schema does not exist |
-| 4915208    | The specified LDAP servers or preferred Active Directory servers contain duplicate server entries |
+| 262222     | The specified LDAP servers or preferred Active Directory servers contain duplicate server entries |
 | 4915229    | DNS resolution failed due to an internal error. Contact technical support if this issue persists |
 | 4915231    | DNS resolution failed for one or more of the specified LDAP servers. Verify that a valid DNS server is configured |
 | 23724132   | DNS resolution failed for all the specified LDAP servers. Verify that a valid DNS server is configured |
@@ -122,16 +128,17 @@ func NewLdapModifyDefault(code int) *LdapModifyDefault {
 | 4915259    | LDAP configurations with Active Directory domains are not supported on admin SVM. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
 | 4915252    | LDAP Referral is not supported with STARTTLS, with session security levels sign, seal or with LDAPS. |
+| 4915266    | LDAP site discovery restriction cannot be applied to a mixed version cluster. |
+| 656477     | Need default site to be specified to enable site restriction. |
+| 4915206    | CIFS server is not configured for the vserver. LDAP client configuration requires CIFS server for binding. |
+| 4915244    | RPC failure occurred during validation of the LDAP configuration. |
+| 4915268    | The bind_as_cifs_server field cannot be set to true when the CIFS server is in workgroup mode. |
+| 4915269    | The bind_as_cifs_server field cannot be set to true when the CIFS server is in realm mode. |
 */
 type LdapModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ldap modify default response
-func (o *LdapModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ldap modify default response has a 2xx status code
@@ -159,12 +166,19 @@ func (o *LdapModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ldap modify default response
+func (o *LdapModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LdapModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /name-services/ldap/{svm.uuid}][%d] ldap_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /name-services/ldap/{svm.uuid}][%d] ldap_modify default %s", o._statusCode, payload)
 }
 
 func (o *LdapModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /name-services/ldap/{svm.uuid}][%d] ldap_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /name-services/ldap/{svm.uuid}][%d] ldap_modify default %s", o._statusCode, payload)
 }
 
 func (o *LdapModifyDefault) GetPayload() *models.ErrorResponse {

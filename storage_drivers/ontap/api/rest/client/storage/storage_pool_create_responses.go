@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,12 +92,19 @@ func (o *StoragePoolCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the storage pool create created response
+func (o *StoragePoolCreateCreated) Code() int {
+	return 201
+}
+
 func (o *StoragePoolCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /storage/pools][%d] storagePoolCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/pools][%d] storagePoolCreateCreated %s", 201, payload)
 }
 
 func (o *StoragePoolCreateCreated) String() string {
-	return fmt.Sprintf("[POST /storage/pools][%d] storagePoolCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/pools][%d] storagePoolCreateCreated %s", 201, payload)
 }
 
 func (o *StoragePoolCreateCreated) GetPayload() *models.StoragePoolResponse {
@@ -138,7 +146,7 @@ type StoragePoolCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.StoragePoolJobLinkResponse
 }
 
 // IsSuccess returns true when this storage pool create accepted response has a 2xx status code
@@ -166,15 +174,22 @@ func (o *StoragePoolCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the storage pool create accepted response
+func (o *StoragePoolCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *StoragePoolCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /storage/pools][%d] storagePoolCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/pools][%d] storagePoolCreateAccepted %s", 202, payload)
 }
 
 func (o *StoragePoolCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /storage/pools][%d] storagePoolCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/pools][%d] storagePoolCreateAccepted %s", 202, payload)
 }
 
-func (o *StoragePoolCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *StoragePoolCreateAccepted) GetPayload() *models.StoragePoolJobLinkResponse {
 	return o.Payload
 }
 
@@ -187,7 +202,7 @@ func (o *StoragePoolCreateAccepted) readResponse(response runtime.ClientResponse
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.StoragePoolJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -226,7 +241,7 @@ func NewStoragePoolCreateDefault(code int) *StoragePoolCreateDefault {
 | 11208674 | Could not determine HA partner of node. |
 | 11208675 | Disks specified in the disk list are not visible to node. |
 | 11208678 | The disk list contains disks from nodes which are not in HA pair. |
-| 11208679 | Sharing disk is not enabled on node. |
+| 11208679 | Storage pools are not supported on nodes. |
 | 11208680 | Internal error. Cannot determine configuration for node. |
 | 11208681 | Node is not online. |
 | 11208682 | Internal error. Sharing configuration mismatch. |
@@ -246,16 +261,12 @@ func NewStoragePoolCreateDefault(code int) *StoragePoolCreateDefault {
 | 11208705 | Disk is a data center SSD, which cannot be used in storage pools. |
 | 11208706 | Disk is a SSD-ZNS, which cannot be used in storage pools. |
 | 11215756 | Missing a required field for POST request. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type StoragePoolCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the storage pool create default response
-func (o *StoragePoolCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this storage pool create default response has a 2xx status code
@@ -283,12 +294,19 @@ func (o *StoragePoolCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the storage pool create default response
+func (o *StoragePoolCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *StoragePoolCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/pools][%d] storage_pool_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/pools][%d] storage_pool_create default %s", o._statusCode, payload)
 }
 
 func (o *StoragePoolCreateDefault) String() string {
-	return fmt.Sprintf("[POST /storage/pools][%d] storage_pool_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/pools][%d] storage_pool_create default %s", o._statusCode, payload)
 }
 
 func (o *StoragePoolCreateDefault) GetPayload() *models.ErrorResponse {

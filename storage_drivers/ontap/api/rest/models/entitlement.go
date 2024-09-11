@@ -22,12 +22,12 @@ type Entitlement struct {
 
 	// Entitlement action to be taken to mitigate the risk
 	// Read Only: true
-	// Enum: [acquire_license adjust_capacity verify_entitlement verify_system_health none]
+	// Enum: ["acquire_license","adjust_capacity","verify_entitlement","verify_system_health","none"]
 	Action *string `json:"action,omitempty"`
 
 	// Entitlement risk of the package
 	// Read Only: true
-	// Enum: [high medium low unlicensed unknown]
+	// Enum: ["high","medium","low","unlicensed","unknown"]
 	Risk *string `json:"risk,omitempty"`
 }
 

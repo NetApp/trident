@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ClusterLdapModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cluster ldap modify o k response
+func (o *ClusterLdapModifyOK) Code() int {
+	return 200
+}
+
 func (o *ClusterLdapModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/authentication/cluster/ldap][%d] clusterLdapModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/ldap][%d] clusterLdapModifyOK", 200)
 }
 
 func (o *ClusterLdapModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/authentication/cluster/ldap][%d] clusterLdapModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/ldap][%d] clusterLdapModifyOK", 200)
 }
 
 func (o *ClusterLdapModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,7 +113,7 @@ func NewClusterLdapModifyDefault(code int) *ClusterLdapModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 4915203    | The specified LDAP schema does not exist. |
-| 4915208    | The specified LDAP servers contain duplicate server entries. |
+| 262222     | The specified LDAP servers contain duplicate server entries. |
 | 4915229    | DNS resolution failed due to an internal error. Contact technical support if this issue persists. |
 | 4915231    | DNS resolution failed for one or more of the specified LDAP servers. Verify that a valid DNS server is configured. |
 | 23724132   | DNS resolution failed for all the specified LDAP servers. Verify that a valid DNS server is configured. |
@@ -118,16 +124,13 @@ func NewClusterLdapModifyDefault(code int) *ClusterLdapModifyDefault {
 | 4915258    | The LDAP configuration is not valid. Verify that the servers are reachable and that the network configuration is correct. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 interfaces. |
 | 4915252    | LDAP referral is not supported with STARTTLS, with session security levels sign, seal or with LDAPS. |
+| 4915244    | RPC failure occurred during validation of the LDAP configuration. |
+| 4915265    | The specified bind password or bind DN is invalid |
 */
 type ClusterLdapModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cluster ldap modify default response
-func (o *ClusterLdapModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cluster ldap modify default response has a 2xx status code
@@ -155,12 +158,19 @@ func (o *ClusterLdapModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster ldap modify default response
+func (o *ClusterLdapModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterLdapModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/authentication/cluster/ldap][%d] cluster_ldap_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/ldap][%d] cluster_ldap_modify default %s", o._statusCode, payload)
 }
 
 func (o *ClusterLdapModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/authentication/cluster/ldap][%d] cluster_ldap_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/ldap][%d] cluster_ldap_modify default %s", o._statusCode, payload)
 }
 
 func (o *ClusterLdapModifyDefault) GetPayload() *models.ErrorResponse {

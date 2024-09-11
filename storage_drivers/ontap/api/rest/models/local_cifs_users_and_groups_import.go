@@ -31,16 +31,19 @@ type LocalCifsUsersAndGroupsImport struct {
 	DetailedStatus *LocalCifsUsersAndGroupsImportInlineDetailedStatus `json:"detailed_status,omitempty"`
 
 	// Number of elements ignored.
+	// Read Only: true
 	ElementsIgnored *int64 `json:"elements_ignored,omitempty"`
 
 	// Number of elements successfully imported.
+	// Read Only: true
 	ElementsImported *int64 `json:"elements_imported,omitempty"`
 
 	// import uri
 	ImportURI *LocalCifsUsersAndGroupsImportInlineImportURI `json:"import_uri,omitempty"`
 
 	// Operation status.
-	// Enum: [failed success success_with_warnings in_progress unknown]
+	// Read Only: true
+	// Enum: ["failed","success","success_with_warnings","in_progress","unknown"]
 	State *string `json:"state,omitempty"`
 
 	// status uri
@@ -283,7 +286,19 @@ func (m *LocalCifsUsersAndGroupsImport) ContextValidate(ctx context.Context, for
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateElementsIgnored(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateElementsImported(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateImportURI(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -329,6 +344,24 @@ func (m *LocalCifsUsersAndGroupsImport) contextValidateDetailedStatus(ctx contex
 	return nil
 }
 
+func (m *LocalCifsUsersAndGroupsImport) contextValidateElementsIgnored(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "elements_ignored", "body", m.ElementsIgnored); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LocalCifsUsersAndGroupsImport) contextValidateElementsImported(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "elements_imported", "body", m.ElementsImported); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *LocalCifsUsersAndGroupsImport) contextValidateImportURI(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ImportURI != nil {
@@ -338,6 +371,15 @@ func (m *LocalCifsUsersAndGroupsImport) contextValidateImportURI(ctx context.Con
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *LocalCifsUsersAndGroupsImport) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
+		return err
 	}
 
 	return nil
@@ -686,7 +728,7 @@ func (m *LocalCifsUsersAndGroupsImportInlineStatusURI) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// LocalCifsUsersAndGroupsImportInlineSvm local cifs users and groups import inline svm
+// LocalCifsUsersAndGroupsImportInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model local_cifs_users_and_groups_import_inline_svm
 type LocalCifsUsersAndGroupsImportInlineSvm struct {
@@ -694,12 +736,12 @@ type LocalCifsUsersAndGroupsImportInlineSvm struct {
 	// links
 	Links *LocalCifsUsersAndGroupsImportInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

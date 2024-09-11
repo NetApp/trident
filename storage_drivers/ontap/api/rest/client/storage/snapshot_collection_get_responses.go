@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SnapshotCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snapshot collection get o k response
+func (o *SnapshotCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *SnapshotCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots][%d] snapshotCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots][%d] snapshotCollectionGetOK %s", 200, payload)
 }
 
 func (o *SnapshotCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots][%d] snapshotCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots][%d] snapshotCollectionGetOK %s", 200, payload)
 }
 
 func (o *SnapshotCollectionGetOK) GetPayload() *models.SnapshotResponse {
@@ -119,16 +127,12 @@ func NewSnapshotCollectionGetDefault(code int) *SnapshotCollectionGetDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 918235     | The specified volume is invalid. |
+| 9437613    | The operation is not supported on FlexCache Volumes. |
 */
 type SnapshotCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snapshot collection get default response
-func (o *SnapshotCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snapshot collection get default response has a 2xx status code
@@ -156,12 +160,19 @@ func (o *SnapshotCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snapshot collection get default response
+func (o *SnapshotCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnapshotCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots][%d] snapshot_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots][%d] snapshot_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots][%d] snapshot_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots][%d] snapshot_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotCollectionGetDefault) GetPayload() *models.ErrorResponse {

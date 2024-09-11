@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CifsConnectionCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs connection collection get o k response
+func (o *CifsConnectionCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *CifsConnectionCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/connections][%d] cifsConnectionCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/connections][%d] cifsConnectionCollectionGetOK %s", 200, payload)
 }
 
 func (o *CifsConnectionCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/connections][%d] cifsConnectionCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/connections][%d] cifsConnectionCollectionGetOK %s", 200, payload)
 }
 
 func (o *CifsConnectionCollectionGetOK) GetPayload() *models.CifsConnectionResponse {
@@ -122,11 +130,6 @@ type CifsConnectionCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cifs connection collection get default response
-func (o *CifsConnectionCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cifs connection collection get default response has a 2xx status code
 func (o *CifsConnectionCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *CifsConnectionCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs connection collection get default response
+func (o *CifsConnectionCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsConnectionCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/connections][%d] cifs_connection_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/connections][%d] cifs_connection_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsConnectionCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/connections][%d] cifs_connection_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/connections][%d] cifs_connection_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsConnectionCollectionGetDefault) GetPayload() *models.ErrorResponse {

@@ -25,11 +25,13 @@ type NisService struct {
 
 	// The NIS domain to which this configuration belongs.
 	//
+	// Example: domainA.example.com
 	// Max Length: 64
 	// Min Length: 1
 	Domain *string `json:"domain,omitempty"`
 
 	// An array of objects where each object represents the NIS server and it's status for a given NIS domain. It is an advanced field.
+	// Read Only: true
 	NisServiceInlineBindingDetails []*NisServiceInlineBindingDetailsInlineArrayItem `json:"binding_details,omitempty"`
 
 	// nis service inline bound servers
@@ -39,6 +41,7 @@ type NisService struct {
 	// A list of hostnames or IP addresses of NIS servers used
 	// by the NIS domain configuration.
 	//
+	// Example: ["10.10.10.10","example.com"]
 	// Max Items: 10
 	NisServiceInlineServers []*string `json:"servers,omitempty"`
 
@@ -247,6 +250,10 @@ func (m *NisService) contextValidateLinks(ctx context.Context, formats strfmt.Re
 }
 
 func (m *NisService) contextValidateNisServiceInlineBindingDetails(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "binding_details", "body", []*NisServiceInlineBindingDetailsInlineArrayItem(m.NisServiceInlineBindingDetails)); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(m.NisServiceInlineBindingDetails); i++ {
 
@@ -502,7 +509,7 @@ func (m *NisServiceInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NisServiceInlineSvm nis service inline svm
+// NisServiceInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model nis_service_inline_svm
 type NisServiceInlineSvm struct {
@@ -510,12 +517,12 @@ type NisServiceInlineSvm struct {
 	// links
 	Links *NisServiceInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

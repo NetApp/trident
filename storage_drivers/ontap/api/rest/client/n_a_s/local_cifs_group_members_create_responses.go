@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *LocalCifsGroupMembersCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the local cifs group members create created response
+func (o *LocalCifsGroupMembersCreateCreated) Code() int {
+	return 201
+}
+
 func (o *LocalCifsGroupMembersCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members][%d] localCifsGroupMembersCreateCreated ", 201)
+	return fmt.Sprintf("[POST /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members][%d] localCifsGroupMembersCreateCreated", 201)
 }
 
 func (o *LocalCifsGroupMembersCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members][%d] localCifsGroupMembersCreateCreated ", 201)
+	return fmt.Sprintf("[POST /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members][%d] localCifsGroupMembersCreateCreated", 201)
 }
 
 func (o *LocalCifsGroupMembersCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -119,18 +125,14 @@ func NewLocalCifsGroupMembersCreateDefault(code int) *LocalCifsGroupMembersCreat
 | ---------- | ----------- |
 | 655673     | Failed to resolve the member to be added to the specified group. |
 | 655718     | Failed to add a member to the specified group. The error code returned details the failure along with the reason for the failure. Take corrective actions as per the specified reason. |
-| 655742     | The "records" field must not be specified when a single user is added. |
+| 655742     | Records must not be specified when member name is specified. |
 | 655743     | SVM UUID and CIFS local group SID are invalid fields for the "records" parameter. |
+| 655744     | Either name or records must be specified. |
 */
 type LocalCifsGroupMembersCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the local cifs group members create default response
-func (o *LocalCifsGroupMembersCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this local cifs group members create default response has a 2xx status code
@@ -158,12 +160,19 @@ func (o *LocalCifsGroupMembersCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the local cifs group members create default response
+func (o *LocalCifsGroupMembersCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LocalCifsGroupMembersCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members][%d] local_cifs_group_members_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members][%d] local_cifs_group_members_create default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsGroupMembersCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members][%d] local_cifs_group_members_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members][%d] local_cifs_group_members_create default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsGroupMembersCreateDefault) GetPayload() *models.ErrorResponse {

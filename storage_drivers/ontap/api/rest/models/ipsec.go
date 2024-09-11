@@ -26,8 +26,11 @@ type Ipsec struct {
 	// Indicates whether or not IPsec is enabled.
 	Enabled *bool `json:"enabled,omitempty"`
 
+	// Indicates whether or not IPsec hardware offload is enabled.
+	OffloadEnabled *bool `json:"offload_enabled,omitempty"`
+
 	// Replay window size in packets, where 0 indicates that the relay window is disabled.
-	// Enum: [0 64 128 256 512 1024]
+	// Enum: [0,64,128,256,512,1024]
 	ReplayWindow *int64 `json:"replay_window,omitempty"`
 }
 

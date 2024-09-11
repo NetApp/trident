@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *LunAttributeDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the lun attribute delete o k response
+func (o *LunAttributeDeleteOK) Code() int {
+	return 200
+}
+
 func (o *LunAttributeDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /storage/luns/{lun.uuid}/attributes/{name}][%d] lunAttributeDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/luns/{lun.uuid}/attributes/{name}][%d] lunAttributeDeleteOK", 200)
 }
 
 func (o *LunAttributeDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /storage/luns/{lun.uuid}/attributes/{name}][%d] lunAttributeDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/luns/{lun.uuid}/attributes/{name}][%d] lunAttributeDeleteOK", 200)
 }
 
 func (o *LunAttributeDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,16 +114,12 @@ func NewLunAttributeDeleteDefault(code int) *LunAttributeDeleteDefault {
 | ---------- | ----------- |
 | 5374875 | The specified LUN was not found. |
 | 5374931 | The specified attribute was not found. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type LunAttributeDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the lun attribute delete default response
-func (o *LunAttributeDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this lun attribute delete default response has a 2xx status code
@@ -145,12 +147,19 @@ func (o *LunAttributeDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the lun attribute delete default response
+func (o *LunAttributeDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LunAttributeDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /storage/luns/{lun.uuid}/attributes/{name}][%d] lun_attribute_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/luns/{lun.uuid}/attributes/{name}][%d] lun_attribute_delete default %s", o._statusCode, payload)
 }
 
 func (o *LunAttributeDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /storage/luns/{lun.uuid}/attributes/{name}][%d] lun_attribute_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/luns/{lun.uuid}/attributes/{name}][%d] lun_attribute_delete default %s", o._statusCode, payload)
 }
 
 func (o *LunAttributeDeleteDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package svm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SvmMigrationCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the svm migration collection get o k response
+func (o *SvmMigrationCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *SvmMigrationCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /svm/migrations][%d] svmMigrationCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/migrations][%d] svmMigrationCollectionGetOK %s", 200, payload)
 }
 
 func (o *SvmMigrationCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /svm/migrations][%d] svmMigrationCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/migrations][%d] svmMigrationCollectionGetOK %s", 200, payload)
 }
 
 func (o *SvmMigrationCollectionGetOK) GetPayload() *models.SvmMigrationResponse {
@@ -119,16 +127,12 @@ func NewSvmMigrationCollectionGetDefault(code int) *SvmMigrationCollectionGetDef
 | Error Code | Description |
 | ---------- | ----------- |
 | 13172783 | Migrate RDB lookup failed |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SvmMigrationCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the svm migration collection get default response
-func (o *SvmMigrationCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this svm migration collection get default response has a 2xx status code
@@ -156,12 +160,19 @@ func (o *SvmMigrationCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the svm migration collection get default response
+func (o *SvmMigrationCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SvmMigrationCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /svm/migrations][%d] svm_migration_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/migrations][%d] svm_migration_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmMigrationCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /svm/migrations][%d] svm_migration_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/migrations][%d] svm_migration_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmMigrationCollectionGetDefault) GetPayload() *models.ErrorResponse {

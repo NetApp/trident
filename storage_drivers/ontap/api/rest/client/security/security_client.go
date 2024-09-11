@@ -36,51 +36,83 @@ type ClientService interface {
 
 	AccountDelete(params *AccountDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountDeleteOK, error)
 
+	AccountDeleteCollection(params *AccountDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountDeleteCollectionOK, error)
+
+	AccountDuoDelete(params *AccountDuoDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountDuoDeleteOK, error)
+
+	AccountDuoDeleteCollection(params *AccountDuoDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountDuoDeleteCollectionOK, error)
+
+	AccountDuogroupDelete(params *AccountDuogroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountDuogroupDeleteOK, error)
+
+	AccountDuogroupDeleteCollection(params *AccountDuogroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountDuogroupDeleteCollectionOK, error)
+
 	AccountGet(params *AccountGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountGetOK, error)
 
 	AccountModify(params *AccountModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountModifyOK, error)
+
+	AccountModifyCollection(params *AccountModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountModifyCollectionOK, error)
 
 	AccountPasswordCreate(params *AccountPasswordCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountPasswordCreateCreated, error)
 
 	AccountPublickeyDelete(params *AccountPublickeyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountPublickeyDeleteOK, error)
 
+	AccountPublickeyDeleteCollection(params *AccountPublickeyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountPublickeyDeleteCollectionOK, error)
+
+	AccountTotpDelete(params *AccountTotpDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountTotpDeleteOK, error)
+
+	AccountTotpDeleteCollection(params *AccountTotpDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountTotpDeleteCollectionOK, error)
+
+	AntiRansomwareGet(params *AntiRansomwareGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareGetOK, error)
+
+	AntiRansomwareModify(params *AntiRansomwareModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareModifyOK, *AntiRansomwareModifyAccepted, error)
+
 	AntiRansomwareSuspectCollectionGet(params *AntiRansomwareSuspectCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareSuspectCollectionGetOK, error)
 
-	AntiRansomwareSuspectDelete(params *AntiRansomwareSuspectDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareSuspectDeleteAccepted, error)
+	AntiRansomwareSuspectDelete(params *AntiRansomwareSuspectDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareSuspectDeleteOK, *AntiRansomwareSuspectDeleteAccepted, error)
+
+	AntiRansomwareSuspectDeleteCollection(params *AntiRansomwareSuspectDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareSuspectDeleteCollectionOK, *AntiRansomwareSuspectDeleteCollectionAccepted, error)
 
 	AuditLogForwardingGet(params *AuditLogForwardingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditLogForwardingGetOK, error)
 
 	AwsKmsCollectionGet(params *AwsKmsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsCollectionGetOK, error)
 
-	AwsKmsCreate(params *AwsKmsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsCreateCreated, error)
+	AwsKmsCreate(params *AwsKmsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsCreateCreated, *AwsKmsCreateAccepted, error)
 
-	AwsKmsDelete(params *AwsKmsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsDeleteOK, error)
+	AwsKmsDelete(params *AwsKmsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsDeleteOK, *AwsKmsDeleteAccepted, error)
+
+	AwsKmsDeleteCollection(params *AwsKmsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsDeleteCollectionOK, *AwsKmsDeleteCollectionAccepted, error)
 
 	AwsKmsGet(params *AwsKmsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsGetOK, error)
 
-	AwsKmsModify(params *AwsKmsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsModifyOK, error)
+	AwsKmsModify(params *AwsKmsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsModifyOK, *AwsKmsModifyAccepted, error)
 
-	AwsKmsRekeyExternal(params *AwsKmsRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRekeyExternalAccepted, error)
+	AwsKmsModifyCollection(params *AwsKmsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsModifyCollectionOK, *AwsKmsModifyCollectionAccepted, error)
 
-	AwsKmsRekeyInternal(params *AwsKmsRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRekeyInternalAccepted, error)
+	AwsKmsRekeyExternal(params *AwsKmsRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRekeyExternalCreated, *AwsKmsRekeyExternalAccepted, error)
 
-	AwsKmsRestore(params *AwsKmsRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRestoreAccepted, error)
+	AwsKmsRekeyInternal(params *AwsKmsRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRekeyInternalCreated, *AwsKmsRekeyInternalAccepted, error)
+
+	AwsKmsRestore(params *AwsKmsRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRestoreCreated, *AwsKmsRestoreAccepted, error)
 
 	AzureKeyVaultCollectionGet(params *AzureKeyVaultCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultCollectionGetOK, error)
 
-	AzureKeyVaultCreate(params *AzureKeyVaultCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultCreateCreated, error)
+	AzureKeyVaultCreate(params *AzureKeyVaultCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultCreateCreated, *AzureKeyVaultCreateAccepted, error)
 
-	AzureKeyVaultDelete(params *AzureKeyVaultDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultDeleteOK, error)
+	AzureKeyVaultDelete(params *AzureKeyVaultDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultDeleteOK, *AzureKeyVaultDeleteAccepted, error)
+
+	AzureKeyVaultDeleteCollection(params *AzureKeyVaultDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultDeleteCollectionOK, *AzureKeyVaultDeleteCollectionAccepted, error)
 
 	AzureKeyVaultGet(params *AzureKeyVaultGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultGetOK, error)
 
 	AzureKeyVaultModify(params *AzureKeyVaultModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultModifyOK, *AzureKeyVaultModifyAccepted, error)
 
-	AzureKeyVaultRekeyExternal(params *AzureKeyVaultRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRekeyExternalAccepted, error)
+	AzureKeyVaultModifyCollection(params *AzureKeyVaultModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultModifyCollectionOK, *AzureKeyVaultModifyCollectionAccepted, error)
 
-	AzureKeyVaultRekeyInternal(params *AzureKeyVaultRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRekeyInternalAccepted, error)
+	AzureKeyVaultRekeyExternal(params *AzureKeyVaultRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRekeyExternalCreated, *AzureKeyVaultRekeyExternalAccepted, error)
 
-	AzureKeyVaultRestore(params *AzureKeyVaultRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRestoreAccepted, error)
+	AzureKeyVaultRekeyInternal(params *AzureKeyVaultRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRekeyInternalCreated, *AzureKeyVaultRekeyInternalAccepted, error)
+
+	AzureKeyVaultRestore(params *AzureKeyVaultRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRestoreCreated, *AzureKeyVaultRestoreAccepted, error)
 
 	ClusterAccountAdProxyCreate(params *ClusterAccountAdProxyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterAccountAdProxyCreateCreated, error)
 
@@ -108,27 +140,67 @@ type ClientService interface {
 
 	CreateCertificateSigningRequest(params *CreateCertificateSigningRequestParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateCertificateSigningRequestOK, error)
 
+	DuoCollectionGet(params *DuoCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuoCollectionGetOK, error)
+
+	DuoCreate(params *DuoCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuoCreateCreated, error)
+
+	DuoGet(params *DuoGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuoGetOK, error)
+
+	DuoModify(params *DuoModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuoModifyOK, error)
+
+	DuoModifyCollection(params *DuoModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuoModifyCollectionOK, error)
+
+	DuogroupCollectionGet(params *DuogroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuogroupCollectionGetOK, error)
+
+	DuogroupCreate(params *DuogroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuogroupCreateCreated, error)
+
+	DuogroupGet(params *DuogroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuogroupGetOK, error)
+
+	DuogroupModify(params *DuogroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuogroupModifyOK, error)
+
+	DuogroupModifyCollection(params *DuogroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuogroupModifyCollectionOK, error)
+
 	GcpKmsCollectionGet(params *GcpKmsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsCollectionGetOK, error)
 
-	GcpKmsCreate(params *GcpKmsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsCreateCreated, error)
+	GcpKmsCreate(params *GcpKmsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsCreateCreated, *GcpKmsCreateAccepted, error)
 
-	GcpKmsDelete(params *GcpKmsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsDeleteOK, error)
+	GcpKmsDelete(params *GcpKmsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsDeleteOK, *GcpKmsDeleteAccepted, error)
+
+	GcpKmsDeleteCollection(params *GcpKmsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsDeleteCollectionOK, *GcpKmsDeleteCollectionAccepted, error)
 
 	GcpKmsGet(params *GcpKmsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsGetOK, error)
 
 	GcpKmsModify(params *GcpKmsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsModifyOK, *GcpKmsModifyAccepted, error)
 
-	GcpKmsRekeyExternal(params *GcpKmsRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRekeyExternalAccepted, error)
+	GcpKmsModifyCollection(params *GcpKmsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsModifyCollectionOK, *GcpKmsModifyCollectionAccepted, error)
 
-	GcpKmsRekeyInternal(params *GcpKmsRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRekeyInternalAccepted, error)
+	GcpKmsRekeyExternal(params *GcpKmsRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRekeyExternalCreated, *GcpKmsRekeyExternalAccepted, error)
 
-	GcpKmsRestore(params *GcpKmsRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRestoreAccepted, error)
+	GcpKmsRekeyInternal(params *GcpKmsRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRekeyInternalCreated, *GcpKmsRekeyInternalAccepted, error)
+
+	GcpKmsRestore(params *GcpKmsRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRestoreCreated, *GcpKmsRestoreAccepted, error)
+
+	GroupRoleMappingsCollectionGet(params *GroupRoleMappingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupRoleMappingsCollectionGetOK, error)
+
+	GroupRoleMappingsCreate(params *GroupRoleMappingsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupRoleMappingsCreateCreated, error)
+
+	GroupRoleMappingsDelete(params *GroupRoleMappingsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupRoleMappingsDeleteOK, error)
+
+	GroupRoleMappingsDeleteCollection(params *GroupRoleMappingsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupRoleMappingsDeleteCollectionOK, error)
+
+	GroupRoleMappingsGet(params *GroupRoleMappingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupRoleMappingsGetOK, error)
+
+	GroupRoleMappingsModify(params *GroupRoleMappingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupRoleMappingsModifyOK, error)
+
+	GroupRoleMappingsModifyCollection(params *GroupRoleMappingsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupRoleMappingsModifyCollectionOK, error)
 
 	IpsecCaCertificateCollectionGet(params *IpsecCaCertificateCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateCollectionGetOK, error)
 
 	IpsecCaCertificateCreate(params *IpsecCaCertificateCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateCreateCreated, error)
 
 	IpsecCaCertificateDelete(params *IpsecCaCertificateDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateDeleteOK, error)
+
+	IpsecCaCertificateDeleteCollection(params *IpsecCaCertificateDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateDeleteCollectionOK, error)
 
 	IpsecCaCertificateGet(params *IpsecCaCertificateGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateGetOK, error)
 
@@ -142,15 +214,21 @@ type ClientService interface {
 
 	IpsecPolicyDelete(params *IpsecPolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecPolicyDeleteOK, error)
 
+	IpsecPolicyDeleteCollection(params *IpsecPolicyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecPolicyDeleteCollectionOK, error)
+
 	IpsecPolicyGet(params *IpsecPolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecPolicyGetOK, error)
 
 	IpsecPolicyModify(params *IpsecPolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecPolicyModifyOK, error)
+
+	IpsecPolicyModifyCollection(params *IpsecPolicyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecPolicyModifyCollectionOK, error)
 
 	KeyManagerAuthKeyCollectionGet(params *KeyManagerAuthKeyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerAuthKeyCollectionGetOK, error)
 
 	KeyManagerAuthKeyCreate(params *KeyManagerAuthKeyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerAuthKeyCreateCreated, error)
 
 	KeyManagerAuthKeyDelete(params *KeyManagerAuthKeyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerAuthKeyDeleteOK, error)
+
+	KeyManagerAuthKeyDeleteCollection(params *KeyManagerAuthKeyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerAuthKeyDeleteCollectionOK, error)
 
 	KeyManagerAuthKeyGet(params *KeyManagerAuthKeyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerAuthKeyGetOK, error)
 
@@ -168,15 +246,21 @@ type ClientService interface {
 
 	LoginMessagesModify(params *LoginMessagesModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LoginMessagesModifyOK, error)
 
+	LoginMessagesModifyCollection(params *LoginMessagesModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LoginMessagesModifyCollectionOK, error)
+
 	MultiAdminVerifyApprovalGroupCollectionGet(params *MultiAdminVerifyApprovalGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupCollectionGetOK, error)
 
 	MultiAdminVerifyApprovalGroupCreate(params *MultiAdminVerifyApprovalGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupCreateCreated, error)
 
 	MultiAdminVerifyApprovalGroupDelete(params *MultiAdminVerifyApprovalGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupDeleteOK, error)
 
+	MultiAdminVerifyApprovalGroupDeleteCollection(params *MultiAdminVerifyApprovalGroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupDeleteCollectionOK, error)
+
 	MultiAdminVerifyApprovalGroupGet(params *MultiAdminVerifyApprovalGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupGetOK, error)
 
 	MultiAdminVerifyApprovalGroupModify(params *MultiAdminVerifyApprovalGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupModifyOK, error)
+
+	MultiAdminVerifyApprovalGroupModifyCollection(params *MultiAdminVerifyApprovalGroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupModifyCollectionOK, error)
 
 	MultiAdminVerifyConfigGet(params *MultiAdminVerifyConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyConfigGetOK, error)
 
@@ -188,9 +272,13 @@ type ClientService interface {
 
 	MultiAdminVerifyRequestDelete(params *MultiAdminVerifyRequestDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestDeleteOK, error)
 
+	MultiAdminVerifyRequestDeleteCollection(params *MultiAdminVerifyRequestDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestDeleteCollectionOK, error)
+
 	MultiAdminVerifyRequestGet(params *MultiAdminVerifyRequestGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestGetOK, error)
 
 	MultiAdminVerifyRequestModify(params *MultiAdminVerifyRequestModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestModifyOK, error)
+
+	MultiAdminVerifyRequestModifyCollection(params *MultiAdminVerifyRequestModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestModifyCollectionOK, error)
 
 	MultiAdminVerifyRuleCollectionGet(params *MultiAdminVerifyRuleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleCollectionGetOK, error)
 
@@ -198,9 +286,13 @@ type ClientService interface {
 
 	MultiAdminVerifyRuleDelete(params *MultiAdminVerifyRuleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleDeleteOK, error)
 
+	MultiAdminVerifyRuleDeleteCollection(params *MultiAdminVerifyRuleDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleDeleteCollectionOK, error)
+
 	MultiAdminVerifyRuleGet(params *MultiAdminVerifyRuleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleGetOK, error)
 
 	MultiAdminVerifyRuleModify(params *MultiAdminVerifyRuleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleModifyOK, error)
+
+	MultiAdminVerifyRuleModifyCollection(params *MultiAdminVerifyRuleModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleModifyCollectionOK, error)
 
 	PublickeyCollectionGet(params *PublickeyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PublickeyCollectionGetOK, error)
 
@@ -210,11 +302,15 @@ type ClientService interface {
 
 	PublickeyModify(params *PublickeyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PublickeyModifyOK, error)
 
+	PublickeyModifyCollection(params *PublickeyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PublickeyModifyCollectionOK, error)
+
 	RoleCollectionGet(params *RoleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RoleCollectionGetOK, error)
 
 	RoleCreate(params *RoleCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RoleCreateCreated, error)
 
 	RoleDelete(params *RoleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RoleDeleteOK, error)
+
+	RoleDeleteCollection(params *RoleDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RoleDeleteCollectionOK, error)
 
 	RoleGet(params *RoleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RoleGetOK, error)
 
@@ -224,9 +320,13 @@ type ClientService interface {
 
 	RolePrivilegeDelete(params *RolePrivilegeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RolePrivilegeDeleteOK, error)
 
+	RolePrivilegeDeleteCollection(params *RolePrivilegeDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RolePrivilegeDeleteCollectionOK, error)
+
 	RolePrivilegeGet(params *RolePrivilegeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RolePrivilegeGetOK, error)
 
 	RolePrivilegeModify(params *RolePrivilegeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RolePrivilegeModifyOK, error)
+
+	RolePrivilegeModifyCollection(params *RolePrivilegeModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RolePrivilegeModifyCollectionOK, error)
 
 	SecurityAssociationCollectionGet(params *SecurityAssociationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityAssociationCollectionGetOK, error)
 
@@ -244,19 +344,51 @@ type ClientService interface {
 
 	SecurityCertificateDelete(params *SecurityCertificateDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityCertificateDeleteOK, error)
 
+	SecurityCertificateDeleteCollection(params *SecurityCertificateDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityCertificateDeleteCollectionOK, error)
+
 	SecurityCertificateGet(params *SecurityCertificateGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityCertificateGetOK, error)
 
 	SecurityCertificateSign(params *SecurityCertificateSignParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityCertificateSignOK, error)
 
 	SecurityConfigGet(params *SecurityConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityConfigGetOK, error)
 
-	SecurityConfigModify(params *SecurityConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityConfigModifyAccepted, error)
+	SecurityConfigModify(params *SecurityConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityConfigModifyOK, *SecurityConfigModifyAccepted, error)
+
+	SecurityExternalRoleMappingCollectionGet(params *SecurityExternalRoleMappingCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityExternalRoleMappingCollectionGetOK, error)
+
+	SecurityExternalRoleMappingCreate(params *SecurityExternalRoleMappingCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityExternalRoleMappingCreateCreated, error)
+
+	SecurityExternalRoleMappingDelete(params *SecurityExternalRoleMappingDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityExternalRoleMappingDeleteOK, error)
+
+	SecurityExternalRoleMappingDeleteCollection(params *SecurityExternalRoleMappingDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityExternalRoleMappingDeleteCollectionOK, error)
+
+	SecurityExternalRoleMappingGet(params *SecurityExternalRoleMappingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityExternalRoleMappingGetOK, error)
+
+	SecurityExternalRoleMappingModify(params *SecurityExternalRoleMappingModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityExternalRoleMappingModifyOK, error)
+
+	SecurityExternalRoleMappingModifyCollection(params *SecurityExternalRoleMappingModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityExternalRoleMappingModifyCollectionOK, error)
+
+	SecurityGroupCollectionGet(params *SecurityGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityGroupCollectionGetOK, error)
+
+	SecurityGroupCreate(params *SecurityGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityGroupCreateCreated, error)
+
+	SecurityGroupDelete(params *SecurityGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityGroupDeleteOK, error)
+
+	SecurityGroupDeleteCollection(params *SecurityGroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityGroupDeleteCollectionOK, error)
+
+	SecurityGroupGet(params *SecurityGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityGroupGetOK, error)
+
+	SecurityGroupModify(params *SecurityGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityGroupModifyOK, error)
+
+	SecurityGroupModifyCollection(params *SecurityGroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityGroupModifyCollectionOK, error)
 
 	SecurityKeyManagerCollectionGet(params *SecurityKeyManagerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerCollectionGetOK, error)
 
-	SecurityKeyManagerCreate(params *SecurityKeyManagerCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerCreateCreated, error)
+	SecurityKeyManagerCreate(params *SecurityKeyManagerCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerCreateCreated, *SecurityKeyManagerCreateAccepted, error)
 
 	SecurityKeyManagerDelete(params *SecurityKeyManagerDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerDeleteOK, error)
+
+	SecurityKeyManagerDeleteCollection(params *SecurityKeyManagerDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerDeleteCollectionOK, error)
 
 	SecurityKeyManagerGet(params *SecurityKeyManagerGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerGetOK, error)
 
@@ -266,25 +398,61 @@ type ClientService interface {
 
 	SecurityKeyManagerKeyServersDelete(params *SecurityKeyManagerKeyServersDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerKeyServersDeleteOK, error)
 
+	SecurityKeyManagerKeyServersDeleteCollection(params *SecurityKeyManagerKeyServersDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerKeyServersDeleteCollectionOK, error)
+
 	SecurityKeyManagerKeyServersGet(params *SecurityKeyManagerKeyServersGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerKeyServersGetOK, error)
 
 	SecurityKeyManagerKeyServersModify(params *SecurityKeyManagerKeyServersModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerKeyServersModifyOK, error)
 
-	SecurityKeyManagerMigrate(params *SecurityKeyManagerMigrateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerMigrateAccepted, error)
+	SecurityKeyManagerKeyServersModifyCollection(params *SecurityKeyManagerKeyServersModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerKeyServersModifyCollectionOK, error)
 
-	SecurityKeyManagerModify(params *SecurityKeyManagerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerModifyOK, error)
+	SecurityKeyManagerMigrate(params *SecurityKeyManagerMigrateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerMigrateCreated, *SecurityKeyManagerMigrateAccepted, error)
+
+	SecurityKeyManagerModify(params *SecurityKeyManagerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerModifyOK, *SecurityKeyManagerModifyAccepted, error)
+
+	SecurityKeyManagerModifyCollection(params *SecurityKeyManagerModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerModifyCollectionOK, *SecurityKeyManagerModifyCollectionAccepted, error)
+
+	SecurityKeyManagerRestore(params *SecurityKeyManagerRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerRestoreCreated, *SecurityKeyManagerRestoreAccepted, error)
 
 	SecurityKeystoreCollectionGet(params *SecurityKeystoreCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeystoreCollectionGetOK, error)
 
-	SecurityLogForwardingCreate(params *SecurityLogForwardingCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingCreateAccepted, error)
+	SecurityKeystoreDelete(params *SecurityKeystoreDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeystoreDeleteOK, error)
+
+	SecurityKeystoreDeleteCollection(params *SecurityKeystoreDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeystoreDeleteCollectionOK, error)
+
+	SecurityKeystoreGet(params *SecurityKeystoreGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeystoreGetOK, error)
+
+	SecurityKeystoreModify(params *SecurityKeystoreModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeystoreModifyOK, *SecurityKeystoreModifyAccepted, error)
+
+	SecurityKeystoreModifyCollection(params *SecurityKeystoreModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeystoreModifyCollectionOK, *SecurityKeystoreModifyCollectionAccepted, error)
+
+	SecurityLogForwardingCreate(params *SecurityLogForwardingCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingCreateCreated, *SecurityLogForwardingCreateAccepted, error)
 
 	SecurityLogForwardingDelete(params *SecurityLogForwardingDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingDeleteOK, error)
+
+	SecurityLogForwardingDeleteCollection(params *SecurityLogForwardingDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingDeleteCollectionOK, error)
 
 	SecurityLogForwardingGet(params *SecurityLogForwardingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingGetOK, error)
 
 	SecurityLogForwardingModify(params *SecurityLogForwardingModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingModifyOK, error)
 
-	SecuritySamlSpCreate(params *SecuritySamlSpCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlSpCreateAccepted, error)
+	SecurityLogForwardingModifyCollection(params *SecurityLogForwardingModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingModifyCollectionOK, error)
+
+	SecurityOauth2CollectionGet(params *SecurityOauth2CollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOauth2CollectionGetOK, error)
+
+	SecurityOauth2Create(params *SecurityOauth2CreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOauth2CreateCreated, *SecurityOauth2CreateAccepted, error)
+
+	SecurityOauth2Delete(params *SecurityOauth2DeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOauth2DeleteOK, error)
+
+	SecurityOauth2DeleteCollection(params *SecurityOauth2DeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOauth2DeleteCollectionOK, error)
+
+	SecurityOauth2Get(params *SecurityOauth2GetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOauth2GetOK, error)
+
+	SecurityOauth2GlobalGet(params *SecurityOauth2GlobalGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOauth2GlobalGetOK, error)
+
+	SecurityOauth2GlobalModify(params *SecurityOauth2GlobalModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOauth2GlobalModifyOK, error)
+
+	SecuritySamlSpCreate(params *SecuritySamlSpCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlSpCreateCreated, *SecuritySamlSpCreateAccepted, error)
 
 	SecuritySamlSpDelete(params *SecuritySamlSpDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlSpDeleteOK, error)
 
@@ -296,11 +464,39 @@ type ClientService interface {
 
 	SSHModify(params *SSHModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SSHModifyOK, error)
 
+	SupportedAlgorithmsCollectionGet(params *SupportedAlgorithmsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SupportedAlgorithmsCollectionGetOK, error)
+
+	SupportedAlgorithmsGet(params *SupportedAlgorithmsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SupportedAlgorithmsGetOK, error)
+
 	SvmSSHServerCollectionGet(params *SvmSSHServerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmSSHServerCollectionGetOK, error)
 
 	SvmSSHServerGet(params *SvmSSHServerGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmSSHServerGetOK, error)
 
 	SvmSSHServerModify(params *SvmSSHServerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmSSHServerModifyOK, error)
+
+	SvmSSHServerModifyCollection(params *SvmSSHServerModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmSSHServerModifyCollectionOK, error)
+
+	TotpCollectionGet(params *TotpCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TotpCollectionGetOK, error)
+
+	TotpCreate(params *TotpCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TotpCreateCreated, error)
+
+	TotpGet(params *TotpGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TotpGetOK, error)
+
+	TotpModify(params *TotpModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TotpModifyOK, error)
+
+	TotpModifyCollection(params *TotpModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TotpModifyCollectionOK, error)
+
+	WebauthnCredentialsCollectionGet(params *WebauthnCredentialsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnCredentialsCollectionGetOK, error)
+
+	WebauthnCredentialsDelete(params *WebauthnCredentialsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnCredentialsDeleteOK, error)
+
+	WebauthnCredentialsDeleteCollection(params *WebauthnCredentialsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnCredentialsDeleteCollectionOK, error)
+
+	WebauthnCredentialsGet(params *WebauthnCredentialsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnCredentialsGetOK, error)
+
+	WebauthnGlobalCollectionGet(params *WebauthnGlobalCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnGlobalCollectionGetOK, error)
+
+	WebauthnGlobalGet(params *WebauthnGlobalGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnGlobalGetOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -322,8 +518,8 @@ func (a *Client) AccountCollectionGet(params *AccountCollectionGetParams, authIn
 		ID:                 "account_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/accounts",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AccountCollectionGetReader{formats: a.formats},
@@ -358,10 +554,11 @@ func (a *Client) AccountCollectionGet(params *AccountCollectionGetParams, authIn
 * `owner.name` or `owner.uuid`  - Name or UUID of the SVM for an SVM-scoped user account. If not supplied, a cluster-scoped user account is created.
 * `role` - RBAC role for the user account. Defaulted to `admin` for cluster user account and to `vsadmin` for SVM-scoped account.
 * `password` - Password for the user account (if the authentication method is opted as password for one or more of applications).
-* `second_authentication_method` - Needed for MFA and only supported for ssh application. Defaults to `none` if not supplied.
+* `second_authentication_method` - Needed for MFA and only supported for _ssh_ and _service_processor_ applications. Defaults to _none_ if not supplied.
 * `comment` - Comment for the user account (e.g purpose of this account).
 * `locked` - Locks the account after creation. Defaults to `false` if not supplied.
-* `ldap_fastbind` - Needed for LDAP Fastbind Authentication and only supported for applications SSH, ONTAPI, and HTTP with authentication method "nsswitch" only. Defaults to false if not supplied.
+* `is_ldap_fastbind` - Needed for LDAP Fastbind Authentication and only supported for applications SSH, ONTAPI, and HTTP with authentication method "nsswitch" only. Defaults to false if not supplied.
+* `is_ns_switch_group` - Specifies whether the user is an LDAP or NIS group and is only supported for SSH, ONTAPI, and HTTP applications with the authentication method "nsswitch". Defaults to false if not supplied.
 ### Related ONTAP commands
 * `security login create`
 ### Learn more
@@ -376,8 +573,8 @@ func (a *Client) AccountCreate(params *AccountCreateParams, authInfo runtime.Cli
 		ID:                 "account_create",
 		Method:             "POST",
 		PathPattern:        "/security/accounts",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AccountCreateReader{formats: a.formats},
@@ -423,8 +620,8 @@ func (a *Client) AccountDelete(params *AccountDeleteParams, authInfo runtime.Cli
 		ID:                 "account_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/accounts/{owner.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AccountDeleteReader{formats: a.formats},
@@ -450,6 +647,208 @@ func (a *Client) AccountDelete(params *AccountDeleteParams, authInfo runtime.Cli
 }
 
 /*
+AccountDeleteCollection account delete collection API
+*/
+func (a *Client) AccountDeleteCollection(params *AccountDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAccountDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "account_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/accounts",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AccountDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AccountDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AccountDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	AccountDuoDelete Deletes the Duo profile of the SVM or cluster.
+
+### Related ONTAP commands
+* `security login duo delete`
+### Learn more
+* [`DOC /security/authentication/duo/profiles/{owner.uuid}`](#docs-security-security_authentication_duo_profiles_{owner.uuid})
+* [`DOC /security/accounts`](#docs-security-security_accounts)
+*/
+func (a *Client) AccountDuoDelete(params *AccountDuoDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountDuoDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAccountDuoDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "account_duo_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/authentication/duo/profiles/{owner.uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AccountDuoDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AccountDuoDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AccountDuoDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+AccountDuoDeleteCollection account duo delete collection API
+*/
+func (a *Client) AccountDuoDeleteCollection(params *AccountDuoDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountDuoDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAccountDuoDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "account_duo_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/authentication/duo/profiles",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AccountDuoDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AccountDuoDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AccountDuoDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	AccountDuogroupDelete Deletes a Duo group of the SVM or cluster.
+
+### Related ONTAP commands
+* `security login duo group delete`
+### Learn more
+* [`DOC /security/authentication/duo/groups/{owner.uuid}/{name}`](#docs-security-security_authentication_duo_groups_{owner.uuid}_{name})
+* [`DOC /security/accounts`](#docs-security-security_accounts)
+*/
+func (a *Client) AccountDuogroupDelete(params *AccountDuogroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountDuogroupDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAccountDuogroupDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "account_duogroup_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/authentication/duo/groups/{owner.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AccountDuogroupDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AccountDuogroupDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AccountDuogroupDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+AccountDuogroupDeleteCollection account duogroup delete collection API
+*/
+func (a *Client) AccountDuogroupDeleteCollection(params *AccountDuogroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountDuogroupDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAccountDuogroupDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "account_duogroup_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/authentication/duo/groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AccountDuogroupDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AccountDuogroupDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AccountDuogroupDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	AccountGet Retrieves a specific user account.
 
 ### Related ONTAP commands
@@ -467,8 +866,8 @@ func (a *Client) AccountGet(params *AccountGetParams, authInfo runtime.ClientAut
 		ID:                 "account_get",
 		Method:             "GET",
 		PathPattern:        "/security/accounts/{owner.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AccountGetReader{formats: a.formats},
@@ -503,10 +902,11 @@ func (a *Client) AccountGet(params *AccountGetParams, authInfo runtime.ClientAut
 * `applications` - Array of one or more tuples (of application and authentication methods).
 * `role` - RBAC role for the user account.
 * `password` - Password for the user account (if the authentication method is opted as password for one or more of applications).
-* `second_authentication_method` - Needed for MFA and only supported for ssh application. Defaults to `none` if not supplied.
+* `second_authentication_method` - Needed for MFA and only supported for _ssh_ and _service_processor_ applications. Defaults to _none_ if not supplied.
 * `comment` - Comment for the user account (e.g purpose of this account).
 * `locked` - Set to true/false to lock/unlock the account.
-* `ldap_fastbind` - Set to true/false to enable LDAP Fastbind Authentication.
+* `is_ldap_fastbind` - Set to true/false to enable LDAP Fastbind Authentication.
+* `is_ns_switch_group` - Set to true/false to specify whether the user is an LDAP or NIS group.
 ### Related ONTAP commands
 * `security login create`
 * `security login modify`
@@ -526,8 +926,8 @@ func (a *Client) AccountModify(params *AccountModifyParams, authInfo runtime.Cli
 		ID:                 "account_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/accounts/{owner.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AccountModifyReader{formats: a.formats},
@@ -549,6 +949,44 @@ func (a *Client) AccountModify(params *AccountModifyParams, authInfo runtime.Cli
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AccountModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+AccountModifyCollection account modify collection API
+*/
+func (a *Client) AccountModifyCollection(params *AccountModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAccountModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "account_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/accounts",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AccountModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AccountModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AccountModifyCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -576,8 +1014,8 @@ func (a *Client) AccountPasswordCreate(params *AccountPasswordCreateParams, auth
 		ID:                 "account_password_create",
 		Method:             "POST",
 		PathPattern:        "/security/authentication/password",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AccountPasswordCreateReader{formats: a.formats},
@@ -620,8 +1058,8 @@ func (a *Client) AccountPublickeyDelete(params *AccountPublickeyDeleteParams, au
 		ID:                 "account_publickey_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/authentication/publickeys/{owner.uuid}/{account.name}/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AccountPublickeyDeleteReader{formats: a.formats},
@@ -647,6 +1085,212 @@ func (a *Client) AccountPublickeyDelete(params *AccountPublickeyDeleteParams, au
 }
 
 /*
+AccountPublickeyDeleteCollection account publickey delete collection API
+*/
+func (a *Client) AccountPublickeyDeleteCollection(params *AccountPublickeyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountPublickeyDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAccountPublickeyDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "account_publickey_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/authentication/publickeys",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AccountPublickeyDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AccountPublickeyDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AccountPublickeyDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	AccountTotpDelete Deletes the TOTP profile for a user account.
+
+### Related ONTAP commands
+* `security login totp delete`
+### Learn more
+* [`DOC /security/login/totps/{owner.uuid}/{account.name}`](#docs-security-security_login_totps_{owner.uuid}_{account.name})
+* [`DOC /security/accounts`](#docs-security-security_accounts)
+*/
+func (a *Client) AccountTotpDelete(params *AccountTotpDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountTotpDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAccountTotpDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "account_totp_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/login/totps/{owner.uuid}/{account.name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AccountTotpDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AccountTotpDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AccountTotpDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+AccountTotpDeleteCollection account totp delete collection API
+*/
+func (a *Client) AccountTotpDeleteCollection(params *AccountTotpDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountTotpDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAccountTotpDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "account_totp_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/login/totps",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AccountTotpDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AccountTotpDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AccountTotpDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	AntiRansomwareGet Retrieves the anti-ransomware version of the nodes in the cluster.
+
+### Related ONTAP commands
+* `security anti-ransomware show`
+*/
+func (a *Client) AntiRansomwareGet(params *AntiRansomwareGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAntiRansomwareGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "anti_ransomware_get",
+		Method:             "GET",
+		PathPattern:        "/security/anti-ransomware",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AntiRansomwareGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AntiRansomwareGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AntiRansomwareGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	AntiRansomwareModify Updates the anti-ransomware package on the cluster.
+
+### Required properties
+* `uri` - URI of the anti-ransomware package
+### Related ONTAP commands
+* `security anti-ransomware update-package-from-uri`
+*/
+func (a *Client) AntiRansomwareModify(params *AntiRansomwareModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareModifyOK, *AntiRansomwareModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAntiRansomwareModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "anti_ransomware_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/anti-ransomware",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AntiRansomwareModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *AntiRansomwareModifyOK:
+		return value, nil, nil
+	case *AntiRansomwareModifyAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AntiRansomwareModifyDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	AntiRansomwareSuspectCollectionGet Retrieves information on the suspects generated by the anti-ransomware analytics.
 
 ### Related ONTAP commands
@@ -661,8 +1305,8 @@ func (a *Client) AntiRansomwareSuspectCollectionGet(params *AntiRansomwareSuspec
 		ID:                 "anti_ransomware_suspect_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/anti-ransomware/suspects",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AntiRansomwareSuspectCollectionGetReader{formats: a.formats},
@@ -693,7 +1337,7 @@ func (a *Client) AntiRansomwareSuspectCollectionGet(params *AntiRansomwareSuspec
 ### Related ONTAP commands
 * `security anti-ransomware volume attack clear-suspect`
 */
-func (a *Client) AntiRansomwareSuspectDelete(params *AntiRansomwareSuspectDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareSuspectDeleteAccepted, error) {
+func (a *Client) AntiRansomwareSuspectDelete(params *AntiRansomwareSuspectDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareSuspectDeleteOK, *AntiRansomwareSuspectDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAntiRansomwareSuspectDeleteParams()
@@ -702,8 +1346,8 @@ func (a *Client) AntiRansomwareSuspectDelete(params *AntiRansomwareSuspectDelete
 		ID:                 "anti_ransomware_suspect_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/anti-ransomware/suspects/{volume.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AntiRansomwareSuspectDeleteReader{formats: a.formats},
@@ -717,15 +1361,56 @@ func (a *Client) AntiRansomwareSuspectDelete(params *AntiRansomwareSuspectDelete
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*AntiRansomwareSuspectDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *AntiRansomwareSuspectDeleteOK:
+		return value, nil, nil
+	case *AntiRansomwareSuspectDeleteAccepted:
+		return nil, value, nil
 	}
-	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for anti_ransomware_suspect_delete: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for security: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+AntiRansomwareSuspectDeleteCollection anti ransomware suspect delete collection API
+*/
+func (a *Client) AntiRansomwareSuspectDeleteCollection(params *AntiRansomwareSuspectDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareSuspectDeleteCollectionOK, *AntiRansomwareSuspectDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAntiRansomwareSuspectDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "anti_ransomware_suspect_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/anti-ransomware/suspects",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AntiRansomwareSuspectDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *AntiRansomwareSuspectDeleteCollectionOK:
+		return value, nil, nil
+	case *AntiRansomwareSuspectDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for security: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -741,8 +1426,8 @@ func (a *Client) AuditLogForwardingGet(params *AuditLogForwardingGetParams, auth
 		ID:                 "audit_log_forwarding_get",
 		Method:             "GET",
 		PathPattern:        "/security/audit/destinations",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AuditLogForwardingGetReader{formats: a.formats},
@@ -783,8 +1468,8 @@ func (a *Client) AwsKmsCollectionGet(params *AwsKmsCollectionGetParams, authInfo
 		ID:                 "aws_kms_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/aws-kms",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AwsKmsCollectionGetReader{formats: a.formats},
@@ -813,14 +1498,15 @@ func (a *Client) AwsKmsCollectionGet(params *AwsKmsCollectionGetParams, authInfo
 	AwsKmsCreate Configures the AWS KMS configuration for the specified SVM.
 
 ### Required properties
+* `access_key_id` - AWS access key ID of the user who has the appropriate access to AWS KMS.
+* `secret_access_key` - AWS secret access key for the access key ID provided.
 * `svm.uuid` or `svm.name` - Existing SVM in which to create an AWS KMS.
 * `region` - AWS region of the AWS KMS.
 * `key_id` - AWS Key ID
 ### Optional properties
-* `access_key_id` - AWS access key ID of the user who has the appropriate access to AWS KMS.
-* `secret_access_key` - AWS secret access key for the access key ID provided.
 * `service` - AWS service type.
 * `default_domain` - AWS KMS default domain.
+* `host` - AWS KMS host's hostname.
 * `port` - AWS KMS port.
 * `proxy_type` - Type of proxy (http, https, etc.), if proxy configuration is used.
 * `proxy_host` - Proxy hostname if proxy configuration is used.
@@ -832,7 +1518,7 @@ func (a *Client) AwsKmsCollectionGet(params *AwsKmsCollectionGetParams, authInfo
 ### Related ONTAP commands
 * `security key-manager external aws enable`
 */
-func (a *Client) AwsKmsCreate(params *AwsKmsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsCreateCreated, error) {
+func (a *Client) AwsKmsCreate(params *AwsKmsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsCreateCreated, *AwsKmsCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAwsKmsCreateParams()
@@ -841,8 +1527,8 @@ func (a *Client) AwsKmsCreate(params *AwsKmsCreateParams, authInfo runtime.Clien
 		ID:                 "aws_kms_create",
 		Method:             "POST",
 		PathPattern:        "/security/aws-kms",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AwsKmsCreateReader{formats: a.formats},
@@ -856,15 +1542,17 @@ func (a *Client) AwsKmsCreate(params *AwsKmsCreateParams, authInfo runtime.Clien
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*AwsKmsCreateCreated)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *AwsKmsCreateCreated:
+		return value, nil, nil
+	case *AwsKmsCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AwsKmsCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -873,7 +1561,7 @@ func (a *Client) AwsKmsCreate(params *AwsKmsCreateParams, authInfo runtime.Clien
 ### Related ONTAP commands
 * `security key-manager external aws disable`
 */
-func (a *Client) AwsKmsDelete(params *AwsKmsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsDeleteOK, error) {
+func (a *Client) AwsKmsDelete(params *AwsKmsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsDeleteOK, *AwsKmsDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAwsKmsDeleteParams()
@@ -882,8 +1570,8 @@ func (a *Client) AwsKmsDelete(params *AwsKmsDeleteParams, authInfo runtime.Clien
 		ID:                 "aws_kms_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/aws-kms/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AwsKmsDeleteReader{formats: a.formats},
@@ -897,15 +1585,57 @@ func (a *Client) AwsKmsDelete(params *AwsKmsDeleteParams, authInfo runtime.Clien
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*AwsKmsDeleteOK)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *AwsKmsDeleteOK:
+		return value, nil, nil
+	case *AwsKmsDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AwsKmsDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+AwsKmsDeleteCollection aws kms delete collection API
+*/
+func (a *Client) AwsKmsDeleteCollection(params *AwsKmsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsDeleteCollectionOK, *AwsKmsDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAwsKmsDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "aws_kms_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/aws-kms",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AwsKmsDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *AwsKmsDeleteCollectionOK:
+		return value, nil, nil
+	case *AwsKmsDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AwsKmsDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -924,8 +1654,8 @@ func (a *Client) AwsKmsGet(params *AwsKmsGetParams, authInfo runtime.ClientAuthI
 		ID:                 "aws_kms_get",
 		Method:             "GET",
 		PathPattern:        "/security/aws-kms/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AwsKmsGetReader{formats: a.formats},
@@ -970,14 +1700,14 @@ func (a *Client) AwsKmsGet(params *AwsKmsGetParams, authInfo runtime.ClientAuthI
 * `verify_ip` - Set to true to verify the AWS KMS host's IP address.
 * `host` - AWS KMS host's hostname.
 * `secret_access_key` - AWS secret access key for the access key ID provided.
-* `access-key-id` - AWS access key ID of the user with the appropriate access to AWS KMS.
-* `skip_verify` - Set to true to bypass verfication of updated user credentials when updating credentials.
+* `access_key_id` - AWS access key ID of the user with the appropriate access to AWS KMS.
+* `skip_verify` - Set to true to bypass verification of the user provided access_key_id and secret_access_key.
 * `encryption_context` - Additional layer of authentication and logging.
 ### Related ONTAP commands
 * `security key-manager external aws update-config`
 * `security key-manager external aws update-credentials`
 */
-func (a *Client) AwsKmsModify(params *AwsKmsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsModifyOK, error) {
+func (a *Client) AwsKmsModify(params *AwsKmsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsModifyOK, *AwsKmsModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAwsKmsModifyParams()
@@ -986,8 +1716,8 @@ func (a *Client) AwsKmsModify(params *AwsKmsModifyParams, authInfo runtime.Clien
 		ID:                 "aws_kms_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/aws-kms/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AwsKmsModifyReader{formats: a.formats},
@@ -1001,15 +1731,57 @@ func (a *Client) AwsKmsModify(params *AwsKmsModifyParams, authInfo runtime.Clien
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*AwsKmsModifyOK)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *AwsKmsModifyOK:
+		return value, nil, nil
+	case *AwsKmsModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AwsKmsModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+AwsKmsModifyCollection aws kms modify collection API
+*/
+func (a *Client) AwsKmsModifyCollection(params *AwsKmsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsModifyCollectionOK, *AwsKmsModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAwsKmsModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "aws_kms_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/aws-kms",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AwsKmsModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *AwsKmsModifyCollectionOK:
+		return value, nil, nil
+	case *AwsKmsModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AwsKmsModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1018,7 +1790,7 @@ func (a *Client) AwsKmsModify(params *AwsKmsModifyParams, authInfo runtime.Clien
 ### Related ONTAP commands
 * `security key-manager external aws rekey-external`
 */
-func (a *Client) AwsKmsRekeyExternal(params *AwsKmsRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRekeyExternalAccepted, error) {
+func (a *Client) AwsKmsRekeyExternal(params *AwsKmsRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRekeyExternalCreated, *AwsKmsRekeyExternalAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAwsKmsRekeyExternalParams()
@@ -1027,8 +1799,8 @@ func (a *Client) AwsKmsRekeyExternal(params *AwsKmsRekeyExternalParams, authInfo
 		ID:                 "aws_kms_rekey_external",
 		Method:             "POST",
 		PathPattern:        "/security/aws-kms/{aws_kms.uuid}/rekey-external",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AwsKmsRekeyExternalReader{formats: a.formats},
@@ -1042,15 +1814,17 @@ func (a *Client) AwsKmsRekeyExternal(params *AwsKmsRekeyExternalParams, authInfo
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*AwsKmsRekeyExternalAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *AwsKmsRekeyExternalCreated:
+		return value, nil, nil
+	case *AwsKmsRekeyExternalAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AwsKmsRekeyExternalDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1059,7 +1833,7 @@ func (a *Client) AwsKmsRekeyExternal(params *AwsKmsRekeyExternalParams, authInfo
 ### Related ONTAP commands
 * `security key-manager external aws rekey-internal`
 */
-func (a *Client) AwsKmsRekeyInternal(params *AwsKmsRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRekeyInternalAccepted, error) {
+func (a *Client) AwsKmsRekeyInternal(params *AwsKmsRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRekeyInternalCreated, *AwsKmsRekeyInternalAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAwsKmsRekeyInternalParams()
@@ -1068,8 +1842,8 @@ func (a *Client) AwsKmsRekeyInternal(params *AwsKmsRekeyInternalParams, authInfo
 		ID:                 "aws_kms_rekey_internal",
 		Method:             "POST",
 		PathPattern:        "/security/aws-kms/{aws_kms.uuid}/rekey-internal",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AwsKmsRekeyInternalReader{formats: a.formats},
@@ -1083,15 +1857,17 @@ func (a *Client) AwsKmsRekeyInternal(params *AwsKmsRekeyInternalParams, authInfo
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*AwsKmsRekeyInternalAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *AwsKmsRekeyInternalCreated:
+		return value, nil, nil
+	case *AwsKmsRekeyInternalAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AwsKmsRekeyInternalDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1100,7 +1876,7 @@ func (a *Client) AwsKmsRekeyInternal(params *AwsKmsRekeyInternalParams, authInfo
 ### Related ONTAP commands
 * `security key-manager external AWS restore`
 */
-func (a *Client) AwsKmsRestore(params *AwsKmsRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRestoreAccepted, error) {
+func (a *Client) AwsKmsRestore(params *AwsKmsRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRestoreCreated, *AwsKmsRestoreAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAwsKmsRestoreParams()
@@ -1109,8 +1885,8 @@ func (a *Client) AwsKmsRestore(params *AwsKmsRestoreParams, authInfo runtime.Cli
 		ID:                 "aws_kms_restore",
 		Method:             "POST",
 		PathPattern:        "/security/aws-kms/{aws_kms.uuid}/restore",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AwsKmsRestoreReader{formats: a.formats},
@@ -1124,15 +1900,17 @@ func (a *Client) AwsKmsRestore(params *AwsKmsRestoreParams, authInfo runtime.Cli
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*AwsKmsRestoreAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *AwsKmsRestoreCreated:
+		return value, nil, nil
+	case *AwsKmsRestoreAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AwsKmsRestoreDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1151,8 +1929,8 @@ func (a *Client) AzureKeyVaultCollectionGet(params *AzureKeyVaultCollectionGetPa
 		ID:                 "azure_key_vault_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/azure-key-vaults",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AzureKeyVaultCollectionGetReader{formats: a.formats},
@@ -1180,25 +1958,31 @@ func (a *Client) AzureKeyVaultCollectionGet(params *AzureKeyVaultCollectionGetPa
 /*
 	AzureKeyVaultCreate Configures the AKV configuration for all clusters and SVMs.
 
-### Required properties
+### Required properties:
 * `svm.uuid` or `svm.name` - Existing SVM in which to create a AKV.
 * `client_id` - Application (client) ID of the deployed Azure application with appropriate access to an AKV.
 * `tenant_id` - Directory (tenant) ID of the deployed Azure application with appropriate access to an AKV.
-* `client_secret` - Secret used by the application to prove its identity to AKV.
-* `client_certificate` - PKCS12 Certificate used by the application to prove its identity to AKV.
+* `client_secret` or `client_certificate` - Secret or PKCS12 Certificate used by the application to prove its identity to AKV.
 * `key_id`- Key Identifier of AKV encryption key.
 * `name` - Name of the deployed AKV used by ONTAP for storing keys.
-### Optional properties
+### Optional properties:
+* `port` - Authorization server and vault port number.
+* `oauth_host` - Open authorization server host name.
+* `vault_host` - AKV host subdomain.
 * `proxy_type` - Type of proxy (http, https etc.) if proxy configuration is used.
 * `proxy_host` - Proxy hostname if proxy configuration is used.
 * `proxy_port` - Proxy port number if proxy configuration is used.
 * `proxy_username` - Proxy username if proxy configuration is used.
 * `proxy_password` - Proxy password if proxy configuration is used.
+* `configuration.name` - The configuration name to use when also setting the `create_inactive` flag.
+### Optional parameters:
+* `create_inactive` - Create an AKV configuration without enabling it. This flag is set to "false" by default.
 ### Related ONTAP commands
 * `security key-manager external azure enable`
+* `security key-manager external azure create-config`
 * `security key-manager external azure update-config`
 */
-func (a *Client) AzureKeyVaultCreate(params *AzureKeyVaultCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultCreateCreated, error) {
+func (a *Client) AzureKeyVaultCreate(params *AzureKeyVaultCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultCreateCreated, *AzureKeyVaultCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAzureKeyVaultCreateParams()
@@ -1207,8 +1991,8 @@ func (a *Client) AzureKeyVaultCreate(params *AzureKeyVaultCreateParams, authInfo
 		ID:                 "azure_key_vault_create",
 		Method:             "POST",
 		PathPattern:        "/security/azure-key-vaults",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AzureKeyVaultCreateReader{formats: a.formats},
@@ -1222,15 +2006,17 @@ func (a *Client) AzureKeyVaultCreate(params *AzureKeyVaultCreateParams, authInfo
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*AzureKeyVaultCreateCreated)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *AzureKeyVaultCreateCreated:
+		return value, nil, nil
+	case *AzureKeyVaultCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AzureKeyVaultCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1239,7 +2025,7 @@ func (a *Client) AzureKeyVaultCreate(params *AzureKeyVaultCreateParams, authInfo
 ### Related ONTAP commands
 * `security key-manager external azure disable`
 */
-func (a *Client) AzureKeyVaultDelete(params *AzureKeyVaultDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultDeleteOK, error) {
+func (a *Client) AzureKeyVaultDelete(params *AzureKeyVaultDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultDeleteOK, *AzureKeyVaultDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAzureKeyVaultDeleteParams()
@@ -1248,8 +2034,8 @@ func (a *Client) AzureKeyVaultDelete(params *AzureKeyVaultDeleteParams, authInfo
 		ID:                 "azure_key_vault_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/azure-key-vaults/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AzureKeyVaultDeleteReader{formats: a.formats},
@@ -1263,15 +2049,57 @@ func (a *Client) AzureKeyVaultDelete(params *AzureKeyVaultDeleteParams, authInfo
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*AzureKeyVaultDeleteOK)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *AzureKeyVaultDeleteOK:
+		return value, nil, nil
+	case *AzureKeyVaultDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AzureKeyVaultDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+AzureKeyVaultDeleteCollection azure key vault delete collection API
+*/
+func (a *Client) AzureKeyVaultDeleteCollection(params *AzureKeyVaultDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultDeleteCollectionOK, *AzureKeyVaultDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAzureKeyVaultDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "azure_key_vault_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/azure-key-vaults",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AzureKeyVaultDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *AzureKeyVaultDeleteCollectionOK:
+		return value, nil, nil
+	case *AzureKeyVaultDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AzureKeyVaultDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1290,8 +2118,8 @@ func (a *Client) AzureKeyVaultGet(params *AzureKeyVaultGetParams, authInfo runti
 		ID:                 "azure_key_vault_get",
 		Method:             "GET",
 		PathPattern:        "/security/azure-key-vaults/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AzureKeyVaultGetReader{formats: a.formats},
@@ -1320,15 +2148,20 @@ func (a *Client) AzureKeyVaultGet(params *AzureKeyVaultGetParams, authInfo runti
 	AzureKeyVaultModify Updates the AKV configuration.
 
 ### Optional properties
-* `client_secret` - New secret used to prove the application's identity to the AKV.
-* `client_certificate` - New PKCS12 certificate used to prove the application's identity to the AKV.
+* `client_secret` or `client_certificate` - New secret or new PKCS12 certificate used to prove the application's identity to the AKV.
 * `proxy_type` - Type of proxy (http, https etc.) if proxy configuration is used.
 * `proxy_host` - Proxy hostname if proxy configuration is used.
 * `proxy_port` - Proxy port number if proxy configuration is used.
+* `port` - Authorization server and vault port number.
+* `oauth_host` - Open authorization server host name.
+* `vault_host` - AKV host subdomain.
+* `verify_host` - Verify the identity of the AKV host name.
+* `verify_ip ` - Verify the identity of the AKV IP address.
 * `proxy_username` - Proxy username if proxy configuration is used.
 * `proxy_password` - Proxy password if proxy configuration is used.
 * `client_id` - Application (client) ID of the deployed Azure application with appropriate access to an AKV.
 * `tenant_id` - Directory (tenant) ID of the deployed Azure application with appropriate access to an AKV.
+* `skip_verification` - Skip the verification of the updated credentials, set to true to bypass the verification. The default value is false.
 ### Related ONTAP commands
 * `security key-manager external azure update-client-secret`
 * `security key-manager external azure update-credentials`
@@ -1343,8 +2176,8 @@ func (a *Client) AzureKeyVaultModify(params *AzureKeyVaultModifyParams, authInfo
 		ID:                 "azure_key_vault_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/azure-key-vaults/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AzureKeyVaultModifyReader{formats: a.formats},
@@ -1372,14 +2205,54 @@ func (a *Client) AzureKeyVaultModify(params *AzureKeyVaultModifyParams, authInfo
 }
 
 /*
+AzureKeyVaultModifyCollection azure key vault modify collection API
+*/
+func (a *Client) AzureKeyVaultModifyCollection(params *AzureKeyVaultModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultModifyCollectionOK, *AzureKeyVaultModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAzureKeyVaultModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "azure_key_vault_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/azure-key-vaults",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AzureKeyVaultModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *AzureKeyVaultModifyCollectionOK:
+		return value, nil, nil
+	case *AzureKeyVaultModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AzureKeyVaultModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	AzureKeyVaultRekeyExternal Rekeys the external key in the key hierarchy for an SVM with an AKV configuration.
 
 ### Required properties
-* `key_id`- Key identifier of the new AKV key encryption key.
+* `key_id` - Key identifier of the new AKV key encryption key.
 ### Related ONTAP commands
 * `security key-manager external azure rekey-external`
 */
-func (a *Client) AzureKeyVaultRekeyExternal(params *AzureKeyVaultRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRekeyExternalAccepted, error) {
+func (a *Client) AzureKeyVaultRekeyExternal(params *AzureKeyVaultRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRekeyExternalCreated, *AzureKeyVaultRekeyExternalAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAzureKeyVaultRekeyExternalParams()
@@ -1388,8 +2261,8 @@ func (a *Client) AzureKeyVaultRekeyExternal(params *AzureKeyVaultRekeyExternalPa
 		ID:                 "azure_key_vault_rekey_external",
 		Method:             "POST",
 		PathPattern:        "/security/azure-key-vaults/{azure_key_vault.uuid}/rekey-external",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AzureKeyVaultRekeyExternalReader{formats: a.formats},
@@ -1403,15 +2276,17 @@ func (a *Client) AzureKeyVaultRekeyExternal(params *AzureKeyVaultRekeyExternalPa
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*AzureKeyVaultRekeyExternalAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *AzureKeyVaultRekeyExternalCreated:
+		return value, nil, nil
+	case *AzureKeyVaultRekeyExternalAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AzureKeyVaultRekeyExternalDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1420,7 +2295,7 @@ func (a *Client) AzureKeyVaultRekeyExternal(params *AzureKeyVaultRekeyExternalPa
 ### Related ONTAP commands
 * `security key-manager external azure rekey-internal`
 */
-func (a *Client) AzureKeyVaultRekeyInternal(params *AzureKeyVaultRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRekeyInternalAccepted, error) {
+func (a *Client) AzureKeyVaultRekeyInternal(params *AzureKeyVaultRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRekeyInternalCreated, *AzureKeyVaultRekeyInternalAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAzureKeyVaultRekeyInternalParams()
@@ -1429,8 +2304,8 @@ func (a *Client) AzureKeyVaultRekeyInternal(params *AzureKeyVaultRekeyInternalPa
 		ID:                 "azure_key_vault_rekey_internal",
 		Method:             "POST",
 		PathPattern:        "/security/azure-key-vaults/{uuid}/rekey-internal",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AzureKeyVaultRekeyInternalReader{formats: a.formats},
@@ -1444,15 +2319,17 @@ func (a *Client) AzureKeyVaultRekeyInternal(params *AzureKeyVaultRekeyInternalPa
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*AzureKeyVaultRekeyInternalAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *AzureKeyVaultRekeyInternalCreated:
+		return value, nil, nil
+	case *AzureKeyVaultRekeyInternalAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AzureKeyVaultRekeyInternalDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1461,7 +2338,7 @@ func (a *Client) AzureKeyVaultRekeyInternal(params *AzureKeyVaultRekeyInternalPa
 ### Related ONTAP commands
 * `security key-manager external azure restore`
 */
-func (a *Client) AzureKeyVaultRestore(params *AzureKeyVaultRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRestoreAccepted, error) {
+func (a *Client) AzureKeyVaultRestore(params *AzureKeyVaultRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRestoreCreated, *AzureKeyVaultRestoreAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAzureKeyVaultRestoreParams()
@@ -1470,8 +2347,8 @@ func (a *Client) AzureKeyVaultRestore(params *AzureKeyVaultRestoreParams, authIn
 		ID:                 "azure_key_vault_restore",
 		Method:             "POST",
 		PathPattern:        "/security/azure-key-vaults/{uuid}/restore",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AzureKeyVaultRestoreReader{formats: a.formats},
@@ -1485,15 +2362,17 @@ func (a *Client) AzureKeyVaultRestore(params *AzureKeyVaultRestoreParams, authIn
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*AzureKeyVaultRestoreAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *AzureKeyVaultRestoreCreated:
+		return value, nil, nil
+	case *AzureKeyVaultRestoreAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AzureKeyVaultRestoreDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1516,8 +2395,8 @@ func (a *Client) ClusterAccountAdProxyCreate(params *ClusterAccountAdProxyCreate
 		ID:                 "cluster_account_ad_proxy_create",
 		Method:             "POST",
 		PathPattern:        "/security/authentication/cluster/ad-proxy",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterAccountAdProxyCreateReader{formats: a.formats},
@@ -1560,8 +2439,8 @@ func (a *Client) ClusterAccountAdProxyDelete(params *ClusterAccountAdProxyDelete
 		ID:                 "cluster_account_ad_proxy_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/authentication/cluster/ad-proxy",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterAccountAdProxyDeleteReader{formats: a.formats},
@@ -1604,8 +2483,8 @@ func (a *Client) ClusterAccountAdProxyGet(params *ClusterAccountAdProxyGetParams
 		ID:                 "cluster_account_ad_proxy_get",
 		Method:             "GET",
 		PathPattern:        "/security/authentication/cluster/ad-proxy",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterAccountAdProxyGetReader{formats: a.formats},
@@ -1648,8 +2527,8 @@ func (a *Client) ClusterAccountAdProxyModify(params *ClusterAccountAdProxyModify
 		ID:                 "cluster_account_ad_proxy_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/authentication/cluster/ad-proxy",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterAccountAdProxyModifyReader{formats: a.formats},
@@ -1679,13 +2558,13 @@ func (a *Client) ClusterAccountAdProxyModify(params *ClusterAccountAdProxyModify
 
 ### Required properties
 * `servers` - List of LDAP servers used for this client configuration.
-* `bind_dn` - Specifies the user that binds to the LDAP servers.
-* `base_dn` - Specifies the default base DN for all searches.
 ### Recommended optional properties
 * `schema` - Schema template name.
 * `port` - Port used to connect to the LDAP Servers.
 * `ldaps_enabled` - Specifies whether or not LDAPS is enabled.
 * `min_bind_level` - Minimum bind authentication level.
+* `bind_dn` - Specifies the user that binds to the LDAP servers.
+* `base_dn` - Specifies the default base DN for all searches.
 * `bind_password` - Specifies the bind password for the LDAP servers.
 * `base_scope` - Specifies the default search scope for LDAP queries.
 * `use_start_tls` - Specifies whether or not to use Start TLS over LDAP connections.
@@ -1735,8 +2614,8 @@ func (a *Client) ClusterLdapCreate(params *ClusterLdapCreateParams, authInfo run
 		ID:                 "cluster_ldap_create",
 		Method:             "POST",
 		PathPattern:        "/security/authentication/cluster/ldap",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterLdapCreateReader{formats: a.formats},
@@ -1773,8 +2652,8 @@ func (a *Client) ClusterLdapDelete(params *ClusterLdapDeleteParams, authInfo run
 		ID:                 "cluster_ldap_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/authentication/cluster/ldap",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterLdapDeleteReader{formats: a.formats},
@@ -1800,7 +2679,16 @@ func (a *Client) ClusterLdapDelete(params *ClusterLdapDeleteParams, authInfo run
 }
 
 /*
-ClusterLdapGet Retrieves the cluster LDAP configuration.
+	ClusterLdapGet Retrieves the cluster LDAP configuration.
+
+### Related ONTAP commands
+  - `ldap show`
+  - `ldap check -vserver vs0`
+  - `ldap check-ipv6 -vserver vs0`
+
+### Important notes
+  - The status.code, status.dn_message, status.message, and status.state fields have the same status fields that are returned using the "ldap check" CLI command.
+  - Refer to the ipv4 or ipv6 objects available in the status field to get specific information about the code, dn_messages, or message and state information for ipv4 or ipv6.
 */
 func (a *Client) ClusterLdapGet(params *ClusterLdapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterLdapGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1811,8 +2699,8 @@ func (a *Client) ClusterLdapGet(params *ClusterLdapGetParams, authInfo runtime.C
 		ID:                 "cluster_ldap_get",
 		Method:             "GET",
 		PathPattern:        "/security/authentication/cluster/ldap",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterLdapGetReader{formats: a.formats},
@@ -1855,8 +2743,8 @@ func (a *Client) ClusterLdapModify(params *ClusterLdapModifyParams, authInfo run
 		ID:                 "cluster_ldap_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/authentication/cluster/ldap",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterLdapModifyReader{formats: a.formats},
@@ -1882,7 +2770,7 @@ func (a *Client) ClusterLdapModify(params *ClusterLdapModifyParams, authInfo run
 }
 
 /*
-	ClusterNisCreate The cluster can have one NIS server configuration. Specify the NIS domain and NIS servers as input. Domain name and servers fields cannot be empty.
+	ClusterNisCreate The cluster can have one NIS server configuration. Specify the NIS domain and NIS servers as input. The servers field cannot be empty.
 
 Both FQDNs and IP addresses are supported for the `server` property. IPv6 must be enabled if IPv6 family addresses are specified in the `server` property. A maximum of ten NIS servers are supported.
 ### Required properties
@@ -1898,8 +2786,8 @@ func (a *Client) ClusterNisCreate(params *ClusterNisCreateParams, authInfo runti
 		ID:                 "cluster_nis_create",
 		Method:             "POST",
 		PathPattern:        "/security/authentication/cluster/nis",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterNisCreateReader{formats: a.formats},
@@ -1936,8 +2824,8 @@ func (a *Client) ClusterNisDelete(params *ClusterNisDeleteParams, authInfo runti
 		ID:                 "cluster_nis_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/authentication/cluster/nis",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterNisDeleteReader{formats: a.formats},
@@ -1976,8 +2864,8 @@ func (a *Client) ClusterNisGet(params *ClusterNisGetParams, authInfo runtime.Cli
 		ID:                 "cluster_nis_get",
 		Method:             "GET",
 		PathPattern:        "/security/authentication/cluster/nis",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterNisGetReader{formats: a.formats},
@@ -2014,8 +2902,8 @@ func (a *Client) ClusterNisModify(params *ClusterNisModifyParams, authInfo runti
 		ID:                 "cluster_nis_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/authentication/cluster/nis",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterNisModifyReader{formats: a.formats},
@@ -2043,12 +2931,13 @@ func (a *Client) ClusterNisModify(params *ClusterNisModifyParams, authInfo runti
 /*
 	CreateCertificateSigningRequest This API generates a Certificate Signing Request(CSR) and a private key pair. A CSR is a message sent securely to a certificate authority (CA) via any electronic media to apply for a digital identity certificate. This is a general utility API for users to generate a CSR.
 
+### Required properties
+* `subject_name` - Subject details of the certificate, including but not limited to the common name. Can be omitted if subject_alternatives is specified.
+* `subject_alternatives` - Subject Alternate Name (SAN) extensions. Only required if a common name is not specified using subject_name.
 ### Recommended optional properties
-* `subject_name` - Subject details of the certificate.
-* `security_strength` - Key size of the certificate in bits. Specifying a stronger security strength in bits is recommended when creating a certificate.
+* `security_strength` - Key size of the certificate, in bits. Specifying a stronger security strength in bits is recommended when creating a certificate. A value of at least 128 is necessary when using EC algorithm if the certificate is to be used in the context of TLSv1.3.
 * `hash_function` -  Hashing function.
 * `algorithm` - Asymmetric algorithm. Algorithm used to generate a public/private key pair when creating a certificate.
-* `subject_alternatives` - Subject Alternate name extensions.
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `security_strength` - _112_
@@ -2066,8 +2955,8 @@ func (a *Client) CreateCertificateSigningRequest(params *CreateCertificateSignin
 		ID:                 "create_certificate_signing_request",
 		Method:             "POST",
 		PathPattern:        "/security/certificate-signing-request",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CreateCertificateSigningRequestReader{formats: a.formats},
@@ -2093,6 +2982,440 @@ func (a *Client) CreateCertificateSigningRequest(params *CreateCertificateSignin
 }
 
 /*
+	DuoCollectionGet Retrieves the configured Duo profiles.
+
+### Related ONTAP commands
+* `security login duo show`
+### Learn more
+* [`DOC /security/authentication/duo/profiles`](#docs-security-security_authentication_duo_profiles)
+* [`DOC /security/accounts`](#docs-security-security_accounts)
+*/
+func (a *Client) DuoCollectionGet(params *DuoCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuoCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDuoCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "duo_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/authentication/duo/profiles",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DuoCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DuoCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DuoCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	DuoCreate Creates a Duo profile.
+
+### Required properties
+* `api_host` - Duo API host
+* `integration_key` - Integration key
+* `secret_key` - Secret key
+### Related ONTAP commands
+* `security login duo create`
+### Learn more
+* [`DOC /security/authentication/duo/profiles`](#docs-security-security_authentication_duo_profiles)
+* [`DOC /security/accounts`](#docs-security-security_accounts)
+*/
+func (a *Client) DuoCreate(params *DuoCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuoCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDuoCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "duo_create",
+		Method:             "POST",
+		PathPattern:        "/security/authentication/duo/profiles",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DuoCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DuoCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DuoCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	DuoGet Retrieves the Duo profile configured for the cluster or an SVM.
+
+### Related ONTAP commands
+* `security login duo show`
+### Learn more
+* [`DOC /security/authentication/duo/profiles/{owner.uuid}`](#docs-security-security_authentication_duo_profiles_{owner.uuid})
+* [`DOC /security/accounts`](#docs-security-security_accounts)
+*/
+func (a *Client) DuoGet(params *DuoGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuoGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDuoGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "duo_get",
+		Method:             "GET",
+		PathPattern:        "/security/authentication/duo/profiles/{owner.uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DuoGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DuoGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DuoGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	DuoModify Updates a configured Duo profile for a cluster or an SVM.
+
+### Related ONTAP commands
+* `security login duo modify`
+### Learn more
+* [`DOC /security/authentication/duo/profiles/{owner.uuid}`](#docs-security-security_authentication_duo_profiles_{owner.uuid})
+* [`DOC /security/accounts`](#docs-security-security_accounts)
+*/
+func (a *Client) DuoModify(params *DuoModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuoModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDuoModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "duo_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/authentication/duo/profiles/{owner.uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DuoModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DuoModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DuoModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+DuoModifyCollection duo modify collection API
+*/
+func (a *Client) DuoModifyCollection(params *DuoModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuoModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDuoModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "duo_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/authentication/duo/profiles",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DuoModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DuoModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DuoModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	DuogroupCollectionGet Retrieves the configured groups.
+
+### Related ONTAP commands
+* `security login duo group show`
+### Learn more
+* [`DOC /security/authentication/duo/groups`](#docs-security-security_authentication_duo_groups)
+* [`DOC /security/accounts`](#docs-security-security_accounts)
+*/
+func (a *Client) DuogroupCollectionGet(params *DuogroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuogroupCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDuogroupCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "duogroup_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/authentication/duo/groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DuogroupCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DuogroupCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DuogroupCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	DuogroupCreate Creates a Duo group.
+
+### Required properties
+* `name` - Group name
+### Related ONTAP commands
+* `security login duo group create`
+### Learn more
+* [`DOC /security/authentication/duo/groups`](#docs-security-security_authentication_duo_groups)
+* [`DOC /security/accounts`](#docs-security-security_accounts)
+*/
+func (a *Client) DuogroupCreate(params *DuogroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuogroupCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDuogroupCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "duogroup_create",
+		Method:             "POST",
+		PathPattern:        "/security/authentication/duo/groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DuogroupCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DuogroupCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DuogroupCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	DuogroupGet Retrieves the Duo group configured for an SVM or cluster.
+
+### Related ONTAP commands
+* `security login duo group show`
+### Learn more
+* [`DOC /security/authentication/duo/groups/{owner.uuid}/{name}`](#docs-security-security_authentication_duo_groups_{owner.uuid}_{name})
+* [`DOC /security/accounts`](#docs-security-security_accounts)
+*/
+func (a *Client) DuogroupGet(params *DuogroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuogroupGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDuogroupGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "duogroup_get",
+		Method:             "GET",
+		PathPattern:        "/security/authentication/duo/groups/{owner.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DuogroupGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DuogroupGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DuogroupGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	DuogroupModify Updates a configured Duo group for a cluster or SVM.
+
+### Related ONTAP commands
+* `security login duo group modify`
+### Learn more
+* [`DOC /security/authentication/duo/groups/{owner.uuid}/{name}`](#docs-security-security_authentication_duo_groups_{owner.uuid}_{name})
+* [`DOC /security/accounts`](#docs-security-security_accounts)
+*/
+func (a *Client) DuogroupModify(params *DuogroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuogroupModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDuogroupModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "duogroup_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/authentication/duo/groups/{owner.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DuogroupModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DuogroupModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DuogroupModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+DuogroupModifyCollection duogroup modify collection API
+*/
+func (a *Client) DuogroupModifyCollection(params *DuogroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuogroupModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDuogroupModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "duogroup_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/authentication/duo/groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DuogroupModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DuogroupModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DuogroupModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	GcpKmsCollectionGet Retrieves Google Cloud KMS configurations for all clusters and SVMs.
 
 ### Related ONTAP commands
@@ -2108,8 +3431,8 @@ func (a *Client) GcpKmsCollectionGet(params *GcpKmsCollectionGetParams, authInfo
 		ID:                 "gcp_kms_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/gcp-kms",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GcpKmsCollectionGetReader{formats: a.formats},
@@ -2150,10 +3473,17 @@ func (a *Client) GcpKmsCollectionGet(params *GcpKmsCollectionGetParams, authInfo
 * `proxy_port` - Proxy port number if proxy configuration is used.
 * `proxy_username` - Proxy username if proxy configuration is used.
 * `proxy_password` - Proxy password if proxy configuration is used.
+* `port` - Authorization server and Google Cloud KMS port number.
+* `cloudkms_host` - Google Cloud KMS host subdomain.
+* `oauth_host` - Open authorization server host name.
+* `oauth_url` - Open authorization URL for the access token.
+* `privileged_account` - Account used to impersonate Google Cloud KMS requests.
+* `verify_ip` - Verify identity of Google Cloud KMS IP address.
+* `verify_host` - Verify the identity of the Google Cloud KMS host name.
 ### Related ONTAP commands
 * `security key-manager external gcp enable`
 */
-func (a *Client) GcpKmsCreate(params *GcpKmsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsCreateCreated, error) {
+func (a *Client) GcpKmsCreate(params *GcpKmsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsCreateCreated, *GcpKmsCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGcpKmsCreateParams()
@@ -2162,8 +3492,8 @@ func (a *Client) GcpKmsCreate(params *GcpKmsCreateParams, authInfo runtime.Clien
 		ID:                 "gcp_kms_create",
 		Method:             "POST",
 		PathPattern:        "/security/gcp-kms",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GcpKmsCreateReader{formats: a.formats},
@@ -2177,15 +3507,17 @@ func (a *Client) GcpKmsCreate(params *GcpKmsCreateParams, authInfo runtime.Clien
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*GcpKmsCreateCreated)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *GcpKmsCreateCreated:
+		return value, nil, nil
+	case *GcpKmsCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*GcpKmsCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -2194,7 +3526,7 @@ func (a *Client) GcpKmsCreate(params *GcpKmsCreateParams, authInfo runtime.Clien
 ### Related ONTAP commands
 * `security key-manager external gcp disable`
 */
-func (a *Client) GcpKmsDelete(params *GcpKmsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsDeleteOK, error) {
+func (a *Client) GcpKmsDelete(params *GcpKmsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsDeleteOK, *GcpKmsDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGcpKmsDeleteParams()
@@ -2203,8 +3535,8 @@ func (a *Client) GcpKmsDelete(params *GcpKmsDeleteParams, authInfo runtime.Clien
 		ID:                 "gcp_kms_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/gcp-kms/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GcpKmsDeleteReader{formats: a.formats},
@@ -2218,15 +3550,57 @@ func (a *Client) GcpKmsDelete(params *GcpKmsDeleteParams, authInfo runtime.Clien
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*GcpKmsDeleteOK)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *GcpKmsDeleteOK:
+		return value, nil, nil
+	case *GcpKmsDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*GcpKmsDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+GcpKmsDeleteCollection gcp kms delete collection API
+*/
+func (a *Client) GcpKmsDeleteCollection(params *GcpKmsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsDeleteCollectionOK, *GcpKmsDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGcpKmsDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "gcp_kms_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/gcp-kms",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GcpKmsDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *GcpKmsDeleteCollectionOK:
+		return value, nil, nil
+	case *GcpKmsDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GcpKmsDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -2245,8 +3619,8 @@ func (a *Client) GcpKmsGet(params *GcpKmsGetParams, authInfo runtime.ClientAuthI
 		ID:                 "gcp_kms_get",
 		Method:             "GET",
 		PathPattern:        "/security/gcp-kms/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GcpKmsGetReader{formats: a.formats},
@@ -2275,18 +3649,25 @@ func (a *Client) GcpKmsGet(params *GcpKmsGetParams, authInfo runtime.ClientAuthI
 	GcpKmsModify Updates the Google Cloud KMS configuration.
 
 ### Optional properties
-* `key_name` - Key Identifier of the Google Cloud KMS key encryption key.
 * `application_credentials` - New credentials used to verify the application's identity to the Google Cloud KMS.
-* `proxy_type“ - Type of proxy (http/https) if proxy configuration is used.
+* `proxy_type` - Type of proxy (http/https) if proxy configuration is used.
 * `proxy_host` - Proxy hostname if proxy configuration is used.
 * `proxy_port` - Proxy port number if proxy configuration is used.
+* `port` - Authorization server and Google Cloud KMS port number.
 * `proxy_username` - Proxy username if proxy configuration is used.
 * `proxy_password` - Proxy password if proxy configuration is used.
 * `project_id` - Google Cloud project (application) ID of the deployed Google Cloud application with appropriate access to the Google Cloud KMS.
 * `key_ring_name` - Google Cloud KMS key ring name of the deployed Google Cloud application with appropriate access to the specified Google Cloud KMS.
 * `key_ring_location` - Google Cloud KMS key ring location.
+* `cloudkms_host` - Google Cloud KMS host subdomain.
+* `oauth_host` - Open authorization server host name.
+* `oauth_url` - Open authorization URL for the access token.
+* `verify_host` - Verify the identity of the Google Cloud KMS host name.
+* `verify_ip ` - Verify identity of Google Cloud KMS IP address.
+* `privileged_account` - Account used to impersonate Google Cloud KMS requests.
 ### Related ONTAP commands
 * `security key-manager external gcp update-credentials`
+* `security key-manager external gcp update-config`
 */
 func (a *Client) GcpKmsModify(params *GcpKmsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsModifyOK, *GcpKmsModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2297,8 +3678,8 @@ func (a *Client) GcpKmsModify(params *GcpKmsModifyParams, authInfo runtime.Clien
 		ID:                 "gcp_kms_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/gcp-kms/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GcpKmsModifyReader{formats: a.formats},
@@ -2326,12 +3707,52 @@ func (a *Client) GcpKmsModify(params *GcpKmsModifyParams, authInfo runtime.Clien
 }
 
 /*
+GcpKmsModifyCollection gcp kms modify collection API
+*/
+func (a *Client) GcpKmsModifyCollection(params *GcpKmsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsModifyCollectionOK, *GcpKmsModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGcpKmsModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "gcp_kms_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/gcp-kms",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GcpKmsModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *GcpKmsModifyCollectionOK:
+		return value, nil, nil
+	case *GcpKmsModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GcpKmsModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	GcpKmsRekeyExternal Rekeys the external key in the key hierarchy for an SVM with a Google Cloud KMS configuration.
 
 ### Related ONTAP commands
 * `security key-manager external gcp rekey-external`
 */
-func (a *Client) GcpKmsRekeyExternal(params *GcpKmsRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRekeyExternalAccepted, error) {
+func (a *Client) GcpKmsRekeyExternal(params *GcpKmsRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRekeyExternalCreated, *GcpKmsRekeyExternalAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGcpKmsRekeyExternalParams()
@@ -2340,8 +3761,8 @@ func (a *Client) GcpKmsRekeyExternal(params *GcpKmsRekeyExternalParams, authInfo
 		ID:                 "gcp_kms_rekey_external",
 		Method:             "POST",
 		PathPattern:        "/security/gcp-kms/{gcp_kms.uuid}/rekey-external",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GcpKmsRekeyExternalReader{formats: a.formats},
@@ -2355,15 +3776,17 @@ func (a *Client) GcpKmsRekeyExternal(params *GcpKmsRekeyExternalParams, authInfo
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*GcpKmsRekeyExternalAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *GcpKmsRekeyExternalCreated:
+		return value, nil, nil
+	case *GcpKmsRekeyExternalAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*GcpKmsRekeyExternalDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -2372,7 +3795,7 @@ func (a *Client) GcpKmsRekeyExternal(params *GcpKmsRekeyExternalParams, authInfo
 ### Related ONTAP commands
 * `security key-manager external gcp rekey-internal`
 */
-func (a *Client) GcpKmsRekeyInternal(params *GcpKmsRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRekeyInternalAccepted, error) {
+func (a *Client) GcpKmsRekeyInternal(params *GcpKmsRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRekeyInternalCreated, *GcpKmsRekeyInternalAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGcpKmsRekeyInternalParams()
@@ -2381,8 +3804,8 @@ func (a *Client) GcpKmsRekeyInternal(params *GcpKmsRekeyInternalParams, authInfo
 		ID:                 "gcp_kms_rekey_internal",
 		Method:             "POST",
 		PathPattern:        "/security/gcp-kms/{uuid}/rekey-internal",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GcpKmsRekeyInternalReader{formats: a.formats},
@@ -2396,15 +3819,17 @@ func (a *Client) GcpKmsRekeyInternal(params *GcpKmsRekeyInternalParams, authInfo
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*GcpKmsRekeyInternalAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *GcpKmsRekeyInternalCreated:
+		return value, nil, nil
+	case *GcpKmsRekeyInternalAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*GcpKmsRekeyInternalDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -2413,7 +3838,7 @@ func (a *Client) GcpKmsRekeyInternal(params *GcpKmsRekeyInternalParams, authInfo
 ### Related ONTAP commands
 * `security key-manager external gcp restore`
 */
-func (a *Client) GcpKmsRestore(params *GcpKmsRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRestoreAccepted, error) {
+func (a *Client) GcpKmsRestore(params *GcpKmsRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRestoreCreated, *GcpKmsRestoreAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGcpKmsRestoreParams()
@@ -2422,8 +3847,8 @@ func (a *Client) GcpKmsRestore(params *GcpKmsRestoreParams, authInfo runtime.Cli
 		ID:                 "gcp_kms_restore",
 		Method:             "POST",
 		PathPattern:        "/security/gcp-kms/{uuid}/restore",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GcpKmsRestoreReader{formats: a.formats},
@@ -2437,14 +3862,302 @@ func (a *Client) GcpKmsRestore(params *GcpKmsRestoreParams, authInfo runtime.Cli
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *GcpKmsRestoreCreated:
+		return value, nil, nil
+	case *GcpKmsRestoreAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GcpKmsRestoreDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	GroupRoleMappingsCollectionGet Retrieves all the group to role mapping entries.
+
+### Related ONTAP commands
+* `security login group role-mapping show`
+*/
+func (a *Client) GroupRoleMappingsCollectionGet(params *GroupRoleMappingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupRoleMappingsCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupRoleMappingsCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_role_mappings_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/group/role-mappings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupRoleMappingsCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GcpKmsRestoreAccepted)
+	success, ok := result.(*GroupRoleMappingsCollectionGetOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*GcpKmsRestoreDefault)
+	unexpectedSuccess := result.(*GroupRoleMappingsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	GroupRoleMappingsCreate Creates a group to role mapping entry.
+
+### Required properties
+* `group_id`
+* `ontap_role`
+### Optional properties
+* `comment`
+### Related ONTAP commands
+* `security login group role-mapping create`
+*/
+func (a *Client) GroupRoleMappingsCreate(params *GroupRoleMappingsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupRoleMappingsCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupRoleMappingsCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_role_mappings_create",
+		Method:             "POST",
+		PathPattern:        "/security/group/role-mappings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupRoleMappingsCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupRoleMappingsCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupRoleMappingsCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	GroupRoleMappingsDelete Deletes a group to role mapping entry.
+
+### Related ONTAP commands
+* `security login group role-mapping delete`
+*/
+func (a *Client) GroupRoleMappingsDelete(params *GroupRoleMappingsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupRoleMappingsDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupRoleMappingsDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_role_mappings_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/group/role-mappings/{group_id}/{ontap_role.name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupRoleMappingsDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupRoleMappingsDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupRoleMappingsDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+GroupRoleMappingsDeleteCollection group role mappings delete collection API
+*/
+func (a *Client) GroupRoleMappingsDeleteCollection(params *GroupRoleMappingsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupRoleMappingsDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupRoleMappingsDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_role_mappings_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/group/role-mappings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupRoleMappingsDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupRoleMappingsDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupRoleMappingsDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	GroupRoleMappingsGet Retrieves a group to role mapping entry.
+
+### Related ONTAP commands
+* `security login group role-mapping show`
+*/
+func (a *Client) GroupRoleMappingsGet(params *GroupRoleMappingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupRoleMappingsGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupRoleMappingsGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_role_mappings_get",
+		Method:             "GET",
+		PathPattern:        "/security/group/role-mappings/{group_id}/{ontap_role.name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupRoleMappingsGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupRoleMappingsGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupRoleMappingsGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	GroupRoleMappingsModify Updates a configured group role-mapping.
+
+### Related ONTAP commands
+* `security login group role-mapping modify`
+*/
+func (a *Client) GroupRoleMappingsModify(params *GroupRoleMappingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupRoleMappingsModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupRoleMappingsModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_role_mappings_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/group/role-mappings/{group_id}/{ontap_role.name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupRoleMappingsModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupRoleMappingsModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupRoleMappingsModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+GroupRoleMappingsModifyCollection group role mappings modify collection API
+*/
+func (a *Client) GroupRoleMappingsModifyCollection(params *GroupRoleMappingsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupRoleMappingsModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupRoleMappingsModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_role_mappings_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/group/role-mappings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupRoleMappingsModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupRoleMappingsModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupRoleMappingsModifyCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -2463,8 +4176,8 @@ func (a *Client) IpsecCaCertificateCollectionGet(params *IpsecCaCertificateColle
 		ID:                 "ipsec_ca_certificate_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/ipsec/ca-certificates",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IpsecCaCertificateCollectionGetReader{formats: a.formats},
@@ -2506,8 +4219,8 @@ func (a *Client) IpsecCaCertificateCreate(params *IpsecCaCertificateCreateParams
 		ID:                 "ipsec_ca_certificate_create",
 		Method:             "POST",
 		PathPattern:        "/security/ipsec/ca-certificates",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IpsecCaCertificateCreateReader{formats: a.formats},
@@ -2547,8 +4260,8 @@ func (a *Client) IpsecCaCertificateDelete(params *IpsecCaCertificateDeleteParams
 		ID:                 "ipsec_ca_certificate_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/ipsec/ca-certificates/{certificate.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IpsecCaCertificateDeleteReader{formats: a.formats},
@@ -2574,6 +4287,44 @@ func (a *Client) IpsecCaCertificateDelete(params *IpsecCaCertificateDeleteParams
 }
 
 /*
+IpsecCaCertificateDeleteCollection ipsec ca certificate delete collection API
+*/
+func (a *Client) IpsecCaCertificateDeleteCollection(params *IpsecCaCertificateDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIpsecCaCertificateDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ipsec_ca_certificate_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/ipsec/ca-certificates",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IpsecCaCertificateDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IpsecCaCertificateDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IpsecCaCertificateDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	IpsecCaCertificateGet Retrieves a specific CA certificate configured for IPsec.
 
 ### Related ONTAP commands
@@ -2588,8 +4339,8 @@ func (a *Client) IpsecCaCertificateGet(params *IpsecCaCertificateGetParams, auth
 		ID:                 "ipsec_ca_certificate_get",
 		Method:             "GET",
 		PathPattern:        "/security/ipsec/ca-certificates/{certificate.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IpsecCaCertificateGetReader{formats: a.formats},
@@ -2629,8 +4380,8 @@ func (a *Client) IpsecGet(params *IpsecGetParams, authInfo runtime.ClientAuthInf
 		ID:                 "ipsec_get",
 		Method:             "GET",
 		PathPattern:        "/security/ipsec",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IpsecGetReader{formats: a.formats},
@@ -2658,6 +4409,10 @@ func (a *Client) IpsecGet(params *IpsecGetParams, authInfo runtime.ClientAuthInf
 /*
 	IpsecModify Updates IPsec configuration via REST APIs.
 
+### Optional properties
+* 'enabled' - Enable IPsec.
+* 'replay_window' - Replay window size in packets.
+* 'offload_enabled' - Enable IPsec hardware offload.
 ### Related ONTAP commands
 * 'security ipsec config modify'
 */
@@ -2670,8 +4425,8 @@ func (a *Client) IpsecModify(params *IpsecModifyParams, authInfo runtime.ClientA
 		ID:                 "ipsec_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/ipsec",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IpsecModifyReader{formats: a.formats},
@@ -2711,8 +4466,8 @@ func (a *Client) IpsecPolicyCollectionGet(params *IpsecPolicyCollectionGetParams
 		ID:                 "ipsec_policy_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/ipsec/policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IpsecPolicyCollectionGetReader{formats: a.formats},
@@ -2752,8 +4507,8 @@ func (a *Client) IpsecPolicyCreate(params *IpsecPolicyCreateParams, authInfo run
 		ID:                 "ipsec_policy_create",
 		Method:             "POST",
 		PathPattern:        "/security/ipsec/policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IpsecPolicyCreateReader{formats: a.formats},
@@ -2793,8 +4548,8 @@ func (a *Client) IpsecPolicyDelete(params *IpsecPolicyDeleteParams, authInfo run
 		ID:                 "ipsec_policy_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/ipsec/policies/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IpsecPolicyDeleteReader{formats: a.formats},
@@ -2820,6 +4575,44 @@ func (a *Client) IpsecPolicyDelete(params *IpsecPolicyDeleteParams, authInfo run
 }
 
 /*
+IpsecPolicyDeleteCollection ipsec policy delete collection API
+*/
+func (a *Client) IpsecPolicyDeleteCollection(params *IpsecPolicyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecPolicyDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIpsecPolicyDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ipsec_policy_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/ipsec/policies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IpsecPolicyDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IpsecPolicyDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IpsecPolicyDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	IpsecPolicyGet Retrieves a specific IPsec policy.
 
 ### Related ONTAP commands
@@ -2834,8 +4627,8 @@ func (a *Client) IpsecPolicyGet(params *IpsecPolicyGetParams, authInfo runtime.C
 		ID:                 "ipsec_policy_get",
 		Method:             "GET",
 		PathPattern:        "/security/ipsec/policies/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IpsecPolicyGetReader{formats: a.formats},
@@ -2875,8 +4668,8 @@ func (a *Client) IpsecPolicyModify(params *IpsecPolicyModifyParams, authInfo run
 		ID:                 "ipsec_policy_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/ipsec/policies/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IpsecPolicyModifyReader{formats: a.formats},
@@ -2902,6 +4695,44 @@ func (a *Client) IpsecPolicyModify(params *IpsecPolicyModifyParams, authInfo run
 }
 
 /*
+IpsecPolicyModifyCollection ipsec policy modify collection API
+*/
+func (a *Client) IpsecPolicyModifyCollection(params *IpsecPolicyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecPolicyModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIpsecPolicyModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ipsec_policy_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/ipsec/policies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IpsecPolicyModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IpsecPolicyModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IpsecPolicyModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	KeyManagerAuthKeyCollectionGet Retrieves a list of all authentication keys associated with the admin SVM.
 
 ### Related ONTAP commands
@@ -2918,8 +4749,8 @@ func (a *Client) KeyManagerAuthKeyCollectionGet(params *KeyManagerAuthKeyCollect
 		ID:                 "key_manager_auth_key_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/key-managers/{security_key_manager.uuid}/auth-keys",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &KeyManagerAuthKeyCollectionGetReader{formats: a.formats},
@@ -2961,8 +4792,8 @@ func (a *Client) KeyManagerAuthKeyCreate(params *KeyManagerAuthKeyCreateParams, 
 		ID:                 "key_manager_auth_key_create",
 		Method:             "POST",
 		PathPattern:        "/security/key-managers/{security_key_manager.uuid}/auth-keys",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &KeyManagerAuthKeyCreateReader{formats: a.formats},
@@ -3005,8 +4836,8 @@ func (a *Client) KeyManagerAuthKeyDelete(params *KeyManagerAuthKeyDeleteParams, 
 		ID:                 "key_manager_auth_key_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/key-managers/{security_key_manager.uuid}/auth-keys/{key_id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &KeyManagerAuthKeyDeleteReader{formats: a.formats},
@@ -3032,13 +4863,51 @@ func (a *Client) KeyManagerAuthKeyDelete(params *KeyManagerAuthKeyDeleteParams, 
 }
 
 /*
-	KeyManagerAuthKeyGet Retrieves a list of all authentication keys associated with the admin SVM.
+KeyManagerAuthKeyDeleteCollection key manager auth key delete collection API
+*/
+func (a *Client) KeyManagerAuthKeyDeleteCollection(params *KeyManagerAuthKeyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerAuthKeyDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewKeyManagerAuthKeyDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "key_manager_auth_key_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/key-managers/{security_key_manager.uuid}/auth-keys",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &KeyManagerAuthKeyDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*KeyManagerAuthKeyDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*KeyManagerAuthKeyDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	KeyManagerAuthKeyGet Retrieves the authentication key identified by the 'key_id' and associated with the admin SVM.
 
 ### Related ONTAP commands
 * `security key-manager key query`
 ### Required properties
 * `security_key_manager.uuid` - UUID of the external key manager.
-* `key_id` - Key ID of the authentication key to be deleted.
+* `key_id` - Key ID of the authentication key to be retrieved.
 */
 func (a *Client) KeyManagerAuthKeyGet(params *KeyManagerAuthKeyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerAuthKeyGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3049,8 +4918,8 @@ func (a *Client) KeyManagerAuthKeyGet(params *KeyManagerAuthKeyGetParams, authIn
 		ID:                 "key_manager_auth_key_get",
 		Method:             "GET",
 		PathPattern:        "/security/key-managers/{security_key_manager.uuid}/auth-keys/{key_id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &KeyManagerAuthKeyGetReader{formats: a.formats},
@@ -3078,8 +4947,10 @@ func (a *Client) KeyManagerAuthKeyGet(params *KeyManagerAuthKeyGetParams, authIn
 /*
 	KeyManagerConfigGet Retrieves key manager configurations.
 
+Retrieves the key manager health monitor policy (fields=health_monitor_policy).
 ### Related ONTAP commands
 * `security key-manager config show`
+* `security key-manager health policy show`
 */
 func (a *Client) KeyManagerConfigGet(params *KeyManagerConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerConfigGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3090,8 +4961,8 @@ func (a *Client) KeyManagerConfigGet(params *KeyManagerConfigGetParams, authInfo
 		ID:                 "key_manager_config_get",
 		Method:             "GET",
 		PathPattern:        "/security/key-manager-configs",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &KeyManagerConfigGetReader{formats: a.formats},
@@ -3119,8 +4990,10 @@ func (a *Client) KeyManagerConfigGet(params *KeyManagerConfigGetParams, authInfo
 /*
 	KeyManagerConfigModify Updates key manager configurations.
 
+Updates the key manager health monitor policy.
 ### Related ONTAP commands
 * `security key-manager config modify`
+* `security key-manager health policy modify`
 */
 func (a *Client) KeyManagerConfigModify(params *KeyManagerConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerConfigModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -3131,8 +5004,8 @@ func (a *Client) KeyManagerConfigModify(params *KeyManagerConfigModifyParams, au
 		ID:                 "key_manager_config_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/key-manager-configs",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &KeyManagerConfigModifyReader{formats: a.formats},
@@ -3165,6 +5038,8 @@ func (a *Client) KeyManagerConfigModify(params *KeyManagerConfigModifyParams, au
 * `node.uuid` - Node UUID.
 ### Related ONTAP commands
 * `security key-manager key query`
+* `security key-manager key query -node <node>`
+* `security key-manager key query -node <node> -key-manager <key_manager>`
 */
 func (a *Client) KeyManagerKeysCollectionGet(params *KeyManagerKeysCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerKeysCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3175,8 +5050,8 @@ func (a *Client) KeyManagerKeysCollectionGet(params *KeyManagerKeysCollectionGet
 		ID:                 "key_manager_keys_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &KeyManagerKeysCollectionGetReader{formats: a.formats},
@@ -3206,6 +5081,8 @@ func (a *Client) KeyManagerKeysCollectionGet(params *KeyManagerKeysCollectionGet
 
 ### Related ONTAP commands
 * `security key-manager key query -key-id <key_id>`
+* `security key-manager key query -key-id <key_id> -node <node>`
+* `security key-manager key query -key-id <key_id> -node <node> -key-manager <key_manager>`
 */
 func (a *Client) KeyManagerKeysGet(params *KeyManagerKeysGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerKeysGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3216,8 +5093,8 @@ func (a *Client) KeyManagerKeysGet(params *KeyManagerKeysGetParams, authInfo run
 		ID:                 "key_manager_keys_get",
 		Method:             "GET",
 		PathPattern:        "/security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids/{key_id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &KeyManagerKeysGetReader{formats: a.formats},
@@ -3256,8 +5133,8 @@ func (a *Client) LoginMessagesCollectionGet(params *LoginMessagesCollectionGetPa
 		ID:                 "login_messages_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/login/messages",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LoginMessagesCollectionGetReader{formats: a.formats},
@@ -3294,8 +5171,8 @@ func (a *Client) LoginMessagesGet(params *LoginMessagesGetParams, authInfo runti
 		ID:                 "login_messages_get",
 		Method:             "GET",
 		PathPattern:        "/security/login/messages/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LoginMessagesGetReader{formats: a.formats},
@@ -3334,8 +5211,8 @@ func (a *Client) LoginMessagesModify(params *LoginMessagesModifyParams, authInfo
 		ID:                 "login_messages_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/login/messages/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LoginMessagesModifyReader{formats: a.formats},
@@ -3361,6 +5238,44 @@ func (a *Client) LoginMessagesModify(params *LoginMessagesModifyParams, authInfo
 }
 
 /*
+LoginMessagesModifyCollection login messages modify collection API
+*/
+func (a *Client) LoginMessagesModifyCollection(params *LoginMessagesModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LoginMessagesModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLoginMessagesModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "login_messages_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/login/messages",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LoginMessagesModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LoginMessagesModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LoginMessagesModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 MultiAdminVerifyApprovalGroupCollectionGet Retrieves multi-admin-verify approval groups.
 */
 func (a *Client) MultiAdminVerifyApprovalGroupCollectionGet(params *MultiAdminVerifyApprovalGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupCollectionGetOK, error) {
@@ -3372,8 +5287,8 @@ func (a *Client) MultiAdminVerifyApprovalGroupCollectionGet(params *MultiAdminVe
 		ID:                 "multi_admin_verify_approval_group_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/multi-admin-verify/approval-groups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MultiAdminVerifyApprovalGroupCollectionGetReader{formats: a.formats},
@@ -3410,8 +5325,8 @@ func (a *Client) MultiAdminVerifyApprovalGroupCreate(params *MultiAdminVerifyApp
 		ID:                 "multi_admin_verify_approval_group_create",
 		Method:             "POST",
 		PathPattern:        "/security/multi-admin-verify/approval-groups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MultiAdminVerifyApprovalGroupCreateReader{formats: a.formats},
@@ -3448,8 +5363,8 @@ func (a *Client) MultiAdminVerifyApprovalGroupDelete(params *MultiAdminVerifyApp
 		ID:                 "multi_admin_verify_approval_group_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/multi-admin-verify/approval-groups/{owner.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MultiAdminVerifyApprovalGroupDeleteReader{formats: a.formats},
@@ -3475,6 +5390,44 @@ func (a *Client) MultiAdminVerifyApprovalGroupDelete(params *MultiAdminVerifyApp
 }
 
 /*
+MultiAdminVerifyApprovalGroupDeleteCollection multi admin verify approval group delete collection API
+*/
+func (a *Client) MultiAdminVerifyApprovalGroupDeleteCollection(params *MultiAdminVerifyApprovalGroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyApprovalGroupDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_approval_group_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/multi-admin-verify/approval-groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyApprovalGroupDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyApprovalGroupDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyApprovalGroupDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 MultiAdminVerifyApprovalGroupGet Retrieves a multi-admin-verify approval group.
 */
 func (a *Client) MultiAdminVerifyApprovalGroupGet(params *MultiAdminVerifyApprovalGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupGetOK, error) {
@@ -3486,8 +5439,8 @@ func (a *Client) MultiAdminVerifyApprovalGroupGet(params *MultiAdminVerifyApprov
 		ID:                 "multi_admin_verify_approval_group_get",
 		Method:             "GET",
 		PathPattern:        "/security/multi-admin-verify/approval-groups/{owner.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MultiAdminVerifyApprovalGroupGetReader{formats: a.formats},
@@ -3524,8 +5477,8 @@ func (a *Client) MultiAdminVerifyApprovalGroupModify(params *MultiAdminVerifyApp
 		ID:                 "multi_admin_verify_approval_group_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/multi-admin-verify/approval-groups/{owner.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MultiAdminVerifyApprovalGroupModifyReader{formats: a.formats},
@@ -3551,6 +5504,44 @@ func (a *Client) MultiAdminVerifyApprovalGroupModify(params *MultiAdminVerifyApp
 }
 
 /*
+MultiAdminVerifyApprovalGroupModifyCollection multi admin verify approval group modify collection API
+*/
+func (a *Client) MultiAdminVerifyApprovalGroupModifyCollection(params *MultiAdminVerifyApprovalGroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyApprovalGroupModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_approval_group_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/multi-admin-verify/approval-groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyApprovalGroupModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyApprovalGroupModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyApprovalGroupModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 MultiAdminVerifyConfigGet Retrieves the multi-admin-verify configuration.
 */
 func (a *Client) MultiAdminVerifyConfigGet(params *MultiAdminVerifyConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyConfigGetOK, error) {
@@ -3562,8 +5553,8 @@ func (a *Client) MultiAdminVerifyConfigGet(params *MultiAdminVerifyConfigGetPara
 		ID:                 "multi_admin_verify_config_get",
 		Method:             "GET",
 		PathPattern:        "/security/multi-admin-verify",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MultiAdminVerifyConfigGetReader{formats: a.formats},
@@ -3600,8 +5591,8 @@ func (a *Client) MultiAdminVerifyConfigModify(params *MultiAdminVerifyConfigModi
 		ID:                 "multi_admin_verify_config_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/multi-admin-verify",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MultiAdminVerifyConfigModifyReader{formats: a.formats},
@@ -3638,8 +5629,8 @@ func (a *Client) MultiAdminVerifyRequestCollectionGet(params *MultiAdminVerifyRe
 		ID:                 "multi_admin_verify_request_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/multi-admin-verify/requests",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MultiAdminVerifyRequestCollectionGetReader{formats: a.formats},
@@ -3676,8 +5667,8 @@ func (a *Client) MultiAdminVerifyRequestCreate(params *MultiAdminVerifyRequestCr
 		ID:                 "multi_admin_verify_request_create",
 		Method:             "POST",
 		PathPattern:        "/security/multi-admin-verify/requests",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MultiAdminVerifyRequestCreateReader{formats: a.formats},
@@ -3714,8 +5705,8 @@ func (a *Client) MultiAdminVerifyRequestDelete(params *MultiAdminVerifyRequestDe
 		ID:                 "multi_admin_verify_request_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/multi-admin-verify/requests/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MultiAdminVerifyRequestDeleteReader{formats: a.formats},
@@ -3741,6 +5732,44 @@ func (a *Client) MultiAdminVerifyRequestDelete(params *MultiAdminVerifyRequestDe
 }
 
 /*
+MultiAdminVerifyRequestDeleteCollection multi admin verify request delete collection API
+*/
+func (a *Client) MultiAdminVerifyRequestDeleteCollection(params *MultiAdminVerifyRequestDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyRequestDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_request_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/multi-admin-verify/requests",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyRequestDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyRequestDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyRequestDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 MultiAdminVerifyRequestGet Retrieves a multi-admin-verify request.
 */
 func (a *Client) MultiAdminVerifyRequestGet(params *MultiAdminVerifyRequestGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestGetOK, error) {
@@ -3752,8 +5781,8 @@ func (a *Client) MultiAdminVerifyRequestGet(params *MultiAdminVerifyRequestGetPa
 		ID:                 "multi_admin_verify_request_get",
 		Method:             "GET",
 		PathPattern:        "/security/multi-admin-verify/requests/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MultiAdminVerifyRequestGetReader{formats: a.formats},
@@ -3790,8 +5819,8 @@ func (a *Client) MultiAdminVerifyRequestModify(params *MultiAdminVerifyRequestMo
 		ID:                 "multi_admin_verify_request_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/multi-admin-verify/requests/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MultiAdminVerifyRequestModifyReader{formats: a.formats},
@@ -3817,6 +5846,44 @@ func (a *Client) MultiAdminVerifyRequestModify(params *MultiAdminVerifyRequestMo
 }
 
 /*
+MultiAdminVerifyRequestModifyCollection multi admin verify request modify collection API
+*/
+func (a *Client) MultiAdminVerifyRequestModifyCollection(params *MultiAdminVerifyRequestModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyRequestModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_request_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/multi-admin-verify/requests",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyRequestModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyRequestModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyRequestModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 MultiAdminVerifyRuleCollectionGet Retrieves multi-admin-verify rules.
 */
 func (a *Client) MultiAdminVerifyRuleCollectionGet(params *MultiAdminVerifyRuleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleCollectionGetOK, error) {
@@ -3828,8 +5895,8 @@ func (a *Client) MultiAdminVerifyRuleCollectionGet(params *MultiAdminVerifyRuleC
 		ID:                 "multi_admin_verify_rule_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/multi-admin-verify/rules",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MultiAdminVerifyRuleCollectionGetReader{formats: a.formats},
@@ -3866,8 +5933,8 @@ func (a *Client) MultiAdminVerifyRuleCreate(params *MultiAdminVerifyRuleCreatePa
 		ID:                 "multi_admin_verify_rule_create",
 		Method:             "POST",
 		PathPattern:        "/security/multi-admin-verify/rules",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MultiAdminVerifyRuleCreateReader{formats: a.formats},
@@ -3904,8 +5971,8 @@ func (a *Client) MultiAdminVerifyRuleDelete(params *MultiAdminVerifyRuleDeletePa
 		ID:                 "multi_admin_verify_rule_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/multi-admin-verify/rules/{owner.uuid}/{operation}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MultiAdminVerifyRuleDeleteReader{formats: a.formats},
@@ -3931,6 +5998,44 @@ func (a *Client) MultiAdminVerifyRuleDelete(params *MultiAdminVerifyRuleDeletePa
 }
 
 /*
+MultiAdminVerifyRuleDeleteCollection multi admin verify rule delete collection API
+*/
+func (a *Client) MultiAdminVerifyRuleDeleteCollection(params *MultiAdminVerifyRuleDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyRuleDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_rule_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/multi-admin-verify/rules",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyRuleDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyRuleDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyRuleDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 MultiAdminVerifyRuleGet Retrieves a multi-admin-verify rule.
 */
 func (a *Client) MultiAdminVerifyRuleGet(params *MultiAdminVerifyRuleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleGetOK, error) {
@@ -3942,8 +6047,8 @@ func (a *Client) MultiAdminVerifyRuleGet(params *MultiAdminVerifyRuleGetParams, 
 		ID:                 "multi_admin_verify_rule_get",
 		Method:             "GET",
 		PathPattern:        "/security/multi-admin-verify/rules/{owner.uuid}/{operation}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MultiAdminVerifyRuleGetReader{formats: a.formats},
@@ -3980,8 +6085,8 @@ func (a *Client) MultiAdminVerifyRuleModify(params *MultiAdminVerifyRuleModifyPa
 		ID:                 "multi_admin_verify_rule_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/multi-admin-verify/rules/{owner.uuid}/{operation}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &MultiAdminVerifyRuleModifyReader{formats: a.formats},
@@ -4007,6 +6112,44 @@ func (a *Client) MultiAdminVerifyRuleModify(params *MultiAdminVerifyRuleModifyPa
 }
 
 /*
+MultiAdminVerifyRuleModifyCollection multi admin verify rule modify collection API
+*/
+func (a *Client) MultiAdminVerifyRuleModifyCollection(params *MultiAdminVerifyRuleModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyRuleModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_rule_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/multi-admin-verify/rules",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyRuleModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyRuleModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyRuleModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	PublickeyCollectionGet Retrieves the public keys configured for user accounts.
 
 ### Related ONTAP commands
@@ -4024,8 +6167,8 @@ func (a *Client) PublickeyCollectionGet(params *PublickeyCollectionGetParams, au
 		ID:                 "publickey_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/authentication/publickeys",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PublickeyCollectionGetReader{formats: a.formats},
@@ -4051,13 +6194,16 @@ func (a *Client) PublickeyCollectionGet(params *PublickeyCollectionGetParams, au
 }
 
 /*
-	PublickeyCreate Creates a public key for a user account.
+	PublickeyCreate Creates a public key along with an optional certificate for a user account.
 
 ### Required properties
 * `owner.uuid` - UUID of the account owner.
 * `name` - User account name.
 * `index` - Index number for the public key (where there are multiple keys for the same account).
 * `public_key` - The publickey details for the creation of the user account.
+### Optional properties
+* `comment` - Comment text for the public key.
+* `certificate` - The certificate in PEM format.
 ### Related ONTAP commands
 * `security login publickey create`
 ### Learn more
@@ -4073,8 +6219,8 @@ func (a *Client) PublickeyCreate(params *PublickeyCreateParams, authInfo runtime
 		ID:                 "publickey_create",
 		Method:             "POST",
 		PathPattern:        "/security/authentication/publickeys",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PublickeyCreateReader{formats: a.formats},
@@ -4117,8 +6263,8 @@ func (a *Client) PublickeyGet(params *PublickeyGetParams, authInfo runtime.Clien
 		ID:                 "publickey_get",
 		Method:             "GET",
 		PathPattern:        "/security/authentication/publickeys/{owner.uuid}/{account.name}/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PublickeyGetReader{formats: a.formats},
@@ -4144,7 +6290,7 @@ func (a *Client) PublickeyGet(params *PublickeyGetParams, authInfo runtime.Clien
 }
 
 /*
-	PublickeyModify Updates the public key for a user account.
+	PublickeyModify Updates the public key and/or certificate for a user account.
 
 ### Related ONTAP commands
 * `security login publickey modify`
@@ -4161,8 +6307,8 @@ func (a *Client) PublickeyModify(params *PublickeyModifyParams, authInfo runtime
 		ID:                 "publickey_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/authentication/publickeys/{owner.uuid}/{account.name}/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PublickeyModifyReader{formats: a.formats},
@@ -4188,6 +6334,44 @@ func (a *Client) PublickeyModify(params *PublickeyModifyParams, authInfo runtime
 }
 
 /*
+PublickeyModifyCollection publickey modify collection API
+*/
+func (a *Client) PublickeyModifyCollection(params *PublickeyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PublickeyModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPublickeyModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "publickey_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/authentication/publickeys",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PublickeyModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PublickeyModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PublickeyModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	RoleCollectionGet Retrieves a list of roles configured in the cluster.
 
 ### Related ONTAP commands
@@ -4205,8 +6389,8 @@ func (a *Client) RoleCollectionGet(params *RoleCollectionGetParams, authInfo run
 		ID:                 "role_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/roles",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &RoleCollectionGetReader{formats: a.formats},
@@ -4254,8 +6438,8 @@ func (a *Client) RoleCreate(params *RoleCreateParams, authInfo runtime.ClientAut
 		ID:                 "role_create",
 		Method:             "POST",
 		PathPattern:        "/security/roles",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &RoleCreateReader{formats: a.formats},
@@ -4302,8 +6486,8 @@ func (a *Client) RoleDelete(params *RoleDeleteParams, authInfo runtime.ClientAut
 		ID:                 "role_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/roles/{owner.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &RoleDeleteReader{formats: a.formats},
@@ -4329,6 +6513,44 @@ func (a *Client) RoleDelete(params *RoleDeleteParams, authInfo runtime.ClientAut
 }
 
 /*
+RoleDeleteCollection role delete collection API
+*/
+func (a *Client) RoleDeleteCollection(params *RoleDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RoleDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewRoleDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "role_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/roles",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &RoleDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*RoleDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*RoleDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	RoleGet Retrieves the details of the specified role.
 
 ### Related ONTAP commands
@@ -4347,8 +6569,8 @@ func (a *Client) RoleGet(params *RoleGetParams, authInfo runtime.ClientAuthInfoW
 		ID:                 "role_get",
 		Method:             "GET",
 		PathPattern:        "/security/roles/{owner.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &RoleGetReader{formats: a.formats},
@@ -4392,8 +6614,8 @@ func (a *Client) RolePrivilegeCollectionGet(params *RolePrivilegeCollectionGetPa
 		ID:                 "role_privilege_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/roles/{owner.uuid}/{name}/privileges",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &RolePrivilegeCollectionGetReader{formats: a.formats},
@@ -4419,7 +6641,7 @@ func (a *Client) RolePrivilegeCollectionGet(params *RolePrivilegeCollectionGetPa
 }
 
 /*
-	RolePrivilegeCreate Adds a privilege tuple (of REST URI or command/command directory path, its access level and an optional query, if the "path" refers to a command/command directory path) to an existing role.
+	RolePrivilegeCreate Adds a privilege tuple (of REST URI or command/command directory path, its access level and an optional query, if the "path" refers to a command/command directory path) to an existing role or creates a new role with the provided tuple.
 
 ### Required parameters
 * `owner.uuid` - UUID of the SVM that houses this role.
@@ -4437,7 +6659,7 @@ func (a *Client) RolePrivilegeCollectionGet(params *RolePrivilegeCollectionGetPa
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/directories</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/files</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><p/>
-In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs.<br/>
+In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs. The <i>{volume.uuid}</i> refers to the <i>-instance-uuid</i> field value in the \"volume show\" command output at diagnostic privilege level. It can also be fetched through REST endpoint <i>/api/storage/volumes</i>.<br/>
 * `access` - Desired access level for the REST URI path or command/command directory.
 ### Related ONTAP commands
 * `security login rest-role create`
@@ -4455,8 +6677,8 @@ func (a *Client) RolePrivilegeCreate(params *RolePrivilegeCreateParams, authInfo
 		ID:                 "role_privilege_create",
 		Method:             "POST",
 		PathPattern:        "/security/roles/{owner.uuid}/{name}/privileges",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &RolePrivilegeCreateReader{formats: a.formats},
@@ -4495,8 +6717,10 @@ func (a *Client) RolePrivilegeCreate(params *RolePrivilegeCreateParams, authInfo
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/clients</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/directories</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/files</i>
-&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><p/>
-In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs.<br/>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><br/>
+#### Ontap S3 APIs
+&ndash; <i>/api/protocols/s3/services/{svm.uuid}/users</i><p/>
+In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs. The <i>{volume.uuid}</i> refers to the <i>-instance-uuid</i> field value in the \"volume show\" command output at diagnostic privilege level. It can also be fetched through REST endpoint <i>/api/storage/volumes</i>.<br/>
 ### Required parameters
 * `owner.uuid` - UUID of the SVM which houses this role.
 * `name` - Name of the role to be updated.
@@ -4517,8 +6741,8 @@ func (a *Client) RolePrivilegeDelete(params *RolePrivilegeDeleteParams, authInfo
 		ID:                 "role_privilege_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/roles/{owner.uuid}/{name}/privileges/{path}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &RolePrivilegeDeleteReader{formats: a.formats},
@@ -4544,6 +6768,44 @@ func (a *Client) RolePrivilegeDelete(params *RolePrivilegeDeleteParams, authInfo
 }
 
 /*
+RolePrivilegeDeleteCollection role privilege delete collection API
+*/
+func (a *Client) RolePrivilegeDeleteCollection(params *RolePrivilegeDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RolePrivilegeDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewRolePrivilegeDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "role_privilege_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/roles/{owner.uuid}/{name}/privileges",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &RolePrivilegeDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*RolePrivilegeDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*RolePrivilegeDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	RolePrivilegeGet Retrieves the access level for a REST API path or command/command directory path for the specified role. Optionally retrieves the query, if 'path' refers to a command/command directory path. The REST API path can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are the following&#58;<p/>
 
 ### Snapshots APIs
@@ -4557,8 +6819,10 @@ func (a *Client) RolePrivilegeDelete(params *RolePrivilegeDeleteParams, authInfo
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/clients</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/directories</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/files</i>
-&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><p/>
-In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs.<br/>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><br/>
+#### Ontap S3 APIs
+&ndash; <i>/api/protocols/s3/services/{svm.uuid}/users</i><p/>
+In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs. The <i>{volume.uuid}</i> refers to the <i>-instance-uuid</i> field value in the \"volume show\" command output at diagnostic privilege level. It can also be fetched through REST endpoint <i>/api/storage/volumes</i>.<br/>
 ### Related ONTAP commands
 * `security login rest-role show`
 * `security login role show`
@@ -4575,8 +6839,8 @@ func (a *Client) RolePrivilegeGet(params *RolePrivilegeGetParams, authInfo runti
 		ID:                 "role_privilege_get",
 		Method:             "GET",
 		PathPattern:        "/security/roles/{owner.uuid}/{name}/privileges/{path}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &RolePrivilegeGetReader{formats: a.formats},
@@ -4615,14 +6879,16 @@ func (a *Client) RolePrivilegeGet(params *RolePrivilegeGetParams, authInfo runti
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/clients</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/directories</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/files</i>
-&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><p/>
-In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs.<br/>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><br/>
+#### Ontap S3 APIs
+&ndash; <i>/api/protocols/s3/services/{svm.uuid}/users</i><p/>
+In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs. The <i>{volume.uuid}</i> refers to the <i>-instance-uuid</i> field value in the \"volume show\" command output at diagnostic privilege level. It can also be fetched through REST endpoint <i>/api/storage/volumes</i>.<br/>
 ### Required parameters
 * `owner.uuid` - UUID of the SVM that houses this role.
 * `name` - Name of the role to be updated.
 * `path` - Constituent REST API path or command/command directory path, whose access level and/or query are/is to be updated. Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the <i>Snapshots</i> and <i>File System Analytics</i> endpoints listed above in the description.
-* `access` - Access level for the path.
 ### Optional parameters
+* `access` - Access level for the path.
 * `query` - Optional query, if the path refers to a command/command directory path.
 ### Related ONTAP commands
 * `security login rest-role modify`
@@ -4640,8 +6906,8 @@ func (a *Client) RolePrivilegeModify(params *RolePrivilegeModifyParams, authInfo
 		ID:                 "role_privilege_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/roles/{owner.uuid}/{name}/privileges/{path}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &RolePrivilegeModifyReader{formats: a.formats},
@@ -4667,6 +6933,44 @@ func (a *Client) RolePrivilegeModify(params *RolePrivilegeModifyParams, authInfo
 }
 
 /*
+RolePrivilegeModifyCollection role privilege modify collection API
+*/
+func (a *Client) RolePrivilegeModifyCollection(params *RolePrivilegeModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RolePrivilegeModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewRolePrivilegeModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "role_privilege_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/roles/{owner.uuid}/{name}/privileges",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &RolePrivilegeModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*RolePrivilegeModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*RolePrivilegeModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	SecurityAssociationCollectionGet Retrieves the IPsec and IKE (Internet Key Exchange) security associations.
 
 ### Related ONTAP commands
@@ -4682,8 +6986,8 @@ func (a *Client) SecurityAssociationCollectionGet(params *SecurityAssociationCol
 		ID:                 "security_association_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/ipsec/security-associations",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityAssociationCollectionGetReader{formats: a.formats},
@@ -4724,8 +7028,8 @@ func (a *Client) SecurityAssociationGet(params *SecurityAssociationGetParams, au
 		ID:                 "security_association_get",
 		Method:             "GET",
 		PathPattern:        "/security/ipsec/security-associations/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityAssociationGetReader{formats: a.formats},
@@ -4762,8 +7066,8 @@ func (a *Client) SecurityAuditGet(params *SecurityAuditGetParams, authInfo runti
 		ID:                 "security_audit_get",
 		Method:             "GET",
 		PathPattern:        "/security/audit",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityAuditGetReader{formats: a.formats},
@@ -4800,8 +7104,8 @@ func (a *Client) SecurityAuditLogCollectionGet(params *SecurityAuditLogCollectio
 		ID:                 "security_audit_log_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/audit/messages",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityAuditLogCollectionGetReader{formats: a.formats},
@@ -4840,8 +7144,8 @@ func (a *Client) SecurityAuditModify(params *SecurityAuditModifyParams, authInfo
 		ID:                 "security_audit_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/audit",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityAuditModifyReader{formats: a.formats},
@@ -4881,8 +7185,8 @@ func (a *Client) SecurityCertificateCollectionGet(params *SecurityCertificateCol
 		ID:                 "security_certificate_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/certificates",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityCertificateCollectionGetReader{formats: a.formats},
@@ -4908,7 +7212,7 @@ func (a *Client) SecurityCertificateCollectionGet(params *SecurityCertificateCol
 }
 
 /*
-	SecurityCertificateCreate Creates or installs a certificate.
+	SecurityCertificateCreate Creates or installs a certificate or downloads a certificate from Azure Key Vault (AKV) and installs it on the ONTAP cluster.
 
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create or install the certificate.
@@ -4919,7 +7223,22 @@ func (a *Client) SecurityCertificateCollectionGet(params *SecurityCertificateCol
 ### Recommended optional properties
 * `expiry_time` - Certificate expiration time. Specifying an expiration time is recommended when creating a certificate.
 * `key_size` - Key size of the certificate in bits. Specifying a strong key size is recommended when creating a certificate.
-* `name` - Unique certificate name per SVM. If one is not provided, it is automatically generated.
+* `name` - Unique certificate name per SVM or the name of the certificate in AKV, required for downloading AKV certificates. If one is not provided, it is automatically generated.
+### AKV required properties for downloading a certificate
+* `azure.key_vault` - URI of the Azure Key Vault.
+* `azure.client_id` - Application (client) ID of the deployed Azure application with appropriate access to an AKV.
+* `azure.tenant_id` - Directory (tenant) ID of the deployed Azure application with appropriate access to an AKV.
+* `azure.client_secret` - Secret used by the application to prove its identity to AKV.
+* `azure.client_certificate` - PKCS12 certificate used by the application to prove its identity to AKV.
+### AKV optional properties for downloading a certificate
+* `azure.oauth_host` - Open authorization server host name.
+* `azure.proxy.type` - Type of proxy (http, https etc.) if proxy configuration is used.
+* `azure.proxy.host` - Proxy hostname if proxy configuration is used.
+* `azure.proxy.port` - Proxy port number if proxy configuration is used.
+* `azure.proxy.username` - Proxy username if proxy configuration is used.
+* `azure.proxy.password` - Proxy password if proxy configuration is used.
+* `azure.timeout` - AKV connection timeout in seconds.
+* `azure.verify_host` - Verify the identity of the AKV host name.
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `key_size` - _2048_
@@ -4928,6 +7247,7 @@ If not specified in POST, the following default property values are assigned:
 ### Related ONTAP commands
 * `security certificate create`
 * `security certificate install`
+* `security certificate azure-install`
 */
 func (a *Client) SecurityCertificateCreate(params *SecurityCertificateCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityCertificateCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -4938,8 +7258,8 @@ func (a *Client) SecurityCertificateCreate(params *SecurityCertificateCreatePara
 		ID:                 "security_certificate_create",
 		Method:             "POST",
 		PathPattern:        "/security/certificates",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityCertificateCreateReader{formats: a.formats},
@@ -4979,8 +7299,8 @@ func (a *Client) SecurityCertificateDelete(params *SecurityCertificateDeletePara
 		ID:                 "security_certificate_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/certificates/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityCertificateDeleteReader{formats: a.formats},
@@ -5006,6 +7326,44 @@ func (a *Client) SecurityCertificateDelete(params *SecurityCertificateDeletePara
 }
 
 /*
+SecurityCertificateDeleteCollection security certificate delete collection API
+*/
+func (a *Client) SecurityCertificateDeleteCollection(params *SecurityCertificateDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityCertificateDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityCertificateDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_certificate_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/certificates",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityCertificateDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityCertificateDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityCertificateDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	SecurityCertificateGet Retrieves security certificates.
 
 ### Related ONTAP commands
@@ -5020,8 +7378,8 @@ func (a *Client) SecurityCertificateGet(params *SecurityCertificateGetParams, au
 		ID:                 "security_certificate_get",
 		Method:             "GET",
 		PathPattern:        "/security/certificates/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityCertificateGetReader{formats: a.formats},
@@ -5072,8 +7430,8 @@ func (a *Client) SecurityCertificateSign(params *SecurityCertificateSignParams, 
 		ID:                 "security_certificate_sign",
 		Method:             "POST",
 		PathPattern:        "/security/certificates/{ca.uuid}/sign",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityCertificateSignReader{formats: a.formats},
@@ -5099,7 +7457,10 @@ func (a *Client) SecurityCertificateSign(params *SecurityCertificateSignParams, 
 }
 
 /*
-SecurityConfigGet Retrieves information about the security configured on the cluster.
+	SecurityConfigGet Retrieves information about the security configured on the cluster.
+
+### Related ONTAP commands
+* `security config show`
 */
 func (a *Client) SecurityConfigGet(params *SecurityConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityConfigGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5110,8 +7471,8 @@ func (a *Client) SecurityConfigGet(params *SecurityConfigGetParams, authInfo run
 		ID:                 "security_config_get",
 		Method:             "GET",
 		PathPattern:        "/security",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityConfigGetReader{formats: a.formats},
@@ -5137,9 +7498,18 @@ func (a *Client) SecurityConfigGet(params *SecurityConfigGetParams, authInfo run
 }
 
 /*
-SecurityConfigModify Updates the software FIPS mode or enables conversion of non-encrypted metadata volumes to encrypted metadata volumes and non-NAE aggregates to NAE aggregates.
+	SecurityConfigModify Updates the software FIPS mode or modifies software data encryption.
+
+## Platform Specifics
+### Unified ONTAP
+The PATCH request can be used to enable conversion of non-encrypted metadata volumes to encrypted metadata volumes and non-NAE aggregates to NAE aggregates.
+### ASA r2
+The PATCH request can be used to enable conversion of all non-encrypted volumes and LUNs to encrypted volumes and LUNs.
+The PATCH request can also be used to start the rekey of all encrypted volumes and LUNs.
+### Related ONTAP commands
+* `security config modify`
 */
-func (a *Client) SecurityConfigModify(params *SecurityConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityConfigModifyAccepted, error) {
+func (a *Client) SecurityConfigModify(params *SecurityConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityConfigModifyOK, *SecurityConfigModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSecurityConfigModifyParams()
@@ -5148,8 +7518,8 @@ func (a *Client) SecurityConfigModify(params *SecurityConfigModifyParams, authIn
 		ID:                 "security_config_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityConfigModifyReader{formats: a.formats},
@@ -5163,14 +7533,591 @@ func (a *Client) SecurityConfigModify(params *SecurityConfigModifyParams, authIn
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SecurityConfigModifyOK:
+		return value, nil, nil
+	case *SecurityConfigModifyAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityConfigModifyDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityExternalRoleMappingCollectionGet Retrieves all external-role-mapping entries.
+
+### Related ONTAP commands
+* `security login external-role-mapping show`
+*/
+func (a *Client) SecurityExternalRoleMappingCollectionGet(params *SecurityExternalRoleMappingCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityExternalRoleMappingCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityExternalRoleMappingCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_external_role_mapping_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/external-role-mappings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityExternalRoleMappingCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*SecurityConfigModifyAccepted)
+	success, ok := result.(*SecurityExternalRoleMappingCollectionGetOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*SecurityConfigModifyDefault)
+	unexpectedSuccess := result.(*SecurityExternalRoleMappingCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityExternalRoleMappingCreate Creates an external-role-mapping entry.
+
+### Required properties
+* `external_role`
+* `provider`
+* `ontap_role`
+### Optional properties
+* `comment`
+### Related ONTAP commands
+* `security login external-role-mapping create`
+*/
+func (a *Client) SecurityExternalRoleMappingCreate(params *SecurityExternalRoleMappingCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityExternalRoleMappingCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityExternalRoleMappingCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_external_role_mapping_create",
+		Method:             "POST",
+		PathPattern:        "/security/external-role-mappings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityExternalRoleMappingCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityExternalRoleMappingCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityExternalRoleMappingCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityExternalRoleMappingDelete Deletes an external-role-mapping entry.
+
+### Related ONTAP commands
+* `security login external-role-mapping delete`
+*/
+func (a *Client) SecurityExternalRoleMappingDelete(params *SecurityExternalRoleMappingDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityExternalRoleMappingDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityExternalRoleMappingDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_external_role_mapping_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/external-role-mappings/{external_role}/{provider}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityExternalRoleMappingDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityExternalRoleMappingDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityExternalRoleMappingDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SecurityExternalRoleMappingDeleteCollection security external role mapping delete collection API
+*/
+func (a *Client) SecurityExternalRoleMappingDeleteCollection(params *SecurityExternalRoleMappingDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityExternalRoleMappingDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityExternalRoleMappingDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_external_role_mapping_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/external-role-mappings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityExternalRoleMappingDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityExternalRoleMappingDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityExternalRoleMappingDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityExternalRoleMappingGet Retrieves an external-role-mapping entry.
+
+### Related ONTAP commands
+* `security login external-role-mapping show`
+*/
+func (a *Client) SecurityExternalRoleMappingGet(params *SecurityExternalRoleMappingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityExternalRoleMappingGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityExternalRoleMappingGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_external_role_mapping_get",
+		Method:             "GET",
+		PathPattern:        "/security/external-role-mappings/{external_role}/{provider}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityExternalRoleMappingGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityExternalRoleMappingGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityExternalRoleMappingGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityExternalRoleMappingModify Updates an external-role-mapping entry.
+
+### Related ONTAP commands
+* `security login external-role-mapping modify`
+*/
+func (a *Client) SecurityExternalRoleMappingModify(params *SecurityExternalRoleMappingModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityExternalRoleMappingModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityExternalRoleMappingModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_external_role_mapping_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/external-role-mappings/{external_role}/{provider}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityExternalRoleMappingModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityExternalRoleMappingModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityExternalRoleMappingModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SecurityExternalRoleMappingModifyCollection security external role mapping modify collection API
+*/
+func (a *Client) SecurityExternalRoleMappingModifyCollection(params *SecurityExternalRoleMappingModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityExternalRoleMappingModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityExternalRoleMappingModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_external_role_mapping_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/external-role-mappings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityExternalRoleMappingModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityExternalRoleMappingModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityExternalRoleMappingModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityGroupCollectionGet Retrieves all group entries.
+
+### Related ONTAP commands
+* `security login group show`
+*/
+func (a *Client) SecurityGroupCollectionGet(params *SecurityGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityGroupCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityGroupCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_group_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityGroupCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityGroupCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityGroupCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityGroupCreate Creates a group entry.
+
+### Required properties
+* `owner`
+* `name`
+* `type`
+### Optional properties
+* `uuid`
+* `comment`
+### Related ONTAP commands
+* `security login group create`
+*/
+func (a *Client) SecurityGroupCreate(params *SecurityGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityGroupCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityGroupCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_group_create",
+		Method:             "POST",
+		PathPattern:        "/security/groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityGroupCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityGroupCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityGroupCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityGroupDelete Deletes a group entry.
+
+### Related ONTAP commands
+* `security login group delete`
+*/
+func (a *Client) SecurityGroupDelete(params *SecurityGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityGroupDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityGroupDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_group_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/groups/{owner.uuid}/{name}/{type}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityGroupDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityGroupDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityGroupDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SecurityGroupDeleteCollection security group delete collection API
+*/
+func (a *Client) SecurityGroupDeleteCollection(params *SecurityGroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityGroupDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityGroupDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_group_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityGroupDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityGroupDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityGroupDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityGroupGet Retrieves a group entry.
+
+### Related ONTAP commands
+* `security login group show`
+*/
+func (a *Client) SecurityGroupGet(params *SecurityGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityGroupGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityGroupGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_group_get",
+		Method:             "GET",
+		PathPattern:        "/security/groups/{owner.uuid}/{name}/{type}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityGroupGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityGroupGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityGroupGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityGroupModify Updates configured group information.
+
+### Related ONTAP commands
+* `security login group modify`
+*/
+func (a *Client) SecurityGroupModify(params *SecurityGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityGroupModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityGroupModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_group_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/groups/{owner.uuid}/{name}/{type}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityGroupModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityGroupModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityGroupModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SecurityGroupModifyCollection security group modify collection API
+*/
+func (a *Client) SecurityGroupModifyCollection(params *SecurityGroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityGroupModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityGroupModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_group_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityGroupModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityGroupModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityGroupModifyCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -5179,6 +8126,10 @@ func (a *Client) SecurityConfigModify(params *SecurityConfigModifyParams, authIn
 
 ### Expensive properties
 There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `connectivity.cluster_availability`
+* `connectivity.node_states.node.name`
+* `connectivity.node_states.node.uuid`
+* `connectivity.node_states.state`
 * `status.message`
 * `status.code`
 ### Related ONTAP commands
@@ -5196,8 +8147,8 @@ func (a *Client) SecurityKeyManagerCollectionGet(params *SecurityKeyManagerColle
 		ID:                 "security_key_manager_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/key-managers",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityKeyManagerCollectionGetReader{formats: a.formats},
@@ -5232,12 +8183,14 @@ func (a *Client) SecurityKeyManagerCollectionGet(params *SecurityKeyManagerColle
 * `external.servers.server` - Primary Key servers. Required only when creating an external key manager.
 * `onboard.passphrase` - Cluster-wide passphrase. Required only when creating an Onboard Key Manager.
 * `synchronize` - Synchronizes missing onboard keys on any node in the cluster. Required only when creating an Onboard Key Manager at the partner site of a MetroCluster configuration.
+### Optional parameters:
+* `create_inactive` - Create a configuration without enabling it. This flag is set to "false" by default.
 ### Related ONTAP commands
 * `security key-manager external enable`
 * `security key-manager onboard enable`
 * `security key-manager onboard sync`
 */
-func (a *Client) SecurityKeyManagerCreate(params *SecurityKeyManagerCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerCreateCreated, error) {
+func (a *Client) SecurityKeyManagerCreate(params *SecurityKeyManagerCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerCreateCreated, *SecurityKeyManagerCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSecurityKeyManagerCreateParams()
@@ -5246,8 +8199,8 @@ func (a *Client) SecurityKeyManagerCreate(params *SecurityKeyManagerCreateParams
 		ID:                 "security_key_manager_create",
 		Method:             "POST",
 		PathPattern:        "/security/key-managers",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityKeyManagerCreateReader{formats: a.formats},
@@ -5261,15 +8214,17 @@ func (a *Client) SecurityKeyManagerCreate(params *SecurityKeyManagerCreateParams
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SecurityKeyManagerCreateCreated)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SecurityKeyManagerCreateCreated:
+		return value, nil, nil
+	case *SecurityKeyManagerCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SecurityKeyManagerCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -5288,8 +8243,8 @@ func (a *Client) SecurityKeyManagerDelete(params *SecurityKeyManagerDeleteParams
 		ID:                 "security_key_manager_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/key-managers/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityKeyManagerDeleteReader{formats: a.formats},
@@ -5315,10 +8270,52 @@ func (a *Client) SecurityKeyManagerDelete(params *SecurityKeyManagerDeleteParams
 }
 
 /*
+SecurityKeyManagerDeleteCollection security key manager delete collection API
+*/
+func (a *Client) SecurityKeyManagerDeleteCollection(params *SecurityKeyManagerDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityKeyManagerDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_key_manager_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/key-managers",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityKeyManagerDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityKeyManagerDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityKeyManagerDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	SecurityKeyManagerGet Retrieves key managers.
 
 ### Expensive properties
 There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `connectivity.cluster_availability`
+* `connectivity.node_states.node.name`
+* `connectivity.node_states.node.uuid`
+* `connectivity.node_states.state`
 * `status.message`
 * `status.code`
 ### Related ONTAP commands
@@ -5336,8 +8333,8 @@ func (a *Client) SecurityKeyManagerGet(params *SecurityKeyManagerGetParams, auth
 		ID:                 "security_key_manager_get",
 		Method:             "GET",
 		PathPattern:        "/security/key-managers/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityKeyManagerGetReader{formats: a.formats},
@@ -5365,6 +8362,12 @@ func (a *Client) SecurityKeyManagerGet(params *SecurityKeyManagerGetParams, auth
 /*
 	SecurityKeyManagerKeyServersCollectionGet Retrieves the list of key servers configured in an external key manager.
 
+### Expensive properties
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `connectivity.cluster_availability`
+* `connectivity.node_states.node.name`
+* `connectivity.node_states.node.uuid`
+* `connectivity.node_states.state`
 ### Related ONTAP commands
 * `security key-manager external show`
 * `security key-manager external show-status`
@@ -5378,8 +8381,8 @@ func (a *Client) SecurityKeyManagerKeyServersCollectionGet(params *SecurityKeyMa
 		ID:                 "security_key_manager_key_servers_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/key-managers/{uuid}/key-servers",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityKeyManagerKeyServersCollectionGetReader{formats: a.formats},
@@ -5422,8 +8425,8 @@ func (a *Client) SecurityKeyManagerKeyServersCreate(params *SecurityKeyManagerKe
 		ID:                 "security_key_manager_key_servers_create",
 		Method:             "POST",
 		PathPattern:        "/security/key-managers/{uuid}/key-servers",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityKeyManagerKeyServersCreateReader{formats: a.formats},
@@ -5452,7 +8455,7 @@ func (a *Client) SecurityKeyManagerKeyServersCreate(params *SecurityKeyManagerKe
 	SecurityKeyManagerKeyServersDelete Deletes a primary key server.
 
 ### Optional parameters:
-* `force` - Bypass Out of Quorum checks wehn deleting a primary key server. This flag is set to "false" by default.
+* `force` - Bypass Out of Quorum checks when deleting a primary key server. This flag is set to "false" by default.
 ### Related ONTAP commands
 * `security key-manager external remove-servers`
 */
@@ -5465,8 +8468,8 @@ func (a *Client) SecurityKeyManagerKeyServersDelete(params *SecurityKeyManagerKe
 		ID:                 "security_key_manager_key_servers_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/key-managers/{uuid}/key-servers/{server}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityKeyManagerKeyServersDeleteReader{formats: a.formats},
@@ -5492,8 +8495,52 @@ func (a *Client) SecurityKeyManagerKeyServersDelete(params *SecurityKeyManagerKe
 }
 
 /*
+SecurityKeyManagerKeyServersDeleteCollection security key manager key servers delete collection API
+*/
+func (a *Client) SecurityKeyManagerKeyServersDeleteCollection(params *SecurityKeyManagerKeyServersDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerKeyServersDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityKeyManagerKeyServersDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_key_manager_key_servers_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/key-managers/{uuid}/key-servers",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityKeyManagerKeyServersDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityKeyManagerKeyServersDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityKeyManagerKeyServersDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	SecurityKeyManagerKeyServersGet Retrieves key servers configured in an external key manager.
 
+### Expensive properties
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `connectivity.cluster_availability`
+* `connectivity.node_states.node.name`
+* `connectivity.node_states.node.uuid`
+* `connectivity.node_states.state`
 ### Related ONTAP commands
 * `security key-manager external show`
 * `security key-manager external show-status`
@@ -5507,8 +8554,8 @@ func (a *Client) SecurityKeyManagerKeyServersGet(params *SecurityKeyManagerKeySe
 		ID:                 "security_key_manager_key_servers_get",
 		Method:             "GET",
 		PathPattern:        "/security/key-managers/{uuid}/key-servers/{server}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityKeyManagerKeyServersGetReader{formats: a.formats},
@@ -5548,8 +8595,8 @@ func (a *Client) SecurityKeyManagerKeyServersModify(params *SecurityKeyManagerKe
 		ID:                 "security_key_manager_key_servers_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/key-managers/{uuid}/key-servers/{server}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityKeyManagerKeyServersModifyReader{formats: a.formats},
@@ -5575,6 +8622,44 @@ func (a *Client) SecurityKeyManagerKeyServersModify(params *SecurityKeyManagerKe
 }
 
 /*
+SecurityKeyManagerKeyServersModifyCollection security key manager key servers modify collection API
+*/
+func (a *Client) SecurityKeyManagerKeyServersModifyCollection(params *SecurityKeyManagerKeyServersModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerKeyServersModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityKeyManagerKeyServersModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_key_manager_key_servers_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/key-managers/{uuid}/key-servers",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityKeyManagerKeyServersModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityKeyManagerKeyServersModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityKeyManagerKeyServersModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	SecurityKeyManagerMigrate Migrates the keys belonging to an SVM between the cluster's key manager and the SVM's key manager. This operation can run for several minutes.
 
 ### Required properties
@@ -5583,10 +8668,11 @@ func (a *Client) SecurityKeyManagerKeyServersModify(params *SecurityKeyManagerKe
 The UUID of onboard and external KMIP key manager can be fetched using [`GET /api/security/key-managers`].
 The UUID of Azure Key Vault key manager can be fetched using [`GET /api/security/azure-key-vaults`].
 The UUID of Google Cloud key manager can be fetched using [`GET /api/security/gcp-kms`].
+The UUID of Amazon Web Services key manager can be fetched using [`GET /api/security/aws-kms`].
 ### Related ONTAP commands
-* `security key-manager migrate`
+* `security key-manager key migrate`
 */
-func (a *Client) SecurityKeyManagerMigrate(params *SecurityKeyManagerMigrateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerMigrateAccepted, error) {
+func (a *Client) SecurityKeyManagerMigrate(params *SecurityKeyManagerMigrateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerMigrateCreated, *SecurityKeyManagerMigrateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSecurityKeyManagerMigrateParams()
@@ -5595,8 +8681,8 @@ func (a *Client) SecurityKeyManagerMigrate(params *SecurityKeyManagerMigratePara
 		ID:                 "security_key_manager_migrate",
 		Method:             "POST",
 		PathPattern:        "/security/key-managers/{source.uuid}/migrate",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityKeyManagerMigrateReader{formats: a.formats},
@@ -5610,29 +8696,36 @@ func (a *Client) SecurityKeyManagerMigrate(params *SecurityKeyManagerMigratePara
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SecurityKeyManagerMigrateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SecurityKeyManagerMigrateCreated:
+		return value, nil, nil
+	case *SecurityKeyManagerMigrateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SecurityKeyManagerMigrateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
 	SecurityKeyManagerModify Updates a key manager.
 
-### Required properties
+NOTE: When validate_certificates is set, the API returns a 202 status code for successful creation of the job, otherwise an error is returned.
+### Required properties (when patching the Onboard Key Manager)
 * `onboard.existing_passphrase` - Cluster-wide passphrase. Required only when synchronizing the passphrase of the Onboard Key Manager.
 * `synchronize` - Synchronizes missing Onboard Key Manager keys on any node in the cluster. Required only when synchronizing the Onboard Key Manager keys in a local cluster.
+### Required properties (when patching an external key manager)
+* `external.client_certificate` or `external.server_ca_certificates` - Client certificate or Server CA certificate. Required when modifying an external key manager.
+### Optional parameters (when patching an external key manager):
+* `validate_certificates` - Validate certificates by testing the connection to the KMIP server using them. This flag is set to "false" by default.
 ### Related ONTAP commands
 * `security key-manager external modify`
 * `security key-manager onboard sync`
 * `security key-manager onboard update-passphrase`
 */
-func (a *Client) SecurityKeyManagerModify(params *SecurityKeyManagerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerModifyOK, error) {
+func (a *Client) SecurityKeyManagerModify(params *SecurityKeyManagerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerModifyOK, *SecurityKeyManagerModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSecurityKeyManagerModifyParams()
@@ -5641,8 +8734,8 @@ func (a *Client) SecurityKeyManagerModify(params *SecurityKeyManagerModifyParams
 		ID:                 "security_key_manager_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/key-managers/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityKeyManagerModifyReader{formats: a.formats},
@@ -5656,27 +8749,111 @@ func (a *Client) SecurityKeyManagerModify(params *SecurityKeyManagerModifyParams
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SecurityKeyManagerModifyOK)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SecurityKeyManagerModifyOK:
+		return value, nil, nil
+	case *SecurityKeyManagerModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SecurityKeyManagerModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SecurityKeyManagerModifyCollection security key manager modify collection API
+*/
+func (a *Client) SecurityKeyManagerModifyCollection(params *SecurityKeyManagerModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerModifyCollectionOK, *SecurityKeyManagerModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityKeyManagerModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_key_manager_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/key-managers",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityKeyManagerModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SecurityKeyManagerModifyCollectionOK:
+		return value, nil, nil
+	case *SecurityKeyManagerModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityKeyManagerModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityKeyManagerRestore Retrieves and restores any current unrestored keys (associated with the storage controller) from the specified key management server.
+
+### Required properties
+* `security_key_manager.uuid` - UUID of the key management server.
+The UUID of the external key manager can be retrieved using [`GET /api/security/key-managers`].
+### Related ONTAP commands
+* `security key-manager external restore`
+*/
+func (a *Client) SecurityKeyManagerRestore(params *SecurityKeyManagerRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerRestoreCreated, *SecurityKeyManagerRestoreAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityKeyManagerRestoreParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_key_manager_restore",
+		Method:             "POST",
+		PathPattern:        "/security/key-managers/{security_key_manager.uuid}/restore",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityKeyManagerRestoreReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SecurityKeyManagerRestoreCreated:
+		return value, nil, nil
+	case *SecurityKeyManagerRestoreAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityKeyManagerRestoreDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
 	SecurityKeystoreCollectionGet Retrieves keystores.
 
-### Expensive properties
-There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-* `keystore.location`
-* `svm.name`
-* `svm.uuid`
 ### Related ONTAP commands
 * `security key-manager show-key-store`
+* `security key-manager keystore show`
 */
 func (a *Client) SecurityKeystoreCollectionGet(params *SecurityKeystoreCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeystoreCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5687,8 +8864,8 @@ func (a *Client) SecurityKeystoreCollectionGet(params *SecurityKeystoreCollectio
 		ID:                 "security_keystore_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/key-stores",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityKeystoreCollectionGetReader{formats: a.formats},
@@ -5714,6 +8891,209 @@ func (a *Client) SecurityKeystoreCollectionGet(params *SecurityKeystoreCollectio
 }
 
 /*
+	SecurityKeystoreDelete Deletes an inactive keystore configuration.
+
+### Related ONTAP commands
+* `security key-manager keystore delete`
+*/
+func (a *Client) SecurityKeystoreDelete(params *SecurityKeystoreDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeystoreDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityKeystoreDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_keystore_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/key-stores/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityKeystoreDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityKeystoreDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityKeystoreDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SecurityKeystoreDeleteCollection security keystore delete collection API
+*/
+func (a *Client) SecurityKeystoreDeleteCollection(params *SecurityKeystoreDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeystoreDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityKeystoreDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_keystore_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/key-stores",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityKeystoreDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityKeystoreDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityKeystoreDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityKeystoreGet Retrieves details of the keystore configuration with the specified UUID.
+
+### Related ONTAP commands
+* `security key-manager keystore show`
+*/
+func (a *Client) SecurityKeystoreGet(params *SecurityKeystoreGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeystoreGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityKeystoreGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_keystore_get",
+		Method:             "GET",
+		PathPattern:        "/security/key-stores/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityKeystoreGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityKeystoreGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityKeystoreGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityKeystoreModify Enables a keystore configuration
+
+### Related ONTAP commands
+* `security key-manager keystore enable`
+*/
+func (a *Client) SecurityKeystoreModify(params *SecurityKeystoreModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeystoreModifyOK, *SecurityKeystoreModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityKeystoreModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_keystore_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/key-stores/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityKeystoreModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SecurityKeystoreModifyOK:
+		return value, nil, nil
+	case *SecurityKeystoreModifyAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityKeystoreModifyDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SecurityKeystoreModifyCollection security keystore modify collection API
+*/
+func (a *Client) SecurityKeystoreModifyCollection(params *SecurityKeystoreModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeystoreModifyCollectionOK, *SecurityKeystoreModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityKeystoreModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_keystore_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/key-stores",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityKeystoreModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SecurityKeystoreModifyCollectionOK:
+		return value, nil, nil
+	case *SecurityKeystoreModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityKeystoreModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	SecurityLogForwardingCreate Configures remote syslog/splunk server information.
 
 ### Required properties
@@ -5721,13 +9101,16 @@ All of the following fields are required for creating a remote syslog/splunk des
 * `address`
 ### Optional properties
 All of the following fields are optional for creating a remote syslog/splunk destination
-* `port`
+* `port` (1 - 65535)
 * `ipspace`
 * `protocol`
 * `facility`
 * `verify_server` (Can only be "true" when protocol is "tcp_encrypted")
+* `message_format` (Can be either "legacy-netapp" or "rfc-5424")
+* `timestamp_format_override` (Can be either "no-override", "rfc-3164", "iso-8601-utc" or "iso-8601-local-time")
+* `hostname_format_override` (Can be either "no-override", "fqdn" or "hostname-only")
 */
-func (a *Client) SecurityLogForwardingCreate(params *SecurityLogForwardingCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingCreateAccepted, error) {
+func (a *Client) SecurityLogForwardingCreate(params *SecurityLogForwardingCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingCreateCreated, *SecurityLogForwardingCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSecurityLogForwardingCreateParams()
@@ -5736,8 +9119,8 @@ func (a *Client) SecurityLogForwardingCreate(params *SecurityLogForwardingCreate
 		ID:                 "security_log_forwarding_create",
 		Method:             "POST",
 		PathPattern:        "/security/audit/destinations",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityLogForwardingCreateReader{formats: a.formats},
@@ -5751,15 +9134,17 @@ func (a *Client) SecurityLogForwardingCreate(params *SecurityLogForwardingCreate
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SecurityLogForwardingCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SecurityLogForwardingCreateCreated:
+		return value, nil, nil
+	case *SecurityLogForwardingCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SecurityLogForwardingCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -5774,8 +9159,8 @@ func (a *Client) SecurityLogForwardingDelete(params *SecurityLogForwardingDelete
 		ID:                 "security_log_forwarding_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/audit/destinations/{address}/{port}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityLogForwardingDeleteReader{formats: a.formats},
@@ -5801,6 +9186,44 @@ func (a *Client) SecurityLogForwardingDelete(params *SecurityLogForwardingDelete
 }
 
 /*
+SecurityLogForwardingDeleteCollection security log forwarding delete collection API
+*/
+func (a *Client) SecurityLogForwardingDeleteCollection(params *SecurityLogForwardingDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityLogForwardingDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_log_forwarding_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/audit/destinations",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityLogForwardingDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityLogForwardingDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityLogForwardingDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 SecurityLogForwardingGet Defines a remote syslog/splunk server for sending audit information to.
 */
 func (a *Client) SecurityLogForwardingGet(params *SecurityLogForwardingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingGetOK, error) {
@@ -5812,8 +9235,8 @@ func (a *Client) SecurityLogForwardingGet(params *SecurityLogForwardingGetParams
 		ID:                 "security_log_forwarding_get",
 		Method:             "GET",
 		PathPattern:        "/security/audit/destinations/{address}/{port}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityLogForwardingGetReader{formats: a.formats},
@@ -5850,8 +9273,8 @@ func (a *Client) SecurityLogForwardingModify(params *SecurityLogForwardingModify
 		ID:                 "security_log_forwarding_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/audit/destinations/{address}/{port}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecurityLogForwardingModifyReader{formats: a.formats},
@@ -5877,6 +9300,351 @@ func (a *Client) SecurityLogForwardingModify(params *SecurityLogForwardingModify
 }
 
 /*
+SecurityLogForwardingModifyCollection security log forwarding modify collection API
+*/
+func (a *Client) SecurityLogForwardingModifyCollection(params *SecurityLogForwardingModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityLogForwardingModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_log_forwarding_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/audit/destinations",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityLogForwardingModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityLogForwardingModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityLogForwardingModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityOauth2CollectionGet Retrieves all OAuth 2.0 configurations.
+
+### Related ONTAP commands
+* `security oauth2 client show`
+*/
+func (a *Client) SecurityOauth2CollectionGet(params *SecurityOauth2CollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOauth2CollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityOauth2CollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_oauth2_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/authentication/cluster/oauth2/clients",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityOauth2CollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityOauth2CollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityOauth2CollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityOauth2Create Creates the OAuth 2.0 configuration.
+
+### Required properties
+* `name`
+* `application`
+* `issuer`
+### Optional properties
+* `audience`
+* `client_id`
+* `client_secret`
+* `introspection.endpoint_uri`
+* `introspection.interval`
+* `remote_user_claim`
+* `jwks.provider_uri`
+* `jwks.refresh_interval`
+* `outgoing_proxy`
+* `use_local_roles_if_present`
+* `skip_uri_validation`
+* `use_mutual_tls`
+* `provider`
+### Related ONTAP commands
+* `security oauth2 client create`
+*/
+func (a *Client) SecurityOauth2Create(params *SecurityOauth2CreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOauth2CreateCreated, *SecurityOauth2CreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityOauth2CreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_oauth2_create",
+		Method:             "POST",
+		PathPattern:        "/security/authentication/cluster/oauth2/clients",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityOauth2CreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SecurityOauth2CreateCreated:
+		return value, nil, nil
+	case *SecurityOauth2CreateAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityOauth2CreateDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityOauth2Delete Deletes the OAuth 2.0 configuration with the specified name.
+
+### Required properties
+  - `config_name`
+
+### Related ONTAP commands
+* `security oauth2 client delete`
+*/
+func (a *Client) SecurityOauth2Delete(params *SecurityOauth2DeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOauth2DeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityOauth2DeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_oauth2_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/authentication/cluster/oauth2/clients/{name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityOauth2DeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityOauth2DeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityOauth2DeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SecurityOauth2DeleteCollection security oauth2 delete collection API
+*/
+func (a *Client) SecurityOauth2DeleteCollection(params *SecurityOauth2DeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOauth2DeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityOauth2DeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_oauth2_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/authentication/cluster/oauth2/clients",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityOauth2DeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityOauth2DeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityOauth2DeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityOauth2Get Retrieves the OAuth 2.0 configuration with the specified name.
+
+### Related ONTAP commands
+* `security oauth2 client show`
+*/
+func (a *Client) SecurityOauth2Get(params *SecurityOauth2GetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOauth2GetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityOauth2GetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_oauth2_get",
+		Method:             "GET",
+		PathPattern:        "/security/authentication/cluster/oauth2/clients/{name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityOauth2GetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityOauth2GetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityOauth2GetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityOauth2GlobalGet Retrieves the OAuth 2.0 status.
+
+### Related ONTAP commands
+* `security oauth2 show`
+*/
+func (a *Client) SecurityOauth2GlobalGet(params *SecurityOauth2GlobalGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOauth2GlobalGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityOauth2GlobalGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_oauth2_global_get",
+		Method:             "GET",
+		PathPattern:        "/security/authentication/cluster/oauth2",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityOauth2GlobalGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityOauth2GlobalGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityOauth2GlobalGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityOauth2GlobalModify Updates the OAuth 2.0 status.
+
+### Related ONTAP commands
+* `security oauth2 modify`
+*/
+func (a *Client) SecurityOauth2GlobalModify(params *SecurityOauth2GlobalModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOauth2GlobalModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityOauth2GlobalModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_oauth2_global_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/authentication/cluster/oauth2",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityOauth2GlobalModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityOauth2GlobalModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityOauth2GlobalModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	SecuritySamlSpCreate Creates a SAML service provider configuration. Note that "common_name" is mutually exclusive with "serial_number" and "ca" in POST. SAML will initially be disabled, requiring a patch to set "enabled" to "true", so that the user has time to complete the setup of the IdP.
 
 ### Required properties
@@ -5886,7 +9654,7 @@ func (a *Client) SecurityLogForwardingModify(params *SecurityLogForwardingModify
 * `enabled`
 * `host`
 */
-func (a *Client) SecuritySamlSpCreate(params *SecuritySamlSpCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlSpCreateAccepted, error) {
+func (a *Client) SecuritySamlSpCreate(params *SecuritySamlSpCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlSpCreateCreated, *SecuritySamlSpCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSecuritySamlSpCreateParams()
@@ -5895,8 +9663,8 @@ func (a *Client) SecuritySamlSpCreate(params *SecuritySamlSpCreateParams, authIn
 		ID:                 "security_saml_sp_create",
 		Method:             "POST",
 		PathPattern:        "/security/authentication/cluster/saml-sp",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecuritySamlSpCreateReader{formats: a.formats},
@@ -5910,15 +9678,17 @@ func (a *Client) SecuritySamlSpCreate(params *SecuritySamlSpCreateParams, authIn
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SecuritySamlSpCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SecuritySamlSpCreateCreated:
+		return value, nil, nil
+	case *SecuritySamlSpCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SecuritySamlSpCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -5933,8 +9703,8 @@ func (a *Client) SecuritySamlSpDelete(params *SecuritySamlSpDeleteParams, authIn
 		ID:                 "security_saml_sp_delete",
 		Method:             "DELETE",
 		PathPattern:        "/security/authentication/cluster/saml-sp",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecuritySamlSpDeleteReader{formats: a.formats},
@@ -5971,8 +9741,8 @@ func (a *Client) SecuritySamlSpGet(params *SecuritySamlSpGetParams, authInfo run
 		ID:                 "security_saml_sp_get",
 		Method:             "GET",
 		PathPattern:        "/security/authentication/cluster/saml-sp",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecuritySamlSpGetReader{formats: a.formats},
@@ -6009,8 +9779,8 @@ func (a *Client) SecuritySamlSpModify(params *SecuritySamlSpModifyParams, authIn
 		ID:                 "security_saml_sp_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/authentication/cluster/saml-sp",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SecuritySamlSpModifyReader{formats: a.formats},
@@ -6036,7 +9806,7 @@ func (a *Client) SecuritySamlSpModify(params *SecuritySamlSpModifyParams, authIn
 }
 
 /*
-	SSHGet Retrieves the cluster SSH server ciphers, MAC algorithms, key exchange algorithms, and connection limits.
+	SSHGet Retrieves the cluster SSH server ciphers, MAC algorithms, key exchange algorithms, host key algorithms, connection limits, and _ssh-rsa_ enabled status for public key algorithms.
 
 ### Related ONTAP commands
 * `security ssh`
@@ -6051,8 +9821,8 @@ func (a *Client) SSHGet(params *SSHGetParams, authInfo runtime.ClientAuthInfoWri
 		ID:                 "ssh_get",
 		Method:             "GET",
 		PathPattern:        "/security/ssh",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SSHGetReader{formats: a.formats},
@@ -6084,9 +9854,11 @@ func (a *Client) SSHGet(params *SSHGetParams, authInfo runtime.ClientAuthInfoWri
 * `ciphers` - Encryption algorithms for the payload
 * `key_exchange_algorithms` - SSH key exchange algorithms
 * `mac_algorithms` - MAC algorithms
+* `host_key_algorithms` - Host key algorithms
 * `max_authentication_retry_count` - Maximum authentication retries allowed before closing the connection
 * `connections_per_second` - Maximum allowed connections per second
 * `max_instances` - Maximum allowed connections per node
+* `is_rsa_in_publickey_algorithms_enabled` - _ssh-rsa_ enabled status for public key algorithms
 * `per_source_limit` - Maximum allowed connections from the same client host
 ### Related ONTAP commands
 * `security ssh`
@@ -6101,8 +9873,8 @@ func (a *Client) SSHModify(params *SSHModifyParams, authInfo runtime.ClientAuthI
 		ID:                 "ssh_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/ssh",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SSHModifyReader{formats: a.formats},
@@ -6128,7 +9900,89 @@ func (a *Client) SSHModify(params *SSHModifyParams, authInfo runtime.ClientAuthI
 }
 
 /*
-	SvmSSHServerCollectionGet Retrieves the SSH server configuration for all the SVMs.
+	SupportedAlgorithmsCollectionGet Retrieve all WebAuthn supported algorithms entries.
+
+### Related ONTAP commands
+* `security webauthn supported-algorithms show`
+*/
+func (a *Client) SupportedAlgorithmsCollectionGet(params *SupportedAlgorithmsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SupportedAlgorithmsCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSupportedAlgorithmsCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "supported_algorithms_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/webauthn/supported-algorithms",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SupportedAlgorithmsCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SupportedAlgorithmsCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SupportedAlgorithmsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SupportedAlgorithmsGet Retrieves a WebAuthn supported algorithms entry.
+
+### Related ONTAP commands
+* `security webauthn supported-algorithms show`
+*/
+func (a *Client) SupportedAlgorithmsGet(params *SupportedAlgorithmsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SupportedAlgorithmsGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSupportedAlgorithmsGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "supported_algorithms_get",
+		Method:             "GET",
+		PathPattern:        "/security/webauthn/supported-algorithms/{owner.uuid}/{algorithm.name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SupportedAlgorithmsGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SupportedAlgorithmsGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SupportedAlgorithmsGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SvmSSHServerCollectionGet Retrieves the SSH server configuration for all the data SVMs.
 
 ### Related ONTAP commands
 * `security ssh`
@@ -6142,8 +9996,8 @@ func (a *Client) SvmSSHServerCollectionGet(params *SvmSSHServerCollectionGetPara
 		ID:                 "svm_ssh_server_collection_get",
 		Method:             "GET",
 		PathPattern:        "/security/ssh/svms",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmSSHServerCollectionGetReader{formats: a.formats},
@@ -6169,7 +10023,7 @@ func (a *Client) SvmSSHServerCollectionGet(params *SvmSSHServerCollectionGetPara
 }
 
 /*
-	SvmSSHServerGet Retrieves the SSH server configuration for the specified SVM.
+	SvmSSHServerGet Retrieves the SSH server configuration for the specified data SVM.
 
 ### Related ONTAP commands
 * `security ssh`
@@ -6183,8 +10037,8 @@ func (a *Client) SvmSSHServerGet(params *SvmSSHServerGetParams, authInfo runtime
 		ID:                 "svm_ssh_server_get",
 		Method:             "GET",
 		PathPattern:        "/security/ssh/svms/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmSSHServerGetReader{formats: a.formats},
@@ -6210,13 +10064,15 @@ func (a *Client) SvmSSHServerGet(params *SvmSSHServerGetParams, authInfo runtime
 }
 
 /*
-	SvmSSHServerModify Updates the SSH server configuration for the specified SVM.
+	SvmSSHServerModify Updates the SSH server configuration for the specified data SVM.
 
 ### Optional parameters
 * `ciphers` - Encryption algorithms for the payload
 * `key_exchange_algorithms` - SSH key exchange algorithms
+* `host_key_algorithms` - Host key algorithms
 * `mac_algorithms` - MAC algorithms
 * `max_authentication_retry_count` - Maximum authentication retries allowed before closing the connection
+* `is_rsa_in_publickey_algorithms_enabled` - _ssh-rsa_ enabled status for public key algorithms
 ### Related ONTAP commands
 * `security ssh`
 */
@@ -6229,8 +10085,8 @@ func (a *Client) SvmSSHServerModify(params *SvmSSHServerModifyParams, authInfo r
 		ID:                 "svm_ssh_server_modify",
 		Method:             "PATCH",
 		PathPattern:        "/security/ssh/svms/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmSSHServerModifyReader{formats: a.formats},
@@ -6252,6 +10108,510 @@ func (a *Client) SvmSSHServerModify(params *SvmSSHServerModifyParams, authInfo r
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SvmSSHServerModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SvmSSHServerModifyCollection svm ssh server modify collection API
+*/
+func (a *Client) SvmSSHServerModifyCollection(params *SvmSSHServerModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmSSHServerModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmSSHServerModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_ssh_server_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/ssh/svms",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmSSHServerModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SvmSSHServerModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmSSHServerModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	TotpCollectionGet Retrieves the TOTP profiles configured for user accounts.
+
+### Related ONTAP commands
+* `security login totp show`
+### Learn more
+* [`DOC /security/login/totps`](#docs-security-security_login_totps)
+* [`DOC /security/accounts`](#docs-security-security_accounts)
+*/
+func (a *Client) TotpCollectionGet(params *TotpCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TotpCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTotpCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "totp_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/login/totps",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TotpCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TotpCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TotpCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	TotpCreate Creates a TOTP profile for a user account.
+
+### Required properties
+* `owner.uuid` - Account owner UUID.
+* `account.name` - Account user name.
+### Related ONTAP commands
+* `security login totp create`
+### Learn more
+* [`DOC /security/login/totps`](#docs-security-security_login_totps)
+* [`DOC /security/accounts`](#docs-security-security_accounts)
+*/
+func (a *Client) TotpCreate(params *TotpCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TotpCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTotpCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "totp_create",
+		Method:             "POST",
+		PathPattern:        "/security/login/totps",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TotpCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TotpCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TotpCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	TotpGet Retrieves the TOTP profile configured for a user account.
+
+### Related ONTAP commands
+* `security login totp show`
+### Learn more
+* [`DOC /security/login/totps/{owner.uuid}/{account.name}`](#docs-security-security_login_totps_{owner.uuid}_{account.name})
+* [`DOC /security/accounts`](#docs-security-security_accounts)
+*/
+func (a *Client) TotpGet(params *TotpGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TotpGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTotpGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "totp_get",
+		Method:             "GET",
+		PathPattern:        "/security/login/totps/{owner.uuid}/{account.name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TotpGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TotpGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TotpGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	TotpModify Updates a TOTP user account.
+
+### Related ONTAP commands
+* `security login totp modify`
+### Learn more
+* [`DOC /security/login/totps/{owner.uuid}/{account.name}`](#docs-security-security_login_totps_{owner.uuid}_{account.name})
+* [`DOC /security/accounts`](#docs-security-security_accounts)
+*/
+func (a *Client) TotpModify(params *TotpModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TotpModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTotpModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "totp_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/login/totps/{owner.uuid}/{account.name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TotpModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TotpModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TotpModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+TotpModifyCollection totp modify collection API
+*/
+func (a *Client) TotpModifyCollection(params *TotpModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TotpModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTotpModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "totp_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/login/totps",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TotpModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TotpModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TotpModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	WebauthnCredentialsCollectionGet Retrieves all WebAuthn credentials entries.
+
+### Related ONTAP commands
+* `security webauthn credentials show`
+*/
+func (a *Client) WebauthnCredentialsCollectionGet(params *WebauthnCredentialsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnCredentialsCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewWebauthnCredentialsCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "webauthn_credentials_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/webauthn/credentials",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &WebauthnCredentialsCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*WebauthnCredentialsCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*WebauthnCredentialsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	WebauthnCredentialsDelete Deletes a WebAuthn credentials entry.
+
+### Required properties
+  - `owner.uuid`
+  - `username`
+  - `index`
+  - `relying_party.id`
+
+### Related ONTAP commands
+* `security webauthn credentials delete`
+*/
+func (a *Client) WebauthnCredentialsDelete(params *WebauthnCredentialsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnCredentialsDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewWebauthnCredentialsDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "webauthn_credentials_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/webauthn/credentials/{owner.uuid}/{username}/{index}/{relying_party.id}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &WebauthnCredentialsDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*WebauthnCredentialsDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*WebauthnCredentialsDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+WebauthnCredentialsDeleteCollection webauthn credentials delete collection API
+*/
+func (a *Client) WebauthnCredentialsDeleteCollection(params *WebauthnCredentialsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnCredentialsDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewWebauthnCredentialsDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "webauthn_credentials_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/webauthn/credentials",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &WebauthnCredentialsDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*WebauthnCredentialsDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*WebauthnCredentialsDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	WebauthnCredentialsGet Retrieves a WebAuthn credentials entry.
+
+### Related ONTAP commands
+* `security webauthn credentials show`
+*/
+func (a *Client) WebauthnCredentialsGet(params *WebauthnCredentialsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnCredentialsGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewWebauthnCredentialsGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "webauthn_credentials_get",
+		Method:             "GET",
+		PathPattern:        "/security/webauthn/credentials/{owner.uuid}/{username}/{index}/{relying_party.id}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &WebauthnCredentialsGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*WebauthnCredentialsGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*WebauthnCredentialsGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	WebauthnGlobalCollectionGet Retrieve WebAuthn global settings for a cluster and all SVMs.
+
+### Related ONTAP commands
+* `security webauthn show`
+*/
+func (a *Client) WebauthnGlobalCollectionGet(params *WebauthnGlobalCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnGlobalCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewWebauthnGlobalCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "webauthn_global_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/webauthn/global-settings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &WebauthnGlobalCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*WebauthnGlobalCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*WebauthnGlobalCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	WebauthnGlobalGet Retrieves a WebAuthn global setting entry.
+
+### Related ONTAP commands
+* `security webauthn show`
+*/
+func (a *Client) WebauthnGlobalGet(params *WebauthnGlobalGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnGlobalGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewWebauthnGlobalGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "webauthn_global_get",
+		Method:             "GET",
+		PathPattern:        "/security/webauthn/global-settings/{owner.uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &WebauthnGlobalGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*WebauthnGlobalGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*WebauthnGlobalGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

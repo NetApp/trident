@@ -164,12 +164,6 @@ type DiskCollectionGetParams struct {
 	*/
 	ErrorReasonMessage *string
 
-	/* ErrorReasonTarget.
-
-	   Filter by error.reason.target
-	*/
-	ErrorReasonTarget *string
-
 	/* ErrorType.
 
 	   Filter by error.type
@@ -223,6 +217,12 @@ type DiskCollectionGetParams struct {
 	   Filter by local
 	*/
 	Local *bool
+
+	/* Location.
+
+	   Filter by location
+	*/
+	Location *string
 
 	/* MaxRecords.
 
@@ -290,17 +290,17 @@ type DiskCollectionGetParams struct {
 	*/
 	OutageReasonMessage *string
 
-	/* OutageReasonTarget.
-
-	   Filter by outage.reason.target
-	*/
-	OutageReasonTarget *string
-
 	/* OverallSecurity.
 
 	   Filter by overall_security
 	*/
 	OverallSecurity *string
+
+	/* PathsDiskPathName.
+
+	   Filter by paths.disk_path_name
+	*/
+	PathsDiskPathName *string
 
 	/* PathsInitiator.
 
@@ -462,6 +462,12 @@ type DiskCollectionGetParams struct {
 	*/
 	StatsThroughput *int64
 
+	/* StorageAvailabilityZoneUUID.
+
+	   Filter by storage_availability_zone.uuid
+	*/
+	StorageAvailabilityZoneUUID *string
+
 	/* StoragePoolName.
 
 	   Filter by storage_pool.name
@@ -515,6 +521,12 @@ type DiskCollectionGetParams struct {
 	   Filter by virtual.storage_account
 	*/
 	VirtualStorageAccount *string
+
+	/* VirtualTargetAddress.
+
+	   Filter by virtual.target_address
+	*/
+	VirtualTargetAddress *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -770,17 +782,6 @@ func (o *DiskCollectionGetParams) SetErrorReasonMessage(errorReasonMessage *stri
 	o.ErrorReasonMessage = errorReasonMessage
 }
 
-// WithErrorReasonTarget adds the errorReasonTarget to the disk collection get params
-func (o *DiskCollectionGetParams) WithErrorReasonTarget(errorReasonTarget *string) *DiskCollectionGetParams {
-	o.SetErrorReasonTarget(errorReasonTarget)
-	return o
-}
-
-// SetErrorReasonTarget adds the errorReasonTarget to the disk collection get params
-func (o *DiskCollectionGetParams) SetErrorReasonTarget(errorReasonTarget *string) {
-	o.ErrorReasonTarget = errorReasonTarget
-}
-
 // WithErrorType adds the errorType to the disk collection get params
 func (o *DiskCollectionGetParams) WithErrorType(errorType *string) *DiskCollectionGetParams {
 	o.SetErrorType(errorType)
@@ -878,6 +879,17 @@ func (o *DiskCollectionGetParams) WithLocal(local *bool) *DiskCollectionGetParam
 // SetLocal adds the local to the disk collection get params
 func (o *DiskCollectionGetParams) SetLocal(local *bool) {
 	o.Local = local
+}
+
+// WithLocation adds the location to the disk collection get params
+func (o *DiskCollectionGetParams) WithLocation(location *string) *DiskCollectionGetParams {
+	o.SetLocation(location)
+	return o
+}
+
+// SetLocation adds the location to the disk collection get params
+func (o *DiskCollectionGetParams) SetLocation(location *string) {
+	o.Location = location
 }
 
 // WithMaxRecords adds the maxRecords to the disk collection get params
@@ -1001,17 +1013,6 @@ func (o *DiskCollectionGetParams) SetOutageReasonMessage(outageReasonMessage *st
 	o.OutageReasonMessage = outageReasonMessage
 }
 
-// WithOutageReasonTarget adds the outageReasonTarget to the disk collection get params
-func (o *DiskCollectionGetParams) WithOutageReasonTarget(outageReasonTarget *string) *DiskCollectionGetParams {
-	o.SetOutageReasonTarget(outageReasonTarget)
-	return o
-}
-
-// SetOutageReasonTarget adds the outageReasonTarget to the disk collection get params
-func (o *DiskCollectionGetParams) SetOutageReasonTarget(outageReasonTarget *string) {
-	o.OutageReasonTarget = outageReasonTarget
-}
-
 // WithOverallSecurity adds the overallSecurity to the disk collection get params
 func (o *DiskCollectionGetParams) WithOverallSecurity(overallSecurity *string) *DiskCollectionGetParams {
 	o.SetOverallSecurity(overallSecurity)
@@ -1021,6 +1022,17 @@ func (o *DiskCollectionGetParams) WithOverallSecurity(overallSecurity *string) *
 // SetOverallSecurity adds the overallSecurity to the disk collection get params
 func (o *DiskCollectionGetParams) SetOverallSecurity(overallSecurity *string) {
 	o.OverallSecurity = overallSecurity
+}
+
+// WithPathsDiskPathName adds the pathsDiskPathName to the disk collection get params
+func (o *DiskCollectionGetParams) WithPathsDiskPathName(pathsDiskPathName *string) *DiskCollectionGetParams {
+	o.SetPathsDiskPathName(pathsDiskPathName)
+	return o
+}
+
+// SetPathsDiskPathName adds the pathsDiskPathName to the disk collection get params
+func (o *DiskCollectionGetParams) SetPathsDiskPathName(pathsDiskPathName *string) {
+	o.PathsDiskPathName = pathsDiskPathName
 }
 
 // WithPathsInitiator adds the pathsInitiator to the disk collection get params
@@ -1309,6 +1321,17 @@ func (o *DiskCollectionGetParams) SetStatsThroughput(statsThroughput *int64) {
 	o.StatsThroughput = statsThroughput
 }
 
+// WithStorageAvailabilityZoneUUID adds the storageAvailabilityZoneUUID to the disk collection get params
+func (o *DiskCollectionGetParams) WithStorageAvailabilityZoneUUID(storageAvailabilityZoneUUID *string) *DiskCollectionGetParams {
+	o.SetStorageAvailabilityZoneUUID(storageAvailabilityZoneUUID)
+	return o
+}
+
+// SetStorageAvailabilityZoneUUID adds the storageAvailabilityZoneUuid to the disk collection get params
+func (o *DiskCollectionGetParams) SetStorageAvailabilityZoneUUID(storageAvailabilityZoneUUID *string) {
+	o.StorageAvailabilityZoneUUID = storageAvailabilityZoneUUID
+}
+
 // WithStoragePoolName adds the storagePoolName to the disk collection get params
 func (o *DiskCollectionGetParams) WithStoragePoolName(storagePoolName *string) *DiskCollectionGetParams {
 	o.SetStoragePoolName(storagePoolName)
@@ -1406,6 +1429,17 @@ func (o *DiskCollectionGetParams) WithVirtualStorageAccount(virtualStorageAccoun
 // SetVirtualStorageAccount adds the virtualStorageAccount to the disk collection get params
 func (o *DiskCollectionGetParams) SetVirtualStorageAccount(virtualStorageAccount *string) {
 	o.VirtualStorageAccount = virtualStorageAccount
+}
+
+// WithVirtualTargetAddress adds the virtualTargetAddress to the disk collection get params
+func (o *DiskCollectionGetParams) WithVirtualTargetAddress(virtualTargetAddress *string) *DiskCollectionGetParams {
+	o.SetVirtualTargetAddress(virtualTargetAddress)
+	return o
+}
+
+// SetVirtualTargetAddress adds the virtualTargetAddress to the disk collection get params
+func (o *DiskCollectionGetParams) SetVirtualTargetAddress(virtualTargetAddress *string) {
+	o.VirtualTargetAddress = virtualTargetAddress
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -1705,23 +1739,6 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ErrorReasonTarget != nil {
-
-		// query param error.reason.target
-		var qrErrorReasonTarget string
-
-		if o.ErrorReasonTarget != nil {
-			qrErrorReasonTarget = *o.ErrorReasonTarget
-		}
-		qErrorReasonTarget := qrErrorReasonTarget
-		if qErrorReasonTarget != "" {
-
-			if err := r.SetQueryParam("error.reason.target", qErrorReasonTarget); err != nil {
-				return err
-			}
-		}
-	}
-
 	if o.ErrorType != nil {
 
 		// query param error.type
@@ -1864,6 +1881,23 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qLocal != "" {
 
 			if err := r.SetQueryParam("local", qLocal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Location != nil {
+
+		// query param location
+		var qrLocation string
+
+		if o.Location != nil {
+			qrLocation = *o.Location
+		}
+		qLocation := qrLocation
+		if qLocation != "" {
+
+			if err := r.SetQueryParam("location", qLocation); err != nil {
 				return err
 			}
 		}
@@ -2050,23 +2084,6 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.OutageReasonTarget != nil {
-
-		// query param outage.reason.target
-		var qrOutageReasonTarget string
-
-		if o.OutageReasonTarget != nil {
-			qrOutageReasonTarget = *o.OutageReasonTarget
-		}
-		qOutageReasonTarget := qrOutageReasonTarget
-		if qOutageReasonTarget != "" {
-
-			if err := r.SetQueryParam("outage.reason.target", qOutageReasonTarget); err != nil {
-				return err
-			}
-		}
-	}
-
 	if o.OverallSecurity != nil {
 
 		// query param overall_security
@@ -2079,6 +2096,23 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qOverallSecurity != "" {
 
 			if err := r.SetQueryParam("overall_security", qOverallSecurity); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PathsDiskPathName != nil {
+
+		// query param paths.disk_path_name
+		var qrPathsDiskPathName string
+
+		if o.PathsDiskPathName != nil {
+			qrPathsDiskPathName = *o.PathsDiskPathName
+		}
+		qPathsDiskPathName := qrPathsDiskPathName
+		if qPathsDiskPathName != "" {
+
+			if err := r.SetQueryParam("paths.disk_path_name", qPathsDiskPathName); err != nil {
 				return err
 			}
 		}
@@ -2526,6 +2560,23 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
+	if o.StorageAvailabilityZoneUUID != nil {
+
+		// query param storage_availability_zone.uuid
+		var qrStorageAvailabilityZoneUUID string
+
+		if o.StorageAvailabilityZoneUUID != nil {
+			qrStorageAvailabilityZoneUUID = *o.StorageAvailabilityZoneUUID
+		}
+		qStorageAvailabilityZoneUUID := qrStorageAvailabilityZoneUUID
+		if qStorageAvailabilityZoneUUID != "" {
+
+			if err := r.SetQueryParam("storage_availability_zone.uuid", qStorageAvailabilityZoneUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.StoragePoolName != nil {
 
 		// query param storage_pool.name
@@ -2674,6 +2725,23 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qVirtualStorageAccount != "" {
 
 			if err := r.SetQueryParam("virtual.storage_account", qVirtualStorageAccount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VirtualTargetAddress != nil {
+
+		// query param virtual.target_address
+		var qrVirtualTargetAddress string
+
+		if o.VirtualTargetAddress != nil {
+			qrVirtualTargetAddress = *o.VirtualTargetAddress
+		}
+		qVirtualTargetAddress := qrVirtualTargetAddress
+		if qVirtualTargetAddress != "" {
+
+			if err := r.SetQueryParam("virtual.target_address", qVirtualTargetAddress); err != nil {
 				return err
 			}
 		}

@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ClusterGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cluster get o k response
+func (o *ClusterGetOK) Code() int {
+	return 200
+}
+
 func (o *ClusterGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster][%d] clusterGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster][%d] clusterGetOK %s", 200, payload)
 }
 
 func (o *ClusterGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster][%d] clusterGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster][%d] clusterGetOK %s", 200, payload)
 }
 
 func (o *ClusterGetOK) GetPayload() *models.Cluster {
@@ -112,19 +120,19 @@ func NewClusterGetDefault(code int) *ClusterGetDefault {
 }
 
 /*
-ClusterGetDefault describes a response with status code -1, with default header values.
+	ClusterGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 9241607 | Only POST/OPTIONS on /api/cluster, GET/HEAD/OPTIONS on /api/cluster/nodes, or calls on /api/cluster/jobs are available in precluster. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ClusterGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cluster get default response
-func (o *ClusterGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cluster get default response has a 2xx status code
@@ -152,12 +160,19 @@ func (o *ClusterGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster get default response
+func (o *ClusterGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster][%d] cluster_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster][%d] cluster_get default %s", o._statusCode, payload)
 }
 
 func (o *ClusterGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster][%d] cluster_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster][%d] cluster_get default %s", o._statusCode, payload)
 }
 
 func (o *ClusterGetDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *AccountCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the account create created response
+func (o *AccountCreateCreated) Code() int {
+	return 201
+}
+
 func (o *AccountCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/accounts][%d] accountCreateCreated ", 201)
+	return fmt.Sprintf("[POST /security/accounts][%d] accountCreateCreated", 201)
 }
 
 func (o *AccountCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/accounts][%d] accountCreateCreated ", 201)
+	return fmt.Sprintf("[POST /security/accounts][%d] accountCreateCreated", 201)
 }
 
 func (o *AccountCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -118,19 +124,36 @@ func NewAccountCreateDefault(code int) *AccountCreateDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 1261215 | The role was not found. |
+| 1261225 | Invalid command directory name. |
 | 1263343 | Cannot lock user with password not set or non-password authentication method. |
+| 2621475 | This operation is not supported on a node SVM. |
+| 2621601 | This operation is not supported on a system SVM. |
+| 2621706 | The specified owner.uuid and owner.name refer to different SVMs. |
 | 5636099 | User creation with a non-admin role is not supported for service-processor application. |
 | 5636121 | The user account name is reserved for use by the system. |
 | 5636126 | Cannot create a user with the username or role as AutoSupport because it is reserved by the system. |
-| 5636140 | Creating a login with application console for a data Vserver is not supported. |
-| 5636141 | Creating a login with application service-processor for a data Vserver is not supported. |
-| 5636154 | The second-authentication-method parameter is supported for ssh application. |
+| 5636136 | Specifying "is_ns_switch_group" as "true" is supported only for authentication method "nsswitch". |
+| 5636140 | Creating a login with application console for a data SVM  is not supported. |
+| 5636141 | Creating a login with application service-processor for a data SVM is not supported. |
 | 5636155 | The second-authentication-method parameter can be specified only if the authentication-method password or public key nsswitch. |
 | 5636156 | The same value cannot be specified for the second-authentication-method and the authentication-method. |
-| 5636157 | If the authentication-method is domain, the second-authentication-method cannot be specified. |
 | 5636164 | If the value for either the authentication-method second-authentication-method is nsswitch or password, the other parameter must differ. |
+| 5636165 | Second authentication method is not supported for NIS or LDAP group based accounts. |
+| 5636176 | The application and authentication-method combination is invalid. |
+| 5636178 | An invalid value is specified for field "application". |
+| 5636179 | Creating an AMQP application login for a data SVM is not supported. |
 | 5636197 | LDAP fastbind combination for application and authentication method is not supported. |
 | 5636198 | LDAP fastbind authentication is supported only for nsswitch. |
+| 5636206 | Non-domain user cannot have a backslash in the username. |
+| 5636207 | If the value for either the authentication-method or second-authentication-method parameters is domain, the other parameter must be publickey or none. |
+| 5636212 | TOTP is supported only when the primary authentication method is password or public key. |
+| 5636214 | Configuring the user with TOTP as secondary authentication method requires an effective cluster version of 9.13.1 or later |
+| 5636223 | Specifying "is_ns_switch_group" as "true" is supported only for SSH, ONTAPI, and HTTP applications. |
+| 5636224 | Configuring a Service Processor (SP) user with two-factor authentication requires an effective cluster version of 9.15.1 or later. |
+| 5636225 | For a Service Processor (SP) user, the second factor of authentication must be one of publickey or none. |
+| 5636226 | Internal error. Failed to check for ONTAP capability. |
+| 5636250 | The "second_authentication_method" parameter is supported for HTTP, SSH, and Service Processor (SP) applications only. |
+| 5636251 | For HTTP application, "publickey" is the only supported value for the "second_authentication_method" parameter; and can be specified only if the "authentication_methods" parameter has value "password" or "domain" or "nsswitch". |
 | 7077897 | Invalid character in username. |
 | 7077898 | The username must contain both letters and numbers. |
 | 7077899 | The username does not meet length requirements. |
@@ -143,16 +166,12 @@ func NewAccountCreateDefault(code int) *AccountCreateDefault {
 | 7077940 | The password exceeds the maximum supported length. |
 | 7077941 | The defined password composition exceeds the maximum password length of 128 characters. |
 | 7078900 | An admin password is not set. Set the password by including it in the request. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AccountCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the account create default response
-func (o *AccountCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this account create default response has a 2xx status code
@@ -180,12 +199,19 @@ func (o *AccountCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the account create default response
+func (o *AccountCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AccountCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/accounts][%d] account_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/accounts][%d] account_create default %s", o._statusCode, payload)
 }
 
 func (o *AccountCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/accounts][%d] account_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/accounts][%d] account_create default %s", o._statusCode, payload)
 }
 
 func (o *AccountCreateDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CifsDomainPreferredDcCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs domain preferred dc collection get o k response
+func (o *CifsDomainPreferredDcCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *CifsDomainPreferredDcCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers][%d] cifsDomainPreferredDcCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers][%d] cifsDomainPreferredDcCollectionGetOK %s", 200, payload)
 }
 
 func (o *CifsDomainPreferredDcCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers][%d] cifsDomainPreferredDcCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers][%d] cifsDomainPreferredDcCollectionGetOK %s", 200, payload)
 }
 
 func (o *CifsDomainPreferredDcCollectionGetOK) GetPayload() *models.CifsDomainPreferredDcResponse {
@@ -122,11 +130,6 @@ type CifsDomainPreferredDcCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cifs domain preferred dc collection get default response
-func (o *CifsDomainPreferredDcCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cifs domain preferred dc collection get default response has a 2xx status code
 func (o *CifsDomainPreferredDcCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *CifsDomainPreferredDcCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs domain preferred dc collection get default response
+func (o *CifsDomainPreferredDcCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsDomainPreferredDcCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers][%d] cifs_domain_preferred_dc_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers][%d] cifs_domain_preferred_dc_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsDomainPreferredDcCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers][%d] cifs_domain_preferred_dc_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers][%d] cifs_domain_preferred_dc_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsDomainPreferredDcCollectionGetDefault) GetPayload() *models.ErrorResponse {

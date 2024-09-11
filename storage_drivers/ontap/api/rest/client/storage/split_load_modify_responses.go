@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SplitLoadModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the split load modify o k response
+func (o *SplitLoadModifyOK) Code() int {
+	return 200
+}
+
 func (o *SplitLoadModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/file/clone/split-loads/{node.uuid}][%d] splitLoadModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/file/clone/split-loads/{node.uuid}][%d] splitLoadModifyOK", 200)
 }
 
 func (o *SplitLoadModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /storage/file/clone/split-loads/{node.uuid}][%d] splitLoadModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/file/clone/split-loads/{node.uuid}][%d] splitLoadModifyOK", 200)
 }
 
 func (o *SplitLoadModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -100,19 +106,19 @@ func NewSplitLoadModifyDefault(code int) *SplitLoadModifyDefault {
 }
 
 /*
-SplitLoadModifyDefault describes a response with status code -1, with default header values.
+	SplitLoadModifyDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 13565966 | Failed to modify the maximum split load on the node due to an invalid field value. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SplitLoadModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the split load modify default response
-func (o *SplitLoadModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this split load modify default response has a 2xx status code
@@ -140,12 +146,19 @@ func (o *SplitLoadModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the split load modify default response
+func (o *SplitLoadModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SplitLoadModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/file/clone/split-loads/{node.uuid}][%d] split_load_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/file/clone/split-loads/{node.uuid}][%d] split_load_modify default %s", o._statusCode, payload)
 }
 
 func (o *SplitLoadModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /storage/file/clone/split-loads/{node.uuid}][%d] split_load_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/file/clone/split-loads/{node.uuid}][%d] split_load_modify default %s", o._statusCode, payload)
 }
 
 func (o *SplitLoadModifyDefault) GetPayload() *models.ErrorResponse {

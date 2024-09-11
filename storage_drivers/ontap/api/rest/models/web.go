@@ -55,7 +55,7 @@ type Web struct {
 
 	// State of the cluster-level web services.
 	// Read Only: true
-	// Enum: [offline partial mixed online unclustered]
+	// Enum: ["offline","partial","mixed","online","unclustered"]
 	State *string `json:"state,omitempty"`
 
 	// The maximum size of the wait queue for connections exceeding the per-address-limit.
@@ -631,13 +631,17 @@ type WebInlineCsrfInlineToken struct {
 	// Maximum number of concurrent CSRF tokens.
 	// Example: 120
 	// Maximum: 9999
-	// Minimum: 0
+	// Minimum: 100
 	ConcurrentLimit *int64 `json:"concurrent_limit,omitempty"`
 
 	// Time for which an unused CSRF token is retained, in seconds.
+	// Example: 200
+	// Minimum: 180
 	IdleTimeout *int64 `json:"idle_timeout,omitempty"`
 
 	// Time for which an unused CSRF token, regardless of usage is retained, in seconds.
+	// Example: 1200
+	// Minimum: 600
 	MaxTimeout *int64 `json:"max_timeout,omitempty"`
 }
 
@@ -646,6 +650,14 @@ func (m *WebInlineCsrfInlineToken) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateConcurrentLimit(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIdleTimeout(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMaxTimeout(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -660,11 +672,35 @@ func (m *WebInlineCsrfInlineToken) validateConcurrentLimit(formats strfmt.Regist
 		return nil
 	}
 
-	if err := validate.MinimumInt("csrf"+"."+"token"+"."+"concurrent_limit", "body", *m.ConcurrentLimit, 0, false); err != nil {
+	if err := validate.MinimumInt("csrf"+"."+"token"+"."+"concurrent_limit", "body", *m.ConcurrentLimit, 100, false); err != nil {
 		return err
 	}
 
 	if err := validate.MaximumInt("csrf"+"."+"token"+"."+"concurrent_limit", "body", *m.ConcurrentLimit, 9999, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebInlineCsrfInlineToken) validateIdleTimeout(formats strfmt.Registry) error {
+	if swag.IsZero(m.IdleTimeout) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("csrf"+"."+"token"+"."+"idle_timeout", "body", *m.IdleTimeout, 180, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebInlineCsrfInlineToken) validateMaxTimeout(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxTimeout) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("csrf"+"."+"token"+"."+"max_timeout", "body", *m.MaxTimeout, 600, false); err != nil {
 		return err
 	}
 

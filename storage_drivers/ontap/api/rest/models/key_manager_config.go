@@ -29,6 +29,9 @@ type KeyManagerConfig struct {
 	// Example: 3
 	CloudKmsRetryCount *int64 `json:"cloud_kms_retry_count,omitempty"`
 
+	// health monitor policy
+	HealthMonitorPolicy *KeyManagerConfigInlineHealthMonitorPolicy `json:"health_monitor_policy,omitempty"`
+
 	// Health Monitor Polling Period, in minutes. Supported value range of 15-30 minutes.
 	// Example: 20
 	HealthMonitorPollingInterval *int64 `json:"health_monitor_polling_interval,omitempty"`
@@ -44,6 +47,10 @@ func (m *KeyManagerConfig) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateHealthMonitorPolicy(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -74,6 +81,23 @@ func (m *KeyManagerConfig) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *KeyManagerConfig) validateHealthMonitorPolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.HealthMonitorPolicy) { // not required
+		return nil
+	}
+
+	if m.HealthMonitorPolicy != nil {
+		if err := m.HealthMonitorPolicy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("health_monitor_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *KeyManagerConfig) validatePassphrase(formats strfmt.Registry) error {
 	if swag.IsZero(m.Passphrase) { // not required
 		return nil
@@ -91,6 +115,10 @@ func (m *KeyManagerConfig) ContextValidate(ctx context.Context, formats strfmt.R
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateHealthMonitorPolicy(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -114,6 +142,20 @@ func (m *KeyManagerConfig) contextValidateLinks(ctx context.Context, formats str
 	return nil
 }
 
+func (m *KeyManagerConfig) contextValidateHealthMonitorPolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.HealthMonitorPolicy != nil {
+		if err := m.HealthMonitorPolicy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("health_monitor_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *KeyManagerConfig) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -125,6 +167,542 @@ func (m *KeyManagerConfig) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *KeyManagerConfig) UnmarshalBinary(b []byte) error {
 	var res KeyManagerConfig
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// KeyManagerConfigInlineHealthMonitorPolicy Manages the keystore configurations.
+//
+// swagger:model key_manager_config_inline_health_monitor_policy
+type KeyManagerConfigInlineHealthMonitorPolicy struct {
+
+	// akv
+	Akv *KeyManagerConfigInlineHealthMonitorPolicyInlineAkv `json:"akv,omitempty"`
+
+	// aws
+	Aws *KeyManagerConfigInlineHealthMonitorPolicyInlineAws `json:"aws,omitempty"`
+
+	// gcp
+	Gcp *KeyManagerConfigInlineHealthMonitorPolicyInlineGcp `json:"gcp,omitempty"`
+
+	// ikp
+	Ikp *KeyManagerConfigInlineHealthMonitorPolicyInlineIkp `json:"ikp,omitempty"`
+
+	// kmip
+	Kmip *KeyManagerConfigInlineHealthMonitorPolicyInlineKmip `json:"kmip,omitempty"`
+
+	// okm
+	Okm *KeyManagerConfigInlineHealthMonitorPolicyInlineOkm `json:"okm,omitempty"`
+}
+
+// Validate validates this key manager config inline health monitor policy
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAkv(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAws(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateGcp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIkp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateKmip(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOkm(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) validateAkv(formats strfmt.Registry) error {
+	if swag.IsZero(m.Akv) { // not required
+		return nil
+	}
+
+	if m.Akv != nil {
+		if err := m.Akv.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("health_monitor_policy" + "." + "akv")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) validateAws(formats strfmt.Registry) error {
+	if swag.IsZero(m.Aws) { // not required
+		return nil
+	}
+
+	if m.Aws != nil {
+		if err := m.Aws.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("health_monitor_policy" + "." + "aws")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) validateGcp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Gcp) { // not required
+		return nil
+	}
+
+	if m.Gcp != nil {
+		if err := m.Gcp.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("health_monitor_policy" + "." + "gcp")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) validateIkp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Ikp) { // not required
+		return nil
+	}
+
+	if m.Ikp != nil {
+		if err := m.Ikp.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("health_monitor_policy" + "." + "ikp")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) validateKmip(formats strfmt.Registry) error {
+	if swag.IsZero(m.Kmip) { // not required
+		return nil
+	}
+
+	if m.Kmip != nil {
+		if err := m.Kmip.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("health_monitor_policy" + "." + "kmip")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) validateOkm(formats strfmt.Registry) error {
+	if swag.IsZero(m.Okm) { // not required
+		return nil
+	}
+
+	if m.Okm != nil {
+		if err := m.Okm.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("health_monitor_policy" + "." + "okm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this key manager config inline health monitor policy based on the context it is used
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAkv(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAws(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGcp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIkp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateKmip(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateOkm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) contextValidateAkv(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Akv != nil {
+		if err := m.Akv.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("health_monitor_policy" + "." + "akv")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) contextValidateAws(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Aws != nil {
+		if err := m.Aws.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("health_monitor_policy" + "." + "aws")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) contextValidateGcp(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Gcp != nil {
+		if err := m.Gcp.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("health_monitor_policy" + "." + "gcp")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) contextValidateIkp(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Ikp != nil {
+		if err := m.Ikp.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("health_monitor_policy" + "." + "ikp")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) contextValidateKmip(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Kmip != nil {
+		if err := m.Kmip.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("health_monitor_policy" + "." + "kmip")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) contextValidateOkm(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Okm != nil {
+		if err := m.Okm.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("health_monitor_policy" + "." + "okm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) UnmarshalBinary(b []byte) error {
+	var res KeyManagerConfigInlineHealthMonitorPolicy
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// KeyManagerConfigInlineHealthMonitorPolicyInlineAkv Azure Key Vault Key Management Service policy options
+//
+// swagger:model key_manager_config_inline_health_monitor_policy_inline_akv
+type KeyManagerConfigInlineHealthMonitorPolicyInlineAkv struct {
+
+	// Indicates whether health monitor is enabled.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Indicates whether the health monitor manages the volume offline operation.
+	ManageVolumeOffline *bool `json:"manage_volume_offline,omitempty"`
+}
+
+// Validate validates this key manager config inline health monitor policy inline akv
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineAkv) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this key manager config inline health monitor policy inline akv based on context it is used
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineAkv) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineAkv) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineAkv) UnmarshalBinary(b []byte) error {
+	var res KeyManagerConfigInlineHealthMonitorPolicyInlineAkv
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// KeyManagerConfigInlineHealthMonitorPolicyInlineAws Amazon Web Services Key Management Service policy options
+//
+// swagger:model key_manager_config_inline_health_monitor_policy_inline_aws
+type KeyManagerConfigInlineHealthMonitorPolicyInlineAws struct {
+
+	// Indicates whether health monitor is enabled.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Indicates whether the health monitor manages the volume offline operation.
+	ManageVolumeOffline *bool `json:"manage_volume_offline,omitempty"`
+}
+
+// Validate validates this key manager config inline health monitor policy inline aws
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineAws) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this key manager config inline health monitor policy inline aws based on context it is used
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineAws) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineAws) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineAws) UnmarshalBinary(b []byte) error {
+	var res KeyManagerConfigInlineHealthMonitorPolicyInlineAws
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// KeyManagerConfigInlineHealthMonitorPolicyInlineGcp Google Cloud Key Management Service policy options
+//
+// swagger:model key_manager_config_inline_health_monitor_policy_inline_gcp
+type KeyManagerConfigInlineHealthMonitorPolicyInlineGcp struct {
+
+	// Indicates whether health monitor is enabled.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Indicates whether the health monitor manages the volume offline operation.
+	ManageVolumeOffline *bool `json:"manage_volume_offline,omitempty"`
+}
+
+// Validate validates this key manager config inline health monitor policy inline gcp
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineGcp) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this key manager config inline health monitor policy inline gcp based on context it is used
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineGcp) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineGcp) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineGcp) UnmarshalBinary(b []byte) error {
+	var res KeyManagerConfigInlineHealthMonitorPolicyInlineGcp
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// KeyManagerConfigInlineHealthMonitorPolicyInlineIkp IBM Key Protect Key Management Service policy options
+//
+// swagger:model key_manager_config_inline_health_monitor_policy_inline_ikp
+type KeyManagerConfigInlineHealthMonitorPolicyInlineIkp struct {
+
+	// Indicates whether health monitor is enabled.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Indicates whether the health monitor manages the volume offline operation.
+	ManageVolumeOffline *bool `json:"manage_volume_offline,omitempty"`
+}
+
+// Validate validates this key manager config inline health monitor policy inline ikp
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineIkp) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this key manager config inline health monitor policy inline ikp based on context it is used
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineIkp) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineIkp) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineIkp) UnmarshalBinary(b []byte) error {
+	var res KeyManagerConfigInlineHealthMonitorPolicyInlineIkp
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// KeyManagerConfigInlineHealthMonitorPolicyInlineKmip External Key Manager policy options
+//
+// swagger:model key_manager_config_inline_health_monitor_policy_inline_kmip
+type KeyManagerConfigInlineHealthMonitorPolicyInlineKmip struct {
+
+	// Indicates whether health monitor is enabled.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Indicates whether the health monitor manages the volume offline operation.
+	ManageVolumeOffline *bool `json:"manage_volume_offline,omitempty"`
+}
+
+// Validate validates this key manager config inline health monitor policy inline kmip
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineKmip) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this key manager config inline health monitor policy inline kmip based on context it is used
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineKmip) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineKmip) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineKmip) UnmarshalBinary(b []byte) error {
+	var res KeyManagerConfigInlineHealthMonitorPolicyInlineKmip
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// KeyManagerConfigInlineHealthMonitorPolicyInlineOkm Onboard Key Manager policy options
+//
+// swagger:model key_manager_config_inline_health_monitor_policy_inline_okm
+type KeyManagerConfigInlineHealthMonitorPolicyInlineOkm struct {
+
+	// Indicates whether health monitor is enabled.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Indicates whether the health monitor manages the volume offline operation.
+	ManageVolumeOffline *bool `json:"manage_volume_offline,omitempty"`
+}
+
+// Validate validates this key manager config inline health monitor policy inline okm
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineOkm) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this key manager config inline health monitor policy inline okm based on context it is used
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineOkm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineOkm) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineOkm) UnmarshalBinary(b []byte) error {
+	var res KeyManagerConfigInlineHealthMonitorPolicyInlineOkm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

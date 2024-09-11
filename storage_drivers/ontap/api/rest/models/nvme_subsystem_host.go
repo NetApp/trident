@@ -30,7 +30,7 @@ type NvmeSubsystemHost struct {
 	// io queue
 	IoQueue *NvmeSubsystemHostInlineIoQueue `json:"io_queue,omitempty"`
 
-	// The NVMe qualified name (NQN) used to identify the NVMe storage target. Not allowed in POST when the `records` property is used.
+	// The NVMe qualified name (NQN) used to identify the NVMe storage target.
 	//
 	// Example: nqn.1992-01.example.com:string
 	Nqn *string `json:"nqn,omitempty"`
@@ -39,8 +39,16 @@ type NvmeSubsystemHost struct {
 	//
 	NvmeSubsystemHostInlineRecords []*NvmeSubsystemHostInlineRecordsInlineArrayItem `json:"records,omitempty"`
 
+	// The host priority setting allocates appropriate NVMe I/O queues (count and depth) for the host to submit I/O commands. Absence of this property in GET implies io_queue count and I/O queue depth are being used.
+	//
+	// Enum: ["regular","high"]
+	Priority *string `json:"priority,omitempty"`
+
 	// subsystem
 	Subsystem *NvmeSubsystemHostInlineSubsystem `json:"subsystem,omitempty"`
+
+	// tls
+	TLS *NvmeSubsystemHostInlineTLS `json:"tls,omitempty"`
 }
 
 // Validate validates this nvme subsystem host
@@ -63,7 +71,15 @@ func (m *NvmeSubsystemHost) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validatePriority(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSubsystem(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTLS(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -148,6 +164,62 @@ func (m *NvmeSubsystemHost) validateNvmeSubsystemHostInlineRecords(formats strfm
 	return nil
 }
 
+var nvmeSubsystemHostTypePriorityPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["regular","high"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nvmeSubsystemHostTypePriorityPropEnum = append(nvmeSubsystemHostTypePriorityPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_host
+	// NvmeSubsystemHost
+	// priority
+	// Priority
+	// regular
+	// END DEBUGGING
+	// NvmeSubsystemHostPriorityRegular captures enum value "regular"
+	NvmeSubsystemHostPriorityRegular string = "regular"
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_host
+	// NvmeSubsystemHost
+	// priority
+	// Priority
+	// high
+	// END DEBUGGING
+	// NvmeSubsystemHostPriorityHigh captures enum value "high"
+	NvmeSubsystemHostPriorityHigh string = "high"
+)
+
+// prop value enum
+func (m *NvmeSubsystemHost) validatePriorityEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeSubsystemHostTypePriorityPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemHost) validatePriority(formats strfmt.Registry) error {
+	if swag.IsZero(m.Priority) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validatePriorityEnum("priority", "body", *m.Priority); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *NvmeSubsystemHost) validateSubsystem(formats strfmt.Registry) error {
 	if swag.IsZero(m.Subsystem) { // not required
 		return nil
@@ -157,6 +229,23 @@ func (m *NvmeSubsystemHost) validateSubsystem(formats strfmt.Registry) error {
 		if err := m.Subsystem.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("subsystem")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeSubsystemHost) validateTLS(formats strfmt.Registry) error {
+	if swag.IsZero(m.TLS) { // not required
+		return nil
+	}
+
+	if m.TLS != nil {
+		if err := m.TLS.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("tls")
 			}
 			return err
 		}
@@ -186,6 +275,10 @@ func (m *NvmeSubsystemHost) ContextValidate(ctx context.Context, formats strfmt.
 	}
 
 	if err := m.contextValidateSubsystem(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTLS(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -269,6 +362,20 @@ func (m *NvmeSubsystemHost) contextValidateSubsystem(ctx context.Context, format
 	return nil
 }
 
+func (m *NvmeSubsystemHost) contextValidateTLS(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.TLS != nil {
+		if err := m.TLS.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("tls")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *NvmeSubsystemHost) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -287,7 +394,7 @@ func (m *NvmeSubsystemHost) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemHostInlineDhHmacChap A container for properties of NVMe in-band authentication with the DH-HMAC-CHAP protocol.
+// NvmeSubsystemHostInlineDhHmacChap A container for the configuration of NVMe in-band authentication using the DH-HMAC-CHAP protocol for a host.
 //
 // swagger:model nvme_subsystem_host_inline_dh_hmac_chap
 type NvmeSubsystemHostInlineDhHmacChap struct {
@@ -300,12 +407,12 @@ type NvmeSubsystemHostInlineDhHmacChap struct {
 
 	// The Diffie-Hellman group size for NVMe in-band authentication. When property `host_secret_key` is provided, this property defaults to `2048_bit`. When supplied, the property `host_secret_key` must also be supplied. Optional in POST.
 	//
-	// Enum: [none 2048_bit 3072_bit 4096_bit 6144_bit 8192_bit]
+	// Enum: ["none","2048_bit","3072_bit","4096_bit","6144_bit","8192_bit"]
 	GroupSize *string `json:"group_size,omitempty"`
 
 	// The hash function for NVMe in-band authentication. When property `host_secret_key` is provided, this property defaults to `sha_256`. When supplied, the property `host_secret_key` must also be supplied. Optional in POST.
 	//
-	// Enum: [sha_256 sha_512]
+	// Enum: ["sha_256","sha_512"]
 	HashFunction *string `json:"hash_function,omitempty"`
 
 	// The host secret for NVMe in-band authentication. The value of this property is used by the NVMe controller to authenticate the NVMe host while establishing a connection. If unset, no authentication is performed by the host or controller. This property must be supplied if any other NVMe in-band authentication properties are supplied. Optional in POST.<br/>
@@ -321,7 +428,7 @@ type NvmeSubsystemHostInlineDhHmacChap struct {
 	//
 	// Example: bidirectional
 	// Read Only: true
-	// Enum: [none unidirectional bidirectional]
+	// Enum: ["none","unidirectional","bidirectional"]
 	Mode *string `json:"mode,omitempty"`
 }
 
@@ -611,7 +718,7 @@ func (m *NvmeSubsystemHostInlineDhHmacChap) UnmarshalBinary(b []byte) error {
 // swagger:model nvme_subsystem_host_inline_io_queue
 type NvmeSubsystemHostInlineIoQueue struct {
 
-	// The number of I/O queue pairs. The default value is inherited from the owning NVMe subsystem.
+	// The number of I/O queue pairs. Absence of this property in GET implies property priority is set and platform and transport protocol specific values for I/O queue count is being used. Valid in GET only.
 	//
 	// Example: 4
 	// Read Only: true
@@ -619,7 +726,7 @@ type NvmeSubsystemHostInlineIoQueue struct {
 	// Minimum: 1
 	Count *int64 `json:"count,omitempty"`
 
-	// The I/O queue depth. The default value is inherited from the owning NVMe subsystem.
+	// The I/O queue depth. Absence of this property in GET implies property priority is set and platform and transport protocol specific values for I/O queue depth is being used. Valid in GET only.
 	//
 	// Example: 32
 	// Read Only: true
@@ -839,6 +946,9 @@ type NvmeSubsystemHostInlineRecordsInlineArrayItem struct {
 
 	// subsystem
 	Subsystem *NvmeSubsystemHostInlineRecordsInlineArrayItemInlineSubsystem `json:"subsystem,omitempty"`
+
+	// tls
+	TLS *NvmeSubsystemHostInlineRecordsInlineArrayItemInlineTLS `json:"tls,omitempty"`
 }
 
 // Validate validates this nvme subsystem host inline records inline array item
@@ -858,6 +968,10 @@ func (m *NvmeSubsystemHostInlineRecordsInlineArrayItem) Validate(formats strfmt.
 	}
 
 	if err := m.validateSubsystem(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTLS(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -935,6 +1049,23 @@ func (m *NvmeSubsystemHostInlineRecordsInlineArrayItem) validateSubsystem(format
 	return nil
 }
 
+func (m *NvmeSubsystemHostInlineRecordsInlineArrayItem) validateTLS(formats strfmt.Registry) error {
+	if swag.IsZero(m.TLS) { // not required
+		return nil
+	}
+
+	if m.TLS != nil {
+		if err := m.TLS.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("tls")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this nvme subsystem host inline records inline array item based on the context it is used
 func (m *NvmeSubsystemHostInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -952,6 +1083,10 @@ func (m *NvmeSubsystemHostInlineRecordsInlineArrayItem) ContextValidate(ctx cont
 	}
 
 	if err := m.contextValidateSubsystem(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTLS(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1017,6 +1152,20 @@ func (m *NvmeSubsystemHostInlineRecordsInlineArrayItem) contextValidateSubsystem
 	return nil
 }
 
+func (m *NvmeSubsystemHostInlineRecordsInlineArrayItem) contextValidateTLS(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.TLS != nil {
+		if err := m.TLS.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("tls")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *NvmeSubsystemHostInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -1035,7 +1184,7 @@ func (m *NvmeSubsystemHostInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte
 	return nil
 }
 
-// NvmeSubsystemHostInlineRecordsInlineArrayItemInlineDhHmacChap A container for properties of NVMe in-band authentication with the DH-HMAC-CHAP protocol.
+// NvmeSubsystemHostInlineRecordsInlineArrayItemInlineDhHmacChap A container for the configuration of NVMe in-band authentication using the DH-HMAC-CHAP protocol for a host.
 //
 // swagger:model nvme_subsystem_host_inline_records_inline_array_item_inline_dh_hmac_chap
 type NvmeSubsystemHostInlineRecordsInlineArrayItemInlineDhHmacChap struct {
@@ -1048,12 +1197,12 @@ type NvmeSubsystemHostInlineRecordsInlineArrayItemInlineDhHmacChap struct {
 
 	// The Diffie-Hellman group size for NVMe in-band authentication. When property `host_secret_key` is provided, this property defaults to `2048_bit`. When supplied, the property `host_secret_key` must also be supplied. Optional in POST.
 	//
-	// Enum: [none 2048_bit 3072_bit 4096_bit 6144_bit 8192_bit]
+	// Enum: ["none","2048_bit","3072_bit","4096_bit","6144_bit","8192_bit"]
 	GroupSize *string `json:"group_size,omitempty"`
 
 	// The hash function for NVMe in-band authentication. When property `host_secret_key` is provided, this property defaults to `sha_256`. When supplied, the property `host_secret_key` must also be supplied. Optional in POST.
 	//
-	// Enum: [sha_256 sha_512]
+	// Enum: ["sha_256","sha_512"]
 	HashFunction *string `json:"hash_function,omitempty"`
 
 	// The host secret for NVMe in-band authentication. The value of this property is used by the NVMe controller to authenticate the NVMe host while establishing a connection. If unset, no authentication is performed by the host or controller. This property must be supplied if any other NVMe in-band authentication properties are supplied. Optional in POST.<br/>
@@ -1069,7 +1218,7 @@ type NvmeSubsystemHostInlineRecordsInlineArrayItemInlineDhHmacChap struct {
 	//
 	// Example: bidirectional
 	// Read Only: true
-	// Enum: [none unidirectional bidirectional]
+	// Enum: ["none","unidirectional","bidirectional"]
 	Mode *string `json:"mode,omitempty"`
 }
 
@@ -1578,7 +1727,7 @@ type NvmeSubsystemHostInlineRecordsInlineArrayItemInlineSubsystem struct {
 	//
 	// Example: subsystem1
 	// Read Only: true
-	// Max Length: 96
+	// Max Length: 64
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
 
@@ -1633,7 +1782,7 @@ func (m *NvmeSubsystemHostInlineRecordsInlineArrayItemInlineSubsystem) validateN
 		return err
 	}
 
-	if err := validate.MaxLength("subsystem"+"."+"name", "body", *m.Name, 96); err != nil {
+	if err := validate.MaxLength("subsystem"+"."+"name", "body", *m.Name, 64); err != nil {
 		return err
 	}
 
@@ -1798,6 +1947,124 @@ func (m *NvmeSubsystemHostInlineRecordsInlineArrayItemInlineSubsystemInlineLinks
 	return nil
 }
 
+// NvmeSubsystemHostInlineRecordsInlineArrayItemInlineTLS A container for the configuration for NVMe/TCP-TLS transport session for the host.
+//
+// swagger:model nvme_subsystem_host_inline_records_inline_array_item_inline_tls
+type NvmeSubsystemHostInlineRecordsInlineArrayItemInlineTLS struct {
+
+	// A user supplied pre-shared key (PSK) value in PSK Interchange Format. Optional in POST.</br>
+	// The values for property `key_type` and property `configured_psk` must logically agree. This property is only allowed when `key_type` is `configured`. If `configured_psk` is supplied and `key_type` is unset, `key_type` defaults to `configured`.</br>
+	// This property is write-only. The `key_type` property can be used to identify if a configured PSK has been set for the host, but the PSK value cannot be read. To change the value, the host must be deleted from the subsystem and re-added.
+	//
+	// Example: NVMeTLSkey-1:01:VRLbtnN9AQb2WXW3c9+wEf/DRLz0QuLdbYvEhwtdWwNf9LrZ:
+	ConfiguredPsk *string `json:"configured_psk,omitempty"`
+
+	// The method by which the TLS pre-shared key (PSK) is configured for the host. Optional in POST.</br>
+	// The values for property `key_type` and property `configured_psk` must logically agree.</br>
+	// Possible values:
+	// - `none` - TLS is not configured for the host connection. No value is allowed for property `configured_psk`.
+	// - `configured` - A user supplied PSK is configured for the NVMe/TCP-TLS transport connection between the host and the NVMe subsystem. A valid value for property `configured_psk` is required.
+	// </br>
+	// This property defaults to `none` unless a value is supplied for `configured_psk` in which case it defaults to `configured`.
+	//
+	// Example: configured
+	// Enum: ["none","configured"]
+	KeyType *string `json:"key_type,omitempty"`
+}
+
+// Validate validates this nvme subsystem host inline records inline array item inline tls
+func (m *NvmeSubsystemHostInlineRecordsInlineArrayItemInlineTLS) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateKeyType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var nvmeSubsystemHostInlineRecordsInlineArrayItemInlineTlsTypeKeyTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["none","configured"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nvmeSubsystemHostInlineRecordsInlineArrayItemInlineTlsTypeKeyTypePropEnum = append(nvmeSubsystemHostInlineRecordsInlineArrayItemInlineTlsTypeKeyTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_host_inline_records_inline_array_item_inline_tls
+	// NvmeSubsystemHostInlineRecordsInlineArrayItemInlineTLS
+	// key_type
+	// KeyType
+	// none
+	// END DEBUGGING
+	// NvmeSubsystemHostInlineRecordsInlineArrayItemInlineTLSKeyTypeNone captures enum value "none"
+	NvmeSubsystemHostInlineRecordsInlineArrayItemInlineTLSKeyTypeNone string = "none"
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_host_inline_records_inline_array_item_inline_tls
+	// NvmeSubsystemHostInlineRecordsInlineArrayItemInlineTLS
+	// key_type
+	// KeyType
+	// configured
+	// END DEBUGGING
+	// NvmeSubsystemHostInlineRecordsInlineArrayItemInlineTLSKeyTypeConfigured captures enum value "configured"
+	NvmeSubsystemHostInlineRecordsInlineArrayItemInlineTLSKeyTypeConfigured string = "configured"
+)
+
+// prop value enum
+func (m *NvmeSubsystemHostInlineRecordsInlineArrayItemInlineTLS) validateKeyTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeSubsystemHostInlineRecordsInlineArrayItemInlineTlsTypeKeyTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemHostInlineRecordsInlineArrayItemInlineTLS) validateKeyType(formats strfmt.Registry) error {
+	if swag.IsZero(m.KeyType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateKeyTypeEnum("tls"+"."+"key_type", "body", *m.KeyType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this nvme subsystem host inline records inline array item inline tls based on context it is used
+func (m *NvmeSubsystemHostInlineRecordsInlineArrayItemInlineTLS) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeSubsystemHostInlineRecordsInlineArrayItemInlineTLS) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeSubsystemHostInlineRecordsInlineArrayItemInlineTLS) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemHostInlineRecordsInlineArrayItemInlineTLS
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // NvmeSubsystemHostInlineSubsystem The NVMe subsystem to which the NVMe host has been provisioned.
 //
 // swagger:model nvme_subsystem_host_inline_subsystem
@@ -1810,7 +2077,7 @@ type NvmeSubsystemHostInlineSubsystem struct {
 	//
 	// Example: subsystem1
 	// Read Only: true
-	// Max Length: 96
+	// Max Length: 64
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
 
@@ -1865,7 +2132,7 @@ func (m *NvmeSubsystemHostInlineSubsystem) validateName(formats strfmt.Registry)
 		return err
 	}
 
-	if err := validate.MaxLength("subsystem"+"."+"name", "body", *m.Name, 96); err != nil {
+	if err := validate.MaxLength("subsystem"+"."+"name", "body", *m.Name, 64); err != nil {
 		return err
 	}
 
@@ -2023,6 +2290,124 @@ func (m *NvmeSubsystemHostInlineSubsystemInlineLinks) MarshalBinary() ([]byte, e
 // UnmarshalBinary interface implementation
 func (m *NvmeSubsystemHostInlineSubsystemInlineLinks) UnmarshalBinary(b []byte) error {
 	var res NvmeSubsystemHostInlineSubsystemInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeSubsystemHostInlineTLS A container for the configuration for NVMe/TCP-TLS transport session for the host.
+//
+// swagger:model nvme_subsystem_host_inline_tls
+type NvmeSubsystemHostInlineTLS struct {
+
+	// A user supplied pre-shared key (PSK) value in PSK Interchange Format. Optional in POST.</br>
+	// The values for property `key_type` and property `configured_psk` must logically agree. This property is only allowed when `key_type` is `configured`. If `configured_psk` is supplied and `key_type` is unset, `key_type` defaults to `configured`.</br>
+	// This property is write-only. The `key_type` property can be used to identify if a configured PSK has been set for the host, but the PSK value cannot be read. To change the value, the host must be deleted from the subsystem and re-added.
+	//
+	// Example: NVMeTLSkey-1:01:VRLbtnN9AQb2WXW3c9+wEf/DRLz0QuLdbYvEhwtdWwNf9LrZ:
+	ConfiguredPsk *string `json:"configured_psk,omitempty"`
+
+	// The method by which the TLS pre-shared key (PSK) is configured for the host. Optional in POST.</br>
+	// The values for property `key_type` and property `configured_psk` must logically agree.</br>
+	// Possible values:
+	// - `none` - TLS is not configured for the host connection. No value is allowed for property `configured_psk`.
+	// - `configured` - A user supplied PSK is configured for the NVMe/TCP-TLS transport connection between the host and the NVMe subsystem. A valid value for property `configured_psk` is required.
+	// </br>
+	// This property defaults to `none` unless a value is supplied for `configured_psk` in which case it defaults to `configured`.
+	//
+	// Example: configured
+	// Enum: ["none","configured"]
+	KeyType *string `json:"key_type,omitempty"`
+}
+
+// Validate validates this nvme subsystem host inline tls
+func (m *NvmeSubsystemHostInlineTLS) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateKeyType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var nvmeSubsystemHostInlineTlsTypeKeyTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["none","configured"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nvmeSubsystemHostInlineTlsTypeKeyTypePropEnum = append(nvmeSubsystemHostInlineTlsTypeKeyTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_host_inline_tls
+	// NvmeSubsystemHostInlineTLS
+	// key_type
+	// KeyType
+	// none
+	// END DEBUGGING
+	// NvmeSubsystemHostInlineTLSKeyTypeNone captures enum value "none"
+	NvmeSubsystemHostInlineTLSKeyTypeNone string = "none"
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_host_inline_tls
+	// NvmeSubsystemHostInlineTLS
+	// key_type
+	// KeyType
+	// configured
+	// END DEBUGGING
+	// NvmeSubsystemHostInlineTLSKeyTypeConfigured captures enum value "configured"
+	NvmeSubsystemHostInlineTLSKeyTypeConfigured string = "configured"
+)
+
+// prop value enum
+func (m *NvmeSubsystemHostInlineTLS) validateKeyTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeSubsystemHostInlineTlsTypeKeyTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemHostInlineTLS) validateKeyType(formats strfmt.Registry) error {
+	if swag.IsZero(m.KeyType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateKeyTypeEnum("tls"+"."+"key_type", "body", *m.KeyType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this nvme subsystem host inline tls based on context it is used
+func (m *NvmeSubsystemHostInlineTLS) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeSubsystemHostInlineTLS) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeSubsystemHostInlineTLS) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemHostInlineTLS
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *SecurityCertificateCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the security certificate create created response
+func (o *SecurityCertificateCreateCreated) Code() int {
+	return 201
+}
+
 func (o *SecurityCertificateCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/certificates][%d] securityCertificateCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/certificates][%d] securityCertificateCreateCreated %s", 201, payload)
 }
 
 func (o *SecurityCertificateCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/certificates][%d] securityCertificateCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/certificates][%d] securityCertificateCreateCreated %s", 201, payload)
 }
 
 func (o *SecurityCertificateCreateCreated) GetPayload() *models.SecurityCertificateResponse {
@@ -152,16 +160,23 @@ func NewSecurityCertificateCreateDefault(code int) *SecurityCertificateCreateDef
 | 3735558    |  Failed to extract information about Common Name from the certificate. |
 | 3735588    |  The common name (CN) extracted from the certificate is not valid. |
 | 3735632    |  Failed to extract Certificate Authority Information from the certificate. |
+| 3735700    |  The specified key size is not supported. |
+| 52560173   |  The hash function is not supported for digital signatures. |
+| 3735751    |  Failed to authenticate and fetch the access token from Azure OAuth host. |
+| 3735752    |  Failed to extract the private key from the Azure Key Vault certificate.
+| 3735753    |  Unsupported content_type in the Azure secrets response.
+| 3735754    |  Internal error. Failed to parse the JSON response from Azure Key Vault.
+| 3735755    |  REST call to Azure failed.
+| 3735756    |  Invalid client certificate.
+| 3735757    |  Internal error. Failed to generate client assertion.
+| 3735762    |  Provided Azure Key Vault configuration is incorrect.
+| 3735763    |  Provided Azure Key Vault configuration is incomplete.
+| 3735764    |  Request to Azure failed. Reason - Azure error code and Azure error message.
 */
 type SecurityCertificateCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security certificate create default response
-func (o *SecurityCertificateCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security certificate create default response has a 2xx status code
@@ -189,12 +204,19 @@ func (o *SecurityCertificateCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security certificate create default response
+func (o *SecurityCertificateCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityCertificateCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/certificates][%d] security_certificate_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/certificates][%d] security_certificate_create default %s", o._statusCode, payload)
 }
 
 func (o *SecurityCertificateCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/certificates][%d] security_certificate_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/certificates][%d] security_certificate_create default %s", o._statusCode, payload)
 }
 
 func (o *SecurityCertificateCreateDefault) GetPayload() *models.ErrorResponse {

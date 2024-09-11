@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *GroupMembershipSettingsModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the group membership settings modify o k response
+func (o *GroupMembershipSettingsModifyOK) Code() int {
+	return 200
+}
+
 func (o *GroupMembershipSettingsModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /name-services/cache/group-membership/settings/{svm.uuid}][%d] groupMembershipSettingsModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /name-services/cache/group-membership/settings/{svm.uuid}][%d] groupMembershipSettingsModifyOK", 200)
 }
 
 func (o *GroupMembershipSettingsModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /name-services/cache/group-membership/settings/{svm.uuid}][%d] groupMembershipSettingsModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /name-services/cache/group-membership/settings/{svm.uuid}][%d] groupMembershipSettingsModifyOK", 200)
 }
 
 func (o *GroupMembershipSettingsModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,16 +113,12 @@ func NewGroupMembershipSettingsModifyDefault(code int) *GroupMembershipSettingsM
 | Error Code | Description |
 | ---------- | ----------- |
 | 23724055 | Internal error. Configuration for Vserver failed. Verify that the cluster is healthy, then try the command again. For further assistance, contact technical support. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type GroupMembershipSettingsModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the group membership settings modify default response
-func (o *GroupMembershipSettingsModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this group membership settings modify default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *GroupMembershipSettingsModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the group membership settings modify default response
+func (o *GroupMembershipSettingsModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *GroupMembershipSettingsModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /name-services/cache/group-membership/settings/{svm.uuid}][%d] group_membership_settings_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /name-services/cache/group-membership/settings/{svm.uuid}][%d] group_membership_settings_modify default %s", o._statusCode, payload)
 }
 
 func (o *GroupMembershipSettingsModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /name-services/cache/group-membership/settings/{svm.uuid}][%d] group_membership_settings_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /name-services/cache/group-membership/settings/{svm.uuid}][%d] group_membership_settings_modify default %s", o._statusCode, payload)
 }
 
 func (o *GroupMembershipSettingsModifyDefault) GetPayload() *models.ErrorResponse {

@@ -59,7 +59,7 @@ type ApplicationTemplate struct {
 
 	// Access protocol.
 	// Read Only: true
-	// Enum: [nas nvme s3 san]
+	// Enum: ["nas","nvme","s3","san"]
 	Protocol *string `json:"protocol,omitempty"`
 
 	// s3 bucket

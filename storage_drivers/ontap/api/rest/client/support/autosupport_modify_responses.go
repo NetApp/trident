@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *AutosupportModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the autosupport modify o k response
+func (o *AutosupportModifyOK) Code() int {
+	return 200
+}
+
 func (o *AutosupportModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /support/autosupport][%d] autosupportModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /support/autosupport][%d] autosupportModifyOK", 200)
 }
 
 func (o *AutosupportModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /support/autosupport][%d] autosupportModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /support/autosupport][%d] autosupportModifyOK", 200)
 }
 
 func (o *AutosupportModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,25 +112,25 @@ func NewAutosupportModifyDefault(code int) *AutosupportModifyDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 8650862    | The SMTP mail host provided cannot be empty |
-| 8650863    | A maximum of 5 SMTP mail hosts can be provided |
-| 8650864    | A maximum of 5 email addresses can be provided |
-| 8650865    | A maximum of 5 partner email addresses can be provided |
-| 8650880    | Automatic update requires AutoSupport to be enabled. |
-| 8650881    | Automatic update requires AutoSupport to use the HTTPS transport. |
-| 8650882    | Automatic update requires AutoSupport OnDemand to be enabled. |
-| 53149727   | The proxy URI provided is invalid |
-| 53149728   | The mailhost URI provided is invalid |
+| 8650862 | The SMTP mail host provided cannot be empty |
+| 8650863 | A maximum of 5 SMTP mail hosts can be provided |
+| 8650864 | A maximum of 5 email addresses can be provided |
+| 8650865 | A maximum of 5 partner email addresses can be provided |
+| 8650880 | Automatic update requires AutoSupport to be enabled |
+| 8650881 | Automatic update requires AutoSupport to use the HTTPS transport |
+| 8650882 | Automatic update requires AutoSupport OnDemand to be enabled |
+| 8650886 | The provided parameter requires an effective cluster version of ONTAP 9.15.1 or later |
+| 8650887 | Username or password is not allowed in the AutoSupport url and put-url fields |
+| 53149727 | The proxy URI provided is invalid |
+| 53149728 | The SMTP mail host URI provided is invalid |
+| 53149732 | The proxy URI provided is invalid. IPv6 addresses must be enclosed within square brackets |
+| 53149737 | The proxy URI provided specifies an unsupported scheme |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AutosupportModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the autosupport modify default response
-func (o *AutosupportModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this autosupport modify default response has a 2xx status code
@@ -152,12 +158,19 @@ func (o *AutosupportModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the autosupport modify default response
+func (o *AutosupportModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AutosupportModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /support/autosupport][%d] autosupport_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/autosupport][%d] autosupport_modify default %s", o._statusCode, payload)
 }
 
 func (o *AutosupportModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /support/autosupport][%d] autosupport_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/autosupport][%d] autosupport_modify default %s", o._statusCode, payload)
 }
 
 func (o *AutosupportModifyDefault) GetPayload() *models.ErrorResponse {

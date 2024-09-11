@@ -16,7 +16,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// SnapmirrorPolicy SnapMirror policy information. SnapMirror policy can either be of type "async", "sync" or "continuous".<br>The policy type "async" can be associated with a SnapMirror relationship that has either the FlexVol volume or FlexGroup volume or SVM as the endpoint.<br>The policy type "sync" along with "sync_type" as "sync" or "strict_sync" can be associated with a SnapMirror relationship that has FlexVol volume as the endpoint. The policy type "sync" can have a "sync_type" of either "sync", "strict_sync" or "automated_failover". If the "sync_type" is "sync" then a write success is returned to the client after writing the data to the source endpoint and before writing the data to the destination endpoint. If the "sync_type" is "strict_sync" then a write success is returned to the client after writing the data to the both source and destination endpoints.<br>If the "sync_type" is "automated_failover" then the policy can be associated with a SnapMirror relationship that has Consistency Group as the endpoint. Use the "sync" policy with "sync_type" as "automated_failover" to establish SnapMirror relationships for business continuity usecases. SnapMirror relationships with policy type as "sync" and "sync_type" as "automated_failover" can be monitored by the Mediator, if configured. In case the source Consistency Group endpoint is not reachable, the Mediator may trigger a failover to the destination Consistency Group endpoint. A policy of type "continuous" can be associated with SnapMirror relationships that have either ONTAP S3 buckets or NON-ONTAP object stores as endpoints. This type of policy is used for FabricLink owned targets.
+// SnapmirrorPolicy SnapMirror policy information. SnapMirror policy can either be of type "async", "sync" or "continuous".<br>The policy type "async" can be associated with a SnapMirror relationship that has either a FlexVol volume, FlexGroup volume or SVM as the endpoint.<br>The policy type "sync" along with "sync_type" as "sync" or "strict_sync" can be associated with a SnapMirror relationship that has a FlexVol volume as the endpoint. The policy type "sync" can have a "sync_type" of either "sync", "strict_sync", "automated_failover" or "automated_failover_duplex". If the "sync_type" is "sync", a write success is returned to the client after writing the data to the source endpoint and before writing the data to the destination endpoint. If the "sync_type" is "strict_sync", a write success is returned to the client after writing the data to both source and destination endpoints.<br>If the "sync_type" is "automated_failover", the policy can be associated with a SnapMirror active sync relationship that has a consistency group as the endpoint and provides asymmetric active active access to the two storage copies. If the "sync_type" is "automated_failover_duplex", the policy can be associated with a SnapMirror active sync relationship that has a consistency group as the endpoint and provides symmetric active active access to the two storage copies. Use the "sync" policy with "sync_type" as "automated_failover" or "automated_failover_duplex" to establish SnapMirror active sync relationships for business continuity use cases. SnapMirror relationships with policy types as "sync" and "sync_type" as "automated_failover" or "automated_failover_duplex" can be monitored by the Mediator, if configured. If the source Consistency Group endpoint is not reachable, the Mediator might trigger a failover to the destination consistency group endpoint.<br>A policy type of "continuous" can be associated with SnapMirror relationships that have either ONTAP S3 buckets or non-ONTAP object stores as endpoints. This type of policy is used for FabricLink owned targets.
 //
 // swagger:model snapmirror_policy
 type SnapmirrorPolicy struct {
@@ -27,20 +27,20 @@ type SnapmirrorPolicy struct {
 	// Comment associated with the policy.
 	Comment *string `json:"comment,omitempty"`
 
-	// Specifies that all the source Snapshot copies (including the one created by SnapMirror before the transfer begins) should be copied to the destination on a transfer. "Retention" properties cannot be specified along with this property. This is applicable only to async policies. Property can only be set to 'true'.
+	// Specifies that all the source snapshots (including the one created by SnapMirror before the transfer begins) should be copied to the destination on a transfer. "Retention" properties cannot be specified along with this property. This is applicable only to async policies. Property can only be set to 'true'.
 	// Example: true
 	CopyAllSourceSnapshots *bool `json:"copy_all_source_snapshots,omitempty"`
 
-	// Specifies that the latest source Snapshot copy (created by SnapMirror before the transfer begins) should be copied to the destination on a transfer. "Retention" properties cannot be specified along with this property. This is applicable only to async policies. Property can only be set to 'true'.
+	// Specifies that the latest source snapshot (created by SnapMirror before the transfer begins) should be copied to the destination on a transfer. "Retention" properties cannot be specified along with this property. This is applicable only to async policies. Property can only be set to 'true'.
 	// Example: true
 	CopyLatestSourceSnapshot *bool `json:"copy_latest_source_snapshot,omitempty"`
 
-	// Specifies whether a new Snapshot copy should be created on the source at the beginning of an update or resync operation. This is applicable only to async policies. Property can only be set to 'false'.
+	// Specifies whether a new snapshot should be created on the source at the beginning of an update or resync operation. This is applicable only to async policies. Property can only be set to 'false'.
 	// Example: false
 	CreateSnapshotOnSource *bool `json:"create_snapshot_on_source,omitempty"`
 
 	// Specifies which configuration of the source SVM is replicated to the destination SVM. This property is applicable only for SVM data protection with "async" policy type.
-	// Enum: [full exclude_network_config exclude_network_and_protocol_config]
+	// Enum: ["full","exclude_network_config","exclude_network_and_protocol_config"]
 	IdentityPreservation *string `json:"identity_preservation,omitempty"`
 
 	// Name of the policy.
@@ -50,15 +50,15 @@ type SnapmirrorPolicy struct {
 	// Specifies whether network compression is enabled for transfers. This is applicable only to the policies of type "async".
 	NetworkCompressionEnabled *bool `json:"network_compression_enabled,omitempty"`
 
-	// Specifies the duration of time for which a change to be propogated to a mirror should be delayed, in seconds. This is an intentional propagation delay between mirrors and is configurable down to zero, which means an immediate propogation. This is supported for policies of type 'continuous'.
+	// Specifies the duration of time for which a change to be propagated to a mirror should be delayed, in seconds. This is an intentional propagation delay between mirrors and is configurable down to zero, which means an immediate propagation. This is supported for policies of type 'continuous'.
 	Rpo *int64 `json:"rpo,omitempty"`
 
 	// Set to "svm" for policies owned by an SVM, otherwise set to "cluster".
 	// Read Only: true
-	// Enum: [svm cluster]
+	// Enum: ["svm","cluster"]
 	Scope *string `json:"scope,omitempty"`
 
-	// Rules for Snapshot copy retention.
+	// Rules for snapshot retention.
 	SnapmirrorPolicyInlineRetention []*SnapmirrorPolicyRule `json:"retention,omitempty"`
 
 	// svm
@@ -68,7 +68,7 @@ type SnapmirrorPolicy struct {
 	SyncCommonSnapshotSchedule *SnapmirrorPolicyInlineSyncCommonSnapshotSchedule `json:"sync_common_snapshot_schedule,omitempty"`
 
 	// sync type
-	// Enum: [sync strict_sync automated_failover]
+	// Enum: ["sync","strict_sync","automated_failover","automated_failover_duplex"]
 	SyncType *string `json:"sync_type,omitempty"`
 
 	// Throttle in KB/s. Default to unlimited.
@@ -78,10 +78,10 @@ type SnapmirrorPolicy struct {
 	TransferSchedule *SnapmirrorPolicyInlineTransferSchedule `json:"transfer_schedule,omitempty"`
 
 	// type
-	// Enum: [async sync continuous]
+	// Enum: ["async","sync","continuous"]
 	Type *string `json:"type,omitempty"`
 
-	// uuid
+	// Unique identifier of the SnapMirror policy.
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
 	// Format: uuid
@@ -339,7 +339,7 @@ var snapmirrorPolicyTypeSyncTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["sync","strict_sync","automated_failover"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["sync","strict_sync","automated_failover","automated_failover_duplex"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -378,6 +378,16 @@ const (
 	// END DEBUGGING
 	// SnapmirrorPolicySyncTypeAutomatedFailover captures enum value "automated_failover"
 	SnapmirrorPolicySyncTypeAutomatedFailover string = "automated_failover"
+
+	// BEGIN DEBUGGING
+	// snapmirror_policy
+	// SnapmirrorPolicy
+	// sync_type
+	// SyncType
+	// automated_failover_duplex
+	// END DEBUGGING
+	// SnapmirrorPolicySyncTypeAutomatedFailoverDuplex captures enum value "automated_failover_duplex"
+	SnapmirrorPolicySyncTypeAutomatedFailoverDuplex string = "automated_failover_duplex"
 )
 
 // prop value enum
@@ -730,7 +740,7 @@ func (m *SnapmirrorPolicyInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorPolicyInlineSvm snapmirror policy inline svm
+// SnapmirrorPolicyInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model snapmirror_policy_inline_svm
 type SnapmirrorPolicyInlineSvm struct {
@@ -738,12 +748,12 @@ type SnapmirrorPolicyInlineSvm struct {
 	// links
 	Links *SnapmirrorPolicyInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -912,7 +922,7 @@ func (m *SnapmirrorPolicyInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorPolicyInlineSyncCommonSnapshotSchedule Schedule used to create common Snapshot copies for synchronous relationships.
+// SnapmirrorPolicyInlineSyncCommonSnapshotSchedule Schedule used to create common snapshots for synchronous relationships.
 //
 // swagger:model snapmirror_policy_inline_sync_common_snapshot_schedule
 type SnapmirrorPolicyInlineSyncCommonSnapshotSchedule struct {

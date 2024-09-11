@@ -74,6 +74,24 @@ type FlexcacheCollectionGetParams struct {
 	*/
 	AggregatesUUID *string
 
+	/* AtimeScrubEnabled.
+
+	   Filter by atime_scrub.enabled
+	*/
+	AtimeScrubEnabled *bool
+
+	/* AtimeScrubPeriod.
+
+	   Filter by atime_scrub.period
+	*/
+	AtimeScrubPeriod *int64
+
+	/* CifsChangeNotifyEnabled.
+
+	   Filter by cifs_change_notify.enabled
+	*/
+	CifsChangeNotifyEnabled *bool
+
 	/* ConstituentsPerAggregate.
 
 	   Filter by constituents_per_aggregate
@@ -182,11 +200,29 @@ type FlexcacheCollectionGetParams struct {
 	*/
 	OriginsVolumeUUID *string
 
+	/* OverrideEncryption.
+
+	   Filter by override_encryption
+	*/
+	OverrideEncryption *bool
+
 	/* Path.
 
 	   Filter by path
 	*/
 	Path *string
+
+	/* RelativeSizeEnabled.
+
+	   Filter by relative_size.enabled
+	*/
+	RelativeSizeEnabled *bool
+
+	/* RelativeSizePercentage.
+
+	   Filter by relative_size.percentage
+	*/
+	RelativeSizePercentage *int64
 
 	/* ReturnRecords.
 
@@ -239,24 +275,6 @@ type FlexcacheCollectionGetParams struct {
 	   Filter by writeback.enabled
 	*/
 	WritebackEnabled *bool
-
-	/* WritebackPerInodeDirtyLimit.
-
-	   Filter by writeback.per_inode_dirty_limit
-	*/
-	WritebackPerInodeDirtyLimit *int64
-
-	/* WritebackScrubThreshold.
-
-	   Filter by writeback.scrub_threshold
-	*/
-	WritebackScrubThreshold *int64
-
-	/* WritebackTransferLimit.
-
-	   Filter by writeback.transfer_limit
-	*/
-	WritebackTransferLimit *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -345,6 +363,39 @@ func (o *FlexcacheCollectionGetParams) WithAggregatesUUID(aggregatesUUID *string
 // SetAggregatesUUID adds the aggregatesUuid to the flexcache collection get params
 func (o *FlexcacheCollectionGetParams) SetAggregatesUUID(aggregatesUUID *string) {
 	o.AggregatesUUID = aggregatesUUID
+}
+
+// WithAtimeScrubEnabled adds the atimeScrubEnabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithAtimeScrubEnabled(atimeScrubEnabled *bool) *FlexcacheCollectionGetParams {
+	o.SetAtimeScrubEnabled(atimeScrubEnabled)
+	return o
+}
+
+// SetAtimeScrubEnabled adds the atimeScrubEnabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetAtimeScrubEnabled(atimeScrubEnabled *bool) {
+	o.AtimeScrubEnabled = atimeScrubEnabled
+}
+
+// WithAtimeScrubPeriod adds the atimeScrubPeriod to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithAtimeScrubPeriod(atimeScrubPeriod *int64) *FlexcacheCollectionGetParams {
+	o.SetAtimeScrubPeriod(atimeScrubPeriod)
+	return o
+}
+
+// SetAtimeScrubPeriod adds the atimeScrubPeriod to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetAtimeScrubPeriod(atimeScrubPeriod *int64) {
+	o.AtimeScrubPeriod = atimeScrubPeriod
+}
+
+// WithCifsChangeNotifyEnabled adds the cifsChangeNotifyEnabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithCifsChangeNotifyEnabled(cifsChangeNotifyEnabled *bool) *FlexcacheCollectionGetParams {
+	o.SetCifsChangeNotifyEnabled(cifsChangeNotifyEnabled)
+	return o
+}
+
+// SetCifsChangeNotifyEnabled adds the cifsChangeNotifyEnabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetCifsChangeNotifyEnabled(cifsChangeNotifyEnabled *bool) {
+	o.CifsChangeNotifyEnabled = cifsChangeNotifyEnabled
 }
 
 // WithConstituentsPerAggregate adds the constituentsPerAggregate to the flexcache collection get params
@@ -545,6 +596,17 @@ func (o *FlexcacheCollectionGetParams) SetOriginsVolumeUUID(originsVolumeUUID *s
 	o.OriginsVolumeUUID = originsVolumeUUID
 }
 
+// WithOverrideEncryption adds the overrideEncryption to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithOverrideEncryption(overrideEncryption *bool) *FlexcacheCollectionGetParams {
+	o.SetOverrideEncryption(overrideEncryption)
+	return o
+}
+
+// SetOverrideEncryption adds the overrideEncryption to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetOverrideEncryption(overrideEncryption *bool) {
+	o.OverrideEncryption = overrideEncryption
+}
+
 // WithPath adds the path to the flexcache collection get params
 func (o *FlexcacheCollectionGetParams) WithPath(path *string) *FlexcacheCollectionGetParams {
 	o.SetPath(path)
@@ -554,6 +616,28 @@ func (o *FlexcacheCollectionGetParams) WithPath(path *string) *FlexcacheCollecti
 // SetPath adds the path to the flexcache collection get params
 func (o *FlexcacheCollectionGetParams) SetPath(path *string) {
 	o.Path = path
+}
+
+// WithRelativeSizeEnabled adds the relativeSizeEnabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithRelativeSizeEnabled(relativeSizeEnabled *bool) *FlexcacheCollectionGetParams {
+	o.SetRelativeSizeEnabled(relativeSizeEnabled)
+	return o
+}
+
+// SetRelativeSizeEnabled adds the relativeSizeEnabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetRelativeSizeEnabled(relativeSizeEnabled *bool) {
+	o.RelativeSizeEnabled = relativeSizeEnabled
+}
+
+// WithRelativeSizePercentage adds the relativeSizePercentage to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithRelativeSizePercentage(relativeSizePercentage *int64) *FlexcacheCollectionGetParams {
+	o.SetRelativeSizePercentage(relativeSizePercentage)
+	return o
+}
+
+// SetRelativeSizePercentage adds the relativeSizePercentage to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetRelativeSizePercentage(relativeSizePercentage *int64) {
+	o.RelativeSizePercentage = relativeSizePercentage
 }
 
 // WithReturnRecords adds the returnRecords to the flexcache collection get params
@@ -644,39 +728,6 @@ func (o *FlexcacheCollectionGetParams) SetWritebackEnabled(writebackEnabled *boo
 	o.WritebackEnabled = writebackEnabled
 }
 
-// WithWritebackPerInodeDirtyLimit adds the writebackPerInodeDirtyLimit to the flexcache collection get params
-func (o *FlexcacheCollectionGetParams) WithWritebackPerInodeDirtyLimit(writebackPerInodeDirtyLimit *int64) *FlexcacheCollectionGetParams {
-	o.SetWritebackPerInodeDirtyLimit(writebackPerInodeDirtyLimit)
-	return o
-}
-
-// SetWritebackPerInodeDirtyLimit adds the writebackPerInodeDirtyLimit to the flexcache collection get params
-func (o *FlexcacheCollectionGetParams) SetWritebackPerInodeDirtyLimit(writebackPerInodeDirtyLimit *int64) {
-	o.WritebackPerInodeDirtyLimit = writebackPerInodeDirtyLimit
-}
-
-// WithWritebackScrubThreshold adds the writebackScrubThreshold to the flexcache collection get params
-func (o *FlexcacheCollectionGetParams) WithWritebackScrubThreshold(writebackScrubThreshold *int64) *FlexcacheCollectionGetParams {
-	o.SetWritebackScrubThreshold(writebackScrubThreshold)
-	return o
-}
-
-// SetWritebackScrubThreshold adds the writebackScrubThreshold to the flexcache collection get params
-func (o *FlexcacheCollectionGetParams) SetWritebackScrubThreshold(writebackScrubThreshold *int64) {
-	o.WritebackScrubThreshold = writebackScrubThreshold
-}
-
-// WithWritebackTransferLimit adds the writebackTransferLimit to the flexcache collection get params
-func (o *FlexcacheCollectionGetParams) WithWritebackTransferLimit(writebackTransferLimit *int64) *FlexcacheCollectionGetParams {
-	o.SetWritebackTransferLimit(writebackTransferLimit)
-	return o
-}
-
-// SetWritebackTransferLimit adds the writebackTransferLimit to the flexcache collection get params
-func (o *FlexcacheCollectionGetParams) SetWritebackTransferLimit(writebackTransferLimit *int64) {
-	o.WritebackTransferLimit = writebackTransferLimit
-}
-
 // WriteToRequest writes these params to a swagger request
 func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -714,6 +765,57 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qAggregatesUUID != "" {
 
 			if err := r.SetQueryParam("aggregates.uuid", qAggregatesUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AtimeScrubEnabled != nil {
+
+		// query param atime_scrub.enabled
+		var qrAtimeScrubEnabled bool
+
+		if o.AtimeScrubEnabled != nil {
+			qrAtimeScrubEnabled = *o.AtimeScrubEnabled
+		}
+		qAtimeScrubEnabled := swag.FormatBool(qrAtimeScrubEnabled)
+		if qAtimeScrubEnabled != "" {
+
+			if err := r.SetQueryParam("atime_scrub.enabled", qAtimeScrubEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AtimeScrubPeriod != nil {
+
+		// query param atime_scrub.period
+		var qrAtimeScrubPeriod int64
+
+		if o.AtimeScrubPeriod != nil {
+			qrAtimeScrubPeriod = *o.AtimeScrubPeriod
+		}
+		qAtimeScrubPeriod := swag.FormatInt64(qrAtimeScrubPeriod)
+		if qAtimeScrubPeriod != "" {
+
+			if err := r.SetQueryParam("atime_scrub.period", qAtimeScrubPeriod); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CifsChangeNotifyEnabled != nil {
+
+		// query param cifs_change_notify.enabled
+		var qrCifsChangeNotifyEnabled bool
+
+		if o.CifsChangeNotifyEnabled != nil {
+			qrCifsChangeNotifyEnabled = *o.CifsChangeNotifyEnabled
+		}
+		qCifsChangeNotifyEnabled := swag.FormatBool(qrCifsChangeNotifyEnabled)
+		if qCifsChangeNotifyEnabled != "" {
+
+			if err := r.SetQueryParam("cifs_change_notify.enabled", qCifsChangeNotifyEnabled); err != nil {
 				return err
 			}
 		}
@@ -1013,6 +1115,23 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.OverrideEncryption != nil {
+
+		// query param override_encryption
+		var qrOverrideEncryption bool
+
+		if o.OverrideEncryption != nil {
+			qrOverrideEncryption = *o.OverrideEncryption
+		}
+		qOverrideEncryption := swag.FormatBool(qrOverrideEncryption)
+		if qOverrideEncryption != "" {
+
+			if err := r.SetQueryParam("override_encryption", qOverrideEncryption); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.Path != nil {
 
 		// query param path
@@ -1025,6 +1144,40 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qPath != "" {
 
 			if err := r.SetQueryParam("path", qPath); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RelativeSizeEnabled != nil {
+
+		// query param relative_size.enabled
+		var qrRelativeSizeEnabled bool
+
+		if o.RelativeSizeEnabled != nil {
+			qrRelativeSizeEnabled = *o.RelativeSizeEnabled
+		}
+		qRelativeSizeEnabled := swag.FormatBool(qrRelativeSizeEnabled)
+		if qRelativeSizeEnabled != "" {
+
+			if err := r.SetQueryParam("relative_size.enabled", qRelativeSizeEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RelativeSizePercentage != nil {
+
+		// query param relative_size.percentage
+		var qrRelativeSizePercentage int64
+
+		if o.RelativeSizePercentage != nil {
+			qrRelativeSizePercentage = *o.RelativeSizePercentage
+		}
+		qRelativeSizePercentage := swag.FormatInt64(qrRelativeSizePercentage)
+		if qRelativeSizePercentage != "" {
+
+			if err := r.SetQueryParam("relative_size.percentage", qRelativeSizePercentage); err != nil {
 				return err
 			}
 		}
@@ -1161,57 +1314,6 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qWritebackEnabled != "" {
 
 			if err := r.SetQueryParam("writeback.enabled", qWritebackEnabled); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.WritebackPerInodeDirtyLimit != nil {
-
-		// query param writeback.per_inode_dirty_limit
-		var qrWritebackPerInodeDirtyLimit int64
-
-		if o.WritebackPerInodeDirtyLimit != nil {
-			qrWritebackPerInodeDirtyLimit = *o.WritebackPerInodeDirtyLimit
-		}
-		qWritebackPerInodeDirtyLimit := swag.FormatInt64(qrWritebackPerInodeDirtyLimit)
-		if qWritebackPerInodeDirtyLimit != "" {
-
-			if err := r.SetQueryParam("writeback.per_inode_dirty_limit", qWritebackPerInodeDirtyLimit); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.WritebackScrubThreshold != nil {
-
-		// query param writeback.scrub_threshold
-		var qrWritebackScrubThreshold int64
-
-		if o.WritebackScrubThreshold != nil {
-			qrWritebackScrubThreshold = *o.WritebackScrubThreshold
-		}
-		qWritebackScrubThreshold := swag.FormatInt64(qrWritebackScrubThreshold)
-		if qWritebackScrubThreshold != "" {
-
-			if err := r.SetQueryParam("writeback.scrub_threshold", qWritebackScrubThreshold); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.WritebackTransferLimit != nil {
-
-		// query param writeback.transfer_limit
-		var qrWritebackTransferLimit int64
-
-		if o.WritebackTransferLimit != nil {
-			qrWritebackTransferLimit = *o.WritebackTransferLimit
-		}
-		qWritebackTransferLimit := swag.FormatInt64(qrWritebackTransferLimit)
-		if qWritebackTransferLimit != "" {
-
-			if err := r.SetQueryParam("writeback.transfer_limit", qWritebackTransferLimit); err != nil {
 				return err
 			}
 		}

@@ -26,7 +26,7 @@ type IscsiConnection struct {
 	// The iSCSI authentication type used to establish the connection.
 	//
 	// Read Only: true
-	// Enum: [chap none]
+	// Enum: ["chap","none"]
 	AuthenticationType *string `json:"authentication_type,omitempty"`
 
 	// The identifier of the connection within the session.

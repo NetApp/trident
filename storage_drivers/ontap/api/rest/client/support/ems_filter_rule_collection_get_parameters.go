@@ -110,6 +110,18 @@ type EmsFilterRuleCollectionGetParams struct {
 	*/
 	OrderBy []string
 
+	/* ParameterCriteriaNamePattern.
+
+	   Filter by parameter_criteria.name_pattern
+	*/
+	ParameterCriteriaNamePattern *string
+
+	/* ParameterCriteriaValuePattern.
+
+	   Filter by parameter_criteria.value_pattern
+	*/
+	ParameterCriteriaValuePattern *string
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -287,6 +299,28 @@ func (o *EmsFilterRuleCollectionGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
 }
 
+// WithParameterCriteriaNamePattern adds the parameterCriteriaNamePattern to the ems filter rule collection get params
+func (o *EmsFilterRuleCollectionGetParams) WithParameterCriteriaNamePattern(parameterCriteriaNamePattern *string) *EmsFilterRuleCollectionGetParams {
+	o.SetParameterCriteriaNamePattern(parameterCriteriaNamePattern)
+	return o
+}
+
+// SetParameterCriteriaNamePattern adds the parameterCriteriaNamePattern to the ems filter rule collection get params
+func (o *EmsFilterRuleCollectionGetParams) SetParameterCriteriaNamePattern(parameterCriteriaNamePattern *string) {
+	o.ParameterCriteriaNamePattern = parameterCriteriaNamePattern
+}
+
+// WithParameterCriteriaValuePattern adds the parameterCriteriaValuePattern to the ems filter rule collection get params
+func (o *EmsFilterRuleCollectionGetParams) WithParameterCriteriaValuePattern(parameterCriteriaValuePattern *string) *EmsFilterRuleCollectionGetParams {
+	o.SetParameterCriteriaValuePattern(parameterCriteriaValuePattern)
+	return o
+}
+
+// SetParameterCriteriaValuePattern adds the parameterCriteriaValuePattern to the ems filter rule collection get params
+func (o *EmsFilterRuleCollectionGetParams) SetParameterCriteriaValuePattern(parameterCriteriaValuePattern *string) {
+	o.ParameterCriteriaValuePattern = parameterCriteriaValuePattern
+}
+
 // WithReturnRecords adds the returnRecords to the ems filter rule collection get params
 func (o *EmsFilterRuleCollectionGetParams) WithReturnRecords(returnRecords *bool) *EmsFilterRuleCollectionGetParams {
 	o.SetReturnRecords(returnRecords)
@@ -437,6 +471,40 @@ func (o *EmsFilterRuleCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.ParameterCriteriaNamePattern != nil {
+
+		// query param parameter_criteria.name_pattern
+		var qrParameterCriteriaNamePattern string
+
+		if o.ParameterCriteriaNamePattern != nil {
+			qrParameterCriteriaNamePattern = *o.ParameterCriteriaNamePattern
+		}
+		qParameterCriteriaNamePattern := qrParameterCriteriaNamePattern
+		if qParameterCriteriaNamePattern != "" {
+
+			if err := r.SetQueryParam("parameter_criteria.name_pattern", qParameterCriteriaNamePattern); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ParameterCriteriaValuePattern != nil {
+
+		// query param parameter_criteria.value_pattern
+		var qrParameterCriteriaValuePattern string
+
+		if o.ParameterCriteriaValuePattern != nil {
+			qrParameterCriteriaValuePattern = *o.ParameterCriteriaValuePattern
+		}
+		qParameterCriteriaValuePattern := qrParameterCriteriaValuePattern
+		if qParameterCriteriaValuePattern != "" {
+
+			if err := r.SetQueryParam("parameter_criteria.value_pattern", qParameterCriteriaValuePattern); err != nil {
+				return err
+			}
 		}
 	}
 

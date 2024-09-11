@@ -27,7 +27,7 @@ type S3Log struct {
 	//   Possible values are:
 	//   * json  - ONTAP-specific Json log format.
 	//
-	// Enum: [json]
+	// Enum: ["json"]
 	Format *string `json:"format,omitempty"`
 
 	// retention

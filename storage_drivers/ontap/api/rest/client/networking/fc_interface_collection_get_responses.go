@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *FcInterfaceCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fc interface collection get o k response
+func (o *FcInterfaceCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *FcInterfaceCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/fc/interfaces][%d] fcInterfaceCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/interfaces][%d] fcInterfaceCollectionGetOK %s", 200, payload)
 }
 
 func (o *FcInterfaceCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /network/fc/interfaces][%d] fcInterfaceCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/interfaces][%d] fcInterfaceCollectionGetOK %s", 200, payload)
 }
 
 func (o *FcInterfaceCollectionGetOK) GetPayload() *models.FcInterfaceResponse {
@@ -118,6 +126,8 @@ func NewFcInterfaceCollectionGetDefault(code int) *FcInterfaceCollectionGetDefau
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 5373982 | An invalid WWN was specified. The length is incorrect. |
+| 5373983 | An invalid WWN was specified. The format is incorrect. |
 | 5374938 | Query parameter `recommend.data_protocol` is required when any other `recommend` query parameters are specified. |
 | 5374939 | Query parameter `recommend.fabrics.name` specifies a duplicate FC fabric. |
 | 5374940 | Query parameter `recommend.nodes.name` or `recommend.nodes.uuid` specifies a duplicate node. |
@@ -127,16 +137,12 @@ func NewFcInterfaceCollectionGetDefault(code int) *FcInterfaceCollectionGetDefau
 | 5375956 | Query parameter `recommend.proposed.locations.port.uuid` specifies a port that is not located on a node specified by query parameter `recommend.nodes.name` or `recommend.nodes.uuid`. If the nodes are to be constrained, only ports on those nodes may be proposed. |
 | 5375957 | Query parameter `recommend.proposed.locations.port.uuid` specifies a port that is disabled. |
 | 5375958 | Query parameter `recommend.proposed.locations.port.uuid` specifies a port that is not reporting a connected FC fabric. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type FcInterfaceCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the fc interface collection get default response
-func (o *FcInterfaceCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this fc interface collection get default response has a 2xx status code
@@ -164,12 +170,19 @@ func (o *FcInterfaceCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fc interface collection get default response
+func (o *FcInterfaceCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FcInterfaceCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/fc/interfaces][%d] fc_interface_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/interfaces][%d] fc_interface_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *FcInterfaceCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/fc/interfaces][%d] fc_interface_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/interfaces][%d] fc_interface_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *FcInterfaceCollectionGetDefault) GetPayload() *models.ErrorResponse {

@@ -26,9 +26,9 @@ type Token struct {
 	ExpiryTime *TokenInlineExpiryTime `json:"expiry_time,omitempty"`
 
 	// node
-	Node *NodeReference `json:"node,omitempty"`
+	Node *TokenInlineNode `json:"node,omitempty"`
 
-	// Specifies the available reserve in the file clone split load for the given token.
+	// Specifies the available reserve in the file clone split load for the given token. Also note that the minimum value for reserve size is 4KB and any value specified below 4KB will be rounded off to 4KB.
 	// Required: true
 	ReserveSize *int64 `json:"reserve_size"`
 
@@ -270,6 +270,65 @@ func (m *TokenInlineExpiryTime) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *TokenInlineExpiryTime) UnmarshalBinary(b []byte) error {
 	var res TokenInlineExpiryTime
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// TokenInlineNode token inline node
+//
+// swagger:model token_inline_node
+type TokenInlineNode struct {
+
+	// Node name
+	// Read Only: true
+	Name *string `json:"name,omitempty"`
+
+	// Node UUID
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this token inline node
+func (m *TokenInlineNode) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this token inline node based on the context it is used
+func (m *TokenInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *TokenInlineNode) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "node"+"."+"name", "body", m.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *TokenInlineNode) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *TokenInlineNode) UnmarshalBinary(b []byte) error {
+	var res TokenInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

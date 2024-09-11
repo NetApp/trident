@@ -33,7 +33,7 @@ type SnapmirrorTransfer struct {
 	CheckpointSize *int64 `json:"checkpoint_size,omitempty"`
 
 	// End time of the transfer.
-	// Example: 2020-12-02T18:36:19-08:00
+	// Example: 2020-12-03 02:36:19
 	// Read Only: true
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
@@ -41,21 +41,40 @@ type SnapmirrorTransfer struct {
 	// error info
 	ErrorInfo *SnapmirrorTransferInlineErrorInfo `json:"error_info,omitempty"`
 
+	// Last updated time of the bytes transferred in an active transfer.
+	// Example: 2023-09-15 23:58:39
+	// Read Only: true
+	// Format: date-time
+	LastUpdatedTime *strfmt.DateTime `json:"last_updated_time,omitempty"`
+
+	// Specifies the compression ratio achieved for the data sent over the wire with network compression enabled. This property is only valid for active transfers.
+	// Example: 61
+	// Read Only: true
+	NetworkCompressionRatio *string `json:"network_compression_ratio,omitempty"`
+
+	// Specifies whether or not an on-demand restore is being carried out. This is only supported for the transfer of restore relationships for entire volumes from the object store. A value for read_write_with_user_data_pull should be provided to start an on-demand restore. A file restore from the object store does not support this option.
+	// Example: read_write_with_user_data_pull
+	// Enum: ["off","read_write_with_user_data_pull"]
+	OnDemandAttrs *string `json:"on_demand_attrs,omitempty"`
+
 	// relationship
 	Relationship *SnapmirrorTransferInlineRelationship `json:"relationship,omitempty"`
 
 	// This is supported for transfer of restore relationship only. This specifies the list of files or LUNs to be restored. Can contain up to eight files or LUNs.
 	SnapmirrorTransferInlineFiles []*SnapmirrorTransferInlineFilesInlineArrayItem `json:"files,omitempty"`
 
-	// Name of Snapshot copy being transferred.
+	// Options for snapmirror transfer.
+	SnapmirrorTransferInlineOptions []interface{} `json:"options,omitempty"`
+
+	// Name of snapshot being transferred.
 	// Read Only: true
 	Snapshot *string `json:"snapshot,omitempty"`
 
-	// Specifies the Snapshot copy on the source to be transferred to the destination.
+	// Specifies the snapshot on the source to be transferred to the destination.
 	SourceSnapshot *string `json:"source_snapshot,omitempty"`
 
 	// Status of the transfer. Set PATCH state to "aborted" to abort the transfer. Set PATCH state to "hard_aborted" to abort the transfer and discard the restart checkpoint. To find "queued" transfers refer to relationships GET API.
-	// Enum: [aborted failed hard_aborted queued success transferring]
+	// Enum: ["aborted","failed","hard_aborted","queued","success","transferring"]
 	State *string `json:"state,omitempty"`
 
 	// This is supported for transfer of restore relationship only. Set this property to "false" to turn off storage efficiency for data transferred over the wire and written to the destination.
@@ -69,7 +88,7 @@ type SnapmirrorTransfer struct {
 	// Read Only: true
 	TotalDuration *string `json:"total_duration,omitempty"`
 
-	// uuid
+	// Unique identifier of the SnapMirror transfer.
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
 	// Format: uuid
@@ -89,6 +108,14 @@ func (m *SnapmirrorTransfer) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateErrorInfo(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLastUpdatedTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOnDemandAttrs(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -155,6 +182,74 @@ func (m *SnapmirrorTransfer) validateErrorInfo(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SnapmirrorTransfer) validateLastUpdatedTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.LastUpdatedTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("last_updated_time", "body", "date-time", m.LastUpdatedTime.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var snapmirrorTransferTypeOnDemandAttrsPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["off","read_write_with_user_data_pull"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		snapmirrorTransferTypeOnDemandAttrsPropEnum = append(snapmirrorTransferTypeOnDemandAttrsPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// snapmirror_transfer
+	// SnapmirrorTransfer
+	// on_demand_attrs
+	// OnDemandAttrs
+	// off
+	// END DEBUGGING
+	// SnapmirrorTransferOnDemandAttrsOff captures enum value "off"
+	SnapmirrorTransferOnDemandAttrsOff string = "off"
+
+	// BEGIN DEBUGGING
+	// snapmirror_transfer
+	// SnapmirrorTransfer
+	// on_demand_attrs
+	// OnDemandAttrs
+	// read_write_with_user_data_pull
+	// END DEBUGGING
+	// SnapmirrorTransferOnDemandAttrsReadWriteWithUserDataPull captures enum value "read_write_with_user_data_pull"
+	SnapmirrorTransferOnDemandAttrsReadWriteWithUserDataPull string = "read_write_with_user_data_pull"
+)
+
+// prop value enum
+func (m *SnapmirrorTransfer) validateOnDemandAttrsEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, snapmirrorTransferTypeOnDemandAttrsPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SnapmirrorTransfer) validateOnDemandAttrs(formats strfmt.Registry) error {
+	if swag.IsZero(m.OnDemandAttrs) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateOnDemandAttrsEnum("on_demand_attrs", "body", *m.OnDemandAttrs); err != nil {
+		return err
 	}
 
 	return nil
@@ -333,6 +428,14 @@ func (m *SnapmirrorTransfer) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateLastUpdatedTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNetworkCompressionRatio(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateRelationship(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -409,6 +512,24 @@ func (m *SnapmirrorTransfer) contextValidateErrorInfo(ctx context.Context, forma
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SnapmirrorTransfer) contextValidateLastUpdatedTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "last_updated_time", "body", m.LastUpdatedTime); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SnapmirrorTransfer) contextValidateNetworkCompressionRatio(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "network_compression_ratio", "body", m.NetworkCompressionRatio); err != nil {
+		return err
 	}
 
 	return nil
@@ -677,7 +798,7 @@ type SnapmirrorTransferInlineRelationship struct {
 	// Is the relationship for restore?
 	Restore *bool `json:"restore,omitempty"`
 
-	// uuid
+	// Unique identifier of the SnapMirror relationship.
 	// Example: d2d7ceea-ab52-11e8-855e-00505682a4c7
 	// Format: uuid
 	UUID *strfmt.UUID `json:"uuid,omitempty"`

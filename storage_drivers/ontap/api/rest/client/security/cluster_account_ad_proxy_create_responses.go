@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *ClusterAccountAdProxyCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the cluster account ad proxy create created response
+func (o *ClusterAccountAdProxyCreateCreated) Code() int {
+	return 201
+}
+
 func (o *ClusterAccountAdProxyCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyCreateCreated ", 201)
+	return fmt.Sprintf("[POST /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyCreateCreated", 201)
 }
 
 func (o *ClusterAccountAdProxyCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyCreateCreated ", 201)
+	return fmt.Sprintf("[POST /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyCreateCreated", 201)
 }
 
 func (o *ClusterAccountAdProxyCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -111,19 +117,20 @@ func NewClusterAccountAdProxyCreateDefault(code int) *ClusterAccountAdProxyCreat
 }
 
 /*
-ClusterAccountAdProxyCreateDefault describes a response with status code -1, with default header values.
+	ClusterAccountAdProxyCreateDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 2621516 | This operation is only supported on a data SVM. |
+| 2621706 | The specified `svm.uuid` and `svm.name` refer to different SVMs. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ClusterAccountAdProxyCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cluster account ad proxy create default response
-func (o *ClusterAccountAdProxyCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cluster account ad proxy create default response has a 2xx status code
@@ -151,12 +158,19 @@ func (o *ClusterAccountAdProxyCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster account ad proxy create default response
+func (o *ClusterAccountAdProxyCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterAccountAdProxyCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_create default %s", o._statusCode, payload)
 }
 
 func (o *ClusterAccountAdProxyCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_create default %s", o._statusCode, payload)
 }
 
 func (o *ClusterAccountAdProxyCreateDefault) GetPayload() *models.ErrorResponse {

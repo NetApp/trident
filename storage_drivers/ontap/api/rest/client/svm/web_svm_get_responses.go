@@ -6,6 +6,7 @@ package svm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *WebSvmGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the web svm get o k response
+func (o *WebSvmGetOK) Code() int {
+	return 200
+}
+
 func (o *WebSvmGetOK) Error() string {
-	return fmt.Sprintf("[GET /svm/svms/{svm.uuid}/web][%d] webSvmGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/svms/{svm.uuid}/web][%d] webSvmGetOK %s", 200, payload)
 }
 
 func (o *WebSvmGetOK) String() string {
-	return fmt.Sprintf("[GET /svm/svms/{svm.uuid}/web][%d] webSvmGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/svms/{svm.uuid}/web][%d] webSvmGetOK %s", 200, payload)
 }
 
 func (o *WebSvmGetOK) GetPayload() *models.WebSvm {
@@ -122,11 +130,6 @@ type WebSvmGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the web svm get default response
-func (o *WebSvmGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this web svm get default response has a 2xx status code
 func (o *WebSvmGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *WebSvmGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the web svm get default response
+func (o *WebSvmGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *WebSvmGetDefault) Error() string {
-	return fmt.Sprintf("[GET /svm/svms/{svm.uuid}/web][%d] web_svm_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/svms/{svm.uuid}/web][%d] web_svm_get default %s", o._statusCode, payload)
 }
 
 func (o *WebSvmGetDefault) String() string {
-	return fmt.Sprintf("[GET /svm/svms/{svm.uuid}/web][%d] web_svm_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/svms/{svm.uuid}/web][%d] web_svm_get default %s", o._statusCode, payload)
 }
 
 func (o *WebSvmGetDefault) GetPayload() *models.ErrorResponse {

@@ -121,7 +121,7 @@ func (m *CifsSearchPath) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsSearchPathInlineSvm cifs search path inline svm
+// CifsSearchPathInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model cifs_search_path_inline_svm
 type CifsSearchPathInlineSvm struct {
@@ -129,12 +129,12 @@ type CifsSearchPathInlineSvm struct {
 	// links
 	Links *CifsSearchPathInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

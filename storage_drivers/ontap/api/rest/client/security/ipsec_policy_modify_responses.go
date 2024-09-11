@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *IpsecPolicyModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ipsec policy modify o k response
+func (o *IpsecPolicyModifyOK) Code() int {
+	return 200
+}
+
 func (o *IpsecPolicyModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/ipsec/policies/{uuid}][%d] ipsecPolicyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/ipsec/policies/{uuid}][%d] ipsecPolicyModifyOK", 200)
 }
 
 func (o *IpsecPolicyModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/ipsec/policies/{uuid}][%d] ipsecPolicyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/ipsec/policies/{uuid}][%d] ipsecPolicyModifyOK", 200)
 }
 
 func (o *IpsecPolicyModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -114,20 +120,30 @@ func NewIpsecPolicyModifyDefault(code int) *IpsecPolicyModifyDefault {
 | 66257113 | Only one local IP subnet can be specified. |
 | 66257114 | Only one remote IP subnet can be specified. |
 | 66257115 | Port ranges containing more than one port are not supported. |
-| 66257116 | IPsec policy with the specified UUID was not found. |
 | 66257120 | The subnet selector must be a host address (An IPv4 address with a 32-bit netmask or an IPv6 address with a 128-bit netmask). |
+| 66257125 | The local_endpoint.address must be specified with local_endpoint.netmask. |
+| 66257126 | The remote_endpoint.address must be specified with remote_endpoint.netmask. |
+| 66257127 | The local subnet must be configured as a non-zero subnet. |
+| 66257128 | Invalid ANY wildcard subnet. |
+| 66257129 | A specific local or remote port number is required when the remote subnet is configured as an ANY wildcard subnet. |
+| 66257131 | ESP in UDPv6 Encapsulation is not supported. |
+| 66257135 | The specified certificate is not found on the SVM. |
+| 66257136 | A certificate is not needed for the PSK authentication method. |
+| 66257138 | Remote identity is required when using certificate verification. |
 | 66257139 | Certificate with the specified UUID was not found. |
 | 66257140 | Only certificates with a client or server type are supported. |
+| 66257142 | Failed to create IPsec policy because the specified SVM is being migrated. |
+| 66257143 | Invalid IPsec policy provided. The subnet must be non-empty. |
+| 66257199 | Not all of the nodes in the cluster are running a version that supports the IPsec feature. |
+| 66257200 | The shared key does not meet required ASCII-range characters length. |
+| 66257201 | Support for the feature available with effective cluster version or later. |
+| 66257305 | The certificate UUID does not match the provided certificate name. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IpsecPolicyModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ipsec policy modify default response
-func (o *IpsecPolicyModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ipsec policy modify default response has a 2xx status code
@@ -155,12 +171,19 @@ func (o *IpsecPolicyModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ipsec policy modify default response
+func (o *IpsecPolicyModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IpsecPolicyModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/ipsec/policies/{uuid}][%d] ipsec_policy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/ipsec/policies/{uuid}][%d] ipsec_policy_modify default %s", o._statusCode, payload)
 }
 
 func (o *IpsecPolicyModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/ipsec/policies/{uuid}][%d] ipsec_policy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/ipsec/policies/{uuid}][%d] ipsec_policy_modify default %s", o._statusCode, payload)
 }
 
 func (o *IpsecPolicyModifyDefault) GetPayload() *models.ErrorResponse {

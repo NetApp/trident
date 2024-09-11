@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *IpsecModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ipsec modify o k response
+func (o *IpsecModifyOK) Code() int {
+	return 200
+}
+
 func (o *IpsecModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/ipsec][%d] ipsecModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/ipsec][%d] ipsecModifyOK", 200)
 }
 
 func (o *IpsecModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/ipsec][%d] ipsecModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/ipsec][%d] ipsecModifyOK", 200)
 }
 
 func (o *IpsecModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,17 +114,16 @@ func NewIpsecModifyDefault(code int) *IpsecModifyDefault {
 | ---------- | ----------- |
 | 66256898 | Internal error. Failed to enable IPsec. |
 | 66256899 | Internal error. Failed to disable IPsec. |
+| 66256913 | Offload setting changes are not allowed when IPsec is enabled. |
+| 66256915 | Both anti-replay protection and IPsec offload cannot be operational at the same time. |
+| 66257007 | Failed to update replay window size. |
 | 66257199 | IPsec is not supported in the current cluster version. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IpsecModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ipsec modify default response
-func (o *IpsecModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ipsec modify default response has a 2xx status code
@@ -146,12 +151,19 @@ func (o *IpsecModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ipsec modify default response
+func (o *IpsecModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IpsecModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/ipsec][%d] ipsec_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/ipsec][%d] ipsec_modify default %s", o._statusCode, payload)
 }
 
 func (o *IpsecModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/ipsec][%d] ipsec_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/ipsec][%d] ipsec_modify default %s", o._statusCode, payload)
 }
 
 func (o *IpsecModifyDefault) GetPayload() *models.ErrorResponse {

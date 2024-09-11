@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *QosPolicyGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the qos policy get o k response
+func (o *QosPolicyGetOK) Code() int {
+	return 200
+}
+
 func (o *QosPolicyGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/qos/policies/{uuid}][%d] qosPolicyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/qos/policies/{uuid}][%d] qosPolicyGetOK %s", 200, payload)
 }
 
 func (o *QosPolicyGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/qos/policies/{uuid}][%d] qosPolicyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/qos/policies/{uuid}][%d] qosPolicyGetOK %s", 200, payload)
 }
 
 func (o *QosPolicyGetOK) GetPayload() *models.QosPolicy {
@@ -122,11 +130,6 @@ type QosPolicyGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the qos policy get default response
-func (o *QosPolicyGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this qos policy get default response has a 2xx status code
 func (o *QosPolicyGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *QosPolicyGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the qos policy get default response
+func (o *QosPolicyGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *QosPolicyGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/qos/policies/{uuid}][%d] qos_policy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/qos/policies/{uuid}][%d] qos_policy_get default %s", o._statusCode, payload)
 }
 
 func (o *QosPolicyGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/qos/policies/{uuid}][%d] qos_policy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/qos/policies/{uuid}][%d] qos_policy_get default %s", o._statusCode, payload)
 }
 
 func (o *QosPolicyGetDefault) GetPayload() *models.ErrorResponse {

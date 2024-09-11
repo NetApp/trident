@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *LunCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the lun collection get o k response
+func (o *LunCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *LunCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/luns][%d] lunCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/luns][%d] lunCollectionGetOK %s", 200, payload)
 }
 
 func (o *LunCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/luns][%d] lunCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/luns][%d] lunCollectionGetOK %s", 200, payload)
 }
 
 func (o *LunCollectionGetOK) GetPayload() *models.LunResponse {
@@ -122,11 +130,6 @@ type LunCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the lun collection get default response
-func (o *LunCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this lun collection get default response has a 2xx status code
 func (o *LunCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *LunCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the lun collection get default response
+func (o *LunCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LunCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/luns][%d] lun_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/luns][%d] lun_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *LunCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/luns][%d] lun_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/luns][%d] lun_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *LunCollectionGetDefault) GetPayload() *models.ErrorResponse {

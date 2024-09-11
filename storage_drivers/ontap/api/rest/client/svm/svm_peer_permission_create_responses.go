@@ -6,6 +6,7 @@ package svm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *SvmPeerPermissionCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the svm peer permission create created response
+func (o *SvmPeerPermissionCreateCreated) Code() int {
+	return 201
+}
+
 func (o *SvmPeerPermissionCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /svm/peer-permissions][%d] svmPeerPermissionCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /svm/peer-permissions][%d] svmPeerPermissionCreateCreated %s", 201, payload)
 }
 
 func (o *SvmPeerPermissionCreateCreated) String() string {
-	return fmt.Sprintf("[POST /svm/peer-permissions][%d] svmPeerPermissionCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /svm/peer-permissions][%d] svmPeerPermissionCreateCreated %s", 201, payload)
 }
 
 func (o *SvmPeerPermissionCreateCreated) GetPayload() *models.SvmPeerPermission {
@@ -136,6 +144,7 @@ func NewSvmPeerPermissionCreateDefault(code int) *SvmPeerPermissionCreateDefault
 | 26345573    | Failed to find the SVM or volume UUID with name. |
 | 26345574    | Failed to find the SVM or volume name with UUID. |
 | 26345575    | The specified peer cluster name and peer cluster UUID do not match. |
+| 9896057     | SVM peer permission already exists. |
 ```
 <br/>
 */
@@ -143,11 +152,6 @@ type SvmPeerPermissionCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the svm peer permission create default response
-func (o *SvmPeerPermissionCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this svm peer permission create default response has a 2xx status code
@@ -175,12 +179,19 @@ func (o *SvmPeerPermissionCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the svm peer permission create default response
+func (o *SvmPeerPermissionCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SvmPeerPermissionCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /svm/peer-permissions][%d] svm_peer_permission_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /svm/peer-permissions][%d] svm_peer_permission_create default %s", o._statusCode, payload)
 }
 
 func (o *SvmPeerPermissionCreateDefault) String() string {
-	return fmt.Sprintf("[POST /svm/peer-permissions][%d] svm_peer_permission_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /svm/peer-permissions][%d] svm_peer_permission_create default %s", o._statusCode, payload)
 }
 
 func (o *SvmPeerPermissionCreateDefault) GetPayload() *models.ErrorResponse {

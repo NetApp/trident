@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *FcLoginCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fc login collection get o k response
+func (o *FcLoginCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *FcLoginCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/fc/logins][%d] fcLoginCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/logins][%d] fcLoginCollectionGetOK %s", 200, payload)
 }
 
 func (o *FcLoginCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /network/fc/logins][%d] fcLoginCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/logins][%d] fcLoginCollectionGetOK %s", 200, payload)
 }
 
 func (o *FcLoginCollectionGetOK) GetPayload() *models.FcLoginResponse {
@@ -122,11 +130,6 @@ type FcLoginCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the fc login collection get default response
-func (o *FcLoginCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this fc login collection get default response has a 2xx status code
 func (o *FcLoginCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *FcLoginCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fc login collection get default response
+func (o *FcLoginCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FcLoginCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/fc/logins][%d] fc_login_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/logins][%d] fc_login_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *FcLoginCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/fc/logins][%d] fc_login_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/logins][%d] fc_login_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *FcLoginCollectionGetDefault) GetPayload() *models.ErrorResponse {

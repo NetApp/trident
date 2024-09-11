@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *LocalCifsUserGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the local cifs user get o k response
+func (o *LocalCifsUserGetOK) Code() int {
+	return 200
+}
+
 func (o *LocalCifsUserGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] localCifsUserGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] localCifsUserGetOK %s", 200, payload)
 }
 
 func (o *LocalCifsUserGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] localCifsUserGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] localCifsUserGetOK %s", 200, payload)
 }
 
 func (o *LocalCifsUserGetOK) GetPayload() *models.LocalCifsUser {
@@ -122,11 +130,6 @@ type LocalCifsUserGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the local cifs user get default response
-func (o *LocalCifsUserGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this local cifs user get default response has a 2xx status code
 func (o *LocalCifsUserGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *LocalCifsUserGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the local cifs user get default response
+func (o *LocalCifsUserGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LocalCifsUserGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] local_cifs_user_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] local_cifs_user_get default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsUserGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] local_cifs_user_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] local_cifs_user_get default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsUserGetDefault) GetPayload() *models.ErrorResponse {

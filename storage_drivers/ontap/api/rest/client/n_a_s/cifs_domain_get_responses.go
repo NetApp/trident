@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CifsDomainGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs domain get o k response
+func (o *CifsDomainGetOK) Code() int {
+	return 200
+}
+
 func (o *CifsDomainGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}][%d] cifsDomainGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}][%d] cifsDomainGetOK %s", 200, payload)
 }
 
 func (o *CifsDomainGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}][%d] cifsDomainGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}][%d] cifsDomainGetOK %s", 200, payload)
 }
 
 func (o *CifsDomainGetOK) GetPayload() *models.CifsDomain {
@@ -126,11 +134,6 @@ type CifsDomainGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cifs domain get default response
-func (o *CifsDomainGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cifs domain get default response has a 2xx status code
 func (o *CifsDomainGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -156,12 +159,19 @@ func (o *CifsDomainGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs domain get default response
+func (o *CifsDomainGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsDomainGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}][%d] cifs_domain_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}][%d] cifs_domain_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsDomainGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}][%d] cifs_domain_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}][%d] cifs_domain_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsDomainGetDefault) GetPayload() *models.ErrorResponse {

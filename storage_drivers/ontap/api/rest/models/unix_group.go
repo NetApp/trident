@@ -12,6 +12,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // UnixGroup unix group
@@ -28,6 +29,7 @@ type UnixGroup struct {
 
 	// UNIX group name to be added to the local database.
 	//
+	// Example: group1
 	Name *string `json:"name,omitempty"`
 
 	// Indicates whether or not the validation for the specified UNIX group name is disabled.
@@ -37,6 +39,7 @@ type UnixGroup struct {
 	Svm *UnixGroupInlineSvm `json:"svm,omitempty"`
 
 	// unix group inline users
+	// Read Only: true
 	UnixGroupInlineUsers []*UnixGroupInlineUsersInlineArrayItem `json:"users,omitempty"`
 }
 
@@ -172,6 +175,10 @@ func (m *UnixGroup) contextValidateSvm(ctx context.Context, formats strfmt.Regis
 
 func (m *UnixGroup) contextValidateUnixGroupInlineUsers(ctx context.Context, formats strfmt.Registry) error {
 
+	if err := validate.ReadOnly(ctx, "users", "body", []*UnixGroupInlineUsersInlineArrayItem(m.UnixGroupInlineUsers)); err != nil {
+		return err
+	}
+
 	for i := 0; i < len(m.UnixGroupInlineUsers); i++ {
 
 		if m.UnixGroupInlineUsers[i] != nil {
@@ -292,7 +299,7 @@ func (m *UnixGroupInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UnixGroupInlineSvm unix group inline svm
+// UnixGroupInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model unix_group_inline_svm
 type UnixGroupInlineSvm struct {
@@ -300,12 +307,12 @@ type UnixGroupInlineSvm struct {
 	// links
 	Links *UnixGroupInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

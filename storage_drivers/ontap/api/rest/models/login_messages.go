@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -46,12 +47,14 @@ type LoginMessages struct {
 	// Min Length: 0
 	Message *string `json:"message,omitempty"`
 
-	// scope
-	Scope *NetworkScope `json:"scope,omitempty"`
+	// Set to "svm" for interfaces owned by an SVM. Otherwise, set to "cluster".
+	// Read Only: true
+	// Enum: ["svm","cluster"]
+	Scope *string `json:"scope,omitempty"`
 
 	// Specifies whether to show a cluster-level message before the SVM message
 	// when logging in as an SVM administrator.
-	// This setting can only be modified by the cluster administrator.
+	// This setting can only be modified by cluster administrators.
 	// Optional in the PATCH body.
 	//
 	ShowClusterMessage *bool `json:"show_cluster_message,omitempty"`
@@ -144,18 +147,57 @@ func (m *LoginMessages) validateMessage(formats strfmt.Registry) error {
 	return nil
 }
 
+var loginMessagesTypeScopePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["svm","cluster"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		loginMessagesTypeScopePropEnum = append(loginMessagesTypeScopePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// login_messages
+	// LoginMessages
+	// scope
+	// Scope
+	// svm
+	// END DEBUGGING
+	// LoginMessagesScopeSvm captures enum value "svm"
+	LoginMessagesScopeSvm string = "svm"
+
+	// BEGIN DEBUGGING
+	// login_messages
+	// LoginMessages
+	// scope
+	// Scope
+	// cluster
+	// END DEBUGGING
+	// LoginMessagesScopeCluster captures enum value "cluster"
+	LoginMessagesScopeCluster string = "cluster"
+)
+
+// prop value enum
+func (m *LoginMessages) validateScopeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, loginMessagesTypeScopePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (m *LoginMessages) validateScope(formats strfmt.Registry) error {
 	if swag.IsZero(m.Scope) { // not required
 		return nil
 	}
 
-	if m.Scope != nil {
-		if err := m.Scope.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("scope")
-			}
-			return err
-		}
+	// value enum
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
+		return err
 	}
 
 	return nil
@@ -220,13 +262,8 @@ func (m *LoginMessages) contextValidateLinks(ctx context.Context, formats strfmt
 
 func (m *LoginMessages) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
 
-	if m.Scope != nil {
-		if err := m.Scope.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("scope")
-			}
-			return err
-		}
+	if err := validate.ReadOnly(ctx, "scope", "body", m.Scope); err != nil {
+		return err
 	}
 
 	return nil
@@ -359,7 +396,7 @@ func (m *LoginMessagesInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LoginMessagesInlineSvm login messages inline svm
+// LoginMessagesInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model login_messages_inline_svm
 type LoginMessagesInlineSvm struct {
@@ -367,12 +404,12 @@ type LoginMessagesInlineSvm struct {
 	// links
 	Links *LoginMessagesInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

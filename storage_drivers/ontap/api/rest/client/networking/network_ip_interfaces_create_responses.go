@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -56,6 +57,8 @@ type NetworkIPInterfacesCreateCreated struct {
 	/* Useful for tracking the resource location
 	 */
 	Location string
+
+	Payload *models.IPInterfaceResponse
 }
 
 // IsSuccess returns true when this network Ip interfaces create created response has a 2xx status code
@@ -83,12 +86,23 @@ func (o *NetworkIPInterfacesCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the network Ip interfaces create created response
+func (o *NetworkIPInterfacesCreateCreated) Code() int {
+	return 201
+}
+
 func (o *NetworkIPInterfacesCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /network/ip/interfaces][%d] networkIpInterfacesCreateCreated ", 201)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ip/interfaces][%d] networkIpInterfacesCreateCreated %s", 201, payload)
 }
 
 func (o *NetworkIPInterfacesCreateCreated) String() string {
-	return fmt.Sprintf("[POST /network/ip/interfaces][%d] networkIpInterfacesCreateCreated ", 201)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ip/interfaces][%d] networkIpInterfacesCreateCreated %s", 201, payload)
+}
+
+func (o *NetworkIPInterfacesCreateCreated) GetPayload() *models.IPInterfaceResponse {
+	return o.Payload
 }
 
 func (o *NetworkIPInterfacesCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -98,6 +112,13 @@ func (o *NetworkIPInterfacesCreateCreated) readResponse(response runtime.ClientR
 
 	if hdrLocation != "" {
 		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.IPInterfaceResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
 	}
 
 	return nil
@@ -122,13 +143,20 @@ func NewNetworkIPInterfacesCreateDefault(code int) *NetworkIPInterfacesCreateDef
 | 1376663 | Cannot add interface to DNS zone because all interfaces from a single DNS zone must be in the same SVM. |
 | 1376963 | Duplicate IP address. |
 | 1376976 | The specified port is not capable of hosting this LIF. |
+| 1377583 | Failed to create the interface because the broadcast domain of the specified subnet is different from the specified broadcast domain. |
+| 1377666 | Subnet does not have any addresses available. |
 | 1966138 | The same IP address may not be used for both a mgmt interface and a gateway address. |
 | 1966140 | An interface with the same name already exists. |
 | 1966141 | Invalid DNS zone name. |
 | 1966142 | Only data LIFs can be assigned a DNS zone. |
+| 1966191 | The interface could not be created because interface identifier creation failed. |
+| 1966217 | Invalid port on the node. |
 | 1966267 | IPv6 addresses must have a prefix length between 1 and 127. |
 | 1966269 | IPv4 addresses must have a prefix length between 1 and 32. |
 | 1966270 | Operation not support on SAN LIFs. |
+| 1966300 | The LIF name is too long. The maximum number of characters allowed for iSCSI and FC LIF names is 254. |
+| 1966373 | Failed to create interface because the home-port is not in the IPspace associated with the SVM. |
+| 1966454 | A port on the node is not a member of a broadcast domain. |
 | 1966476 | DNS Update is supported only on data LIFs. |
 | 1966477 | DNS Update is supported only on LIFs configured with the NFS or CIFS protocol. |
 | 1966987 | The Vserver Broadcast-Domain Home-Node and Home-Port combination is not valid. |
@@ -172,23 +200,30 @@ func NewNetworkIPInterfacesCreateDefault(code int) *NetworkIPInterfacesCreateDef
 | 1967396 | The specified subnet.name does not match the subnet name of subnet.uuid. |
 | 1967397 | The specified subnet.uuid does not match any configured subnet."; |
 | 1967398 | Address must be specified by either ip.address and ip.netmask, or at least one subnet field, not both."; |
+| 1967401 | The specified subnet.name does not match any configured subnet. |
+| 1967402 | Data SVM cannot be specified with cluster scope. |
+| 2621519 | Invalid SVM name. The SVM name must begin with a letter or an underscore. The maximum supported length is 41 if the SVM type is "sync-source", otherwise it is 47. |
 | 5373966 | An iSCSI interface cannot be created in an SVM configured for NVMe. |
+| 8847378 | Cannot specify DNS zone when DNS updates are enabled for SVM |
+| 53216540 | LIFs on the specified SVM do not have a default service policy. |
 | 53281018 | Failover policy is not compatible with one or more services in service policy |
 | 53281036 | Setting the probe port parameter is not allowed on this platform. |
 | 53281065 | The service_policy does not exist in the SVM. |
+| 53281073 | IP address and netmask cannot be used because this represents a subnet address rather than a specific host address. |
 | 53281086 | LIF would exceed the maximum number of supported intercluster LIFs in IPspace. |
 | 53281087 | Cannot configure SAN LIF on SVM. |
+| 53281092 | Failed to create interface because the home-port does not support the specified protocol. |
+| 53281104 | The specified address is in use by the Service Processor |
 | 53281106 | Failed checking the cluster capabilities. |
+| 53281114 | The specified parameter is only supported on data SVMs. |
+| 53281468 | Failed to update external route tables for IP. |
+| 53281680 | Invalid value for the specified field. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NetworkIPInterfacesCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the network ip interfaces create default response
-func (o *NetworkIPInterfacesCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this network ip interfaces create default response has a 2xx status code
@@ -216,12 +251,19 @@ func (o *NetworkIPInterfacesCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the network ip interfaces create default response
+func (o *NetworkIPInterfacesCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetworkIPInterfacesCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /network/ip/interfaces][%d] network_ip_interfaces_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ip/interfaces][%d] network_ip_interfaces_create default %s", o._statusCode, payload)
 }
 
 func (o *NetworkIPInterfacesCreateDefault) String() string {
-	return fmt.Sprintf("[POST /network/ip/interfaces][%d] network_ip_interfaces_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ip/interfaces][%d] network_ip_interfaces_create default %s", o._statusCode, payload)
 }
 
 func (o *NetworkIPInterfacesCreateDefault) GetPayload() *models.ErrorResponse {

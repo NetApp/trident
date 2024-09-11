@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *KeyManagerKeysGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the key manager keys get o k response
+func (o *KeyManagerKeysGetOK) Code() int {
+	return 200
+}
+
 func (o *KeyManagerKeysGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids/{key_id}][%d] keyManagerKeysGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids/{key_id}][%d] keyManagerKeysGetOK %s", 200, payload)
 }
 
 func (o *KeyManagerKeysGetOK) String() string {
-	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids/{key_id}][%d] keyManagerKeysGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids/{key_id}][%d] keyManagerKeysGetOK %s", 200, payload)
 }
 
 func (o *KeyManagerKeysGetOK) GetPayload() *models.KeyManagerKeys {
@@ -122,11 +130,6 @@ type KeyManagerKeysGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the key manager keys get default response
-func (o *KeyManagerKeysGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this key manager keys get default response has a 2xx status code
 func (o *KeyManagerKeysGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *KeyManagerKeysGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the key manager keys get default response
+func (o *KeyManagerKeysGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *KeyManagerKeysGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids/{key_id}][%d] key_manager_keys_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids/{key_id}][%d] key_manager_keys_get default %s", o._statusCode, payload)
 }
 
 func (o *KeyManagerKeysGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids/{key_id}][%d] key_manager_keys_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids/{key_id}][%d] key_manager_keys_get default %s", o._statusCode, payload)
 }
 
 func (o *KeyManagerKeysGetDefault) GetPayload() *models.ErrorResponse {

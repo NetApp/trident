@@ -20,8 +20,8 @@ import (
 // swagger:model software_package_download_get
 type SoftwarePackageDownloadGet struct {
 
-	// Code corresponds to download message
-	// Example: 10551496
+	// Code returned corresponds to a download message
+	// Example: 10551382
 	Code *int64 `json:"code,omitempty"`
 
 	// Download progress details
@@ -30,7 +30,7 @@ type SoftwarePackageDownloadGet struct {
 
 	// Download status of the package
 	// Example: success
-	// Enum: [not_started running success failure]
+	// Enum: ["not_started","running","success","failure"]
 	State *string `json:"state,omitempty"`
 }
 

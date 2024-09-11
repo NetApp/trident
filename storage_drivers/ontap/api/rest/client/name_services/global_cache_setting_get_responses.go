@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *GlobalCacheSettingGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the global cache setting get o k response
+func (o *GlobalCacheSettingGetOK) Code() int {
+	return 200
+}
+
 func (o *GlobalCacheSettingGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/cache/setting][%d] globalCacheSettingGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/setting][%d] globalCacheSettingGetOK %s", 200, payload)
 }
 
 func (o *GlobalCacheSettingGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/cache/setting][%d] globalCacheSettingGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/setting][%d] globalCacheSettingGetOK %s", 200, payload)
 }
 
 func (o *GlobalCacheSettingGetOK) GetPayload() *models.GlobalCacheSetting {
@@ -122,11 +130,6 @@ type GlobalCacheSettingGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the global cache setting get default response
-func (o *GlobalCacheSettingGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this global cache setting get default response has a 2xx status code
 func (o *GlobalCacheSettingGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *GlobalCacheSettingGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the global cache setting get default response
+func (o *GlobalCacheSettingGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *GlobalCacheSettingGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/cache/setting][%d] global_cache_setting_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/setting][%d] global_cache_setting_get default %s", o._statusCode, payload)
 }
 
 func (o *GlobalCacheSettingGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/cache/setting][%d] global_cache_setting_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/setting][%d] global_cache_setting_get default %s", o._statusCode, payload)
 }
 
 func (o *GlobalCacheSettingGetDefault) GetPayload() *models.ErrorResponse {

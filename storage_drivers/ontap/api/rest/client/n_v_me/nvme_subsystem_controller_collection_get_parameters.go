@@ -86,6 +86,18 @@ type NvmeSubsystemControllerCollectionGetParams struct {
 	*/
 	DhHmacChapMode *string
 
+	/* DigestData.
+
+	   Filter by digest.data
+	*/
+	DigestData *bool
+
+	/* DigestHeader.
+
+	   Filter by digest.header
+	*/
+	DigestHeader *bool
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -145,6 +157,12 @@ type NvmeSubsystemControllerCollectionGetParams struct {
 	   Filter by io_queue.depth
 	*/
 	IoQueueDepth *int64
+
+	/* KeepAliveTimeout.
+
+	   Filter by keep_alive_timeout
+	*/
+	KeepAliveTimeout *int64
 
 	/* MaxRecords.
 
@@ -209,6 +227,30 @@ type NvmeSubsystemControllerCollectionGetParams struct {
 	   Filter by svm.uuid
 	*/
 	SvmUUID *string
+
+	/* TLSCipher.
+
+	   Filter by tls.cipher
+	*/
+	TLSCipher *string
+
+	/* TLSKeyType.
+
+	   Filter by tls.key_type
+	*/
+	TLSKeyType *string
+
+	/* TLSPskIdentity.
+
+	   Filter by tls.psk_identity
+	*/
+	TLSPskIdentity *string
+
+	/* TransportProtocol.
+
+	   Filter by transport_protocol
+	*/
+	TransportProtocol *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -321,6 +363,28 @@ func (o *NvmeSubsystemControllerCollectionGetParams) SetDhHmacChapMode(dhHmacCha
 	o.DhHmacChapMode = dhHmacChapMode
 }
 
+// WithDigestData adds the digestData to the nvme subsystem controller collection get params
+func (o *NvmeSubsystemControllerCollectionGetParams) WithDigestData(digestData *bool) *NvmeSubsystemControllerCollectionGetParams {
+	o.SetDigestData(digestData)
+	return o
+}
+
+// SetDigestData adds the digestData to the nvme subsystem controller collection get params
+func (o *NvmeSubsystemControllerCollectionGetParams) SetDigestData(digestData *bool) {
+	o.DigestData = digestData
+}
+
+// WithDigestHeader adds the digestHeader to the nvme subsystem controller collection get params
+func (o *NvmeSubsystemControllerCollectionGetParams) WithDigestHeader(digestHeader *bool) *NvmeSubsystemControllerCollectionGetParams {
+	o.SetDigestHeader(digestHeader)
+	return o
+}
+
+// SetDigestHeader adds the digestHeader to the nvme subsystem controller collection get params
+func (o *NvmeSubsystemControllerCollectionGetParams) SetDigestHeader(digestHeader *bool) {
+	o.DigestHeader = digestHeader
+}
+
 // WithFields adds the fields to the nvme subsystem controller collection get params
 func (o *NvmeSubsystemControllerCollectionGetParams) WithFields(fields []string) *NvmeSubsystemControllerCollectionGetParams {
 	o.SetFields(fields)
@@ -429,6 +493,17 @@ func (o *NvmeSubsystemControllerCollectionGetParams) WithIoQueueDepth(ioQueueDep
 // SetIoQueueDepth adds the ioQueueDepth to the nvme subsystem controller collection get params
 func (o *NvmeSubsystemControllerCollectionGetParams) SetIoQueueDepth(ioQueueDepth *int64) {
 	o.IoQueueDepth = ioQueueDepth
+}
+
+// WithKeepAliveTimeout adds the keepAliveTimeout to the nvme subsystem controller collection get params
+func (o *NvmeSubsystemControllerCollectionGetParams) WithKeepAliveTimeout(keepAliveTimeout *int64) *NvmeSubsystemControllerCollectionGetParams {
+	o.SetKeepAliveTimeout(keepAliveTimeout)
+	return o
+}
+
+// SetKeepAliveTimeout adds the keepAliveTimeout to the nvme subsystem controller collection get params
+func (o *NvmeSubsystemControllerCollectionGetParams) SetKeepAliveTimeout(keepAliveTimeout *int64) {
+	o.KeepAliveTimeout = keepAliveTimeout
 }
 
 // WithMaxRecords adds the maxRecords to the nvme subsystem controller collection get params
@@ -541,6 +616,50 @@ func (o *NvmeSubsystemControllerCollectionGetParams) SetSvmUUID(svmUUID *string)
 	o.SvmUUID = svmUUID
 }
 
+// WithTLSCipher adds the tLSCipher to the nvme subsystem controller collection get params
+func (o *NvmeSubsystemControllerCollectionGetParams) WithTLSCipher(tLSCipher *string) *NvmeSubsystemControllerCollectionGetParams {
+	o.SetTLSCipher(tLSCipher)
+	return o
+}
+
+// SetTLSCipher adds the tlsCipher to the nvme subsystem controller collection get params
+func (o *NvmeSubsystemControllerCollectionGetParams) SetTLSCipher(tLSCipher *string) {
+	o.TLSCipher = tLSCipher
+}
+
+// WithTLSKeyType adds the tLSKeyType to the nvme subsystem controller collection get params
+func (o *NvmeSubsystemControllerCollectionGetParams) WithTLSKeyType(tLSKeyType *string) *NvmeSubsystemControllerCollectionGetParams {
+	o.SetTLSKeyType(tLSKeyType)
+	return o
+}
+
+// SetTLSKeyType adds the tlsKeyType to the nvme subsystem controller collection get params
+func (o *NvmeSubsystemControllerCollectionGetParams) SetTLSKeyType(tLSKeyType *string) {
+	o.TLSKeyType = tLSKeyType
+}
+
+// WithTLSPskIdentity adds the tLSPskIdentity to the nvme subsystem controller collection get params
+func (o *NvmeSubsystemControllerCollectionGetParams) WithTLSPskIdentity(tLSPskIdentity *string) *NvmeSubsystemControllerCollectionGetParams {
+	o.SetTLSPskIdentity(tLSPskIdentity)
+	return o
+}
+
+// SetTLSPskIdentity adds the tlsPskIdentity to the nvme subsystem controller collection get params
+func (o *NvmeSubsystemControllerCollectionGetParams) SetTLSPskIdentity(tLSPskIdentity *string) {
+	o.TLSPskIdentity = tLSPskIdentity
+}
+
+// WithTransportProtocol adds the transportProtocol to the nvme subsystem controller collection get params
+func (o *NvmeSubsystemControllerCollectionGetParams) WithTransportProtocol(transportProtocol *string) *NvmeSubsystemControllerCollectionGetParams {
+	o.SetTransportProtocol(transportProtocol)
+	return o
+}
+
+// SetTransportProtocol adds the transportProtocol to the nvme subsystem controller collection get params
+func (o *NvmeSubsystemControllerCollectionGetParams) SetTransportProtocol(transportProtocol *string) {
+	o.TransportProtocol = transportProtocol
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *NvmeSubsystemControllerCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -612,6 +731,40 @@ func (o *NvmeSubsystemControllerCollectionGetParams) WriteToRequest(r runtime.Cl
 		if qDhHmacChapMode != "" {
 
 			if err := r.SetQueryParam("dh_hmac_chap.mode", qDhHmacChapMode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DigestData != nil {
+
+		// query param digest.data
+		var qrDigestData bool
+
+		if o.DigestData != nil {
+			qrDigestData = *o.DigestData
+		}
+		qDigestData := swag.FormatBool(qrDigestData)
+		if qDigestData != "" {
+
+			if err := r.SetQueryParam("digest.data", qDigestData); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DigestHeader != nil {
+
+		// query param digest.header
+		var qrDigestHeader bool
+
+		if o.DigestHeader != nil {
+			qrDigestHeader = *o.DigestHeader
+		}
+		qDigestHeader := swag.FormatBool(qrDigestHeader)
+		if qDigestHeader != "" {
+
+			if err := r.SetQueryParam("digest.header", qDigestHeader); err != nil {
 				return err
 			}
 		}
@@ -781,6 +934,23 @@ func (o *NvmeSubsystemControllerCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
+	if o.KeepAliveTimeout != nil {
+
+		// query param keep_alive_timeout
+		var qrKeepAliveTimeout int64
+
+		if o.KeepAliveTimeout != nil {
+			qrKeepAliveTimeout = *o.KeepAliveTimeout
+		}
+		qKeepAliveTimeout := swag.FormatInt64(qrKeepAliveTimeout)
+		if qKeepAliveTimeout != "" {
+
+			if err := r.SetQueryParam("keep_alive_timeout", qKeepAliveTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.MaxRecords != nil {
 
 		// query param max_records
@@ -940,6 +1110,74 @@ func (o *NvmeSubsystemControllerCollectionGetParams) WriteToRequest(r runtime.Cl
 		if qSvmUUID != "" {
 
 			if err := r.SetQueryParam("svm.uuid", qSvmUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TLSCipher != nil {
+
+		// query param tls.cipher
+		var qrTLSCipher string
+
+		if o.TLSCipher != nil {
+			qrTLSCipher = *o.TLSCipher
+		}
+		qTLSCipher := qrTLSCipher
+		if qTLSCipher != "" {
+
+			if err := r.SetQueryParam("tls.cipher", qTLSCipher); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TLSKeyType != nil {
+
+		// query param tls.key_type
+		var qrTLSKeyType string
+
+		if o.TLSKeyType != nil {
+			qrTLSKeyType = *o.TLSKeyType
+		}
+		qTLSKeyType := qrTLSKeyType
+		if qTLSKeyType != "" {
+
+			if err := r.SetQueryParam("tls.key_type", qTLSKeyType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TLSPskIdentity != nil {
+
+		// query param tls.psk_identity
+		var qrTLSPskIdentity string
+
+		if o.TLSPskIdentity != nil {
+			qrTLSPskIdentity = *o.TLSPskIdentity
+		}
+		qTLSPskIdentity := qrTLSPskIdentity
+		if qTLSPskIdentity != "" {
+
+			if err := r.SetQueryParam("tls.psk_identity", qTLSPskIdentity); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TransportProtocol != nil {
+
+		// query param transport_protocol
+		var qrTransportProtocol string
+
+		if o.TransportProtocol != nil {
+			qrTransportProtocol = *o.TransportProtocol
+		}
+		qTransportProtocol := qrTransportProtocol
+		if qTransportProtocol != "" {
+
+			if err := r.SetQueryParam("transport_protocol", qTransportProtocol); err != nil {
 				return err
 			}
 		}

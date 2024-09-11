@@ -15,6 +15,8 @@ import (
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
 
 // NewMetroclusterModifyParams creates a new MetroclusterModifyParams object,
@@ -67,6 +69,24 @@ type MetroclusterModifyParams struct {
 	   Action to perform on the MetroCluster.
 	*/
 	Action *string
+
+	/* DrGroupID.
+
+	   DR group ID.
+	*/
+	DrGroupID *int64
+
+	/* EncryptionEnabled.
+
+	   Specifies if encryption for NVLog and storage traffic is enabled.
+	*/
+	EncryptionEnabled *bool
+
+	/* Info.
+
+	   Specifies the configuration of automatic switchover.
+	*/
+	Info *models.Metrocluster
 
 	/* ReturnTimeout.
 
@@ -149,6 +169,39 @@ func (o *MetroclusterModifyParams) SetAction(action *string) {
 	o.Action = action
 }
 
+// WithDrGroupID adds the drGroupID to the metrocluster modify params
+func (o *MetroclusterModifyParams) WithDrGroupID(drGroupID *int64) *MetroclusterModifyParams {
+	o.SetDrGroupID(drGroupID)
+	return o
+}
+
+// SetDrGroupID adds the drGroupId to the metrocluster modify params
+func (o *MetroclusterModifyParams) SetDrGroupID(drGroupID *int64) {
+	o.DrGroupID = drGroupID
+}
+
+// WithEncryptionEnabled adds the encryptionEnabled to the metrocluster modify params
+func (o *MetroclusterModifyParams) WithEncryptionEnabled(encryptionEnabled *bool) *MetroclusterModifyParams {
+	o.SetEncryptionEnabled(encryptionEnabled)
+	return o
+}
+
+// SetEncryptionEnabled adds the encryptionEnabled to the metrocluster modify params
+func (o *MetroclusterModifyParams) SetEncryptionEnabled(encryptionEnabled *bool) {
+	o.EncryptionEnabled = encryptionEnabled
+}
+
+// WithInfo adds the info to the metrocluster modify params
+func (o *MetroclusterModifyParams) WithInfo(info *models.Metrocluster) *MetroclusterModifyParams {
+	o.SetInfo(info)
+	return o
+}
+
+// SetInfo adds the info to the metrocluster modify params
+func (o *MetroclusterModifyParams) SetInfo(info *models.Metrocluster) {
+	o.Info = info
+}
+
 // WithReturnTimeout adds the returnTimeout to the metrocluster modify params
 func (o *MetroclusterModifyParams) WithReturnTimeout(returnTimeout *int64) *MetroclusterModifyParams {
 	o.SetReturnTimeout(returnTimeout)
@@ -182,6 +235,45 @@ func (o *MetroclusterModifyParams) WriteToRequest(r runtime.ClientRequest, reg s
 			if err := r.SetQueryParam("action", qAction); err != nil {
 				return err
 			}
+		}
+	}
+
+	if o.DrGroupID != nil {
+
+		// query param dr_group_id
+		var qrDrGroupID int64
+
+		if o.DrGroupID != nil {
+			qrDrGroupID = *o.DrGroupID
+		}
+		qDrGroupID := swag.FormatInt64(qrDrGroupID)
+		if qDrGroupID != "" {
+
+			if err := r.SetQueryParam("dr_group_id", qDrGroupID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EncryptionEnabled != nil {
+
+		// query param encryption_enabled
+		var qrEncryptionEnabled bool
+
+		if o.EncryptionEnabled != nil {
+			qrEncryptionEnabled = *o.EncryptionEnabled
+		}
+		qEncryptionEnabled := swag.FormatBool(qrEncryptionEnabled)
+		if qEncryptionEnabled != "" {
+
+			if err := r.SetQueryParam("encryption_enabled", qEncryptionEnabled); err != nil {
+				return err
+			}
+		}
+	}
+	if o.Info != nil {
+		if err := r.SetBodyParam(o.Info); err != nil {
+			return err
 		}
 	}
 

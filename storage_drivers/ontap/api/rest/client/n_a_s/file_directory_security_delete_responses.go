@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *FileDirectorySecurityDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the file directory security delete o k response
+func (o *FileDirectorySecurityDeleteOK) Code() int {
+	return 200
+}
+
 func (o *FileDirectorySecurityDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityDeleteOK", 200)
 }
 
 func (o *FileDirectorySecurityDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityDeleteOK", 200)
 }
 
 func (o *FileDirectorySecurityDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -100,19 +106,21 @@ func NewFileDirectorySecurityDeleteDefault(code int) *FileDirectorySecurityDelet
 }
 
 /*
-FileDirectorySecurityDeleteDefault describes a response with status code -1, with default header values.
+	FileDirectorySecurityDeleteDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 655865     | The specified file or directory does not exist.|
+| 10485811   | Access is a required field.|
+| 1260882    | Specified SVM not found.|
+| 6691623    | User is not authorized.|
 */
 type FileDirectorySecurityDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the file directory security delete default response
-func (o *FileDirectorySecurityDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this file directory security delete default response has a 2xx status code
@@ -140,12 +148,19 @@ func (o *FileDirectorySecurityDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the file directory security delete default response
+func (o *FileDirectorySecurityDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FileDirectorySecurityDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_delete default %s", o._statusCode, payload)
 }
 
 func (o *FileDirectorySecurityDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_delete default %s", o._statusCode, payload)
 }
 
 func (o *FileDirectorySecurityDeleteDefault) GetPayload() *models.ErrorResponse {

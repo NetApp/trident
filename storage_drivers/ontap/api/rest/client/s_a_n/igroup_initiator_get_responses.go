@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *IgroupInitiatorGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the igroup initiator get o k response
+func (o *IgroupInitiatorGetOK) Code() int {
+	return 200
+}
+
 func (o *IgroupInitiatorGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroupInitiatorGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroupInitiatorGetOK %s", 200, payload)
 }
 
 func (o *IgroupInitiatorGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroupInitiatorGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroupInitiatorGetOK %s", 200, payload)
 }
 
 func (o *IgroupInitiatorGetOK) GetPayload() *models.IgroupInitiator {
@@ -120,16 +128,12 @@ func NewIgroupInitiatorGetDefault(code int) *IgroupInitiatorGetDefault {
 | ---------- | ----------- |
 | 4 | The initiator is not a member of the initiator group. |
 | 5374852 | The initiator group specified in the URI does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IgroupInitiatorGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the igroup initiator get default response
-func (o *IgroupInitiatorGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this igroup initiator get default response has a 2xx status code
@@ -157,12 +161,19 @@ func (o *IgroupInitiatorGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the igroup initiator get default response
+func (o *IgroupInitiatorGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IgroupInitiatorGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroup_initiator_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroup_initiator_get default %s", o._statusCode, payload)
 }
 
 func (o *IgroupInitiatorGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroup_initiator_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroup_initiator_get default %s", o._statusCode, payload)
 }
 
 func (o *IgroupInitiatorGetDefault) GetPayload() *models.ErrorResponse {

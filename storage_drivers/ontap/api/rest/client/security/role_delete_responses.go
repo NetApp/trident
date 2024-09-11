@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *RoleDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the role delete o k response
+func (o *RoleDeleteOK) Code() int {
+	return 200
+}
+
 func (o *RoleDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}][%d] roleDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}][%d] roleDeleteOK", 200)
 }
 
 func (o *RoleDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}][%d] roleDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}][%d] roleDeleteOK", 200)
 }
 
 func (o *RoleDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -114,18 +120,18 @@ func NewRoleDeleteDefault(code int) *RoleDeleteDefault {
 | 5636184 | Expanded REST roles for granular resource control feature is currently disabled. |
 | 5636185 | The specified UUID was not found. |
 | 5636186 | Expanded REST roles for granular resource control requires an effective cluster version of 9.10.1 or later. |
+| 5636245 | Failed to delete the role because it is part of the group role-mapping configuration. |
+| 5636246 | Failed to delete the rest role because it is part of the group role-mapping configuration. |
+| 5636247 | Failed to delete the rest role because it is part of the external-role-mapping configuration. |
+| 5636249 | Failed to delete the role because it is part of the external-role-mapping configuration. |
 | 13434890 | Vserver-ID failed for Vserver roles. |
 | 13434893 | The SVM does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type RoleDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the role delete default response
-func (o *RoleDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this role delete default response has a 2xx status code
@@ -153,12 +159,19 @@ func (o *RoleDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the role delete default response
+func (o *RoleDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *RoleDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}][%d] role_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}][%d] role_delete default %s", o._statusCode, payload)
 }
 
 func (o *RoleDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}][%d] role_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}][%d] role_delete default %s", o._statusCode, payload)
 }
 
 func (o *RoleDeleteDefault) GetPayload() *models.ErrorResponse {

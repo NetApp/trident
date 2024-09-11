@@ -19,7 +19,7 @@ import (
 type ErrorResponse struct {
 
 	// error
-	Error *Error `json:"error,omitempty"`
+	Error *ReturnedError `json:"error,omitempty"`
 }
 
 // Validate validates this error response

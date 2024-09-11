@@ -36,7 +36,7 @@ type StoragePoolSpareAllocationUnit struct {
 
 	// The RAID SyncMirror Pool to which this allocation unit is assigned.
 	// Read Only: true
-	// Enum: [pool0 pool1]
+	// Enum: ["pool0","pool1"]
 	SyncmirrorPool *string `json:"syncmirror_pool,omitempty"`
 }
 

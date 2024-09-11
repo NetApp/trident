@@ -6,6 +6,7 @@ package ndmp
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NdmpNodeModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ndmp node modify o k response
+func (o *NdmpNodeModifyOK) Code() int {
+	return 200
+}
+
 func (o *NdmpNodeModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/ndmp/nodes/{node.uuid}][%d] ndmpNodeModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/ndmp/nodes/{node.uuid}][%d] ndmpNodeModifyOK %s", 200, payload)
 }
 
 func (o *NdmpNodeModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/ndmp/nodes/{node.uuid}][%d] ndmpNodeModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/ndmp/nodes/{node.uuid}][%d] ndmpNodeModifyOK %s", 200, payload)
 }
 
 func (o *NdmpNodeModifyOK) GetPayload() *models.NdmpNode {
@@ -128,11 +136,6 @@ type NdmpNodeModifyDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the ndmp node modify default response
-func (o *NdmpNodeModifyDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this ndmp node modify default response has a 2xx status code
 func (o *NdmpNodeModifyDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -158,12 +161,19 @@ func (o *NdmpNodeModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ndmp node modify default response
+func (o *NdmpNodeModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NdmpNodeModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/ndmp/nodes/{node.uuid}][%d] ndmp_node_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/ndmp/nodes/{node.uuid}][%d] ndmp_node_modify default %s", o._statusCode, payload)
 }
 
 func (o *NdmpNodeModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/ndmp/nodes/{node.uuid}][%d] ndmp_node_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/ndmp/nodes/{node.uuid}][%d] ndmp_node_modify default %s", o._statusCode, payload)
 }
 
 func (o *NdmpNodeModifyDefault) GetPayload() *models.ErrorResponse {

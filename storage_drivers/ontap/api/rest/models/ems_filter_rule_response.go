@@ -302,9 +302,12 @@ type EmsFilterRuleResponseInlineRecordsInlineArrayItem struct {
 	// message criteria
 	MessageCriteria *EmsFilterRuleResponseInlineRecordsInlineArrayItemInlineMessageCriteria `json:"message_criteria,omitempty"`
 
+	// Parameter criteria used to match against events' parameters. Each parameter consists of a name and a value. When multiple parameter criteria are provided in a rule, all must match for the rule to be considered matched. A pattern can include one or more wildcard '*' characters.
+	ParameterCriteria []*EmsFilterRuleResponseRecordsItems0ParameterCriteriaItems0 `json:"parameter_criteria"`
+
 	// Rule type
 	// Example: include
-	// Enum: [include exclude]
+	// Enum: ["include","exclude"]
 	Type *string `json:"type,omitempty"`
 }
 
@@ -317,6 +320,10 @@ func (m *EmsFilterRuleResponseInlineRecordsInlineArrayItem) Validate(formats str
 	}
 
 	if err := m.validateMessageCriteria(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateParameterCriteria(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -359,6 +366,30 @@ func (m *EmsFilterRuleResponseInlineRecordsInlineArrayItem) validateMessageCrite
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *EmsFilterRuleResponseInlineRecordsInlineArrayItem) validateParameterCriteria(formats strfmt.Registry) error {
+	if swag.IsZero(m.ParameterCriteria) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ParameterCriteria); i++ {
+		if swag.IsZero(m.ParameterCriteria[i]) { // not required
+			continue
+		}
+
+		if m.ParameterCriteria[i] != nil {
+			if err := m.ParameterCriteria[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("parameter_criteria" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -432,6 +463,10 @@ func (m *EmsFilterRuleResponseInlineRecordsInlineArrayItem) ContextValidate(ctx 
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateParameterCriteria(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -461,6 +496,24 @@ func (m *EmsFilterRuleResponseInlineRecordsInlineArrayItem) contextValidateMessa
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *EmsFilterRuleResponseInlineRecordsInlineArrayItem) contextValidateParameterCriteria(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ParameterCriteria); i++ {
+
+		if m.ParameterCriteria[i] != nil {
+			if err := m.ParameterCriteria[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("parameter_criteria" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -579,15 +632,15 @@ type EmsFilterRuleResponseInlineRecordsInlineArrayItemInlineMessageCriteria stru
 	Links *EmsFilterRuleResponseInlineRecordsInlineArrayItemInlineMessageCriteriaInlineLinks `json:"_links,omitempty"`
 
 	// Message name filter on which to match. Supports wildcards. Defaults to * if not specified.
-	// Example: callhome.*
+	// Example: wafl.*
 	NamePattern *string `json:"name_pattern,omitempty"`
 
 	// A comma-separated list of severities or a wildcard.
-	// Example: error,informational
+	// Example: emergency,alert,error
 	Severities *string `json:"severities,omitempty"`
 
 	// A comma separated list of snmp_trap_types or a wildcard.
-	// Example: standard|built_in
+	// Example: standard,built_in
 	SnmpTrapTypes *string `json:"snmp_trap_types,omitempty"`
 }
 
@@ -747,6 +800,48 @@ func (m *EmsFilterRuleResponseInlineRecordsInlineArrayItemInlineMessageCriteriaI
 // UnmarshalBinary interface implementation
 func (m *EmsFilterRuleResponseInlineRecordsInlineArrayItemInlineMessageCriteriaInlineLinks) UnmarshalBinary(b []byte) error {
 	var res EmsFilterRuleResponseInlineRecordsInlineArrayItemInlineMessageCriteriaInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// EmsFilterRuleResponseRecordsItems0ParameterCriteriaItems0 Criterion used for parameter based filtering
+//
+// swagger:model EmsFilterRuleResponseRecordsItems0ParameterCriteriaItems0
+type EmsFilterRuleResponseRecordsItems0ParameterCriteriaItems0 struct {
+
+	// Parameter name pattern. Wildcard character '*' is supported.
+	// Example: vol
+	NamePattern *string `json:"name_pattern,omitempty"`
+
+	// Parameter value pattern. Wildcard character '*' is supported.
+	// Example: cloud*
+	ValuePattern *string `json:"value_pattern,omitempty"`
+}
+
+// Validate validates this ems filter rule response records items0 parameter criteria items0
+func (m *EmsFilterRuleResponseRecordsItems0ParameterCriteriaItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this ems filter rule response records items0 parameter criteria items0 based on context it is used
+func (m *EmsFilterRuleResponseRecordsItems0ParameterCriteriaItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *EmsFilterRuleResponseRecordsItems0ParameterCriteriaItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *EmsFilterRuleResponseRecordsItems0ParameterCriteriaItems0) UnmarshalBinary(b []byte) error {
+	var res EmsFilterRuleResponseRecordsItems0ParameterCriteriaItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

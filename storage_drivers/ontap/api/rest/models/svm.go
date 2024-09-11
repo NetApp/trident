@@ -28,9 +28,36 @@ type Svm struct {
 	// Read Only: true
 	AggregatesDelegated *bool `json:"aggregates_delegated,omitempty"`
 
+	// Anti-ransomware related information for the SVM.
+	AntiRansomware *ArwVserver `json:"anti_ransomware,omitempty"`
+
+	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that no new file-extensions are observed in the volume in recent time. This parameter optionally specifies the recent time duration (in days) to be considered during which no new file-extension should be observed in a given volume to automatically switch the anti-ransomware state from ‘learning” to “enabled”.
+	AntiRansomwareAutoSwitchDurationWithoutNewFileExtension *int64 `json:"anti_ransomware_auto_switch_duration_without_new_file_extension,omitempty"`
+
+	// This property specifies whether anti-ransomware state of the volumes in this SVM are automatically switched by the system from “learning” (dry-run) to “enabled” (active) state after sufficient learning.
+	AntiRansomwareAutoSwitchFromLearningToEnabled *bool `json:"anti_ransomware_auto_switch_from_learning_to_enabled,omitempty"`
+
+	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that the volume should have a minimum file count in “learning” state. This parameter optionally specifies the minimum number of newly created files in “learning” state in a given volume to automatically switch the anti-ransomware state from “learning” to “enabled”.
+	AntiRansomwareAutoSwitchMinimumFileCount *int64 `json:"anti_ransomware_auto_switch_minimum_file_count,omitempty"`
+
+	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that the volume should have minimum number of file extensions in “learning” state. This parameter optionally specifies the minimum number of new file extensions in “learning” state in a given volume to automatically switch the anti-ransomware state from “learning” to “enabled”.
+	AntiRansomwareAutoSwitchMinimumFileExtension *int64 `json:"anti_ransomware_auto_switch_minimum_file_extension,omitempty"`
+
+	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that the volume should have sufficient data ingested to do the learning. This parameter optionally specifies the minimum amount of data (in GB) to be written to a given volume during the learning period to automatically switch the anti-ransomware state from “learning” to “enabled”. The amount of data considered as ingested also includes the data that is deleted or overwritten after ingestion.
+	AntiRansomwareAutoSwitchMinimumIncomingData *string `json:"anti_ransomware_auto_switch_minimum_incoming_data,omitempty"`
+
+	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that the volume should be in “learning” state for sufficient time period. This parameter optionally specifies the minimum number of days a given volume should be in “learning” state to automatically switch the anti-ransomware state from “learning” to “enabled”.
+	AntiRansomwareAutoSwitchMinimumLearningPeriod *int64 `json:"anti_ransomware_auto_switch_minimum_learning_period,omitempty"`
+
 	// Specifies the default Anti-ransomware state of the volumes in the SVM. Default "anti_ransomware_default_volume_state" property is disabled for POST operation. If this value is "disabled", Anti-ransomware protection is disabled by default on the new volumes that are created in the SVM. If this value is "dry_run", Anti-ransomware protection is in learning mode by default on the new volumes that are created in the SVM.  When the Anti-ransomware license is not present, this property is ignored and volumes will be created with the "disabled" state.
-	// Enum: [disabled dry_run]
+	// Enum: ["disabled","dry_run"]
 	AntiRansomwareDefaultVolumeState *string `json:"anti_ransomware_default_volume_state,omitempty"`
+
+	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that the volume should have sufficient data ingested to do the learning. This parameter optionally specifies the minimum amount of data (in GB) to be written to a given volume during the learning period to automatically switch the anti-ransomware state from “learning” to “enabled”. The amount of data considered as ingested also includes the data that is deleted or overwritten after ingestion. This field is no longer supported.
+	AntiRansomwareIncomingWriteThreshold *string `json:"anti_ransomware_incoming_write_threshold,omitempty"`
+
+	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that the volume should have sufficient data ingested to do the learning. This parameter optionally specifies the minimum amount of data (in percentage) to be written to a given volume during the learning period to automatically switch the anti-ransomware state from “learning” to “enabled”. The amount of data considered as ingested also includes the data that is deleted or overwritten after ingestion.
+	AntiRansomwareIncomingWriteThresholdPercent *string `json:"anti_ransomware_incoming_write_threshold_percent,omitempty"`
 
 	// Specifies whether volume activity tracking is automatically enabled on volumes that are created in the SVM.
 	AutoEnableActivityTracking *bool `json:"auto_enable_activity_tracking,omitempty"`
@@ -69,7 +96,7 @@ type Svm struct {
 
 	// Default volume language code. UTF-8 encoded languages are valid in POST or PATCH. Non UTF-8 language encodings are for backward compatibility and are not valid input for POST and PATCH requests.
 	// Example: c.utf_8
-	// Enum: [c da de en en_us es fi fr he it ja ja_jp.pck ko no nl pt sv zh zh.gbk zh_tw zh_tw.big5 c.utf_8 ar ar.utf_8 cs cs.utf_8 da.utf_8 de.utf_8 en.utf_8 en_us.utf_8 es.utf_8 fi.utf_8 fr.utf_8 he.utf_8 hr hr.utf_8 hu hu.utf_8 it.utf_8 ja.utf_8 ja_v1 ja_v1.utf_8 ja_jp.pck.utf_8 ja_jp.932 ja_jp.932.utf_8 ja_jp.pck_v2 ja_jp.pck_v2.utf_8 ko.utf_8 no.utf_8 nl.utf_8 pl pl.utf_8 pt.utf_8 ro ro.utf_8 ru ru.utf_8 sk sk.utf_8 sl sl.utf_8 sv.utf_8 tr tr.utf_8 zh.utf_8 zh.gbk.utf_8 zh_tw.utf_8 zh_tw.big5.utf_8 utf8mb4]
+	// Enum: ["c","da","de","en","en_us","es","fi","fr","he","it","ja","ja_jp.pck","ko","no","nl","pt","sv","zh","zh.gbk","zh_tw","zh_tw.big5","c.utf_8","ar","ar.utf_8","cs","cs.utf_8","da.utf_8","de.utf_8","en.utf_8","en_us.utf_8","es.utf_8","fi.utf_8","fr.utf_8","he.utf_8","hr","hr.utf_8","hu","hu.utf_8","it.utf_8","ja.utf_8","ja_v1","ja_v1.utf_8","ja_jp.pck.utf_8","ja_jp.932","ja_jp.932.utf_8","ja_jp.pck_v2","ja_jp.pck_v2.utf_8","ko.utf_8","no.utf_8","nl.utf_8","pl","pl.utf_8","pt.utf_8","ro","ro.utf_8","ru","ru.utf_8","sk","sk.utf_8","sl","sl.utf_8","sv.utf_8","tr","tr.utf_8","zh.utf_8","zh.gbk.utf_8","zh_tw.utf_8","zh_tw.big5.utf_8","utf8mb4"]
 	Language *string `json:"language,omitempty"`
 
 	// ldap
@@ -95,11 +122,21 @@ type Svm struct {
 	// nsswitch
 	Nsswitch *SvmInlineNsswitch `json:"nsswitch,omitempty"`
 
+	// Number of volumes in the recovery queue.
+	// Read Only: true
+	NumberOfVolumesInRecoveryQueue *int64 `json:"number_of_volumes_in_recovery_queue,omitempty"`
+
 	// nvme
 	Nvme *SvmInlineNvme `json:"nvme,omitempty"`
 
+	// qos adaptive policy group template
+	QosAdaptivePolicyGroupTemplate *SvmInlineQosAdaptivePolicyGroupTemplate `json:"qos_adaptive_policy_group_template,omitempty"`
+
 	// qos policy
 	QosPolicy *SvmInlineQosPolicy `json:"qos_policy,omitempty"`
+
+	// qos policy group template
+	QosPolicyGroupTemplate *SvmInlineQosPolicyGroupTemplate `json:"qos_policy_group_template,omitempty"`
 
 	// s3
 	S3 *SvmInlineS3 `json:"s3,omitempty"`
@@ -112,11 +149,14 @@ type Svm struct {
 
 	// SVM State
 	// Example: running
-	// Enum: [starting running stopping stopped deleting]
+	// Enum: ["starting","running","stopping","stopped","deleting","initializing"]
 	State *string `json:"state,omitempty"`
 
+	// storage
+	Storage *SvmInlineStorage `json:"storage,omitempty"`
+
 	// SVM subtype. The SVM subtype sync_destination is created automatically when an SVM of subtype sync_source is created on the source MetroCluster cluster. A POST request with sync_destination as SVM subtype is invalid.
-	// Enum: [default dp_destination sync_source sync_destination]
+	// Enum: ["default","dp_destination","sync_source","sync_destination"]
 	Subtype *string `json:"subtype,omitempty"`
 
 	// List of allowed aggregates for SVM volumes. An administrator is allowed to create volumes on these aggregates.
@@ -131,6 +171,10 @@ type Svm struct {
 	// Optional array of routes for the SVM
 	SvmInlineRoutes []*NetworkRouteForSvm `json:"routes,omitempty"`
 
+	// Sum of the sizes of the volumes in the recovery queue.
+	// Read Only: true
+	TotalVolumeSizeInRecoveryQueue *int64 `json:"total_volume_size_in_recovery_queue,omitempty"`
+
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
@@ -143,6 +187,10 @@ func (m *Svm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAntiRansomware(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -206,7 +254,15 @@ func (m *Svm) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateQosAdaptivePolicyGroupTemplate(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateQosPolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateQosPolicyGroupTemplate(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -223,6 +279,10 @@ func (m *Svm) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorage(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -261,6 +321,23 @@ func (m *Svm) validateLinks(formats strfmt.Registry) error {
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Svm) validateAntiRansomware(formats strfmt.Registry) error {
+	if swag.IsZero(m.AntiRansomware) { // not required
+		return nil
+	}
+
+	if m.AntiRansomware != nil {
+		if err := m.AntiRansomware.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("anti_ransomware")
 			}
 			return err
 		}
@@ -1271,6 +1348,23 @@ func (m *Svm) validateNvme(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Svm) validateQosAdaptivePolicyGroupTemplate(formats strfmt.Registry) error {
+	if swag.IsZero(m.QosAdaptivePolicyGroupTemplate) { // not required
+		return nil
+	}
+
+	if m.QosAdaptivePolicyGroupTemplate != nil {
+		if err := m.QosAdaptivePolicyGroupTemplate.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_adaptive_policy_group_template")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Svm) validateQosPolicy(formats strfmt.Registry) error {
 	if swag.IsZero(m.QosPolicy) { // not required
 		return nil
@@ -1280,6 +1374,23 @@ func (m *Svm) validateQosPolicy(formats strfmt.Registry) error {
 		if err := m.QosPolicy.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("qos_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Svm) validateQosPolicyGroupTemplate(formats strfmt.Registry) error {
+	if swag.IsZero(m.QosPolicyGroupTemplate) { // not required
+		return nil
+	}
+
+	if m.QosPolicyGroupTemplate != nil {
+		if err := m.QosPolicyGroupTemplate.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy_group_template")
 			}
 			return err
 		}
@@ -1343,7 +1454,7 @@ var svmTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["starting","running","stopping","stopped","deleting"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["starting","running","stopping","stopped","deleting","initializing"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1402,6 +1513,16 @@ const (
 	// END DEBUGGING
 	// SvmStateDeleting captures enum value "deleting"
 	SvmStateDeleting string = "deleting"
+
+	// BEGIN DEBUGGING
+	// svm
+	// Svm
+	// state
+	// State
+	// initializing
+	// END DEBUGGING
+	// SvmStateInitializing captures enum value "initializing"
+	SvmStateInitializing string = "initializing"
 )
 
 // prop value enum
@@ -1420,6 +1541,23 @@ func (m *Svm) validateState(formats strfmt.Registry) error {
 	// value enum
 	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Svm) validateStorage(formats strfmt.Registry) error {
+	if swag.IsZero(m.Storage) { // not required
+		return nil
+	}
+
+	if m.Storage != nil {
+		if err := m.Storage.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -1609,6 +1747,10 @@ func (m *Svm) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAntiRansomware(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateCertificate(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1653,11 +1795,23 @@ func (m *Svm) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateNumberOfVolumesInRecoveryQueue(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateNvme(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateQosAdaptivePolicyGroupTemplate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateQosPolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateQosPolicyGroupTemplate(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1670,6 +1824,10 @@ func (m *Svm) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 	}
 
 	if err := m.contextValidateSnapshotPolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStorage(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1686,6 +1844,10 @@ func (m *Svm) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 	}
 
 	if err := m.contextValidateSvmInlineRoutes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTotalVolumeSizeInRecoveryQueue(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1717,6 +1879,20 @@ func (m *Svm) contextValidateAggregatesDelegated(ctx context.Context, formats st
 
 	if err := validate.ReadOnly(ctx, "aggregates_delegated", "body", m.AggregatesDelegated); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Svm) contextValidateAntiRansomware(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AntiRansomware != nil {
+		if err := m.AntiRansomware.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("anti_ransomware")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -1876,6 +2052,15 @@ func (m *Svm) contextValidateNsswitch(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
+func (m *Svm) contextValidateNumberOfVolumesInRecoveryQueue(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "number_of_volumes_in_recovery_queue", "body", m.NumberOfVolumesInRecoveryQueue); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Svm) contextValidateNvme(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Nvme != nil {
@@ -1890,12 +2075,40 @@ func (m *Svm) contextValidateNvme(ctx context.Context, formats strfmt.Registry) 
 	return nil
 }
 
+func (m *Svm) contextValidateQosAdaptivePolicyGroupTemplate(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.QosAdaptivePolicyGroupTemplate != nil {
+		if err := m.QosAdaptivePolicyGroupTemplate.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_adaptive_policy_group_template")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Svm) contextValidateQosPolicy(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.QosPolicy != nil {
 		if err := m.QosPolicy.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("qos_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Svm) contextValidateQosPolicyGroupTemplate(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.QosPolicyGroupTemplate != nil {
+		if err := m.QosPolicyGroupTemplate.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy_group_template")
 			}
 			return err
 		}
@@ -1938,6 +2151,20 @@ func (m *Svm) contextValidateSnapshotPolicy(ctx context.Context, formats strfmt.
 		if err := m.SnapshotPolicy.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("snapshot_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Svm) contextValidateStorage(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Storage != nil {
+		if err := m.Storage.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage")
 			}
 			return err
 		}
@@ -2018,6 +2245,15 @@ func (m *Svm) contextValidateSvmInlineRoutes(ctx context.Context, formats strfmt
 	return nil
 }
 
+func (m *Svm) contextValidateTotalVolumeSizeInRecoveryQueue(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "total_volume_size_in_recovery_queue", "body", m.TotalVolumeSizeInRecoveryQueue); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Svm) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
@@ -2063,15 +2299,18 @@ type SvmInlineAggregatesInlineArrayItem struct {
 	Name *string `json:"name,omitempty"`
 
 	// SnapLock type.
-	// Enum: [non_snaplock compliance enterprise]
+	// Read Only: true
+	// Enum: ["non_snaplock","compliance","enterprise"]
 	SnaplockType *string `json:"snaplock_type,omitempty"`
 
 	// Aggregate state.
-	// Enum: [online offline unknown]
+	// Read Only: true
+	// Enum: ["online","offline","unknown"]
 	State *string `json:"state,omitempty"`
 
 	// Type of aggregate.
-	// Enum: [hdd hybrid lun ssd vmdisk]
+	// Read Only: true
+	// Enum: ["hdd","hybrid","lun","ssd","vmdisk"]
 	Type *string `json:"type,omitempty"`
 
 	// uuid
@@ -2352,6 +2591,18 @@ func (m *SvmInlineAggregatesInlineArrayItem) ContextValidate(ctx context.Context
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSnaplockType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -2375,6 +2626,33 @@ func (m *SvmInlineAggregatesInlineArrayItem) contextValidateLinks(ctx context.Co
 func (m *SvmInlineAggregatesInlineArrayItem) contextValidateAvailableSize(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "available_size", "body", m.AvailableSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmInlineAggregatesInlineArrayItem) contextValidateSnaplockType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "snaplock_type", "body", m.SnaplockType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmInlineAggregatesInlineArrayItem) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmInlineAggregatesInlineArrayItem) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -2494,7 +2772,6 @@ type SvmInlineCertificate struct {
 	Links *SvmInlineCertificateInlineLinks `json:"_links,omitempty"`
 
 	// Certificate name
-	// Example: cert1
 	Name *string `json:"name,omitempty"`
 
 	// Certificate UUID
@@ -2679,6 +2956,17 @@ type SvmInlineCifs struct {
 	// If this is set to true, an SVM administrator can manage the CIFS service. If it is false, only the cluster administrator can manage the service.
 	Allowed *bool `json:"allowed,omitempty"`
 
+	// Authentication type.
+	// Example: domain
+	// Read Only: true
+	// Enum: ["domain","workgroup"]
+	AuthStyle *string `json:"auth-style,omitempty"`
+
+	// The NetBIOS name of the domain or workgroup associated with the CIFS server.
+	//
+	// Read Only: true
+	DomainWorkgroup *string `json:"domain_workgroup,omitempty"`
+
 	// If allowed, setting to true enables the CIFS service.
 	Enabled *bool `json:"enabled,omitempty"`
 
@@ -2687,6 +2975,12 @@ type SvmInlineCifs struct {
 	// Max Length: 15
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
+
+	// The workgroup name.
+	// Example: workgrp1
+	// Max Length: 15
+	// Min Length: 1
+	Workgroup *string `json:"workgroup,omitempty"`
 }
 
 // Validate validates this svm inline cifs
@@ -2701,7 +2995,15 @@ func (m *SvmInlineCifs) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateAuthStyle(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateWorkgroup(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2745,6 +3047,62 @@ func (m *SvmInlineCifs) validateAdDomain(formats strfmt.Registry) error {
 	return nil
 }
 
+var svmInlineCifsTypeAuthStylePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["domain","workgroup"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		svmInlineCifsTypeAuthStylePropEnum = append(svmInlineCifsTypeAuthStylePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// svm_inline_cifs
+	// SvmInlineCifs
+	// auth-style
+	// AuthStyle
+	// domain
+	// END DEBUGGING
+	// SvmInlineCifsAuthStyleDomain captures enum value "domain"
+	SvmInlineCifsAuthStyleDomain string = "domain"
+
+	// BEGIN DEBUGGING
+	// svm_inline_cifs
+	// SvmInlineCifs
+	// auth-style
+	// AuthStyle
+	// workgroup
+	// END DEBUGGING
+	// SvmInlineCifsAuthStyleWorkgroup captures enum value "workgroup"
+	SvmInlineCifsAuthStyleWorkgroup string = "workgroup"
+)
+
+// prop value enum
+func (m *SvmInlineCifs) validateAuthStyleEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, svmInlineCifsTypeAuthStylePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SvmInlineCifs) validateAuthStyle(formats strfmt.Registry) error {
+	if swag.IsZero(m.AuthStyle) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAuthStyleEnum("cifs"+"."+"auth-style", "body", *m.AuthStyle); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *SvmInlineCifs) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
@@ -2761,6 +3119,22 @@ func (m *SvmInlineCifs) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *SvmInlineCifs) validateWorkgroup(formats strfmt.Registry) error {
+	if swag.IsZero(m.Workgroup) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("cifs"+"."+"workgroup", "body", *m.Workgroup, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("cifs"+"."+"workgroup", "body", *m.Workgroup, 15); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this svm inline cifs based on the context it is used
 func (m *SvmInlineCifs) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -2770,6 +3144,14 @@ func (m *SvmInlineCifs) ContextValidate(ctx context.Context, formats strfmt.Regi
 	}
 
 	if err := m.contextValidateAdDomain(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAuthStyle(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDomainWorkgroup(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2807,6 +3189,24 @@ func (m *SvmInlineCifs) contextValidateAdDomain(ctx context.Context, formats str
 	return nil
 }
 
+func (m *SvmInlineCifs) contextValidateAuthStyle(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "cifs"+"."+"auth-style", "body", m.AuthStyle); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmInlineCifs) contextValidateDomainWorkgroup(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "cifs"+"."+"domain_workgroup", "body", m.DomainWorkgroup); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *SvmInlineCifs) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -2829,6 +3229,10 @@ func (m *SvmInlineCifs) UnmarshalBinary(b []byte) error {
 //
 // swagger:model svm_inline_cifs_inline_ad_domain
 type SvmInlineCifsInlineAdDomain struct {
+
+	// The default site used by LIFs that do not have a site membership.
+	//
+	DefaultSite *string `json:"default_site,omitempty"`
 
 	// The fully qualified domain name of the Windows Active Directory to which this CIFS server belongs. A CIFS server appears as a member of Windows server object in the Active Directory store.
 	//
@@ -3210,7 +3614,9 @@ func (m *SvmInlineDNSInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmInlineFcp svm inline fcp
+// SvmInlineFcp ### Platform Specifics
+// * **Unified ONTAP**: Available for GET, POST and PATCH.
+// * **ASA r2**: Available for GET. All SVMs are provisioned with the FCP service configured.
 //
 // swagger:model svm_inline_fcp
 type SvmInlineFcp struct {
@@ -3397,7 +3803,7 @@ type SvmInlineIpspace struct {
 	Links *SvmInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
-	// Example: exchange
+	// Example: Default
 	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
@@ -3568,7 +3974,9 @@ func (m *SvmInlineIpspaceInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmInlineIscsi svm inline iscsi
+// SvmInlineIscsi ### Platform Specifics
+// * **Unified ONTAP**: Available for GET, POST and PATCH.
+// * **ASA r2**: Available for GET. All SVMs are provisioned with the iSCSI service configured.
 //
 // swagger:model svm_inline_iscsi
 type SvmInlineIscsi struct {
@@ -3579,7 +3987,7 @@ type SvmInlineIscsi struct {
 	// If this is set to true, an SVM administrator can manage the iSCSI service. If it is false, only the cluster administrator can manage the service.
 	Allowed *bool `json:"allowed,omitempty"`
 
-	// If allowed, setting to true enables the ISCSI service.
+	// If allowed, setting to true enables the iSCSI service.
 	Enabled *bool `json:"enabled,omitempty"`
 }
 
@@ -3765,6 +4173,10 @@ type SvmInlineLdap struct {
 
 	// Enable LDAP? Setting to true creates a configuration if not already created.
 	Enabled *bool `json:"enabled,omitempty"`
+
+	// Specifies whether or not LDAP server discovery is restricted to site-scope.
+	//
+	RestrictDiscoveryToSite *bool `json:"restrict_discovery_to_site,omitempty"`
 
 	// servers
 	Servers []*string `json:"servers,omitempty"`
@@ -4663,7 +5075,9 @@ func (m *SvmInlineNsswitch) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmInlineNvme svm inline nvme
+// SvmInlineNvme ### Platform Specifics
+// * **Unified ONTAP**: Available for GET, POST and PATCH.
+// * **ASA r2**: Available for GET. All SVMs are provisioned with the NVMe service configured.
 //
 // swagger:model svm_inline_nvme
 type SvmInlineNvme struct {
@@ -4841,6 +5255,290 @@ func (m *SvmInlineNvmeInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// SvmInlineQosAdaptivePolicyGroupTemplate This optionally specifies which QoS adaptive policy group to apply to the SVM as a template. This policy group will then be assigned to volumes created or rehosted into this SVM. This policy group defines measurable service level objectives (SLOs) and Service Level Agreements (SLAs) that adjust based on the volume allocated space or used space.
+//
+// swagger:model svm_inline_qos_adaptive_policy_group_template
+type SvmInlineQosAdaptivePolicyGroupTemplate struct {
+
+	// links
+	Links *SvmInlineQosAdaptivePolicyGroupTemplateInlineLinks `json:"_links,omitempty"`
+
+	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 10000
+	// Maximum: 2.147483647e+09
+	// Minimum: 0
+	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
+
+	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 500
+	// Maximum: 4.194303e+06
+	// Minimum: 0
+	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
+
+	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 2000
+	// Maximum: 2.147483647e+09
+	// Minimum: 0
+	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
+
+	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 500
+	// Maximum: 4.194303e+06
+	// Minimum: 0
+	MinThroughputMbps *int64 `json:"min_throughput_mbps,omitempty"`
+
+	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
+	// Example: performance
+	Name *string `json:"name,omitempty"`
+
+	// The QoS policy group UUID. This is mutually exclusive with name and other QoS attributes during POST and PATCH.
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this svm inline qos adaptive policy group template
+func (m *SvmInlineQosAdaptivePolicyGroupTemplate) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMaxThroughputIops(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMaxThroughputMbps(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMinThroughputIops(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMinThroughputMbps(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmInlineQosAdaptivePolicyGroupTemplate) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_adaptive_policy_group_template" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *SvmInlineQosAdaptivePolicyGroupTemplate) validateMaxThroughputIops(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxThroughputIops) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("qos_adaptive_policy_group_template"+"."+"max_throughput_iops", "body", *m.MaxThroughputIops, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("qos_adaptive_policy_group_template"+"."+"max_throughput_iops", "body", *m.MaxThroughputIops, 2.147483647e+09, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmInlineQosAdaptivePolicyGroupTemplate) validateMaxThroughputMbps(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxThroughputMbps) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("qos_adaptive_policy_group_template"+"."+"max_throughput_mbps", "body", *m.MaxThroughputMbps, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("qos_adaptive_policy_group_template"+"."+"max_throughput_mbps", "body", *m.MaxThroughputMbps, 4.194303e+06, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmInlineQosAdaptivePolicyGroupTemplate) validateMinThroughputIops(formats strfmt.Registry) error {
+	if swag.IsZero(m.MinThroughputIops) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("qos_adaptive_policy_group_template"+"."+"min_throughput_iops", "body", *m.MinThroughputIops, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("qos_adaptive_policy_group_template"+"."+"min_throughput_iops", "body", *m.MinThroughputIops, 2.147483647e+09, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmInlineQosAdaptivePolicyGroupTemplate) validateMinThroughputMbps(formats strfmt.Registry) error {
+	if swag.IsZero(m.MinThroughputMbps) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("qos_adaptive_policy_group_template"+"."+"min_throughput_mbps", "body", *m.MinThroughputMbps, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("qos_adaptive_policy_group_template"+"."+"min_throughput_mbps", "body", *m.MinThroughputMbps, 4.194303e+06, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm inline qos adaptive policy group template based on the context it is used
+func (m *SvmInlineQosAdaptivePolicyGroupTemplate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmInlineQosAdaptivePolicyGroupTemplate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_adaptive_policy_group_template" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmInlineQosAdaptivePolicyGroupTemplate) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmInlineQosAdaptivePolicyGroupTemplate) UnmarshalBinary(b []byte) error {
+	var res SvmInlineQosAdaptivePolicyGroupTemplate
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SvmInlineQosAdaptivePolicyGroupTemplateInlineLinks svm inline qos adaptive policy group template inline links
+//
+// swagger:model svm_inline_qos_adaptive_policy_group_template_inline__links
+type SvmInlineQosAdaptivePolicyGroupTemplateInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this svm inline qos adaptive policy group template inline links
+func (m *SvmInlineQosAdaptivePolicyGroupTemplateInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmInlineQosAdaptivePolicyGroupTemplateInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_adaptive_policy_group_template" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm inline qos adaptive policy group template inline links based on the context it is used
+func (m *SvmInlineQosAdaptivePolicyGroupTemplateInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmInlineQosAdaptivePolicyGroupTemplateInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_adaptive_policy_group_template" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmInlineQosAdaptivePolicyGroupTemplateInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmInlineQosAdaptivePolicyGroupTemplateInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmInlineQosAdaptivePolicyGroupTemplateInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // SvmInlineQosPolicy This optionally specifies which QoS policy group to apply to the Vserver. This policy group defines measurable service level objectives (SLOs) that apply to the storage objects with which the policy group is associated.
 //
 // swagger:model svm_inline_qos_policy
@@ -4851,18 +5549,26 @@ type SvmInlineQosPolicy struct {
 
 	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 10000
+	// Maximum: 2.147483647e+09
+	// Minimum: 0
 	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
 	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
+	// Maximum: 4.194303e+06
+	// Minimum: 0
 	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
 	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 2000
+	// Maximum: 2.147483647e+09
+	// Minimum: 0
 	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
 	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
+	// Maximum: 4.194303e+06
+	// Minimum: 0
 	MinThroughputMbps *int64 `json:"min_throughput_mbps,omitempty"`
 
 	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
@@ -4879,6 +5585,22 @@ func (m *SvmInlineQosPolicy) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMaxThroughputIops(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMaxThroughputMbps(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMinThroughputIops(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMinThroughputMbps(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -4900,6 +5622,70 @@ func (m *SvmInlineQosPolicy) validateLinks(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SvmInlineQosPolicy) validateMaxThroughputIops(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxThroughputIops) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("qos_policy"+"."+"max_throughput_iops", "body", *m.MaxThroughputIops, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("qos_policy"+"."+"max_throughput_iops", "body", *m.MaxThroughputIops, 2.147483647e+09, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmInlineQosPolicy) validateMaxThroughputMbps(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxThroughputMbps) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("qos_policy"+"."+"max_throughput_mbps", "body", *m.MaxThroughputMbps, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("qos_policy"+"."+"max_throughput_mbps", "body", *m.MaxThroughputMbps, 4.194303e+06, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmInlineQosPolicy) validateMinThroughputIops(formats strfmt.Registry) error {
+	if swag.IsZero(m.MinThroughputIops) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("qos_policy"+"."+"min_throughput_iops", "body", *m.MinThroughputIops, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("qos_policy"+"."+"min_throughput_iops", "body", *m.MinThroughputIops, 2.147483647e+09, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmInlineQosPolicy) validateMinThroughputMbps(formats strfmt.Registry) error {
+	if swag.IsZero(m.MinThroughputMbps) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("qos_policy"+"."+"min_throughput_mbps", "body", *m.MinThroughputMbps, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("qos_policy"+"."+"min_throughput_mbps", "body", *m.MinThroughputMbps, 4.194303e+06, false); err != nil {
+		return err
 	}
 
 	return nil
@@ -4944,6 +5730,290 @@ func (m *SvmInlineQosPolicy) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *SvmInlineQosPolicy) UnmarshalBinary(b []byte) error {
 	var res SvmInlineQosPolicy
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SvmInlineQosPolicyGroupTemplate This optionally specifies which QoS non-shared policy group to apply to the SVM as a template. This policy group is then assigned to volumes created or rehosted into this SVM. This policy group defines measurable service level objectives (SLOs) and Service Level Agreements (SLAs).
+//
+// swagger:model svm_inline_qos_policy_group_template
+type SvmInlineQosPolicyGroupTemplate struct {
+
+	// links
+	Links *SvmInlineQosPolicyGroupTemplateInlineLinks `json:"_links,omitempty"`
+
+	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 10000
+	// Maximum: 2.147483647e+09
+	// Minimum: 0
+	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
+
+	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 500
+	// Maximum: 4.194303e+06
+	// Minimum: 0
+	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
+
+	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 2000
+	// Maximum: 2.147483647e+09
+	// Minimum: 0
+	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
+
+	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 500
+	// Maximum: 4.194303e+06
+	// Minimum: 0
+	MinThroughputMbps *int64 `json:"min_throughput_mbps,omitempty"`
+
+	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
+	// Example: performance
+	Name *string `json:"name,omitempty"`
+
+	// The QoS policy group UUID. This is mutually exclusive with name and other QoS attributes during POST and PATCH.
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this svm inline qos policy group template
+func (m *SvmInlineQosPolicyGroupTemplate) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMaxThroughputIops(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMaxThroughputMbps(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMinThroughputIops(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMinThroughputMbps(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmInlineQosPolicyGroupTemplate) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy_group_template" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *SvmInlineQosPolicyGroupTemplate) validateMaxThroughputIops(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxThroughputIops) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("qos_policy_group_template"+"."+"max_throughput_iops", "body", *m.MaxThroughputIops, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("qos_policy_group_template"+"."+"max_throughput_iops", "body", *m.MaxThroughputIops, 2.147483647e+09, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmInlineQosPolicyGroupTemplate) validateMaxThroughputMbps(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxThroughputMbps) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("qos_policy_group_template"+"."+"max_throughput_mbps", "body", *m.MaxThroughputMbps, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("qos_policy_group_template"+"."+"max_throughput_mbps", "body", *m.MaxThroughputMbps, 4.194303e+06, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmInlineQosPolicyGroupTemplate) validateMinThroughputIops(formats strfmt.Registry) error {
+	if swag.IsZero(m.MinThroughputIops) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("qos_policy_group_template"+"."+"min_throughput_iops", "body", *m.MinThroughputIops, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("qos_policy_group_template"+"."+"min_throughput_iops", "body", *m.MinThroughputIops, 2.147483647e+09, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmInlineQosPolicyGroupTemplate) validateMinThroughputMbps(formats strfmt.Registry) error {
+	if swag.IsZero(m.MinThroughputMbps) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("qos_policy_group_template"+"."+"min_throughput_mbps", "body", *m.MinThroughputMbps, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("qos_policy_group_template"+"."+"min_throughput_mbps", "body", *m.MinThroughputMbps, 4.194303e+06, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm inline qos policy group template based on the context it is used
+func (m *SvmInlineQosPolicyGroupTemplate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmInlineQosPolicyGroupTemplate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy_group_template" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmInlineQosPolicyGroupTemplate) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmInlineQosPolicyGroupTemplate) UnmarshalBinary(b []byte) error {
+	var res SvmInlineQosPolicyGroupTemplate
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SvmInlineQosPolicyGroupTemplateInlineLinks svm inline qos policy group template inline links
+//
+// swagger:model svm_inline_qos_policy_group_template_inline__links
+type SvmInlineQosPolicyGroupTemplateInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this svm inline qos policy group template inline links
+func (m *SvmInlineQosPolicyGroupTemplateInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmInlineQosPolicyGroupTemplateInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy_group_template" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm inline qos policy group template inline links based on the context it is used
+func (m *SvmInlineQosPolicyGroupTemplateInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmInlineQosPolicyGroupTemplateInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy_group_template" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmInlineQosPolicyGroupTemplateInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmInlineQosPolicyGroupTemplateInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmInlineQosPolicyGroupTemplateInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5221,7 +6291,6 @@ type SvmInlineS3InlineCertificate struct {
 	Links *SvmInlineS3InlineCertificateInlineLinks `json:"_links,omitempty"`
 
 	// Certificate name
-	// Example: cert1
 	Name *string `json:"name,omitempty"`
 
 	// Certificate UUID
@@ -5487,6 +6556,10 @@ type SvmInlineSnapmirror struct {
 	// Read Only: true
 	IsProtected *bool `json:"is_protected,omitempty"`
 
+	// Specifies the number of SVM DR protected consistency groups in the SVM.
+	// Read Only: true
+	ProtectedConsistencyGroupCount *int64 `json:"protected_consistency_group_count,omitempty"`
+
 	// Specifies the number of SVM DR protected volumes in the SVM.
 	// Read Only: true
 	ProtectedVolumesCount *int64 `json:"protected_volumes_count,omitempty"`
@@ -5505,6 +6578,10 @@ func (m *SvmInlineSnapmirror) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateProtectedConsistencyGroupCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateProtectedVolumesCount(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -5518,6 +6595,15 @@ func (m *SvmInlineSnapmirror) ContextValidate(ctx context.Context, formats strfm
 func (m *SvmInlineSnapmirror) contextValidateIsProtected(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "snapmirror"+"."+"is_protected", "body", m.IsProtected); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmInlineSnapmirror) contextValidateProtectedConsistencyGroupCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "snapmirror"+"."+"protected_consistency_group_count", "body", m.ProtectedConsistencyGroupCount); err != nil {
 		return err
 	}
 
@@ -5551,7 +6637,7 @@ func (m *SvmInlineSnapmirror) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmInlineSnapshotPolicy This is a reference to the Snapshot copy policy.
+// SvmInlineSnapshotPolicy This is a reference to the snapshot policy.
 //
 // swagger:model svm_inline_snapshot_policy
 type SvmInlineSnapshotPolicy struct {
@@ -5724,6 +6810,119 @@ func (m *SvmInlineSnapshotPolicyInlineLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *SvmInlineSnapshotPolicyInlineLinks) UnmarshalBinary(b []byte) error {
 	var res SvmInlineSnapshotPolicyInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SvmInlineStorage svm inline storage
+//
+// swagger:model svm_inline_storage
+type SvmInlineStorage struct {
+
+	// Total size of the volumes in SVM, in bytes.
+	// Read Only: true
+	Allocated *int64 `json:"allocated,omitempty"`
+
+	// Currently available storage capacity in SVM, in bytes.
+	// Read Only: true
+	Available *int64 `json:"available,omitempty"`
+
+	// Maximum storage permitted on a single SVM, in bytes.
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Indicates at what percentage of storage capacity an alert message is sent. The default value is 90.
+	LimitThresholdAlert *int64 `json:"limit_threshold_alert,omitempty"`
+
+	// Indicates whether the total storage capacity exceeds the alert percentage.
+	// Read Only: true
+	LimitThresholdExceeded *bool `json:"limit_threshold_exceeded,omitempty"`
+
+	// The percentage of storage capacity used.
+	// Read Only: true
+	UsedPercentage *int64 `json:"used_percentage,omitempty"`
+}
+
+// Validate validates this svm inline storage
+func (m *SvmInlineStorage) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this svm inline storage based on the context it is used
+func (m *SvmInlineStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAllocated(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAvailable(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLimitThresholdExceeded(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsedPercentage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmInlineStorage) contextValidateAllocated(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "storage"+"."+"allocated", "body", m.Allocated); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmInlineStorage) contextValidateAvailable(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "storage"+"."+"available", "body", m.Available); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmInlineStorage) contextValidateLimitThresholdExceeded(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "storage"+"."+"limit_threshold_exceeded", "body", m.LimitThresholdExceeded); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmInlineStorage) contextValidateUsedPercentage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "storage"+"."+"used_percentage", "body", m.UsedPercentage); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmInlineStorage) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmInlineStorage) UnmarshalBinary(b []byte) error {
+	var res SvmInlineStorage
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

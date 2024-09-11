@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *FileMoveCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the file move create created response
+func (o *FileMoveCreateCreated) Code() int {
+	return 201
+}
+
 func (o *FileMoveCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /storage/file/moves][%d] fileMoveCreateCreated ", 201)
+	return fmt.Sprintf("[POST /storage/file/moves][%d] fileMoveCreateCreated", 201)
 }
 
 func (o *FileMoveCreateCreated) String() string {
-	return fmt.Sprintf("[POST /storage/file/moves][%d] fileMoveCreateCreated ", 201)
+	return fmt.Sprintf("[POST /storage/file/moves][%d] fileMoveCreateCreated", 201)
 }
 
 func (o *FileMoveCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -117,8 +123,8 @@ func NewFileMoveCreateDefault(code int) *FileMoveCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 917505 | SVM not found. |
 | 918236 | The specified \"volume.uuid\" and \"volume.name\" do not refer to the same volume. |
+| 2621462 | SVM `svm.name` does not exist. |
 | 2621706 | The specified \"svm.uuid\" and \"svm.name\" do not refer to the same SVM. |
 | 7012352 | File locations are inconsistent. All files must be on the same volume. |
 | 7012353 | Exceeded the file operations supported number of files. |
@@ -130,6 +136,7 @@ func NewFileMoveCreateDefault(code int) *FileMoveCreateDefault {
 | 7012361 | The SVMs peering relationship does not include application \"file-move\". |
 | 7012362 | The SVMs are not yet in a peered state. |
 | 7012363 | Cannot move files. All file operations must be managed by the destination SVM's administrator. |
+| 7012364 | Cannot move file from SVM \"svm.name\" to SVM \"svm.name\". Moving a file between SVMs is not supported. |
 | 7012365 | Copying a file between clusters is not supported. |
 | 7012367 | A reference path may only be specified if multiple source paths are specified. |
 | 7012368 | The reference path must have a matching source path. |
@@ -145,6 +152,7 @@ func NewFileMoveCreateDefault(code int) *FileMoveCreateDefault {
 | 7013357 | The specified volume could not be found. |
 | 7013358 | The specified SVM or volume UUID could not be found. |
 | 7013359 | The SVM and volume must both be provided. |
+| 7018861 | Cannot start the file operation. The volume is offline. |
 | 7018877 | Maximum combined total (50) of file and LUN copy and move operations reached. When one or more of the operations has completed, try the command again. |
 | 7018937 | The file is already on the destination constituent. |
 | 13107222 | Internal error. |
@@ -159,30 +167,27 @@ func NewFileMoveCreateDefault(code int) *FileMoveCreateDefault {
 | 144180203 | Volume capacity rebalancing is not supported on FlexCache volumes. |
 | 144180204 | Volume capacity rebalancing is not supported on object store volumes. |
 | 144180205 | The system is busy. |
-| 144180206 | File movement with automatic destination constituent selection only supported on FlexGroup volumes with more than one constituent. |
 | 144180207 | Volume capacity rebalancing is not supported on inactive MetroCluster configurations. |
 | 144180208 | Disruptive file movement is not supported when granular data is enabled on the volume. Try the operation again using \"disruptive=false\". |
 | 144181200 | Too many source or destination files are specified for a file move within a FlexGroup volume. There must be one source file identifying a file on a FlexGroup volume and either zero or one destination files identifying the destination constituent. |
-| 144181202 | For a file move within a FlexGroup volume, the source volume must be a FlexGroup volume, and the destination volume must be a constituent. |
+| 144181201 | For a file move within a FlexGroup volume, the source volume must be a FlexGroup volume, and the destination volume must be a constituent. |
+| 144181202 | The specified source volume UUID is for a constituent. For a file move within a FlexGroup volume, the source volume must be a FlexGroup volume, and the destination volume must be a constituent. |
 | 144181203 | A destination constituent must be provided in \"files_to_move.destinations\" if it is not being selected automatically. Use the \"automatic\" query to enable automatic destination constituent selection. |
 | 144181204 | A destination constituent is provided while automatic destination constituent selection is enabled with the \"automatic\" query. |
 | 144181205 | The destination volume is not a constituent. For a file move within a FlexGroup volume, the destination volume must be a constituent of the source FlexGroup volume. |
 | 144181207 | The destination constituent SVM is not the same as the source SVM. For a file move within a FlexGroup volume, the destination constituent must be a constituent of the source FlexGroup volume. |
 | 144181208 | The destination file path is different from the source file path. For a file move within a FlexGroup volume, the path of the source file does not change. |
 | 144181209 | The specified SVM for the destination constituent differs from the SVM of the source FlexGroup volume. For a file move within a FlexGroup volume, the destination constituent must be a constituent of the source FlexGroup volume. |
+| 144181210 | The \"force\" parameter is not supported unless the \"disruptive\" parameter is specified as \"true\". |
 | 144182201 | Volume capacity rebalancing using non-disruptive file move operations and granular data requires an effective cluster version of 9.11.1 or later. |
-| 144182206 | The \"force\" parameter is not supported unless the \"disruptive\" parameter is specified as \"true\". |
+| 144182228 | Operation is not supported on FlexGroup volumes with only one constituent. |
 | 196608143 | Cannot start the operation. The volume is undergoing a secure purge operation. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type FileMoveCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the file move create default response
-func (o *FileMoveCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this file move create default response has a 2xx status code
@@ -210,12 +215,19 @@ func (o *FileMoveCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the file move create default response
+func (o *FileMoveCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FileMoveCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/file/moves][%d] file_move_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/file/moves][%d] file_move_create default %s", o._statusCode, payload)
 }
 
 func (o *FileMoveCreateDefault) String() string {
-	return fmt.Sprintf("[POST /storage/file/moves][%d] file_move_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/file/moves][%d] file_move_create default %s", o._statusCode, payload)
 }
 
 func (o *FileMoveCreateDefault) GetPayload() *models.ErrorResponse {

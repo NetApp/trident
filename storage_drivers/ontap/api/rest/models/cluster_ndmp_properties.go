@@ -24,7 +24,7 @@ type ClusterNdmpProperties struct {
 	Links *ClusterNdmpPropertiesInlineLinks `json:"_links,omitempty"`
 
 	// Indicates whether NDMP is in node-scoped or SVM-scoped mode.
-	// Enum: [svm node]
+	// Enum: ["svm","node"]
 	Mode *string `json:"mode,omitempty"`
 }
 

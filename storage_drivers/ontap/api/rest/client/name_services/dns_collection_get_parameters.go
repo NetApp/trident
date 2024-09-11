@@ -150,6 +150,26 @@ type DNSCollectionGetParams struct {
 	*/
 	Servers *string
 
+	/* ServiceAddressType.
+
+	   The type of IP address to be looked up on the DNS server.
+
+	   Default: "all"
+	*/
+	ServiceAddressType *string
+
+	/* ServiceName.
+
+	   The string required to look up the SRV record on the DNS server.
+	*/
+	ServiceName *string
+
+	/* ServiceIps.
+
+	   Filter by service_ips
+	*/
+	ServiceIps *string
+
 	/* SourceAddressMatch.
 
 	   Filter by source_address_match
@@ -204,6 +224,12 @@ type DNSCollectionGetParams struct {
 	*/
 	TldQueryEnabled *bool
 
+	/* UUID.
+
+	   Filter by uuid
+	*/
+	UUID *string
+
 	requestTimeout time.Duration
 	Context        context.Context
 	HTTPClient     *http.Client
@@ -225,11 +251,14 @@ func (o *DNSCollectionGetParams) SetDefaults() {
 		returnRecordsDefault = bool(true)
 
 		returnTimeoutDefault = int64(15)
+
+		serviceAddressTypeDefault = string("all")
 	)
 
 	val := DNSCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecords:      &returnRecordsDefault,
+		ReturnTimeout:      &returnTimeoutDefault,
+		ServiceAddressType: &serviceAddressTypeDefault,
 	}
 
 	val.requestTimeout = o.requestTimeout
@@ -425,6 +454,39 @@ func (o *DNSCollectionGetParams) SetServers(servers *string) {
 	o.Servers = servers
 }
 
+// WithServiceAddressType adds the serviceAddressType to the dns collection get params
+func (o *DNSCollectionGetParams) WithServiceAddressType(serviceAddressType *string) *DNSCollectionGetParams {
+	o.SetServiceAddressType(serviceAddressType)
+	return o
+}
+
+// SetServiceAddressType adds the serviceAddressType to the dns collection get params
+func (o *DNSCollectionGetParams) SetServiceAddressType(serviceAddressType *string) {
+	o.ServiceAddressType = serviceAddressType
+}
+
+// WithServiceName adds the serviceName to the dns collection get params
+func (o *DNSCollectionGetParams) WithServiceName(serviceName *string) *DNSCollectionGetParams {
+	o.SetServiceName(serviceName)
+	return o
+}
+
+// SetServiceName adds the serviceName to the dns collection get params
+func (o *DNSCollectionGetParams) SetServiceName(serviceName *string) {
+	o.ServiceName = serviceName
+}
+
+// WithServiceIps adds the serviceIps to the dns collection get params
+func (o *DNSCollectionGetParams) WithServiceIps(serviceIps *string) *DNSCollectionGetParams {
+	o.SetServiceIps(serviceIps)
+	return o
+}
+
+// SetServiceIps adds the serviceIps to the dns collection get params
+func (o *DNSCollectionGetParams) SetServiceIps(serviceIps *string) {
+	o.ServiceIps = serviceIps
+}
+
 // WithSourceAddressMatch adds the sourceAddressMatch to the dns collection get params
 func (o *DNSCollectionGetParams) WithSourceAddressMatch(sourceAddressMatch *bool) *DNSCollectionGetParams {
 	o.SetSourceAddressMatch(sourceAddressMatch)
@@ -522,6 +584,17 @@ func (o *DNSCollectionGetParams) WithTldQueryEnabled(tldQueryEnabled *bool) *DNS
 // SetTldQueryEnabled adds the tldQueryEnabled to the dns collection get params
 func (o *DNSCollectionGetParams) SetTldQueryEnabled(tldQueryEnabled *bool) {
 	o.TldQueryEnabled = tldQueryEnabled
+}
+
+// WithUUID adds the uuid to the dns collection get params
+func (o *DNSCollectionGetParams) WithUUID(uuid *string) *DNSCollectionGetParams {
+	o.SetUUID(uuid)
+	return o
+}
+
+// SetUUID adds the uuid to the dns collection get params
+func (o *DNSCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -758,6 +831,57 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.ServiceAddressType != nil {
+
+		// query param service.address_type
+		var qrServiceAddressType string
+
+		if o.ServiceAddressType != nil {
+			qrServiceAddressType = *o.ServiceAddressType
+		}
+		qServiceAddressType := qrServiceAddressType
+		if qServiceAddressType != "" {
+
+			if err := r.SetQueryParam("service.address_type", qServiceAddressType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceName != nil {
+
+		// query param service.name
+		var qrServiceName string
+
+		if o.ServiceName != nil {
+			qrServiceName = *o.ServiceName
+		}
+		qServiceName := qrServiceName
+		if qServiceName != "" {
+
+			if err := r.SetQueryParam("service.name", qServiceName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceIps != nil {
+
+		// query param service_ips
+		var qrServiceIps string
+
+		if o.ServiceIps != nil {
+			qrServiceIps = *o.ServiceIps
+		}
+		qServiceIps := qrServiceIps
+		if qServiceIps != "" {
+
+			if err := r.SetQueryParam("service_ips", qServiceIps); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SourceAddressMatch != nil {
 
 		// query param source_address_match
@@ -906,6 +1030,23 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qTldQueryEnabled != "" {
 
 			if err := r.SetQueryParam("tld_query_enabled", qTldQueryEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UUID != nil {
+
+		// query param uuid
+		var qrUUID string
+
+		if o.UUID != nil {
+			qrUUID = *o.UUID
+		}
+		qUUID := qrUUID
+		if qUUID != "" {
+
+			if err := r.SetQueryParam("uuid", qUUID); err != nil {
 				return err
 			}
 		}

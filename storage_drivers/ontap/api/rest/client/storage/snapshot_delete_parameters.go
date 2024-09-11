@@ -70,7 +70,7 @@ type SnapshotDeleteParams struct {
 
 	/* UUID.
 
-	   Snapshot copy UUID
+	   Snapshot UUID
 	*/
 	UUID string
 

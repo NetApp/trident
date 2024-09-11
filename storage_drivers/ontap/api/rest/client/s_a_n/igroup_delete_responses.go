@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *IgroupDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the igroup delete o k response
+func (o *IgroupDeleteOK) Code() int {
+	return 200
+}
+
 func (o *IgroupDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/igroups/{uuid}][%d] igroupDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/igroups/{uuid}][%d] igroupDeleteOK", 200)
 }
 
 func (o *IgroupDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/igroups/{uuid}][%d] igroupDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/igroups/{uuid}][%d] igroupDeleteOK", 200)
 }
 
 func (o *IgroupDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,17 +113,14 @@ func NewIgroupDeleteDefault(code int) *IgroupDeleteDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 1254213 | The initiator group is mapped to one or more LUNs and `allow_delete_while_mapped` has not been specified. |
+| 5374760 | An error was reported by the peer cluster while deleting a replicated initiator group. The specific error will be included as a nested error. |
 | 5374852 | The initiator group does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IgroupDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the igroup delete default response
-func (o *IgroupDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this igroup delete default response has a 2xx status code
@@ -145,12 +148,19 @@ func (o *IgroupDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the igroup delete default response
+func (o *IgroupDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IgroupDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/igroups/{uuid}][%d] igroup_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/igroups/{uuid}][%d] igroup_delete default %s", o._statusCode, payload)
 }
 
 func (o *IgroupDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/igroups/{uuid}][%d] igroup_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/igroups/{uuid}][%d] igroup_delete default %s", o._statusCode, payload)
 }
 
 func (o *IgroupDeleteDefault) GetPayload() *models.ErrorResponse {

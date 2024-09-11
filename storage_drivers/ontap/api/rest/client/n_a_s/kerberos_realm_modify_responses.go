@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *KerberosRealmModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the kerberos realm modify o k response
+func (o *KerberosRealmModifyOK) Code() int {
+	return 200
+}
+
 func (o *KerberosRealmModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberosRealmModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberosRealmModifyOK", 200)
 }
 
 func (o *KerberosRealmModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberosRealmModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberosRealmModifyOK", 200)
 }
 
 func (o *KerberosRealmModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -125,11 +131,6 @@ type KerberosRealmModifyDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the kerberos realm modify default response
-func (o *KerberosRealmModifyDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this kerberos realm modify default response has a 2xx status code
 func (o *KerberosRealmModifyDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -155,12 +156,19 @@ func (o *KerberosRealmModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the kerberos realm modify default response
+func (o *KerberosRealmModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *KerberosRealmModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberos_realm_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberos_realm_modify default %s", o._statusCode, payload)
 }
 
 func (o *KerberosRealmModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberos_realm_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberos_realm_modify default %s", o._statusCode, payload)
 }
 
 func (o *KerberosRealmModifyDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *NfsModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nfs modify o k response
+func (o *NfsModifyOK) Code() int {
+	return 200
+}
+
 func (o *NfsModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/services/{svm.uuid}][%d] nfsModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/nfs/services/{svm.uuid}][%d] nfsModifyOK", 200)
 }
 
 func (o *NfsModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/services/{svm.uuid}][%d] nfsModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/nfs/services/{svm.uuid}][%d] nfsModifyOK", 200)
 }
 
 func (o *NfsModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,22 +112,24 @@ func NewNfsModifyDefault(code int) *NfsModifyDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 1534829    | The port numbers allowed are 635 (the default) and 1024 through 9999 |
+| 2621516    | This operation is only supported on a data SVM |
+| 2621574    | This operation is not permitted on a SVM that is configured as the destination of a MetroCluster SVM relationship |
 | 3276916    | Vserver is not running |
+| 3276969    | Ports cannot be modified when NFS access is enabled. Disable NFS access before changing port settings |
+| 3277048    | The port numbers allowed are 635 (the default) and 1024 through 9999 |
 | 3277069    | Cannot disable TCP because the SnapDiff RPC server is in the \\\"on\\\" state |
+| 3277085    | The port numbers allowed are 1024 through 9999. |
 | 3277087    | Attempting to reduce the number of bits used for NFSv3 FSIDs and File IDs from 64 to 32 on Vserver. This could result in collisions between different File IDs and is not recommended |
 | 3277088    | Attempting to increase the number of bits used for NFSv3 FSIDs and File IDs from 32 to 64 on Vserver. This could result in older client software no longer working with the volumes owned by Vserver  |
 | 3277090    | Attempting to disallow multiple FSIDs per mount point on Vserver. Since this Vserver currently uses 32-bit NFSv3 FSIDs and File IDs, this could result in collisions between different File IDs and is not recommended |
 | 3277099    | Domain name contains invalid characters or its too short. Allowed characters are: alphabetical characters (A-Za-z), numeric characters (0-9), minus sign (-), and the period (.). The first character must be alphabetical or numeric, last character must not be a minus sign or a period. Minimum supported length: 2 characters, maximum of 256 characters |
+| 3277140    | Cannot set \"transport.tcp_max_transfer_size\" to a value other than multiples of 4096 |
 */
 type NfsModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nfs modify default response
-func (o *NfsModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nfs modify default response has a 2xx status code
@@ -149,12 +157,19 @@ func (o *NfsModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nfs modify default response
+func (o *NfsModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NfsModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/services/{svm.uuid}][%d] nfs_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/nfs/services/{svm.uuid}][%d] nfs_modify default %s", o._statusCode, payload)
 }
 
 func (o *NfsModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/services/{svm.uuid}][%d] nfs_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/nfs/services/{svm.uuid}][%d] nfs_modify default %s", o._statusCode, payload)
 }
 
 func (o *NfsModifyDefault) GetPayload() *models.ErrorResponse {

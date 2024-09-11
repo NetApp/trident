@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *ClusterLdapCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the cluster ldap create created response
+func (o *ClusterLdapCreateCreated) Code() int {
+	return 201
+}
+
 func (o *ClusterLdapCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/authentication/cluster/ldap][%d] clusterLdapCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/cluster/ldap][%d] clusterLdapCreateCreated %s", 201, payload)
 }
 
 func (o *ClusterLdapCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/authentication/cluster/ldap][%d] clusterLdapCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/cluster/ldap][%d] clusterLdapCreateCreated %s", 201, payload)
 }
 
 func (o *ClusterLdapCreateCreated) GetPayload() *models.LdapServiceResponse {
@@ -131,7 +139,7 @@ func NewClusterLdapCreateDefault(code int) *ClusterLdapCreateDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 4915203    | The specified LDAP schema does not exist. |
-| 4915207    | The specified LDAP servers contain duplicate server entries. |
+| 262222     | The specified LDAP servers contain duplicate server entries. |
 | 4915229    | DNS resolution failed due to an internal error. Contact technical support if this issue persists. |
 | 4915231    | DNS resolution failed for one or more of the specified LDAP servers. Verify that a valid DNS server is configured. |
 | 23724132   | DNS resolution failed for all the specified LDAP servers. Verify that a valid DNS server is configured. |
@@ -143,16 +151,12 @@ func NewClusterLdapCreateDefault(code int) *ClusterLdapCreateDefault {
 | 13434916   | The SVM is in the process of being created. Wait a few minutes, and then try the command again. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 interfaces. |
 | 4915252    | LDAP referral is not supported with STARTTLS, with session security levels sign, seal or with LDAPS. |
+| 4915265    | The specified bind password or bind DN is invalid |
 */
 type ClusterLdapCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cluster ldap create default response
-func (o *ClusterLdapCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cluster ldap create default response has a 2xx status code
@@ -180,12 +184,19 @@ func (o *ClusterLdapCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster ldap create default response
+func (o *ClusterLdapCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterLdapCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/authentication/cluster/ldap][%d] cluster_ldap_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/cluster/ldap][%d] cluster_ldap_create default %s", o._statusCode, payload)
 }
 
 func (o *ClusterLdapCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/authentication/cluster/ldap][%d] cluster_ldap_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/cluster/ldap][%d] cluster_ldap_create default %s", o._statusCode, payload)
 }
 
 func (o *ClusterLdapCreateDefault) GetPayload() *models.ErrorResponse {

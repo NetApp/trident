@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *PortMetricsCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the port metrics collection get o k response
+func (o *PortMetricsCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *PortMetricsCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/ethernet/ports/{uuid}/metrics][%d] portMetricsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/ports/{uuid}/metrics][%d] portMetricsCollectionGetOK %s", 200, payload)
 }
 
 func (o *PortMetricsCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /network/ethernet/ports/{uuid}/metrics][%d] portMetricsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/ports/{uuid}/metrics][%d] portMetricsCollectionGetOK %s", 200, payload)
 }
 
 func (o *PortMetricsCollectionGetOK) GetPayload() *models.PortMetricsResponse {
@@ -122,11 +130,6 @@ type PortMetricsCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the port metrics collection get default response
-func (o *PortMetricsCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this port metrics collection get default response has a 2xx status code
 func (o *PortMetricsCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *PortMetricsCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the port metrics collection get default response
+func (o *PortMetricsCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *PortMetricsCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/ethernet/ports/{uuid}/metrics][%d] port_metrics_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/ports/{uuid}/metrics][%d] port_metrics_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PortMetricsCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/ethernet/ports/{uuid}/metrics][%d] port_metrics_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/ports/{uuid}/metrics][%d] port_metrics_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PortMetricsCollectionGetDefault) GetPayload() *models.ErrorResponse {

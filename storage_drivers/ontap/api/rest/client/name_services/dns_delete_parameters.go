@@ -61,11 +61,11 @@ DNSDeleteParams contains all the parameters to send to the API endpoint
 */
 type DNSDeleteParams struct {
 
-	/* SvmUUID.
+	/* UUID.
 
-	   UUID of the SVM to which this object belongs.
+	   UUID of the DNS object.
 	*/
-	SvmUUID string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *DNSDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithSvmUUID adds the svmUUID to the dns delete params
-func (o *DNSDeleteParams) WithSvmUUID(svmUUID string) *DNSDeleteParams {
-	o.SetSvmUUID(svmUUID)
+// WithUUID adds the uuid to the dns delete params
+func (o *DNSDeleteParams) WithUUID(uuid string) *DNSDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the dns delete params
-func (o *DNSDeleteParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetUUID adds the uuid to the dns delete params
+func (o *DNSDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -139,8 +139,8 @@ func (o *DNSDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 	var res []error
 
-	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	// path param uuid
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

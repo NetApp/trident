@@ -16,7 +16,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// ConsistencyGroupIgroup An initiator group (igroup) is a collection of Fibre Channel (FC) world wide port names (WWPNs), and/or iSCSI Qualified Names (IQNs), and/or iSCSI EUIs (Extended Unique Identifiers) that identify host initiators.<br/>
+// ConsistencyGroupIgroup An initiator group (igroup) is a collection of Fibre Channel (FC) world wide port names (WWPNs), and/or iSCSI Qualified Names (IQNs), and/or iSCSI EUIs (Extended Unique Identifiers) that identify host endpoints.<br/>
 // Initiator groups are used to control which hosts can access specific LUNs. To grant access to a LUN from one or more hosts, create an initiator group containing the host initiator names, then create a LUN map that associates the initiator group with the LUN.<br/>
 // An initiator group may contain either initiators or other initiator groups, but not both simultaneously. When a parent initiator group is mapped, it inherits all of the initiators of any initiator groups nested below it. If any nested initiator group is modified to contain different initiators, the parent initiator groups inherit the change. A parent can have many nested initiator groups and an initiator group can be nested under multiple parents. Initiators can only be added or removed from the initiator group that directly contains them. The maximum supported depth of nesting is three layers.<br/>
 // Best practice when using nested initiator groups is to match host hierarchies. A single initiator group should correspond to a single host. If a LUN needs to be mapped to multiple hosts, the initiator groups representing those hosts should be aggregated into a parent initiator group and the LUN should be mapped to that initiator group. For multi-ported hosts, initiators have a comment property where the port corresponding to the initiator can be documented.<br/>
@@ -34,7 +34,11 @@ type ConsistencyGroupIgroup struct {
 	// Min Length: 0
 	Comment *string `json:"comment,omitempty"`
 
-	// Separate igroup definitions to include in this igroup.
+	// The existing initiator groups that are members of the group. Optional in POST.<br/>
+	// This property is mutually exclusive with the _initiators_ property during POST.<br/>
+	// This array contains only the direct children of the initiator group. If the member initiator groups have further nested initiator groups, those are reported in the `igroups` property of the child initiator group.<br/>
+	// Zero or more nested initiator groups can be supplied when the initiator group is created. The initiator group will act as if it contains the aggregation of all initiators in any nested initiator groups.<br/>
+	// After creation, nested initiator groups can be added or removed from the initiator group using the `/protocols/san/igroups/{igroup.uuid}/igroups` endpoint. See [`POST /protocols/san/igroups/{igroup.uuid}/igroups`](#/SAN/igroup_nested_create) and [`DELETE /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}`](#/SAN/igroup_nested_delete) for more details.
 	//
 	ConsistencyGroupIgroupInlineIgroups []*ConsistencyGroupIgroupInlineIgroupsInlineArrayItem `json:"igroups,omitempty"`
 
@@ -51,13 +55,13 @@ type ConsistencyGroupIgroup struct {
 
 	// The host operating system of the initiator group. All initiators in the group should be hosts of the same operating system. Required in POST; optional in PATCH.
 	//
-	// Enum: [aix hpux hyper_v linux netware openvms solaris vmware windows xen]
+	// Enum: ["aix","hpux","hyper_v","linux","netware","openvms","solaris","vmware","windows","xen"]
 	OsType *string `json:"os_type,omitempty"`
 
 	// The protocols supported by the initiator group. This restricts the type of initiators that can be added to the initiator group. Optional in POST; if not supplied, this defaults to _mixed_.<br/>
 	// The protocol of an initiator group cannot be changed after creation of the group.
 	//
-	// Enum: [fcp iscsi mixed]
+	// Enum: ["fcp","iscsi","mixed"]
 	Protocol *string `json:"protocol,omitempty"`
 
 	// The unique identifier of the initiator group.

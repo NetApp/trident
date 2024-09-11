@@ -64,14 +64,14 @@ type ConsistencyGroupSnapshotModifyParams struct {
 
 	/* Action.
 
-	   Commits the Snapshot copy. The commit must be called within the timeout value specified during POST. If the commit is not called within the specified time, then the Snapshot copy create operation is aborted.
+	   Commits the snapshot. The commit must be called within the timeout value specified during POST. If the commit is not called within the specified time, then the snapshot create operation is aborted.
 
 	*/
 	Action *string
 
 	/* ConsistencyGroupUUID.
 
-	   Unique identifier of the consistency group's Snapshot copy for deletion.
+	   Unique identifier of the consistency group's snapshot for deletion.
 
 	*/
 	ConsistencyGroupUUID string
@@ -84,7 +84,7 @@ type ConsistencyGroupSnapshotModifyParams struct {
 
 	/* UUID.
 
-	   Snapshot copy UUID.
+	   Snapshot UUID.
 	*/
 	UUID string
 

@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type SoftwarePackageDeleteReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *SoftwarePackageDeleteReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewSoftwarePackageDeleteOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewSoftwarePackageDeleteAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -39,6 +46,62 @@ func (o *SoftwarePackageDeleteReader) ReadResponse(response runtime.ClientRespon
 		}
 		return nil, result
 	}
+}
+
+// NewSoftwarePackageDeleteOK creates a SoftwarePackageDeleteOK with default headers values
+func NewSoftwarePackageDeleteOK() *SoftwarePackageDeleteOK {
+	return &SoftwarePackageDeleteOK{}
+}
+
+/*
+SoftwarePackageDeleteOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type SoftwarePackageDeleteOK struct {
+}
+
+// IsSuccess returns true when this software package delete o k response has a 2xx status code
+func (o *SoftwarePackageDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this software package delete o k response has a 3xx status code
+func (o *SoftwarePackageDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this software package delete o k response has a 4xx status code
+func (o *SoftwarePackageDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this software package delete o k response has a 5xx status code
+func (o *SoftwarePackageDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this software package delete o k response a status code equal to that given
+func (o *SoftwarePackageDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the software package delete o k response
+func (o *SoftwarePackageDeleteOK) Code() int {
+	return 200
+}
+
+func (o *SoftwarePackageDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] softwarePackageDeleteOK", 200)
+}
+
+func (o *SoftwarePackageDeleteOK) String() string {
+	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] softwarePackageDeleteOK", 200)
+}
+
+func (o *SoftwarePackageDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	return nil
 }
 
 // NewSoftwarePackageDeleteAccepted creates a SoftwarePackageDeleteAccepted with default headers values
@@ -79,12 +142,17 @@ func (o *SoftwarePackageDeleteAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the software package delete accepted response
+func (o *SoftwarePackageDeleteAccepted) Code() int {
+	return 202
+}
+
 func (o *SoftwarePackageDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] softwarePackageDeleteAccepted ", 202)
+	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] softwarePackageDeleteAccepted", 202)
 }
 
 func (o *SoftwarePackageDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] softwarePackageDeleteAccepted ", 202)
+	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] softwarePackageDeleteAccepted", 202)
 }
 
 func (o *SoftwarePackageDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -102,30 +170,25 @@ func NewSoftwarePackageDeleteDefault(code int) *SoftwarePackageDeleteDefault {
 /*
 	SoftwarePackageDeleteDefault describes a response with status code -1, with default header values.
 
-	ONTAP error response codes
+	ONTAP Error Response Codes
 
-| Error codes | Description |
-| ----------- | ----------- |
-| 10551315    | Package store is empty |
-| 10551322    | Error in retrieving package cleanup status |
-| 10551323    | Error in cleaning up package information on a node |
-| 10551324    | Error in cleaning up package information on multiple nodes |
-| 10551325    | Package does not exist on the system |
-| 10551326    | Error in deleting older package cleanup tasks. Clean up images from the store and retry |
-| 10551346    | Package delete failed since a validation is in progress |
-| 10551347    | Package delete failed since an update is in progress |
-| 10551367    | A package synchronization is in progress |
-| 10551388    | Package delete operation timed out |
+| Error Code | Description |
+| ---------- | ----------- |
+| 10551315 | The repository does not contain any packages. |
+| 10551322 | An internal error occurred while retrieving the package cleanup status. |
+| 10551323 | An internal error occurred while removing the package information on a node. |
+| 10551324 | An internal error occurred while removing the package information on multiple nodes. |
+| 10551325 | The required package could not be found in the repository. |
+| 10551326 | An error occurred while deleting older package cleanup tasks. |
+| 10551346 | A validation is in progress, retry command after it is completed. |
+| 10551367 | The repository is busy, retry the operation later. |
+| 10551388 | The package delete operation timed out. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SoftwarePackageDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the software package delete default response
-func (o *SoftwarePackageDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this software package delete default response has a 2xx status code
@@ -153,12 +216,19 @@ func (o *SoftwarePackageDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the software package delete default response
+func (o *SoftwarePackageDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SoftwarePackageDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] software_package_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] software_package_delete default %s", o._statusCode, payload)
 }
 
 func (o *SoftwarePackageDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] software_package_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] software_package_delete default %s", o._statusCode, payload)
 }
 
 func (o *SoftwarePackageDeleteDefault) GetPayload() *models.ErrorResponse {

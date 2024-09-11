@@ -42,7 +42,7 @@ type DeviceDiscoveryData struct {
 
 	// The protocol used to identify the discovered device. This can have a value of CDP or LLDP.
 	// Example: cdp
-	// Enum: [cdp lldp]
+	// Enum: ["cdp","lldp"]
 	Protocol *string `json:"protocol,omitempty"`
 
 	// The number of seconds until the discovered device entry expires and is removed.
@@ -52,7 +52,7 @@ type DeviceDiscoveryData struct {
 	// Example: FastEthernet0/12
 	RemotePort *string `json:"remote_port,omitempty"`
 
-	// Additional name used to identifiy a specific piece of equipment.
+	// Additional name used to identify a specific piece of equipment.
 	SystemName *string `json:"system_name,omitempty"`
 
 	// The version of the software running on the discovered device.

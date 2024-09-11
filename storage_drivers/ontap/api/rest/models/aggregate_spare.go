@@ -26,18 +26,18 @@ type AggregateSpare struct {
 
 	// The checksum type that has been assigned to the spares.
 	// Read Only: true
-	// Enum: [block advanced_zoned]
+	// Enum: ["block","advanced_zoned"]
 	ChecksumStyle *string `json:"checksum_style,omitempty"`
 
 	// Disk class of spares.
 	// Example: solid_state
 	// Read Only: true
-	// Enum: [unknown capacity performance archive solid_state array virtual data_center capacity_flash]
+	// Enum: ["unknown","capacity","performance","archive","solid_state","array","virtual","data_center","capacity_flash"]
 	DiskClass *string `json:"disk_class,omitempty"`
 
 	// Type of disk.
 	// Read Only: true
-	// Enum: [fc lun nl_sas nvme_ssd sas sata scsi ssd ssd_cap ssd_zns vm_disk]
+	// Enum: ["fc","lun","nl_sas","nvme_ssd","sas","sata","scsi","ssd","ssd_cap","ssd_zns","vmdisk"]
 	DiskType *string `json:"disk_type,omitempty"`
 
 	// Indicates whether a disk is partitioned (true) or whole (false)
@@ -55,7 +55,7 @@ type AggregateSpare struct {
 
 	// SyncMirror spare pool.
 	// Read Only: true
-	// Enum: [pool0 pool1]
+	// Enum: ["pool0","pool1"]
 	SyncmirrorPool *string `json:"syncmirror_pool,omitempty"`
 
 	// Total number of spares in the bucket. The total spare count for each class of spares also includes reserved spare capacity recommended by ONTAP best practices.
@@ -313,7 +313,7 @@ var aggregateSpareTypeDiskTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["fc","lun","nl_sas","nvme_ssd","sas","sata","scsi","ssd","ssd_cap","ssd_zns","vm_disk"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["fc","lun","nl_sas","nvme_ssd","sas","sata","scsi","ssd","ssd_cap","ssd_zns","vmdisk"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -428,10 +428,10 @@ const (
 	// AggregateSpare
 	// disk_type
 	// DiskType
-	// vm_disk
+	// vmdisk
 	// END DEBUGGING
-	// AggregateSpareDiskTypeVMDisk captures enum value "vm_disk"
-	AggregateSpareDiskTypeVMDisk string = "vm_disk"
+	// AggregateSpareDiskTypeVmdisk captures enum value "vmdisk"
+	AggregateSpareDiskTypeVmdisk string = "vmdisk"
 )
 
 // prop value enum

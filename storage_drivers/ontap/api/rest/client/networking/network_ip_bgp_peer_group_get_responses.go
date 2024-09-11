@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NetworkIPBgpPeerGroupGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the network Ip bgp peer group get o k response
+func (o *NetworkIPBgpPeerGroupGetOK) Code() int {
+	return 200
+}
+
 func (o *NetworkIPBgpPeerGroupGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/ip/bgp/peer-groups/{uuid}][%d] networkIpBgpPeerGroupGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/bgp/peer-groups/{uuid}][%d] networkIpBgpPeerGroupGetOK %s", 200, payload)
 }
 
 func (o *NetworkIPBgpPeerGroupGetOK) String() string {
-	return fmt.Sprintf("[GET /network/ip/bgp/peer-groups/{uuid}][%d] networkIpBgpPeerGroupGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/bgp/peer-groups/{uuid}][%d] networkIpBgpPeerGroupGetOK %s", 200, payload)
 }
 
 func (o *NetworkIPBgpPeerGroupGetOK) GetPayload() *models.BgpPeerGroup {
@@ -122,11 +130,6 @@ type NetworkIPBgpPeerGroupGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the network ip bgp peer group get default response
-func (o *NetworkIPBgpPeerGroupGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this network ip bgp peer group get default response has a 2xx status code
 func (o *NetworkIPBgpPeerGroupGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NetworkIPBgpPeerGroupGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the network ip bgp peer group get default response
+func (o *NetworkIPBgpPeerGroupGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetworkIPBgpPeerGroupGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/ip/bgp/peer-groups/{uuid}][%d] network_ip_bgp_peer_group_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/bgp/peer-groups/{uuid}][%d] network_ip_bgp_peer_group_get default %s", o._statusCode, payload)
 }
 
 func (o *NetworkIPBgpPeerGroupGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/ip/bgp/peer-groups/{uuid}][%d] network_ip_bgp_peer_group_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/bgp/peer-groups/{uuid}][%d] network_ip_bgp_peer_group_get default %s", o._statusCode, payload)
 }
 
 func (o *NetworkIPBgpPeerGroupGetDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *VscanOnDemandCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the vscan on demand create created response
+func (o *VscanOnDemandCreateCreated) Code() int {
+	return 201
+}
+
 func (o *VscanOnDemandCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscanOnDemandCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscanOnDemandCreateCreated %s", 201, payload)
 }
 
 func (o *VscanOnDemandCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscanOnDemandCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscanOnDemandCreateCreated %s", 201, payload)
 }
 
 func (o *VscanOnDemandCreateCreated) GetPayload() *models.VscanOnDemandResponse {
@@ -141,6 +149,7 @@ func NewVscanOnDemandCreateDefault(code int) *VscanOnDemandCreateDefault {
 | 10027175   | An On-Demand policy cannot be scheduled as the Vserver is not in an operational state. |
 | 10027176   | The log-path specified does not exist. The log path must be specified from the root of the SVM, and must begin with UNIX path delimiters (use “/” not “\”). |
 | 10027177   | The log path specified is not supported. |
+| 10027178   | The specified task-name is invalid. Valid characters are 0-9, A-Z, a-z, "_", ".", and "-"
 | 10027253   | The number of paths specified exceeds the configured maximum number of paths. You cannot specify more than the maximum number of configured paths. |
 | 10027254   | The number of extensions specified exceeds the configured maximum number of extensions. You cannot specify more than the maximum number of configured extensions. |
 | 10027255   | Another policy is already scheduled. Only one policy per SVM is allowed to be scheduled at any one time. Create a policy without specifying a schedule. |
@@ -149,11 +158,6 @@ type VscanOnDemandCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the vscan on demand create default response
-func (o *VscanOnDemandCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this vscan on demand create default response has a 2xx status code
@@ -181,12 +185,19 @@ func (o *VscanOnDemandCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the vscan on demand create default response
+func (o *VscanOnDemandCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VscanOnDemandCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscan_on_demand_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscan_on_demand_create default %s", o._statusCode, payload)
 }
 
 func (o *VscanOnDemandCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscan_on_demand_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscan_on_demand_create default %s", o._statusCode, payload)
 }
 
 func (o *VscanOnDemandCreateDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *VscanOnAccessModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the vscan on access modify o k response
+func (o *VscanOnAccessModifyOK) Code() int {
+	return 200
+}
+
 func (o *VscanOnAccessModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessModifyOK", 200)
 }
 
 func (o *VscanOnAccessModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessModifyOK", 200)
 }
 
 func (o *VscanOnAccessModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,7 +112,7 @@ func NewVscanOnAccessModifyDefault(code int) *VscanOnAccessModifyDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 10027033   | Configurations for an On-Access policy associated with an administrative SVM cannot be modified. However, the policy can be enabled or disabled. |
+| 10027033   | Configurations for an On-Access policy associated with a data SVM which was created by SVM owned by the cluster cannot be modified. However, the policy can be enabled or disabled. |
 | 10027046   | The specified SVM is not the owner of the specified policy. Check for the correct SVM who owns the policy. |
 | 10027101   | The file size must be in the range 1KB to 1TB |
 | 10027107   | The include extensions list cannot be empty. Specify at least one extension for inclusion. |
@@ -120,11 +126,6 @@ type VscanOnAccessModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the vscan on access modify default response
-func (o *VscanOnAccessModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this vscan on access modify default response has a 2xx status code
@@ -152,12 +153,19 @@ func (o *VscanOnAccessModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the vscan on access modify default response
+func (o *VscanOnAccessModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VscanOnAccessModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_modify default %s", o._statusCode, payload)
 }
 
 func (o *VscanOnAccessModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_modify default %s", o._statusCode, payload)
 }
 
 func (o *VscanOnAccessModifyDefault) GetPayload() *models.ErrorResponse {

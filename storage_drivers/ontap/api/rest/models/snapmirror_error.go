@@ -23,8 +23,8 @@ type SnapmirrorError struct {
 	// Error message
 	Message *string `json:"message,omitempty"`
 
-	// Parameters for the error message
-	SnapmirrorErrorInlineParameters []*string `json:"parameters,omitempty"`
+	// Arguments present in the error message encountered.
+	SnapmirrorErrorInlineArguments []*string `json:"arguments,omitempty"`
 }
 
 // Validate validates this snapmirror error

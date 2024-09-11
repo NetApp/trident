@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,17 @@ func (o *TapeDeviceModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the tape device modify o k response
+func (o *TapeDeviceModifyOK) Code() int {
+	return 200
+}
+
 func (o *TapeDeviceModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceModifyOK", 200)
 }
 
 func (o *TapeDeviceModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceModifyOK", 200)
 }
 
 func (o *TapeDeviceModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,7 +115,7 @@ TapeDeviceModifyAccepted describes a response with status code 202, with default
 Accepted
 */
 type TapeDeviceModifyAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.TapeDeviceJobLinkResponse
 }
 
 // IsSuccess returns true when this tape device modify accepted response has a 2xx status code
@@ -137,21 +143,28 @@ func (o *TapeDeviceModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the tape device modify accepted response
+func (o *TapeDeviceModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *TapeDeviceModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceModifyAccepted %s", 202, payload)
 }
 
 func (o *TapeDeviceModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceModifyAccepted %s", 202, payload)
 }
 
-func (o *TapeDeviceModifyAccepted) GetPayload() *models.JobLinkResponse {
+func (o *TapeDeviceModifyAccepted) GetPayload() *models.TapeDeviceJobLinkResponse {
 	return o.Payload
 }
 
 func (o *TapeDeviceModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.TapeDeviceJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -188,16 +201,12 @@ func NewTapeDeviceModifyDefault(code int) *TapeDeviceModifyDefault {
 | 11403275 | Tape alias name \"<alias>\" not found. |
 | 11403277 | Tape device \"<device_id>\" is reserved by another host. |
 | 11403278 | Invalid count value specified with operation \"<operation>\". Valid values are from 0 to {1}. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type TapeDeviceModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the tape device modify default response
-func (o *TapeDeviceModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this tape device modify default response has a 2xx status code
@@ -225,12 +234,19 @@ func (o *TapeDeviceModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the tape device modify default response
+func (o *TapeDeviceModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *TapeDeviceModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tape_device_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tape_device_modify default %s", o._statusCode, payload)
 }
 
 func (o *TapeDeviceModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tape_device_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tape_device_modify default %s", o._statusCode, payload)
 }
 
 func (o *TapeDeviceModifyDefault) GetPayload() *models.ErrorResponse {

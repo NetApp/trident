@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *CifsSearchPathCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the cifs search path create created response
+func (o *CifsSearchPathCreateCreated) Code() int {
+	return 201
+}
+
 func (o *CifsSearchPathCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/home-directory/search-paths][%d] cifsSearchPathCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/home-directory/search-paths][%d] cifsSearchPathCreateCreated %s", 201, payload)
 }
 
 func (o *CifsSearchPathCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/home-directory/search-paths][%d] cifsSearchPathCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/home-directory/search-paths][%d] cifsSearchPathCreateCreated %s", 201, payload)
 }
 
 func (o *CifsSearchPathCreateCreated) GetPayload() *models.CifsSearchPathResponse {
@@ -139,11 +147,6 @@ type CifsSearchPathCreateDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cifs search path create default response
-func (o *CifsSearchPathCreateDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cifs search path create default response has a 2xx status code
 func (o *CifsSearchPathCreateDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -169,12 +172,19 @@ func (o *CifsSearchPathCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs search path create default response
+func (o *CifsSearchPathCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsSearchPathCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/home-directory/search-paths][%d] cifs_search_path_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/home-directory/search-paths][%d] cifs_search_path_create default %s", o._statusCode, payload)
 }
 
 func (o *CifsSearchPathCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/home-directory/search-paths][%d] cifs_search_path_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/home-directory/search-paths][%d] cifs_search_path_create default %s", o._statusCode, payload)
 }
 
 func (o *CifsSearchPathCreateDefault) GetPayload() *models.ErrorResponse {

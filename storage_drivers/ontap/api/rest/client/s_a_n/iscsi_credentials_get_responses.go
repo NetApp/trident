@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *IscsiCredentialsGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the iscsi credentials get o k response
+func (o *IscsiCredentialsGetOK) Code() int {
+	return 200
+}
+
 func (o *IscsiCredentialsGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsiCredentialsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsiCredentialsGetOK %s", 200, payload)
 }
 
 func (o *IscsiCredentialsGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsiCredentialsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsiCredentialsGetOK %s", 200, payload)
 }
 
 func (o *IscsiCredentialsGetOK) GetPayload() *models.IscsiCredentials {
@@ -122,11 +130,6 @@ type IscsiCredentialsGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the iscsi credentials get default response
-func (o *IscsiCredentialsGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this iscsi credentials get default response has a 2xx status code
 func (o *IscsiCredentialsGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *IscsiCredentialsGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the iscsi credentials get default response
+func (o *IscsiCredentialsGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IscsiCredentialsGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsi_credentials_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsi_credentials_get default %s", o._statusCode, payload)
 }
 
 func (o *IscsiCredentialsGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsi_credentials_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsi_credentials_get default %s", o._statusCode, payload)
 }
 
 func (o *IscsiCredentialsGetDefault) GetPayload() *models.ErrorResponse {

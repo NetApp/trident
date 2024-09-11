@@ -13,7 +13,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// SnapshotPolicyReference This is a reference to the Snapshot copy policy.
+// SnapshotPolicyReference This is a reference to the snapshot policy.
 //
 // swagger:model snapshot_policy_reference
 type SnapshotPolicyReference struct {

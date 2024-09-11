@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *VscanCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the vscan create created response
+func (o *VscanCreateCreated) Code() int {
+	return 201
+}
+
 func (o *VscanCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/vscan][%d] vscanCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/vscan][%d] vscanCreateCreated %s", 201, payload)
 }
 
 func (o *VscanCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/vscan][%d] vscanCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/vscan][%d] vscanCreateCreated %s", 201, payload)
 }
 
 func (o *VscanCreateCreated) GetPayload() *models.VscanResponse {
@@ -137,16 +145,13 @@ func NewVscanCreateDefault(code int) *VscanCreateDefault {
 | 10027015   | Attempting to enable a Vscan but no active scanner-pool exists for the specified SVM
 | 10027011   | Attempting to enable a Vscan for an SVM for which no CIFS server exists
 | 10027023   | Attempting to enable a Vscan for an SVM for which no active Vscan On-Access policy exist
+| 10027086   | DNS resolution failed for one or more hostnames
+| 10027012   | Cannot enable Vscan on an administrative SVM.
 */
 type VscanCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the vscan create default response
-func (o *VscanCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this vscan create default response has a 2xx status code
@@ -174,12 +179,19 @@ func (o *VscanCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the vscan create default response
+func (o *VscanCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VscanCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/vscan][%d] vscan_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/vscan][%d] vscan_create default %s", o._statusCode, payload)
 }
 
 func (o *VscanCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/vscan][%d] vscan_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/vscan][%d] vscan_create default %s", o._statusCode, payload)
 }
 
 func (o *VscanCreateDefault) GetPayload() *models.ErrorResponse {

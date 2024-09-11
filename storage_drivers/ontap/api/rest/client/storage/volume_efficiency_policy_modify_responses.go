@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *VolumeEfficiencyPolicyModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the volume efficiency policy modify o k response
+func (o *VolumeEfficiencyPolicyModifyOK) Code() int {
+	return 200
+}
+
 func (o *VolumeEfficiencyPolicyModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyModifyOK", 200)
 }
 
 func (o *VolumeEfficiencyPolicyModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyModifyOK", 200)
 }
 
 func (o *VolumeEfficiencyPolicyModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -102,33 +108,25 @@ func NewVolumeEfficiencyPolicyModifyDefault(code int) *VolumeEfficiencyPolicyMod
 /*
 	VolumeEfficiencyPolicyModifyDefault describes a response with status code -1, with default header values.
 
-	ONTAP Error Response Code
+	ONTAP Error Response Codes
 
 | Error Code | Description |
 | ---------- | ----------- |
-|  6881341   | Specified schedule not found. |
-|  6881344   | Failed to queue specified job. |
-|  6881348   | This operation cannot be performed because the specified policy is owned by the cluster admin. |
-|  6881349   | Policy name is not valid. |
-|  6881362   | Threshold percentage cannot be less than 1 percent. |
-|  6881433   | For \"{{0}}\" type policy, \"{{1}}\" duration is not supported. |
-|  6881435   | Only a policy of type "threshold" can set the "start-threshold-percent" attribute. |
-|  6881436   | For a policy of type "scheduled", a valid "schedule" is a required attribute. |
-|  6881438   | For \"{{0}}\" policy, modification of attributes is not allowed. |
-|  6881474   | Duration cannot be null. |
-|  6881475   | Duration is not valid. |
-|  6881476   | Duration cannot be less than 1 hour. |
-|  6881477   | Duration cannot be more than 999 hours. |
+| 918702 | The specified operation on the volume efficiency policies endpoint is not supported on this platform. |
+| 6881341 | Specified schedule not found. |
+| 6881344 | Failed to queue specified job. |
+| 6881351 | Policy name is too long. |
+| 6881352 | Policy name is not valid. |
+| 6881362 | Threshold percentage cannot be less than 1 percent. |
+| 6881433 | For \"threshold\" type policy, \"schedule and duration\" is not supported. |
+| 6881435 | Only a policy of type "threshold" can set the "start-threshold-percent" attribute. |
+| 6881438 | For \"inline-only and auto\" policy, modification of attributes is not allowed. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type VolumeEfficiencyPolicyModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the volume efficiency policy modify default response
-func (o *VolumeEfficiencyPolicyModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this volume efficiency policy modify default response has a 2xx status code
@@ -156,12 +154,19 @@ func (o *VolumeEfficiencyPolicyModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the volume efficiency policy modify default response
+func (o *VolumeEfficiencyPolicyModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VolumeEfficiencyPolicyModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_modify default %s", o._statusCode, payload)
 }
 
 func (o *VolumeEfficiencyPolicyModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_modify default %s", o._statusCode, payload)
 }
 
 func (o *VolumeEfficiencyPolicyModifyDefault) GetPayload() *models.ErrorResponse {

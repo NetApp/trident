@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *NetworkEthernetPortsCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the network ethernet ports create created response
+func (o *NetworkEthernetPortsCreateCreated) Code() int {
+	return 201
+}
+
 func (o *NetworkEthernetPortsCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /network/ethernet/ports][%d] networkEthernetPortsCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ethernet/ports][%d] networkEthernetPortsCreateCreated %s", 201, payload)
 }
 
 func (o *NetworkEthernetPortsCreateCreated) String() string {
-	return fmt.Sprintf("[POST /network/ethernet/ports][%d] networkEthernetPortsCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ethernet/ports][%d] networkEthernetPortsCreateCreated %s", 201, payload)
 }
 
 func (o *NetworkEthernetPortsCreateCreated) GetPayload() *models.PortResponse {
@@ -131,7 +139,10 @@ func NewNetworkEthernetPortsCreateDefault(code int) *NetworkEthernetPortsCreateD
 | Error Code | Description |
 | ---------- | ----------- |
 | 1376361 | Port is already a member of a LAG. |
+| 1376857 | Cannot create a VLAN on a port that is a member of a LAG. |
+| 1377609 | The update is partially complete. Updating broadcast domain attributes on this port has failed. |
 | 1966189 | Port is the home port or current port of an interface. |
+| 1966466 | VLAN ID must be a number from 1 to 4094. |
 | 1967083 | The specified type is not valid. |
 | 1967084 | The specified node UUID is not valid. |
 | 1967085 | The specified node name is not valid. |
@@ -152,19 +163,18 @@ func NewNetworkEthernetPortsCreateDefault(code int) *NetworkEthernetPortsCreateD
 | 1967100 | LAG POST operation failed because admin status could not be set. |
 | 1967101 | Partial success of the LAG POST operation. Verify the state of the created LAG for more information. |
 | 1967102 | POST operation might have left the configuration in an inconsistent state. Check the configuration. |
+| 1967126 | A LAG requires at least one member port. |
 | 1967148 | Failure to remove port from broadcast domain. |
 | 1967149 | Failure to add port to broadcast domain. |
 | 1967175 | VLANs cannot be created on ports in the Cluster IPspace. |
+| 1967190 | Missing or incomplete VLAN specification. |
+| 1967191 | Missing or incomplete lag specification. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NetworkEthernetPortsCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the network ethernet ports create default response
-func (o *NetworkEthernetPortsCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this network ethernet ports create default response has a 2xx status code
@@ -192,12 +202,19 @@ func (o *NetworkEthernetPortsCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the network ethernet ports create default response
+func (o *NetworkEthernetPortsCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetworkEthernetPortsCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /network/ethernet/ports][%d] network_ethernet_ports_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ethernet/ports][%d] network_ethernet_ports_create default %s", o._statusCode, payload)
 }
 
 func (o *NetworkEthernetPortsCreateDefault) String() string {
-	return fmt.Sprintf("[POST /network/ethernet/ports][%d] network_ethernet_ports_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ethernet/ports][%d] network_ethernet_ports_create default %s", o._statusCode, payload)
 }
 
 func (o *NetworkEthernetPortsCreateDefault) GetPayload() *models.ErrorResponse {

@@ -98,11 +98,29 @@ type SnapmirrorRelationshipTransfersGetParams struct {
 	*/
 	Fields []string
 
+	/* LastUpdatedTime.
+
+	   Filter by last_updated_time
+	*/
+	LastUpdatedTime *string
+
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
 	MaxRecords *int64
+
+	/* NetworkCompressionRatio.
+
+	   Filter by network_compression_ratio
+	*/
+	NetworkCompressionRatio *string
+
+	/* OnDemandAttrs.
+
+	   Filter by on_demand_attrs
+	*/
+	OnDemandAttrs *string
 
 	/* OrderBy.
 
@@ -128,6 +146,18 @@ type SnapmirrorRelationshipTransfersGetParams struct {
 	*/
 	RelationshipDestinationConsistencyGroupVolumesName *string
 
+	/* RelationshipDestinationLunsName.
+
+	   Filter by relationship.destination.luns.name
+	*/
+	RelationshipDestinationLunsName *string
+
+	/* RelationshipDestinationLunsUUID.
+
+	   Filter by relationship.destination.luns.uuid
+	*/
+	RelationshipDestinationLunsUUID *string
+
 	/* RelationshipDestinationPath.
 
 	   Filter by relationship.destination.path
@@ -146,12 +176,6 @@ type SnapmirrorRelationshipTransfersGetParams struct {
 	*/
 	RelationshipDestinationSvmUUID *string
 
-	/* RelationshipDestinationUUID.
-
-	   Filter by relationship.destination.uuid
-	*/
-	RelationshipDestinationUUID *string
-
 	/* RelationshipRestore.
 
 	   Filter by relationship.restore
@@ -160,7 +184,7 @@ type SnapmirrorRelationshipTransfersGetParams struct {
 
 	/* RelationshipUUID.
 
-	   Relationship UUID
+	   SnapMirror relationship UUID
 	*/
 	RelationshipUUID string
 
@@ -343,6 +367,17 @@ func (o *SnapmirrorRelationshipTransfersGetParams) SetFields(fields []string) {
 	o.Fields = fields
 }
 
+// WithLastUpdatedTime adds the lastUpdatedTime to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithLastUpdatedTime(lastUpdatedTime *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetLastUpdatedTime(lastUpdatedTime)
+	return o
+}
+
+// SetLastUpdatedTime adds the lastUpdatedTime to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetLastUpdatedTime(lastUpdatedTime *string) {
+	o.LastUpdatedTime = lastUpdatedTime
+}
+
 // WithMaxRecords adds the maxRecords to the snapmirror relationship transfers get params
 func (o *SnapmirrorRelationshipTransfersGetParams) WithMaxRecords(maxRecords *int64) *SnapmirrorRelationshipTransfersGetParams {
 	o.SetMaxRecords(maxRecords)
@@ -352,6 +387,28 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WithMaxRecords(maxRecords *in
 // SetMaxRecords adds the maxRecords to the snapmirror relationship transfers get params
 func (o *SnapmirrorRelationshipTransfersGetParams) SetMaxRecords(maxRecords *int64) {
 	o.MaxRecords = maxRecords
+}
+
+// WithNetworkCompressionRatio adds the networkCompressionRatio to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithNetworkCompressionRatio(networkCompressionRatio *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetNetworkCompressionRatio(networkCompressionRatio)
+	return o
+}
+
+// SetNetworkCompressionRatio adds the networkCompressionRatio to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetNetworkCompressionRatio(networkCompressionRatio *string) {
+	o.NetworkCompressionRatio = networkCompressionRatio
+}
+
+// WithOnDemandAttrs adds the onDemandAttrs to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithOnDemandAttrs(onDemandAttrs *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetOnDemandAttrs(onDemandAttrs)
+	return o
+}
+
+// SetOnDemandAttrs adds the onDemandAttrs to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetOnDemandAttrs(onDemandAttrs *string) {
+	o.OnDemandAttrs = onDemandAttrs
 }
 
 // WithOrderBy adds the orderBy to the snapmirror relationship transfers get params
@@ -398,6 +455,28 @@ func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshipDestinationCon
 	o.RelationshipDestinationConsistencyGroupVolumesName = relationshipDestinationConsistencyGroupVolumesName
 }
 
+// WithRelationshipDestinationLunsName adds the relationshipDestinationLunsName to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshipDestinationLunsName(relationshipDestinationLunsName *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetRelationshipDestinationLunsName(relationshipDestinationLunsName)
+	return o
+}
+
+// SetRelationshipDestinationLunsName adds the relationshipDestinationLunsName to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshipDestinationLunsName(relationshipDestinationLunsName *string) {
+	o.RelationshipDestinationLunsName = relationshipDestinationLunsName
+}
+
+// WithRelationshipDestinationLunsUUID adds the relationshipDestinationLunsUUID to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshipDestinationLunsUUID(relationshipDestinationLunsUUID *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetRelationshipDestinationLunsUUID(relationshipDestinationLunsUUID)
+	return o
+}
+
+// SetRelationshipDestinationLunsUUID adds the relationshipDestinationLunsUuid to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshipDestinationLunsUUID(relationshipDestinationLunsUUID *string) {
+	o.RelationshipDestinationLunsUUID = relationshipDestinationLunsUUID
+}
+
 // WithRelationshipDestinationPath adds the relationshipDestinationPath to the snapmirror relationship transfers get params
 func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshipDestinationPath(relationshipDestinationPath *string) *SnapmirrorRelationshipTransfersGetParams {
 	o.SetRelationshipDestinationPath(relationshipDestinationPath)
@@ -429,17 +508,6 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshipDestinationSv
 // SetRelationshipDestinationSvmUUID adds the relationshipDestinationSvmUuid to the snapmirror relationship transfers get params
 func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshipDestinationSvmUUID(relationshipDestinationSvmUUID *string) {
 	o.RelationshipDestinationSvmUUID = relationshipDestinationSvmUUID
-}
-
-// WithRelationshipDestinationUUID adds the relationshipDestinationUUID to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshipDestinationUUID(relationshipDestinationUUID *string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetRelationshipDestinationUUID(relationshipDestinationUUID)
-	return o
-}
-
-// SetRelationshipDestinationUUID adds the relationshipDestinationUuid to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshipDestinationUUID(relationshipDestinationUUID *string) {
-	o.RelationshipDestinationUUID = relationshipDestinationUUID
 }
 
 // WithRelationshipRestore adds the relationshipRestore to the snapmirror relationship transfers get params
@@ -645,6 +713,23 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
+	if o.LastUpdatedTime != nil {
+
+		// query param last_updated_time
+		var qrLastUpdatedTime string
+
+		if o.LastUpdatedTime != nil {
+			qrLastUpdatedTime = *o.LastUpdatedTime
+		}
+		qLastUpdatedTime := qrLastUpdatedTime
+		if qLastUpdatedTime != "" {
+
+			if err := r.SetQueryParam("last_updated_time", qLastUpdatedTime); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.MaxRecords != nil {
 
 		// query param max_records
@@ -657,6 +742,40 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		if qMaxRecords != "" {
 
 			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NetworkCompressionRatio != nil {
+
+		// query param network_compression_ratio
+		var qrNetworkCompressionRatio string
+
+		if o.NetworkCompressionRatio != nil {
+			qrNetworkCompressionRatio = *o.NetworkCompressionRatio
+		}
+		qNetworkCompressionRatio := qrNetworkCompressionRatio
+		if qNetworkCompressionRatio != "" {
+
+			if err := r.SetQueryParam("network_compression_ratio", qNetworkCompressionRatio); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OnDemandAttrs != nil {
+
+		// query param on_demand_attrs
+		var qrOnDemandAttrs string
+
+		if o.OnDemandAttrs != nil {
+			qrOnDemandAttrs = *o.OnDemandAttrs
+		}
+		qOnDemandAttrs := qrOnDemandAttrs
+		if qOnDemandAttrs != "" {
+
+			if err := r.SetQueryParam("on_demand_attrs", qOnDemandAttrs); err != nil {
 				return err
 			}
 		}
@@ -724,6 +843,40 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
+	if o.RelationshipDestinationLunsName != nil {
+
+		// query param relationship.destination.luns.name
+		var qrRelationshipDestinationLunsName string
+
+		if o.RelationshipDestinationLunsName != nil {
+			qrRelationshipDestinationLunsName = *o.RelationshipDestinationLunsName
+		}
+		qRelationshipDestinationLunsName := qrRelationshipDestinationLunsName
+		if qRelationshipDestinationLunsName != "" {
+
+			if err := r.SetQueryParam("relationship.destination.luns.name", qRelationshipDestinationLunsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RelationshipDestinationLunsUUID != nil {
+
+		// query param relationship.destination.luns.uuid
+		var qrRelationshipDestinationLunsUUID string
+
+		if o.RelationshipDestinationLunsUUID != nil {
+			qrRelationshipDestinationLunsUUID = *o.RelationshipDestinationLunsUUID
+		}
+		qRelationshipDestinationLunsUUID := qrRelationshipDestinationLunsUUID
+		if qRelationshipDestinationLunsUUID != "" {
+
+			if err := r.SetQueryParam("relationship.destination.luns.uuid", qRelationshipDestinationLunsUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.RelationshipDestinationPath != nil {
 
 		// query param relationship.destination.path
@@ -770,23 +923,6 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		if qRelationshipDestinationSvmUUID != "" {
 
 			if err := r.SetQueryParam("relationship.destination.svm.uuid", qRelationshipDestinationSvmUUID); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.RelationshipDestinationUUID != nil {
-
-		// query param relationship.destination.uuid
-		var qrRelationshipDestinationUUID string
-
-		if o.RelationshipDestinationUUID != nil {
-			qrRelationshipDestinationUUID = *o.RelationshipDestinationUUID
-		}
-		qRelationshipDestinationUUID := qrRelationshipDestinationUUID
-		if qRelationshipDestinationUUID != "" {
-
-			if err := r.SetQueryParam("relationship.destination.uuid", qRelationshipDestinationUUID); err != nil {
 				return err
 			}
 		}

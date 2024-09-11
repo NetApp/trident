@@ -49,11 +49,11 @@ type StorageSwitch struct {
 	Name *string `json:"name,omitempty"`
 
 	// Storage switch role in fabric.
-	// Enum: [unknown primary subordinate]
+	// Enum: ["unknown","primary","subordinate"]
 	Role *string `json:"role,omitempty"`
 
 	// Storage switch state
-	// Enum: [ok error]
+	// Enum: ["ok","error"]
 	State *string `json:"state,omitempty"`
 
 	// storage switch inline connections
@@ -90,7 +90,7 @@ type StorageSwitch struct {
 	SymbolicName *string `json:"symbolic_name,omitempty"`
 
 	// Storage switch vendor
-	// Enum: [unknown brocade cisco]
+	// Enum: ["unknown","brocade","cisco"]
 	Vendor *string `json:"vendor,omitempty"`
 
 	// Storage switch world wide name
@@ -922,7 +922,7 @@ type StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPort struct {
 	Connection *string `json:"connection,omitempty"`
 
 	// Storage switch peer type
-	// Enum: [unknown bridge switch fcp_adapter fcvi_adapter]
+	// Enum: ["unknown","bridge","switch","fcp_adapter","fcvi_adapter"]
 	Type *string `json:"type,omitempty"`
 
 	// Storage switch peer unique ID
@@ -1110,11 +1110,11 @@ type StorageSwitchInlineErrorsInlineArrayItem struct {
 	Reason *Error `json:"reason,omitempty"`
 
 	// Error component severity
-	// Enum: [unknown notice warning error]
+	// Enum: ["unknown","notice","warning","error"]
 	Severity *string `json:"severity,omitempty"`
 
 	// Error component type
-	// Enum: [switch_unreachable temp_above_warning_level temp_above_critical_level temp_below_warning_level temp_below_critical_level temp_sensor_status_failed fan_status_non_operational power_supply_status_failed power_above_warning_level power_above_critical_level power_below_warning_level power_below_critical_level sfp_rx_power_above_warning_level sfp_rx_power_above_critical_level sfp_tx_power_above_warning_level sfp_tx_power_above_critical_level sfp_rx_power_below_warning_level sfp_rx_power_below_critical_level sfp_tx_power_below_warning_level sfp_tx_power_below_critical_level sfp_status_failed vsan_invalid_frame_delivery_configuration temp_sensor_status_unavailable fan_status_unavailable power_supply_inline_power_failed power_supply_status_unavailable unknown power_supply_off_env_other power_supply_off_admin power_supply_off_denied power_supply_off_env_power power_supply_off_env_temp power_supply_off_env_fan power_supply_on_but_fan_fail power_supply_off_cooling power_supply_off_connector_rating e_ports_down snmpv3_user_not_configured incomplete_snmp_data_refresh]
+	// Enum: ["switch_unreachable","temp_above_warning_level","temp_above_critical_level","temp_below_warning_level","temp_below_critical_level","temp_sensor_status_failed","fan_status_non_operational","power_supply_status_failed","power_above_warning_level","power_above_critical_level","power_below_warning_level","power_below_critical_level","sfp_rx_power_above_warning_level","sfp_rx_power_above_critical_level","sfp_tx_power_above_warning_level","sfp_tx_power_above_critical_level","sfp_rx_power_below_warning_level","sfp_rx_power_below_critical_level","sfp_tx_power_below_warning_level","sfp_tx_power_below_critical_level","sfp_status_failed","vsan_invalid_frame_delivery_configuration","temp_sensor_status_unavailable","fan_status_unavailable","power_supply_inline_power_failed","power_supply_status_unavailable","unknown","power_supply_off_env_other","power_supply_off_admin","power_supply_off_denied","power_supply_off_env_power","power_supply_off_env_temp","power_supply_off_env_fan","power_supply_on_but_fan_fail","power_supply_off_cooling","power_supply_off_connector_rating","e_ports_down","snmpv3_user_not_configured","incomplete_snmp_data_refresh"]
 	Type *string `json:"type,omitempty"`
 }
 
@@ -1796,7 +1796,7 @@ type StorageSwitchInlineFansInlineArrayItem struct {
 	Speed *int64 `json:"speed,omitempty"`
 
 	// Storage switch fan state
-	// Enum: [ok error]
+	// Enum: ["ok","error"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -2072,7 +2072,7 @@ type StorageSwitchInlinePathsInlineArrayItemInlineAdapter struct {
 	Name *string `json:"name,omitempty"`
 
 	// Node adapter type
-	// Enum: [unknown fcp_initiator fc_vi fcp_target]
+	// Enum: ["unknown","fcp_initiator","fc_vi","fcp_target"]
 	Type *string `json:"type,omitempty"`
 
 	// Node adapter world wide name
@@ -2421,7 +2421,7 @@ type StorageSwitchInlinePortsInlineArrayItem struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// Storage switch port mode
-	// Enum: [unknown auto f_port fl_port e_port te_port u_port g_port other ex_port d_port sim_port ve_port ae_port af_port]
+	// Enum: ["unknown","auto","f_port","fl_port","e_port","te_port","u_port","g_port","other","ex_port","d_port","sim_port","ve_port","ae_port","af_port"]
 	Mode *string `json:"mode,omitempty"`
 
 	// Storage switch port name
@@ -2434,7 +2434,7 @@ type StorageSwitchInlinePortsInlineArrayItem struct {
 	Speed *int64 `json:"speed,omitempty"`
 
 	// Storage switch port state
-	// Enum: [error online offline]
+	// Enum: ["error","online","offline"]
 	State *string `json:"state,omitempty"`
 
 	// Storage switch port world wide name
@@ -2787,11 +2787,11 @@ type StorageSwitchInlinePortsInlineArrayItemInlineSfp struct {
 	SerialNumber *string `json:"serial_number,omitempty"`
 
 	// Storage switch port SFP transmitter type
-	// Enum: [unknown long_wave_laser short_wave_laser long_wave_laser_cost_reduced electrical ten_gig_base_sr ten_gig_base_lr ten_gig_base_er ten_gig_base_lx4 ten_gig_base_sw ten_gig_base_lw ten_gig_base_ew]
+	// Enum: ["unknown","long_wave_laser","short_wave_laser","long_wave_laser_cost_reduced","electrical","ten_gig_base_sr","ten_gig_base_lr","ten_gig_base_er","ten_gig_base_lx4","ten_gig_base_sw","ten_gig_base_lw","ten_gig_base_ew"]
 	TransmitterType *string `json:"transmitter_type,omitempty"`
 
 	// Storage switch port SFP type
-	// Enum: [unknown other gbic embedded glm gbic_with_serial_id gbic_without_serial_id sfp_with_serial_id sfp_without_serial_id xfp x2_short x2_medium x2_tall xpak_short xpak_medium xpak_tall xenpak sfp_dw_dm qsfp x2_dw_dm gbic_not_installed small_form_factor]
+	// Enum: ["unknown","other","gbic","embedded","glm","gbic_with_serial_id","gbic_without_serial_id","sfp_with_serial_id","sfp_without_serial_id","xfp","x2_short","x2_medium","x2_tall","xpak_short","xpak_medium","xpak_tall","xenpak","sfp_dw_dm","qsfp","x2_dw_dm","gbic_not_installed","small_form_factor"]
 	Type *string `json:"type,omitempty"`
 }
 
@@ -3257,7 +3257,7 @@ type StorageSwitchInlinePowerSupplyUnitsInlineArrayItem struct {
 	Name *string `json:"name,omitempty"`
 
 	// Power supply unit state
-	// Enum: [ok error]
+	// Enum: ["ok","error"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -3366,7 +3366,7 @@ type StorageSwitchInlineTemperatureSensorsInlineArrayItem struct {
 	Reading *int64 `json:"reading,omitempty"`
 
 	// Temperature sensor state
-	// Enum: [error ok]
+	// Enum: ["error","ok"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -3481,7 +3481,7 @@ type StorageSwitchInlineVsansInlineArrayItem struct {
 	Name *string `json:"name,omitempty"`
 
 	// Storage switch VSAN Port state
-	// Enum: [ok error]
+	// Enum: ["ok","error"]
 	State *string `json:"state,omitempty"`
 }
 

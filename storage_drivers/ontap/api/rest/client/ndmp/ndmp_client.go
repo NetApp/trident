@@ -38,7 +38,11 @@ type ClientService interface {
 
 	NdmpNodeModify(params *NdmpNodeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpNodeModifyOK, error)
 
+	NdmpNodeModifyCollection(params *NdmpNodeModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpNodeModifyCollectionOK, error)
+
 	NdmpNodeSessionDelete(params *NdmpNodeSessionDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpNodeSessionDeleteOK, error)
+
+	NdmpNodeSessionDeleteCollection(params *NdmpNodeSessionDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpNodeSessionDeleteCollectionOK, error)
 
 	NdmpNodeSessionGet(params *NdmpNodeSessionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpNodeSessionGetOK, error)
 
@@ -51,6 +55,8 @@ type ClientService interface {
 	NdmpSvmGet(params *NdmpSvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpSvmGetOK, error)
 
 	NdmpSvmModify(params *NdmpSvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpSvmModifyOK, error)
+
+	NdmpSvmModifyCollection(params *NdmpSvmModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpSvmModifyCollectionOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -72,8 +78,8 @@ func (a *Client) ClusterNdmpGet(params *ClusterNdmpGetParams, authInfo runtime.C
 		ID:                 "cluster_ndmp_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/ndmp",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterNdmpGetReader{formats: a.formats},
@@ -115,8 +121,8 @@ func (a *Client) ClusterNdmpModify(params *ClusterNdmpModifyParams, authInfo run
 		ID:                 "cluster_ndmp_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/ndmp",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClusterNdmpModifyReader{formats: a.formats},
@@ -158,8 +164,8 @@ func (a *Client) NdmpNodeCollectionGet(params *NdmpNodeCollectionGetParams, auth
 		ID:                 "ndmp_node_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/ndmp/nodes",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NdmpNodeCollectionGetReader{formats: a.formats},
@@ -201,8 +207,8 @@ func (a *Client) NdmpNodeGet(params *NdmpNodeGetParams, authInfo runtime.ClientA
 		ID:                 "ndmp_node_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/ndmp/nodes/{node.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NdmpNodeGetReader{formats: a.formats},
@@ -244,8 +250,8 @@ func (a *Client) NdmpNodeModify(params *NdmpNodeModifyParams, authInfo runtime.C
 		ID:                 "ndmp_node_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/ndmp/nodes/{node.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NdmpNodeModifyReader{formats: a.formats},
@@ -271,6 +277,44 @@ func (a *Client) NdmpNodeModify(params *NdmpNodeModifyParams, authInfo runtime.C
 }
 
 /*
+NdmpNodeModifyCollection ndmp node modify collection API
+*/
+func (a *Client) NdmpNodeModifyCollection(params *NdmpNodeModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpNodeModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNdmpNodeModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ndmp_node_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/ndmp/nodes",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NdmpNodeModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NdmpNodeModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NdmpNodeModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NdmpNodeSessionDelete Deletes a specific NDMP session.
 
 ### Related ONTAP commands
@@ -288,8 +332,8 @@ func (a *Client) NdmpNodeSessionDelete(params *NdmpNodeSessionDeleteParams, auth
 		ID:                 "ndmp_node_session_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/ndmp/sessions/{owner.uuid}/{session.id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NdmpNodeSessionDeleteReader{formats: a.formats},
@@ -315,6 +359,44 @@ func (a *Client) NdmpNodeSessionDelete(params *NdmpNodeSessionDeleteParams, auth
 }
 
 /*
+NdmpNodeSessionDeleteCollection ndmp node session delete collection API
+*/
+func (a *Client) NdmpNodeSessionDeleteCollection(params *NdmpNodeSessionDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpNodeSessionDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNdmpNodeSessionDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ndmp_node_session_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/ndmp/sessions",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NdmpNodeSessionDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NdmpNodeSessionDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NdmpNodeSessionDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NdmpNodeSessionGet Retrieves the details of a specific NDMP session.
 
 ### Related ONTAP commands
@@ -332,8 +414,8 @@ func (a *Client) NdmpNodeSessionGet(params *NdmpNodeSessionGetParams, authInfo r
 		ID:                 "ndmp_node_session_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/ndmp/sessions/{owner.uuid}/{session.id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NdmpNodeSessionGetReader{formats: a.formats},
@@ -376,8 +458,8 @@ func (a *Client) NdmpNodeSessionsCollectionGet(params *NdmpNodeSessionsCollectio
 		ID:                 "ndmp_node_sessions_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/ndmp/sessions",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NdmpNodeSessionsCollectionGetReader{formats: a.formats},
@@ -419,8 +501,8 @@ func (a *Client) NdmpPasswordGet(params *NdmpPasswordGetParams, authInfo runtime
 		ID:                 "ndmp_password_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/ndmp/svms/{svm.uuid}/passwords/{user}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NdmpPasswordGetReader{formats: a.formats},
@@ -462,8 +544,8 @@ func (a *Client) NdmpSvmCollectionGet(params *NdmpSvmCollectionGetParams, authIn
 		ID:                 "ndmp_svm_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/ndmp/svms",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NdmpSvmCollectionGetReader{formats: a.formats},
@@ -505,8 +587,8 @@ func (a *Client) NdmpSvmGet(params *NdmpSvmGetParams, authInfo runtime.ClientAut
 		ID:                 "ndmp_svm_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/ndmp/svms/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NdmpSvmGetReader{formats: a.formats},
@@ -548,8 +630,8 @@ func (a *Client) NdmpSvmModify(params *NdmpSvmModifyParams, authInfo runtime.Cli
 		ID:                 "ndmp_svm_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/ndmp/svms/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NdmpSvmModifyReader{formats: a.formats},
@@ -571,6 +653,44 @@ func (a *Client) NdmpSvmModify(params *NdmpSvmModifyParams, authInfo runtime.Cli
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*NdmpSvmModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+NdmpSvmModifyCollection ndmp svm modify collection API
+*/
+func (a *Client) NdmpSvmModifyCollection(params *NdmpSvmModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpSvmModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNdmpSvmModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ndmp_svm_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/ndmp/svms",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NdmpSvmModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NdmpSvmModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NdmpSvmModifyCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

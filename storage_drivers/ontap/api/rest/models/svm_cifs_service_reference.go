@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -28,6 +29,17 @@ type SvmCifsServiceReference struct {
 	// If this is set to true, an SVM administrator can manage the CIFS service. If it is false, only the cluster administrator can manage the service.
 	Allowed *bool `json:"allowed,omitempty"`
 
+	// Authentication type.
+	// Example: domain
+	// Read Only: true
+	// Enum: ["domain","workgroup"]
+	AuthStyle *string `json:"auth-style,omitempty"`
+
+	// The NetBIOS name of the domain or workgroup associated with the CIFS server.
+	//
+	// Read Only: true
+	DomainWorkgroup *string `json:"domain_workgroup,omitempty"`
+
 	// If allowed, setting to true enables the CIFS service.
 	Enabled *bool `json:"enabled,omitempty"`
 
@@ -36,6 +48,12 @@ type SvmCifsServiceReference struct {
 	// Max Length: 15
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
+
+	// The workgroup name.
+	// Example: workgrp1
+	// Max Length: 15
+	// Min Length: 1
+	Workgroup *string `json:"workgroup,omitempty"`
 }
 
 // Validate validates this svm cifs service reference
@@ -50,7 +68,15 @@ func (m *SvmCifsServiceReference) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateAuthStyle(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateWorkgroup(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -94,6 +120,62 @@ func (m *SvmCifsServiceReference) validateAdDomain(formats strfmt.Registry) erro
 	return nil
 }
 
+var svmCifsServiceReferenceTypeAuthStylePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["domain","workgroup"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		svmCifsServiceReferenceTypeAuthStylePropEnum = append(svmCifsServiceReferenceTypeAuthStylePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// svm_cifs_service_reference
+	// SvmCifsServiceReference
+	// auth-style
+	// AuthStyle
+	// domain
+	// END DEBUGGING
+	// SvmCifsServiceReferenceAuthStyleDomain captures enum value "domain"
+	SvmCifsServiceReferenceAuthStyleDomain string = "domain"
+
+	// BEGIN DEBUGGING
+	// svm_cifs_service_reference
+	// SvmCifsServiceReference
+	// auth-style
+	// AuthStyle
+	// workgroup
+	// END DEBUGGING
+	// SvmCifsServiceReferenceAuthStyleWorkgroup captures enum value "workgroup"
+	SvmCifsServiceReferenceAuthStyleWorkgroup string = "workgroup"
+)
+
+// prop value enum
+func (m *SvmCifsServiceReference) validateAuthStyleEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, svmCifsServiceReferenceTypeAuthStylePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SvmCifsServiceReference) validateAuthStyle(formats strfmt.Registry) error {
+	if swag.IsZero(m.AuthStyle) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAuthStyleEnum("auth-style", "body", *m.AuthStyle); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *SvmCifsServiceReference) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
@@ -110,6 +192,22 @@ func (m *SvmCifsServiceReference) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *SvmCifsServiceReference) validateWorkgroup(formats strfmt.Registry) error {
+	if swag.IsZero(m.Workgroup) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("workgroup", "body", *m.Workgroup, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("workgroup", "body", *m.Workgroup, 15); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this svm cifs service reference based on the context it is used
 func (m *SvmCifsServiceReference) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -119,6 +217,14 @@ func (m *SvmCifsServiceReference) ContextValidate(ctx context.Context, formats s
 	}
 
 	if err := m.contextValidateAdDomain(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAuthStyle(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDomainWorkgroup(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -156,6 +262,24 @@ func (m *SvmCifsServiceReference) contextValidateAdDomain(ctx context.Context, f
 	return nil
 }
 
+func (m *SvmCifsServiceReference) contextValidateAuthStyle(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "auth-style", "body", m.AuthStyle); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmCifsServiceReference) contextValidateDomainWorkgroup(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "domain_workgroup", "body", m.DomainWorkgroup); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *SvmCifsServiceReference) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -178,6 +302,10 @@ func (m *SvmCifsServiceReference) UnmarshalBinary(b []byte) error {
 //
 // swagger:model svm_cifs_service_reference_inline_ad_domain
 type SvmCifsServiceReferenceInlineAdDomain struct {
+
+	// The default site used by LIFs that do not have a site membership.
+	//
+	DefaultSite *string `json:"default_site,omitempty"`
 
 	// The fully qualified domain name of the Windows Active Directory to which this CIFS server belongs. A CIFS server appears as a member of Windows server object in the Active Directory store.
 	//

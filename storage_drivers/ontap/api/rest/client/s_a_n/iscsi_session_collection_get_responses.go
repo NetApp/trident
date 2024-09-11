@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *IscsiSessionCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the iscsi session collection get o k response
+func (o *IscsiSessionCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *IscsiSessionCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/iscsi/sessions][%d] iscsiSessionCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/iscsi/sessions][%d] iscsiSessionCollectionGetOK %s", 200, payload)
 }
 
 func (o *IscsiSessionCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/san/iscsi/sessions][%d] iscsiSessionCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/iscsi/sessions][%d] iscsiSessionCollectionGetOK %s", 200, payload)
 }
 
 func (o *IscsiSessionCollectionGetOK) GetPayload() *models.IscsiSessionResponse {
@@ -122,11 +130,6 @@ type IscsiSessionCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the iscsi session collection get default response
-func (o *IscsiSessionCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this iscsi session collection get default response has a 2xx status code
 func (o *IscsiSessionCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *IscsiSessionCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the iscsi session collection get default response
+func (o *IscsiSessionCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IscsiSessionCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/iscsi/sessions][%d] iscsi_session_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/iscsi/sessions][%d] iscsi_session_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *IscsiSessionCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/san/iscsi/sessions][%d] iscsi_session_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/iscsi/sessions][%d] iscsi_session_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *IscsiSessionCollectionGetDefault) GetPayload() *models.ErrorResponse {

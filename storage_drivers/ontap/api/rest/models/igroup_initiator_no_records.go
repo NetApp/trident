@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -35,6 +36,9 @@ type IgroupInitiatorNoRecords struct {
 	// Max Length: 96
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
+
+	// proximity
+	Proximity *IgroupInitiatorNoRecordsInlineProximity `json:"proximity,omitempty"`
 }
 
 // Validate validates this igroup initiator no records
@@ -50,6 +54,10 @@ func (m *IgroupInitiatorNoRecords) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProximity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -108,11 +116,32 @@ func (m *IgroupInitiatorNoRecords) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *IgroupInitiatorNoRecords) validateProximity(formats strfmt.Registry) error {
+	if swag.IsZero(m.Proximity) { // not required
+		return nil
+	}
+
+	if m.Proximity != nil {
+		if err := m.Proximity.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("proximity")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this igroup initiator no records based on the context it is used
 func (m *IgroupInitiatorNoRecords) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProximity(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -128,6 +157,20 @@ func (m *IgroupInitiatorNoRecords) contextValidateLinks(ctx context.Context, for
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IgroupInitiatorNoRecords) contextValidateProximity(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Proximity != nil {
+		if err := m.Proximity.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("proximity")
 			}
 			return err
 		}
@@ -233,6 +276,291 @@ func (m *IgroupInitiatorNoRecordsInlineLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *IgroupInitiatorNoRecordsInlineLinks) UnmarshalBinary(b []byte) error {
 	var res IgroupInitiatorNoRecordsInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInitiatorNoRecordsInlineProximity Properties that define to what SVMs the initiator is proximal. This information is used to properly report active optimized and active non-optimized network paths via ALUA. If no configuration has been specified for an initiator, the sub-object will not be present in GET.<br/>
+// These properties can be set via initiator group POST and PATCH and apply to all instances of the initiator in all initiator groups in the SVM and its peers. The `proximity` sub-object for an initiator is set in POST and PATCH in its entirety and replaces any previously set proximity for the initiator within the SVM for the initiator within the SVM. The `local_svm` property must always be set to `true` or `false` when setting the `proximity` property. To clear any previously set proximity, POST or PATCH the `proximity` object to `null`.
+//
+// swagger:model igroup_initiator_no_records_inline_proximity
+type IgroupInitiatorNoRecordsInlineProximity struct {
+
+	// A boolean that indicates if the initiator is proximal to the SVM of the containing initiator group. This is required for any POST or PATCH that includes the `proximity` sub-object.
+	//
+	LocalSvm *bool `json:"local_svm,omitempty"`
+
+	// An array of remote peer SVMs to which the initiator is proximal.
+	//
+	PeerSvms []*IgroupInitiatorNoRecordsProximityPeerSvmsItems0 `json:"peer_svms,omitempty"`
+}
+
+// Validate validates this igroup initiator no records inline proximity
+func (m *IgroupInitiatorNoRecordsInlineProximity) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validatePeerSvms(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorNoRecordsInlineProximity) validatePeerSvms(formats strfmt.Registry) error {
+	if swag.IsZero(m.PeerSvms) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.PeerSvms); i++ {
+		if swag.IsZero(m.PeerSvms[i]) { // not required
+			continue
+		}
+
+		if m.PeerSvms[i] != nil {
+			if err := m.PeerSvms[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("proximity" + "." + "peer_svms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup initiator no records inline proximity based on the context it is used
+func (m *IgroupInitiatorNoRecordsInlineProximity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidatePeerSvms(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorNoRecordsInlineProximity) contextValidatePeerSvms(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.PeerSvms); i++ {
+
+		if m.PeerSvms[i] != nil {
+			if err := m.PeerSvms[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("proximity" + "." + "peer_svms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorNoRecordsInlineProximity) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorNoRecordsInlineProximity) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorNoRecordsInlineProximity
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInitiatorNoRecordsProximityPeerSvmsItems0 A reference to an SVM peer relationship.
+//
+// swagger:model IgroupInitiatorNoRecordsProximityPeerSvmsItems0
+type IgroupInitiatorNoRecordsProximityPeerSvmsItems0 struct {
+
+	// links
+	Links *IgroupInitiatorNoRecordsProximityPeerSvmsItems0Links `json:"_links,omitempty"`
+
+	// The local name of the peer SVM. This name is unique among all local and peer SVMs.
+	//
+	// Example: peer1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM peer relationship. This is the UUID of the relationship, not the UUID of the peer SVM itself.
+	//
+	// Example: 4204cf77-4c82-9bdb-5644-b5a841c097a9
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this igroup initiator no records proximity peer svms items0
+func (m *IgroupInitiatorNoRecordsProximityPeerSvmsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorNoRecordsProximityPeerSvmsItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup initiator no records proximity peer svms items0 based on the context it is used
+func (m *IgroupInitiatorNoRecordsProximityPeerSvmsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorNoRecordsProximityPeerSvmsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorNoRecordsProximityPeerSvmsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorNoRecordsProximityPeerSvmsItems0) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorNoRecordsProximityPeerSvmsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInitiatorNoRecordsProximityPeerSvmsItems0Links igroup initiator no records proximity peer svms items0 links
+//
+// swagger:model IgroupInitiatorNoRecordsProximityPeerSvmsItems0Links
+type IgroupInitiatorNoRecordsProximityPeerSvmsItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this igroup initiator no records proximity peer svms items0 links
+func (m *IgroupInitiatorNoRecordsProximityPeerSvmsItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorNoRecordsProximityPeerSvmsItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup initiator no records proximity peer svms items0 links based on the context it is used
+func (m *IgroupInitiatorNoRecordsProximityPeerSvmsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorNoRecordsProximityPeerSvmsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorNoRecordsProximityPeerSvmsItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorNoRecordsProximityPeerSvmsItems0Links) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorNoRecordsProximityPeerSvmsItems0Links
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

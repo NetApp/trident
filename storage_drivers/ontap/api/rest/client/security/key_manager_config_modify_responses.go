@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *KeyManagerConfigModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the key manager config modify o k response
+func (o *KeyManagerConfigModifyOK) Code() int {
+	return 200
+}
+
 func (o *KeyManagerConfigModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/key-manager-configs][%d] keyManagerConfigModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/key-manager-configs][%d] keyManagerConfigModifyOK", 200)
 }
 
 func (o *KeyManagerConfigModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/key-manager-configs][%d] keyManagerConfigModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/key-manager-configs][%d] keyManagerConfigModifyOK", 200)
 }
 
 func (o *KeyManagerConfigModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -111,20 +117,19 @@ func NewKeyManagerConfigModifyDefault(code int) *KeyManagerConfigModifyDefault {
 | 65536806 | Passphrase length error. |
 | 65536807 | MetroCluster cannot be configured while in Common Criteria mode. |
 | 65536809 | Common Criteria mode is disabled on the cluster. Contact technical support for assistance in enabling Common Criteria mode. |
+| 65537301 | The Onboard Key Manager is not enabled. |
 | 65537302 | The passphrase field is required when changing cc_mode_enabled to true. |
 | 65537303 | Modifying polling period requires an effective cluster version of ONTAP 9.10 or later. |
 | 65537304 | Unable to modify polling period because no external key management is configured on the cluster. |
 | 65538404 | Modifying cloud keymanager retry count requires an effective cluster version of ONTAP 9.11 or later. |
+| 65539303 | Modifying the health monitor policy requires an effective cluster version of 9.15 or later. |
+| 65539304 | The health monitor policy feature is not enabled. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type KeyManagerConfigModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the key manager config modify default response
-func (o *KeyManagerConfigModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this key manager config modify default response has a 2xx status code
@@ -152,12 +157,19 @@ func (o *KeyManagerConfigModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the key manager config modify default response
+func (o *KeyManagerConfigModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *KeyManagerConfigModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/key-manager-configs][%d] key_manager_config_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/key-manager-configs][%d] key_manager_config_modify default %s", o._statusCode, payload)
 }
 
 func (o *KeyManagerConfigModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/key-manager-configs][%d] key_manager_config_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/key-manager-configs][%d] key_manager_config_modify default %s", o._statusCode, payload)
 }
 
 func (o *KeyManagerConfigModifyDefault) GetPayload() *models.ErrorResponse {

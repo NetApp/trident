@@ -13,7 +13,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// AnalyticsInfo File system analytics information summarizing all descendents of a specific directory.
+// AnalyticsInfo File system analytics information summarizing all descendants of a specific directory.
 //
 // swagger:model analytics_info
 type AnalyticsInfo struct {

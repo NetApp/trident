@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *AggregatePerformanceMetricsCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the aggregate performance metrics collection get o k response
+func (o *AggregatePerformanceMetricsCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *AggregatePerformanceMetricsCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/aggregates/{uuid}/metrics][%d] aggregatePerformanceMetricsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates/{uuid}/metrics][%d] aggregatePerformanceMetricsCollectionGetOK %s", 200, payload)
 }
 
 func (o *AggregatePerformanceMetricsCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/aggregates/{uuid}/metrics][%d] aggregatePerformanceMetricsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates/{uuid}/metrics][%d] aggregatePerformanceMetricsCollectionGetOK %s", 200, payload)
 }
 
 func (o *AggregatePerformanceMetricsCollectionGetOK) GetPayload() *models.PerformanceMetricResponse {
@@ -119,16 +127,12 @@ func NewAggregatePerformanceMetricsCollectionGetDefault(code int) *AggregatePerf
 | Error Code | Description |
 | ---------- | ----------- |
 | 8586225 | Encountered unexpected error in retrieving metrics for the requested aggregate. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AggregatePerformanceMetricsCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the aggregate performance metrics collection get default response
-func (o *AggregatePerformanceMetricsCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this aggregate performance metrics collection get default response has a 2xx status code
@@ -156,12 +160,19 @@ func (o *AggregatePerformanceMetricsCollectionGetDefault) IsCode(code int) bool 
 	return o._statusCode == code
 }
 
+// Code gets the status code for the aggregate performance metrics collection get default response
+func (o *AggregatePerformanceMetricsCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AggregatePerformanceMetricsCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/aggregates/{uuid}/metrics][%d] aggregate_performance_metrics_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates/{uuid}/metrics][%d] aggregate_performance_metrics_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *AggregatePerformanceMetricsCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/aggregates/{uuid}/metrics][%d] aggregate_performance_metrics_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates/{uuid}/metrics][%d] aggregate_performance_metrics_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *AggregatePerformanceMetricsCollectionGetDefault) GetPayload() *models.ErrorResponse {

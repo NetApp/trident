@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *LocalCifsGroupDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the local cifs group delete o k response
+func (o *LocalCifsGroupDeleteOK) Code() int {
+	return 200
+}
+
 func (o *LocalCifsGroupDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{sid}][%d] localCifsGroupDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{sid}][%d] localCifsGroupDeleteOK", 200)
 }
 
 func (o *LocalCifsGroupDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{sid}][%d] localCifsGroupDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{sid}][%d] localCifsGroupDeleteOK", 200)
 }
 
 func (o *LocalCifsGroupDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type LocalCifsGroupDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the local cifs group delete default response
-func (o *LocalCifsGroupDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this local cifs group delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *LocalCifsGroupDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the local cifs group delete default response
+func (o *LocalCifsGroupDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LocalCifsGroupDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{sid}][%d] local_cifs_group_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{sid}][%d] local_cifs_group_delete default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsGroupDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{sid}][%d] local_cifs_group_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{sid}][%d] local_cifs_group_delete default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsGroupDeleteDefault) GetPayload() *models.ErrorResponse {

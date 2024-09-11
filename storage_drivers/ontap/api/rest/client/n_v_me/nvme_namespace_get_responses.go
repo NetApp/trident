@@ -6,6 +6,7 @@ package n_v_me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NvmeNamespaceGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nvme namespace get o k response
+func (o *NvmeNamespaceGetOK) Code() int {
+	return 200
+}
+
 func (o *NvmeNamespaceGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/namespaces/{uuid}][%d] nvmeNamespaceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/namespaces/{uuid}][%d] nvmeNamespaceGetOK %s", 200, payload)
 }
 
 func (o *NvmeNamespaceGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/namespaces/{uuid}][%d] nvmeNamespaceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/namespaces/{uuid}][%d] nvmeNamespaceGetOK %s", 200, payload)
 }
 
 func (o *NvmeNamespaceGetOK) GetPayload() *models.NvmeNamespace {
@@ -120,16 +128,12 @@ func NewNvmeNamespaceGetDefault(code int) *NvmeNamespaceGetDefault {
 | ---------- | ----------- |
 | 72090006 | The specified namespace was not found. |
 | 72090007 | The specified namespace was not found. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NvmeNamespaceGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nvme namespace get default response
-func (o *NvmeNamespaceGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nvme namespace get default response has a 2xx status code
@@ -157,12 +161,19 @@ func (o *NvmeNamespaceGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nvme namespace get default response
+func (o *NvmeNamespaceGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NvmeNamespaceGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/namespaces/{uuid}][%d] nvme_namespace_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/namespaces/{uuid}][%d] nvme_namespace_get default %s", o._statusCode, payload)
 }
 
 func (o *NvmeNamespaceGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/namespaces/{uuid}][%d] nvme_namespace_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/namespaces/{uuid}][%d] nvme_namespace_get default %s", o._statusCode, payload)
 }
 
 func (o *NvmeNamespaceGetDefault) GetPayload() *models.ErrorResponse {

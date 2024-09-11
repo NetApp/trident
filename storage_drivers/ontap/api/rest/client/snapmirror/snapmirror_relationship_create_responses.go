@@ -6,6 +6,7 @@ package snapmirror
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type SnapmirrorRelationshipCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *SnapmirrorRelationshipCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewSnapmirrorRelationshipCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewSnapmirrorRelationshipCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *SnapmirrorRelationshipCreateReader) ReadResponse(response runtime.Clien
 	}
 }
 
+// NewSnapmirrorRelationshipCreateCreated creates a SnapmirrorRelationshipCreateCreated with default headers values
+func NewSnapmirrorRelationshipCreateCreated() *SnapmirrorRelationshipCreateCreated {
+	return &SnapmirrorRelationshipCreateCreated{}
+}
+
+/*
+SnapmirrorRelationshipCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type SnapmirrorRelationshipCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.SnapmirrorRelationshipJobLinkResponse
+}
+
+// IsSuccess returns true when this snapmirror relationship create created response has a 2xx status code
+func (o *SnapmirrorRelationshipCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapmirror relationship create created response has a 3xx status code
+func (o *SnapmirrorRelationshipCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapmirror relationship create created response has a 4xx status code
+func (o *SnapmirrorRelationshipCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapmirror relationship create created response has a 5xx status code
+func (o *SnapmirrorRelationshipCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapmirror relationship create created response a status code equal to that given
+func (o *SnapmirrorRelationshipCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the snapmirror relationship create created response
+func (o *SnapmirrorRelationshipCreateCreated) Code() int {
+	return 201
+}
+
+func (o *SnapmirrorRelationshipCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /snapmirror/relationships][%d] snapmirrorRelationshipCreateCreated %s", 201, payload)
+}
+
+func (o *SnapmirrorRelationshipCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /snapmirror/relationships][%d] snapmirrorRelationshipCreateCreated %s", 201, payload)
+}
+
+func (o *SnapmirrorRelationshipCreateCreated) GetPayload() *models.SnapmirrorRelationshipJobLinkResponse {
+	return o.Payload
+}
+
+func (o *SnapmirrorRelationshipCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.SnapmirrorRelationshipJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewSnapmirrorRelationshipCreateAccepted creates a SnapmirrorRelationshipCreateAccepted with default headers values
 func NewSnapmirrorRelationshipCreateAccepted() *SnapmirrorRelationshipCreateAccepted {
 	return &SnapmirrorRelationshipCreateAccepted{}
@@ -57,7 +146,7 @@ type SnapmirrorRelationshipCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.SnapmirrorRelationshipJobLinkResponse
 }
 
 // IsSuccess returns true when this snapmirror relationship create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *SnapmirrorRelationshipCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the snapmirror relationship create accepted response
+func (o *SnapmirrorRelationshipCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *SnapmirrorRelationshipCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /snapmirror/relationships][%d] snapmirrorRelationshipCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /snapmirror/relationships][%d] snapmirrorRelationshipCreateAccepted %s", 202, payload)
 }
 
 func (o *SnapmirrorRelationshipCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /snapmirror/relationships][%d] snapmirrorRelationshipCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /snapmirror/relationships][%d] snapmirrorRelationshipCreateAccepted %s", 202, payload)
 }
 
-func (o *SnapmirrorRelationshipCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *SnapmirrorRelationshipCreateAccepted) GetPayload() *models.SnapmirrorRelationshipJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *SnapmirrorRelationshipCreateAccepted) readResponse(response runtime.Cli
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.SnapmirrorRelationshipJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -130,21 +226,25 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 1115545 | Access token has an invalid signature. |
-| 1115546 | Access token expired at a time. |
-| 1115547 | Access token not valid until a time. |
-| 1115548 | Access token is malformed. |
-| 1115549 | Internal error. Failed to validate access token. |
+| 1115542 | Invalid value given for the field. |
+| 6619441 | The source volume cannot be the same as the destination volume. |
+| 6619599 | Only the \"none\" tiering policy is supported when creating a destination volume with \"snapshot_locking_enabled\" set to true or if \"snapshot_locking_enabled\" is set to true on the source volume. |
 | 6619637 | Relationship with specified destination volume already exists. |
 | 6619699 | Schedule not found. |
 | 6620374 | Internal error. Failed to get SVM information. |
 | 6620478 | Internal error. Failed to check SnapMirror capability. |
-| 6621834 | Object store configuration does not exist for specified vserver. |
+| 6620654 | Invalid SnapMirror Consistency Group name. |
+| 6621125 | The policy is not valid for relationships with FlexGroup volume endpoints. Only policies without snapshot creation schedules are supported for these relationships. |
+| 6621458 | The destination Consistency Group is the source of a SnapMirror Synchronous (SM-S) relationship. Sources of SM-S relationships cannot be the destination of any other SnapMirror relationship. |
+| 6621782 | A property of the policy is not valid for relationships between these endpoints. |
+| 6621834 | Object store configuration does not exist for specified SVM. |
+| 6622088 | SnapMirror Asynchronous relationship is not supported on a Consistency Group volume that has snapshot locking enabled. |
 | 13303819 | Could not retrieve SnapMirror policy information. |
 | 13303821 | Invalid SnapMirror policy UUID. |
 | 13303841 | This operation is not supported for SnapMirror relationships between these endpoints. |
 | 13303852 | destination.path provided does not contain \\\":\\\". |
 | 13303853 | Restore relationships are not supported for SVM-DR endpoints. |
+| 13303866 | Associating the specified SnapMirror policy with this SnapMirror relationship is not supported. |
 | 13303868 | Create of destination endpoint and SnapMirror relationship failed. |
 | 13303869 | Creating a destination endpoint is not supported for restore relationships. |
 | 13303870 | A tiering policy cannot be specified if tiering is not being set to supported. |
@@ -161,6 +261,7 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 | 13303881 | Network validation failed. |
 | 13303882 | SVM validation failed. |
 | 13303883 | Encryption is not enabled on the destination cluster. |
+| 13303886 | SVM peer permission not found. |
 | 13303887 | Synchronous SnapMirror relationships between FlexGroup volumes are not supported. |
 | 13303888 | Synchronous SnapMirror relationships require an effective cluster version of 9.5 or later on both the source and destination clusters. |
 | 13303889 | Asynchronous SnapMirror relationships between FlexGroup volumes require an effective cluster version of 9.5 or later on both the source and destination clusters. |
@@ -170,7 +271,6 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 | 13303893 | Updating job description failed. |
 | 13303894 | Destination volume name is invalid. It must contain the source volume name and have a suffix when creating a destination endpoint on a cluster with an effective cluster version of 9.6 or earlier. |
 | 13303895 | Operation on the remote destination cluster is not supported. |
-| 13303897 | Specifying transfer_schedule is only supported for an asynchronous SnapMirror relationship with a remote destination cluster that has an effective cluster version of 9.6 or earlier. |
 | 13303916 | FlexGroup volumes are not supported on SnapLock aggregates. |
 | 13303918 | No suitable destination aggregate type is available. |
 | 13303919 | Only FabricPool enabled aggregates are available on the destination. |
@@ -178,22 +278,13 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 | 13303921 | Unable to retrieve the SnapMirror capabilities of the destination cluster. |
 | 13303922 | Specified source SVM is not a data SVM. |
 | 13303923 | Specified destination SVM is not a data SVM. |
-| 13303924 | Source SVM has an invalid Snapshot copy policy. |
+| 13303924 | Source SVM has an invalid snapshot policy. |
 | 13303925 | SnapMirror validation has failed. |
 | 13303930 | The specified tiering policy is not supported for destination volumes of Synchronous relationships. |
 | 13303938 | Fetching information from the local cluster failed. |
 | 13303939 | Could not create an SVM peer relationship. |
 | 13303944 | An SVM-DR relationship is not supported because the source SVM has CIFS configured and the associated SnapMirror policy has either the "identity_preservation" property not set or set to "exclude_network_and_protocol_config". |
-| 13303945 | Schedule specified cannot be associated with the relationship because the policy used for the relationship has a schedule. |
-| 13303953 | SnapMirror relationships between FlexGroup volumes and object store endpoints are not supported. |
-| 13303957 | Restore to the specified destination endpoint is not supported. |
-| 13303958 | The \\\"source.uuid\\\" property must be specified. |
-| 13303959 | The \\\"source.uuid\\\" property can only be specified when using the \\\"restore\\\" property to create a SnapMirror relationship from an object store endpoint. |
-| 13303960 | The \\\"destination.uuid\\\" property cannot be specified for these endpoints. |
-| 13303961 | Creating a destination endpoint is not supported with the \\\"source.uuid\\\" property. |
-| 13303962 | Creating a destination endpoint is not supported with the \\\"destination.uuid\\\" property. |
-| 13303964 | Specified property is not supported for object store relationships. |
-| 13303965 | Specified endpoint not found. |
+| 13303949 | This SnapMirror policy is only supported for relationships with object store destination endpoints. |
 | 13303966 | Consistency Group relationships require a policy of type \"sync\" with a sync_type of \"automated_failover\". |
 | 13303967 | Consistency Group volume is not a FlexVol volume. |
 | 13303968 | Unsupported volume type for the Consistency Group. |
@@ -209,34 +300,33 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 | 13303982 | SAN data interface is not configured on the SVM. |
 | 13304021 | No suitable storage can be found meeting the specified requirements. No FabricPool enabled aggregates are available on the destination. |
 | 13304022 | No suitable storage can be found meeting the specified requirements. No non-root, non-taken-over, non-SnapLock, non-composite aggregates are available on the destination. |
-| 13304026 | API license token is required for this operation. |
-| 13304027 | Invalid API license token specified. |
 | 13304032 | In an "All SAN Array", an SVM-DR relationship is not supported when the associated SnapMirror policy does not have the "identity_preservation" property set to "exclude_network_and_protocol_config". |
-| 13304034 | SnapMirror Cloud license must be installed to use this feature. |
-| 13304035 | SnapMirror Cloud license capacity limit has been exceeded. |
-| 13304036 | SnapmMirror Cloud license term has expired. |
-| 13304038 | SnapMirror Cloud License capacity limit would be exceeded with this SnapMirror operation. |
-| 13304042 | The specified destination or source cluster for relationships with an object store destination must be local. |
-| 13304043 | The property must be specified for a restore from an object store endpoint. |
-| 13304044 | File restore from object store endpoints is not supported for relationship restore. |
-| 13304045 | Incremental restore from an object store endpoint is not supported. |
-| 13304077 | Specified property is only supported for creating a destination endpoint for FabricLink SnapMirror relationships.</private> |
 | 13304080 | Specified UUID and name do not match. |
 | 13304082 | Specified properties are mutually exclusive. |
-| 13304083 | The specified property is not supported because all nodes in the cluster are not capable of supporting the property.<private> |
-| 13304098 | This SnapMirror policy is not supported for SnapMirror relationhips with SnapLock volumes. |
+| 13304083 | The specified property is not supported because all nodes in the cluster are not capable of supporting the property. |
+| 13304093 | The property specified is not supported for the specified relationships. |
+| 13304098 | This SnapMirror policy is not supported for SnapMirror relationships with SnapLock volumes. |
 | 13304099 | SnapLock Compliance Clock is not running on all nodes in the destination cluster. |
 | 13304108 | Schedule not found in the Administrative SVM or the SVM for the relationship. |
+| 13304112 | File restore from a Consistency Group asynchronous SnapMirror relationship endpoint is not supported. |
+| 13304132 | Creating a destination endpoint is not supported with the \"backoff_level\" property. |
+| 13304144 | SnapLock is not licensed on the destination cluster. |
+| 53411897 | The specified source volumes do not match the volumes contained in the source consistency group. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
+##### Above error msgs have been added in sorted(ascending) order
+##### of error codes, for example - 13303945 is error code for
+##### SM_REST_SCHEDULE_CONFLICT_FOR_SM_OP and for 13303949 is err
+##### code for SM_REST_POLICY_ONLY_SUPPORTED_FOR_OBJSTORE, so
+##### SM_REST_SCHEDULE_CONFLICT_FOR_SM_OP has been placed before
+##### SM_REST_POLICY_ONLY_SUPPORTED_FOR_OBJSTORE.
+##### Also for private error msg, add private tags as  after adding the error msg at correct place(in sorted order).
+##### Please make sure new error messages are being put at correct place
+##### so that order is maintained.
 */
 type SnapmirrorRelationshipCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snapmirror relationship create default response
-func (o *SnapmirrorRelationshipCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snapmirror relationship create default response has a 2xx status code
@@ -264,12 +354,19 @@ func (o *SnapmirrorRelationshipCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snapmirror relationship create default response
+func (o *SnapmirrorRelationshipCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnapmirrorRelationshipCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /snapmirror/relationships][%d] snapmirror_relationship_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /snapmirror/relationships][%d] snapmirror_relationship_create default %s", o._statusCode, payload)
 }
 
 func (o *SnapmirrorRelationshipCreateDefault) String() string {
-	return fmt.Sprintf("[POST /snapmirror/relationships][%d] snapmirror_relationship_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /snapmirror/relationships][%d] snapmirror_relationship_create default %s", o._statusCode, payload)
 }
 
 func (o *SnapmirrorRelationshipCreateDefault) GetPayload() *models.ErrorResponse {

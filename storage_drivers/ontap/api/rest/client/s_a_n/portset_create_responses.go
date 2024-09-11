@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *PortsetCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the portset create created response
+func (o *PortsetCreateCreated) Code() int {
+	return 201
+}
+
 func (o *PortsetCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/portsets][%d] portsetCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/portsets][%d] portsetCreateCreated %s", 201, payload)
 }
 
 func (o *PortsetCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/san/portsets][%d] portsetCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/portsets][%d] portsetCreateCreated %s", 201, payload)
 }
 
 func (o *PortsetCreateCreated) GetPayload() *models.PortsetResponse {
@@ -135,20 +143,18 @@ func NewPortsetCreateDefault(code int) *PortsetCreateDefault {
 | 2621706 | The specified `svm.uuid` and `svm.name` do not refer to the same SVM. |
 | 2621707 | No SVM was specified. Either `svm.name` or `svm.uuid` must be supplied. |
 | 5373958 | The specified portset name contains invalid characters. |
+| 5373982 | An invalid WWN was specified. The length is incorrect. |
+| 5373983 | An invalid WWN was specified. The format is incorrect. |
 | 5374905 | An invalid interfaces array element was specified. |
 | 5374906 | A specified network interface was not found. |
 | 5374907 | The specified network interface UUID and name don't identify the same network interface. |
 | 5374914 | An attempt was made to add a network interface of an incompatible protocol to a portset. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type PortsetCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the portset create default response
-func (o *PortsetCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this portset create default response has a 2xx status code
@@ -176,12 +182,19 @@ func (o *PortsetCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the portset create default response
+func (o *PortsetCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *PortsetCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/portsets][%d] portset_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/portsets][%d] portset_create default %s", o._statusCode, payload)
 }
 
 func (o *PortsetCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/san/portsets][%d] portset_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/portsets][%d] portset_create default %s", o._statusCode, payload)
 }
 
 func (o *PortsetCreateDefault) GetPayload() *models.ErrorResponse {

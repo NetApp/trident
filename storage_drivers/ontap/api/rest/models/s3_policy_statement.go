@@ -22,10 +22,10 @@ type S3PolicyStatement struct {
 
 	// Specifies whether access is allowed or denied. If access (to allow) is not granted explicitly to a resource, access is implicitly denied. Access can also be denied explicitly to a resource, in order to make sure that a user cannot access it, even if a different policy grants access.
 	// Example: allow
-	// Enum: [allow deny]
+	// Enum: ["allow","deny"]
 	Effect *string `json:"effect,omitempty"`
 
-	// Specifies a unique statement index used to identify a particular statement. This parameter should not be specified in the POST method. A statement index is automatically generated and is retrieved using the GET method.
+	// Specifies a unique statement index used to identify a particular statement. This parameter should not be specified in the POST method. A statement index is automatically generated. It is not retrieved in the GET method.
 	// Read Only: true
 	Index *int64 `json:"index,omitempty"`
 

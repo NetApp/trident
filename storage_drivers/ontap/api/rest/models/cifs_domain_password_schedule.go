@@ -19,13 +19,19 @@ import (
 // swagger:model cifs_domain_password_schedule
 type CifsDomainPasswordSchedule struct {
 
+	// Day of the week for password change schedule.
+	// Example: Sunday
+	ScheduleDayOfWeek *string `json:"schedule_day_of_week,omitempty"`
+
 	// Schedule description.
+	// Read Only: true
 	ScheduleDescription *string `json:"schedule_description,omitempty"`
 
 	// Is password schedule enabled.
 	ScheduleEnabled *bool `json:"schedule_enabled,omitempty"`
 
 	// Last successful password change time.
+	// Read Only: true
 	// Format: date-time
 	ScheduleLastChangedTime *strfmt.DateTime `json:"schedule_last_changed_time,omitempty"`
 
@@ -34,7 +40,12 @@ type CifsDomainPasswordSchedule struct {
 	// Minimum: 1
 	ScheduleRandomizedMinute *int64 `json:"schedule_randomized_minute,omitempty"`
 
+	// Start time for password change schedule.
+	// Example: 36900
+	ScheduleTimeOfDay *string `json:"schedule_time_of_day,omitempty"`
+
 	// Warning message in case job is deleted.
+	// Read Only: true
 	ScheduleWarnMessage *string `json:"schedule_warn_message,omitempty"`
 
 	// Interval in weeks for password change schedule.
@@ -109,8 +120,52 @@ func (m *CifsDomainPasswordSchedule) validateScheduleWeeklyInterval(formats strf
 	return nil
 }
 
-// ContextValidate validates this cifs domain password schedule based on context it is used
+// ContextValidate validate this cifs domain password schedule based on the context it is used
 func (m *CifsDomainPasswordSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScheduleDescription(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateScheduleLastChangedTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateScheduleWarnMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *CifsDomainPasswordSchedule) contextValidateScheduleDescription(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "schedule_description", "body", m.ScheduleDescription); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CifsDomainPasswordSchedule) contextValidateScheduleLastChangedTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "schedule_last_changed_time", "body", m.ScheduleLastChangedTime); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CifsDomainPasswordSchedule) contextValidateScheduleWarnMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "schedule_warn_message", "body", m.ScheduleWarnMessage); err != nil {
+		return err
+	}
+
 	return nil
 }
 

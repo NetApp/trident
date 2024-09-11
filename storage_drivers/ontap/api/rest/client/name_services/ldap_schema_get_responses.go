@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *LdapSchemaGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ldap schema get o k response
+func (o *LdapSchemaGetOK) Code() int {
+	return 200
+}
+
 func (o *LdapSchemaGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldapSchemaGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldapSchemaGetOK %s", 200, payload)
 }
 
 func (o *LdapSchemaGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldapSchemaGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldapSchemaGetOK %s", 200, payload)
 }
 
 func (o *LdapSchemaGetOK) GetPayload() *models.LdapSchema {
@@ -122,11 +130,6 @@ type LdapSchemaGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the ldap schema get default response
-func (o *LdapSchemaGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this ldap schema get default response has a 2xx status code
 func (o *LdapSchemaGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *LdapSchemaGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ldap schema get default response
+func (o *LdapSchemaGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LdapSchemaGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldap_schema_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldap_schema_get default %s", o._statusCode, payload)
 }
 
 func (o *LdapSchemaGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldap_schema_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldap_schema_get default %s", o._statusCode, payload)
 }
 
 func (o *LdapSchemaGetDefault) GetPayload() *models.ErrorResponse {

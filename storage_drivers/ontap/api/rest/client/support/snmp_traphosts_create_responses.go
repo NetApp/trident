@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *SnmpTraphostsCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the snmp traphosts create created response
+func (o *SnmpTraphostsCreateCreated) Code() int {
+	return 201
+}
+
 func (o *SnmpTraphostsCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /support/snmp/traphosts][%d] snmpTraphostsCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/snmp/traphosts][%d] snmpTraphostsCreateCreated %s", 201, payload)
 }
 
 func (o *SnmpTraphostsCreateCreated) String() string {
-	return fmt.Sprintf("[POST /support/snmp/traphosts][%d] snmpTraphostsCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/snmp/traphosts][%d] snmpTraphostsCreateCreated %s", 201, payload)
 }
 
 func (o *SnmpTraphostsCreateCreated) GetPayload() *models.SnmpTraphostResponse {
@@ -137,16 +145,12 @@ func NewSnmpTraphostsCreateDefault(code int) *SnmpTraphostsCreateDefault {
 | 9043993 | Current cluster version does not support SNMPv3 traps. |
 | 9044001 | Failed to create SNMPv1 traphost. |
 | 9044002 | Failed to create SNMPv3 traphost. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SnmpTraphostsCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snmp traphosts create default response
-func (o *SnmpTraphostsCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snmp traphosts create default response has a 2xx status code
@@ -174,12 +178,19 @@ func (o *SnmpTraphostsCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snmp traphosts create default response
+func (o *SnmpTraphostsCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnmpTraphostsCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /support/snmp/traphosts][%d] snmp_traphosts_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/snmp/traphosts][%d] snmp_traphosts_create default %s", o._statusCode, payload)
 }
 
 func (o *SnmpTraphostsCreateDefault) String() string {
-	return fmt.Sprintf("[POST /support/snmp/traphosts][%d] snmp_traphosts_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/snmp/traphosts][%d] snmp_traphosts_create default %s", o._statusCode, payload)
 }
 
 func (o *SnmpTraphostsCreateDefault) GetPayload() *models.ErrorResponse {

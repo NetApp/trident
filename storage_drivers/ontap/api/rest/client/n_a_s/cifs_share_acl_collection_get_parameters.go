@@ -108,6 +108,12 @@ type CifsShareACLCollectionGetParams struct {
 	*/
 	Share string
 
+	/* Sid.
+
+	   Filter by sid
+	*/
+	Sid *string
+
 	/* SvmName.
 
 	   Filter by svm.name
@@ -125,6 +131,12 @@ type CifsShareACLCollectionGetParams struct {
 	   Filter by type
 	*/
 	Type *string
+
+	/* UnixID.
+
+	   Filter by unix_id
+	*/
+	UnixID *int64
 
 	/* UserOrGroup.
 
@@ -276,6 +288,17 @@ func (o *CifsShareACLCollectionGetParams) SetShare(share string) {
 	o.Share = share
 }
 
+// WithSid adds the sid to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) WithSid(sid *string) *CifsShareACLCollectionGetParams {
+	o.SetSid(sid)
+	return o
+}
+
+// SetSid adds the sid to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) SetSid(sid *string) {
+	o.Sid = sid
+}
+
 // WithSvmName adds the svmName to the cifs share acl collection get params
 func (o *CifsShareACLCollectionGetParams) WithSvmName(svmName *string) *CifsShareACLCollectionGetParams {
 	o.SetSvmName(svmName)
@@ -307,6 +330,17 @@ func (o *CifsShareACLCollectionGetParams) WithType(typeVar *string) *CifsShareAC
 // SetType adds the type to the cifs share acl collection get params
 func (o *CifsShareACLCollectionGetParams) SetType(typeVar *string) {
 	o.Type = typeVar
+}
+
+// WithUnixID adds the unixID to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) WithUnixID(unixID *int64) *CifsShareACLCollectionGetParams {
+	o.SetUnixID(unixID)
+	return o
+}
+
+// SetUnixID adds the unixId to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) SetUnixID(unixID *int64) {
+	o.UnixID = unixID
 }
 
 // WithUserOrGroup adds the userOrGroup to the cifs share acl collection get params
@@ -423,6 +457,23 @@ func (o *CifsShareACLCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		return err
 	}
 
+	if o.Sid != nil {
+
+		// query param sid
+		var qrSid string
+
+		if o.Sid != nil {
+			qrSid = *o.Sid
+		}
+		qSid := qrSid
+		if qSid != "" {
+
+			if err := r.SetQueryParam("sid", qSid); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SvmName != nil {
 
 		// query param svm.name
@@ -457,6 +508,23 @@ func (o *CifsShareACLCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		if qType != "" {
 
 			if err := r.SetQueryParam("type", qType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UnixID != nil {
+
+		// query param unix_id
+		var qrUnixID int64
+
+		if o.UnixID != nil {
+			qrUnixID = *o.UnixID
+		}
+		qUnixID := swag.FormatInt64(qrUnixID)
+		if qUnixID != "" {
+
+			if err := r.SetQueryParam("unix_id", qUnixID); err != nil {
 				return err
 			}
 		}

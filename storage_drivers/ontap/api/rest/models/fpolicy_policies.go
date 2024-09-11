@@ -20,6 +20,14 @@ import (
 // swagger:model fpolicy_policies
 type FpolicyPolicies struct {
 
+	// Specifies whether privileged access is required for FPolicy servers.
+	// Privileged access is used when the FPolicy server requires direct
+	// access to the cluster nodes. When this parameter is set to true,
+	// FPolicy servers can access files on the cluster using a separate
+	// data channel with privileged access.
+	//
+	AllowPrivilegedAccess *bool `json:"allow_privileged_access,omitempty"`
+
 	// Specifies if the policy is enabled on the SVM or not. If no value is
 	// mentioned for this field but priority is set, then this policy will be enabled.
 	//
@@ -29,7 +37,7 @@ type FpolicyPolicies struct {
 	Engine *FpolicyEngineReference `json:"engine,omitempty"`
 
 	// fpolicy policies inline events
-	// Example: ["event_nfs_close","event_open"]
+	// Example: ["event_cifs","event_open"]
 	FpolicyPoliciesInlineEvents []*FpolicyEventReference `json:"events,omitempty"`
 
 	// Specifies what action to take on a file access event in a case when all primary and secondary servers are down or no response is received from the FPolicy servers within a given timeout period. When this parameter is set to true, file access events will be denied under these circumstances.
@@ -46,7 +54,14 @@ type FpolicyPolicies struct {
 	//
 	PassthroughRead *bool `json:"passthrough_read,omitempty"`
 
+	// Specifies the persistent storage name. This can then be used
+	// to enable persistent mode for FPolicy events.
+	//
+	// Example: ps1
+	PersistentStore *string `json:"persistent_store,omitempty"`
+
 	// Specifies the priority that is assigned to this policy.
+	// Example: 1
 	// Maximum: 10
 	// Minimum: 1
 	Priority *int64 `json:"priority,omitempty"`

@@ -22,12 +22,12 @@ type S3AuditEventSelector struct {
 
 	// Specifies read and write access types.
 	//
-	// Enum: [read write all]
+	// Enum: ["read","write","all","none"]
 	Access *string `json:"access,omitempty"`
 
 	// Specifies allow and deny permission types.
 	//
-	// Enum: [deny allow all]
+	// Enum: ["deny","allow","all","none"]
 	Permission *string `json:"permission,omitempty"`
 }
 
@@ -53,7 +53,7 @@ var s3AuditEventSelectorTypeAccessPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["read","write","all"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["read","write","all","none"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -92,6 +92,16 @@ const (
 	// END DEBUGGING
 	// S3AuditEventSelectorAccessAll captures enum value "all"
 	S3AuditEventSelectorAccessAll string = "all"
+
+	// BEGIN DEBUGGING
+	// s3_audit_event_selector
+	// S3AuditEventSelector
+	// access
+	// Access
+	// none
+	// END DEBUGGING
+	// S3AuditEventSelectorAccessNone captures enum value "none"
+	S3AuditEventSelectorAccessNone string = "none"
 )
 
 // prop value enum
@@ -119,7 +129,7 @@ var s3AuditEventSelectorTypePermissionPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["deny","allow","all"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["deny","allow","all","none"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -158,6 +168,16 @@ const (
 	// END DEBUGGING
 	// S3AuditEventSelectorPermissionAll captures enum value "all"
 	S3AuditEventSelectorPermissionAll string = "all"
+
+	// BEGIN DEBUGGING
+	// s3_audit_event_selector
+	// S3AuditEventSelector
+	// permission
+	// Permission
+	// none
+	// END DEBUGGING
+	// S3AuditEventSelectorPermissionNone captures enum value "none"
+	S3AuditEventSelectorPermissionNone string = "none"
 )
 
 // prop value enum

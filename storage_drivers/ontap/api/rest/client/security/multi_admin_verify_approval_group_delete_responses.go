@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *MultiAdminVerifyApprovalGroupDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the multi admin verify approval group delete o k response
+func (o *MultiAdminVerifyApprovalGroupDeleteOK) Code() int {
+	return 200
+}
+
 func (o *MultiAdminVerifyApprovalGroupDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multiAdminVerifyApprovalGroupDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multiAdminVerifyApprovalGroupDeleteOK", 200)
 }
 
 func (o *MultiAdminVerifyApprovalGroupDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multiAdminVerifyApprovalGroupDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multiAdminVerifyApprovalGroupDeleteOK", 200)
 }
 
 func (o *MultiAdminVerifyApprovalGroupDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -100,19 +106,19 @@ func NewMultiAdminVerifyApprovalGroupDeleteDefault(code int) *MultiAdminVerifyAp
 }
 
 /*
-MultiAdminVerifyApprovalGroupDeleteDefault describes a response with status code -1, with default header values.
+	MultiAdminVerifyApprovalGroupDeleteDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 262319 | Cannot delete an approval group that is in the list of global approval groups. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type MultiAdminVerifyApprovalGroupDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the multi admin verify approval group delete default response
-func (o *MultiAdminVerifyApprovalGroupDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this multi admin verify approval group delete default response has a 2xx status code
@@ -140,12 +146,19 @@ func (o *MultiAdminVerifyApprovalGroupDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the multi admin verify approval group delete default response
+func (o *MultiAdminVerifyApprovalGroupDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MultiAdminVerifyApprovalGroupDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multi_admin_verify_approval_group_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multi_admin_verify_approval_group_delete default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyApprovalGroupDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multi_admin_verify_approval_group_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multi_admin_verify_approval_group_delete default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyApprovalGroupDeleteDefault) GetPayload() *models.ErrorResponse {

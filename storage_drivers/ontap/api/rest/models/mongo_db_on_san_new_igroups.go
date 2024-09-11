@@ -40,11 +40,11 @@ type MongoDbOnSanNewIgroups struct {
 	Name *string `json:"name"`
 
 	// The name of the host OS accessing the application. The default value is the host OS that is running the application.
-	// Enum: [hyper_v linux solaris vmware windows xen]
+	// Enum: ["hyper_v","linux","solaris","vmware","windows","xen"]
 	OsType *string `json:"os_type,omitempty"`
 
 	// The protocol of the new initiator group.
-	// Enum: [fcp iscsi mixed]
+	// Enum: ["fcp","iscsi","mixed"]
 	Protocol *string `json:"protocol,omitempty"`
 }
 

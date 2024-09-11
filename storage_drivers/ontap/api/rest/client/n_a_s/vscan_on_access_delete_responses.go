@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *VscanOnAccessDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the vscan on access delete o k response
+func (o *VscanOnAccessDeleteOK) Code() int {
+	return 200
+}
+
 func (o *VscanOnAccessDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessDeleteOK", 200)
 }
 
 func (o *VscanOnAccessDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessDeleteOK", 200)
 }
 
 func (o *VscanOnAccessDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,18 +112,13 @@ func NewVscanOnAccessDeleteDefault(code int) *VscanOnAccessDeleteDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 10027034   | An On-Access policy associated with an administrative SVM cannot be deleted. |
+| 10027034   | An On-Access policy associated with a data SVM which was created by SVM owned by the cluster cannot be deleted. |
 | 10027040   | An On-Access policy with a status enabled cannot be deleted. Disable the policy and then delete the policy. |
 */
 type VscanOnAccessDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the vscan on access delete default response
-func (o *VscanOnAccessDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this vscan on access delete default response has a 2xx status code
@@ -145,12 +146,19 @@ func (o *VscanOnAccessDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the vscan on access delete default response
+func (o *VscanOnAccessDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VscanOnAccessDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_delete default %s", o._statusCode, payload)
 }
 
 func (o *VscanOnAccessDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_delete default %s", o._statusCode, payload)
 }
 
 func (o *VscanOnAccessDeleteDefault) GetPayload() *models.ErrorResponse {

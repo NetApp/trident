@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *PlexCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the plex collection get o k response
+func (o *PlexCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *PlexCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/plexes][%d] plexCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/plexes][%d] plexCollectionGetOK %s", 200, payload)
 }
 
 func (o *PlexCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/plexes][%d] plexCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/plexes][%d] plexCollectionGetOK %s", 200, payload)
 }
 
 func (o *PlexCollectionGetOK) GetPayload() *models.PlexResponse {
@@ -122,11 +130,6 @@ type PlexCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the plex collection get default response
-func (o *PlexCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this plex collection get default response has a 2xx status code
 func (o *PlexCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *PlexCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the plex collection get default response
+func (o *PlexCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *PlexCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/plexes][%d] plex_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/plexes][%d] plex_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PlexCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/plexes][%d] plex_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/plexes][%d] plex_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PlexCollectionGetDefault) GetPayload() *models.ErrorResponse {

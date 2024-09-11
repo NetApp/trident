@@ -26,9 +26,42 @@ type CifsService struct {
 	// ad domain
 	AdDomain *AdDomain `json:"ad_domain,omitempty"`
 
+	// Authentication type.
+	// Example: domain
+	// Read Only: true
+	// Enum: ["domain","workgroup"]
+	AuthStyle *string `json:"auth-style,omitempty"`
+
+	// Specifies the type of user who can access the SMB Volume. The default is domain_user. In the case of a hybrid-user, ONTAP won't contact on-premise ADDS.
+	//
+	// Enum: ["domain_user","hybrid_user"]
+	AuthUserType *string `json:"auth_user_type,omitempty"`
+
+	// Specifies the authentication method.
+	// The available values are:
+	//   * client_secret
+	//   * certificate
+	//
+	// Enum: ["client_secret","certificate"]
+	AuthenticationMethod *string `json:"authentication_method,omitempty"`
+
+	// PKCS12 certificate used by the application to prove its identity to AKV.
+	// Example: PEM Cert
+	// Format: password
+	ClientCertificate *strfmt.Password `json:"client_certificate,omitempty"`
+
+	// Application client ID of the deployed Azure application with appropriate access to an AKV or EntraId.
+	// Example: e959d1b5-5a63-4284-9268-851e30e3eceb
+	ClientID *string `json:"client_id,omitempty"`
+
+	// Secret used by the application to prove its identity to AKV.
+	// Example: _8E8Q~Qu866jtihUE3ia4Q5Y5IDEVC6UfskbZa6X
+	// Format: password
+	ClientSecret *strfmt.Password `json:"client_secret,omitempty"`
+
 	// A descriptive text comment for the CIFS server. SMB clients can see the CIFS server comment when browsing servers on the network. If there is a space in the comment, you must enclose the entire string in quotation marks.
 	// Example: This CIFS Server Belongs to CS Department
-	// Max Length: 48
+	// Max Length: 256
 	// Min Length: 0
 	Comment *string `json:"comment,omitempty"`
 
@@ -42,6 +75,11 @@ type CifsService struct {
 	// If set to true, group policies will be applied to the SVM.
 	GroupPolicyObjectEnabled *bool `json:"group_policy_object_enabled,omitempty"`
 
+	// URI of the deployed AKV that is used by ONTAP for storing keys.
+	// Example: https://kmip-akv-keyvault.vault.azure.net/
+	// Format: uri
+	KeyVaultURI *strfmt.URI `json:"key_vault_uri,omitempty"`
+
 	// metric
 	Metric *CifsServiceInlineMetric `json:"metric,omitempty"`
 
@@ -54,8 +92,32 @@ type CifsService struct {
 	// netbios
 	Netbios *CifsNetbios `json:"netbios,omitempty"`
 
+	// Open authorization server host name.
+	// Example: login.microsoftonline.com
+	OauthHost *string `json:"oauth_host,omitempty"`
+
 	// options
 	Options *CifsServiceOptions `json:"options,omitempty"`
+
+	// Proxy host.
+	// Example: proxy.eng.com
+	ProxyHost *string `json:"proxy_host,omitempty"`
+
+	// Proxy password. Password is not audited.
+	// Example: proxypassword
+	ProxyPassword *string `json:"proxy_password,omitempty"`
+
+	// Proxy port.
+	// Example: 1234
+	ProxyPort *int64 `json:"proxy_port,omitempty"`
+
+	// Proxy type.
+	// Enum: ["http","https"]
+	ProxyType *string `json:"proxy_type,omitempty"`
+
+	// Proxy username.
+	// Example: proxyuser
+	ProxyUsername *string `json:"proxy_username,omitempty"`
 
 	// security
 	Security *CifsServiceSecurity `json:"security,omitempty"`
@@ -65,6 +127,23 @@ type CifsService struct {
 
 	// svm
 	Svm *CifsServiceInlineSvm `json:"svm,omitempty"`
+
+	// Directory (tenant) ID of the deployed Azure application with appropriate access to an AKV or EntraId.
+	// Example: c9f32fcb-4ab7-40fe-af1b-1850d46cfbbe
+	TenantID *string `json:"tenant_id,omitempty"`
+
+	// AKV connection timeout, in seconds. The allowed range is between 0 to 30 seconds.
+	// Example: 25
+	Timeout *int64 `json:"timeout,omitempty"`
+
+	// Verify the identity of the AKV host name. By default, verify_host is set to true.
+	VerifyHost *bool `json:"verify_host,omitempty"`
+
+	// The workgroup name.
+	// Example: workgrp1
+	// Max Length: 15
+	// Min Length: 1
+	Workgroup *string `json:"workgroup,omitempty"`
 }
 
 // Validate validates this cifs service
@@ -79,7 +158,31 @@ func (m *CifsService) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateAuthStyle(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAuthUserType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAuthenticationMethod(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateClientCertificate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateClientSecret(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateComment(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateKeyVaultURI(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -99,6 +202,10 @@ func (m *CifsService) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateProxyType(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSecurity(formats); err != nil {
 		res = append(res, err)
 	}
@@ -108,6 +215,10 @@ func (m *CifsService) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSvm(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateWorkgroup(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -151,6 +262,198 @@ func (m *CifsService) validateAdDomain(formats strfmt.Registry) error {
 	return nil
 }
 
+var cifsServiceTypeAuthStylePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["domain","workgroup"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		cifsServiceTypeAuthStylePropEnum = append(cifsServiceTypeAuthStylePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cifs_service
+	// CifsService
+	// auth-style
+	// AuthStyle
+	// domain
+	// END DEBUGGING
+	// CifsServiceAuthStyleDomain captures enum value "domain"
+	CifsServiceAuthStyleDomain string = "domain"
+
+	// BEGIN DEBUGGING
+	// cifs_service
+	// CifsService
+	// auth-style
+	// AuthStyle
+	// workgroup
+	// END DEBUGGING
+	// CifsServiceAuthStyleWorkgroup captures enum value "workgroup"
+	CifsServiceAuthStyleWorkgroup string = "workgroup"
+)
+
+// prop value enum
+func (m *CifsService) validateAuthStyleEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsServiceTypeAuthStylePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CifsService) validateAuthStyle(formats strfmt.Registry) error {
+	if swag.IsZero(m.AuthStyle) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAuthStyleEnum("auth-style", "body", *m.AuthStyle); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var cifsServiceTypeAuthUserTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["domain_user","hybrid_user"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		cifsServiceTypeAuthUserTypePropEnum = append(cifsServiceTypeAuthUserTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cifs_service
+	// CifsService
+	// auth_user_type
+	// AuthUserType
+	// domain_user
+	// END DEBUGGING
+	// CifsServiceAuthUserTypeDomainUser captures enum value "domain_user"
+	CifsServiceAuthUserTypeDomainUser string = "domain_user"
+
+	// BEGIN DEBUGGING
+	// cifs_service
+	// CifsService
+	// auth_user_type
+	// AuthUserType
+	// hybrid_user
+	// END DEBUGGING
+	// CifsServiceAuthUserTypeHybridUser captures enum value "hybrid_user"
+	CifsServiceAuthUserTypeHybridUser string = "hybrid_user"
+)
+
+// prop value enum
+func (m *CifsService) validateAuthUserTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsServiceTypeAuthUserTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CifsService) validateAuthUserType(formats strfmt.Registry) error {
+	if swag.IsZero(m.AuthUserType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAuthUserTypeEnum("auth_user_type", "body", *m.AuthUserType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var cifsServiceTypeAuthenticationMethodPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["client_secret","certificate"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		cifsServiceTypeAuthenticationMethodPropEnum = append(cifsServiceTypeAuthenticationMethodPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cifs_service
+	// CifsService
+	// authentication_method
+	// AuthenticationMethod
+	// client_secret
+	// END DEBUGGING
+	// CifsServiceAuthenticationMethodClientSecret captures enum value "client_secret"
+	CifsServiceAuthenticationMethodClientSecret string = "client_secret"
+
+	// BEGIN DEBUGGING
+	// cifs_service
+	// CifsService
+	// authentication_method
+	// AuthenticationMethod
+	// certificate
+	// END DEBUGGING
+	// CifsServiceAuthenticationMethodCertificate captures enum value "certificate"
+	CifsServiceAuthenticationMethodCertificate string = "certificate"
+)
+
+// prop value enum
+func (m *CifsService) validateAuthenticationMethodEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsServiceTypeAuthenticationMethodPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CifsService) validateAuthenticationMethod(formats strfmt.Registry) error {
+	if swag.IsZero(m.AuthenticationMethod) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAuthenticationMethodEnum("authentication_method", "body", *m.AuthenticationMethod); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CifsService) validateClientCertificate(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClientCertificate) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("client_certificate", "body", "password", m.ClientCertificate.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CifsService) validateClientSecret(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClientSecret) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("client_secret", "body", "password", m.ClientSecret.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *CifsService) validateComment(formats strfmt.Registry) error {
 	if swag.IsZero(m.Comment) { // not required
 		return nil
@@ -160,7 +463,19 @@ func (m *CifsService) validateComment(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MaxLength("comment", "body", *m.Comment, 48); err != nil {
+	if err := validate.MaxLength("comment", "body", *m.Comment, 256); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CifsService) validateKeyVaultURI(formats strfmt.Registry) error {
+	if swag.IsZero(m.KeyVaultURI) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("key_vault_uri", "body", "uri", m.KeyVaultURI.String(), formats); err != nil {
 		return err
 	}
 
@@ -234,6 +549,62 @@ func (m *CifsService) validateOptions(formats strfmt.Registry) error {
 	return nil
 }
 
+var cifsServiceTypeProxyTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["http","https"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		cifsServiceTypeProxyTypePropEnum = append(cifsServiceTypeProxyTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cifs_service
+	// CifsService
+	// proxy_type
+	// ProxyType
+	// http
+	// END DEBUGGING
+	// CifsServiceProxyTypeHTTP captures enum value "http"
+	CifsServiceProxyTypeHTTP string = "http"
+
+	// BEGIN DEBUGGING
+	// cifs_service
+	// CifsService
+	// proxy_type
+	// ProxyType
+	// https
+	// END DEBUGGING
+	// CifsServiceProxyTypeHTTPS captures enum value "https"
+	CifsServiceProxyTypeHTTPS string = "https"
+)
+
+// prop value enum
+func (m *CifsService) validateProxyTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsServiceTypeProxyTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CifsService) validateProxyType(formats strfmt.Registry) error {
+	if swag.IsZero(m.ProxyType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateProxyTypeEnum("proxy_type", "body", *m.ProxyType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *CifsService) validateSecurity(formats strfmt.Registry) error {
 	if swag.IsZero(m.Security) { // not required
 		return nil
@@ -285,6 +656,22 @@ func (m *CifsService) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *CifsService) validateWorkgroup(formats strfmt.Registry) error {
+	if swag.IsZero(m.Workgroup) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("workgroup", "body", *m.Workgroup, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("workgroup", "body", *m.Workgroup, 15); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this cifs service based on the context it is used
 func (m *CifsService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -294,6 +681,10 @@ func (m *CifsService) ContextValidate(ctx context.Context, formats strfmt.Regist
 	}
 
 	if err := m.contextValidateAdDomain(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAuthStyle(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -350,6 +741,15 @@ func (m *CifsService) contextValidateAdDomain(ctx context.Context, formats strfm
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *CifsService) contextValidateAuthStyle(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "auth-style", "body", m.AuthStyle); err != nil {
+		return err
 	}
 
 	return nil
@@ -543,7 +943,7 @@ func (m *CifsServiceInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsServiceInlineMetric cifs service inline metric
+// CifsServiceInlineMetric Performance numbers, such as IOPS latency and throughput, for SVM protocols.
 //
 // swagger:model cifs_service_inline_metric
 type CifsServiceInlineMetric struct {
@@ -555,7 +955,7 @@ type CifsServiceInlineMetric struct {
 	//
 	// Example: PT15S
 	// Read Only: true
-	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
+	// Enum: ["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]
 	Duration *string `json:"duration,omitempty"`
 
 	// iops
@@ -567,14 +967,14 @@ type CifsServiceInlineMetric struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	// Enum: ["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *CifsServiceInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1095,7 +1495,7 @@ type CifsServiceInlineMetricInlineIops struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -1149,7 +1549,7 @@ type CifsServiceInlineMetricInlineLatency struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -1286,7 +1686,7 @@ type CifsServiceInlineMetricInlineThroughput struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -1324,7 +1724,7 @@ func (m *CifsServiceInlineMetricInlineThroughput) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// CifsServiceInlineStatistics cifs service inline statistics
+// CifsServiceInlineStatistics These are raw performance numbers, such as IOPS latency and throughput for SVM protocols. These numbers are aggregated across all nodes in the cluster and increase with the uptime of the cluster.
 //
 // swagger:model cifs_service_inline_statistics
 type CifsServiceInlineStatistics struct {
@@ -1338,14 +1738,14 @@ type CifsServiceInlineStatistics struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	// Enum: ["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *CifsServiceInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1714,7 +2114,7 @@ type CifsServiceInlineStatisticsInlineIopsRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -1768,7 +2168,7 @@ type CifsServiceInlineStatisticsInlineLatencyRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -1819,7 +2219,7 @@ type CifsServiceInlineStatisticsInlineThroughputRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -1857,7 +2257,7 @@ func (m *CifsServiceInlineStatisticsInlineThroughputRaw) UnmarshalBinary(b []byt
 	return nil
 }
 
-// CifsServiceInlineSvm cifs service inline svm
+// CifsServiceInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model cifs_service_inline_svm
 type CifsServiceInlineSvm struct {
@@ -1865,12 +2265,12 @@ type CifsServiceInlineSvm struct {
 	// links
 	Links *CifsServiceInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

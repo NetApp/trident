@@ -141,12 +141,13 @@ type MultiAdminVerifyApprovalGroupInlineOwner struct {
 	// links
 	Links *MultiAdminVerifyApprovalGroupInlineOwnerInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a POST or PATCH method.
 	//
 	// Example: svm1
+	// Read Only: true
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -191,6 +192,10 @@ func (m *MultiAdminVerifyApprovalGroupInlineOwner) ContextValidate(ctx context.C
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -206,6 +211,15 @@ func (m *MultiAdminVerifyApprovalGroupInlineOwner) contextValidateLinks(ctx cont
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *MultiAdminVerifyApprovalGroupInlineOwner) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "owner"+"."+"name", "body", m.Name); err != nil {
+		return err
 	}
 
 	return nil

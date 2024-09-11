@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ScheduleDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the schedule delete o k response
+func (o *ScheduleDeleteOK) Code() int {
+	return 200
+}
+
 func (o *ScheduleDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /cluster/schedules/{uuid}][%d] scheduleDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /cluster/schedules/{uuid}][%d] scheduleDeleteOK", 200)
 }
 
 func (o *ScheduleDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /cluster/schedules/{uuid}][%d] scheduleDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /cluster/schedules/{uuid}][%d] scheduleDeleteOK", 200)
 }
 
 func (o *ScheduleDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,16 +115,12 @@ func NewScheduleDeleteDefault(code int) *ScheduleDeleteDefault {
 | 459758 | Cannot delete a job schedule that is in use. Remove all references to the schedule, and then try to delete again. |
 | 459761 | Schedule cannot be deleted on this cluster because it is replicated from the remote cluster. |
 | 459762 | The schedule cannot be deleted because it is a system-level schedule. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ScheduleDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the schedule delete default response
-func (o *ScheduleDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this schedule delete default response has a 2xx status code
@@ -146,12 +148,19 @@ func (o *ScheduleDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the schedule delete default response
+func (o *ScheduleDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ScheduleDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /cluster/schedules/{uuid}][%d] schedule_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/schedules/{uuid}][%d] schedule_delete default %s", o._statusCode, payload)
 }
 
 func (o *ScheduleDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /cluster/schedules/{uuid}][%d] schedule_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/schedules/{uuid}][%d] schedule_delete default %s", o._statusCode, payload)
 }
 
 func (o *ScheduleDeleteDefault) GetPayload() *models.ErrorResponse {

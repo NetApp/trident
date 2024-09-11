@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *PortsetInterfaceDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the portset interface delete o k response
+func (o *PortsetInterfaceDeleteOK) Code() int {
+	return 200
+}
+
 func (o *PortsetInterfaceDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}][%d] portsetInterfaceDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}][%d] portsetInterfaceDeleteOK", 200)
 }
 
 func (o *PortsetInterfaceDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}][%d] portsetInterfaceDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}][%d] portsetInterfaceDeleteOK", 200)
 }
 
 func (o *PortsetInterfaceDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,16 +115,12 @@ func NewPortsetInterfaceDeleteDefault(code int) *PortsetInterfaceDeleteDefault {
 | 5374906 | A specified network interface was not found. |
 | 5374908 | The portset specified in the URI does not exist. |
 | 5374916 | The specified network interface is not in the portset. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type PortsetInterfaceDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the portset interface delete default response
-func (o *PortsetInterfaceDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this portset interface delete default response has a 2xx status code
@@ -146,12 +148,19 @@ func (o *PortsetInterfaceDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the portset interface delete default response
+func (o *PortsetInterfaceDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *PortsetInterfaceDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}][%d] portset_interface_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}][%d] portset_interface_delete default %s", o._statusCode, payload)
 }
 
 func (o *PortsetInterfaceDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}][%d] portset_interface_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}][%d] portset_interface_delete default %s", o._statusCode, payload)
 }
 
 func (o *PortsetInterfaceDeleteDefault) GetPayload() *models.ErrorResponse {

@@ -31,7 +31,7 @@ type ClusterLdap struct {
 	// * onelevel - search all entries immediately below the DN
 	// * subtree - search the named DN entry and the entire subtree below the DN
 	//
-	// Enum: [base onelevel subtree]
+	// Enum: ["base","onelevel","subtree"]
 	BaseScope *string `json:"base_scope,omitempty"`
 
 	// Specifies whether or not CIFS server's credentials are used to bind to the LDAP server.
@@ -59,7 +59,7 @@ type ClusterLdap struct {
 	// * onelevel - search all entries immediately below the DN
 	// * subtree - search the named DN entry and the entire subtree below the DN
 	//
-	// Enum: [base onelevel subtree]
+	// Enum: ["base","onelevel","subtree"]
 	GroupScope *string `json:"group_scope,omitempty"`
 
 	// Specifies whether or not netgroup by host querying is enabled.
@@ -80,7 +80,7 @@ type ClusterLdap struct {
 	// * simple - simple bind
 	// * sasl - Simple Authentication and Security Layer (SASL) bind
 	//
-	// Enum: [anonymous simple sasl]
+	// Enum: ["anonymous","simple","sasl"]
 	MinBindLevel *string `json:"min_bind_level,omitempty"`
 
 	// Specifies the netgroup Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for netgroup by host lookups.
@@ -91,7 +91,7 @@ type ClusterLdap struct {
 	// * onelevel - search all entries immediately below the DN
 	// * subtree - search the named DN entry and the entire subtree below the DN
 	//
-	// Enum: [base onelevel subtree]
+	// Enum: ["base","onelevel","subtree"]
 	NetgroupByhostScope *string `json:"netgroup_byhost_scope,omitempty"`
 
 	// Specifies the netgroup Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for netgroup lookups.
@@ -102,7 +102,7 @@ type ClusterLdap struct {
 	// * onelevel - search all entries immediately below the DN
 	// * subtree - search the named DN entry and the entire subtree below the DN
 	//
-	// Enum: [base onelevel subtree]
+	// Enum: ["base","onelevel","subtree"]
 	NetgroupScope *string `json:"netgroup_scope,omitempty"`
 
 	// The port used to connect to the LDAP Servers.
@@ -129,7 +129,7 @@ type ClusterLdap struct {
 	// * sign - sign LDAP traffic
 	// * seal - seal and sign LDAP traffic
 	//
-	// Enum: [none sign seal]
+	// Enum: ["none","sign","seal"]
 	SessionSecurity *string `json:"session_security,omitempty"`
 
 	// Indicates whether or not the validation for the specified LDAP configuration is disabled.
@@ -155,7 +155,7 @@ type ClusterLdap struct {
 	// * onelevel - search all entries immediately below the DN
 	// * subtree - search the named DN entry and the entire subtree below the DN
 	//
-	// Enum: [base onelevel subtree]
+	// Enum: ["base","onelevel","subtree"]
 	UserScope *string `json:"user_scope,omitempty"`
 }
 
@@ -889,7 +889,7 @@ func (m *ClusterLdapInlineLinks) UnmarshalBinary(b []byte) error {
 // swagger:model cluster_ldap_inline_status
 type ClusterLdapInlineStatus struct {
 
-	// Code corresponding to the status message.
+	// This field is no longer supported. Use ipv4.code or ipv6.code instead.
 	//
 	// Example: 65537300
 	Code *int64 `json:"code,omitempty"`
@@ -897,19 +897,52 @@ type ClusterLdapInlineStatus struct {
 	// dn message
 	DnMessage []*string `json:"dn_message,omitempty"`
 
-	// Provides additional details on the status of the LDAP service.
+	// ipv4
+	IPV4 *ClusterLdapInlineStatusInlineIPV4 `json:"ipv4,omitempty"`
+
+	// This field is no longer supported. Use ipv4.state instead.
+	//
+	// Enum: ["up","down"]
+	IPV4State *string `json:"ipv4_state,omitempty"`
+
+	// ipv6
+	IPV6 *ClusterLdapInlineStatusInlineIPV6 `json:"ipv6,omitempty"`
+
+	// This field is no longer supported. Use ipv6.state instead.
+	//
+	// Enum: ["up","down"]
+	IPV6State *string `json:"ipv6_state,omitempty"`
+
+	// This field is no longer supported. Use ipv4.message or ipv6.message instead.
 	//
 	Message *string `json:"message,omitempty"`
 
-	// Specifies the status of the LDAP service.
+	// The status of the LDAP service for the SVM. The LDAP service is up if either `ipv4_state` or `ipv6_state` is up.
+	// The LDAP service is down if both `ipv4_state` and `ipv6_state` are down.
 	//
-	// Enum: [up down]
+	// Enum: ["up","down"]
 	State *string `json:"state,omitempty"`
 }
 
 // Validate validates this cluster ldap inline status
 func (m *ClusterLdapInlineStatus) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateIPV4(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIPV4State(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIPV6(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIPV6State(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateState(formats); err != nil {
 		res = append(res, err)
@@ -918,6 +951,152 @@ func (m *ClusterLdapInlineStatus) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ClusterLdapInlineStatus) validateIPV4(formats strfmt.Registry) error {
+	if swag.IsZero(m.IPV4) { // not required
+		return nil
+	}
+
+	if m.IPV4 != nil {
+		if err := m.IPV4.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status" + "." + "ipv4")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var clusterLdapInlineStatusTypeIPV4StatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["up","down"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterLdapInlineStatusTypeIPV4StatePropEnum = append(clusterLdapInlineStatusTypeIPV4StatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cluster_ldap_inline_status
+	// ClusterLdapInlineStatus
+	// ipv4_state
+	// IPV4State
+	// up
+	// END DEBUGGING
+	// ClusterLdapInlineStatusIPV4StateUp captures enum value "up"
+	ClusterLdapInlineStatusIPV4StateUp string = "up"
+
+	// BEGIN DEBUGGING
+	// cluster_ldap_inline_status
+	// ClusterLdapInlineStatus
+	// ipv4_state
+	// IPV4State
+	// down
+	// END DEBUGGING
+	// ClusterLdapInlineStatusIPV4StateDown captures enum value "down"
+	ClusterLdapInlineStatusIPV4StateDown string = "down"
+)
+
+// prop value enum
+func (m *ClusterLdapInlineStatus) validateIPV4StateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterLdapInlineStatusTypeIPV4StatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterLdapInlineStatus) validateIPV4State(formats strfmt.Registry) error {
+	if swag.IsZero(m.IPV4State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateIPV4StateEnum("status"+"."+"ipv4_state", "body", *m.IPV4State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterLdapInlineStatus) validateIPV6(formats strfmt.Registry) error {
+	if swag.IsZero(m.IPV6) { // not required
+		return nil
+	}
+
+	if m.IPV6 != nil {
+		if err := m.IPV6.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status" + "." + "ipv6")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var clusterLdapInlineStatusTypeIPV6StatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["up","down"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterLdapInlineStatusTypeIPV6StatePropEnum = append(clusterLdapInlineStatusTypeIPV6StatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cluster_ldap_inline_status
+	// ClusterLdapInlineStatus
+	// ipv6_state
+	// IPV6State
+	// up
+	// END DEBUGGING
+	// ClusterLdapInlineStatusIPV6StateUp captures enum value "up"
+	ClusterLdapInlineStatusIPV6StateUp string = "up"
+
+	// BEGIN DEBUGGING
+	// cluster_ldap_inline_status
+	// ClusterLdapInlineStatus
+	// ipv6_state
+	// IPV6State
+	// down
+	// END DEBUGGING
+	// ClusterLdapInlineStatusIPV6StateDown captures enum value "down"
+	ClusterLdapInlineStatusIPV6StateDown string = "down"
+)
+
+// prop value enum
+func (m *ClusterLdapInlineStatus) validateIPV6StateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterLdapInlineStatusTypeIPV6StatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterLdapInlineStatus) validateIPV6State(formats strfmt.Registry) error {
+	if swag.IsZero(m.IPV6State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateIPV6StateEnum("status"+"."+"ipv6_state", "body", *m.IPV6State); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -981,9 +1160,45 @@ func (m *ClusterLdapInlineStatus) validateState(formats strfmt.Registry) error {
 func (m *ClusterLdapInlineStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateIPV4(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIPV6(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ClusterLdapInlineStatus) contextValidateIPV4(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.IPV4 != nil {
+		if err := m.IPV4.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status" + "." + "ipv4")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterLdapInlineStatus) contextValidateIPV6(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.IPV6 != nil {
+		if err := m.IPV6.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status" + "." + "ipv6")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -998,6 +1213,238 @@ func (m *ClusterLdapInlineStatus) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ClusterLdapInlineStatus) UnmarshalBinary(b []byte) error {
 	var res ClusterLdapInlineStatus
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterLdapInlineStatusInlineIPV4 cluster ldap inline status inline ipv4
+//
+// swagger:model cluster_ldap_inline_status_inline_ipv4
+type ClusterLdapInlineStatusInlineIPV4 struct {
+
+	// Code corresponding to the error message. If there is no error, it is 0 to indicate success.
+	//
+	// Example: 65537300
+	Code *int64 `json:"code,omitempty"`
+
+	// dn messages
+	DnMessages []*string `json:"dn_messages,omitempty"`
+
+	// Provides additional details on the error.
+	//
+	Message *string `json:"message,omitempty"`
+
+	// Status of the LDAP service.
+	//
+	// Enum: ["up","down"]
+	State *string `json:"state,omitempty"`
+}
+
+// Validate validates this cluster ldap inline status inline ipv4
+func (m *ClusterLdapInlineStatusInlineIPV4) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var clusterLdapInlineStatusInlineIpv4TypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["up","down"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterLdapInlineStatusInlineIpv4TypeStatePropEnum = append(clusterLdapInlineStatusInlineIpv4TypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cluster_ldap_inline_status_inline_ipv4
+	// ClusterLdapInlineStatusInlineIPV4
+	// state
+	// State
+	// up
+	// END DEBUGGING
+	// ClusterLdapInlineStatusInlineIPV4StateUp captures enum value "up"
+	ClusterLdapInlineStatusInlineIPV4StateUp string = "up"
+
+	// BEGIN DEBUGGING
+	// cluster_ldap_inline_status_inline_ipv4
+	// ClusterLdapInlineStatusInlineIPV4
+	// state
+	// State
+	// down
+	// END DEBUGGING
+	// ClusterLdapInlineStatusInlineIPV4StateDown captures enum value "down"
+	ClusterLdapInlineStatusInlineIPV4StateDown string = "down"
+)
+
+// prop value enum
+func (m *ClusterLdapInlineStatusInlineIPV4) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterLdapInlineStatusInlineIpv4TypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterLdapInlineStatusInlineIPV4) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("status"+"."+"ipv4"+"."+"state", "body", *m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this cluster ldap inline status inline ipv4 based on context it is used
+func (m *ClusterLdapInlineStatusInlineIPV4) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterLdapInlineStatusInlineIPV4) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterLdapInlineStatusInlineIPV4) UnmarshalBinary(b []byte) error {
+	var res ClusterLdapInlineStatusInlineIPV4
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterLdapInlineStatusInlineIPV6 cluster ldap inline status inline ipv6
+//
+// swagger:model cluster_ldap_inline_status_inline_ipv6
+type ClusterLdapInlineStatusInlineIPV6 struct {
+
+	// Code corresponding to the error message. If there is no error, it is 0 to indicate success.
+	//
+	// Example: 65537300
+	Code *int64 `json:"code,omitempty"`
+
+	// dn messages
+	DnMessages []*string `json:"dn_messages,omitempty"`
+
+	// Provides additional details on the error.
+	//
+	Message *string `json:"message,omitempty"`
+
+	// Status of the LDAP service.
+	//
+	// Enum: ["up","down"]
+	State *string `json:"state,omitempty"`
+}
+
+// Validate validates this cluster ldap inline status inline ipv6
+func (m *ClusterLdapInlineStatusInlineIPV6) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var clusterLdapInlineStatusInlineIpv6TypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["up","down"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterLdapInlineStatusInlineIpv6TypeStatePropEnum = append(clusterLdapInlineStatusInlineIpv6TypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cluster_ldap_inline_status_inline_ipv6
+	// ClusterLdapInlineStatusInlineIPV6
+	// state
+	// State
+	// up
+	// END DEBUGGING
+	// ClusterLdapInlineStatusInlineIPV6StateUp captures enum value "up"
+	ClusterLdapInlineStatusInlineIPV6StateUp string = "up"
+
+	// BEGIN DEBUGGING
+	// cluster_ldap_inline_status_inline_ipv6
+	// ClusterLdapInlineStatusInlineIPV6
+	// state
+	// State
+	// down
+	// END DEBUGGING
+	// ClusterLdapInlineStatusInlineIPV6StateDown captures enum value "down"
+	ClusterLdapInlineStatusInlineIPV6StateDown string = "down"
+)
+
+// prop value enum
+func (m *ClusterLdapInlineStatusInlineIPV6) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterLdapInlineStatusInlineIpv6TypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterLdapInlineStatusInlineIPV6) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("status"+"."+"ipv6"+"."+"state", "body", *m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this cluster ldap inline status inline ipv6 based on context it is used
+func (m *ClusterLdapInlineStatusInlineIPV6) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterLdapInlineStatusInlineIPV6) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterLdapInlineStatusInlineIPV6) UnmarshalBinary(b []byte) error {
+	var res ClusterLdapInlineStatusInlineIPV6
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

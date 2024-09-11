@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *PortsetDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the portset delete o k response
+func (o *PortsetDeleteOK) Code() int {
+	return 200
+}
+
 func (o *PortsetDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/portsets/{uuid}][%d] portsetDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/portsets/{uuid}][%d] portsetDeleteOK", 200)
 }
 
 func (o *PortsetDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/portsets/{uuid}][%d] portsetDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/portsets/{uuid}][%d] portsetDeleteOK", 200)
 }
 
 func (o *PortsetDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,16 +114,12 @@ func NewPortsetDeleteDefault(code int) *PortsetDeleteDefault {
 | ---------- | ----------- |
 | 5374063 | An attempt was made to delete a portset that is bound to an initiator group without using query parameter `allow_delete_while_bound`. |
 | 5374908 | The portset does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type PortsetDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the portset delete default response
-func (o *PortsetDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this portset delete default response has a 2xx status code
@@ -145,12 +147,19 @@ func (o *PortsetDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the portset delete default response
+func (o *PortsetDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *PortsetDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/portsets/{uuid}][%d] portset_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/portsets/{uuid}][%d] portset_delete default %s", o._statusCode, payload)
 }
 
 func (o *PortsetDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/portsets/{uuid}][%d] portset_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/portsets/{uuid}][%d] portset_delete default %s", o._statusCode, payload)
 }
 
 func (o *PortsetDeleteDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *FcpServiceDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fcp service delete o k response
+func (o *FcpServiceDeleteOK) Code() int {
+	return 200
+}
+
 func (o *FcpServiceDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/fcp/services/{svm.uuid}][%d] fcpServiceDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/fcp/services/{svm.uuid}][%d] fcpServiceDeleteOK", 200)
 }
 
 func (o *FcpServiceDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/fcp/services/{svm.uuid}][%d] fcpServiceDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/fcp/services/{svm.uuid}][%d] fcpServiceDeleteOK", 200)
 }
 
 func (o *FcpServiceDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,16 +115,13 @@ func NewFcpServiceDeleteDefault(code int) *FcpServiceDeleteDefault {
 | 2621462 | An SVM with the specified UUID does not exist. |
 | 5373960 | The Fibre Channel Protocol service cannot be removed while it is enabled. |
 | 5374083 | There is no Fibre Channel Protocol service for the specified SVM. |
+| 5376452 | Service POST and DELETE are not supported on ASA r2. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type FcpServiceDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the fcp service delete default response
-func (o *FcpServiceDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this fcp service delete default response has a 2xx status code
@@ -146,12 +149,19 @@ func (o *FcpServiceDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fcp service delete default response
+func (o *FcpServiceDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FcpServiceDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/fcp/services/{svm.uuid}][%d] fcp_service_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/fcp/services/{svm.uuid}][%d] fcp_service_delete default %s", o._statusCode, payload)
 }
 
 func (o *FcpServiceDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/fcp/services/{svm.uuid}][%d] fcp_service_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/fcp/services/{svm.uuid}][%d] fcp_service_delete default %s", o._statusCode, payload)
 }
 
 func (o *FcpServiceDeleteDefault) GetPayload() *models.ErrorResponse {

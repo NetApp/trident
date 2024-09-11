@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SecurityKeyManagerGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the security key manager get o k response
+func (o *SecurityKeyManagerGetOK) Code() int {
+	return 200
+}
+
 func (o *SecurityKeyManagerGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/key-managers/{uuid}][%d] securityKeyManagerGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/key-managers/{uuid}][%d] securityKeyManagerGetOK %s", 200, payload)
 }
 
 func (o *SecurityKeyManagerGetOK) String() string {
-	return fmt.Sprintf("[GET /security/key-managers/{uuid}][%d] securityKeyManagerGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/key-managers/{uuid}][%d] securityKeyManagerGetOK %s", 200, payload)
 }
 
 func (o *SecurityKeyManagerGetOK) GetPayload() *models.SecurityKeyManager {
@@ -112,19 +120,23 @@ func NewSecurityKeyManagerGetDefault(code int) *SecurityKeyManagerGetDefault {
 }
 
 /*
-SecurityKeyManagerGetDefault describes a response with status code -1, with default header values.
+	SecurityKeyManagerGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 65536894 | This cluster is part of a MetroCluster configuration. Configure an external key manager on the partner cluster providing the same key servers before proceeding with any key manager operations. |
+| 65537201 | There are no key servers configured for this SVM in the local cluster. |
+| 65537202 | There are no key servers configured for this SVM in the remote cluster. |
+| 65537203 | Internal error. Failed to check for key servers on partner cluster. |
+| 65537204 | This cluster is part of a MetroCluster configuration. Configure an external key manager on the partner cluster providing the same key servers before proceeding with any key manager operations. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SecurityKeyManagerGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security key manager get default response
-func (o *SecurityKeyManagerGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security key manager get default response has a 2xx status code
@@ -152,12 +164,19 @@ func (o *SecurityKeyManagerGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security key manager get default response
+func (o *SecurityKeyManagerGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityKeyManagerGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/key-managers/{uuid}][%d] security_key_manager_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/key-managers/{uuid}][%d] security_key_manager_get default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeyManagerGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/key-managers/{uuid}][%d] security_key_manager_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/key-managers/{uuid}][%d] security_key_manager_get default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeyManagerGetDefault) GetPayload() *models.ErrorResponse {

@@ -45,7 +45,7 @@ type Portset struct {
 	// The protocols supported by the portset. This restricts the type of network interfaces that can be added to the portset. Optional in POST; if not supplied, this defaults to _mixed_.<br/>
 	// The protocol of a portset cannot be changed after creation.
 	//
-	// Enum: [fcp iscsi mixed]
+	// Enum: ["fcp","iscsi","mixed"]
 	Protocol *string `json:"protocol,omitempty"`
 
 	// svm
@@ -975,7 +975,7 @@ func (m *PortsetInlineInterfacesInlineArrayItemInlineFcInlineLinks) UnmarshalBin
 	return nil
 }
 
-// PortsetInlineInterfacesInlineArrayItemInlineIP portset inline interfaces inline array item inline ip
+// PortsetInlineInterfacesInlineArrayItemInlineIP A network interface. Either UUID or name may be supplied on input.
 //
 // swagger:model portset_inline_interfaces_inline_array_item_inline_ip
 type PortsetInlineInterfacesInlineArrayItemInlineIP struct {
@@ -1457,7 +1457,7 @@ func (m *PortsetInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetInlineSvm portset inline svm
+// PortsetInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model portset_inline_svm
 type PortsetInlineSvm struct {
@@ -1465,12 +1465,12 @@ type PortsetInlineSvm struct {
 	// links
 	Links *PortsetInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

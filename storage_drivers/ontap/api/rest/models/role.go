@@ -40,7 +40,7 @@ type Role struct {
 
 	// Scope of the entity. Set to "cluster" for cluster owned objects and to "svm" for SVM owned objects.
 	// Read Only: true
-	// Enum: [cluster svm]
+	// Enum: ["cluster","svm"]
 	Scope *string `json:"scope,omitempty"`
 }
 
@@ -390,12 +390,12 @@ type RoleInlineOwner struct {
 	// links
 	Links *RoleInlineOwnerInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

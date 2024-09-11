@@ -25,7 +25,7 @@ type NvmeSubsystemReference struct {
 	// The name of the NVMe subsystem.
 	//
 	// Example: subsystem1
-	// Max Length: 96
+	// Max Length: 64
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
 
@@ -79,7 +79,7 @@ func (m *NvmeSubsystemReference) validateName(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 64); err != nil {
 		return err
 	}
 

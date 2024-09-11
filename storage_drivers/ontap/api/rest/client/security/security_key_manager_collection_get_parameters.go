@@ -62,17 +62,71 @@ SecurityKeyManagerCollectionGetParams contains all the parameters to send to the
 */
 type SecurityKeyManagerCollectionGetParams struct {
 
+	/* ConfigurationName.
+
+	   Filter by configuration.name
+	*/
+	ConfigurationName *string
+
+	/* ConfigurationUUID.
+
+	   Filter by configuration.uuid
+	*/
+	ConfigurationUUID *string
+
+	/* Enabled.
+
+	   Filter by enabled
+	*/
+	Enabled *bool
+
+	/* ExternalClientCertificateName.
+
+	   Filter by external.client_certificate.name
+	*/
+	ExternalClientCertificateName *string
+
 	/* ExternalClientCertificateUUID.
 
 	   Filter by external.client_certificate.uuid
 	*/
 	ExternalClientCertificateUUID *string
 
+	/* ExternalServerCaCertificatesName.
+
+	   Filter by external.server_ca_certificates.name
+	*/
+	ExternalServerCaCertificatesName *string
+
 	/* ExternalServerCaCertificatesUUID.
 
 	   Filter by external.server_ca_certificates.uuid
 	*/
 	ExternalServerCaCertificatesUUID *string
+
+	/* ExternalServersConnectivityClusterAvailability.
+
+	   Filter by external.servers.connectivity.cluster_availability
+	*/
+	ExternalServersConnectivityClusterAvailability *bool
+
+	/* ExternalServersConnectivityNodeStatesNodeName.
+
+	   Filter by external.servers.connectivity.node_states.node.name
+	*/
+	ExternalServersConnectivityNodeStatesNodeName *string
+
+	/* ExternalServersConnectivityNodeStatesNodeUUID.
+
+	   Filter by external.servers.connectivity.node_states.node.uuid
+	*/
+	ExternalServersConnectivityNodeStatesNodeUUID *string
+
+	/* ExternalServersConnectivityNodeStatesState.
+
+	   Filter by external.servers.connectivity.node_states.state
+	*/
+	ExternalServersConnectivityNodeStatesState *string
 
 	/* ExternalServersSecondaryKeyServers.
 
@@ -277,6 +331,50 @@ func (o *SecurityKeyManagerCollectionGetParams) SetHTTPClient(client *http.Clien
 	o.HTTPClient = client
 }
 
+// WithConfigurationName adds the configurationName to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithConfigurationName(configurationName *string) *SecurityKeyManagerCollectionGetParams {
+	o.SetConfigurationName(configurationName)
+	return o
+}
+
+// SetConfigurationName adds the configurationName to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetConfigurationName(configurationName *string) {
+	o.ConfigurationName = configurationName
+}
+
+// WithConfigurationUUID adds the configurationUUID to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithConfigurationUUID(configurationUUID *string) *SecurityKeyManagerCollectionGetParams {
+	o.SetConfigurationUUID(configurationUUID)
+	return o
+}
+
+// SetConfigurationUUID adds the configurationUuid to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetConfigurationUUID(configurationUUID *string) {
+	o.ConfigurationUUID = configurationUUID
+}
+
+// WithEnabled adds the enabled to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithEnabled(enabled *bool) *SecurityKeyManagerCollectionGetParams {
+	o.SetEnabled(enabled)
+	return o
+}
+
+// SetEnabled adds the enabled to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
+}
+
+// WithExternalClientCertificateName adds the externalClientCertificateName to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithExternalClientCertificateName(externalClientCertificateName *string) *SecurityKeyManagerCollectionGetParams {
+	o.SetExternalClientCertificateName(externalClientCertificateName)
+	return o
+}
+
+// SetExternalClientCertificateName adds the externalClientCertificateName to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetExternalClientCertificateName(externalClientCertificateName *string) {
+	o.ExternalClientCertificateName = externalClientCertificateName
+}
+
 // WithExternalClientCertificateUUID adds the externalClientCertificateUUID to the security key manager collection get params
 func (o *SecurityKeyManagerCollectionGetParams) WithExternalClientCertificateUUID(externalClientCertificateUUID *string) *SecurityKeyManagerCollectionGetParams {
 	o.SetExternalClientCertificateUUID(externalClientCertificateUUID)
@@ -288,6 +386,17 @@ func (o *SecurityKeyManagerCollectionGetParams) SetExternalClientCertificateUUID
 	o.ExternalClientCertificateUUID = externalClientCertificateUUID
 }
 
+// WithExternalServerCaCertificatesName adds the externalServerCaCertificatesName to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithExternalServerCaCertificatesName(externalServerCaCertificatesName *string) *SecurityKeyManagerCollectionGetParams {
+	o.SetExternalServerCaCertificatesName(externalServerCaCertificatesName)
+	return o
+}
+
+// SetExternalServerCaCertificatesName adds the externalServerCaCertificatesName to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetExternalServerCaCertificatesName(externalServerCaCertificatesName *string) {
+	o.ExternalServerCaCertificatesName = externalServerCaCertificatesName
+}
+
 // WithExternalServerCaCertificatesUUID adds the externalServerCaCertificatesUUID to the security key manager collection get params
 func (o *SecurityKeyManagerCollectionGetParams) WithExternalServerCaCertificatesUUID(externalServerCaCertificatesUUID *string) *SecurityKeyManagerCollectionGetParams {
 	o.SetExternalServerCaCertificatesUUID(externalServerCaCertificatesUUID)
@@ -297,6 +406,50 @@ func (o *SecurityKeyManagerCollectionGetParams) WithExternalServerCaCertificates
 // SetExternalServerCaCertificatesUUID adds the externalServerCaCertificatesUuid to the security key manager collection get params
 func (o *SecurityKeyManagerCollectionGetParams) SetExternalServerCaCertificatesUUID(externalServerCaCertificatesUUID *string) {
 	o.ExternalServerCaCertificatesUUID = externalServerCaCertificatesUUID
+}
+
+// WithExternalServersConnectivityClusterAvailability adds the externalServersConnectivityClusterAvailability to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithExternalServersConnectivityClusterAvailability(externalServersConnectivityClusterAvailability *bool) *SecurityKeyManagerCollectionGetParams {
+	o.SetExternalServersConnectivityClusterAvailability(externalServersConnectivityClusterAvailability)
+	return o
+}
+
+// SetExternalServersConnectivityClusterAvailability adds the externalServersConnectivityClusterAvailability to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetExternalServersConnectivityClusterAvailability(externalServersConnectivityClusterAvailability *bool) {
+	o.ExternalServersConnectivityClusterAvailability = externalServersConnectivityClusterAvailability
+}
+
+// WithExternalServersConnectivityNodeStatesNodeName adds the externalServersConnectivityNodeStatesNodeName to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithExternalServersConnectivityNodeStatesNodeName(externalServersConnectivityNodeStatesNodeName *string) *SecurityKeyManagerCollectionGetParams {
+	o.SetExternalServersConnectivityNodeStatesNodeName(externalServersConnectivityNodeStatesNodeName)
+	return o
+}
+
+// SetExternalServersConnectivityNodeStatesNodeName adds the externalServersConnectivityNodeStatesNodeName to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetExternalServersConnectivityNodeStatesNodeName(externalServersConnectivityNodeStatesNodeName *string) {
+	o.ExternalServersConnectivityNodeStatesNodeName = externalServersConnectivityNodeStatesNodeName
+}
+
+// WithExternalServersConnectivityNodeStatesNodeUUID adds the externalServersConnectivityNodeStatesNodeUUID to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithExternalServersConnectivityNodeStatesNodeUUID(externalServersConnectivityNodeStatesNodeUUID *string) *SecurityKeyManagerCollectionGetParams {
+	o.SetExternalServersConnectivityNodeStatesNodeUUID(externalServersConnectivityNodeStatesNodeUUID)
+	return o
+}
+
+// SetExternalServersConnectivityNodeStatesNodeUUID adds the externalServersConnectivityNodeStatesNodeUuid to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetExternalServersConnectivityNodeStatesNodeUUID(externalServersConnectivityNodeStatesNodeUUID *string) {
+	o.ExternalServersConnectivityNodeStatesNodeUUID = externalServersConnectivityNodeStatesNodeUUID
+}
+
+// WithExternalServersConnectivityNodeStatesState adds the externalServersConnectivityNodeStatesState to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithExternalServersConnectivityNodeStatesState(externalServersConnectivityNodeStatesState *string) *SecurityKeyManagerCollectionGetParams {
+	o.SetExternalServersConnectivityNodeStatesState(externalServersConnectivityNodeStatesState)
+	return o
+}
+
+// SetExternalServersConnectivityNodeStatesState adds the externalServersConnectivityNodeStatesState to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetExternalServersConnectivityNodeStatesState(externalServersConnectivityNodeStatesState *string) {
+	o.ExternalServersConnectivityNodeStatesState = externalServersConnectivityNodeStatesState
 }
 
 // WithExternalServersSecondaryKeyServers adds the externalServersSecondaryKeyServers to the security key manager collection get params
@@ -549,6 +702,74 @@ func (o *SecurityKeyManagerCollectionGetParams) WriteToRequest(r runtime.ClientR
 	}
 	var res []error
 
+	if o.ConfigurationName != nil {
+
+		// query param configuration.name
+		var qrConfigurationName string
+
+		if o.ConfigurationName != nil {
+			qrConfigurationName = *o.ConfigurationName
+		}
+		qConfigurationName := qrConfigurationName
+		if qConfigurationName != "" {
+
+			if err := r.SetQueryParam("configuration.name", qConfigurationName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConfigurationUUID != nil {
+
+		// query param configuration.uuid
+		var qrConfigurationUUID string
+
+		if o.ConfigurationUUID != nil {
+			qrConfigurationUUID = *o.ConfigurationUUID
+		}
+		qConfigurationUUID := qrConfigurationUUID
+		if qConfigurationUUID != "" {
+
+			if err := r.SetQueryParam("configuration.uuid", qConfigurationUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Enabled != nil {
+
+		// query param enabled
+		var qrEnabled bool
+
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
+		}
+		qEnabled := swag.FormatBool(qrEnabled)
+		if qEnabled != "" {
+
+			if err := r.SetQueryParam("enabled", qEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ExternalClientCertificateName != nil {
+
+		// query param external.client_certificate.name
+		var qrExternalClientCertificateName string
+
+		if o.ExternalClientCertificateName != nil {
+			qrExternalClientCertificateName = *o.ExternalClientCertificateName
+		}
+		qExternalClientCertificateName := qrExternalClientCertificateName
+		if qExternalClientCertificateName != "" {
+
+			if err := r.SetQueryParam("external.client_certificate.name", qExternalClientCertificateName); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ExternalClientCertificateUUID != nil {
 
 		// query param external.client_certificate.uuid
@@ -566,6 +787,23 @@ func (o *SecurityKeyManagerCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
+	if o.ExternalServerCaCertificatesName != nil {
+
+		// query param external.server_ca_certificates.name
+		var qrExternalServerCaCertificatesName string
+
+		if o.ExternalServerCaCertificatesName != nil {
+			qrExternalServerCaCertificatesName = *o.ExternalServerCaCertificatesName
+		}
+		qExternalServerCaCertificatesName := qrExternalServerCaCertificatesName
+		if qExternalServerCaCertificatesName != "" {
+
+			if err := r.SetQueryParam("external.server_ca_certificates.name", qExternalServerCaCertificatesName); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ExternalServerCaCertificatesUUID != nil {
 
 		// query param external.server_ca_certificates.uuid
@@ -578,6 +816,74 @@ func (o *SecurityKeyManagerCollectionGetParams) WriteToRequest(r runtime.ClientR
 		if qExternalServerCaCertificatesUUID != "" {
 
 			if err := r.SetQueryParam("external.server_ca_certificates.uuid", qExternalServerCaCertificatesUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ExternalServersConnectivityClusterAvailability != nil {
+
+		// query param external.servers.connectivity.cluster_availability
+		var qrExternalServersConnectivityClusterAvailability bool
+
+		if o.ExternalServersConnectivityClusterAvailability != nil {
+			qrExternalServersConnectivityClusterAvailability = *o.ExternalServersConnectivityClusterAvailability
+		}
+		qExternalServersConnectivityClusterAvailability := swag.FormatBool(qrExternalServersConnectivityClusterAvailability)
+		if qExternalServersConnectivityClusterAvailability != "" {
+
+			if err := r.SetQueryParam("external.servers.connectivity.cluster_availability", qExternalServersConnectivityClusterAvailability); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ExternalServersConnectivityNodeStatesNodeName != nil {
+
+		// query param external.servers.connectivity.node_states.node.name
+		var qrExternalServersConnectivityNodeStatesNodeName string
+
+		if o.ExternalServersConnectivityNodeStatesNodeName != nil {
+			qrExternalServersConnectivityNodeStatesNodeName = *o.ExternalServersConnectivityNodeStatesNodeName
+		}
+		qExternalServersConnectivityNodeStatesNodeName := qrExternalServersConnectivityNodeStatesNodeName
+		if qExternalServersConnectivityNodeStatesNodeName != "" {
+
+			if err := r.SetQueryParam("external.servers.connectivity.node_states.node.name", qExternalServersConnectivityNodeStatesNodeName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ExternalServersConnectivityNodeStatesNodeUUID != nil {
+
+		// query param external.servers.connectivity.node_states.node.uuid
+		var qrExternalServersConnectivityNodeStatesNodeUUID string
+
+		if o.ExternalServersConnectivityNodeStatesNodeUUID != nil {
+			qrExternalServersConnectivityNodeStatesNodeUUID = *o.ExternalServersConnectivityNodeStatesNodeUUID
+		}
+		qExternalServersConnectivityNodeStatesNodeUUID := qrExternalServersConnectivityNodeStatesNodeUUID
+		if qExternalServersConnectivityNodeStatesNodeUUID != "" {
+
+			if err := r.SetQueryParam("external.servers.connectivity.node_states.node.uuid", qExternalServersConnectivityNodeStatesNodeUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ExternalServersConnectivityNodeStatesState != nil {
+
+		// query param external.servers.connectivity.node_states.state
+		var qrExternalServersConnectivityNodeStatesState string
+
+		if o.ExternalServersConnectivityNodeStatesState != nil {
+			qrExternalServersConnectivityNodeStatesState = *o.ExternalServersConnectivityNodeStatesState
+		}
+		qExternalServersConnectivityNodeStatesState := qrExternalServersConnectivityNodeStatesState
+		if qExternalServersConnectivityNodeStatesState != "" {
+
+			if err := r.SetQueryParam("external.servers.connectivity.node_states.state", qExternalServersConnectivityNodeStatesState); err != nil {
 				return err
 			}
 		}

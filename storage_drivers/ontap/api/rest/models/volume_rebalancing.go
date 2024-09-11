@@ -31,7 +31,7 @@ type VolumeRebalancing struct {
 	// engine
 	Engine *VolumeRebalancingInlineEngine `json:"engine,omitempty"`
 
-	// Specifies whether or not to exclude files that are stuck in Snapshot copies during rebalancing operation. When a new capacity rebalancing operation is started on a FlexGroup volume, it uses the current "exclude_snapshots" value. Once the operation is started, any changes to the "exclude_snapshots" value do not affect the currently running capacity rebalancing operation. Only future capacity rebalancing operations will use the new "exclude_snapshots" value.
+	// Specifies whether or not to exclude files that are stuck in snapshots during rebalancing operation. When a new capacity rebalancing operation is started on a FlexGroup volume, it uses the current "exclude_snapshots" value. Once the operation is started, any changes to the "exclude_snapshots" value do not affect the currently running capacity rebalancing operation. Only future capacity rebalancing operations will use the new "exclude_snapshots" value.
 	ExcludeSnapshots *bool `json:"exclude_snapshots,omitempty"`
 
 	// Represents the percentage the volume is out of balance.
@@ -65,14 +65,13 @@ type VolumeRebalancing struct {
 	// Read Only: true
 	Runtime *string `json:"runtime,omitempty"`
 
-	// Time when the current capacity rebalancing operation started.
-	// Read Only: true
+	// Time when the current capacity rebalancing operation started, or when a future scheduled rebalancing operation begins.
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
 
-	// State of the volume capacity rebalancing operation. PATCH the state to "starting" to trigger the capacity rebalance operation. PATCH the state to "stopping" to stop the capacity rebalance operation.<br><br>While a FlexGroup volume is rebalancing, every constituent will have a rebalancing engine that can either be scanning the filesystem for space usage and files to move, actively moving files or temporarily doing neither.<br><br>If one or more constituents has a state of "rebalancing_source" or "rebalancing_dest", then files are being moved to rebalance the FlexGroup.<br><br>If no files are being moved, more information about what the rebalancing engine is doing for each constituent is available using the "rebalancing.engine" property.<br><br>The following values apply to FlexGroup volumes.<br>not_running &dash; capacity rebalancing is not running on the volume.<br>starting &dash; used in a PATCH operation to start a capacity rebalancing operation.<br>rebalancing &dash; capacity rebalancing is running on the volume.<br> paused &dash; volume capacity rebalancing is paused on the volume.<br>stopping &dash; used in a PATCH operation to stop a capacity rebalancing operation.<br>unknown &dash; the system was unable to determine the rebalancing state for the volume.<br><br>The following values apply to FlexGroup volume constiutents.<br>idle &dash; capacity rebalancing is running on the constituent, however, no active scanning or file movement is currently occurring.<br>scanning &dash; the constituent's file system is being scanned to find files to move and determine free space.<br>rebalancing_source &dash; a file is being moved off of the constituent.<br>rebalancing_dest &dash; a file is being moved to the constituent.<br>not_running &dash; capacity rebalancing is not running on the constituent.<br>unknown &dash; the system was unable to determine the rebalancing state for the constituent.
+	// State of the volume capacity rebalancing operation. PATCH the state to "starting" to trigger the capacity rebalance operation, and include start_time to schedule rebalancing. PATCH the state to "stopping" to stop the capacity rebalance operation, or cancel a scheduled rebalancing operation. PATCH without the state with a valid start_time to modify the start_time of an existing scheduled rebalance operation.<br><br>While a FlexGroup volume is rebalancing, every constituent will have a rebalancing engine that can either be scanning the filesystem for space usage and files to move, actively moving files or temporarily doing neither.<br><br>If one or more constituents has a state of "rebalancing_source" or "rebalancing_dest", then files are being moved to rebalance the FlexGroup volume.<br><br>If no files are being moved, more information about what the rebalancing engine is doing for each constituent is available using the "rebalancing.engine" property.<br><br>The following values apply to FlexGroup volumes.<br>not_running &dash; capacity rebalancing is not running on the volume.<br>starting &dash; used in a PATCH operation to start a capacity rebalancing operation.<br>rebalancing &dash; capacity rebalancing is running on the volume.<br> paused &dash; volume capacity rebalancing is paused on the volume.<br>stopping &dash; used in a PATCH operation to stop a capacity rebalancing operation.<br>unknown &dash; the system was unable to determine the rebalancing state for the volume.<br><br>The following values apply to FlexGroup volume constituents.<br>idle &dash; capacity rebalancing is running on the constituent, however, no active scanning or file movement is currently occurring.<br>scanning &dash; the constituent's file system is being scanned to find files to move and determine free space.<br>rebalancing_source &dash; a file is being moved off of the constituent.<br>rebalancing_dest &dash; a file is being moved to the constituent.<br>not_running &dash; capacity rebalancing is not running on the constituent.<br>unknown &dash; the system was unable to determine the rebalancing state for the constituent.
 	// Example: rebalancing
-	// Enum: [not_running starting rebalancing paused stopping idle scanning rebalancing_source rebalancing_dest unknown]
+	// Enum: ["not_running","starting","rebalancing","paused","stopping","idle","scanning","rebalancing_source","rebalancing_dest","unknown"]
 	State *string `json:"state,omitempty"`
 
 	// Time when the capacity rebalancing operation stopped.
@@ -84,7 +83,7 @@ type VolumeRebalancing struct {
 	// Read Only: true
 	TargetUsed *int64 `json:"target_used,omitempty"`
 
-	// Represents the used size of each constituent, as determined by the rebalancing engine. Calculated by subtracting the size used by Snapshot copies, the size of files pending deletion and the size of filesystem metadata from the volume used size.
+	// Represents the used size of each constituent, as determined by the rebalancing engine. Calculated by subtracting the size used by snapshots, the size of files pending deletion and the size of filesystem metadata from the volume used size.
 	// Read Only: true
 	UsedForImbalance *int64 `json:"used_for_imbalance,omitempty"`
 
@@ -377,10 +376,6 @@ func (m *VolumeRebalancing) ContextValidate(ctx context.Context, formats strfmt.
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateStartTime(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateStopTime(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -470,15 +465,6 @@ func (m *VolumeRebalancing) contextValidateMaxConstituentImbalancePercent(ctx co
 func (m *VolumeRebalancing) contextValidateRuntime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "runtime", "body", m.Runtime); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *VolumeRebalancing) contextValidateStartTime(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "start_time", "body", m.StartTime); err != nil {
 		return err
 	}
 
@@ -692,8 +678,8 @@ type VolumeRebalancingInlineEngineInlineMovement struct {
 	// last error
 	LastError *VolumeRebalancingInlineEngineInlineMovementInlineLastError `json:"last_error,omitempty"`
 
-	// Start time of the most recent file move on the constiutent.
-	// Example: 2018-06-04T19:00:00Z
+	// Start time of the most recent file move on the constituent.
+	// Example: 2018-06-04 19:00:00
 	// Read Only: true
 	// Format: date-time
 	MostRecentStartTime *strfmt.DateTime `json:"most_recent_start_time,omitempty"`
@@ -823,20 +809,20 @@ func (m *VolumeRebalancingInlineEngineInlineMovement) UnmarshalBinary(b []byte) 
 // swagger:model volume_rebalancing_inline_engine_inline_movement_inline_last_error
 type VolumeRebalancingInlineEngineInlineMovementInlineLastError struct {
 
-	// Error code of the last file move error on the constiutent.
+	// Error code of the last file move error on the constituent.
 	// Read Only: true
 	Code *int64 `json:"code,omitempty"`
 
-	// DSID of the destination constituent of the last file move error on the constiutent.
+	// DSID of the destination constituent of the last file move error on the constituent.
 	// Read Only: true
 	Destination *int64 `json:"destination,omitempty"`
 
-	// File ID of the last file move error on the constiutent.
+	// File ID of the last file move error on the constituent.
 	// Read Only: true
 	FileID *int64 `json:"file_id,omitempty"`
 
-	// Time of the last file move error on the constiutent.
-	// Example: 2018-06-04T19:00:00Z
+	// Time of the last file move error on the constituent.
+	// Example: 2018-06-04 19:00:00
 	// Read Only: true
 	// Format: date-time
 	Time *strfmt.DateTime `json:"time,omitempty"`
@@ -1110,7 +1096,7 @@ func (m *VolumeRebalancingInlineEngineInlineScanner) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// VolumeRebalancingInlineEngineInlineScannerInlineBlocksSkipped Number of blocks skipped by the scanner on this constiutent due to various reasons.
+// VolumeRebalancingInlineEngineInlineScannerInlineBlocksSkipped Number of blocks skipped by the scanner on this constituent due to various reasons.
 //
 // swagger:model volume_rebalancing_inline_engine_inline_scanner_inline_blocks_skipped
 type VolumeRebalancingInlineEngineInlineScannerInlineBlocksSkipped struct {
@@ -1131,7 +1117,7 @@ type VolumeRebalancingInlineEngineInlineScannerInlineBlocksSkipped struct {
 	// Read Only: true
 	FootprintInvalid *int64 `json:"footprint_invalid,omitempty"`
 
-	// Number of blocks skipped by the scanner on this constituent because of files in Snapshot copies.
+	// Number of blocks skipped by the scanner on this constituent because of files in snapshots.
 	// Read Only: true
 	InSnapshot *int64 `json:"in_snapshot,omitempty"`
 
@@ -1370,7 +1356,7 @@ func (m *VolumeRebalancingInlineEngineInlineScannerInlineBlocksSkipped) Unmarsha
 	return nil
 }
 
-// VolumeRebalancingInlineEngineInlineScannerInlineFilesSkipped Number of files skipped by the scanner on this constiutent due to various reasons.
+// VolumeRebalancingInlineEngineInlineScannerInlineFilesSkipped Number of files skipped by the scanner on this constituent due to various reasons.
 //
 // swagger:model volume_rebalancing_inline_engine_inline_scanner_inline_files_skipped
 type VolumeRebalancingInlineEngineInlineScannerInlineFilesSkipped struct {
@@ -1391,7 +1377,7 @@ type VolumeRebalancingInlineEngineInlineScannerInlineFilesSkipped struct {
 	// Read Only: true
 	FootprintInvalid *int64 `json:"footprint_invalid,omitempty"`
 
-	// Number of files skipped by the scanner on this constituent because they are trapped in Snapshot copies.
+	// Number of files skipped by the scanner on this constituent because they are trapped in snapshots.
 	// Read Only: true
 	InSnapshot *int64 `json:"in_snapshot,omitempty"`
 

@@ -28,7 +28,7 @@ type Log struct {
 	//   * xml  - Data ONTAP-specific XML log format
 	//   * evtx - Microsoft Windows EVTX log format
 	//
-	// Enum: [xml evtx]
+	// Enum: ["xml","evtx"]
 	Format *string `json:"format,omitempty"`
 
 	// retention

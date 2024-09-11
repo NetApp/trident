@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *NameMappingDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the name mapping delete o k response
+func (o *NameMappingDeleteOK) Code() int {
+	return 200
+}
+
 func (o *NameMappingDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingDeleteOK", 200)
 }
 
 func (o *NameMappingDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingDeleteOK", 200)
 }
 
 func (o *NameMappingDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type NameMappingDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the name mapping delete default response
-func (o *NameMappingDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this name mapping delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *NameMappingDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the name mapping delete default response
+func (o *NameMappingDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NameMappingDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_delete default %s", o._statusCode, payload)
 }
 
 func (o *NameMappingDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_delete default %s", o._statusCode, payload)
 }
 
 func (o *NameMappingDeleteDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *PublickeyCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the publickey create created response
+func (o *PublickeyCreateCreated) Code() int {
+	return 201
+}
+
 func (o *PublickeyCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/authentication/publickeys][%d] publickeyCreateCreated ", 201)
+	return fmt.Sprintf("[POST /security/authentication/publickeys][%d] publickeyCreateCreated", 201)
 }
 
 func (o *PublickeyCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/authentication/publickeys][%d] publickeyCreateCreated ", 201)
+	return fmt.Sprintf("[POST /security/authentication/publickeys][%d] publickeyCreateCreated", 201)
 }
 
 func (o *PublickeyCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -111,19 +117,21 @@ func NewPublickeyCreateDefault(code int) *PublickeyCreateDefault {
 }
 
 /*
-PublickeyCreateDefault describes a response with status code -1, with default header values.
+	PublickeyCreateDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 5832705 | Public key already exists for the given user and application. |
+| 5832707 | Failed to generate fingerprint for the public key. |
+| 5832722 | The public key cannot be associated with this user on the SVM because a login method using the given application and authentication method does not exist for this user. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type PublickeyCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the publickey create default response
-func (o *PublickeyCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this publickey create default response has a 2xx status code
@@ -151,12 +159,19 @@ func (o *PublickeyCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the publickey create default response
+func (o *PublickeyCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *PublickeyCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/authentication/publickeys][%d] publickey_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/publickeys][%d] publickey_create default %s", o._statusCode, payload)
 }
 
 func (o *PublickeyCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/authentication/publickeys][%d] publickey_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/publickeys][%d] publickey_create default %s", o._statusCode, payload)
 }
 
 func (o *PublickeyCreateDefault) GetPayload() *models.ErrorResponse {

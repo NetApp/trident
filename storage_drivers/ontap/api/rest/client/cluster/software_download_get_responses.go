@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SoftwareDownloadGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the software download get o k response
+func (o *SoftwareDownloadGetOK) Code() int {
+	return 200
+}
+
 func (o *SoftwareDownloadGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/software/download][%d] softwareDownloadGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/software/download][%d] softwareDownloadGetOK %s", 200, payload)
 }
 
 func (o *SoftwareDownloadGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/software/download][%d] softwareDownloadGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/software/download][%d] softwareDownloadGetOK %s", 200, payload)
 }
 
 func (o *SoftwareDownloadGetOK) GetPayload() *models.SoftwarePackageDownloadGet {
@@ -112,19 +120,20 @@ func NewSoftwareDownloadGetDefault(code int) *SoftwareDownloadGetDefault {
 }
 
 /*
-SoftwareDownloadGetDefault describes a response with status code -1, with default header values.
+	SoftwareDownloadGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 10551382 | Package download is still running. |
+| 10551383 | Operation took longer than the maximum 1 hour time limit. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SoftwareDownloadGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the software download get default response
-func (o *SoftwareDownloadGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this software download get default response has a 2xx status code
@@ -152,12 +161,19 @@ func (o *SoftwareDownloadGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the software download get default response
+func (o *SoftwareDownloadGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SoftwareDownloadGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/software/download][%d] software_download_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/software/download][%d] software_download_get default %s", o._statusCode, payload)
 }
 
 func (o *SoftwareDownloadGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/software/download][%d] software_download_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/software/download][%d] software_download_get default %s", o._statusCode, payload)
 }
 
 func (o *SoftwareDownloadGetDefault) GetPayload() *models.ErrorResponse {

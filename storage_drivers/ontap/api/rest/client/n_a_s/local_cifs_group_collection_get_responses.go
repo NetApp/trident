@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *LocalCifsGroupCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the local cifs group collection get o k response
+func (o *LocalCifsGroupCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *LocalCifsGroupCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/local-groups][%d] localCifsGroupCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/local-groups][%d] localCifsGroupCollectionGetOK %s", 200, payload)
 }
 
 func (o *LocalCifsGroupCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/local-groups][%d] localCifsGroupCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/local-groups][%d] localCifsGroupCollectionGetOK %s", 200, payload)
 }
 
 func (o *LocalCifsGroupCollectionGetOK) GetPayload() *models.LocalCifsGroupResponse {
@@ -122,11 +130,6 @@ type LocalCifsGroupCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the local cifs group collection get default response
-func (o *LocalCifsGroupCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this local cifs group collection get default response has a 2xx status code
 func (o *LocalCifsGroupCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *LocalCifsGroupCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the local cifs group collection get default response
+func (o *LocalCifsGroupCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LocalCifsGroupCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/local-groups][%d] local_cifs_group_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/local-groups][%d] local_cifs_group_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsGroupCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/local-groups][%d] local_cifs_group_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/local-groups][%d] local_cifs_group_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsGroupCollectionGetDefault) GetPayload() *models.ErrorResponse {

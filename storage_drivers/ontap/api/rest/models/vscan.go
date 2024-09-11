@@ -14,7 +14,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// Vscan Vscan can be used to protect data from being compromised by viruses or other malicious code. This combines best-in-class third-party antivirus software with ONTAP features that give you the flexibility you need to control which files get scanned and when. Storage systems offload scanning operations to external servers hosting antivirus software from thirdparty vendors. An Antivirus Connector on the external server handles communications between the storage system and the antivirus software.
+// Vscan Vscan can be used to protect data from being compromised by viruses or other malicious code. This combines best-in-class third-party antivirus software with ONTAP features that give you the flexibility you need to control which files get scanned and when. Storage systems offload scanning operations to external servers hosting antivirus software from third-party vendors. An Antivirus Connector on the external server handles communications between the storage system and the antivirus software.
 //
 // swagger:model vscan
 type Vscan struct {
@@ -32,7 +32,7 @@ type Vscan struct {
 	Svm *VscanInlineSvm `json:"svm,omitempty"`
 
 	// vscan inline on access policies
-	VscanInlineOnAccessPolicies []*VscanOnAccess `json:"on_access_policies,omitempty"`
+	VscanInlineOnAccessPolicies []*VscanOnAccessPolicy `json:"on_access_policies,omitempty"`
 
 	// vscan inline on demand policies
 	VscanInlineOnDemandPolicies []*VscanOnDemandPolicy `json:"on_demand_policies,omitempty"`
@@ -393,7 +393,7 @@ func (m *VscanInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanInlineSvm vscan inline svm
+// VscanInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model vscan_inline_svm
 type VscanInlineSvm struct {
@@ -401,12 +401,12 @@ type VscanInlineSvm struct {
 	// links
 	Links *VscanInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

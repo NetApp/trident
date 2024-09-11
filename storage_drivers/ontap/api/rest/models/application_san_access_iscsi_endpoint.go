@@ -182,7 +182,7 @@ func (m *ApplicationSanAccessIscsiEndpoint) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationSanAccessIscsiEndpointInlineInterface application san access iscsi endpoint inline interface
+// ApplicationSanAccessIscsiEndpointInlineInterface A network interface. Either UUID or name may be supplied on input.
 //
 // swagger:model application_san_access_iscsi_endpoint_inline_interface
 type ApplicationSanAccessIscsiEndpointInlineInterface struct {

@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SecurityKeyManagerKeyServersModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the security key manager key servers modify o k response
+func (o *SecurityKeyManagerKeyServersModifyOK) Code() int {
+	return 200
+}
+
 func (o *SecurityKeyManagerKeyServersModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}/key-servers/{server}][%d] securityKeyManagerKeyServersModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}/key-servers/{server}][%d] securityKeyManagerKeyServersModifyOK", 200)
 }
 
 func (o *SecurityKeyManagerKeyServersModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}/key-servers/{server}][%d] securityKeyManagerKeyServersModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}/key-servers/{server}][%d] securityKeyManagerKeyServersModifyOK", 200)
 }
 
 func (o *SecurityKeyManagerKeyServersModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,28 +113,25 @@ func NewSecurityKeyManagerKeyServersModifyDefault(code int) *SecurityKeyManagerK
 | Error Code | Description |
 | ---------- | ----------- |
 | 65536600 | Cannot modify a key server while a node is out quorum. |
-| 65536822 | Multitenant key management is not supported in the current cluster version. |
 | 65536824 | Multitenant key management is not supported in MetroCluster configurations. |
 | 65536828 | External key management is not enabled for the SVM. |
 | 65536843 | The key management server is not configured for the SVM. |
 | 65536845 | Missing username. |
 | 65536846 | Missing password. |
+| 65536880 | One or more of the following values must be provided \"timeout\", \"username\", \"password\", \"secondary_key_servers\", \"create_remove_timeout\". |
+| 65536921 | Unable to execute the command on the KMIP server. |
 | 65537400 | Exceeded maximum number of secondary key servers. |
 | 65538407 | A secondary key server is a duplicate of the associated primary key server. |
 | 65538408 | The list of secondary key servers contains duplicates. |
 | 65538413 | A secondary key server address is not formatted correctly. |
 | 65538502 | A secondary key server is also a primary key server. |
 | 65538503 | Support for adding secondary key servers requires an ECV of ONTAP 9.11.1 or later. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SecurityKeyManagerKeyServersModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security key manager key servers modify default response
-func (o *SecurityKeyManagerKeyServersModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security key manager key servers modify default response has a 2xx status code
@@ -156,12 +159,19 @@ func (o *SecurityKeyManagerKeyServersModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security key manager key servers modify default response
+func (o *SecurityKeyManagerKeyServersModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityKeyManagerKeyServersModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}/key-servers/{server}][%d] security_key_manager_key_servers_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}/key-servers/{server}][%d] security_key_manager_key_servers_modify default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeyManagerKeyServersModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}/key-servers/{server}][%d] security_key_manager_key_servers_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}/key-servers/{server}][%d] security_key_manager_key_servers_modify default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeyManagerKeyServersModifyDefault) GetPayload() *models.ErrorResponse {

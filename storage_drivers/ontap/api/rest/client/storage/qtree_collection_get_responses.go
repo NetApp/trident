@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *QtreeCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the qtree collection get o k response
+func (o *QtreeCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *QtreeCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/qtrees][%d] qtreeCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/qtrees][%d] qtreeCollectionGetOK %s", 200, payload)
 }
 
 func (o *QtreeCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/qtrees][%d] qtreeCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/qtrees][%d] qtreeCollectionGetOK %s", 200, payload)
 }
 
 func (o *QtreeCollectionGetOK) GetPayload() *models.QtreeResponse {
@@ -112,19 +120,23 @@ func NewQtreeCollectionGetDefault(code int) *QtreeCollectionGetDefault {
 }
 
 /*
-QtreeCollectionGetDefault describes a response with status code -1, with default header values.
+	QtreeCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 918235 | A volume with UUID was not found. |
+| 2621462 | The specified SVM does not exist. |
+| 5242889 | Failed to get the qtree from volume. |
+| 5242956 | Failed to obtain qtree. |
+| 5242965 | Invalid qtree path. The volume name component of the qtree path, must be the same as the volume specified with the parameter. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type QtreeCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the qtree collection get default response
-func (o *QtreeCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this qtree collection get default response has a 2xx status code
@@ -152,12 +164,19 @@ func (o *QtreeCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the qtree collection get default response
+func (o *QtreeCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *QtreeCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/qtrees][%d] qtree_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/qtrees][%d] qtree_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *QtreeCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/qtrees][%d] qtree_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/qtrees][%d] qtree_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *QtreeCollectionGetDefault) GetPayload() *models.ErrorResponse {

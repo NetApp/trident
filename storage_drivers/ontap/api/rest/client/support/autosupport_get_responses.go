@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *AutosupportGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the autosupport get o k response
+func (o *AutosupportGetOK) Code() int {
+	return 200
+}
+
 func (o *AutosupportGetOK) Error() string {
-	return fmt.Sprintf("[GET /support/autosupport][%d] autosupportGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/autosupport][%d] autosupportGetOK %s", 200, payload)
 }
 
 func (o *AutosupportGetOK) String() string {
-	return fmt.Sprintf("[GET /support/autosupport][%d] autosupportGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/autosupport][%d] autosupportGetOK %s", 200, payload)
 }
 
 func (o *AutosupportGetOK) GetPayload() *models.Autosupport {
@@ -122,11 +130,6 @@ type AutosupportGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the autosupport get default response
-func (o *AutosupportGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this autosupport get default response has a 2xx status code
 func (o *AutosupportGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *AutosupportGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the autosupport get default response
+func (o *AutosupportGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AutosupportGetDefault) Error() string {
-	return fmt.Sprintf("[GET /support/autosupport][%d] autosupport_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/autosupport][%d] autosupport_get default %s", o._statusCode, payload)
 }
 
 func (o *AutosupportGetDefault) String() string {
-	return fmt.Sprintf("[GET /support/autosupport][%d] autosupport_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/autosupport][%d] autosupport_get default %s", o._statusCode, payload)
 }
 
 func (o *AutosupportGetDefault) GetPayload() *models.ErrorResponse {

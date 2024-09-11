@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NameMappingCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the name mapping collection get o k response
+func (o *NameMappingCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *NameMappingCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/name-mappings][%d] nameMappingCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/name-mappings][%d] nameMappingCollectionGetOK %s", 200, payload)
 }
 
 func (o *NameMappingCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/name-mappings][%d] nameMappingCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/name-mappings][%d] nameMappingCollectionGetOK %s", 200, payload)
 }
 
 func (o *NameMappingCollectionGetOK) GetPayload() *models.NameMappingResponse {
@@ -122,11 +130,6 @@ type NameMappingCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the name mapping collection get default response
-func (o *NameMappingCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this name mapping collection get default response has a 2xx status code
 func (o *NameMappingCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NameMappingCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the name mapping collection get default response
+func (o *NameMappingCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NameMappingCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/name-mappings][%d] name_mapping_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/name-mappings][%d] name_mapping_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *NameMappingCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/name-mappings][%d] name_mapping_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/name-mappings][%d] name_mapping_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *NameMappingCollectionGetDefault) GetPayload() *models.ErrorResponse {

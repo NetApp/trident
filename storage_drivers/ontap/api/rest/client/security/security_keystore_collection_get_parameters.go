@@ -62,6 +62,24 @@ SecurityKeystoreCollectionGetParams contains all the parameters to send to the A
 */
 type SecurityKeystoreCollectionGetParams struct {
 
+	/* ConfigurationName.
+
+	   Filter by configuration.name
+	*/
+	ConfigurationName *string
+
+	/* ConfigurationUUID.
+
+	   Filter by configuration.uuid
+	*/
+	ConfigurationUUID *string
+
+	/* Enabled.
+
+	   Filter by enabled
+	*/
+	Enabled *bool
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -101,6 +119,18 @@ type SecurityKeystoreCollectionGetParams struct {
 	   Default: 15
 	*/
 	ReturnTimeout *int64
+
+	/* Scope.
+
+	   Filter by scope
+	*/
+	Scope *string
+
+	/* State.
+
+	   Filter by state
+	*/
+	State *string
 
 	/* SvmName.
 
@@ -193,6 +223,39 @@ func (o *SecurityKeystoreCollectionGetParams) SetHTTPClient(client *http.Client)
 	o.HTTPClient = client
 }
 
+// WithConfigurationName adds the configurationName to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) WithConfigurationName(configurationName *string) *SecurityKeystoreCollectionGetParams {
+	o.SetConfigurationName(configurationName)
+	return o
+}
+
+// SetConfigurationName adds the configurationName to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) SetConfigurationName(configurationName *string) {
+	o.ConfigurationName = configurationName
+}
+
+// WithConfigurationUUID adds the configurationUUID to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) WithConfigurationUUID(configurationUUID *string) *SecurityKeystoreCollectionGetParams {
+	o.SetConfigurationUUID(configurationUUID)
+	return o
+}
+
+// SetConfigurationUUID adds the configurationUuid to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) SetConfigurationUUID(configurationUUID *string) {
+	o.ConfigurationUUID = configurationUUID
+}
+
+// WithEnabled adds the enabled to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) WithEnabled(enabled *bool) *SecurityKeystoreCollectionGetParams {
+	o.SetEnabled(enabled)
+	return o
+}
+
+// SetEnabled adds the enabled to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
+}
+
 // WithFields adds the fields to the security keystore collection get params
 func (o *SecurityKeystoreCollectionGetParams) WithFields(fields []string) *SecurityKeystoreCollectionGetParams {
 	o.SetFields(fields)
@@ -259,6 +322,28 @@ func (o *SecurityKeystoreCollectionGetParams) SetReturnTimeout(returnTimeout *in
 	o.ReturnTimeout = returnTimeout
 }
 
+// WithScope adds the scope to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) WithScope(scope *string) *SecurityKeystoreCollectionGetParams {
+	o.SetScope(scope)
+	return o
+}
+
+// SetScope adds the scope to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
+}
+
+// WithState adds the state to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) WithState(state *string) *SecurityKeystoreCollectionGetParams {
+	o.SetState(state)
+	return o
+}
+
+// SetState adds the state to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) SetState(state *string) {
+	o.State = state
+}
+
 // WithSvmName adds the svmName to the security keystore collection get params
 func (o *SecurityKeystoreCollectionGetParams) WithSvmName(svmName *string) *SecurityKeystoreCollectionGetParams {
 	o.SetSvmName(svmName)
@@ -310,6 +395,57 @@ func (o *SecurityKeystoreCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		return err
 	}
 	var res []error
+
+	if o.ConfigurationName != nil {
+
+		// query param configuration.name
+		var qrConfigurationName string
+
+		if o.ConfigurationName != nil {
+			qrConfigurationName = *o.ConfigurationName
+		}
+		qConfigurationName := qrConfigurationName
+		if qConfigurationName != "" {
+
+			if err := r.SetQueryParam("configuration.name", qConfigurationName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConfigurationUUID != nil {
+
+		// query param configuration.uuid
+		var qrConfigurationUUID string
+
+		if o.ConfigurationUUID != nil {
+			qrConfigurationUUID = *o.ConfigurationUUID
+		}
+		qConfigurationUUID := qrConfigurationUUID
+		if qConfigurationUUID != "" {
+
+			if err := r.SetQueryParam("configuration.uuid", qConfigurationUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Enabled != nil {
+
+		// query param enabled
+		var qrEnabled bool
+
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
+		}
+		qEnabled := swag.FormatBool(qrEnabled)
+		if qEnabled != "" {
+
+			if err := r.SetQueryParam("enabled", qEnabled); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.Fields != nil {
 
@@ -396,6 +532,40 @@ func (o *SecurityKeystoreCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Scope != nil {
+
+		// query param scope
+		var qrScope string
+
+		if o.Scope != nil {
+			qrScope = *o.Scope
+		}
+		qScope := qrScope
+		if qScope != "" {
+
+			if err := r.SetQueryParam("scope", qScope); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.State != nil {
+
+		// query param state
+		var qrState string
+
+		if o.State != nil {
+			qrState = *o.State
+		}
+		qState := qrState
+		if qState != "" {
+
+			if err := r.SetQueryParam("state", qState); err != nil {
 				return err
 			}
 		}

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *UserGroupPrivilegesCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the user group privileges create created response
+func (o *UserGroupPrivilegesCreateCreated) Code() int {
+	return 201
+}
+
 func (o *UserGroupPrivilegesCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/privileges][%d] userGroupPrivilegesCreateCreated ", 201)
+	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/privileges][%d] userGroupPrivilegesCreateCreated", 201)
 }
 
 func (o *UserGroupPrivilegesCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/privileges][%d] userGroupPrivilegesCreateCreated ", 201)
+	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/privileges][%d] userGroupPrivilegesCreateCreated", 201)
 }
 
 func (o *UserGroupPrivilegesCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -127,11 +133,6 @@ type UserGroupPrivilegesCreateDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the user group privileges create default response
-func (o *UserGroupPrivilegesCreateDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this user group privileges create default response has a 2xx status code
 func (o *UserGroupPrivilegesCreateDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -157,12 +158,19 @@ func (o *UserGroupPrivilegesCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the user group privileges create default response
+func (o *UserGroupPrivilegesCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *UserGroupPrivilegesCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/privileges][%d] user_group_privileges_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/privileges][%d] user_group_privileges_create default %s", o._statusCode, payload)
 }
 
 func (o *UserGroupPrivilegesCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/privileges][%d] user_group_privileges_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/privileges][%d] user_group_privileges_create default %s", o._statusCode, payload)
 }
 
 func (o *UserGroupPrivilegesCreateDefault) GetPayload() *models.ErrorResponse {

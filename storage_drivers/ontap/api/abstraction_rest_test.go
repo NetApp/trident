@@ -2946,7 +2946,8 @@ func TestSnapshotDeleteByNameAndStyle(t *testing.T) {
 	jobId := strfmt.UUID("1234")
 	jobLink := models.JobLink{UUID: &jobId}
 	jobResponse := models.JobLinkResponse{Job: &jobLink}
-	snapResponse := storage.SnapshotDeleteAccepted{Payload: &jobResponse}
+	snapshotJobResponse := models.SnapshotJobLinkResponse{Job: &jobLink}
+	snapResponse := storage.SnapshotDeleteAccepted{Payload: &snapshotJobResponse}
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1:  Snapshot delete by name
@@ -3006,7 +3007,8 @@ func TestFlexgroupSnapshotDelete(t *testing.T) {
 	jobId := strfmt.UUID("1234")
 	jobLink := models.JobLink{UUID: &jobId}
 	jobResponse := models.JobLinkResponse{Job: &jobLink}
-	snapResponse := storage.SnapshotDeleteAccepted{Payload: &jobResponse}
+	snapshotJobResponse := models.SnapshotJobLinkResponse{Job: &jobLink}
+	snapResponse := storage.SnapshotDeleteAccepted{Payload: &snapshotJobResponse}
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1:  Flexgroup Snapshot delete
@@ -3036,7 +3038,8 @@ func TestVolumeSnapshotDelete(t *testing.T) {
 	jobId := strfmt.UUID("1234")
 	jobLink := models.JobLink{UUID: &jobId}
 	jobResponse := models.JobLinkResponse{Job: &jobLink}
-	snapResponse := storage.SnapshotDeleteAccepted{Payload: &jobResponse}
+	snapshotJobResponse := models.SnapshotJobLinkResponse{Job: &jobLink}
+	snapResponse := storage.SnapshotDeleteAccepted{Payload: &snapshotJobResponse}
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1:  Volume Snapshot delete

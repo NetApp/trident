@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -25,6 +26,12 @@ func (o *SecurityKeyManagerModifyReader) ReadResponse(response runtime.ClientRes
 	switch response.Code() {
 	case 200:
 		result := NewSecurityKeyManagerModifyOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
+	case 202:
+		result := NewSecurityKeyManagerModifyAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -79,15 +86,90 @@ func (o *SecurityKeyManagerModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the security key manager modify o k response
+func (o *SecurityKeyManagerModifyOK) Code() int {
+	return 200
+}
+
 func (o *SecurityKeyManagerModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}][%d] securityKeyManagerModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}][%d] securityKeyManagerModifyOK", 200)
 }
 
 func (o *SecurityKeyManagerModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}][%d] securityKeyManagerModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}][%d] securityKeyManagerModifyOK", 200)
 }
 
 func (o *SecurityKeyManagerModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	return nil
+}
+
+// NewSecurityKeyManagerModifyAccepted creates a SecurityKeyManagerModifyAccepted with default headers values
+func NewSecurityKeyManagerModifyAccepted() *SecurityKeyManagerModifyAccepted {
+	return &SecurityKeyManagerModifyAccepted{}
+}
+
+/*
+SecurityKeyManagerModifyAccepted describes a response with status code 202, with default header values.
+
+Accepted
+*/
+type SecurityKeyManagerModifyAccepted struct {
+	Payload *models.SecurityKeyManagerJobLinkResponse
+}
+
+// IsSuccess returns true when this security key manager modify accepted response has a 2xx status code
+func (o *SecurityKeyManagerModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security key manager modify accepted response has a 3xx status code
+func (o *SecurityKeyManagerModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security key manager modify accepted response has a 4xx status code
+func (o *SecurityKeyManagerModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security key manager modify accepted response has a 5xx status code
+func (o *SecurityKeyManagerModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security key manager modify accepted response a status code equal to that given
+func (o *SecurityKeyManagerModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
+// Code gets the status code for the security key manager modify accepted response
+func (o *SecurityKeyManagerModifyAccepted) Code() int {
+	return 202
+}
+
+func (o *SecurityKeyManagerModifyAccepted) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}][%d] securityKeyManagerModifyAccepted %s", 202, payload)
+}
+
+func (o *SecurityKeyManagerModifyAccepted) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}][%d] securityKeyManagerModifyAccepted %s", 202, payload)
+}
+
+func (o *SecurityKeyManagerModifyAccepted) GetPayload() *models.SecurityKeyManagerJobLinkResponse {
+	return o.Payload
+}
+
+func (o *SecurityKeyManagerModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.SecurityKeyManagerJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }
@@ -113,26 +195,23 @@ func NewSecurityKeyManagerModifyDefault(code int) *SecurityKeyManagerModifyDefau
 | 65536407 | The passphrase update failed on some nodes. |
 | 65536802 | The passphrase does not match the accepted length in common criteria mode. |
 | 65536821 | The certificate is not installed. |
-| 65536822 | Multitenant key management is not supported in the current cluster version. |
 | 65536828 | External key management is not enabled for the SVM. |
 | 65536850 | New client certificate public or private keys are different from the existing client certificate. |
 | 65536852 | Failed to query supported KMIP protocol versions. |
-| 65536917 | Updating an onboard passhrase requires both new and existing cluster passphrase. |
+| 65536917 | Updating an onboard passphrase requires both new and existing cluster passphrase. |
 | 65537242 | The Onboard Key Manager existing_passphrase must be provided when performing a PATCH/synchronize operation. |
 | 65537243 | The Onboard Key Manager passphrase must not be provided when performing a PATCH/synchronize operation. |
+| 65538120 | The key manager policy is not supported on the admin SVM. |
+| 65539586 | Cannot modify an inactive key manager configuration. |
 | 66060338 | Failed to establish secure connection for a key management server due to incorrect server_ca certificates. |
 | 66060339 | Failed to establish secure connection for a key management server due to incorrect client certificates. |
 | 66060340 | Failed to establish secure connection for a key management server due to Cryptsoft error. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SecurityKeyManagerModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security key manager modify default response
-func (o *SecurityKeyManagerModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security key manager modify default response has a 2xx status code
@@ -160,12 +239,19 @@ func (o *SecurityKeyManagerModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security key manager modify default response
+func (o *SecurityKeyManagerModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityKeyManagerModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}][%d] security_key_manager_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}][%d] security_key_manager_modify default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeyManagerModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}][%d] security_key_manager_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}][%d] security_key_manager_modify default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeyManagerModifyDefault) GetPayload() *models.ErrorResponse {

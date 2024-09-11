@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -86,12 +87,19 @@ func (o *AggregateModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the aggregate modify o k response
+func (o *AggregateModifyOK) Code() int {
+	return 200
+}
+
 func (o *AggregateModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregateModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregateModifyOK %s", 200, payload)
 }
 
 func (o *AggregateModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregateModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregateModifyOK %s", 200, payload)
 }
 
 func (o *AggregateModifyOK) GetPayload() *models.AggregateSimulate {
@@ -149,12 +157,19 @@ func (o *AggregateModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the aggregate modify accepted response
+func (o *AggregateModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *AggregateModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregateModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregateModifyAccepted %s", 202, payload)
 }
 
 func (o *AggregateModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregateModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregateModifyAccepted %s", 202, payload)
 }
 
 func (o *AggregateModifyAccepted) GetPayload() *models.AggregateSimulate {
@@ -291,6 +306,8 @@ func NewAggregateModifyDefault(code int) *AggregateModifyDefault {
 | 19726397 | Aggregates must contain disks with identical disk-types and disk-sizes. |
 | 19726402 | Internal error. Unable to determine the MetroCluster configuration state. |
 | 19726538 | Cannot perform the operation because the aggregate is not in a healthy state. |
+| 19726541 | Cannot perform the operation because the specified aggregate is a root aggregate. |
+| 19726544 | PATCH on the aggregate endpoint is not supported on this version of ONTAP. |
 | 26542083 | Destination node is at higher Data ONTAP version than source node. |
 | 26542084 | Source node is at higher Data ONTAP version than destination node. |
 | 26542097 | Unable to get D-blade ID of destination. |
@@ -300,16 +317,12 @@ func NewAggregateModifyDefault(code int) *AggregateModifyDefault {
 | 26542121 | A MetroCluster disaster recovery operation is in progress. When the recovery operation completes, try the operation again. |
 | 196608334 | Failed to modify the aggregate because it contains NAE volumes. |
 | 196608335 | Failed to modify the aggregate because it contains non-encrypted volumes. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AggregateModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the aggregate modify default response
-func (o *AggregateModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this aggregate modify default response has a 2xx status code
@@ -337,12 +350,19 @@ func (o *AggregateModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the aggregate modify default response
+func (o *AggregateModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AggregateModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregate_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregate_modify default %s", o._statusCode, payload)
 }
 
 func (o *AggregateModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregate_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregate_modify default %s", o._statusCode, payload)
 }
 
 func (o *AggregateModifyDefault) GetPayload() *models.ErrorResponse {

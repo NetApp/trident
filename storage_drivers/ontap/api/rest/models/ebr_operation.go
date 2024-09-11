@@ -58,7 +58,7 @@ type EbrOperation struct {
 	// Specifies the operation status of an EBR operation.
 	// Example: completed
 	// Read Only: true
-	// Enum: [unknown in_progress failed aborting completed]
+	// Enum: ["unknown","in_progress","failed","aborting","completed"]
 	State *string `json:"state,omitempty"`
 
 	// svm
@@ -529,10 +529,8 @@ type EbrOperationInlinePolicy struct {
 
 	// Specifies the retention period of an event based retention policy. The retention period value represents a duration and must be specified in the ISO-8601 duration format. The retention period can be in years, months, days, hours or minutes. A period specified for years, months and days is represented in the ISO-8601 format as "P<num>Y", "P<num>M", "P<num>D" respectively. For example "P10Y" represents a duration of 10 years. Similarly, a duration in hours, minutes is represented by "PT<num>H", "PT<num>M" respectively. The period string must contain only a single time element i.e. either years, months, days, hours or minutes. A duration which combines different periods is not supported, example "P1Y10M" is not supported. Apart from the duration specified in the ISO-8601 format, the retention period field also accepts the strings "infinite" and "unspecified".
 	// Example: P30M
+	// Read Only: true
 	RetentionPeriod *string `json:"retention_period,omitempty"`
-
-	// svm
-	Svm *EbrOperationInlinePolicyInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this ebr operation inline policy
@@ -540,10 +538,6 @@ func (m *EbrOperationInlinePolicy) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSvm(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -570,23 +564,6 @@ func (m *EbrOperationInlinePolicy) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *EbrOperationInlinePolicy) validateSvm(formats strfmt.Registry) error {
-	if swag.IsZero(m.Svm) { // not required
-		return nil
-	}
-
-	if m.Svm != nil {
-		if err := m.Svm.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("policy" + "." + "svm")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
 // ContextValidate validate this ebr operation inline policy based on the context it is used
 func (m *EbrOperationInlinePolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -595,7 +572,7 @@ func (m *EbrOperationInlinePolicy) ContextValidate(ctx context.Context, formats 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateSvm(ctx, formats); err != nil {
+	if err := m.contextValidateRetentionPeriod(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -619,15 +596,10 @@ func (m *EbrOperationInlinePolicy) contextValidateLinks(ctx context.Context, for
 	return nil
 }
 
-func (m *EbrOperationInlinePolicy) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+func (m *EbrOperationInlinePolicy) contextValidateRetentionPeriod(ctx context.Context, formats strfmt.Registry) error {
 
-	if m.Svm != nil {
-		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("policy" + "." + "svm")
-			}
-			return err
-		}
+	if err := validate.ReadOnly(ctx, "policy"+"."+"retention_period", "body", m.RetentionPeriod); err != nil {
+		return err
 	}
 
 	return nil
@@ -737,189 +709,7 @@ func (m *EbrOperationInlinePolicyInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EbrOperationInlinePolicyInlineSvm ebr operation inline policy inline svm
-//
-// swagger:model ebr_operation_inline_policy_inline_svm
-type EbrOperationInlinePolicyInlineSvm struct {
-
-	// links
-	Links *EbrOperationInlinePolicyInlineSvmInlineLinks `json:"_links,omitempty"`
-
-	// The name of the SVM.
-	//
-	// Example: svm1
-	Name *string `json:"name,omitempty"`
-
-	// The unique identifier of the SVM.
-	//
-	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID *string `json:"uuid,omitempty"`
-}
-
-// Validate validates this ebr operation inline policy inline svm
-func (m *EbrOperationInlinePolicyInlineSvm) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *EbrOperationInlinePolicyInlineSvm) validateLinks(formats strfmt.Registry) error {
-	if swag.IsZero(m.Links) { // not required
-		return nil
-	}
-
-	if m.Links != nil {
-		if err := m.Links.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("policy" + "." + "svm" + "." + "_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this ebr operation inline policy inline svm based on the context it is used
-func (m *EbrOperationInlinePolicyInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateLinks(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *EbrOperationInlinePolicyInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Links != nil {
-		if err := m.Links.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("policy" + "." + "svm" + "." + "_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *EbrOperationInlinePolicyInlineSvm) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *EbrOperationInlinePolicyInlineSvm) UnmarshalBinary(b []byte) error {
-	var res EbrOperationInlinePolicyInlineSvm
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// EbrOperationInlinePolicyInlineSvmInlineLinks ebr operation inline policy inline svm inline links
-//
-// swagger:model ebr_operation_inline_policy_inline_svm_inline__links
-type EbrOperationInlinePolicyInlineSvmInlineLinks struct {
-
-	// self
-	Self *Href `json:"self,omitempty"`
-}
-
-// Validate validates this ebr operation inline policy inline svm inline links
-func (m *EbrOperationInlinePolicyInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateSelf(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *EbrOperationInlinePolicyInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
-	if swag.IsZero(m.Self) { // not required
-		return nil
-	}
-
-	if m.Self != nil {
-		if err := m.Self.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("policy" + "." + "svm" + "." + "_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this ebr operation inline policy inline svm inline links based on the context it is used
-func (m *EbrOperationInlinePolicyInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateSelf(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *EbrOperationInlinePolicyInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Self != nil {
-		if err := m.Self.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("policy" + "." + "svm" + "." + "_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *EbrOperationInlinePolicyInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *EbrOperationInlinePolicyInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
-	var res EbrOperationInlinePolicyInlineSvmInlineLinks
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// EbrOperationInlineSvm ebr operation inline svm
+// EbrOperationInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model ebr_operation_inline_svm
 type EbrOperationInlineSvm struct {
@@ -927,12 +717,12 @@ type EbrOperationInlineSvm struct {
 	// links
 	Links *EbrOperationInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -1109,7 +899,7 @@ type EbrOperationInlineVolume struct {
 	// links
 	Links *EbrOperationInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

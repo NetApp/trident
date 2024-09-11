@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *IgroupInitiatorCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the igroup initiator create created response
+func (o *IgroupInitiatorCreateCreated) Code() int {
+	return 201
+}
+
 func (o *IgroupInitiatorCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/initiators][%d] igroupInitiatorCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/initiators][%d] igroupInitiatorCreateCreated %s", 201, payload)
 }
 
 func (o *IgroupInitiatorCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/initiators][%d] igroupInitiatorCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/initiators][%d] igroupInitiatorCreateCreated %s", 201, payload)
 }
 
 func (o *IgroupInitiatorCreateCreated) GetPayload() *models.IgroupInitiatorResponse {
@@ -137,6 +145,8 @@ func NewIgroupInitiatorCreateDefault(code int) *IgroupInitiatorCreateDefault {
 | 5373972 | A supplied initiator name looks like an iSCSI IQN initiator, but the naming authority portion is invalid. |
 | 5373977 | A supplied initiator name looks like an iSCSI EUI initiator, but the length is invalid. |
 | 5373978 | A supplied initiator name looks like an iSCSI EUI initiator, but the format is invalid. |
+| 5373982 | An invalid WWN was specified. The length is incorrect. |
+| 5373983 | An invalid WWN was specified. The format is incorrect. |
 | 5373992 | A supplied initiator name was too long to be valid. |
 | 5373993 | A supplied initiator name did not match any valid format. |
 | 5374033 | Initiators must be supplied. |
@@ -144,18 +154,24 @@ func NewIgroupInitiatorCreateDefault(code int) *IgroupInitiatorCreateDefault {
 | 5374038 | An invalid Fibre Channel WWPN was supplied. |
 | 5374039 | An invalid iSCSI initiator name was supplied. |
 | 5374734 | An initiator is already in another initiator group with a conflicting operating system type. |
+| 5374761 | An error was reported by the peer cluster while adding an initiator to a replicated initiator group. The specific error will be included as a nested error. |
 | 5374852 | The initiator group specified in the URI does not exist. |
-| 5374917 | Multiple matching initiators have been supplied with conflicting comments. |
+| 5374917 | Duplicated initiators have conflicting property values. |
+| 5375055 | The `local_svm` property of an initiator proximity was not specified. |
+| 5375056 | An SVM peering relationship that does not have the initiator group's SVM as the local SVM was specified. |
+| 5375261 | Setting initiator proximity is not supported for the SVM type. |
+| 5376057 | Setting initiator proximity is not supported for the ONTAP version. |
+| 5376059 | Setting initiator proximity to a peer that is either the destination of an SVM DR relationship or in a Metrocluster configuration is not supported. |
+| 26345672 | The specified SVM peering relationship was not found. |
+| 26345673 | An SVM peering relationship between the initiator group's SVM and specified peer SVM was not found. |
+| 26345675 | An SVM peering relationship UUID and name were specified and they do not refer to the same SVM peering relationship. |
+| 26345680 | Supplied SVM peer is on the local cluster. The operation requires a peer on a remote cluster. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IgroupInitiatorCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the igroup initiator create default response
-func (o *IgroupInitiatorCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this igroup initiator create default response has a 2xx status code
@@ -183,12 +199,19 @@ func (o *IgroupInitiatorCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the igroup initiator create default response
+func (o *IgroupInitiatorCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IgroupInitiatorCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/initiators][%d] igroup_initiator_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/initiators][%d] igroup_initiator_create default %s", o._statusCode, payload)
 }
 
 func (o *IgroupInitiatorCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/initiators][%d] igroup_initiator_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/initiators][%d] igroup_initiator_create default %s", o._statusCode, payload)
 }
 
 func (o *IgroupInitiatorCreateDefault) GetPayload() *models.ErrorResponse {

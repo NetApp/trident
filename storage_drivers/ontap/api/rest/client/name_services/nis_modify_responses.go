@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *NisModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nis modify o k response
+func (o *NisModifyOK) Code() int {
+	return 200
+}
+
 func (o *NisModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /name-services/nis/{svm.uuid}][%d] nisModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /name-services/nis/{svm.uuid}][%d] nisModifyOK", 200)
 }
 
 func (o *NisModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /name-services/nis/{svm.uuid}][%d] nisModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /name-services/nis/{svm.uuid}][%d] nisModifyOK", 200)
 }
 
 func (o *NisModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -112,6 +118,7 @@ func NewNisModifyDefault(code int) *NisModifyDefault {
 | 3276964    | NIS domain name or NIS server domain is too long. The maximum supported for domain name is 64 characters and the maximum supported for NIS server domain is 255 characters |
 | 3276933    | A maximum of 10 NIS servers can be configured per SVM |
 | 23724109   | DNS resolution failed for one or more specified servers  |
+| 23724111   | Empty NIS servers cannot be specified.  |
 | 23724112   | DNS resolution failed due to an internal error. Contact technical support if this issue persists |
 | 23724132   | DNS resolution failed for all the specified servers  |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
@@ -120,11 +127,6 @@ type NisModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nis modify default response
-func (o *NisModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nis modify default response has a 2xx status code
@@ -152,12 +154,19 @@ func (o *NisModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nis modify default response
+func (o *NisModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NisModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /name-services/nis/{svm.uuid}][%d] nis_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /name-services/nis/{svm.uuid}][%d] nis_modify default %s", o._statusCode, payload)
 }
 
 func (o *NisModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /name-services/nis/{svm.uuid}][%d] nis_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /name-services/nis/{svm.uuid}][%d] nis_modify default %s", o._statusCode, payload)
 }
 
 func (o *NisModifyDefault) GetPayload() *models.ErrorResponse {

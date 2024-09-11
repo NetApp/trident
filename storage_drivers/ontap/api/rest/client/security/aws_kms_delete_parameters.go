@@ -14,6 +14,7 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 )
 
 // NewAwsKmsDeleteParams creates a new AwsKmsDeleteParams object,
@@ -61,6 +62,12 @@ AwsKmsDeleteParams contains all the parameters to send to the API endpoint
 */
 type AwsKmsDeleteParams struct {
 
+	/* ReturnTimeout.
+
+	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
+	*/
+	ReturnTimeout *int64
+
 	/* UUID.
 
 	   AWS KMS UUID
@@ -84,7 +91,18 @@ func (o *AwsKmsDeleteParams) WithDefaults() *AwsKmsDeleteParams {
 //
 // All values with no default are reset to their zero value.
 func (o *AwsKmsDeleteParams) SetDefaults() {
-	// no default values defined for this parameter
+	var (
+		returnTimeoutDefault = int64(0)
+	)
+
+	val := AwsKmsDeleteParams{
+		ReturnTimeout: &returnTimeoutDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the aws kms delete params
@@ -120,6 +138,17 @@ func (o *AwsKmsDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithReturnTimeout adds the returnTimeout to the aws kms delete params
+func (o *AwsKmsDeleteParams) WithReturnTimeout(returnTimeout *int64) *AwsKmsDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
+	return o
+}
+
+// SetReturnTimeout adds the returnTimeout to the aws kms delete params
+func (o *AwsKmsDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
+}
+
 // WithUUID adds the uuid to the aws kms delete params
 func (o *AwsKmsDeleteParams) WithUUID(uuid string) *AwsKmsDeleteParams {
 	o.SetUUID(uuid)
@@ -138,6 +167,23 @@ func (o *AwsKmsDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		return err
 	}
 	var res []error
+
+	if o.ReturnTimeout != nil {
+
+		// query param return_timeout
+		var qrReturnTimeout int64
+
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
+		}
+		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
+		if qReturnTimeout != "" {
+
+			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
 
 	// path param uuid
 	if err := r.SetPathParam("uuid", o.UUID); err != nil {

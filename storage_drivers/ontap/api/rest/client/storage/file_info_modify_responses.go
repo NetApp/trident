@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *FileInfoModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the file info modify o k response
+func (o *FileInfoModifyOK) Code() int {
+	return 200
+}
+
 func (o *FileInfoModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/volumes/{volume.uuid}/files/{path}][%d] fileInfoModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/volumes/{volume.uuid}/files/{path}][%d] fileInfoModifyOK", 200)
 }
 
 func (o *FileInfoModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /storage/volumes/{volume.uuid}/files/{path}][%d] fileInfoModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/volumes/{volume.uuid}/files/{path}][%d] fileInfoModifyOK", 200)
 }
 
 func (o *FileInfoModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -110,16 +116,15 @@ func NewFileInfoModifyDefault(code int) *FileInfoModifyDefault {
 | 6488081 | The {field} field is not supported for PATCH operations. |
 | 6488082 | Failed to rename {path}. |
 | 6488083 | Failed to rename {path} to {path} because a directory named {path} already exists. |
+| 6488111 | The fields 'fill_enabled' and 'overwrite_enabled' are not supported in the directory modify operation. |
+| 6488117 | Permission denied. |
+| 6488119 | Operation not supported. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type FileInfoModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the file info modify default response
-func (o *FileInfoModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this file info modify default response has a 2xx status code
@@ -147,12 +152,19 @@ func (o *FileInfoModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the file info modify default response
+func (o *FileInfoModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FileInfoModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/volumes/{volume.uuid}/files/{path}][%d] file_info_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/volumes/{volume.uuid}/files/{path}][%d] file_info_modify default %s", o._statusCode, payload)
 }
 
 func (o *FileInfoModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /storage/volumes/{volume.uuid}/files/{path}][%d] file_info_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/volumes/{volume.uuid}/files/{path}][%d] file_info_modify default %s", o._statusCode, payload)
 }
 
 func (o *FileInfoModifyDefault) GetPayload() *models.ErrorResponse {

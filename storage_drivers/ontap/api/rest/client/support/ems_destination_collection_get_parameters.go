@@ -62,6 +62,12 @@ EmsDestinationCollectionGetParams contains all the parameters to send to the API
 */
 type EmsDestinationCollectionGetParams struct {
 
+	/* AccessControlRoleName.
+
+	   Filter by access_control_role.name
+	*/
+	AccessControlRoleName *string
+
 	/* CertificateCa.
 
 	   Filter by certificate.ca
@@ -281,6 +287,17 @@ func (o *EmsDestinationCollectionGetParams) WithHTTPClient(client *http.Client) 
 // SetHTTPClient adds the HTTPClient to the ems destination collection get params
 func (o *EmsDestinationCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithAccessControlRoleName adds the accessControlRoleName to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithAccessControlRoleName(accessControlRoleName *string) *EmsDestinationCollectionGetParams {
+	o.SetAccessControlRoleName(accessControlRoleName)
+	return o
+}
+
+// SetAccessControlRoleName adds the accessControlRoleName to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetAccessControlRoleName(accessControlRoleName *string) {
+	o.AccessControlRoleName = accessControlRoleName
 }
 
 // WithCertificateCa adds the certificateCa to the ems destination collection get params
@@ -565,6 +582,23 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		return err
 	}
 	var res []error
+
+	if o.AccessControlRoleName != nil {
+
+		// query param access_control_role.name
+		var qrAccessControlRoleName string
+
+		if o.AccessControlRoleName != nil {
+			qrAccessControlRoleName = *o.AccessControlRoleName
+		}
+		qAccessControlRoleName := qrAccessControlRoleName
+		if qAccessControlRoleName != "" {
+
+			if err := r.SetQueryParam("access_control_role.name", qAccessControlRoleName); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.CertificateCa != nil {
 

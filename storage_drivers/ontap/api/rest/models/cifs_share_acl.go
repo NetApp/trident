@@ -30,12 +30,17 @@ type CifsShareACL struct {
 	// * change       - User has change access
 	// * full_control - User has full_control access
 	//
-	// Enum: [no_access read change full_control]
+	// Enum: ["no_access","read","change","full_control"]
 	Permission *string `json:"permission,omitempty"`
 
 	// CIFS share name
 	// Read Only: true
 	Share *string `json:"share,omitempty"`
+
+	// Specifies the user or group secure identifier (SID).
+	// Example: S-1-5-21-256008430-3394229847-3930036330-1001
+	// Read Only: true
+	Sid *string `json:"sid,omitempty"`
 
 	// svm
 	Svm *CifsShareACLInlineSvm `json:"svm,omitempty"`
@@ -46,8 +51,13 @@ type CifsShareACL struct {
 	// * unix_user  - UNIX user
 	// * unix_group - UNIX group
 	//
-	// Enum: [windows unix_user unix_group]
+	// Enum: ["windows","unix_user","unix_group"]
 	Type *string `json:"type,omitempty"`
+
+	// Specifies the UNIX user or group identifier (UID/GID).
+	// Example: 100
+	// Read Only: true
+	UnixID *int64 `json:"unix_id,omitempty"`
 
 	// Specifies the user or group name to add to the access control list of a CIFS share.
 	// Example: ENGDOMAIN\\ad_user
@@ -268,7 +278,15 @@ func (m *CifsShareACL) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSid(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUnixID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -301,6 +319,15 @@ func (m *CifsShareACL) contextValidateShare(ctx context.Context, formats strfmt.
 	return nil
 }
 
+func (m *CifsShareACL) contextValidateSid(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "sid", "body", m.Sid); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *CifsShareACL) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
@@ -310,6 +337,15 @@ func (m *CifsShareACL) contextValidateSvm(ctx context.Context, formats strfmt.Re
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *CifsShareACL) contextValidateUnixID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "unix_id", "body", m.UnixID); err != nil {
+		return err
 	}
 
 	return nil
@@ -419,7 +455,7 @@ func (m *CifsShareACLInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsShareACLInlineSvm cifs share acl inline svm
+// CifsShareACLInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model cifs_share_acl_inline_svm
 type CifsShareACLInlineSvm struct {
@@ -427,12 +463,12 @@ type CifsShareACLInlineSvm struct {
 	// links
 	Links *CifsShareACLInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

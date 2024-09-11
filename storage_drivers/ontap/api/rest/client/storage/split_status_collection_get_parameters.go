@@ -114,11 +114,11 @@ type SplitStatusCollectionGetParams struct {
 	*/
 	SvmUUID *string
 
-	/* UnsplitCloneSize.
+	/* UnsplitSize.
 
-	   Filter by unsplit_clone_size
+	   Filter by unsplit_size
 	*/
-	UnsplitCloneSize *int64
+	UnsplitSize *int64
 
 	/* VolumeName.
 
@@ -287,15 +287,15 @@ func (o *SplitStatusCollectionGetParams) SetSvmUUID(svmUUID *string) {
 	o.SvmUUID = svmUUID
 }
 
-// WithUnsplitCloneSize adds the unsplitCloneSize to the split status collection get params
-func (o *SplitStatusCollectionGetParams) WithUnsplitCloneSize(unsplitCloneSize *int64) *SplitStatusCollectionGetParams {
-	o.SetUnsplitCloneSize(unsplitCloneSize)
+// WithUnsplitSize adds the unsplitSize to the split status collection get params
+func (o *SplitStatusCollectionGetParams) WithUnsplitSize(unsplitSize *int64) *SplitStatusCollectionGetParams {
+	o.SetUnsplitSize(unsplitSize)
 	return o
 }
 
-// SetUnsplitCloneSize adds the unsplitCloneSize to the split status collection get params
-func (o *SplitStatusCollectionGetParams) SetUnsplitCloneSize(unsplitCloneSize *int64) {
-	o.UnsplitCloneSize = unsplitCloneSize
+// SetUnsplitSize adds the unsplitSize to the split status collection get params
+func (o *SplitStatusCollectionGetParams) SetUnsplitSize(unsplitSize *int64) {
+	o.UnsplitSize = unsplitSize
 }
 
 // WithVolumeName adds the volumeName to the split status collection get params
@@ -452,18 +452,18 @@ func (o *SplitStatusCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.UnsplitCloneSize != nil {
+	if o.UnsplitSize != nil {
 
-		// query param unsplit_clone_size
-		var qrUnsplitCloneSize int64
+		// query param unsplit_size
+		var qrUnsplitSize int64
 
-		if o.UnsplitCloneSize != nil {
-			qrUnsplitCloneSize = *o.UnsplitCloneSize
+		if o.UnsplitSize != nil {
+			qrUnsplitSize = *o.UnsplitSize
 		}
-		qUnsplitCloneSize := swag.FormatInt64(qrUnsplitCloneSize)
-		if qUnsplitCloneSize != "" {
+		qUnsplitSize := swag.FormatInt64(qrUnsplitSize)
+		if qUnsplitSize != "" {
 
-			if err := r.SetQueryParam("unsplit_clone_size", qUnsplitCloneSize); err != nil {
+			if err := r.SetQueryParam("unsplit_size", qUnsplitSize); err != nil {
 				return err
 			}
 		}

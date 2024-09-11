@@ -29,7 +29,7 @@ type SoftwareValidationReference struct {
 	// Status of the update check.
 	// Example: warning
 	// Read Only: true
-	// Enum: [warning error]
+	// Enum: ["warning","error"]
 	Status *string `json:"status,omitempty"`
 
 	// Name of the update check.

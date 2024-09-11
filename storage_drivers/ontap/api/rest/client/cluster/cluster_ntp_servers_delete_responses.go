@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type ClusterNtpServersDeleteReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *ClusterNtpServersDeleteReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewClusterNtpServersDeleteOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewClusterNtpServersDeleteAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *ClusterNtpServersDeleteReader) ReadResponse(response runtime.ClientResp
 	}
 }
 
+// NewClusterNtpServersDeleteOK creates a ClusterNtpServersDeleteOK with default headers values
+func NewClusterNtpServersDeleteOK() *ClusterNtpServersDeleteOK {
+	return &ClusterNtpServersDeleteOK{}
+}
+
+/*
+ClusterNtpServersDeleteOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type ClusterNtpServersDeleteOK struct {
+	Payload *models.NtpServerJobLinkResponse
+}
+
+// IsSuccess returns true when this cluster ntp servers delete o k response has a 2xx status code
+func (o *ClusterNtpServersDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster ntp servers delete o k response has a 3xx status code
+func (o *ClusterNtpServersDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster ntp servers delete o k response has a 4xx status code
+func (o *ClusterNtpServersDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster ntp servers delete o k response has a 5xx status code
+func (o *ClusterNtpServersDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster ntp servers delete o k response a status code equal to that given
+func (o *ClusterNtpServersDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the cluster ntp servers delete o k response
+func (o *ClusterNtpServersDeleteOK) Code() int {
+	return 200
+}
+
+func (o *ClusterNtpServersDeleteOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/ntp/servers/{server}][%d] clusterNtpServersDeleteOK %s", 200, payload)
+}
+
+func (o *ClusterNtpServersDeleteOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/ntp/servers/{server}][%d] clusterNtpServersDeleteOK %s", 200, payload)
+}
+
+func (o *ClusterNtpServersDeleteOK) GetPayload() *models.NtpServerJobLinkResponse {
+	return o.Payload
+}
+
+func (o *ClusterNtpServersDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.NtpServerJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewClusterNtpServersDeleteAccepted creates a ClusterNtpServersDeleteAccepted with default headers values
 func NewClusterNtpServersDeleteAccepted() *ClusterNtpServersDeleteAccepted {
 	return &ClusterNtpServersDeleteAccepted{}
@@ -52,7 +129,7 @@ ClusterNtpServersDeleteAccepted describes a response with status code 202, with 
 Accepted
 */
 type ClusterNtpServersDeleteAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.NtpServerJobLinkResponse
 }
 
 // IsSuccess returns true when this cluster ntp servers delete accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *ClusterNtpServersDeleteAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the cluster ntp servers delete accepted response
+func (o *ClusterNtpServersDeleteAccepted) Code() int {
+	return 202
+}
+
 func (o *ClusterNtpServersDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /cluster/ntp/servers/{server}][%d] clusterNtpServersDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/ntp/servers/{server}][%d] clusterNtpServersDeleteAccepted %s", 202, payload)
 }
 
 func (o *ClusterNtpServersDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /cluster/ntp/servers/{server}][%d] clusterNtpServersDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/ntp/servers/{server}][%d] clusterNtpServersDeleteAccepted %s", 202, payload)
 }
 
-func (o *ClusterNtpServersDeleteAccepted) GetPayload() *models.JobLinkResponse {
+func (o *ClusterNtpServersDeleteAccepted) GetPayload() *models.NtpServerJobLinkResponse {
 	return o.Payload
 }
 
 func (o *ClusterNtpServersDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.NtpServerJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -122,11 +206,6 @@ type ClusterNtpServersDeleteDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cluster ntp servers delete default response
-func (o *ClusterNtpServersDeleteDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cluster ntp servers delete default response has a 2xx status code
 func (o *ClusterNtpServersDeleteDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +231,19 @@ func (o *ClusterNtpServersDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster ntp servers delete default response
+func (o *ClusterNtpServersDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterNtpServersDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /cluster/ntp/servers/{server}][%d] cluster_ntp_servers_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/ntp/servers/{server}][%d] cluster_ntp_servers_delete default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNtpServersDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /cluster/ntp/servers/{server}][%d] cluster_ntp_servers_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/ntp/servers/{server}][%d] cluster_ntp_servers_delete default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNtpServersDeleteDefault) GetPayload() *models.ErrorResponse {

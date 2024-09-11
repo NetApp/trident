@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *FileMoveGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the file move get o k response
+func (o *FileMoveGetOK) Code() int {
+	return 200
+}
+
 func (o *FileMoveGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/file/moves/{node.uuid}/{uuid}/{index}][%d] fileMoveGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/file/moves/{node.uuid}/{uuid}/{index}][%d] fileMoveGetOK %s", 200, payload)
 }
 
 func (o *FileMoveGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/file/moves/{node.uuid}/{uuid}/{index}][%d] fileMoveGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/file/moves/{node.uuid}/{uuid}/{index}][%d] fileMoveGetOK %s", 200, payload)
 }
 
 func (o *FileMoveGetOK) GetPayload() *models.FileMove {
@@ -112,19 +120,31 @@ func NewFileMoveGetDefault(code int) *FileMoveGetDefault {
 }
 
 /*
-FileMoveGetDefault describes a response with status code -1, with default header values.
+	FileMoveGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 6521       | Cannot quiesce source file. Source file \"file.name\" is under construction and is being used by either a file copy or move operation. Wait a few minutes and try the operation again.|
+| 6522       | Volume is not VM aligned.|
+| 6523       | File suffix not VM aligned.|
+| 6524       | Completion interface not specified.|
+| 6525       | Maximum simultaneous file operations reached.|
+| 6526       | Lock conflict.|
+| 6527       | Permission denied.|
+| 6528       | Waiting for an I/O fence to be released.|
+| 6529       | Waiting for space to become available.|
+| 6530       | Waiting for an external process to complete.|
+| 6531       | Source volume was deleted.|
+| 6532       | Slowed due to resource constraints.|
+| 6533       | Volume does not support block reallocation.|
+| 6534       | File operation not supported.|
 */
 type FileMoveGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the file move get default response
-func (o *FileMoveGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this file move get default response has a 2xx status code
@@ -152,12 +172,19 @@ func (o *FileMoveGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the file move get default response
+func (o *FileMoveGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FileMoveGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/file/moves/{node.uuid}/{uuid}/{index}][%d] file_move_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/file/moves/{node.uuid}/{uuid}/{index}][%d] file_move_get default %s", o._statusCode, payload)
 }
 
 func (o *FileMoveGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/file/moves/{node.uuid}/{uuid}/{index}][%d] file_move_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/file/moves/{node.uuid}/{uuid}/{index}][%d] file_move_get default %s", o._statusCode, payload)
 }
 
 func (o *FileMoveGetDefault) GetPayload() *models.ErrorResponse {

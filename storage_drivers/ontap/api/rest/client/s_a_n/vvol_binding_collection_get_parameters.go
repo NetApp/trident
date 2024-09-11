@@ -126,6 +126,12 @@ type VvolBindingCollectionGetParams struct {
 	*/
 	ReturnTimeout *int64
 
+	/* SecondaryID.
+
+	   Filter by secondary_id
+	*/
+	SecondaryID *string
+
 	/* SvmName.
 
 	   Filter by svm.name
@@ -325,6 +331,17 @@ func (o *VvolBindingCollectionGetParams) WithReturnTimeout(returnTimeout *int64)
 // SetReturnTimeout adds the returnTimeout to the vvol binding collection get params
 func (o *VvolBindingCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
 	o.ReturnTimeout = returnTimeout
+}
+
+// WithSecondaryID adds the secondaryID to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) WithSecondaryID(secondaryID *string) *VvolBindingCollectionGetParams {
+	o.SetSecondaryID(secondaryID)
+	return o
+}
+
+// SetSecondaryID adds the secondaryId to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) SetSecondaryID(secondaryID *string) {
+	o.SecondaryID = secondaryID
 }
 
 // WithSvmName adds the svmName to the vvol binding collection get params
@@ -532,6 +549,23 @@ func (o *VvolBindingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SecondaryID != nil {
+
+		// query param secondary_id
+		var qrSecondaryID string
+
+		if o.SecondaryID != nil {
+			qrSecondaryID = *o.SecondaryID
+		}
+		qSecondaryID := qrSecondaryID
+		if qSecondaryID != "" {
+
+			if err := r.SetQueryParam("secondary_id", qSecondaryID); err != nil {
 				return err
 			}
 		}

@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type QosPolicyCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *QosPolicyCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewQosPolicyCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewQosPolicyCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *QosPolicyCreateReader) ReadResponse(response runtime.ClientResponse, co
 	}
 }
 
+// NewQosPolicyCreateCreated creates a QosPolicyCreateCreated with default headers values
+func NewQosPolicyCreateCreated() *QosPolicyCreateCreated {
+	return &QosPolicyCreateCreated{}
+}
+
+/*
+QosPolicyCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type QosPolicyCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.QosPolicyJobLinkResponse
+}
+
+// IsSuccess returns true when this qos policy create created response has a 2xx status code
+func (o *QosPolicyCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this qos policy create created response has a 3xx status code
+func (o *QosPolicyCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this qos policy create created response has a 4xx status code
+func (o *QosPolicyCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this qos policy create created response has a 5xx status code
+func (o *QosPolicyCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this qos policy create created response a status code equal to that given
+func (o *QosPolicyCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the qos policy create created response
+func (o *QosPolicyCreateCreated) Code() int {
+	return 201
+}
+
+func (o *QosPolicyCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/qos/policies][%d] qosPolicyCreateCreated %s", 201, payload)
+}
+
+func (o *QosPolicyCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/qos/policies][%d] qosPolicyCreateCreated %s", 201, payload)
+}
+
+func (o *QosPolicyCreateCreated) GetPayload() *models.QosPolicyJobLinkResponse {
+	return o.Payload
+}
+
+func (o *QosPolicyCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.QosPolicyJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewQosPolicyCreateAccepted creates a QosPolicyCreateAccepted with default headers values
 func NewQosPolicyCreateAccepted() *QosPolicyCreateAccepted {
 	return &QosPolicyCreateAccepted{}
@@ -57,7 +146,7 @@ type QosPolicyCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.QosPolicyJobLinkResponse
 }
 
 // IsSuccess returns true when this qos policy create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *QosPolicyCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the qos policy create accepted response
+func (o *QosPolicyCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *QosPolicyCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /storage/qos/policies][%d] qosPolicyCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/qos/policies][%d] qosPolicyCreateAccepted %s", 202, payload)
 }
 
 func (o *QosPolicyCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /storage/qos/policies][%d] qosPolicyCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/qos/policies][%d] qosPolicyCreateAccepted %s", 202, payload)
 }
 
-func (o *QosPolicyCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *QosPolicyCreateAccepted) GetPayload() *models.QosPolicyJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *QosPolicyCreateAccepted) readResponse(response runtime.ClientResponse, 
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.QosPolicyJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -132,20 +228,20 @@ func NewQosPolicyCreateDefault(code int) *QosPolicyCreateDefault {
 | ---------- | ----------- |
 | 8454147 | The maximum limit for QoS policies has been reached. |
 | 8454154 | The name specified for creating conflicts with an existing QoS policy name. |
+| 8454194 | The minimum throughput value for the policy group must be less than or equal to the maximum throughput value. |
 | 8454260 | Invalid value for maximum and minimum fields. Valid values for max_throughput_iops and max_throughput_mbps combination is for the ratio of max_throughput_mbps and max_throughput_iops to be within 1 to 4096. |
 | 8454273 | Invalid value for an adaptive field. Value should be non-zero. |
+| 8454274 | Invalid value for an adaptive field. Value for expected_iops must be less than or equal to the value for peak_iops. |
 | 8454277 | The name specified for creating an adaptive QoS policy conflicts with an existing fixed QoS policy name. |
 | 8454278 | The name specified for creating a fixed QoS policy conflicts with an existing adaptive QoS policy name. |
+| 8454379 | The name specified for creating a fixed QoS policy already exists. |
+| 8454380 | The name specified for creating an adaptive QoS policy already exists. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type QosPolicyCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the qos policy create default response
-func (o *QosPolicyCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this qos policy create default response has a 2xx status code
@@ -173,12 +269,19 @@ func (o *QosPolicyCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the qos policy create default response
+func (o *QosPolicyCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *QosPolicyCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/qos/policies][%d] qos_policy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/qos/policies][%d] qos_policy_create default %s", o._statusCode, payload)
 }
 
 func (o *QosPolicyCreateDefault) String() string {
-	return fmt.Sprintf("[POST /storage/qos/policies][%d] qos_policy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/qos/policies][%d] qos_policy_create default %s", o._statusCode, payload)
 }
 
 func (o *QosPolicyCreateDefault) GetPayload() *models.ErrorResponse {

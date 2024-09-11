@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *MetroclusterNodeGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the metrocluster node get o k response
+func (o *MetroclusterNodeGetOK) Code() int {
+	return 200
+}
+
 func (o *MetroclusterNodeGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/nodes/{node.uuid}][%d] metroclusterNodeGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/nodes/{node.uuid}][%d] metroclusterNodeGetOK %s", 200, payload)
 }
 
 func (o *MetroclusterNodeGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/nodes/{node.uuid}][%d] metroclusterNodeGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/nodes/{node.uuid}][%d] metroclusterNodeGetOK %s", 200, payload)
 }
 
 func (o *MetroclusterNodeGetOK) GetPayload() *models.MetroclusterNode {
@@ -119,16 +127,12 @@ func NewMetroclusterNodeGetDefault(code int) *MetroclusterNodeGetDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 2425734 | An internal error occurred. Wait a few minutes, and try the operation again. For further assistance, contact technical support. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type MetroclusterNodeGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the metrocluster node get default response
-func (o *MetroclusterNodeGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this metrocluster node get default response has a 2xx status code
@@ -156,12 +160,19 @@ func (o *MetroclusterNodeGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the metrocluster node get default response
+func (o *MetroclusterNodeGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MetroclusterNodeGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/nodes/{node.uuid}][%d] metrocluster_node_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/nodes/{node.uuid}][%d] metrocluster_node_get default %s", o._statusCode, payload)
 }
 
 func (o *MetroclusterNodeGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/nodes/{node.uuid}][%d] metrocluster_node_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/nodes/{node.uuid}][%d] metrocluster_node_get default %s", o._statusCode, payload)
 }
 
 func (o *MetroclusterNodeGetDefault) GetPayload() *models.ErrorResponse {

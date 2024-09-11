@@ -6,6 +6,7 @@ package n_v_me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *PerformanceNamespaceMetricCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the performance namespace metric collection get o k response
+func (o *PerformanceNamespaceMetricCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *PerformanceNamespaceMetricCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/namespaces/{uuid}/metrics][%d] performanceNamespaceMetricCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/namespaces/{nvme_namespace.uuid}/metrics][%d] performanceNamespaceMetricCollectionGetOK %s", 200, payload)
 }
 
 func (o *PerformanceNamespaceMetricCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/namespaces/{uuid}/metrics][%d] performanceNamespaceMetricCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/namespaces/{nvme_namespace.uuid}/metrics][%d] performanceNamespaceMetricCollectionGetOK %s", 200, payload)
 }
 
 func (o *PerformanceNamespaceMetricCollectionGetOK) GetPayload() *models.PerformanceNamespaceMetricResponse {
@@ -112,19 +120,20 @@ func NewPerformanceNamespaceMetricCollectionGetDefault(code int) *PerformanceNam
 }
 
 /*
-PerformanceNamespaceMetricCollectionGetDefault describes a response with status code -1, with default header values.
+	PerformanceNamespaceMetricCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 8585947 | No metrics are available for the requested object. |
+| 8586225 | An unexpected error occurred retrieving metrics for the requested object. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type PerformanceNamespaceMetricCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the performance namespace metric collection get default response
-func (o *PerformanceNamespaceMetricCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this performance namespace metric collection get default response has a 2xx status code
@@ -152,12 +161,19 @@ func (o *PerformanceNamespaceMetricCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the performance namespace metric collection get default response
+func (o *PerformanceNamespaceMetricCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *PerformanceNamespaceMetricCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/namespaces/{uuid}/metrics][%d] performance_namespace_metric_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/namespaces/{nvme_namespace.uuid}/metrics][%d] performance_namespace_metric_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PerformanceNamespaceMetricCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/namespaces/{uuid}/metrics][%d] performance_namespace_metric_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/namespaces/{nvme_namespace.uuid}/metrics][%d] performance_namespace_metric_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PerformanceNamespaceMetricCollectionGetDefault) GetPayload() *models.ErrorResponse {

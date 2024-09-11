@@ -72,7 +72,7 @@ type VscanServerStatus struct {
 	//   * primary - Primary server
 	//   * backup  - Backup server
 	//
-	// Enum: [primary backup]
+	// Enum: ["primary","backup"]
 	Type *string `json:"type,omitempty"`
 
 	// Specifies the time the server is in the connected or disconnected state.
@@ -807,7 +807,7 @@ func (m *VscanServerStatusInlineNodeInlineLinks) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// VscanServerStatusInlineSvm vscan server status inline svm
+// VscanServerStatusInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model vscan_server_status_inline_svm
 type VscanServerStatusInlineSvm struct {
@@ -815,12 +815,12 @@ type VscanServerStatusInlineSvm struct {
 	// links
 	Links *VscanServerStatusInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

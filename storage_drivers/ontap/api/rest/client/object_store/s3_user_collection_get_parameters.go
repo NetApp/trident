@@ -80,6 +80,18 @@ type S3UserCollectionGetParams struct {
 	*/
 	Fields []string
 
+	/* KeyExpiryTime.
+
+	   Filter by key_expiry_time
+	*/
+	KeyExpiryTime *string
+
+	/* KeyTimeToLive.
+
+	   Filter by key_time_to_live
+	*/
+	KeyTimeToLive *string
+
 	/* MaxRecords.
 
 	   Limit the number of records returned.
@@ -226,6 +238,28 @@ func (o *S3UserCollectionGetParams) SetFields(fields []string) {
 	o.Fields = fields
 }
 
+// WithKeyExpiryTime adds the keyExpiryTime to the s3 user collection get params
+func (o *S3UserCollectionGetParams) WithKeyExpiryTime(keyExpiryTime *string) *S3UserCollectionGetParams {
+	o.SetKeyExpiryTime(keyExpiryTime)
+	return o
+}
+
+// SetKeyExpiryTime adds the keyExpiryTime to the s3 user collection get params
+func (o *S3UserCollectionGetParams) SetKeyExpiryTime(keyExpiryTime *string) {
+	o.KeyExpiryTime = keyExpiryTime
+}
+
+// WithKeyTimeToLive adds the keyTimeToLive to the s3 user collection get params
+func (o *S3UserCollectionGetParams) WithKeyTimeToLive(keyTimeToLive *string) *S3UserCollectionGetParams {
+	o.SetKeyTimeToLive(keyTimeToLive)
+	return o
+}
+
+// SetKeyTimeToLive adds the keyTimeToLive to the s3 user collection get params
+func (o *S3UserCollectionGetParams) SetKeyTimeToLive(keyTimeToLive *string) {
+	o.KeyTimeToLive = keyTimeToLive
+}
+
 // WithMaxRecords adds the maxRecords to the s3 user collection get params
 func (o *S3UserCollectionGetParams) WithMaxRecords(maxRecords *int64) *S3UserCollectionGetParams {
 	o.SetMaxRecords(maxRecords)
@@ -353,6 +387,40 @@ func (o *S3UserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.KeyExpiryTime != nil {
+
+		// query param key_expiry_time
+		var qrKeyExpiryTime string
+
+		if o.KeyExpiryTime != nil {
+			qrKeyExpiryTime = *o.KeyExpiryTime
+		}
+		qKeyExpiryTime := qrKeyExpiryTime
+		if qKeyExpiryTime != "" {
+
+			if err := r.SetQueryParam("key_expiry_time", qKeyExpiryTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.KeyTimeToLive != nil {
+
+		// query param key_time_to_live
+		var qrKeyTimeToLive string
+
+		if o.KeyTimeToLive != nil {
+			qrKeyTimeToLive = *o.KeyTimeToLive
+		}
+		qKeyTimeToLive := qrKeyTimeToLive
+		if qKeyTimeToLive != "" {
+
+			if err := r.SetQueryParam("key_time_to_live", qKeyTimeToLive); err != nil {
+				return err
+			}
 		}
 	}
 

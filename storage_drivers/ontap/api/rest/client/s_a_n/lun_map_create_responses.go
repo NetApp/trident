@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *LunMapCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the lun map create created response
+func (o *LunMapCreateCreated) Code() int {
+	return 201
+}
+
 func (o *LunMapCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/lun-maps][%d] lunMapCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/lun-maps][%d] lunMapCreateCreated %s", 201, payload)
 }
 
 func (o *LunMapCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/san/lun-maps][%d] lunMapCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/lun-maps][%d] lunMapCreateCreated %s", 201, payload)
 }
 
 func (o *LunMapCreateCreated) GetPayload() *models.LunMapResponse {
@@ -130,12 +138,14 @@ func NewLunMapCreateDefault(code int) *LunMapCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 1254201 | The specified LUN does not exist. |
 | 1254207 | The LUN is already mapped to the same initiator group. |
 | 2621462 | The specified SVM does not exist or is not accessible to the caller. |
 | 2621706 | Both the SVM UUID and SVM name were supplied, but don't refer to the same SVM. |
 | 2621707 | No SVM was specified. Either `svm.name` or `svm.uuid` must be supplied. |
 | 5374053 | The LUN is the destination of an ongoing restore operation and is inaccessible for I/O and management. Wait for the restore to complete and try the command again. |
-| 5374238 | The operation is not allowed on a LUN in a Snapshot copy. |
+| 5374127 | The specified LUN name is invalid. |
+| 5374238 | The operation is not allowed on a LUN in a snapshot. |
 | 5374316 | A LUN move operation is in progress on the source LUN. |
 | 5374329 | A LUN of class `vvol` cannot be mapped. |
 | 5374573 | A node has no interface configured with the iSCSI or Fibre Channel protocols for the specified SVM. |
@@ -144,20 +154,19 @@ func NewLunMapCreateDefault(code int) *LunMapCreateDefault {
 | 5374582 | Multiple nodes have no interface configured with the iSCSI protocol for the specified SVM. |
 | 5374583 | A node has no interface configured with the Fibre Channel protocol for the specified SVM. |
 | 5374584 | Multiple nodes have no interface configured with the Fibre Channel protocol for the specified SVM. |
+| 5374652 | An error was reported by the peer cluster while creating a replicated LUN map. The specific error will be included as a nested error. |
 | 5374901 | Either `lun.uuid` or `lun.name` must be provided to create a LUN map. |
 | 5374902 | Either `igroup.uuid` or `igroup.name` must be provided to create a LUN map. |
 | 5374920 | The cluster node specified in additional_reporting_node does not exist. |
 | 5374921 | The cluster node name and UUID specified in additional_reporting_node do not refer to the same cluster node. |
+| 5376461 | The specified LUN name is invalid. |
+| 5376462 | The specified LUN name is too long. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type LunMapCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the lun map create default response
-func (o *LunMapCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this lun map create default response has a 2xx status code
@@ -185,12 +194,19 @@ func (o *LunMapCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the lun map create default response
+func (o *LunMapCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LunMapCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/lun-maps][%d] lun_map_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/lun-maps][%d] lun_map_create default %s", o._statusCode, payload)
 }
 
 func (o *LunMapCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/san/lun-maps][%d] lun_map_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/lun-maps][%d] lun_map_create default %s", o._statusCode, payload)
 }
 
 func (o *LunMapCreateDefault) GetPayload() *models.ErrorResponse {

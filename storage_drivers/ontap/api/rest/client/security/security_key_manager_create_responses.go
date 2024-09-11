@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -25,6 +26,12 @@ func (o *SecurityKeyManagerCreateReader) ReadResponse(response runtime.ClientRes
 	switch response.Code() {
 	case 201:
 		result := NewSecurityKeyManagerCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
+	case 202:
+		result := NewSecurityKeyManagerCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -85,12 +92,19 @@ func (o *SecurityKeyManagerCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the security key manager create created response
+func (o *SecurityKeyManagerCreateCreated) Code() int {
+	return 201
+}
+
 func (o *SecurityKeyManagerCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/key-managers][%d] securityKeyManagerCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers][%d] securityKeyManagerCreateCreated %s", 201, payload)
 }
 
 func (o *SecurityKeyManagerCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/key-managers][%d] securityKeyManagerCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers][%d] securityKeyManagerCreateCreated %s", 201, payload)
 }
 
 func (o *SecurityKeyManagerCreateCreated) GetPayload() *models.SecurityKeyManagerResponse {
@@ -116,6 +130,88 @@ func (o *SecurityKeyManagerCreateCreated) readResponse(response runtime.ClientRe
 	return nil
 }
 
+// NewSecurityKeyManagerCreateAccepted creates a SecurityKeyManagerCreateAccepted with default headers values
+func NewSecurityKeyManagerCreateAccepted() *SecurityKeyManagerCreateAccepted {
+	return &SecurityKeyManagerCreateAccepted{}
+}
+
+/*
+SecurityKeyManagerCreateAccepted describes a response with status code 202, with default header values.
+
+Accepted
+*/
+type SecurityKeyManagerCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.SecurityKeyManagerJobLinkResponse
+}
+
+// IsSuccess returns true when this security key manager create accepted response has a 2xx status code
+func (o *SecurityKeyManagerCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security key manager create accepted response has a 3xx status code
+func (o *SecurityKeyManagerCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security key manager create accepted response has a 4xx status code
+func (o *SecurityKeyManagerCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security key manager create accepted response has a 5xx status code
+func (o *SecurityKeyManagerCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security key manager create accepted response a status code equal to that given
+func (o *SecurityKeyManagerCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
+// Code gets the status code for the security key manager create accepted response
+func (o *SecurityKeyManagerCreateAccepted) Code() int {
+	return 202
+}
+
+func (o *SecurityKeyManagerCreateAccepted) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers][%d] securityKeyManagerCreateAccepted %s", 202, payload)
+}
+
+func (o *SecurityKeyManagerCreateAccepted) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers][%d] securityKeyManagerCreateAccepted %s", 202, payload)
+}
+
+func (o *SecurityKeyManagerCreateAccepted) GetPayload() *models.SecurityKeyManagerJobLinkResponse {
+	return o.Payload
+}
+
+func (o *SecurityKeyManagerCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.SecurityKeyManagerJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewSecurityKeyManagerCreateDefault creates a SecurityKeyManagerCreateDefault with default headers values
 func NewSecurityKeyManagerCreateDefault(code int) *SecurityKeyManagerCreateDefault {
 	return &SecurityKeyManagerCreateDefault{
@@ -130,6 +226,8 @@ func NewSecurityKeyManagerCreateDefault(code int) *SecurityKeyManagerCreateDefau
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 262224 | Failed to contact the peer cluster. |
+| 262228 | Failed to contact the peer cluster. |
 | 65536038 | A maximum of 4 active primary key servers are allowed. |
 | 65536214 | Failed to generate cluster key encryption key. |
 | 65536216 | Failed to add cluster key encryption key. |
@@ -137,7 +235,6 @@ func NewSecurityKeyManagerCreateDefault(code int) *SecurityKeyManagerCreateDefau
 | 65536341 | Failed to setup the Onboard Key Manager because the MetroCluster peer is unhealthy. |
 | 65536508 | The platform does not support data at rest encryption. |
 | 65536821 | The certificate is not installed. |
-| 65536822 | Multitenant key management is not supported in the current cluster version. |
 | 65536823 | The SVM has key manager already configured. |
 | 65536824 | Multitenant key management is not supported in MetroCluster configurations. |
 | 65536834 | Failed to get existing key-server details for the SVM. |
@@ -146,11 +243,11 @@ func NewSecurityKeyManagerCreateDefault(code int) *SecurityKeyManagerCreateDefau
 | 65536871 | Duplicate key management servers exist. |
 | 65536876 | External key management requires client and server CA certificates installed and with one or more key servers provided. |
 | 65536878 | External key management cannot be configured as one or more volume encryption keys of the SVM are stored in cluster key management server. |
-| 65536895 | External key manager cannnot be configured since this cluster is part of a MetroCluster configuration and the partner site of this MetroCluster configuration has Onboard Key Manager configured. |
+| 65536895 | External key manager cannot be configured because this cluster is part of a MetroCluster configuration and the partner site of this MetroCluster configuration has Onboard Key Manager configured. |
 | 65536900 | The Onboard Key Manager cannot be configured because this cluster is part of a MetroCluster configuration and the partner site has the external key manager configured. |
 | 65536903 | The Onboard Key Manager has failed to configure on some nodes in the cluster. Use the CLI to sync the Onboard Key Manager configuration on failed nodes. |
 | 65536906 | The Onboard Key Manager has already been configured at the partner site. Use the CLI to sync the Onboard Key Manager with the same passphrase. |
-| 65536907 | The Onboard Key Manager is already configured. Use the CLI to sync any nodes with the Onboard Key Manager configuration. |
+| 65536913 | The Onboard Key Manager is already configured. Use the CLI to sync any nodes with the Onboard Key Manager configuration. |
 | 65536916 | The Onboard Key Manager is only supported for an admin SVM. |
 | 65536920 | The Onboard Key Manager passphrase length is incorrect. |
 | 65537240 | The Onboard Key Manager passphrase must be provided when performing a POST/synchronize operation. |
@@ -158,19 +255,30 @@ func NewSecurityKeyManagerCreateDefault(code int) *SecurityKeyManagerCreateDefau
 | 65537244 | Unable to sync/create Onboard Key Manager on the local cluster; Onboard Key Manager is already configured on the cluster. |
 | 65537245 | Unable to sync/create Onboard Key Manager on the local cluster; Onboard Key Manager is not configured on the partner cluster. |
 | 65537246 | Unable to sync/create Onboard Key Manager on local cluster. This cluster is not part of a MetroCluster configuration. |
+| 65537247 | Internal error. Unable to sync the Onboard Key Manager on local cluster. |
+| 65537248 | Unable to sync the Onboard Key Manager on local cluster. |
+| 65538111 | The key manager policy is invalid. |
+| 65538120 | The key manager policy is not supported on the admin SVM. |
+| 65539216 | The Admin SVM has a key manager already configured. |
+| 65539221 | Failed to configure the Onboard Key Manager because the MetroCluster peer cluster is unhealthy. Verify that the peer cluster is online and healthy. |
+| 65539500 | Cannot create an inactive external key manager on this SVM because inactive external key managers can only be created on the admin SVM. |
+| 65539501 | Cannot create an inactive external key manager on the admin SVM because an external key manager already exists on the admin SVM. |
+| 65539503 | Cannot create an inactive external key manager on the admin SVM while MetroCluster is configured. |
+| 65539504 | An effective cluster version of ONTAP 9.16.1 or later is required to create an inactive external key manager on the admin SVM. |
+| 65539511 | Cannot create an inactive Onboard Key Manager on the admin SVM while MetroCluster is configured. |
+| 65539512 | An effective cluster version of ONTAP 9.16.1 or later is required to create an inactive Onboard Key Manager configuration on the admin SVM. |
+| 65539580 | Failed to create inactive Onboard Key Manager configuration. |
+| 65539581 | Cannot create an inactive Onboard Key Manager on the admin SVM because an inactive Onboard Key Manager configuration already exists on the admin SVM. |
+| 65539582 | Cannot specify the configuration name parameter. Only one Onboard Key Manager is supported for the admin SVM. |
 | 66060338 | Failed to establish secure connection for a key management server due to incorrect server_ca certificates. |
 | 66060339 | Failed to establish secure connection for a key management server due to incorrect client certificates. |
 | 66060340 | Failed to establish secure connection for a key management server due to Cryptsoft error. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SecurityKeyManagerCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security key manager create default response
-func (o *SecurityKeyManagerCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security key manager create default response has a 2xx status code
@@ -198,12 +306,19 @@ func (o *SecurityKeyManagerCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security key manager create default response
+func (o *SecurityKeyManagerCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityKeyManagerCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/key-managers][%d] security_key_manager_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers][%d] security_key_manager_create default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeyManagerCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/key-managers][%d] security_key_manager_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers][%d] security_key_manager_create default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeyManagerCreateDefault) GetPayload() *models.ErrorResponse {

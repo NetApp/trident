@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NodeGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the node get o k response
+func (o *NodeGetOK) Code() int {
+	return 200
+}
+
 func (o *NodeGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/nodes/{uuid}][%d] nodeGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/nodes/{uuid}][%d] nodeGetOK %s", 200, payload)
 }
 
 func (o *NodeGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/nodes/{uuid}][%d] nodeGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/nodes/{uuid}][%d] nodeGetOK %s", 200, payload)
 }
 
 func (o *NodeGetOK) GetPayload() *models.Node {
@@ -122,11 +130,6 @@ type NodeGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the node get default response
-func (o *NodeGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this node get default response has a 2xx status code
 func (o *NodeGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NodeGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the node get default response
+func (o *NodeGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NodeGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/nodes/{uuid}][%d] node_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/nodes/{uuid}][%d] node_get default %s", o._statusCode, payload)
 }
 
 func (o *NodeGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/nodes/{uuid}][%d] node_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/nodes/{uuid}][%d] node_get default %s", o._statusCode, payload)
 }
 
 func (o *NodeGetDefault) GetPayload() *models.ErrorResponse {

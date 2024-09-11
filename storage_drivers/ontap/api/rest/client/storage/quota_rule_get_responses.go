@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *QuotaRuleGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the quota rule get o k response
+func (o *QuotaRuleGetOK) Code() int {
+	return 200
+}
+
 func (o *QuotaRuleGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/quota/rules/{uuid}][%d] quotaRuleGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/quota/rules/{uuid}][%d] quotaRuleGetOK %s", 200, payload)
 }
 
 func (o *QuotaRuleGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/quota/rules/{uuid}][%d] quotaRuleGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/quota/rules/{uuid}][%d] quotaRuleGetOK %s", 200, payload)
 }
 
 func (o *QuotaRuleGetOK) GetPayload() *models.QuotaRule {
@@ -121,16 +129,12 @@ func NewQuotaRuleGetDefault(code int) *QuotaRuleGetDefault {
 | 5308544 | The specified quota rule UUID is invalid. |
 | 5308545 | Unable to retrieve rule for the specified quota rule UUID. |
 | 5308576 | Parameter `show_default_records` only allowed for GET collection. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type QuotaRuleGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the quota rule get default response
-func (o *QuotaRuleGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this quota rule get default response has a 2xx status code
@@ -158,12 +162,19 @@ func (o *QuotaRuleGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the quota rule get default response
+func (o *QuotaRuleGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *QuotaRuleGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/quota/rules/{uuid}][%d] quota_rule_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/quota/rules/{uuid}][%d] quota_rule_get default %s", o._statusCode, payload)
 }
 
 func (o *QuotaRuleGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/quota/rules/{uuid}][%d] quota_rule_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/quota/rules/{uuid}][%d] quota_rule_get default %s", o._statusCode, payload)
 }
 
 func (o *QuotaRuleGetDefault) GetPayload() *models.ErrorResponse {

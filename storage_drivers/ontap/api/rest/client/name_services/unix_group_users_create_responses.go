@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *UnixGroupUsersCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the unix group users create created response
+func (o *UnixGroupUsersCreateCreated) Code() int {
+	return 201
+}
+
 func (o *UnixGroupUsersCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unixGroupUsersCreateCreated ", 201)
+	return fmt.Sprintf("[POST /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unixGroupUsersCreateCreated", 201)
 }
 
 func (o *UnixGroupUsersCreateCreated) String() string {
-	return fmt.Sprintf("[POST /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unixGroupUsersCreateCreated ", 201)
+	return fmt.Sprintf("[POST /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unixGroupUsersCreateCreated", 201)
 }
 
 func (o *UnixGroupUsersCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -131,11 +137,6 @@ type UnixGroupUsersCreateDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the unix group users create default response
-func (o *UnixGroupUsersCreateDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this unix group users create default response has a 2xx status code
 func (o *UnixGroupUsersCreateDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -161,12 +162,19 @@ func (o *UnixGroupUsersCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the unix group users create default response
+func (o *UnixGroupUsersCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *UnixGroupUsersCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unix_group_users_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unix_group_users_create default %s", o._statusCode, payload)
 }
 
 func (o *UnixGroupUsersCreateDefault) String() string {
-	return fmt.Sprintf("[POST /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unix_group_users_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unix_group_users_create default %s", o._statusCode, payload)
 }
 
 func (o *UnixGroupUsersCreateDefault) GetPayload() *models.ErrorResponse {

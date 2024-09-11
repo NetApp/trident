@@ -28,21 +28,23 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	NvmeCollectionPerformanceMetricsGet(params *NvmeCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeCollectionPerformanceMetricsGetOK, error)
-
 	NvmeInterfaceCollectionGet(params *NvmeInterfaceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeInterfaceCollectionGetOK, error)
 
 	NvmeInterfaceGet(params *NvmeInterfaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeInterfaceGetOK, error)
 
 	NvmeNamespaceCollectionGet(params *NvmeNamespaceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceCollectionGetOK, error)
 
-	NvmeNamespaceCreate(params *NvmeNamespaceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceCreateCreated, error)
+	NvmeNamespaceCreate(params *NvmeNamespaceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceCreateCreated, *NvmeNamespaceCreateAccepted, error)
 
-	NvmeNamespaceDelete(params *NvmeNamespaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceDeleteOK, error)
+	NvmeNamespaceDelete(params *NvmeNamespaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceDeleteOK, *NvmeNamespaceDeleteAccepted, error)
+
+	NvmeNamespaceDeleteCollection(params *NvmeNamespaceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceDeleteCollectionOK, *NvmeNamespaceDeleteCollectionAccepted, error)
 
 	NvmeNamespaceGet(params *NvmeNamespaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceGetOK, error)
 
-	NvmeNamespaceModify(params *NvmeNamespaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceModifyOK, error)
+	NvmeNamespaceModify(params *NvmeNamespaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceModifyOK, *NvmeNamespaceModifyAccepted, error)
+
+	NvmeNamespaceModifyCollection(params *NvmeNamespaceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceModifyCollectionOK, *NvmeNamespaceModifyCollectionAccepted, error)
 
 	NvmeServiceCollectionGet(params *NvmeServiceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeServiceCollectionGetOK, error)
 
@@ -50,9 +52,13 @@ type ClientService interface {
 
 	NvmeServiceDelete(params *NvmeServiceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeServiceDeleteOK, error)
 
+	NvmeServiceDeleteCollection(params *NvmeServiceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeServiceDeleteCollectionOK, error)
+
 	NvmeServiceGet(params *NvmeServiceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeServiceGetOK, error)
 
 	NvmeServiceModify(params *NvmeServiceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeServiceModifyOK, error)
+
+	NvmeServiceModifyCollection(params *NvmeServiceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeServiceModifyCollectionOK, error)
 
 	NvmeSubsystemCollectionGet(params *NvmeSubsystemCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemCollectionGetOK, error)
 
@@ -64,6 +70,8 @@ type ClientService interface {
 
 	NvmeSubsystemDelete(params *NvmeSubsystemDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemDeleteOK, error)
 
+	NvmeSubsystemDeleteCollection(params *NvmeSubsystemDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemDeleteCollectionOK, error)
+
 	NvmeSubsystemGet(params *NvmeSubsystemGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemGetOK, error)
 
 	NvmeSubsystemHostCollectionGet(params *NvmeSubsystemHostCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemHostCollectionGetOK, error)
@@ -71,6 +79,8 @@ type ClientService interface {
 	NvmeSubsystemHostCreate(params *NvmeSubsystemHostCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemHostCreateCreated, error)
 
 	NvmeSubsystemHostDelete(params *NvmeSubsystemHostDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemHostDeleteOK, error)
+
+	NvmeSubsystemHostDeleteCollection(params *NvmeSubsystemHostDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemHostDeleteCollectionOK, error)
 
 	NvmeSubsystemHostGet(params *NvmeSubsystemHostGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemHostGetOK, error)
 
@@ -80,51 +90,23 @@ type ClientService interface {
 
 	NvmeSubsystemMapDelete(params *NvmeSubsystemMapDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemMapDeleteOK, error)
 
+	NvmeSubsystemMapDeleteCollection(params *NvmeSubsystemMapDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemMapDeleteCollectionOK, error)
+
 	NvmeSubsystemMapGet(params *NvmeSubsystemMapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemMapGetOK, error)
 
 	NvmeSubsystemModify(params *NvmeSubsystemModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemModifyOK, error)
 
+	NvmeSubsystemModifyCollection(params *NvmeSubsystemModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemModifyCollectionOK, error)
+
 	PerformanceNamespaceMetricCollectionGet(params *PerformanceNamespaceMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceNamespaceMetricCollectionGetOK, error)
 
+	PerformanceNamespaceMetricGet(params *PerformanceNamespaceMetricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceNamespaceMetricGetOK, error)
+
+	PerformanceNvmeMetricCollectionGet(params *PerformanceNvmeMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceNvmeMetricCollectionGetOK, error)
+
+	PerformanceNvmeMetricGet(params *PerformanceNvmeMetricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceNvmeMetricGetOK, error)
+
 	SetTransport(transport runtime.ClientTransport)
-}
-
-/*
-NvmeCollectionPerformanceMetricsGet Retrieves historical performance metrics for NVMe protocol of an SVM.
-*/
-func (a *Client) NvmeCollectionPerformanceMetricsGet(params *NvmeCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeCollectionPerformanceMetricsGetOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewNvmeCollectionPerformanceMetricsGetParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "nvme_collection_performance_metrics_get",
-		Method:             "GET",
-		PathPattern:        "/protocols/nvme/services/{svm.uuid}/metrics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &NvmeCollectionPerformanceMetricsGetReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*NvmeCollectionPerformanceMetricsGetOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*NvmeCollectionPerformanceMetricsGetDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -144,8 +126,8 @@ func (a *Client) NvmeInterfaceCollectionGet(params *NvmeInterfaceCollectionGetPa
 		ID:                 "nvme_interface_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nvme/interfaces",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeInterfaceCollectionGetReader{formats: a.formats},
@@ -187,8 +169,8 @@ func (a *Client) NvmeInterfaceGet(params *NvmeInterfaceGetParams, authInfo runti
 		ID:                 "nvme_interface_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nvme/interfaces/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeInterfaceGetReader{formats: a.formats},
@@ -219,6 +201,9 @@ func (a *Client) NvmeInterfaceGet(params *NvmeInterfaceGetParams, authInfo runti
 ### Expensive properties
 There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `auto_delete`
+* `space.physical_used`
+* `space.physical_used_by_snapshots`
+* `space.efficiency_ratio`
 * `subsystem_map.*`
 * `status.mapped`
 * `statistics.*`
@@ -238,8 +223,8 @@ func (a *Client) NvmeNamespaceCollectionGet(params *NvmeNamespaceCollectionGetPa
 		ID:                 "nvme_namespace_collection_get",
 		Method:             "GET",
 		PathPattern:        "/storage/namespaces",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeNamespaceCollectionGetReader{formats: a.formats},
@@ -282,10 +267,13 @@ If not specified in POST, the following default property values are assigned:
 * `volume file clone create`
 * `vserver nvme namespace convert-from-lun`
 * `vserver nvme namespace create`
+### Platform Specifics
+* **ASA r2**: The `name` property is required when creating a new namespace. The name must start with an alphabetic character (a to z or A to Z) or an underscore (_). The name must be 203 characters or less in length. The `location` properties are not supported.
+POST is asynchronous when creating a new namespace. It is synchronous when converting a LUN to a namespace via the `convert` property.
 ### Learn more
 * [`DOC /storage/namespaces`](#docs-NVMe-storage_namespaces)
 */
-func (a *Client) NvmeNamespaceCreate(params *NvmeNamespaceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceCreateCreated, error) {
+func (a *Client) NvmeNamespaceCreate(params *NvmeNamespaceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceCreateCreated, *NvmeNamespaceCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewNvmeNamespaceCreateParams()
@@ -294,8 +282,8 @@ func (a *Client) NvmeNamespaceCreate(params *NvmeNamespaceCreateParams, authInfo
 		ID:                 "nvme_namespace_create",
 		Method:             "POST",
 		PathPattern:        "/storage/namespaces",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeNamespaceCreateReader{formats: a.formats},
@@ -309,15 +297,17 @@ func (a *Client) NvmeNamespaceCreate(params *NvmeNamespaceCreateParams, authInfo
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*NvmeNamespaceCreateCreated)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *NvmeNamespaceCreateCreated:
+		return value, nil, nil
+	case *NvmeNamespaceCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*NvmeNamespaceCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -325,10 +315,12 @@ func (a *Client) NvmeNamespaceCreate(params *NvmeNamespaceCreateParams, authInfo
 
 ### Related ONTAP commands
 * `vserver nvme namespace delete`
+### Platform Specifics
+* **ASA r2**: DELETE is asynchronous.
 ### Learn more
 * [`DOC /storage/namespaces`](#docs-NVMe-storage_namespaces)
 */
-func (a *Client) NvmeNamespaceDelete(params *NvmeNamespaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceDeleteOK, error) {
+func (a *Client) NvmeNamespaceDelete(params *NvmeNamespaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceDeleteOK, *NvmeNamespaceDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewNvmeNamespaceDeleteParams()
@@ -337,8 +329,8 @@ func (a *Client) NvmeNamespaceDelete(params *NvmeNamespaceDeleteParams, authInfo
 		ID:                 "nvme_namespace_delete",
 		Method:             "DELETE",
 		PathPattern:        "/storage/namespaces/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeNamespaceDeleteReader{formats: a.formats},
@@ -352,15 +344,57 @@ func (a *Client) NvmeNamespaceDelete(params *NvmeNamespaceDeleteParams, authInfo
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*NvmeNamespaceDeleteOK)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *NvmeNamespaceDeleteOK:
+		return value, nil, nil
+	case *NvmeNamespaceDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*NvmeNamespaceDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+NvmeNamespaceDeleteCollection nvme namespace delete collection API
+*/
+func (a *Client) NvmeNamespaceDeleteCollection(params *NvmeNamespaceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceDeleteCollectionOK, *NvmeNamespaceDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNvmeNamespaceDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nvme_namespace_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/storage/namespaces",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NvmeNamespaceDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *NvmeNamespaceDeleteCollectionOK:
+		return value, nil, nil
+	case *NvmeNamespaceDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NvmeNamespaceDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -369,6 +403,9 @@ func (a *Client) NvmeNamespaceDelete(params *NvmeNamespaceDeleteParams, authInfo
 ### Expensive properties
 There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `auto_delete`
+* `space.physical_used`
+* `space.physical_used_by_snapshots`
+* `space.efficiency_ratio`
 * `subsystem_map.*`
 * `status.mapped`
 * `statistics.*`
@@ -388,8 +425,8 @@ func (a *Client) NvmeNamespaceGet(params *NvmeNamespaceGetParams, authInfo runti
 		ID:                 "nvme_namespace_get",
 		Method:             "GET",
 		PathPattern:        "/storage/namespaces/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeNamespaceGetReader{formats: a.formats},
@@ -420,10 +457,12 @@ func (a *Client) NvmeNamespaceGet(params *NvmeNamespaceGetParams, authInfo runti
 ### Related ONTAP commands
 * `volume file clone autodelete`
 * `vserver nvme namespace modify`
+### Platform Specifics
+* **ASA r2**: PATCH is asynchronous when modifying `name` or `qos_policy`.
 ### Learn more
 * [`DOC /storage/namespaces`](#docs-NVMe-storage_namespaces)
 */
-func (a *Client) NvmeNamespaceModify(params *NvmeNamespaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceModifyOK, error) {
+func (a *Client) NvmeNamespaceModify(params *NvmeNamespaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceModifyOK, *NvmeNamespaceModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewNvmeNamespaceModifyParams()
@@ -432,8 +471,8 @@ func (a *Client) NvmeNamespaceModify(params *NvmeNamespaceModifyParams, authInfo
 		ID:                 "nvme_namespace_modify",
 		Method:             "PATCH",
 		PathPattern:        "/storage/namespaces/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeNamespaceModifyReader{formats: a.formats},
@@ -447,15 +486,57 @@ func (a *Client) NvmeNamespaceModify(params *NvmeNamespaceModifyParams, authInfo
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*NvmeNamespaceModifyOK)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *NvmeNamespaceModifyOK:
+		return value, nil, nil
+	case *NvmeNamespaceModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*NvmeNamespaceModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+NvmeNamespaceModifyCollection nvme namespace modify collection API
+*/
+func (a *Client) NvmeNamespaceModifyCollection(params *NvmeNamespaceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceModifyCollectionOK, *NvmeNamespaceModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNvmeNamespaceModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nvme_namespace_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/storage/namespaces",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NvmeNamespaceModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *NvmeNamespaceModifyCollectionOK:
+		return value, nil, nil
+	case *NvmeNamespaceModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NvmeNamespaceModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -479,8 +560,8 @@ func (a *Client) NvmeServiceCollectionGet(params *NvmeServiceCollectionGetParams
 		ID:                 "nvme_service_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nvme/services",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeServiceCollectionGetReader{formats: a.formats},
@@ -508,6 +589,9 @@ func (a *Client) NvmeServiceCollectionGet(params *NvmeServiceCollectionGetParams
 /*
 	NvmeServiceCreate Creates an NVMe service.
 
+### Platform Specifics
+* **Unified ONTAP**: POST and DELETE must be used to manage the NVMe service for access to the NVMe protocol.
+* **ASA r2**: POST and DELETE are not supported. The NVMe service is automatically created and deleted with the SVM.
 ### Required properties
 * `svm.uuid` or `svm.name` - The existing SVM in which to create the NVMe service.
 ### Related ONTAP commands
@@ -524,8 +608,8 @@ func (a *Client) NvmeServiceCreate(params *NvmeServiceCreateParams, authInfo run
 		ID:                 "nvme_service_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/nvme/services",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeServiceCreateReader{formats: a.formats},
@@ -553,6 +637,9 @@ func (a *Client) NvmeServiceCreate(params *NvmeServiceCreateParams, authInfo run
 /*
 	NvmeServiceDelete Deletes an NVMe service. An NVMe service must be disabled before it can be deleted. In addition, all NVMe interfaces, subsystems, and subsystem maps associated with the SVM must first be deleted.
 
+### Platform Specifics
+* **Unified ONTAP**: POST and DELETE must be used to manage the NVMe service for access to the NVMe protocol.
+* **ASA r2**: POST and DELETE are not supported. The NVMe service is automatically created and deleted with the SVM.
 ### Related ONTAP commands
 * `vserver nvme delete`
 ### Learn more
@@ -567,8 +654,8 @@ func (a *Client) NvmeServiceDelete(params *NvmeServiceDeleteParams, authInfo run
 		ID:                 "nvme_service_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/nvme/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeServiceDeleteReader{formats: a.formats},
@@ -594,6 +681,44 @@ func (a *Client) NvmeServiceDelete(params *NvmeServiceDeleteParams, authInfo run
 }
 
 /*
+NvmeServiceDeleteCollection nvme service delete collection API
+*/
+func (a *Client) NvmeServiceDeleteCollection(params *NvmeServiceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeServiceDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNvmeServiceDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nvme_service_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/nvme/services",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NvmeServiceDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NvmeServiceDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NvmeServiceDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NvmeServiceGet Retrieves an NVMe service.
 
 ### Related ONTAP commands
@@ -610,8 +735,8 @@ func (a *Client) NvmeServiceGet(params *NvmeServiceGetParams, authInfo runtime.C
 		ID:                 "nvme_service_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nvme/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeServiceGetReader{formats: a.formats},
@@ -653,8 +778,8 @@ func (a *Client) NvmeServiceModify(params *NvmeServiceModifyParams, authInfo run
 		ID:                 "nvme_service_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/nvme/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeServiceModifyReader{formats: a.formats},
@@ -680,6 +805,44 @@ func (a *Client) NvmeServiceModify(params *NvmeServiceModifyParams, authInfo run
 }
 
 /*
+NvmeServiceModifyCollection nvme service modify collection API
+*/
+func (a *Client) NvmeServiceModifyCollection(params *NvmeServiceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeServiceModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNvmeServiceModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nvme_service_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/nvme/services",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NvmeServiceModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NvmeServiceModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NvmeServiceModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NvmeSubsystemCollectionGet Retrieves NVMe subsystems.
 
 ### Related ONTAP commands
@@ -698,8 +861,8 @@ func (a *Client) NvmeSubsystemCollectionGet(params *NvmeSubsystemCollectionGetPa
 		ID:                 "nvme_subsystem_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nvme/subsystems",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeSubsystemCollectionGetReader{formats: a.formats},
@@ -741,8 +904,8 @@ func (a *Client) NvmeSubsystemControllerCollectionGet(params *NvmeSubsystemContr
 		ID:                 "nvme_subsystem_controller_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nvme/subsystem-controllers",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeSubsystemControllerCollectionGetReader{formats: a.formats},
@@ -784,8 +947,8 @@ func (a *Client) NvmeSubsystemControllerGet(params *NvmeSubsystemControllerGetPa
 		ID:                 "nvme_subsystem_controller_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nvme/subsystem-controllers/{subsystem.uuid}/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeSubsystemControllerGetReader{formats: a.formats},
@@ -831,8 +994,8 @@ func (a *Client) NvmeSubsystemCreate(params *NvmeSubsystemCreateParams, authInfo
 		ID:                 "nvme_subsystem_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/nvme/subsystems",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeSubsystemCreateReader{formats: a.formats},
@@ -874,8 +1037,8 @@ func (a *Client) NvmeSubsystemDelete(params *NvmeSubsystemDeleteParams, authInfo
 		ID:                 "nvme_subsystem_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/nvme/subsystems/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeSubsystemDeleteReader{formats: a.formats},
@@ -901,6 +1064,44 @@ func (a *Client) NvmeSubsystemDelete(params *NvmeSubsystemDeleteParams, authInfo
 }
 
 /*
+NvmeSubsystemDeleteCollection nvme subsystem delete collection API
+*/
+func (a *Client) NvmeSubsystemDeleteCollection(params *NvmeSubsystemDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNvmeSubsystemDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nvme_subsystem_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/nvme/subsystems",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NvmeSubsystemDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NvmeSubsystemDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NvmeSubsystemDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NvmeSubsystemGet Retrieves an NVMe subsystem.
 
 ### Expensive properties
@@ -922,8 +1123,8 @@ func (a *Client) NvmeSubsystemGet(params *NvmeSubsystemGetParams, authInfo runti
 		ID:                 "nvme_subsystem_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nvme/subsystems/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeSubsystemGetReader{formats: a.formats},
@@ -969,8 +1170,8 @@ func (a *Client) NvmeSubsystemHostCollectionGet(params *NvmeSubsystemHostCollect
 		ID:                 "nvme_subsystem_host_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nvme/subsystems/{subsystem.uuid}/hosts",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeSubsystemHostCollectionGetReader{formats: a.formats},
@@ -1014,8 +1215,8 @@ func (a *Client) NvmeSubsystemHostCreate(params *NvmeSubsystemHostCreateParams, 
 		ID:                 "nvme_subsystem_host_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/nvme/subsystems/{subsystem.uuid}/hosts",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeSubsystemHostCreateReader{formats: a.formats},
@@ -1057,8 +1258,8 @@ func (a *Client) NvmeSubsystemHostDelete(params *NvmeSubsystemHostDeleteParams, 
 		ID:                 "nvme_subsystem_host_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/nvme/subsystems/{subsystem.uuid}/hosts/{nqn}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeSubsystemHostDeleteReader{formats: a.formats},
@@ -1084,6 +1285,44 @@ func (a *Client) NvmeSubsystemHostDelete(params *NvmeSubsystemHostDeleteParams, 
 }
 
 /*
+NvmeSubsystemHostDeleteCollection nvme subsystem host delete collection API
+*/
+func (a *Client) NvmeSubsystemHostDeleteCollection(params *NvmeSubsystemHostDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemHostDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNvmeSubsystemHostDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nvme_subsystem_host_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/nvme/subsystems/{subsystem.uuid}/hosts",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NvmeSubsystemHostDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NvmeSubsystemHostDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NvmeSubsystemHostDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NvmeSubsystemHostGet Retrieves an NVMe subsystem host of an NVMe subsystem.
 
 ### Related ONTAP commands
@@ -1100,8 +1339,8 @@ func (a *Client) NvmeSubsystemHostGet(params *NvmeSubsystemHostGetParams, authIn
 		ID:                 "nvme_subsystem_host_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nvme/subsystems/{subsystem.uuid}/hosts/{nqn}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeSubsystemHostGetReader{formats: a.formats},
@@ -1146,8 +1385,8 @@ func (a *Client) NvmeSubsystemMapCollectionGet(params *NvmeSubsystemMapCollectio
 		ID:                 "nvme_subsystem_map_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nvme/subsystem-maps",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeSubsystemMapCollectionGetReader{formats: a.formats},
@@ -1180,7 +1419,7 @@ func (a *Client) NvmeSubsystemMapCollectionGet(params *NvmeSubsystemMapCollectio
 * `namespace.uuid` or `namespace.name` - Existing NVMe namespace to map to the specified NVme subsystem.
 * `subsystem.uuid` or `subsystem.name` - Existing NVMe subsystem to map to the specified NVMe namespace.
 ### Related ONTAP commands
-* `vserver nvme subsystem map create`
+* `vserver nvme subsystem map add`
 ### Learn more
 * [`DOC /protocols/nvme/subsystem-maps`](#docs-NVMe-protocols_nvme_subsystem-maps)
 */
@@ -1193,8 +1432,8 @@ func (a *Client) NvmeSubsystemMapCreate(params *NvmeSubsystemMapCreateParams, au
 		ID:                 "nvme_subsystem_map_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/nvme/subsystem-maps",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeSubsystemMapCreateReader{formats: a.formats},
@@ -1223,7 +1462,7 @@ func (a *Client) NvmeSubsystemMapCreate(params *NvmeSubsystemMapCreateParams, au
 	NvmeSubsystemMapDelete Deletes an NVMe subsystem map.
 
 ### Related ONTAP commands
-* `vserver nvme subsystem map delete`
+* `vserver nvme subsystem map remove`
 ### Learn more
 * [`DOC /protocols/nvme/subsystem-maps`](#docs-NVMe-protocols_nvme_subsystem-maps)
 */
@@ -1236,8 +1475,8 @@ func (a *Client) NvmeSubsystemMapDelete(params *NvmeSubsystemMapDeleteParams, au
 		ID:                 "nvme_subsystem_map_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/nvme/subsystem-maps/{subsystem.uuid}/{namespace.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeSubsystemMapDeleteReader{formats: a.formats},
@@ -1263,6 +1502,44 @@ func (a *Client) NvmeSubsystemMapDelete(params *NvmeSubsystemMapDeleteParams, au
 }
 
 /*
+NvmeSubsystemMapDeleteCollection nvme subsystem map delete collection API
+*/
+func (a *Client) NvmeSubsystemMapDeleteCollection(params *NvmeSubsystemMapDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemMapDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNvmeSubsystemMapDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nvme_subsystem_map_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/nvme/subsystem-maps",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NvmeSubsystemMapDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NvmeSubsystemMapDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NvmeSubsystemMapDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NvmeSubsystemMapGet Retrieves an NVMe subsystem map.
 
 ### Expensive properties
@@ -1282,8 +1559,8 @@ func (a *Client) NvmeSubsystemMapGet(params *NvmeSubsystemMapGetParams, authInfo
 		ID:                 "nvme_subsystem_map_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nvme/subsystem-maps/{subsystem.uuid}/{namespace.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeSubsystemMapGetReader{formats: a.formats},
@@ -1325,8 +1602,8 @@ func (a *Client) NvmeSubsystemModify(params *NvmeSubsystemModifyParams, authInfo
 		ID:                 "nvme_subsystem_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/nvme/subsystems/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NvmeSubsystemModifyReader{formats: a.formats},
@@ -1352,7 +1629,48 @@ func (a *Client) NvmeSubsystemModify(params *NvmeSubsystemModifyParams, authInfo
 }
 
 /*
-PerformanceNamespaceMetricCollectionGet Retrieves historical performance metrics for an NVMe namespace.
+NvmeSubsystemModifyCollection nvme subsystem modify collection API
+*/
+func (a *Client) NvmeSubsystemModifyCollection(params *NvmeSubsystemModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNvmeSubsystemModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nvme_subsystem_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/nvme/subsystems",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NvmeSubsystemModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NvmeSubsystemModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NvmeSubsystemModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	PerformanceNamespaceMetricCollectionGet Retrieves historical performance metrics for an NVMe namespace.
+
+### Related ONTAP commands
+* `statistics namespace show`
 */
 func (a *Client) PerformanceNamespaceMetricCollectionGet(params *PerformanceNamespaceMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceNamespaceMetricCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1362,9 +1680,9 @@ func (a *Client) PerformanceNamespaceMetricCollectionGet(params *PerformanceName
 	op := &runtime.ClientOperation{
 		ID:                 "performance_namespace_metric_collection_get",
 		Method:             "GET",
-		PathPattern:        "/storage/namespaces/{uuid}/metrics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		PathPattern:        "/storage/namespaces/{nvme_namespace.uuid}/metrics",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PerformanceNamespaceMetricCollectionGetReader{formats: a.formats},
@@ -1386,6 +1704,123 @@ func (a *Client) PerformanceNamespaceMetricCollectionGet(params *PerformanceName
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*PerformanceNamespaceMetricCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	PerformanceNamespaceMetricGet Retrieves historical performance metrics for an NVMe namespace for a specific time.
+
+### Related ONTAP commands
+* `statistics namespace show`
+*/
+func (a *Client) PerformanceNamespaceMetricGet(params *PerformanceNamespaceMetricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceNamespaceMetricGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPerformanceNamespaceMetricGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "performance_namespace_metric_get",
+		Method:             "GET",
+		PathPattern:        "/storage/namespaces/{nvme_namespace.uuid}/metrics/{timestamp}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PerformanceNamespaceMetricGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PerformanceNamespaceMetricGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PerformanceNamespaceMetricGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+PerformanceNvmeMetricCollectionGet Retrieves historical performance metrics for the NVMe protocol service of an SVM.
+*/
+func (a *Client) PerformanceNvmeMetricCollectionGet(params *PerformanceNvmeMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceNvmeMetricCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPerformanceNvmeMetricCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "performance_nvme_metric_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/nvme/services/{svm.uuid}/metrics",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PerformanceNvmeMetricCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PerformanceNvmeMetricCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PerformanceNvmeMetricCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+PerformanceNvmeMetricGet Retrieves historical performance metrics for the NVMe protocol service of an SVM for a specific time.
+*/
+func (a *Client) PerformanceNvmeMetricGet(params *PerformanceNvmeMetricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceNvmeMetricGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPerformanceNvmeMetricGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "performance_nvme_metric_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/nvme/services/{svm.uuid}/metrics/{timestamp}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PerformanceNvmeMetricGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PerformanceNvmeMetricGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PerformanceNvmeMetricGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

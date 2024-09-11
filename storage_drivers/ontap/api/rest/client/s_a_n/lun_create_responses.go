@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -25,6 +26,12 @@ func (o *LunCreateReader) ReadResponse(response runtime.ClientResponse, consumer
 	switch response.Code() {
 	case 201:
 		result := NewLunCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
+	case 202:
+		result := NewLunCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -85,12 +92,19 @@ func (o *LunCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the lun create created response
+func (o *LunCreateCreated) Code() int {
+	return 201
+}
+
 func (o *LunCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /storage/luns][%d] lunCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/luns][%d] lunCreateCreated %s", 201, payload)
 }
 
 func (o *LunCreateCreated) String() string {
-	return fmt.Sprintf("[POST /storage/luns][%d] lunCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/luns][%d] lunCreateCreated %s", 201, payload)
 }
 
 func (o *LunCreateCreated) GetPayload() *models.LunResponse {
@@ -116,6 +130,88 @@ func (o *LunCreateCreated) readResponse(response runtime.ClientResponse, consume
 	return nil
 }
 
+// NewLunCreateAccepted creates a LunCreateAccepted with default headers values
+func NewLunCreateAccepted() *LunCreateAccepted {
+	return &LunCreateAccepted{}
+}
+
+/*
+LunCreateAccepted describes a response with status code 202, with default header values.
+
+Accepted
+*/
+type LunCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.LunJobLinkResponse
+}
+
+// IsSuccess returns true when this lun create accepted response has a 2xx status code
+func (o *LunCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this lun create accepted response has a 3xx status code
+func (o *LunCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this lun create accepted response has a 4xx status code
+func (o *LunCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this lun create accepted response has a 5xx status code
+func (o *LunCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this lun create accepted response a status code equal to that given
+func (o *LunCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
+// Code gets the status code for the lun create accepted response
+func (o *LunCreateAccepted) Code() int {
+	return 202
+}
+
+func (o *LunCreateAccepted) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/luns][%d] lunCreateAccepted %s", 202, payload)
+}
+
+func (o *LunCreateAccepted) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/luns][%d] lunCreateAccepted %s", 202, payload)
+}
+
+func (o *LunCreateAccepted) GetPayload() *models.LunJobLinkResponse {
+	return o.Payload
+}
+
+func (o *LunCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.LunJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewLunCreateDefault creates a LunCreateDefault with default headers values
 func NewLunCreateDefault(code int) *LunCreateDefault {
 	return &LunCreateDefault{
@@ -132,6 +228,8 @@ func NewLunCreateDefault(code int) *LunCreateDefault {
 | ---------- | ----------- |
 | 917927 | The specified volume was not found. |
 | 918236 | The specified `location.volume.uuid` and `location.volume.name` do not refer to the same volume. |
+| 1260121 | Cloning a LUN to a volume different than the source volume is not supported. |
+| 1260136 | The specified destination for a clone operation already exists as a LUN, namespace, or file. |
 | 2621462 | The specified SVM does not exist. |
 | 2621706 | The specified `svm.uuid` and `svm.name` do not refer to the same SVM. |
 | 2621707 | No SVM was specified. Either `svm.name` or `svm.uuid` must be supplied. |
@@ -141,10 +239,11 @@ func NewLunCreateDefault(code int) *LunCreateDefault {
 | 5374123 | A negative size was provided for the LUN. |
 | 5374124 | The specified size is too small for the LUN. |
 | 5374125 | The specified size is too large for the LUN. |
+| 5374127 | The specified LUN name is invalid. |
 | 5374129 | LUNs cannot be created on a load sharing mirror volume. |
 | 5374130 | An invalid size value was provided. |
 | 5374237 | LUNs cannot be created on an SVM root volume. |
-| 5374238 | LUNs cannot be created in Snapshot copies. |
+| 5374238 | LUNs cannot be created in snapshots. |
 | 5374241 | A size value with invalid units was provided. |
 | 5374242 | A LUN or NVMe namespace already exists at the specified path. |
 | 5374352 | An invalid name was provided for the LUN. |
@@ -161,28 +260,37 @@ func NewLunCreateDefault(code int) *LunCreateDefault {
 | 5374883 | The property cannot be specified when creating a LUN clone. The `target` property of the error object identifies the property. |
 | 5374884 | A property that is required when creating a new LUN that is not a LUN clone or LUN copy was not supplied. The `target` property of the error object identifies the property. |
 | 5374886 | An error occurred after successfully creating the LUN preventing the retrieval of its properties. |
-| 5374899 | The `clone.source.uuid` property is not supported when specifying a source LUN from a Snapshot copy. |
+| 5374899 | The `clone.source.uuid` property is not supported when specifying a source LUN from a snapshot. |
 | 5374928 | An incomplete attribute name/value pair was supplied. |
 | 5374929 | The combined sizes of an attribute name and value are too large. |
 | 5374932 | A name for an attribute was duplicated. |
 | 5374942 | The property cannot be specified at the same time when creating a LUN as a clone. The `target` property of the error object identifies the other property given with clone. |
 | 5374943 | The property cannot be specified at the same time when creating a LUN as a copy. The `target` property of the error object identifies the other property given with copy. |
 | 5374944 | The property cannot be specified when converting an NVMe namespace into a LUN. The `target` property of the error object identifies the property. |
+| 5375054 | The source LUN is required when requesting an SVM copy operation. |
+| 5375059 | An unsuitable QoS policy was specified. |
+| 5376461 | The specified LUN name is invalid. |
+| 5376462 | The specified LUN name is too long. |
+| 5376463 | The snapshot portion of the specified LUN name is too long. |
+| 5376469 | The property cannot be set during the LUN create operation on this platform. |
+| 5440509 | Cannot create a LUN with a LUN map on an SVM that does not have any LIFs. |
+| 5440688 | A LUN cannot be created with the same name as an existing LUN. |
+| 5702832 | A LUN or namespace with the same name is already being created. LUN and namespace names must be unique within an SVM. |
 | 7018877 | Maximum combined total (50) of file and LUN copy and move operations reached. When one or more of the operations has completed, try the command again. |
 | 13565952 | The LUN clone request failed. |
+| 26345672 | An SVM peer relationship was not found with the provided 'copy.source.peer.uuid'. |
+| 26345673 | An SVM peer relationship between the SVM provided in 'copy.source.peer.name' and the SVM provided in either 'svm.name' or 'svm.uuid' was not found. |
+| 26345674 | The SVM peer relationship provided in 'copy.source.peer.uuid' does not match a peer relationship between the local SVM provided in either 'svm.uuid' or 'svm.name' and the peer SVM provided in 'copy.source.peer.name'. |
+| 26345675 | The destination SVM provided via 'svm.name' or 'svm.uuid' does not match the local SVM for the provided SVM peer relationship UUID in 'copy.source.peer.uuid'. |
 | 72089755 | NVMe namespace with a block size of 4096 bytes cannot be converted to a LUN. |
 | 72089756 | Namespace is currently mapped to subsystem. |
-| 72089757 | NVMe namespace in a Snapshot copy cannot be converted to a LUN. |
+| 72089757 | NVMe namespace in a snapshot cannot be converted to a LUN. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type LunCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the lun create default response
-func (o *LunCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this lun create default response has a 2xx status code
@@ -210,12 +318,19 @@ func (o *LunCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the lun create default response
+func (o *LunCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LunCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/luns][%d] lun_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/luns][%d] lun_create default %s", o._statusCode, payload)
 }
 
 func (o *LunCreateDefault) String() string {
-	return fmt.Sprintf("[POST /storage/luns][%d] lun_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/luns][%d] lun_create default %s", o._statusCode, payload)
 }
 
 func (o *LunCreateDefault) GetPayload() *models.ErrorResponse {

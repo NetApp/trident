@@ -86,6 +86,12 @@ type EmsMessageCollectionGetParams struct {
 	*/
 	Fields []string
 
+	/* FilterName.
+
+	   The filter name that applies to the query.
+	*/
+	FilterName *string
+
 	/* MaxRecords.
 
 	   Limit the number of records returned.
@@ -243,6 +249,17 @@ func (o *EmsMessageCollectionGetParams) SetFields(fields []string) {
 	o.Fields = fields
 }
 
+// WithFilterName adds the filterName to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) WithFilterName(filterName *string) *EmsMessageCollectionGetParams {
+	o.SetFilterName(filterName)
+	return o
+}
+
+// SetFilterName adds the filterName to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) SetFilterName(filterName *string) {
+	o.FilterName = filterName
+}
+
 // WithMaxRecords adds the maxRecords to the ems message collection get params
 func (o *EmsMessageCollectionGetParams) WithMaxRecords(maxRecords *int64) *EmsMessageCollectionGetParams {
 	o.SetMaxRecords(maxRecords)
@@ -387,6 +404,23 @@ func (o *EmsMessageCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.FilterName != nil {
+
+		// query param filter.name
+		var qrFilterName string
+
+		if o.FilterName != nil {
+			qrFilterName = *o.FilterName
+		}
+		qFilterName := qrFilterName
+		if qFilterName != "" {
+
+			if err := r.SetQueryParam("filter.name", qFilterName); err != nil {
+				return err
+			}
 		}
 	}
 

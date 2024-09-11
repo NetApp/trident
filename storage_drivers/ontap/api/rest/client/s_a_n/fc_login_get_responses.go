@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *FcLoginGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fc login get o k response
+func (o *FcLoginGetOK) Code() int {
+	return 200
+}
+
 func (o *FcLoginGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/fc/logins/{interface.uuid}/{initiator.wwpn}][%d] fcLoginGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/logins/{interface.uuid}/{initiator.wwpn}][%d] fcLoginGetOK %s", 200, payload)
 }
 
 func (o *FcLoginGetOK) String() string {
-	return fmt.Sprintf("[GET /network/fc/logins/{interface.uuid}/{initiator.wwpn}][%d] fcLoginGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/logins/{interface.uuid}/{initiator.wwpn}][%d] fcLoginGetOK %s", 200, payload)
 }
 
 func (o *FcLoginGetOK) GetPayload() *models.FcLogin {
@@ -119,18 +127,15 @@ func NewFcLoginGetDefault(code int) *FcLoginGetDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 4 | The Fibre Channel login specified does not exist. |
-| 5373983 | An invalid WWPN was supplied. |
+| 5373982 | An invalid WWN was specified. The length is incorrect. |
+| 5373983 | An invalid WWN was specified. The format is incorrect. |
 | 5374881 | The Fibre Channel interface specified does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type FcLoginGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the fc login get default response
-func (o *FcLoginGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this fc login get default response has a 2xx status code
@@ -158,12 +163,19 @@ func (o *FcLoginGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fc login get default response
+func (o *FcLoginGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FcLoginGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/fc/logins/{interface.uuid}/{initiator.wwpn}][%d] fc_login_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/logins/{interface.uuid}/{initiator.wwpn}][%d] fc_login_get default %s", o._statusCode, payload)
 }
 
 func (o *FcLoginGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/fc/logins/{interface.uuid}/{initiator.wwpn}][%d] fc_login_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/logins/{interface.uuid}/{initiator.wwpn}][%d] fc_login_get default %s", o._statusCode, payload)
 }
 
 func (o *FcLoginGetDefault) GetPayload() *models.ErrorResponse {

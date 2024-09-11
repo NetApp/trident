@@ -6,6 +6,7 @@ package snapmirror
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SnapmirrorRelationshipGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snapmirror relationship get o k response
+func (o *SnapmirrorRelationshipGetOK) Code() int {
+	return 200
+}
+
 func (o *SnapmirrorRelationshipGetOK) Error() string {
-	return fmt.Sprintf("[GET /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipGetOK %s", 200, payload)
 }
 
 func (o *SnapmirrorRelationshipGetOK) String() string {
-	return fmt.Sprintf("[GET /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipGetOK %s", 200, payload)
 }
 
 func (o *SnapmirrorRelationshipGetOK) GetPayload() *models.SnapmirrorRelationship {
@@ -127,11 +135,6 @@ type SnapmirrorRelationshipGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the snapmirror relationship get default response
-func (o *SnapmirrorRelationshipGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this snapmirror relationship get default response has a 2xx status code
 func (o *SnapmirrorRelationshipGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -157,12 +160,19 @@ func (o *SnapmirrorRelationshipGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snapmirror relationship get default response
+func (o *SnapmirrorRelationshipGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnapmirrorRelationshipGetDefault) Error() string {
-	return fmt.Sprintf("[GET /snapmirror/relationships/{uuid}][%d] snapmirror_relationship_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /snapmirror/relationships/{uuid}][%d] snapmirror_relationship_get default %s", o._statusCode, payload)
 }
 
 func (o *SnapmirrorRelationshipGetDefault) String() string {
-	return fmt.Sprintf("[GET /snapmirror/relationships/{uuid}][%d] snapmirror_relationship_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /snapmirror/relationships/{uuid}][%d] snapmirror_relationship_get default %s", o._statusCode, payload)
 }
 
 func (o *SnapmirrorRelationshipGetDefault) GetPayload() *models.ErrorResponse {

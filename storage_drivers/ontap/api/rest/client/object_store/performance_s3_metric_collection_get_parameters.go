@@ -177,12 +177,6 @@ type PerformanceS3MetricCollectionGetParams struct {
 	*/
 	SvmUUID string
 
-	/* ThroughputOther.
-
-	   Filter by throughput.other
-	*/
-	ThroughputOther *int64
-
 	/* ThroughputRead.
 
 	   Filter by throughput.read
@@ -462,17 +456,6 @@ func (o *PerformanceS3MetricCollectionGetParams) WithSvmUUID(svmUUID string) *Pe
 // SetSvmUUID adds the svmUuid to the performance s3 metric collection get params
 func (o *PerformanceS3MetricCollectionGetParams) SetSvmUUID(svmUUID string) {
 	o.SvmUUID = svmUUID
-}
-
-// WithThroughputOther adds the throughputOther to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithThroughputOther(throughputOther *int64) *PerformanceS3MetricCollectionGetParams {
-	o.SetThroughputOther(throughputOther)
-	return o
-}
-
-// SetThroughputOther adds the throughputOther to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetThroughputOther(throughputOther *int64) {
-	o.ThroughputOther = throughputOther
 }
 
 // WithThroughputRead adds the throughputRead to the performance s3 metric collection get params
@@ -790,23 +773,6 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 	// path param svm.uuid
 	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
-	}
-
-	if o.ThroughputOther != nil {
-
-		// query param throughput.other
-		var qrThroughputOther int64
-
-		if o.ThroughputOther != nil {
-			qrThroughputOther = *o.ThroughputOther
-		}
-		qThroughputOther := swag.FormatInt64(qrThroughputOther)
-		if qThroughputOther != "" {
-
-			if err := r.SetQueryParam("throughput.other", qThroughputOther); err != nil {
-				return err
-			}
-		}
 	}
 
 	if o.ThroughputRead != nil {

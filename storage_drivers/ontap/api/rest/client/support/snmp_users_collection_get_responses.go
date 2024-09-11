@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SnmpUsersCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snmp users collection get o k response
+func (o *SnmpUsersCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *SnmpUsersCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /support/snmp/users][%d] snmpUsersCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/snmp/users][%d] snmpUsersCollectionGetOK %s", 200, payload)
 }
 
 func (o *SnmpUsersCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /support/snmp/users][%d] snmpUsersCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/snmp/users][%d] snmpUsersCollectionGetOK %s", 200, payload)
 }
 
 func (o *SnmpUsersCollectionGetOK) GetPayload() *models.SnmpUserResponse {
@@ -122,11 +130,6 @@ type SnmpUsersCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the snmp users collection get default response
-func (o *SnmpUsersCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this snmp users collection get default response has a 2xx status code
 func (o *SnmpUsersCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SnmpUsersCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snmp users collection get default response
+func (o *SnmpUsersCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnmpUsersCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /support/snmp/users][%d] snmp_users_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/snmp/users][%d] snmp_users_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SnmpUsersCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /support/snmp/users][%d] snmp_users_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/snmp/users][%d] snmp_users_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SnmpUsersCollectionGetDefault) GetPayload() *models.ErrorResponse {

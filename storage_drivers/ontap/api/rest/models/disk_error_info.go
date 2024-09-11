@@ -26,7 +26,7 @@ type DiskErrorInfo struct {
 	// Disk error type.
 	// Example: notallflashdisk
 	// Read Only: true
-	// Enum: [onepath onedomain control foreign toobig toosmall invalidblocksize targetasymmap deviceassymmap failovermisconfig unknown netapp fwdownrev qualfail diskfail notallflashdisk]
+	// Enum: ["onepath","onedomain","control","foreign","toobig","toosmall","invalidblocksize","targetasymmap","deviceassymmap","failovermisconfig","unknown","netapp","fwdownrev","qualfail","diskfail","notallflashdisk"]
 	Type *string `json:"type,omitempty"`
 }
 

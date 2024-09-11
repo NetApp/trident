@@ -114,7 +114,7 @@ type FirmwareHistoryUpdateStateInlineWorker struct {
 
 	// The state of each worker that a node is controlling.
 	// Example: waiting_to_retry
-	// Enum: [idle working complete failed waiting_to_retry]
+	// Enum: ["idle","working","complete","failed","waiting_to_retry"]
 	State *string `json:"state,omitempty"`
 }
 

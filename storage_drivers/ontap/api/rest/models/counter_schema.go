@@ -31,11 +31,11 @@ type CounterSchema struct {
 
 	// Type of counter or property. Properties will always set this field to 'string'.
 	//
-	// Enum: [average rate raw delta percent string]
+	// Enum: ["average","rate","raw","delta","percent","string"]
 	Type *string `json:"type,omitempty"`
 
 	// Counter unit.
-	// Enum: [per_sec b_per_sec kb_per_sec mb_per_sec percent millisec microsec nanosec sec none]
+	// Enum: ["per_sec","b_per_sec","kb_per_sec","mb_per_sec","percent","millisec","microsec","nanosec","sec","none"]
 	Unit *string `json:"unit,omitempty"`
 }
 

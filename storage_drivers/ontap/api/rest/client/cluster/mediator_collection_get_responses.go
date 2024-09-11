@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *MediatorCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the mediator collection get o k response
+func (o *MediatorCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *MediatorCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/mediators][%d] mediatorCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/mediators][%d] mediatorCollectionGetOK %s", 200, payload)
 }
 
 func (o *MediatorCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/mediators][%d] mediatorCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/mediators][%d] mediatorCollectionGetOK %s", 200, payload)
 }
 
 func (o *MediatorCollectionGetOK) GetPayload() *models.MediatorResponse {
@@ -112,19 +120,18 @@ func NewMediatorCollectionGetDefault(code int) *MediatorCollectionGetDefault {
 }
 
 /*
-MediatorCollectionGetDefault describes a response with status code -1, with default header values.
+	MediatorCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response codes
+
+| Error code  |  Description |
+|-------------|--------------|
+| 2430739     | Unable to access Mediator. Reason: Invalid Mediator IP or Mediator does not exist.|
 */
 type MediatorCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the mediator collection get default response
-func (o *MediatorCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this mediator collection get default response has a 2xx status code
@@ -152,12 +159,19 @@ func (o *MediatorCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the mediator collection get default response
+func (o *MediatorCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MediatorCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/mediators][%d] mediator_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/mediators][%d] mediator_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *MediatorCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/mediators][%d] mediator_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/mediators][%d] mediator_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *MediatorCollectionGetDefault) GetPayload() *models.ErrorResponse {

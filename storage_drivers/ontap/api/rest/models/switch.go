@@ -40,7 +40,7 @@ type Switch struct {
 	Name *string `json:"name,omitempty"`
 
 	// Switch Network.
-	// Enum: [cluster management storage]
+	// Enum: ["cluster","storage"]
 	Network *string `json:"network,omitempty"`
 
 	// Serial Number.
@@ -119,7 +119,7 @@ var switchTypeNetworkPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["cluster","management","storage"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["cluster","storage"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -138,16 +138,6 @@ const (
 	// END DEBUGGING
 	// SwitchNetworkCluster captures enum value "cluster"
 	SwitchNetworkCluster string = "cluster"
-
-	// BEGIN DEBUGGING
-	// switch
-	// Switch
-	// network
-	// Network
-	// management
-	// END DEBUGGING
-	// SwitchNetworkManagement captures enum value "management"
-	SwitchNetworkManagement string = "management"
 
 	// BEGIN DEBUGGING
 	// switch
@@ -333,7 +323,7 @@ type SwitchInlineMonitoring struct {
 
 	// Reason For Not Monitoring.
 	// Read Only: true
-	// Enum: [none unsupported_model user_deleted bad_ip_address invalid_snmp_settings bad_model invalid_software_version user_disabled unknown]
+	// Enum: ["none","unsupported_model","user_deleted","bad_ip_address","invalid_snmp_settings","bad_model","invalid_software_version","user_disabled","unknown"]
 	Reason *string `json:"reason,omitempty"`
 }
 
@@ -540,7 +530,7 @@ type SwitchInlineSnmp struct {
 	User *string `json:"user,omitempty"`
 
 	// SNMP Version.
-	// Enum: [snmpv1 snmpv2c snmpv3]
+	// Enum: ["snmpv1","snmpv2c","snmpv3"]
 	Version *string `json:"version,omitempty"`
 }
 

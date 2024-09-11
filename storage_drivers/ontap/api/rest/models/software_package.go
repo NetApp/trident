@@ -23,7 +23,7 @@ type SoftwarePackage struct {
 	Links *SoftwarePackageInlineLinks `json:"_links,omitempty"`
 
 	// Indicates when this package was loaded
-	// Example: 2019-02-04T19:00:00Z
+	// Example: 2019-02-04 19:00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`

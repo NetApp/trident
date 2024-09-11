@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type SnapshotCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *SnapshotCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewSnapshotCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewSnapshotCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *SnapshotCreateReader) ReadResponse(response runtime.ClientResponse, con
 	}
 }
 
+// NewSnapshotCreateCreated creates a SnapshotCreateCreated with default headers values
+func NewSnapshotCreateCreated() *SnapshotCreateCreated {
+	return &SnapshotCreateCreated{}
+}
+
+/*
+SnapshotCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type SnapshotCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.SnapshotJobLinkResponse
+}
+
+// IsSuccess returns true when this snapshot create created response has a 2xx status code
+func (o *SnapshotCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapshot create created response has a 3xx status code
+func (o *SnapshotCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapshot create created response has a 4xx status code
+func (o *SnapshotCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapshot create created response has a 5xx status code
+func (o *SnapshotCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapshot create created response a status code equal to that given
+func (o *SnapshotCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the snapshot create created response
+func (o *SnapshotCreateCreated) Code() int {
+	return 201
+}
+
+func (o *SnapshotCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/snapshots][%d] snapshotCreateCreated %s", 201, payload)
+}
+
+func (o *SnapshotCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/snapshots][%d] snapshotCreateCreated %s", 201, payload)
+}
+
+func (o *SnapshotCreateCreated) GetPayload() *models.SnapshotJobLinkResponse {
+	return o.Payload
+}
+
+func (o *SnapshotCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.SnapshotJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewSnapshotCreateAccepted creates a SnapshotCreateAccepted with default headers values
 func NewSnapshotCreateAccepted() *SnapshotCreateAccepted {
 	return &SnapshotCreateAccepted{}
@@ -57,7 +146,7 @@ type SnapshotCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.SnapshotJobLinkResponse
 }
 
 // IsSuccess returns true when this snapshot create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *SnapshotCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the snapshot create accepted response
+func (o *SnapshotCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *SnapshotCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/snapshots][%d] snapshotCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/snapshots][%d] snapshotCreateAccepted %s", 202, payload)
 }
 
 func (o *SnapshotCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/snapshots][%d] snapshotCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/snapshots][%d] snapshotCreateAccepted %s", 202, payload)
 }
 
-func (o *SnapshotCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *SnapshotCreateAccepted) GetPayload() *models.SnapshotJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *SnapshotCreateAccepted) readResponse(response runtime.ClientResponse, c
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.SnapshotJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -130,27 +226,26 @@ func NewSnapshotCreateDefault(code int) *SnapshotCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 524479     | The specified volume is not online or does not have enough space to create a Snapshot copy. |
+| 524479     | The specified volume is not online or does not have enough space to create a snapshot. |
+| 1520351    | Snapshot operation is not allowed. |
+| 525062     | Cannot exceed maximum number of snapshots. |
 | 2621462    | The specified SVM name does not exist. |
-| 1638433    | A Snapshot copy with the specified name already exists. |
-| 1638461    | Snapshot copies can only be created on read/write (RW) volumes. |
-| 1638477    | User-created Snapshot copy names cannot begin with the specified prefix. |
-| 1638518    | The specified Snapshot copy name is invalid. |
-| 1638532    | Failed to create the Snapshot copy on the specified volume because a revert operation is in progress. |
-| 1638537    | Cannot determine the status of the Snapshot copy create operation for the specified volume. |
-| 1638616    | Bulk Snapshot copy create is not supported with multiple Snapshot copy names. |
-| 1638617    | Bulk Snapshot copy create is not supported with volume names in a mixed-version cluster. |
-| 1638618    | The property cannot be specified for Snapshot copy create. |
+| 525059     | A snapshot with the specified name already exists. |
+| 1638461    | Snapshots can only be created on read/write (RW) volumes. |
+| 1638477    | User-created snapshot names cannot begin with the specified prefix. |
+| 1638518    | The specified snapshot name is invalid. |
+| 1638532    | Failed to create the snapshot on the specified volume because a revert operation is in progress. |
+| 1638537    | Cannot determine the status of the snapshot create operation for the specified volume. |
+| 1638574    | The \"expiry-time\" parameter is not supported for FlexGroup volumes. |
+| 1638616    | Bulk snapshot create is not supported with multiple snapshot names. |
+| 1638617    | Bulk snapshot create is not supported with volume names in a mixed-version cluster. |
+| 1638618    | The property cannot be specified for snapshot create. |
+| 1638630    | Snapshot create operation is not supported on destination of SnapMirror active sync relationship with policy-type "automated-failover-duplex". |
 */
 type SnapshotCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snapshot create default response
-func (o *SnapshotCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snapshot create default response has a 2xx status code
@@ -178,12 +273,19 @@ func (o *SnapshotCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snapshot create default response
+func (o *SnapshotCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnapshotCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/snapshots][%d] snapshot_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/snapshots][%d] snapshot_create default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotCreateDefault) String() string {
-	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/snapshots][%d] snapshot_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/snapshots][%d] snapshot_create default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotCreateDefault) GetPayload() *models.ErrorResponse {

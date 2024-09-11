@@ -52,12 +52,12 @@ type ServiceProcessor struct {
 
 	// Provides the "update status" of the last service processor update.
 	// Read Only: true
-	// Enum: [failed passed]
+	// Enum: ["failed","passed"]
 	LastUpdateState *string `json:"last_update_state,omitempty"`
 
 	// link status
 	// Read Only: true
-	// Enum: [up down disabled unknown]
+	// Enum: ["up","down","disabled","unknown"]
 	LinkStatus *string `json:"link_status,omitempty"`
 
 	// mac address
@@ -72,13 +72,16 @@ type ServiceProcessor struct {
 
 	// state
 	// Read Only: true
-	// Enum: [online offline degraded rebooting unknown updating node_offline sp_daemon_offline]
+	// Enum: ["online","offline","degraded","rebooting","unknown","updating","node_offline","sp_daemon_offline"]
 	State *string `json:"state,omitempty"`
 
 	// type
 	// Read Only: true
-	// Enum: [sp none bmc]
+	// Enum: ["sp","none","bmc"]
 	Type *string `json:"type,omitempty"`
+
+	// web service
+	WebService *ServiceProcessorInlineWebService `json:"web_service,omitempty"`
 }
 
 // Validate validates this service processor
@@ -126,6 +129,10 @@ func (m *ServiceProcessor) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateWebService(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -568,6 +575,23 @@ func (m *ServiceProcessor) validateType(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *ServiceProcessor) validateWebService(formats strfmt.Registry) error {
+	if swag.IsZero(m.WebService) { // not required
+		return nil
+	}
+
+	if m.WebService != nil {
+		if err := m.WebService.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("web_service")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this service processor based on the context it is used
 func (m *ServiceProcessor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -625,6 +649,10 @@ func (m *ServiceProcessor) ContextValidate(ctx context.Context, formats strfmt.R
 	}
 
 	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWebService(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -795,6 +823,20 @@ func (m *ServiceProcessor) contextValidateType(ctx context.Context, formats strf
 	return nil
 }
 
+func (m *ServiceProcessor) contextValidateWebService(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.WebService != nil {
+		if err := m.WebService.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("web_service")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *ServiceProcessor) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -813,21 +855,18 @@ func (m *ServiceProcessor) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ServiceProcessorInlineAPIService Provides the properties of the service processor API service.
+// ServiceProcessorInlineAPIService Provides the properties of the service processor (SP) or baseboard management controller (BMC) API service.
 //
 // swagger:model service_processor_inline_api_service
 type ServiceProcessorInlineAPIService struct {
 
-	// Indicates whether the service processor API service is enabled.
-	// Read Only: true
+	// Indicates whether the SP API service of the SP or BMC is enabled or disabled. When the SP API service is disabled, features such as network-based firmware updates and network-based down node log collection are not available, and the slower serial-interface is used for firmware updates and down node log collection.
 	Enabled *bool `json:"enabled,omitempty"`
 
-	// Indicates whether the service processor API service limit access is enabled.
-	// Read Only: true
+	// Restricts SP API service access to cluster nodes only. By default, limit_access is set to true.
 	LimitAccess *bool `json:"limit_access,omitempty"`
 
-	// Indicates the port number of service processor API service.
-	// Read Only: true
+	// Specifies the port number on the SP or BMC used for the SP API service. By default, port 50000 is used.
 	Port *int64 `json:"port,omitempty"`
 }
 
@@ -840,48 +879,9 @@ func (m *ServiceProcessorInlineAPIService) Validate(formats strfmt.Registry) err
 func (m *ServiceProcessorInlineAPIService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateEnabled(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateLimitAccess(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidatePort(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *ServiceProcessorInlineAPIService) contextValidateEnabled(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "api_service"+"."+"enabled", "body", m.Enabled); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ServiceProcessorInlineAPIService) contextValidateLimitAccess(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "api_service"+"."+"limit_access", "body", m.LimitAccess); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ServiceProcessorInlineAPIService) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "api_service"+"."+"port", "body", m.Port); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -961,7 +961,7 @@ type ServiceProcessorInlineBackup struct {
 
 	// Status of the backup partition.
 	// Read Only: true
-	// Enum: [installed corrupt updating auto_updating none]
+	// Enum: ["installed","corrupt","updating","auto_updating","none"]
 	State *string `json:"state,omitempty"`
 
 	// Firmware version of the backup partition.
@@ -1137,28 +1137,37 @@ func (m *ServiceProcessorInlineBackup) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ServiceProcessorInlineIPV4Interface Object to setup an interface along with its default router.
+// ServiceProcessorInlineIPV4Interface Object to set up an interface along with its default router.
 //
 // swagger:model service_processor_inline_ipv4_interface
 type ServiceProcessorInlineIPV4Interface struct {
 
-	// IPv4 or IPv6 address
+	// IPv4 address
 	// Example: 10.10.10.7
 	Address *string `json:"address,omitempty"`
 
-	// The IPv4 or IPv6 address of the default router.
+	// Indicates whether the IPv4 interfaces is enabled. It expects dhcp_enabled as "true" or values for address, netmask and gateway when set to "true".
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// The IPv4 address of the default router.
 	// Example: 10.1.1.1
 	Gateway *string `json:"gateway,omitempty"`
 
-	// netmask
-	Netmask *IPNetmask `json:"netmask,omitempty"`
+	// Input as IPv4 mask (255.255.0.0). Output is always the netmask length.
+	// Example: 255.255.0.0
+	Netmask *string `json:"netmask,omitempty"`
+
+	// Indicates the setup state of the interface.
+	// Read Only: true
+	// Enum: ["not_setup","succeeded","in_progress","failed"]
+	SetupState *string `json:"setup_state,omitempty"`
 }
 
 // Validate validates this service processor inline ipv4 interface
 func (m *ServiceProcessorInlineIPV4Interface) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateNetmask(formats); err != nil {
+	if err := m.validateSetupState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1168,18 +1177,77 @@ func (m *ServiceProcessorInlineIPV4Interface) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *ServiceProcessorInlineIPV4Interface) validateNetmask(formats strfmt.Registry) error {
-	if swag.IsZero(m.Netmask) { // not required
+var serviceProcessorInlineIpv4InterfaceTypeSetupStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["not_setup","succeeded","in_progress","failed"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		serviceProcessorInlineIpv4InterfaceTypeSetupStatePropEnum = append(serviceProcessorInlineIpv4InterfaceTypeSetupStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// service_processor_inline_ipv4_interface
+	// ServiceProcessorInlineIPV4Interface
+	// setup_state
+	// SetupState
+	// not_setup
+	// END DEBUGGING
+	// ServiceProcessorInlineIPV4InterfaceSetupStateNotSetup captures enum value "not_setup"
+	ServiceProcessorInlineIPV4InterfaceSetupStateNotSetup string = "not_setup"
+
+	// BEGIN DEBUGGING
+	// service_processor_inline_ipv4_interface
+	// ServiceProcessorInlineIPV4Interface
+	// setup_state
+	// SetupState
+	// succeeded
+	// END DEBUGGING
+	// ServiceProcessorInlineIPV4InterfaceSetupStateSucceeded captures enum value "succeeded"
+	ServiceProcessorInlineIPV4InterfaceSetupStateSucceeded string = "succeeded"
+
+	// BEGIN DEBUGGING
+	// service_processor_inline_ipv4_interface
+	// ServiceProcessorInlineIPV4Interface
+	// setup_state
+	// SetupState
+	// in_progress
+	// END DEBUGGING
+	// ServiceProcessorInlineIPV4InterfaceSetupStateInProgress captures enum value "in_progress"
+	ServiceProcessorInlineIPV4InterfaceSetupStateInProgress string = "in_progress"
+
+	// BEGIN DEBUGGING
+	// service_processor_inline_ipv4_interface
+	// ServiceProcessorInlineIPV4Interface
+	// setup_state
+	// SetupState
+	// failed
+	// END DEBUGGING
+	// ServiceProcessorInlineIPV4InterfaceSetupStateFailed captures enum value "failed"
+	ServiceProcessorInlineIPV4InterfaceSetupStateFailed string = "failed"
+)
+
+// prop value enum
+func (m *ServiceProcessorInlineIPV4Interface) validateSetupStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, serviceProcessorInlineIpv4InterfaceTypeSetupStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ServiceProcessorInlineIPV4Interface) validateSetupState(formats strfmt.Registry) error {
+	if swag.IsZero(m.SetupState) { // not required
 		return nil
 	}
 
-	if m.Netmask != nil {
-		if err := m.Netmask.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("ipv4_interface" + "." + "netmask")
-			}
-			return err
-		}
+	// value enum
+	if err := m.validateSetupStateEnum("ipv4_interface"+"."+"setup_state", "body", *m.SetupState); err != nil {
+		return err
 	}
 
 	return nil
@@ -1189,7 +1257,7 @@ func (m *ServiceProcessorInlineIPV4Interface) validateNetmask(formats strfmt.Reg
 func (m *ServiceProcessorInlineIPV4Interface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateNetmask(ctx, formats); err != nil {
+	if err := m.contextValidateSetupState(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1199,15 +1267,10 @@ func (m *ServiceProcessorInlineIPV4Interface) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *ServiceProcessorInlineIPV4Interface) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
+func (m *ServiceProcessorInlineIPV4Interface) contextValidateSetupState(ctx context.Context, formats strfmt.Registry) error {
 
-	if m.Netmask != nil {
-		if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("ipv4_interface" + "." + "netmask")
-			}
-			return err
-		}
+	if err := validate.ReadOnly(ctx, "ipv4_interface"+"."+"setup_state", "body", m.SetupState); err != nil {
+		return err
 	}
 
 	return nil
@@ -1240,22 +1303,144 @@ type ServiceProcessorInlineIPV6Interface struct {
 	// Example: fd20:8b1e:b255:5011:10:141:4:97
 	Address *string `json:"address,omitempty"`
 
+	// Indicates whether the IPv6 interfaces is enabled. It expects values for address, netmask and gateway when set to "true".
+	Enabled *bool `json:"enabled,omitempty"`
+
 	// The IPv6 address of the default router.
 	// Example: fd20:8b1e:b255:5011:10::1
 	Gateway *string `json:"gateway,omitempty"`
 
+	// Indicates whether IPv6 RA is enabled.
+	IsIPV6RaEnabled *bool `json:"is_ipv6_ra_enabled,omitempty"`
+
+	// Link local IP address.
+	// Example: FE80::/10
+	LinkLocalIP *string `json:"link_local_ip,omitempty"`
+
 	// The IPv6 netmask/prefix length. The default value is 64 with a valid range of 1 to 127.
 	// Example: 64
 	Netmask *int64 `json:"netmask,omitempty"`
+
+	// Router assigned IP address.
+	// Example: 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+	RouterIP *string `json:"router_ip,omitempty"`
+
+	// Indicates the setup state of the interface.
+	// Read Only: true
+	// Enum: ["not_setup","succeeded","in_progress","failed"]
+	SetupState *string `json:"setup_state,omitempty"`
 }
 
 // Validate validates this service processor inline ipv6 interface
 func (m *ServiceProcessorInlineIPV6Interface) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSetupState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this service processor inline ipv6 interface based on context it is used
+var serviceProcessorInlineIpv6InterfaceTypeSetupStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["not_setup","succeeded","in_progress","failed"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		serviceProcessorInlineIpv6InterfaceTypeSetupStatePropEnum = append(serviceProcessorInlineIpv6InterfaceTypeSetupStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// service_processor_inline_ipv6_interface
+	// ServiceProcessorInlineIPV6Interface
+	// setup_state
+	// SetupState
+	// not_setup
+	// END DEBUGGING
+	// ServiceProcessorInlineIPV6InterfaceSetupStateNotSetup captures enum value "not_setup"
+	ServiceProcessorInlineIPV6InterfaceSetupStateNotSetup string = "not_setup"
+
+	// BEGIN DEBUGGING
+	// service_processor_inline_ipv6_interface
+	// ServiceProcessorInlineIPV6Interface
+	// setup_state
+	// SetupState
+	// succeeded
+	// END DEBUGGING
+	// ServiceProcessorInlineIPV6InterfaceSetupStateSucceeded captures enum value "succeeded"
+	ServiceProcessorInlineIPV6InterfaceSetupStateSucceeded string = "succeeded"
+
+	// BEGIN DEBUGGING
+	// service_processor_inline_ipv6_interface
+	// ServiceProcessorInlineIPV6Interface
+	// setup_state
+	// SetupState
+	// in_progress
+	// END DEBUGGING
+	// ServiceProcessorInlineIPV6InterfaceSetupStateInProgress captures enum value "in_progress"
+	ServiceProcessorInlineIPV6InterfaceSetupStateInProgress string = "in_progress"
+
+	// BEGIN DEBUGGING
+	// service_processor_inline_ipv6_interface
+	// ServiceProcessorInlineIPV6Interface
+	// setup_state
+	// SetupState
+	// failed
+	// END DEBUGGING
+	// ServiceProcessorInlineIPV6InterfaceSetupStateFailed captures enum value "failed"
+	ServiceProcessorInlineIPV6InterfaceSetupStateFailed string = "failed"
+)
+
+// prop value enum
+func (m *ServiceProcessorInlineIPV6Interface) validateSetupStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, serviceProcessorInlineIpv6InterfaceTypeSetupStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ServiceProcessorInlineIPV6Interface) validateSetupState(formats strfmt.Registry) error {
+	if swag.IsZero(m.SetupState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateSetupStateEnum("ipv6_interface"+"."+"setup_state", "body", *m.SetupState); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this service processor inline ipv6 interface based on the context it is used
 func (m *ServiceProcessorInlineIPV6Interface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSetupState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ServiceProcessorInlineIPV6Interface) contextValidateSetupState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ipv6_interface"+"."+"setup_state", "body", m.SetupState); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -1288,7 +1473,7 @@ type ServiceProcessorInlinePrimary struct {
 
 	// Status of the primary partition.
 	// Read Only: true
-	// Enum: [installed corrupt updating auto_updating none]
+	// Enum: ["installed","corrupt","updating","auto_updating","none"]
 	State *string `json:"state,omitempty"`
 
 	// Firmware version of the primary partition.
@@ -1554,6 +1739,51 @@ func (m *ServiceProcessorInlineSSHInfo) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ServiceProcessorInlineSSHInfo) UnmarshalBinary(b []byte) error {
 	var res ServiceProcessorInlineSSHInfo
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ServiceProcessorInlineWebService Provides the properties of SP or BMC web service.
+//
+// swagger:model service_processor_inline_web_service
+type ServiceProcessorInlineWebService struct {
+
+	// Indicates whether the web service of the SP or BMC is enabled or disabled. When the web service is disabled, features such as network-based firmware updates and network-based down node log collection are not available, and the slower serial-interface is used for firmware updates and down node log collection.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Restricts web service access to cluster nodes only. By default, limit_access is set to true.
+	LimitAccess *bool `json:"limit_access,omitempty"`
+}
+
+// Validate validates this service processor inline web service
+func (m *ServiceProcessorInlineWebService) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this service processor inline web service based on the context it is used
+func (m *ServiceProcessorInlineWebService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ServiceProcessorInlineWebService) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ServiceProcessorInlineWebService) UnmarshalBinary(b []byte) error {
+	var res ServiceProcessorInlineWebService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

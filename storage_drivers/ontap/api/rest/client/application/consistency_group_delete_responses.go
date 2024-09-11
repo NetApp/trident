@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,17 @@ func (o *ConsistencyGroupDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the consistency group delete o k response
+func (o *ConsistencyGroupDeleteOK) Code() int {
+	return 200
+}
+
 func (o *ConsistencyGroupDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /application/consistency-groups/{uuid}][%d] consistencyGroupDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{uuid}][%d] consistencyGroupDeleteOK", 200)
 }
 
 func (o *ConsistencyGroupDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /application/consistency-groups/{uuid}][%d] consistencyGroupDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{uuid}][%d] consistencyGroupDeleteOK", 200)
 }
 
 func (o *ConsistencyGroupDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,7 +115,7 @@ ConsistencyGroupDeleteAccepted describes a response with status code 202, with d
 Accepted
 */
 type ConsistencyGroupDeleteAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.ConsistencyGroupJobLinkResponse
 }
 
 // IsSuccess returns true when this consistency group delete accepted response has a 2xx status code
@@ -137,21 +143,28 @@ func (o *ConsistencyGroupDeleteAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the consistency group delete accepted response
+func (o *ConsistencyGroupDeleteAccepted) Code() int {
+	return 202
+}
+
 func (o *ConsistencyGroupDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /application/consistency-groups/{uuid}][%d] consistencyGroupDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{uuid}][%d] consistencyGroupDeleteAccepted %s", 202, payload)
 }
 
 func (o *ConsistencyGroupDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /application/consistency-groups/{uuid}][%d] consistencyGroupDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{uuid}][%d] consistencyGroupDeleteAccepted %s", 202, payload)
 }
 
-func (o *ConsistencyGroupDeleteAccepted) GetPayload() *models.JobLinkResponse {
+func (o *ConsistencyGroupDeleteAccepted) GetPayload() *models.ConsistencyGroupJobLinkResponse {
 	return o.Payload
 }
 
 func (o *ConsistencyGroupDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.ConsistencyGroupJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -180,16 +193,13 @@ func NewConsistencyGroupDeleteDefault(code int) *ConsistencyGroupDeleteDefault {
 | 53411844 | Specified consistency group was not found in the specified SVM. |
 | 53411845 | The specified UUID and name refer to different consistency groups. |
 | 53411846 | Either name or UUID must be provided. |
+| 53412041 | Cannot delete a consistency group because it contains one or more storage units that are part of replication relationships. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ConsistencyGroupDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the consistency group delete default response
-func (o *ConsistencyGroupDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this consistency group delete default response has a 2xx status code
@@ -217,12 +227,19 @@ func (o *ConsistencyGroupDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the consistency group delete default response
+func (o *ConsistencyGroupDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ConsistencyGroupDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /application/consistency-groups/{uuid}][%d] consistency_group_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{uuid}][%d] consistency_group_delete default %s", o._statusCode, payload)
 }
 
 func (o *ConsistencyGroupDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /application/consistency-groups/{uuid}][%d] consistency_group_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{uuid}][%d] consistency_group_delete default %s", o._statusCode, payload)
 }
 
 func (o *ConsistencyGroupDeleteDefault) GetPayload() *models.ErrorResponse {

@@ -138,6 +138,12 @@ type HostsSettingsCollectionGetParams struct {
 	*/
 	TTL *string
 
+	/* UUID.
+
+	   Filter by uuid
+	*/
+	UUID *string
+
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -337,6 +343,17 @@ func (o *HostsSettingsCollectionGetParams) SetTTL(ttl *string) {
 	o.TTL = ttl
 }
 
+// WithUUID adds the uuid to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) WithUUID(uuid *string) *HostsSettingsCollectionGetParams {
+	o.SetUUID(uuid)
+	return o
+}
+
+// SetUUID adds the uuid to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *HostsSettingsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -532,6 +549,23 @@ func (o *HostsSettingsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qTTL != "" {
 
 			if err := r.SetQueryParam("ttl", qTTL); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UUID != nil {
+
+		// query param uuid
+		var qrUUID string
+
+		if o.UUID != nil {
+			qrUUID = *o.UUID
+		}
+		qUUID := qrUUID
+		if qUUID != "" {
+
+			if err := r.SetQueryParam("uuid", qUUID); err != nil {
 				return err
 			}
 		}

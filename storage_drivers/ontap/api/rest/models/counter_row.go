@@ -34,7 +34,7 @@ type CounterRow struct {
 	// counter table
 	CounterTable *CounterTableReference `json:"counter_table,omitempty"`
 
-	// Unique row idenfier.
+	// Unique row identifier.
 	ID *string `json:"id,omitempty"`
 }
 

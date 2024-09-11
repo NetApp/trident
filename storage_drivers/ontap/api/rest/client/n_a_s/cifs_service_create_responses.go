@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type CifsServiceCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *CifsServiceCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewCifsServiceCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewCifsServiceCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *CifsServiceCreateReader) ReadResponse(response runtime.ClientResponse, 
 	}
 }
 
+// NewCifsServiceCreateCreated creates a CifsServiceCreateCreated with default headers values
+func NewCifsServiceCreateCreated() *CifsServiceCreateCreated {
+	return &CifsServiceCreateCreated{}
+}
+
+/*
+CifsServiceCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type CifsServiceCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.CifsServiceJobLinkResponse
+}
+
+// IsSuccess returns true when this cifs service create created response has a 2xx status code
+func (o *CifsServiceCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs service create created response has a 3xx status code
+func (o *CifsServiceCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs service create created response has a 4xx status code
+func (o *CifsServiceCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs service create created response has a 5xx status code
+func (o *CifsServiceCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs service create created response a status code equal to that given
+func (o *CifsServiceCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the cifs service create created response
+func (o *CifsServiceCreateCreated) Code() int {
+	return 201
+}
+
+func (o *CifsServiceCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/services][%d] cifsServiceCreateCreated %s", 201, payload)
+}
+
+func (o *CifsServiceCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/services][%d] cifsServiceCreateCreated %s", 201, payload)
+}
+
+func (o *CifsServiceCreateCreated) GetPayload() *models.CifsServiceJobLinkResponse {
+	return o.Payload
+}
+
+func (o *CifsServiceCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.CifsServiceJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewCifsServiceCreateAccepted creates a CifsServiceCreateAccepted with default headers values
 func NewCifsServiceCreateAccepted() *CifsServiceCreateAccepted {
 	return &CifsServiceCreateAccepted{}
@@ -57,7 +146,7 @@ type CifsServiceCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.CifsServiceJobLinkResponse
 }
 
 // IsSuccess returns true when this cifs service create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *CifsServiceCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the cifs service create accepted response
+func (o *CifsServiceCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *CifsServiceCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/services][%d] cifsServiceCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/services][%d] cifsServiceCreateAccepted %s", 202, payload)
 }
 
 func (o *CifsServiceCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/services][%d] cifsServiceCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/services][%d] cifsServiceCreateAccepted %s", 202, payload)
 }
 
-func (o *CifsServiceCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *CifsServiceCreateAccepted) GetPayload() *models.CifsServiceJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *CifsServiceCreateAccepted) readResponse(response runtime.ClientResponse
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.CifsServiceJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -130,17 +226,37 @@ func NewCifsServiceCreateDefault(code int) *CifsServiceCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 4915251    | STARTTLS and LDAPS cannot be used together.|
+| 1115127    | The cluster lacks a valid CIFS license. |
+| 3735751    | Failed to authenticate and retrieve the access token from the Azure OAuth host. |
+| 3735752    | Failed to extract the private key from the Azure Key Vault certificate. |
+| 3735753    | Unsupported content_type in the Azure secrets response. |
+| 3735754    | Failed to parse the JSON response from Azure Key Vault. |
+| 3735755    | REST API call to Azure failed. |
+| 3735756    | Invalid client certificate. |
+| 3735757    | Failed to generate client assertion. |
+| 3735762    | The provided Azure Key Vault configuration is incorrect. |
+| 3735763    | The provided Azure Key Vault configuration is incomplete. |
+| 3735764    | Request to Azure failed. Reason - Azure error code and Azure error message. |
+| 655388     | STARTTLS and LDAPS cannot be used together.|
+| 655524     | CIFS server creation failed. |
+| 655538     | CIFS server creation failed because a server with the same name already exists. |
+| 655562     | NetBIOS name is longer than 15 characters. |
+| 655563     | NetBIOS name contains characters that are not allowed. |
+| 655771     | The number of NetBIOS aliases cannot exceed the maximum supported number of '200'. |
+| 655914     | Failed to create the Active Directory machine account. |
+| 655923     | Retrieving credentials from AKV is not supported because the effective cluster version is not ONTAP 9.15.0 or later. |
+| 656464     | Failed to create the Active Directory machine account. Reason: Invalid Credentials. |
+| 656465     | Failed to create the Active Directory machine account. Reason: Account with same name already exists. |
+| 656466     | Failed to create the Active Directory machine account. Reason: Domain Controller is not reachable or does not exist. |
+| 656467     | Failed to create the Active Directory machine account. Reason: Organizational-Unit not found. |
+| 656473     | Fields security.kdc_encryption and security.advertised_kdc_encryptions are mutually exclusive. Specify only one of the two.|
+| 655477     | Only one CIFS server is supported per SVM. |
+| 656487     | Missing fields when doing CIFS operation with hybrid auth user type. |
 */
 type CifsServiceCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cifs service create default response
-func (o *CifsServiceCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cifs service create default response has a 2xx status code
@@ -168,12 +284,19 @@ func (o *CifsServiceCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs service create default response
+func (o *CifsServiceCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsServiceCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/services][%d] cifs_service_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/services][%d] cifs_service_create default %s", o._statusCode, payload)
 }
 
 func (o *CifsServiceCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/services][%d] cifs_service_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/services][%d] cifs_service_create default %s", o._statusCode, payload)
 }
 
 func (o *CifsServiceCreateDefault) GetPayload() *models.ErrorResponse {

@@ -286,7 +286,7 @@ func (m *MediatorResponseInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MediatorResponseInlineRecordsInlineArrayItem mediator response inline records inline array item
+// MediatorResponseInlineRecordsInlineArrayItem Mediator information
 //
 // swagger:model mediator_response_inline_records_inline_array_item
 type MediatorResponseInlineRecordsInlineArrayItem struct {

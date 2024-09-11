@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *UnixUserCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the unix user create created response
+func (o *UnixUserCreateCreated) Code() int {
+	return 201
+}
+
 func (o *UnixUserCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /name-services/unix-users][%d] unixUserCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/unix-users][%d] unixUserCreateCreated %s", 201, payload)
 }
 
 func (o *UnixUserCreateCreated) String() string {
-	return fmt.Sprintf("[POST /name-services/unix-users][%d] unixUserCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/unix-users][%d] unixUserCreateCreated %s", 201, payload)
 }
 
 func (o *UnixUserCreateCreated) GetPayload() *models.UnixUserResponse {
@@ -131,6 +139,7 @@ func NewUnixUserCreateDefault(code int) *UnixUserCreateDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621706    | The specified SVM UUID is incorrect for the specified SVM name |
+| 2621516    | This operation is only supported on a data SVM |
 | 23724066   | The specified UNIX user name is too long. Maximum supported length is 64 characters. |
 | 3277051    | The specified UNIX user name contains invalid characters. Valid characters are 0-9, A-Z, a-z, \".\", \"_\" and \"-\". |
 | 23724128   | The specified UNIX user full-name contains the invalid character ':'. |
@@ -143,11 +152,6 @@ type UnixUserCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the unix user create default response
-func (o *UnixUserCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this unix user create default response has a 2xx status code
@@ -175,12 +179,19 @@ func (o *UnixUserCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the unix user create default response
+func (o *UnixUserCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *UnixUserCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /name-services/unix-users][%d] unix_user_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/unix-users][%d] unix_user_create default %s", o._statusCode, payload)
 }
 
 func (o *UnixUserCreateDefault) String() string {
-	return fmt.Sprintf("[POST /name-services/unix-users][%d] unix_user_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/unix-users][%d] unix_user_create default %s", o._statusCode, payload)
 }
 
 func (o *UnixUserCreateDefault) GetPayload() *models.ErrorResponse {

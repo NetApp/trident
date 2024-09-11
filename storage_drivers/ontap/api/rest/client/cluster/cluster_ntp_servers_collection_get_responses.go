@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ClusterNtpServersCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cluster ntp servers collection get o k response
+func (o *ClusterNtpServersCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *ClusterNtpServersCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/ntp/servers][%d] clusterNtpServersCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/ntp/servers][%d] clusterNtpServersCollectionGetOK %s", 200, payload)
 }
 
 func (o *ClusterNtpServersCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/ntp/servers][%d] clusterNtpServersCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/ntp/servers][%d] clusterNtpServersCollectionGetOK %s", 200, payload)
 }
 
 func (o *ClusterNtpServersCollectionGetOK) GetPayload() *models.NtpServerResponse {
@@ -122,11 +130,6 @@ type ClusterNtpServersCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cluster ntp servers collection get default response
-func (o *ClusterNtpServersCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cluster ntp servers collection get default response has a 2xx status code
 func (o *ClusterNtpServersCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *ClusterNtpServersCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster ntp servers collection get default response
+func (o *ClusterNtpServersCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterNtpServersCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/ntp/servers][%d] cluster_ntp_servers_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/ntp/servers][%d] cluster_ntp_servers_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNtpServersCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/ntp/servers][%d] cluster_ntp_servers_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/ntp/servers][%d] cluster_ntp_servers_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNtpServersCollectionGetDefault) GetPayload() *models.ErrorResponse {

@@ -26,7 +26,7 @@ type FirmwareShelf struct {
 
 	// Status of the shelf firmware update.
 	// Read Only: true
-	// Enum: [running idle]
+	// Enum: ["running","idle"]
 	UpdateStatus interface{} `json:"update_status,omitempty"`
 }
 

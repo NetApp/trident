@@ -36,31 +36,39 @@ type ClientService interface {
 
 	ApplicationComponentSnapshotCollectionGet(params *ApplicationComponentSnapshotCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationComponentSnapshotCollectionGetOK, error)
 
-	ApplicationComponentSnapshotCreate(params *ApplicationComponentSnapshotCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationComponentSnapshotCreateAccepted, error)
+	ApplicationComponentSnapshotCreate(params *ApplicationComponentSnapshotCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationComponentSnapshotCreateCreated, *ApplicationComponentSnapshotCreateAccepted, error)
 
-	ApplicationComponentSnapshotDelete(params *ApplicationComponentSnapshotDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationComponentSnapshotDeleteAccepted, error)
+	ApplicationComponentSnapshotDelete(params *ApplicationComponentSnapshotDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationComponentSnapshotDeleteOK, *ApplicationComponentSnapshotDeleteAccepted, error)
+
+	ApplicationComponentSnapshotDeleteCollection(params *ApplicationComponentSnapshotDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationComponentSnapshotDeleteCollectionOK, *ApplicationComponentSnapshotDeleteCollectionAccepted, error)
 
 	ApplicationComponentSnapshotGet(params *ApplicationComponentSnapshotGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationComponentSnapshotGetOK, error)
 
-	ApplicationComponentSnapshotRestore(params *ApplicationComponentSnapshotRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationComponentSnapshotRestoreAccepted, error)
+	ApplicationComponentSnapshotRestore(params *ApplicationComponentSnapshotRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationComponentSnapshotRestoreCreated, *ApplicationComponentSnapshotRestoreAccepted, error)
 
-	ApplicationCreate(params *ApplicationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationCreateAccepted, error)
+	ApplicationCreate(params *ApplicationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationCreateCreated, *ApplicationCreateAccepted, error)
 
-	ApplicationDelete(params *ApplicationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationDeleteAccepted, error)
+	ApplicationDelete(params *ApplicationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationDeleteOK, *ApplicationDeleteAccepted, error)
+
+	ApplicationDeleteCollection(params *ApplicationDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationDeleteCollectionOK, *ApplicationDeleteCollectionAccepted, error)
 
 	ApplicationGet(params *ApplicationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationGetOK, error)
 
-	ApplicationModify(params *ApplicationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationModifyAccepted, error)
+	ApplicationModify(params *ApplicationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationModifyOK, *ApplicationModifyAccepted, error)
+
+	ApplicationModifyCollection(params *ApplicationModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationModifyCollectionOK, *ApplicationModifyCollectionAccepted, error)
 
 	ApplicationSnapshotCollectionGet(params *ApplicationSnapshotCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotCollectionGetOK, error)
 
-	ApplicationSnapshotCreate(params *ApplicationSnapshotCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotCreateAccepted, error)
+	ApplicationSnapshotCreate(params *ApplicationSnapshotCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotCreateCreated, *ApplicationSnapshotCreateAccepted, error)
 
-	ApplicationSnapshotDelete(params *ApplicationSnapshotDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotDeleteAccepted, error)
+	ApplicationSnapshotDelete(params *ApplicationSnapshotDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotDeleteOK, *ApplicationSnapshotDeleteAccepted, error)
+
+	ApplicationSnapshotDeleteCollection(params *ApplicationSnapshotDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotDeleteCollectionOK, *ApplicationSnapshotDeleteCollectionAccepted, error)
 
 	ApplicationSnapshotGet(params *ApplicationSnapshotGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotGetOK, error)
 
-	ApplicationSnapshotRestore(params *ApplicationSnapshotRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotRestoreAccepted, error)
+	ApplicationSnapshotRestore(params *ApplicationSnapshotRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotRestoreCreated, *ApplicationSnapshotRestoreAccepted, error)
 
 	ApplicationTemplateCollectionGet(params *ApplicationTemplateCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationTemplateCollectionGetOK, error)
 
@@ -72,9 +80,15 @@ type ClientService interface {
 
 	ConsistencyGroupDelete(params *ConsistencyGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupDeleteOK, *ConsistencyGroupDeleteAccepted, error)
 
+	ConsistencyGroupDeleteCollection(params *ConsistencyGroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupDeleteCollectionOK, *ConsistencyGroupDeleteCollectionAccepted, error)
+
 	ConsistencyGroupGet(params *ConsistencyGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupGetOK, error)
 
+	ConsistencyGroupMetricsCollectionGet(params *ConsistencyGroupMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupMetricsCollectionGetOK, error)
+
 	ConsistencyGroupModify(params *ConsistencyGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupModifyOK, *ConsistencyGroupModifyAccepted, error)
+
+	ConsistencyGroupModifyCollection(params *ConsistencyGroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupModifyCollectionOK, *ConsistencyGroupModifyCollectionAccepted, error)
 
 	ConsistencyGroupSnapshotCollectionGet(params *ConsistencyGroupSnapshotCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotCollectionGetOK, error)
 
@@ -82,9 +96,13 @@ type ClientService interface {
 
 	ConsistencyGroupSnapshotDelete(params *ConsistencyGroupSnapshotDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotDeleteOK, *ConsistencyGroupSnapshotDeleteAccepted, error)
 
+	ConsistencyGroupSnapshotDeleteCollection(params *ConsistencyGroupSnapshotDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotDeleteCollectionOK, *ConsistencyGroupSnapshotDeleteCollectionAccepted, error)
+
 	ConsistencyGroupSnapshotGet(params *ConsistencyGroupSnapshotGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotGetOK, error)
 
 	ConsistencyGroupSnapshotModify(params *ConsistencyGroupSnapshotModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotModifyOK, *ConsistencyGroupSnapshotModifyAccepted, error)
+
+	ConsistencyGroupSnapshotModifyCollection(params *ConsistencyGroupSnapshotModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotModifyCollectionOK, *ConsistencyGroupSnapshotModifyCollectionAccepted, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -135,8 +153,8 @@ func (a *Client) ApplicationCollectionGet(params *ApplicationCollectionGetParams
 		ID:                 "application_collection_get",
 		Method:             "GET",
 		PathPattern:        "/application/applications",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationCollectionGetReader{formats: a.formats},
@@ -188,8 +206,8 @@ func (a *Client) ApplicationComponentCollectionGet(params *ApplicationComponentC
 		ID:                 "application_component_collection_get",
 		Method:             "GET",
 		PathPattern:        "/application/applications/{application.uuid}/components",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationComponentCollectionGetReader{formats: a.formats},
@@ -233,8 +251,8 @@ func (a *Client) ApplicationComponentGet(params *ApplicationComponentGetParams, 
 		ID:                 "application_component_get",
 		Method:             "GET",
 		PathPattern:        "/application/applications/{application.uuid}/components/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationComponentGetReader{formats: a.formats},
@@ -260,10 +278,10 @@ func (a *Client) ApplicationComponentGet(params *ApplicationComponentGetParams, 
 }
 
 /*
-	ApplicationComponentSnapshotCollectionGet Retrieves Snapshot copies of an application component.<br/>
+	ApplicationComponentSnapshotCollectionGet Retrieves snapshots of an application component.<br/>
 
 This endpoint is only supported for Maxdata template applications.<br/>
-Component Snapshot copies are essentially more granular application Snapshot copies. There is no difference beyond the scope of the operation.
+Component snapshots are essentially more granular application snapshots. There is no difference beyond the scope of the operation.
 ### Learn more
 * [`DOC /application/applications/{application.uuid}/snapshots`](#docs-application-application_applications_{application.uuid}_snapshots)
 * [`GET /application/applications/{uuid}/snapshots`](#operations-application-application_snapshot_collection_get)
@@ -278,8 +296,8 @@ func (a *Client) ApplicationComponentSnapshotCollectionGet(params *ApplicationCo
 		ID:                 "application_component_snapshot_collection_get",
 		Method:             "GET",
 		PathPattern:        "/application/applications/{application.uuid}/components/{component.uuid}/snapshots",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationComponentSnapshotCollectionGetReader{formats: a.formats},
@@ -305,20 +323,20 @@ func (a *Client) ApplicationComponentSnapshotCollectionGet(params *ApplicationCo
 }
 
 /*
-	ApplicationComponentSnapshotCreate Creates a Snapshot copy of an application component.<br/>
+	ApplicationComponentSnapshotCreate Creates a snapshot of an application component.<br/>
 
 This endpoint is only supported for Maxdata template applications.<br/>
 ### Required properties
 * `name`
 ### Recommended optional properties
 * `consistency_type` - Track whether this snapshot is _application_ or _crash_ consistent.
-Component Snapshot copies are essentially more granular application Snapshot copies. There is no difference beyond the scope of the operation.
+Component snapshots are essentially more granular application snapshots. There is no difference beyond the scope of the operation.
 ### Learn more
 * [`DOC /application/applications/{application.uuid}/snapshots`](#docs-application-application_applications_{application.uuid}_snapshots)
 * [`GET /application/applications/{uuid}/snapshots`](#operations-application-application_snapshot_create)
 * [`DOC /application`](#docs-application-overview)
 */
-func (a *Client) ApplicationComponentSnapshotCreate(params *ApplicationComponentSnapshotCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationComponentSnapshotCreateAccepted, error) {
+func (a *Client) ApplicationComponentSnapshotCreate(params *ApplicationComponentSnapshotCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationComponentSnapshotCreateCreated, *ApplicationComponentSnapshotCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewApplicationComponentSnapshotCreateParams()
@@ -327,8 +345,8 @@ func (a *Client) ApplicationComponentSnapshotCreate(params *ApplicationComponent
 		ID:                 "application_component_snapshot_create",
 		Method:             "POST",
 		PathPattern:        "/application/applications/{application.uuid}/components/{component.uuid}/snapshots",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationComponentSnapshotCreateReader{formats: a.formats},
@@ -342,28 +360,30 @@ func (a *Client) ApplicationComponentSnapshotCreate(params *ApplicationComponent
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*ApplicationComponentSnapshotCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *ApplicationComponentSnapshotCreateCreated:
+		return value, nil, nil
+	case *ApplicationComponentSnapshotCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ApplicationComponentSnapshotCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-	ApplicationComponentSnapshotDelete Delete a Snapshot copy of an application component.<br/>
+	ApplicationComponentSnapshotDelete Delete a snapshot of an application component.<br/>
 
 This endpoint is only supported for Maxdata template applications.<br/>
-Component Snapshot copies are essentially more granular application Snapshot copies. There is no difference beyond the scope of the operation.
+Component snapshots are essentially more granular application snapshots. There is no difference beyond the scope of the operation.
 ### Learn more
 * [`DOC /application/applications/{application.uuid}/snapshots`](#docs-application-application_applications_{application.uuid}_snapshots)
 * [`DELETE /application/applications/{uuid}/snapshots`](#operations-application-application_snapshot_delete)
 * [`DOC /application`](#docs-application-overview)
 */
-func (a *Client) ApplicationComponentSnapshotDelete(params *ApplicationComponentSnapshotDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationComponentSnapshotDeleteAccepted, error) {
+func (a *Client) ApplicationComponentSnapshotDelete(params *ApplicationComponentSnapshotDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationComponentSnapshotDeleteOK, *ApplicationComponentSnapshotDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewApplicationComponentSnapshotDeleteParams()
@@ -372,8 +392,8 @@ func (a *Client) ApplicationComponentSnapshotDelete(params *ApplicationComponent
 		ID:                 "application_component_snapshot_delete",
 		Method:             "DELETE",
 		PathPattern:        "/application/applications/{application.uuid}/components/{component.uuid}/snapshots/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationComponentSnapshotDeleteReader{formats: a.formats},
@@ -387,22 +407,64 @@ func (a *Client) ApplicationComponentSnapshotDelete(params *ApplicationComponent
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*ApplicationComponentSnapshotDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *ApplicationComponentSnapshotDeleteOK:
+		return value, nil, nil
+	case *ApplicationComponentSnapshotDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ApplicationComponentSnapshotDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-	ApplicationComponentSnapshotGet Retrieve a Snapshot copy of an application component.<br/>
+ApplicationComponentSnapshotDeleteCollection application component snapshot delete collection API
+*/
+func (a *Client) ApplicationComponentSnapshotDeleteCollection(params *ApplicationComponentSnapshotDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationComponentSnapshotDeleteCollectionOK, *ApplicationComponentSnapshotDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewApplicationComponentSnapshotDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "application_component_snapshot_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/application/applications/{application.uuid}/components/{component.uuid}/snapshots",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ApplicationComponentSnapshotDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *ApplicationComponentSnapshotDeleteCollectionOK:
+		return value, nil, nil
+	case *ApplicationComponentSnapshotDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ApplicationComponentSnapshotDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	ApplicationComponentSnapshotGet Retrieve a snapshot of an application component.<br/>
 
 This endpoint is only supported for Maxdata template applications.<br/>
-Component Snapshot copies are essentially more granular application Snapshot copies. There is no difference beyond the scope of the operation.
+Component snapshots are essentially more granular application snapshots. There is no difference beyond the scope of the operation.
 ### Learn more
 * [`DOC /application/applications/{application.uuid}/snapshots`](#docs-application-application_applications_{application.uuid}_snapshots)
 * [`GET /application/applications/{uuid}/snapshots`](#operations-application-application_snapshot_get)
@@ -417,8 +479,8 @@ func (a *Client) ApplicationComponentSnapshotGet(params *ApplicationComponentSna
 		ID:                 "application_component_snapshot_get",
 		Method:             "GET",
 		PathPattern:        "/application/applications/{application.uuid}/components/{component.uuid}/snapshots/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationComponentSnapshotGetReader{formats: a.formats},
@@ -444,17 +506,17 @@ func (a *Client) ApplicationComponentSnapshotGet(params *ApplicationComponentSna
 }
 
 /*
-	ApplicationComponentSnapshotRestore Restore a Snapshot copy of an application component.<br/>
+	ApplicationComponentSnapshotRestore Restore a snapshot of an application component.<br/>
 
 This endpoint is only supported for Maxdata template applications.<br/>
-Component Snapshot copies are essentially more granular application Snapshot copies. There is no difference beyond the scope of the operation.
+Component snapshots are essentially more granular application snapshots. There is no difference beyond the scope of the operation.
 ### Learn more
 * [`DOC /application/applications/{application.uuid}/snapshots`](#docs-application-application_applications_{application.uuid}_snapshots)
 * [`POST /application/applications/{application.uuid}/snapshots/{uuid}/restore`](#operations-application-application_snapshot_restore)
 * [`DOC /application`](#docs-application-overview)
 * [`Asynchronous operations`](#Synchronous_and_asynchronous_operations)
 */
-func (a *Client) ApplicationComponentSnapshotRestore(params *ApplicationComponentSnapshotRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationComponentSnapshotRestoreAccepted, error) {
+func (a *Client) ApplicationComponentSnapshotRestore(params *ApplicationComponentSnapshotRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationComponentSnapshotRestoreCreated, *ApplicationComponentSnapshotRestoreAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewApplicationComponentSnapshotRestoreParams()
@@ -463,8 +525,8 @@ func (a *Client) ApplicationComponentSnapshotRestore(params *ApplicationComponen
 		ID:                 "application_component_snapshot_restore",
 		Method:             "POST",
 		PathPattern:        "/application/applications/{application.uuid}/components/{component.uuid}/snapshots/{uuid}/restore",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationComponentSnapshotRestoreReader{formats: a.formats},
@@ -478,15 +540,17 @@ func (a *Client) ApplicationComponentSnapshotRestore(params *ApplicationComponen
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*ApplicationComponentSnapshotRestoreAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *ApplicationComponentSnapshotRestoreCreated:
+		return value, nil, nil
+	case *ApplicationComponentSnapshotRestoreAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ApplicationComponentSnapshotRestoreDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -519,7 +583,7 @@ If not specified in POST, the follow default property values are assigned. It is
 * `template.name` - Defaults to match the `<template>` provided. If specified, the value of this property must match the provided template properties.
 * `<template>` - The majority of template properties have default values. The defaults may vary from template to template. See the model of each template for complete details. In general the following patterns are common across all template properties. The location of these properties varies from template to template.
   - `<template>.storage_service.name` - _value_
-  - `<template>.protection_type.local_rpo` - _hourly_ (Hourly Snapshot copies)
+  - `<template>.protection_type.local_rpo` - _hourly_ (Hourly snapshots)
   - `<template>.protection_type.remote_rpo` - _none_ (Not MetroCluster)
   - `san.new_igroups.os_type` - Defaults to match the `os_type` provided for the application, but may need to be provided explicitly when using virtualization.
 
@@ -587,7 +651,7 @@ A common pattern across many templates are objects that are optional, but once a
 * [`DOC /application`](#docs-application-overview)
 * [`Asynchronous operations`](#Synchronous_and_asynchronous_operations)
 */
-func (a *Client) ApplicationCreate(params *ApplicationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationCreateAccepted, error) {
+func (a *Client) ApplicationCreate(params *ApplicationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationCreateCreated, *ApplicationCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewApplicationCreateParams()
@@ -596,8 +660,8 @@ func (a *Client) ApplicationCreate(params *ApplicationCreateParams, authInfo run
 		ID:                 "application_create",
 		Method:             "POST",
 		PathPattern:        "/application/applications",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationCreateReader{formats: a.formats},
@@ -611,15 +675,17 @@ func (a *Client) ApplicationCreate(params *ApplicationCreateParams, authInfo run
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*ApplicationCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *ApplicationCreateCreated:
+		return value, nil, nil
+	case *ApplicationCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ApplicationCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -631,7 +697,7 @@ This deletes everything created with the application, including any volumes, LUN
 * [`DOC /application`](#docs-application-overview)
 * [`Asynchronous operations`](#Synchronous_and_asynchronous_operations)
 */
-func (a *Client) ApplicationDelete(params *ApplicationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationDeleteAccepted, error) {
+func (a *Client) ApplicationDelete(params *ApplicationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationDeleteOK, *ApplicationDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewApplicationDeleteParams()
@@ -640,8 +706,8 @@ func (a *Client) ApplicationDelete(params *ApplicationDeleteParams, authInfo run
 		ID:                 "application_delete",
 		Method:             "DELETE",
 		PathPattern:        "/application/applications/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationDeleteReader{formats: a.formats},
@@ -655,15 +721,57 @@ func (a *Client) ApplicationDelete(params *ApplicationDeleteParams, authInfo run
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*ApplicationDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *ApplicationDeleteOK:
+		return value, nil, nil
+	case *ApplicationDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ApplicationDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+ApplicationDeleteCollection application delete collection API
+*/
+func (a *Client) ApplicationDeleteCollection(params *ApplicationDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationDeleteCollectionOK, *ApplicationDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewApplicationDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "application_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/application/applications",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ApplicationDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *ApplicationDeleteCollectionOK:
+		return value, nil, nil
+	case *ApplicationDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ApplicationDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -694,8 +802,8 @@ func (a *Client) ApplicationGet(params *ApplicationGetParams, authInfo runtime.C
 		ID:                 "application_get",
 		Method:             "GET",
 		PathPattern:        "/application/applications/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationGetReader{formats: a.formats},
@@ -732,7 +840,7 @@ Size modifications are processed in a variety of ways depending on the type of a
 ### `igroup_name`
 Modification of the igroup name allows an entire application to be mapped from one initiator group to another. Data access will be interrupted as the LUNs are unmapped from the original igroup and remapped to the new one.
 ### Application state
-During a modification, the `state` property of the application updates to indicate `modifying`. In `modifying` state, statistics are not available and Snapshot copy operations are not allowed. If the modification fails, it is possible for the application to be left in an inconsistent state, with the underlying ONTAP storage elements not matching across a component. When this occurs, the application is left in the `modifying` state until the command is either retried and succeeds or a call to restore the original state is successful.
+During a modification, the `state` property of the application updates to indicate `modifying`. In `modifying` state, statistics are not available and snapshot operations are not allowed. If the modification fails, it is possible for the application to be left in an inconsistent state, with the underlying ONTAP storage elements not matching across a component. When this occurs, the application is left in the `modifying` state until the command is either retried and succeeds or a call to restore the original state is successful.
 ### Examples
  1. Change the storage service of the database of the Oracle application to _extreme_ and resize the redo logs to _100GB_.
     ```
@@ -779,7 +887,7 @@ During a modification, the `state` property of the application updates to indica
 * [`DOC /application`](#docs-application-overview)
 * [`Asynchronous operations`](#Synchronous_and_asynchronous_operations)
 */
-func (a *Client) ApplicationModify(params *ApplicationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationModifyAccepted, error) {
+func (a *Client) ApplicationModify(params *ApplicationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationModifyOK, *ApplicationModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewApplicationModifyParams()
@@ -788,8 +896,8 @@ func (a *Client) ApplicationModify(params *ApplicationModifyParams, authInfo run
 		ID:                 "application_modify",
 		Method:             "PATCH",
 		PathPattern:        "/application/applications/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationModifyReader{formats: a.formats},
@@ -803,26 +911,68 @@ func (a *Client) ApplicationModify(params *ApplicationModifyParams, authInfo run
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*ApplicationModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *ApplicationModifyOK:
+		return value, nil, nil
+	case *ApplicationModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ApplicationModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-	ApplicationSnapshotCollectionGet Retrieves Snapshot copies of an application.
+ApplicationModifyCollection application modify collection API
+*/
+func (a *Client) ApplicationModifyCollection(params *ApplicationModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationModifyCollectionOK, *ApplicationModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewApplicationModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "application_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/application/applications",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ApplicationModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *ApplicationModifyCollectionOK:
+		return value, nil, nil
+	case *ApplicationModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ApplicationModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	ApplicationSnapshotCollectionGet Retrieves snapshots of an application.
 
 ### Query examples
-The following query returns all Snapshot copies from May 4, 2017 EST. For readability, the colon (`:`) is left in this example. For an actual call, they should be escaped as `%3A`.<br/><br/>
+The following query returns all snapshots from May 4, 2017 EST. For readability, the colon (`:`) is left in this example. For an actual call, they should be escaped as `%3A`.<br/><br/>
 ```
 GET /application/applications/{application.uuid}/snapshots?create_time=2017-05-04T00:00:00-05:00..2017-05-04T23:59:59-05:00
 ```
-<br/>The following query returns all Snapshot copies that have been flagged as _application consistent_.<br/><br/>
+<br/>The following query returns all snapshots that have been flagged as _application consistent_.<br/><br/>
 ```
 GET /application/applications/{application.uuid}/snapshots?consistency_type=application
 ```
@@ -839,8 +989,8 @@ func (a *Client) ApplicationSnapshotCollectionGet(params *ApplicationSnapshotCol
 		ID:                 "application_snapshot_collection_get",
 		Method:             "GET",
 		PathPattern:        "/application/applications/{application.uuid}/snapshots",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationSnapshotCollectionGetReader{formats: a.formats},
@@ -866,7 +1016,7 @@ func (a *Client) ApplicationSnapshotCollectionGet(params *ApplicationSnapshotCol
 }
 
 /*
-	ApplicationSnapshotCreate Creates a Snapshot copy of the application.
+	ApplicationSnapshotCreate Creates a snapshot of the application.
 
 ### Required properties
 * `name`
@@ -876,7 +1026,7 @@ func (a *Client) ApplicationSnapshotCollectionGet(params *ApplicationSnapshotCol
 * [`DOC /application/applications/{application.uuid}/snapshots`](#docs-application-application_applications_{application.uuid}_snapshots)
 * [`DOC /application`](#docs-application-overview)
 */
-func (a *Client) ApplicationSnapshotCreate(params *ApplicationSnapshotCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotCreateAccepted, error) {
+func (a *Client) ApplicationSnapshotCreate(params *ApplicationSnapshotCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotCreateCreated, *ApplicationSnapshotCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewApplicationSnapshotCreateParams()
@@ -885,8 +1035,8 @@ func (a *Client) ApplicationSnapshotCreate(params *ApplicationSnapshotCreatePara
 		ID:                 "application_snapshot_create",
 		Method:             "POST",
 		PathPattern:        "/application/applications/{application.uuid}/snapshots",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationSnapshotCreateReader{formats: a.formats},
@@ -900,28 +1050,30 @@ func (a *Client) ApplicationSnapshotCreate(params *ApplicationSnapshotCreatePara
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*ApplicationSnapshotCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *ApplicationSnapshotCreateCreated:
+		return value, nil, nil
+	case *ApplicationSnapshotCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ApplicationSnapshotCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-	ApplicationSnapshotDelete Delete a Snapshot copy of an application
+	ApplicationSnapshotDelete Delete a snapshot of an application
 
 ### Query examples
-Individual Snapshot copies can be destroyed with no query parameters, or a range of Snapshot copies can be destroyed at one time using a query.<br/>
-The following query deletes all application Snapshot copies created before May 4, 2017<br/><br/>
+Individual snapshots can be destroyed with no query parameters, or a range of snapshots can be destroyed at one time using a query.<br/>
+The following query deletes all application snapshots created before May 4, 2017<br/><br/>
 ```
 DELETE /application/applications/{application.uuid}/snapshots?create_time=<2017-05-04T00:00:00-05:00
 ```
 */
-func (a *Client) ApplicationSnapshotDelete(params *ApplicationSnapshotDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotDeleteAccepted, error) {
+func (a *Client) ApplicationSnapshotDelete(params *ApplicationSnapshotDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotDeleteOK, *ApplicationSnapshotDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewApplicationSnapshotDeleteParams()
@@ -930,8 +1082,8 @@ func (a *Client) ApplicationSnapshotDelete(params *ApplicationSnapshotDeletePara
 		ID:                 "application_snapshot_delete",
 		Method:             "DELETE",
 		PathPattern:        "/application/applications/{application.uuid}/snapshots/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationSnapshotDeleteReader{formats: a.formats},
@@ -945,22 +1097,64 @@ func (a *Client) ApplicationSnapshotDelete(params *ApplicationSnapshotDeletePara
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*ApplicationSnapshotDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *ApplicationSnapshotDeleteOK:
+		return value, nil, nil
+	case *ApplicationSnapshotDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ApplicationSnapshotDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-	ApplicationSnapshotGet Retrieve a Snapshot copy of an application component.<br/>
+ApplicationSnapshotDeleteCollection application snapshot delete collection API
+*/
+func (a *Client) ApplicationSnapshotDeleteCollection(params *ApplicationSnapshotDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotDeleteCollectionOK, *ApplicationSnapshotDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewApplicationSnapshotDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "application_snapshot_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/application/applications/{application.uuid}/snapshots",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ApplicationSnapshotDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *ApplicationSnapshotDeleteCollectionOK:
+		return value, nil, nil
+	case *ApplicationSnapshotDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ApplicationSnapshotDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	ApplicationSnapshotGet Retrieve a snapshot of an application component.<br/>
 
 This endpoint is only supported for Maxdata template applications.<br/>
-Component Snapshot copies are essentially more granular application Snapshot copies. There is no difference beyond the scope of the operation.
+Component snapshots are essentially more granular application snapshots. There is no difference beyond the scope of the operation.
 ### Learn more
 * [`DOC /application/applications/{application.uuid}/snapshots`](#docs-application-application_applications_{application.uuid}_snapshots)
 * [`GET /application/applications/{uuid}/snapshots`](#operations-application-application_snapshot_create)
@@ -975,8 +1169,8 @@ func (a *Client) ApplicationSnapshotGet(params *ApplicationSnapshotGetParams, au
 		ID:                 "application_snapshot_get",
 		Method:             "GET",
 		PathPattern:        "/application/applications/{application.uuid}/snapshots/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationSnapshotGetReader{formats: a.formats},
@@ -1004,12 +1198,12 @@ func (a *Client) ApplicationSnapshotGet(params *ApplicationSnapshotGetParams, au
 /*
 	ApplicationSnapshotRestore Restore an application snapshot<br/>
 
-Restoring an application Snapshot copy reverts all storage elements in the Snapshot copy to the state in which the Snapshot copy was in when the Snapshot copy was taken. This restoration does not apply to access settings that might have changed since the Snapshot copy was created.
+Restoring an application snapshot reverts all storage elements in the snapshot to the state in which the snapshot was in when the snapshot was taken. This restoration does not apply to access settings that might have changed since the snapshot was created.
 ### Learn more
 * [`DOC /application`](#docs-application-overview)
 * [`Asynchronous operations`](#Synchronous_and_asynchronous_operations)
 */
-func (a *Client) ApplicationSnapshotRestore(params *ApplicationSnapshotRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotRestoreAccepted, error) {
+func (a *Client) ApplicationSnapshotRestore(params *ApplicationSnapshotRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotRestoreCreated, *ApplicationSnapshotRestoreAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewApplicationSnapshotRestoreParams()
@@ -1018,8 +1212,8 @@ func (a *Client) ApplicationSnapshotRestore(params *ApplicationSnapshotRestorePa
 		ID:                 "application_snapshot_restore",
 		Method:             "POST",
 		PathPattern:        "/application/applications/{application.uuid}/snapshots/{uuid}/restore",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationSnapshotRestoreReader{formats: a.formats},
@@ -1033,15 +1227,17 @@ func (a *Client) ApplicationSnapshotRestore(params *ApplicationSnapshotRestorePa
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*ApplicationSnapshotRestoreAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *ApplicationSnapshotRestoreCreated:
+		return value, nil, nil
+	case *ApplicationSnapshotRestoreAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ApplicationSnapshotRestoreDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1068,8 +1264,8 @@ func (a *Client) ApplicationTemplateCollectionGet(params *ApplicationTemplateCol
 		ID:                 "application_template_collection_get",
 		Method:             "GET",
 		PathPattern:        "/application/templates",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationTemplateCollectionGetReader{formats: a.formats},
@@ -1114,8 +1310,8 @@ func (a *Client) ApplicationTemplateGet(params *ApplicationTemplateGetParams, au
 		ID:                 "application_template_get",
 		Method:             "GET",
 		PathPattern:        "/application/templates/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ApplicationTemplateGetReader{formats: a.formats},
@@ -1145,7 +1341,9 @@ func (a *Client) ApplicationTemplateGet(params *ApplicationTemplateGetParams, au
 
 ## Notes
 When volume granular properties, such as, the storage SLC, Fabric Pool tiering are not the same for all the existing volumes of a consistency group, the corresponding property is not reported at consistency group granularity. It is only reported if all the volumes of the consistency group have the same value for that property.
-<br>If this consistency group instance is part of a replication relationship, the "replicated" parameter will be true. Otherwise, it is false. Also, the "replicated" parameter will not be present in the output for Nested-consistency groups, it is included only for single and top-level consistency groups. If this consistency group instance is the source of a replication relationship, the "replication_source" parameter will be true. Otherwise, it is false.
+<br>If this consistency group instance has 1 or more replication relationships, the "replicated" parameter is true.  If there are no associated replication relationships, it is false. This parameter is only included in the output for Single-CG and Parent-CG, not for Child-CG.
+If this consistency group instance has 1 or more replication relationships, the "replication_relationships" parameter is included in the output for Single-CG and Parent-CG instances.  If there are no associated replication relationships, this parameter is not included in the output.
+Note that this parameter is an array and as such it has as many elements as the number of replication relationships associated with this consistency group. Each element of the array describes properties of one replication relationship associated with this consistency group. The "uuid" parameter identifies a specific replication relationship and the "href" parameter is a link to the corresponding SnapMirror relationship. The "is_source" parameter is true if this consistency group is the source in that relationship, otherwise it is false.
 ## Expensive properties
 There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
 * `volumes`
@@ -1161,8 +1359,8 @@ func (a *Client) ConsistencyGroupCollectionGet(params *ConsistencyGroupCollectio
 		ID:                 "consistency_group_collection_get",
 		Method:             "GET",
 		PathPattern:        "/application/consistency-groups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ConsistencyGroupCollectionGetReader{formats: a.formats},
@@ -1228,8 +1426,8 @@ func (a *Client) ConsistencyGroupCreate(params *ConsistencyGroupCreateParams, au
 		ID:                 "consistency_group_create",
 		Method:             "POST",
 		PathPattern:        "/application/consistency-groups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ConsistencyGroupCreateReader{formats: a.formats},
@@ -1259,7 +1457,7 @@ func (a *Client) ConsistencyGroupCreate(params *ConsistencyGroupCreateParams, au
 /*
 	ConsistencyGroupDelete Deletes a consistency group.
 
-<br>Note this will not delete any associated volumes or LUNs. To remove those elements, you can use the appropriate object endpoint.
+<br>Note this will not delete any associated volumes or LUNs. To delete those elements, use the appropriate object endpoint.
 ## Related ONTAP commands
 There are no ONTAP commands for managing consistency groups.
 */
@@ -1272,8 +1470,8 @@ func (a *Client) ConsistencyGroupDelete(params *ConsistencyGroupDeleteParams, au
 		ID:                 "consistency_group_delete",
 		Method:             "DELETE",
 		PathPattern:        "/application/consistency-groups/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ConsistencyGroupDeleteReader{formats: a.formats},
@@ -1301,6 +1499,46 @@ func (a *Client) ConsistencyGroupDelete(params *ConsistencyGroupDeleteParams, au
 }
 
 /*
+ConsistencyGroupDeleteCollection consistency group delete collection API
+*/
+func (a *Client) ConsistencyGroupDeleteCollection(params *ConsistencyGroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupDeleteCollectionOK, *ConsistencyGroupDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewConsistencyGroupDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "consistency_group_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/application/consistency-groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ConsistencyGroupDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *ConsistencyGroupDeleteCollectionOK:
+		return value, nil, nil
+	case *ConsistencyGroupDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ConsistencyGroupDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	ConsistencyGroupGet Retrieves a single consistency group.
 
 ### Expensive properties
@@ -1320,8 +1558,8 @@ func (a *Client) ConsistencyGroupGet(params *ConsistencyGroupGetParams, authInfo
 		ID:                 "consistency_group_get",
 		Method:             "GET",
 		PathPattern:        "/application/consistency-groups/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ConsistencyGroupGetReader{formats: a.formats},
@@ -1347,11 +1585,50 @@ func (a *Client) ConsistencyGroupGet(params *ConsistencyGroupGetParams, authInfo
 }
 
 /*
+ConsistencyGroupMetricsCollectionGet Retrieves historical performance and capacity metrics for a consistency group.
+*/
+func (a *Client) ConsistencyGroupMetricsCollectionGet(params *ConsistencyGroupMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupMetricsCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewConsistencyGroupMetricsCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "consistency_group_metrics_collection_get",
+		Method:             "GET",
+		PathPattern:        "/application/consistency-groups/{consistency_group.uuid}/metrics",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ConsistencyGroupMetricsCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ConsistencyGroupMetricsCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ConsistencyGroupMetricsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	ConsistencyGroupModify Updates a consistency group.
 
 <br>Note that this operation will never delete storage elements. You can specify only elements that should be added to the consistency group regardless of existing storage objects.
+
 ## Related ONTAP commands
-N/A. There are no ONTAP commands for managing consistency groups.
+* `vserver consistency-group modify`
 */
 func (a *Client) ConsistencyGroupModify(params *ConsistencyGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupModifyOK, *ConsistencyGroupModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1362,8 +1639,8 @@ func (a *Client) ConsistencyGroupModify(params *ConsistencyGroupModifyParams, au
 		ID:                 "consistency_group_modify",
 		Method:             "PATCH",
 		PathPattern:        "/application/consistency-groups/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ConsistencyGroupModifyReader{formats: a.formats},
@@ -1391,13 +1668,53 @@ func (a *Client) ConsistencyGroupModify(params *ConsistencyGroupModifyParams, au
 }
 
 /*
-	ConsistencyGroupSnapshotCollectionGet Retrieves Snapshot copies for a consistency group.
+ConsistencyGroupModifyCollection consistency group modify collection API
+*/
+func (a *Client) ConsistencyGroupModifyCollection(params *ConsistencyGroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupModifyCollectionOK, *ConsistencyGroupModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewConsistencyGroupModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "consistency_group_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/application/consistency-groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ConsistencyGroupModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *ConsistencyGroupModifyCollectionOK:
+		return value, nil, nil
+	case *ConsistencyGroupModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ConsistencyGroupModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	ConsistencyGroupSnapshotCollectionGet Retrieves snapshots for a consistency group.
 
 ## Expensive properties
 There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
 * `is_partial`
-* `missing_voumes.uuid`
-* `missing_voumes.name`
+* `missing_volumes.uuid`
+* `missing_volumes.name`
 */
 func (a *Client) ConsistencyGroupSnapshotCollectionGet(params *ConsistencyGroupSnapshotCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1408,8 +1725,8 @@ func (a *Client) ConsistencyGroupSnapshotCollectionGet(params *ConsistencyGroupS
 		ID:                 "consistency_group_snapshot_collection_get",
 		Method:             "GET",
 		PathPattern:        "/application/consistency-groups/{consistency_group.uuid}/snapshots",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ConsistencyGroupSnapshotCollectionGetReader{formats: a.formats},
@@ -1435,10 +1752,10 @@ func (a *Client) ConsistencyGroupSnapshotCollectionGet(params *ConsistencyGroupS
 }
 
 /*
-	ConsistencyGroupSnapshotCreate Creates a Snapshot copy of an existing consistency group.
+	ConsistencyGroupSnapshotCreate Creates a snapshot of an existing consistency group.
 
 ### Required properties
-* `consistency_group.uuid` - Existing consistency group UUID in which to create the Snapshot copy.
+* `consistency_group.uuid` - Existing consistency group UUID in which to create the snapshot.
 */
 func (a *Client) ConsistencyGroupSnapshotCreate(params *ConsistencyGroupSnapshotCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotCreateCreated, *ConsistencyGroupSnapshotCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1449,8 +1766,8 @@ func (a *Client) ConsistencyGroupSnapshotCreate(params *ConsistencyGroupSnapshot
 		ID:                 "consistency_group_snapshot_create",
 		Method:             "POST",
 		PathPattern:        "/application/consistency-groups/{consistency_group.uuid}/snapshots",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ConsistencyGroupSnapshotCreateReader{formats: a.formats},
@@ -1478,7 +1795,7 @@ func (a *Client) ConsistencyGroupSnapshotCreate(params *ConsistencyGroupSnapshot
 }
 
 /*
-	ConsistencyGroupSnapshotDelete Deletes a Snapshot copy of a consistency group.
+	ConsistencyGroupSnapshotDelete Deletes a snapshot of a consistency group.
 
 ## Examples
 */
@@ -1491,8 +1808,8 @@ func (a *Client) ConsistencyGroupSnapshotDelete(params *ConsistencyGroupSnapshot
 		ID:                 "consistency_group_snapshot_delete",
 		Method:             "DELETE",
 		PathPattern:        "/application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ConsistencyGroupSnapshotDeleteReader{formats: a.formats},
@@ -1520,13 +1837,53 @@ func (a *Client) ConsistencyGroupSnapshotDelete(params *ConsistencyGroupSnapshot
 }
 
 /*
+ConsistencyGroupSnapshotDeleteCollection consistency group snapshot delete collection API
+*/
+func (a *Client) ConsistencyGroupSnapshotDeleteCollection(params *ConsistencyGroupSnapshotDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotDeleteCollectionOK, *ConsistencyGroupSnapshotDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewConsistencyGroupSnapshotDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "consistency_group_snapshot_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/application/consistency-groups/{consistency_group.uuid}/snapshots",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ConsistencyGroupSnapshotDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *ConsistencyGroupSnapshotDeleteCollectionOK:
+		return value, nil, nil
+	case *ConsistencyGroupSnapshotDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ConsistencyGroupSnapshotDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	ConsistencyGroupSnapshotGet Retrieves details of a specific snapshot for a consistency group.
 
 ### Expensive properties
 There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
 * `is_partial`
-* `missing_voumes.uuid`
-* `missing_voumes.name`
+* `missing_volumes.uuid`
+* `missing_volumes.name`
 */
 func (a *Client) ConsistencyGroupSnapshotGet(params *ConsistencyGroupSnapshotGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1537,8 +1894,8 @@ func (a *Client) ConsistencyGroupSnapshotGet(params *ConsistencyGroupSnapshotGet
 		ID:                 "consistency_group_snapshot_get",
 		Method:             "GET",
 		PathPattern:        "/application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ConsistencyGroupSnapshotGetReader{formats: a.formats},
@@ -1564,12 +1921,12 @@ func (a *Client) ConsistencyGroupSnapshotGet(params *ConsistencyGroupSnapshotGet
 }
 
 /*
-	ConsistencyGroupSnapshotModify Completes a Snapshot copy operation of a consistency group.
+	ConsistencyGroupSnapshotModify Completes a snapshot operation of a consistency group. This can also be used to modify the SnapLock expiry time of a locked snapshot in SnapLock for SnapVault destination.
 
 ## Example
-### Completing a Snapshot copy operation
+### Completing a snapshot operation
 
-	The following example shows how to complete the Snapshot copy operation by committing an existing Snapshot copy to disk:
+	The following example shows how to complete the snapshot operation by committing an existing snapshot to disk:
 	```
 	curl -X PATCH https://<mgmt-ip>/api/application/consistency-groups/a8d0626a-17a0-11eb-b141-005056acd498/snapshots/92c6c770-17a1-11eb-b141-005056acd498?action=commit
 	```
@@ -1578,6 +1935,28 @@ func (a *Client) ConsistencyGroupSnapshotGet(params *ConsistencyGroupSnapshotGet
 
 	```
 	{
+	}
+	```
+
+### Modifying the SnapLock expiry time of a snapshot in SnapLock for SnapVault
+
+	The following example shows how to modify the SnapLock expiry time of a locked snapshot in SnapLock for SnapVault destination:
+	```
+	curl -X PATCH 'https://<mgmt-ip>/api/application/consistency-groups/a8d0626a-17a0-11eb-b141-005056acd498/snapshots/92c6c770-17a1-11eb-b141-005056acd498' -d '{"snaplock.expiry_time" : "2/28/2024 10:11:10 +05:30"}' -H "accept: application/hal+json"
+	```
+
+#### Response:
+
+	```
+	{
+	  "job": {
+	    "uuid": "8c9cabf3-0a88-11ec-a449-005056bbcf9f",
+	    "_links": {
+	      "self": {
+	        "href": "/api/cluster/jobs/8c9cabf3-0a88-11ec-a449-005056bbcf9f"
+	      }
+	    }
+	  }
 	}
 	```
 */
@@ -1590,8 +1969,8 @@ func (a *Client) ConsistencyGroupSnapshotModify(params *ConsistencyGroupSnapshot
 		ID:                 "consistency_group_snapshot_modify",
 		Method:             "PATCH",
 		PathPattern:        "/application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ConsistencyGroupSnapshotModifyReader{formats: a.formats},
@@ -1615,6 +1994,46 @@ func (a *Client) ConsistencyGroupSnapshotModify(params *ConsistencyGroupSnapshot
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ConsistencyGroupSnapshotModifyDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+ConsistencyGroupSnapshotModifyCollection consistency group snapshot modify collection API
+*/
+func (a *Client) ConsistencyGroupSnapshotModifyCollection(params *ConsistencyGroupSnapshotModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotModifyCollectionOK, *ConsistencyGroupSnapshotModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewConsistencyGroupSnapshotModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "consistency_group_snapshot_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/application/consistency-groups/{consistency_group.uuid}/snapshots",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ConsistencyGroupSnapshotModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *ConsistencyGroupSnapshotModifyCollectionOK:
+		return value, nil, nil
+	case *ConsistencyGroupSnapshotModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ConsistencyGroupSnapshotModifyCollectionDefault)
 	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

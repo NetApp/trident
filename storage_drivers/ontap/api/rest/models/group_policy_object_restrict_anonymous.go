@@ -25,7 +25,7 @@ type GroupPolicyObjectRestrictAnonymous struct {
 
 	// Combined restriction for anonymous user.
 	// Example: no_access
-	// Enum: [no_restriction no_enumeration no_access]
+	// Enum: ["no_restriction","no_enumeration","no_access"]
 	CombinedRestrictionForAnonymousUser *string `json:"combined_restriction_for_anonymous_user,omitempty"`
 
 	// No enumeration of SAM accounts.

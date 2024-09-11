@@ -24,12 +24,12 @@ type FlexcacheRelationship struct {
 	Cluster *FlexcacheRelationshipInlineCluster `json:"cluster,omitempty"`
 
 	// Creation time of the relationship.
-	// Example: 2018-06-04T19:00:00Z
+	// Example: 2018-06-04 19:00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
 
-	// Cluster managerment IP of the remote cluster.
+	// Cluster management IP of the remote cluster.
 	// Example: 10.10.10.7
 	// Read Only: true
 	IPAddress *string `json:"ip_address,omitempty"`
@@ -40,7 +40,7 @@ type FlexcacheRelationship struct {
 
 	// Volume state
 	// Read Only: true
-	// Enum: [error mixed offline online]
+	// Enum: ["error","mixed","offline","online"]
 	State *string `json:"state,omitempty"`
 
 	// svm
@@ -550,7 +550,7 @@ func (m *FlexcacheRelationshipInlineClusterInlineLinks) UnmarshalBinary(b []byte
 	return nil
 }
 
-// FlexcacheRelationshipInlineSvm flexcache relationship inline svm
+// FlexcacheRelationshipInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model flexcache_relationship_inline_svm
 type FlexcacheRelationshipInlineSvm struct {
@@ -558,12 +558,12 @@ type FlexcacheRelationshipInlineSvm struct {
 	// links
 	Links *FlexcacheRelationshipInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -740,7 +740,7 @@ type FlexcacheRelationshipInlineVolume struct {
 	// links
 	Links *FlexcacheRelationshipInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

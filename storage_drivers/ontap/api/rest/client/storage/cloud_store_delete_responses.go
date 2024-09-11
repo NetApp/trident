@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type CloudStoreDeleteReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *CloudStoreDeleteReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewCloudStoreDeleteOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewCloudStoreDeleteAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *CloudStoreDeleteReader) ReadResponse(response runtime.ClientResponse, c
 	}
 }
 
+// NewCloudStoreDeleteOK creates a CloudStoreDeleteOK with default headers values
+func NewCloudStoreDeleteOK() *CloudStoreDeleteOK {
+	return &CloudStoreDeleteOK{}
+}
+
+/*
+CloudStoreDeleteOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type CloudStoreDeleteOK struct {
+	Payload *models.CloudStoreJobLinkResponse
+}
+
+// IsSuccess returns true when this cloud store delete o k response has a 2xx status code
+func (o *CloudStoreDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cloud store delete o k response has a 3xx status code
+func (o *CloudStoreDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cloud store delete o k response has a 4xx status code
+func (o *CloudStoreDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cloud store delete o k response has a 5xx status code
+func (o *CloudStoreDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cloud store delete o k response a status code equal to that given
+func (o *CloudStoreDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the cloud store delete o k response
+func (o *CloudStoreDeleteOK) Code() int {
+	return 200
+}
+
+func (o *CloudStoreDeleteOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloudStoreDeleteOK %s", 200, payload)
+}
+
+func (o *CloudStoreDeleteOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloudStoreDeleteOK %s", 200, payload)
+}
+
+func (o *CloudStoreDeleteOK) GetPayload() *models.CloudStoreJobLinkResponse {
+	return o.Payload
+}
+
+func (o *CloudStoreDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.CloudStoreJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewCloudStoreDeleteAccepted creates a CloudStoreDeleteAccepted with default headers values
 func NewCloudStoreDeleteAccepted() *CloudStoreDeleteAccepted {
 	return &CloudStoreDeleteAccepted{}
@@ -52,7 +129,7 @@ CloudStoreDeleteAccepted describes a response with status code 202, with default
 Accepted
 */
 type CloudStoreDeleteAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.CloudStoreJobLinkResponse
 }
 
 // IsSuccess returns true when this cloud store delete accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *CloudStoreDeleteAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the cloud store delete accepted response
+func (o *CloudStoreDeleteAccepted) Code() int {
+	return 202
+}
+
 func (o *CloudStoreDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloudStoreDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloudStoreDeleteAccepted %s", 202, payload)
 }
 
 func (o *CloudStoreDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloudStoreDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloudStoreDeleteAccepted %s", 202, payload)
 }
 
-func (o *CloudStoreDeleteAccepted) GetPayload() *models.JobLinkResponse {
+func (o *CloudStoreDeleteAccepted) GetPayload() *models.CloudStoreJobLinkResponse {
 	return o.Payload
 }
 
 func (o *CloudStoreDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.CloudStoreJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -112,19 +196,19 @@ func NewCloudStoreDeleteDefault(code int) *CloudStoreDeleteDefault {
 }
 
 /*
-CloudStoreDeleteDefault describes a response with status code -1, with default header values.
+	CloudStoreDeleteDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 3 | Invalid operation |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type CloudStoreDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cloud store delete default response
-func (o *CloudStoreDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cloud store delete default response has a 2xx status code
@@ -152,12 +236,19 @@ func (o *CloudStoreDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cloud store delete default response
+func (o *CloudStoreDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CloudStoreDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloud_store_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloud_store_delete default %s", o._statusCode, payload)
 }
 
 func (o *CloudStoreDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloud_store_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloud_store_delete default %s", o._statusCode, payload)
 }
 
 func (o *CloudStoreDeleteDefault) GetPayload() *models.ErrorResponse {

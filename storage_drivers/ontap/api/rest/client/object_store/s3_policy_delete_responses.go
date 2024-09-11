@@ -6,6 +6,7 @@ package object_store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *S3PolicyDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the s3 policy delete o k response
+func (o *S3PolicyDeleteOK) Code() int {
+	return 200
+}
+
 func (o *S3PolicyDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyDeleteOK", 200)
 }
 
 func (o *S3PolicyDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyDeleteOK", 200)
 }
 
 func (o *S3PolicyDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -100,19 +106,18 @@ func NewS3PolicyDeleteDefault(code int) *S3PolicyDeleteDefault {
 }
 
 /*
-S3PolicyDeleteDefault describes a response with status code -1, with default header values.
+	S3PolicyDeleteDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 92405858   | Failed to \"delete\" the \"policy\" because the operation is only supported on data SVMs.
 */
 type S3PolicyDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the s3 policy delete default response
-func (o *S3PolicyDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this s3 policy delete default response has a 2xx status code
@@ -140,12 +145,19 @@ func (o *S3PolicyDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the s3 policy delete default response
+func (o *S3PolicyDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *S3PolicyDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *S3PolicyDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *S3PolicyDeleteDefault) GetPayload() *models.ErrorResponse {

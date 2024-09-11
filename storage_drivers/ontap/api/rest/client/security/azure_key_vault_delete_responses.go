@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -25,6 +26,12 @@ func (o *AzureKeyVaultDeleteReader) ReadResponse(response runtime.ClientResponse
 	switch response.Code() {
 	case 200:
 		result := NewAzureKeyVaultDeleteOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
+	case 202:
+		result := NewAzureKeyVaultDeleteAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -79,15 +86,90 @@ func (o *AzureKeyVaultDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the azure key vault delete o k response
+func (o *AzureKeyVaultDeleteOK) Code() int {
+	return 200
+}
+
 func (o *AzureKeyVaultDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /security/azure-key-vaults/{uuid}][%d] azureKeyVaultDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/azure-key-vaults/{uuid}][%d] azureKeyVaultDeleteOK", 200)
 }
 
 func (o *AzureKeyVaultDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /security/azure-key-vaults/{uuid}][%d] azureKeyVaultDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/azure-key-vaults/{uuid}][%d] azureKeyVaultDeleteOK", 200)
 }
 
 func (o *AzureKeyVaultDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	return nil
+}
+
+// NewAzureKeyVaultDeleteAccepted creates a AzureKeyVaultDeleteAccepted with default headers values
+func NewAzureKeyVaultDeleteAccepted() *AzureKeyVaultDeleteAccepted {
+	return &AzureKeyVaultDeleteAccepted{}
+}
+
+/*
+AzureKeyVaultDeleteAccepted describes a response with status code 202, with default header values.
+
+Accepted
+*/
+type AzureKeyVaultDeleteAccepted struct {
+	Payload *models.AzureKeyVaultJobLinkResponse
+}
+
+// IsSuccess returns true when this azure key vault delete accepted response has a 2xx status code
+func (o *AzureKeyVaultDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this azure key vault delete accepted response has a 3xx status code
+func (o *AzureKeyVaultDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this azure key vault delete accepted response has a 4xx status code
+func (o *AzureKeyVaultDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this azure key vault delete accepted response has a 5xx status code
+func (o *AzureKeyVaultDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this azure key vault delete accepted response a status code equal to that given
+func (o *AzureKeyVaultDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
+// Code gets the status code for the azure key vault delete accepted response
+func (o *AzureKeyVaultDeleteAccepted) Code() int {
+	return 202
+}
+
+func (o *AzureKeyVaultDeleteAccepted) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/azure-key-vaults/{uuid}][%d] azureKeyVaultDeleteAccepted %s", 202, payload)
+}
+
+func (o *AzureKeyVaultDeleteAccepted) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/azure-key-vaults/{uuid}][%d] azureKeyVaultDeleteAccepted %s", 202, payload)
+}
+
+func (o *AzureKeyVaultDeleteAccepted) GetPayload() *models.AzureKeyVaultJobLinkResponse {
+	return o.Payload
+}
+
+func (o *AzureKeyVaultDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.AzureKeyVaultJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }
@@ -119,16 +201,12 @@ func NewAzureKeyVaultDeleteDefault(code int) *AzureKeyVaultDeleteDefault {
 | 196608080 | One or more nodes in the cluster have the root volume encrypted using NVE (NetApp Volume Encryption). |
 | 196608301 | Internal error. Failed to get encryption type. |
 | 196608305 | NAE aggregates found in the cluster. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AzureKeyVaultDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the azure key vault delete default response
-func (o *AzureKeyVaultDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this azure key vault delete default response has a 2xx status code
@@ -156,12 +234,19 @@ func (o *AzureKeyVaultDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the azure key vault delete default response
+func (o *AzureKeyVaultDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AzureKeyVaultDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /security/azure-key-vaults/{uuid}][%d] azure_key_vault_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/azure-key-vaults/{uuid}][%d] azure_key_vault_delete default %s", o._statusCode, payload)
 }
 
 func (o *AzureKeyVaultDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /security/azure-key-vaults/{uuid}][%d] azure_key_vault_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/azure-key-vaults/{uuid}][%d] azure_key_vault_delete default %s", o._statusCode, payload)
 }
 
 func (o *AzureKeyVaultDeleteDefault) GetPayload() *models.ErrorResponse {

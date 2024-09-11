@@ -22,11 +22,11 @@ import (
 type SanApplicationComponentsTiering struct {
 
 	// Storage tiering placement rules for the container(s)
-	// Enum: [required best_effort disallowed]
+	// Enum: ["required","best_effort","disallowed"]
 	Control *string `json:"control,omitempty"`
 
 	// The storage tiering type of the application component.
-	// Enum: [all auto none snapshot_only]
+	// Enum: ["all","auto","none","snapshot_only"]
 	Policy *string `json:"policy,omitempty"`
 
 	// san application components tiering inline object stores

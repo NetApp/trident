@@ -6,6 +6,7 @@ package svm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SvmCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the svm collection get o k response
+func (o *SvmCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *SvmCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /svm/svms][%d] svmCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/svms][%d] svmCollectionGetOK %s", 200, payload)
 }
 
 func (o *SvmCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /svm/svms][%d] svmCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/svms][%d] svmCollectionGetOK %s", 200, payload)
 }
 
 func (o *SvmCollectionGetOK) GetPayload() *models.SvmResponse {
@@ -122,11 +130,6 @@ type SvmCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the svm collection get default response
-func (o *SvmCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this svm collection get default response has a 2xx status code
 func (o *SvmCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SvmCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the svm collection get default response
+func (o *SvmCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SvmCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /svm/svms][%d] svm_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/svms][%d] svm_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /svm/svms][%d] svm_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/svms][%d] svm_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmCollectionGetDefault) GetPayload() *models.ErrorResponse {

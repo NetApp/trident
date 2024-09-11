@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *LocalHostGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the local host get o k response
+func (o *LocalHostGetOK) Code() int {
+	return 200
+}
+
 func (o *LocalHostGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/local-hosts/{owner.uuid}/{address}][%d] localHostGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/local-hosts/{owner.uuid}/{address}][%d] localHostGetOK %s", 200, payload)
 }
 
 func (o *LocalHostGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/local-hosts/{owner.uuid}/{address}][%d] localHostGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/local-hosts/{owner.uuid}/{address}][%d] localHostGetOK %s", 200, payload)
 }
 
 func (o *LocalHostGetOK) GetPayload() *models.LocalHost {
@@ -122,11 +130,6 @@ type LocalHostGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the local host get default response
-func (o *LocalHostGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this local host get default response has a 2xx status code
 func (o *LocalHostGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *LocalHostGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the local host get default response
+func (o *LocalHostGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LocalHostGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/local-hosts/{owner.uuid}/{address}][%d] local_host_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/local-hosts/{owner.uuid}/{address}][%d] local_host_get default %s", o._statusCode, payload)
 }
 
 func (o *LocalHostGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/local-hosts/{owner.uuid}/{address}][%d] local_host_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/local-hosts/{owner.uuid}/{address}][%d] local_host_get default %s", o._statusCode, payload)
 }
 
 func (o *LocalHostGetDefault) GetPayload() *models.ErrorResponse {

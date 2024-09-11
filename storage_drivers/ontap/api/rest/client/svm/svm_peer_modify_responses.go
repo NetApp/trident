@@ -6,6 +6,7 @@ package svm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type SvmPeerModifyReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *SvmPeerModifyReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewSvmPeerModifyOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewSvmPeerModifyAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -39,6 +46,62 @@ func (o *SvmPeerModifyReader) ReadResponse(response runtime.ClientResponse, cons
 		}
 		return nil, result
 	}
+}
+
+// NewSvmPeerModifyOK creates a SvmPeerModifyOK with default headers values
+func NewSvmPeerModifyOK() *SvmPeerModifyOK {
+	return &SvmPeerModifyOK{}
+}
+
+/*
+SvmPeerModifyOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type SvmPeerModifyOK struct {
+}
+
+// IsSuccess returns true when this svm peer modify o k response has a 2xx status code
+func (o *SvmPeerModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm peer modify o k response has a 3xx status code
+func (o *SvmPeerModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm peer modify o k response has a 4xx status code
+func (o *SvmPeerModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm peer modify o k response has a 5xx status code
+func (o *SvmPeerModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm peer modify o k response a status code equal to that given
+func (o *SvmPeerModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the svm peer modify o k response
+func (o *SvmPeerModifyOK) Code() int {
+	return 200
+}
+
+func (o *SvmPeerModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svmPeerModifyOK", 200)
+}
+
+func (o *SvmPeerModifyOK) String() string {
+	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svmPeerModifyOK", 200)
+}
+
+func (o *SvmPeerModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	return nil
 }
 
 // NewSvmPeerModifyAccepted creates a SvmPeerModifyAccepted with default headers values
@@ -79,12 +142,17 @@ func (o *SvmPeerModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the svm peer modify accepted response
+func (o *SvmPeerModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *SvmPeerModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svmPeerModifyAccepted ", 202)
+	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svmPeerModifyAccepted", 202)
 }
 
 func (o *SvmPeerModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svmPeerModifyAccepted ", 202)
+	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svmPeerModifyAccepted", 202)
 }
 
 func (o *SvmPeerModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -115,6 +183,8 @@ func NewSvmPeerModifyDefault(code int) *SvmPeerModifyDefault {
 | 26345578    | Internal error. Unable to retrieve local or peer SVM name. |
 | 26345579    | The specified field is invalid. |
 | 26345581    | Peer cluster name could not be retrieved or validated. |
+| 9896077     | The peer relationship is in use by FlexCache. View the FlexCache relationships, delete them and retry the operation. |
+| 9896088     | System generated a name for the peer SVM because of a naming conflict. Use the name property to uniquely identify the peer SVM alias name. |
 ```
 <br/>
 */
@@ -122,11 +192,6 @@ type SvmPeerModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the svm peer modify default response
-func (o *SvmPeerModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this svm peer modify default response has a 2xx status code
@@ -154,12 +219,19 @@ func (o *SvmPeerModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the svm peer modify default response
+func (o *SvmPeerModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SvmPeerModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svm_peer_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svm_peer_modify default %s", o._statusCode, payload)
 }
 
 func (o *SvmPeerModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svm_peer_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svm_peer_modify default %s", o._statusCode, payload)
 }
 
 func (o *SvmPeerModifyDefault) GetPayload() *models.ErrorResponse {

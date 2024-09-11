@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *IgroupInitiatorModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the igroup initiator modify o k response
+func (o *IgroupInitiatorModifyOK) Code() int {
+	return 200
+}
+
 func (o *IgroupInitiatorModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroupInitiatorModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroupInitiatorModifyOK", 200)
 }
 
 func (o *IgroupInitiatorModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroupInitiatorModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroupInitiatorModifyOK", 200)
 }
 
 func (o *IgroupInitiatorModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -110,16 +116,21 @@ func NewIgroupInitiatorModifyDefault(code int) *IgroupInitiatorModifyDefault {
 | 5374744 | The cluster is currently running in a mixed version and the initiators cannot be modified until the effective cluster version reaches 9.9.1. |
 | 5374852 | The initiator group does not exist. |
 | 5374918 | A subset of the provided list of initiators were modified before a failure occurred. |
+| 5375055 | The `local_svm` property of an initiator proximity was not specified. |
+| 5375056 | An SVM peering relationship that does not have the initiator group's SVM as the local SVM was specified. |
+| 5375261 | Setting initiator proximity is not supported for the SVM type. |
+| 5376057 | Setting initiator proximity is not supported for the ONTAP version. |
+| 5376059 | Setting initiator proximity to a peer that is either the destination of an SVM DR relationship or in a Metrocluster configuration is not supported. |
+| 26345672 | The specified SVM peering relationship was not found. |
+| 26345673 | An SVM peering relationship between the initiator group's SVM and specified peer SVM was not found. |
+| 26345675 | An SVM peering relationship UUID and name were specified and they do not refer to the same SVM peering relationship. |
+| 26345680 | Supplied SVM peer is on the local cluster. The operation requires a peer on a remote cluster. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IgroupInitiatorModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the igroup initiator modify default response
-func (o *IgroupInitiatorModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this igroup initiator modify default response has a 2xx status code
@@ -147,12 +158,19 @@ func (o *IgroupInitiatorModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the igroup initiator modify default response
+func (o *IgroupInitiatorModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IgroupInitiatorModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroup_initiator_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroup_initiator_modify default %s", o._statusCode, payload)
 }
 
 func (o *IgroupInitiatorModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroup_initiator_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroup_initiator_modify default %s", o._statusCode, payload)
 }
 
 func (o *IgroupInitiatorModifyDefault) GetPayload() *models.ErrorResponse {

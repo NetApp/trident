@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *CifsShareACLDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs share Acl delete o k response
+func (o *CifsShareACLDeleteOK) Code() int {
+	return 200
+}
+
 func (o *CifsShareACLDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}][%d] cifsShareAclDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}][%d] cifsShareAclDeleteOK", 200)
 }
 
 func (o *CifsShareACLDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}][%d] cifsShareAclDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}][%d] cifsShareAclDeleteOK", 200)
 }
 
 func (o *CifsShareACLDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type CifsShareACLDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cifs share acl delete default response
-func (o *CifsShareACLDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cifs share acl delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *CifsShareACLDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs share acl delete default response
+func (o *CifsShareACLDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsShareACLDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}][%d] cifs_share_acl_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}][%d] cifs_share_acl_delete default %s", o._statusCode, payload)
 }
 
 func (o *CifsShareACLDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}][%d] cifs_share_acl_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}][%d] cifs_share_acl_delete default %s", o._statusCode, payload)
 }
 
 func (o *CifsShareACLDeleteDefault) GetPayload() *models.ErrorResponse {

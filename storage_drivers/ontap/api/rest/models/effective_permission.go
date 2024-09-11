@@ -43,7 +43,7 @@ type EffectivePermission struct {
 	// * windows  - Windows user
 	// * unix     - UNIX user
 	//
-	// Enum: [windows unix]
+	// Enum: ["windows","unix"]
 	Type *string `json:"type,omitempty"`
 
 	// Specifies the user for which effective permission needs to be displayed for the specified path.

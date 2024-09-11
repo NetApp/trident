@@ -30,6 +30,7 @@ type LocalCifsGroup struct {
 	Description *string `json:"description,omitempty"`
 
 	// local cifs group inline members
+	// Read Only: true
 	LocalCifsGroupInlineMembers []*LocalCifsGroupInlineMembersInlineArrayItem `json:"members,omitempty"`
 
 	// Local group name. The maximum supported length of a group name is 256 characters.
@@ -41,6 +42,7 @@ type LocalCifsGroup struct {
 	// The security ID of the local group which uniquely identifies the group. The group SID is automatically generated in POST and it is retrieved using the GET method.
 	//
 	// Example: S-1-5-21-256008430-3394229847-3930036330-1001
+	// Read Only: true
 	Sid *string `json:"sid,omitempty"`
 
 	// svm
@@ -171,6 +173,10 @@ func (m *LocalCifsGroup) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSid(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -197,6 +203,10 @@ func (m *LocalCifsGroup) contextValidateLinks(ctx context.Context, formats strfm
 
 func (m *LocalCifsGroup) contextValidateLocalCifsGroupInlineMembers(ctx context.Context, formats strfmt.Registry) error {
 
+	if err := validate.ReadOnly(ctx, "members", "body", []*LocalCifsGroupInlineMembersInlineArrayItem(m.LocalCifsGroupInlineMembers)); err != nil {
+		return err
+	}
+
 	for i := 0; i < len(m.LocalCifsGroupInlineMembers); i++ {
 
 		if m.LocalCifsGroupInlineMembers[i] != nil {
@@ -208,6 +218,15 @@ func (m *LocalCifsGroup) contextValidateLocalCifsGroupInlineMembers(ctx context.
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *LocalCifsGroup) contextValidateSid(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "sid", "body", m.Sid); err != nil {
+		return err
 	}
 
 	return nil
@@ -369,7 +388,7 @@ func (m *LocalCifsGroupInlineMembersInlineArrayItem) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// LocalCifsGroupInlineSvm local cifs group inline svm
+// LocalCifsGroupInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model local_cifs_group_inline_svm
 type LocalCifsGroupInlineSvm struct {
@@ -377,12 +396,12 @@ type LocalCifsGroupInlineSvm struct {
 	// links
 	Links *LocalCifsGroupInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

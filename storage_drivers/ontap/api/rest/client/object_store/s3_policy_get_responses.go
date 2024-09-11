@@ -6,6 +6,7 @@ package object_store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *S3PolicyGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the s3 policy get o k response
+func (o *S3PolicyGetOK) Code() int {
+	return 200
+}
+
 func (o *S3PolicyGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyGetOK %s", 200, payload)
 }
 
 func (o *S3PolicyGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyGetOK %s", 200, payload)
 }
 
 func (o *S3PolicyGetOK) GetPayload() *models.S3Policy {
@@ -122,11 +130,6 @@ type S3PolicyGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the s3 policy get default response
-func (o *S3PolicyGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this s3 policy get default response has a 2xx status code
 func (o *S3PolicyGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *S3PolicyGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the s3 policy get default response
+func (o *S3PolicyGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *S3PolicyGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_get default %s", o._statusCode, payload)
 }
 
 func (o *S3PolicyGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_get default %s", o._statusCode, payload)
 }
 
 func (o *S3PolicyGetDefault) GetPayload() *models.ErrorResponse {

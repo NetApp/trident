@@ -32,6 +32,7 @@ type AwsKms struct {
 	AmazonReachability *AwsKmsInlineAmazonReachability `json:"amazon_reachability,omitempty"`
 
 	// aws kms inline ekmip reachability
+	// Read Only: true
 	AwsKmsInlineEkmipReachability []*AwsKmsInlineEkmipReachabilityInlineArrayItem `json:"ekmip_reachability,omitempty"`
 
 	// AWS KMS default domain.
@@ -72,7 +73,7 @@ type AwsKms struct {
 
 	// Proxy type.
 	// Example: http
-	// Enum: [http https]
+	// Enum: ["http","https"]
 	ProxyType *string `json:"proxy_type,omitempty"`
 
 	// Proxy username.
@@ -85,7 +86,7 @@ type AwsKms struct {
 
 	// Set to "svm" for interfaces owned by an SVM. Otherwise, set to "cluster".
 	// Read Only: true
-	// Enum: [svm cluster]
+	// Enum: ["svm","cluster"]
 	Scope *string `json:"scope,omitempty"`
 
 	// AWS Secret Access Key for the provided access key ID.
@@ -97,7 +98,10 @@ type AwsKms struct {
 	// Example: dynamodb.*.amazonaws.com
 	Service *string `json:"service,omitempty"`
 
-	// Set to true to bypass verfication of updated user credentials when updating credentials.
+	// Set to true to bypass verification of the user provided access_key_id
+	// and secret_access_key. An error will be returned if 'skip_verify' is
+	// provided but 'access_key_id' is not.
+	//
 	// Example: false
 	SkipVerify *bool `json:"skip_verify,omitempty"`
 
@@ -455,6 +459,10 @@ func (m *AwsKms) contextValidateAmazonReachability(ctx context.Context, formats 
 
 func (m *AwsKms) contextValidateAwsKmsInlineEkmipReachability(ctx context.Context, formats strfmt.Registry) error {
 
+	if err := validate.ReadOnly(ctx, "ekmip_reachability", "body", []*AwsKmsInlineEkmipReachabilityInlineArrayItem(m.AwsKmsInlineEkmipReachability)); err != nil {
+		return err
+	}
+
 	for i := 0; i < len(m.AwsKmsInlineEkmipReachability); i++ {
 
 		if m.AwsKmsInlineEkmipReachability[i] != nil {
@@ -558,8 +566,13 @@ func (m *AwsKmsInlineAmazonReachability) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validates this aws kms inline amazon reachability based on context it is used
+// ContextValidate validate this aws kms inline amazon reachability based on the context it is used
 func (m *AwsKmsInlineAmazonReachability) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -967,8 +980,13 @@ func (m *AwsKmsInlineState) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this aws kms inline state based on context it is used
+// ContextValidate validate this aws kms inline state based on the context it is used
 func (m *AwsKmsInlineState) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -990,7 +1008,7 @@ func (m *AwsKmsInlineState) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AwsKmsInlineSvm aws kms inline svm
+// AwsKmsInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model aws_kms_inline_svm
 type AwsKmsInlineSvm struct {
@@ -998,12 +1016,12 @@ type AwsKmsInlineSvm struct {
 	// links
 	Links *AwsKmsInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

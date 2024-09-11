@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CifsOpenFileCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs open file collection get o k response
+func (o *CifsOpenFileCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *CifsOpenFileCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/session/files][%d] cifsOpenFileCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/session/files][%d] cifsOpenFileCollectionGetOK %s", 200, payload)
 }
 
 func (o *CifsOpenFileCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/session/files][%d] cifsOpenFileCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/session/files][%d] cifsOpenFileCollectionGetOK %s", 200, payload)
 }
 
 func (o *CifsOpenFileCollectionGetOK) GetPayload() *models.CifsOpenFileResponse {
@@ -122,11 +130,6 @@ type CifsOpenFileCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cifs open file collection get default response
-func (o *CifsOpenFileCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cifs open file collection get default response has a 2xx status code
 func (o *CifsOpenFileCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *CifsOpenFileCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs open file collection get default response
+func (o *CifsOpenFileCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsOpenFileCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/session/files][%d] cifs_open_file_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/session/files][%d] cifs_open_file_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsOpenFileCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/session/files][%d] cifs_open_file_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/session/files][%d] cifs_open_file_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsOpenFileCollectionGetDefault) GetPayload() *models.ErrorResponse {

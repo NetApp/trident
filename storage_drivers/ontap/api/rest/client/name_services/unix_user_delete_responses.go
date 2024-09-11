@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *UnixUserDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the unix user delete o k response
+func (o *UnixUserDeleteOK) Code() int {
+	return 200
+}
+
 func (o *UnixUserDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/unix-users/{svm.uuid}/{name}][%d] unixUserDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/unix-users/{svm.uuid}/{name}][%d] unixUserDeleteOK", 200)
 }
 
 func (o *UnixUserDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /name-services/unix-users/{svm.uuid}/{name}][%d] unixUserDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/unix-users/{svm.uuid}/{name}][%d] unixUserDeleteOK", 200)
 }
 
 func (o *UnixUserDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type UnixUserDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the unix user delete default response
-func (o *UnixUserDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this unix user delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *UnixUserDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the unix user delete default response
+func (o *UnixUserDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *UnixUserDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/unix-users/{svm.uuid}/{name}][%d] unix_user_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/unix-users/{svm.uuid}/{name}][%d] unix_user_delete default %s", o._statusCode, payload)
 }
 
 func (o *UnixUserDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /name-services/unix-users/{svm.uuid}/{name}][%d] unix_user_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/unix-users/{svm.uuid}/{name}][%d] unix_user_delete default %s", o._statusCode, payload)
 }
 
 func (o *UnixUserDeleteDefault) GetPayload() *models.ErrorResponse {

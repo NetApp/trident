@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ShadowcopySetModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the shadowcopy set modify o k response
+func (o *ShadowcopySetModifyOK) Code() int {
+	return 200
+}
+
 func (o *ShadowcopySetModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/shadowcopy-sets/{uuid}][%d] shadowcopySetModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/cifs/shadowcopy-sets/{uuid}][%d] shadowcopySetModifyOK", 200)
 }
 
 func (o *ShadowcopySetModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/shadowcopy-sets/{uuid}][%d] shadowcopySetModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/cifs/shadowcopy-sets/{uuid}][%d] shadowcopySetModifyOK", 200)
 }
 
 func (o *ShadowcopySetModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -100,19 +106,18 @@ func NewShadowcopySetModifyDefault(code int) *ShadowcopySetModifyDefault {
 }
 
 /*
-ShadowcopySetModifyDefault describes a response with status code -1, with default header values.
+	ShadowcopySetModifyDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 262196     | The 'svm' field is not supported in the body of a PATCH request. |
 */
 type ShadowcopySetModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the shadowcopy set modify default response
-func (o *ShadowcopySetModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this shadowcopy set modify default response has a 2xx status code
@@ -140,12 +145,19 @@ func (o *ShadowcopySetModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the shadowcopy set modify default response
+func (o *ShadowcopySetModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ShadowcopySetModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/shadowcopy-sets/{uuid}][%d] shadowcopy_set_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/shadowcopy-sets/{uuid}][%d] shadowcopy_set_modify default %s", o._statusCode, payload)
 }
 
 func (o *ShadowcopySetModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/shadowcopy-sets/{uuid}][%d] shadowcopy_set_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/shadowcopy-sets/{uuid}][%d] shadowcopy_set_modify default %s", o._statusCode, payload)
 }
 
 func (o *ShadowcopySetModifyDefault) GetPayload() *models.ErrorResponse {

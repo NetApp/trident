@@ -15,7 +15,7 @@ import (
 )
 
 // TopMetricsClient Information about a client's IO activity.
-// Example: {"client_ip":"154.148.234.187","iops":{"error":{"lower_bound":"28","upper_bound":"29"},"read":"28","write":"8"},"svm":{"name":"vserver_1","uuid":"42ee3002-67dd-11ea-8508-005056a7b8ac"},"throughput":{"error":{"lower_bound":"56","upper_bound":"57"},"read":"56","write":"10"},"volume":{"name":"vol_5","uuid":"c05eb66a-685f-11ea-8508-005056a7b8ac"}}
+// Example: {"client_ip":"154.148.234.187","iops":{"error":{"lower_bound":28,"upper_bound":29},"read":28,"write":8},"svm":{"name":"vserver_1","uuid":"42ee3002-67dd-11ea-8508-005056a7b8ac"},"throughput":{"error":{"lower_bound":56,"upper_bound":57},"read":56,"write":10},"volume":{"name":"vol_5","uuid":"c05eb66a-685f-11ea-8508-005056a7b8ac"}}
 //
 // swagger:model top_metrics_client
 type TopMetricsClient struct {
@@ -367,7 +367,7 @@ func (m *TopMetricsClientInlineIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsClientInlineSvm top metrics client inline svm
+// TopMetricsClientInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model top_metrics_client_inline_svm
 type TopMetricsClientInlineSvm struct {
@@ -375,12 +375,12 @@ type TopMetricsClientInlineSvm struct {
 	// links
 	Links *TopMetricsClientInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -679,7 +679,7 @@ type TopMetricsClientInlineVolume struct {
 	// links
 	Links *TopMetricsClientInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

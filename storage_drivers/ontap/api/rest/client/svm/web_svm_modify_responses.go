@@ -6,6 +6,7 @@ package svm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,17 @@ func (o *WebSvmModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the web svm modify o k response
+func (o *WebSvmModifyOK) Code() int {
+	return 200
+}
+
 func (o *WebSvmModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] webSvmModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] webSvmModifyOK", 200)
 }
 
 func (o *WebSvmModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] webSvmModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] webSvmModifyOK", 200)
 }
 
 func (o *WebSvmModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,7 +115,7 @@ WebSvmModifyAccepted describes a response with status code 202, with default hea
 Accepted
 */
 type WebSvmModifyAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.WebSvmJobLinkResponse
 }
 
 // IsSuccess returns true when this web svm modify accepted response has a 2xx status code
@@ -137,21 +143,28 @@ func (o *WebSvmModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the web svm modify accepted response
+func (o *WebSvmModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *WebSvmModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] webSvmModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] webSvmModifyAccepted %s", 202, payload)
 }
 
 func (o *WebSvmModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] webSvmModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] webSvmModifyAccepted %s", 202, payload)
 }
 
-func (o *WebSvmModifyAccepted) GetPayload() *models.JobLinkResponse {
+func (o *WebSvmModifyAccepted) GetPayload() *models.WebSvmJobLinkResponse {
 	return o.Payload
 }
 
 func (o *WebSvmModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.WebSvmJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -178,16 +191,12 @@ func NewWebSvmModifyDefault(code int) *WebSvmModifyDefault {
 | 9830442 | Client authentication cannot be enabled without a client ca certificate. |
 | 9830488 | The certificate is not a "server" certificate. |
 | 9830489 | The certificate does not exist for the given SVM. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type WebSvmModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the web svm modify default response
-func (o *WebSvmModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this web svm modify default response has a 2xx status code
@@ -215,12 +224,19 @@ func (o *WebSvmModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the web svm modify default response
+func (o *WebSvmModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *WebSvmModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] web_svm_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] web_svm_modify default %s", o._statusCode, payload)
 }
 
 func (o *WebSvmModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] web_svm_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] web_svm_modify default %s", o._statusCode, payload)
 }
 
 func (o *WebSvmModifyDefault) GetPayload() *models.ErrorResponse {

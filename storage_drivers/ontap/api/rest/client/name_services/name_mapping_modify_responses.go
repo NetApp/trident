@@ -6,10 +6,14 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
+
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
 
 // NameMappingModifyReader is a Reader for the NameMappingModify structure.
@@ -76,12 +80,17 @@ func (o *NameMappingModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the name mapping modify o k response
+func (o *NameMappingModifyOK) Code() int {
+	return 200
+}
+
 func (o *NameMappingModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingModifyOK", 200)
 }
 
 func (o *NameMappingModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingModifyOK", 200)
 }
 
 func (o *NameMappingModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,16 +115,11 @@ func NewNameMappingModifyDefault(code int) *NameMappingModifyDefault {
 | 65798185   | Failed to resolve the specified hostname |
 | 65798179   | Cannot swap entries because one or both entries have host name or address configured.|
 |            | Delete and re-create the new entry at the specified position.|
-schema:
-$ref: "#/definitions/error_response"
 */
 type NameMappingModifyDefault struct {
 	_statusCode int
-}
 
-// Code gets the status code for the name mapping modify default response
-func (o *NameMappingModifyDefault) Code() int {
-	return o._statusCode
+	Payload *models.ErrorResponse
 }
 
 // IsSuccess returns true when this name mapping modify default response has a 2xx status code
@@ -143,15 +147,33 @@ func (o *NameMappingModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the name mapping modify default response
+func (o *NameMappingModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NameMappingModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_modify default ", o._statusCode)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_modify default %s", o._statusCode, payload)
 }
 
 func (o *NameMappingModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_modify default ", o._statusCode)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_modify default %s", o._statusCode, payload)
+}
+
+func (o *NameMappingModifyDefault) GetPayload() *models.ErrorResponse {
+	return o.Payload
 }
 
 func (o *NameMappingModifyDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ErrorResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }

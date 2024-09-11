@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *AuditLogForwardingGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the audit log forwarding get o k response
+func (o *AuditLogForwardingGetOK) Code() int {
+	return 200
+}
+
 func (o *AuditLogForwardingGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/audit/destinations][%d] auditLogForwardingGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/audit/destinations][%d] auditLogForwardingGetOK %s", 200, payload)
 }
 
 func (o *AuditLogForwardingGetOK) String() string {
-	return fmt.Sprintf("[GET /security/audit/destinations][%d] auditLogForwardingGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/audit/destinations][%d] auditLogForwardingGetOK %s", 200, payload)
 }
 
 func (o *AuditLogForwardingGetOK) GetPayload() *models.SecurityAuditLogForwardResponse {
@@ -122,11 +130,6 @@ type AuditLogForwardingGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the audit log forwarding get default response
-func (o *AuditLogForwardingGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this audit log forwarding get default response has a 2xx status code
 func (o *AuditLogForwardingGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *AuditLogForwardingGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the audit log forwarding get default response
+func (o *AuditLogForwardingGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AuditLogForwardingGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/audit/destinations][%d] audit_log_forwarding_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/audit/destinations][%d] audit_log_forwarding_get default %s", o._statusCode, payload)
 }
 
 func (o *AuditLogForwardingGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/audit/destinations][%d] audit_log_forwarding_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/audit/destinations][%d] audit_log_forwarding_get default %s", o._statusCode, payload)
 }
 
 func (o *AuditLogForwardingGetDefault) GetPayload() *models.ErrorResponse {

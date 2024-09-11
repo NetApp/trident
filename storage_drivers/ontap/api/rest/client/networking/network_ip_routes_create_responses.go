@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *NetworkIPRoutesCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the network Ip routes create created response
+func (o *NetworkIPRoutesCreateCreated) Code() int {
+	return 201
+}
+
 func (o *NetworkIPRoutesCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /network/ip/routes][%d] networkIpRoutesCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ip/routes][%d] networkIpRoutesCreateCreated %s", 201, payload)
 }
 
 func (o *NetworkIPRoutesCreateCreated) String() string {
-	return fmt.Sprintf("[POST /network/ip/routes][%d] networkIpRoutesCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ip/routes][%d] networkIpRoutesCreateCreated %s", 201, payload)
 }
 
 func (o *NetworkIPRoutesCreateCreated) GetPayload() *models.NetworkRouteResponse {
@@ -130,22 +138,23 @@ func NewNetworkIPRoutesCreateDefault(code int) *NetworkIPRoutesCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 1966345    | Duplicate route exists. |
-| 1967080    | The destination.address is missing. |
-| 1967081    | The specified SVM must exist in the specified IPspace. |
-| 1967082    | The specified ipspace.uuid and ipspace.name refer to different IPspaces. |
-| 1967146    | The specified svm.name is not valid. |
-| 2          | The specified svm.uuid is not valid. |
+| 1966265 | The destination and gateway must belong to the same IP address family. |
+| 1966345 | Duplicate route exists. |
+| 1966505 | The gateway address cannot be the same as a LIF address. A LIF is already configured with that IP address. |
+| 1967080 | The destination.address is missing. |
+| 1967081 | The specified SVM must exist in the specified IPspace. |
+| 1967082 | The specified ipspace.uuid and ipspace.name refer to different IPspaces. |
+| 1967146 | The specified svm.name is not valid. |
+| 2621462 | The specified SVM does not exist. |
+| 2621574 | This operation is not permitted on an SVM that is configured as the destination of a MetroCluster SVM relationship. |
+| 2621706 | The specified UUID and name refer to different SVMs. |
+| 53282375 | The specified destination is invalid. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NetworkIPRoutesCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the network ip routes create default response
-func (o *NetworkIPRoutesCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this network ip routes create default response has a 2xx status code
@@ -173,12 +182,19 @@ func (o *NetworkIPRoutesCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the network ip routes create default response
+func (o *NetworkIPRoutesCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetworkIPRoutesCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /network/ip/routes][%d] network_ip_routes_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ip/routes][%d] network_ip_routes_create default %s", o._statusCode, payload)
 }
 
 func (o *NetworkIPRoutesCreateDefault) String() string {
-	return fmt.Sprintf("[POST /network/ip/routes][%d] network_ip_routes_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ip/routes][%d] network_ip_routes_create default %s", o._statusCode, payload)
 }
 
 func (o *NetworkIPRoutesCreateDefault) GetPayload() *models.ErrorResponse {

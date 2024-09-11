@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *IgroupModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the igroup modify o k response
+func (o *IgroupModifyOK) Code() int {
+	return 200
+}
+
 func (o *IgroupModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/san/igroups/{uuid}][%d] igroupModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/san/igroups/{uuid}][%d] igroupModifyOK", 200)
 }
 
 func (o *IgroupModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/san/igroups/{uuid}][%d] igroupModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/san/igroups/{uuid}][%d] igroupModifyOK", 200)
 }
 
 func (o *IgroupModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -115,18 +121,26 @@ func NewIgroupModifyDefault(code int) *IgroupModifyDefault {
 | 5374745 | An attempt was made to add an initiator group as a child to itself. |
 | 5374746 | The cluster is currently running in a mixed version and nested initiator groups cannot be created until the effective cluster version reaches 9.9.1. |
 | 5374747 | The cluster is currently running in a mixed version and initiator group comments cannot be created until the effective cluster version reaches 9.9.1. |
+| 5374749 | An initiator group's replication peer SVM cannot be changed without first being cleared. |
+| 5374759 | An error was reported by the peer cluster while modifying a replicated initiator group. The specific error will be included as a nested error. |
+| 5374763 | An error was reported by the peer cluster while renaming a replicated initiator group. The specific error will be included as a nested error. |
+| 5374765 | An initiator group cannot be replicated if it has unreplicated child initiator groups. |
+| 5374766 | A replicated initiator group cannot be changed to unreplicated if it is the child of a replicated initiator group. |
+| 5374770 | An unreplicated initiator group cannot be changed to replicated due to a conflict in its LUN maps. |
 | 5374852 | The initiator group does not exist. |
 | 5374868 | The initiator group was partially modified before an error was encountered while renaming the initiator group. |
+| 5375258 | The igroup is already replicated to a different peer SVM. |
+| 5376253 | Initiator group replication requires an effective cluster version of 9.15.1. |
+| 5376255 | Initiator group replication requires the peer cluster to have an effective cluster version of 9.15.1. |
+| 5376488 | An NVMe over Fabrics subsystem already exists with the requested name. |
+| 6620376 | SVM peering information is unavailable. |
+| 6620384 | The supplied SVMs are not peered. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IgroupModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the igroup modify default response
-func (o *IgroupModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this igroup modify default response has a 2xx status code
@@ -154,12 +168,19 @@ func (o *IgroupModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the igroup modify default response
+func (o *IgroupModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IgroupModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/san/igroups/{uuid}][%d] igroup_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/san/igroups/{uuid}][%d] igroup_modify default %s", o._statusCode, payload)
 }
 
 func (o *IgroupModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/san/igroups/{uuid}][%d] igroup_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/san/igroups/{uuid}][%d] igroup_modify default %s", o._statusCode, payload)
 }
 
 func (o *IgroupModifyDefault) GetPayload() *models.ErrorResponse {

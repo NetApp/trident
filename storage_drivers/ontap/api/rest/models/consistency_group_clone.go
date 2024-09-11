@@ -23,14 +23,25 @@ type ConsistencyGroupClone struct {
 	// guarantee
 	Guarantee *ConsistencyGroupCloneInlineGuarantee `json:"guarantee,omitempty"`
 
+	// Specifies if this consistency group is a FlexClone of a consistency group.
+	// Read Only: true
+	IsFlexclone *bool `json:"is_flexclone,omitempty"`
+
 	// parent consistency group
 	ParentConsistencyGroup *ConsistencyGroupCloneInlineParentConsistencyGroup `json:"parent_consistency_group,omitempty"`
 
 	// parent snapshot
 	ParentSnapshot *ConsistencyGroupCloneInlineParentSnapshot `json:"parent_snapshot,omitempty"`
 
+	// Specifies the SnapLock type for the clone consistency group.
+	// Enum: ["compliance","enterprise","non_snaplock"]
+	SnaplockType *string `json:"snaplock_type,omitempty"`
+
 	// Splits volumes after cloning. Default is false.
 	SplitInitiated *bool `json:"split_initiated,omitempty"`
+
+	// storage unit
+	StorageUnit *ConsistencyGroupCloneInlineStorageUnit `json:"storage_unit,omitempty"`
 
 	// volume
 	Volume *ConsistencyGroupCloneInlineVolume `json:"volume,omitempty"`
@@ -49,6 +60,14 @@ func (m *ConsistencyGroupClone) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateParentSnapshot(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnaplockType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageUnit(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -113,6 +132,89 @@ func (m *ConsistencyGroupClone) validateParentSnapshot(formats strfmt.Registry) 
 	return nil
 }
 
+var consistencyGroupCloneTypeSnaplockTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["compliance","enterprise","non_snaplock"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		consistencyGroupCloneTypeSnaplockTypePropEnum = append(consistencyGroupCloneTypeSnaplockTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// consistency_group_clone
+	// ConsistencyGroupClone
+	// snaplock_type
+	// SnaplockType
+	// compliance
+	// END DEBUGGING
+	// ConsistencyGroupCloneSnaplockTypeCompliance captures enum value "compliance"
+	ConsistencyGroupCloneSnaplockTypeCompliance string = "compliance"
+
+	// BEGIN DEBUGGING
+	// consistency_group_clone
+	// ConsistencyGroupClone
+	// snaplock_type
+	// SnaplockType
+	// enterprise
+	// END DEBUGGING
+	// ConsistencyGroupCloneSnaplockTypeEnterprise captures enum value "enterprise"
+	ConsistencyGroupCloneSnaplockTypeEnterprise string = "enterprise"
+
+	// BEGIN DEBUGGING
+	// consistency_group_clone
+	// ConsistencyGroupClone
+	// snaplock_type
+	// SnaplockType
+	// non_snaplock
+	// END DEBUGGING
+	// ConsistencyGroupCloneSnaplockTypeNonSnaplock captures enum value "non_snaplock"
+	ConsistencyGroupCloneSnaplockTypeNonSnaplock string = "non_snaplock"
+)
+
+// prop value enum
+func (m *ConsistencyGroupClone) validateSnaplockTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, consistencyGroupCloneTypeSnaplockTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupClone) validateSnaplockType(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnaplockType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateSnaplockTypeEnum("snaplock_type", "body", *m.SnaplockType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupClone) validateStorageUnit(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageUnit) { // not required
+		return nil
+	}
+
+	if m.StorageUnit != nil {
+		if err := m.StorageUnit.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_unit")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *ConsistencyGroupClone) validateVolume(formats strfmt.Registry) error {
 	if swag.IsZero(m.Volume) { // not required
 		return nil
@@ -138,11 +240,19 @@ func (m *ConsistencyGroupClone) ContextValidate(ctx context.Context, formats str
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateIsFlexclone(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateParentConsistencyGroup(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateParentSnapshot(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStorageUnit(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -170,6 +280,15 @@ func (m *ConsistencyGroupClone) contextValidateGuarantee(ctx context.Context, fo
 	return nil
 }
 
+func (m *ConsistencyGroupClone) contextValidateIsFlexclone(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "is_flexclone", "body", m.IsFlexclone); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *ConsistencyGroupClone) contextValidateParentConsistencyGroup(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ParentConsistencyGroup != nil {
@@ -190,6 +309,20 @@ func (m *ConsistencyGroupClone) contextValidateParentSnapshot(ctx context.Contex
 		if err := m.ParentSnapshot.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("parent_snapshot")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupClone) contextValidateStorageUnit(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.StorageUnit != nil {
+		if err := m.StorageUnit.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_unit")
 			}
 			return err
 		}
@@ -236,7 +369,7 @@ func (m *ConsistencyGroupClone) UnmarshalBinary(b []byte) error {
 type ConsistencyGroupCloneInlineGuarantee struct {
 
 	// The type of space guarantee of this volume in the aggregate.
-	// Enum: [volume none]
+	// Enum: ["volume","none"]
 	Type *string `json:"type,omitempty"`
 }
 
@@ -427,22 +560,79 @@ func (m *ConsistencyGroupCloneInlineParentConsistencyGroup) UnmarshalBinary(b []
 	return nil
 }
 
-// ConsistencyGroupCloneInlineParentSnapshot consistency group clone inline parent snapshot
+// ConsistencyGroupCloneInlineParentSnapshot Consistency group that is to be cloned.
 //
 // swagger:model consistency_group_clone_inline_parent_snapshot
 type ConsistencyGroupCloneInlineParentSnapshot struct {
 
-	// Name of an existing Snapshot copy of a parent consistency group.
+	// links
+	Links *ConsistencyGroupCloneInlineParentSnapshotInlineLinks `json:"_links,omitempty"`
+
+	// name
+	// Example: this_snapshot
 	Name *string `json:"name,omitempty"`
+
+	// uuid
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this consistency group clone inline parent snapshot
 func (m *ConsistencyGroupCloneInlineParentSnapshot) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this consistency group clone inline parent snapshot based on context it is used
+func (m *ConsistencyGroupCloneInlineParentSnapshot) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("parent_snapshot" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this consistency group clone inline parent snapshot based on the context it is used
 func (m *ConsistencyGroupCloneInlineParentSnapshot) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupCloneInlineParentSnapshot) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("parent_snapshot" + "." + "_links")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -464,7 +654,134 @@ func (m *ConsistencyGroupCloneInlineParentSnapshot) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// ConsistencyGroupCloneInlineVolume Volume name suffix/prefix for the cloned volumes.
+// ConsistencyGroupCloneInlineParentSnapshotInlineLinks consistency group clone inline parent snapshot inline links
+//
+// swagger:model consistency_group_clone_inline_parent_snapshot_inline__links
+type ConsistencyGroupCloneInlineParentSnapshotInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this consistency group clone inline parent snapshot inline links
+func (m *ConsistencyGroupCloneInlineParentSnapshotInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupCloneInlineParentSnapshotInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("parent_snapshot" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this consistency group clone inline parent snapshot inline links based on the context it is used
+func (m *ConsistencyGroupCloneInlineParentSnapshotInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupCloneInlineParentSnapshotInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("parent_snapshot" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupCloneInlineParentSnapshotInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupCloneInlineParentSnapshotInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupCloneInlineParentSnapshotInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupCloneInlineStorageUnit Storage unit name suffix/prefix for the cloned blocks. This is applied to all the vdisks, i.e. LUNs or NVMe namespaces within the consistency group.
+//
+// swagger:model consistency_group_clone_inline_storage_unit
+type ConsistencyGroupCloneInlineStorageUnit struct {
+
+	// Storage unit name prefix for cloned volume blocks.
+	Prefix *string `json:"prefix,omitempty"`
+
+	// Storage unit name suffix for cloned volume blocks.
+	Suffix *string `json:"suffix,omitempty"`
+}
+
+// Validate validates this consistency group clone inline storage unit
+func (m *ConsistencyGroupCloneInlineStorageUnit) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this consistency group clone inline storage unit based on context it is used
+func (m *ConsistencyGroupCloneInlineStorageUnit) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupCloneInlineStorageUnit) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupCloneInlineStorageUnit) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupCloneInlineStorageUnit
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupCloneInlineVolume
+// Volume name suffix/prefix for the cloned volumes.
 //
 // swagger:model consistency_group_clone_inline_volume
 type ConsistencyGroupCloneInlineVolume struct {

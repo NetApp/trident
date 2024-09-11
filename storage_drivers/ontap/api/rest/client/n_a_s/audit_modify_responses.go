@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type AuditModifyReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *AuditModifyReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewAuditModifyOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewAuditModifyAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *AuditModifyReader) ReadResponse(response runtime.ClientResponse, consum
 	}
 }
 
+// NewAuditModifyOK creates a AuditModifyOK with default headers values
+func NewAuditModifyOK() *AuditModifyOK {
+	return &AuditModifyOK{}
+}
+
+/*
+AuditModifyOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type AuditModifyOK struct {
+	Payload *models.AuditJobLinkResponse
+}
+
+// IsSuccess returns true when this audit modify o k response has a 2xx status code
+func (o *AuditModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this audit modify o k response has a 3xx status code
+func (o *AuditModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this audit modify o k response has a 4xx status code
+func (o *AuditModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this audit modify o k response has a 5xx status code
+func (o *AuditModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this audit modify o k response a status code equal to that given
+func (o *AuditModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the audit modify o k response
+func (o *AuditModifyOK) Code() int {
+	return 200
+}
+
+func (o *AuditModifyOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}][%d] auditModifyOK %s", 200, payload)
+}
+
+func (o *AuditModifyOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}][%d] auditModifyOK %s", 200, payload)
+}
+
+func (o *AuditModifyOK) GetPayload() *models.AuditJobLinkResponse {
+	return o.Payload
+}
+
+func (o *AuditModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.AuditJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewAuditModifyAccepted creates a AuditModifyAccepted with default headers values
 func NewAuditModifyAccepted() *AuditModifyAccepted {
 	return &AuditModifyAccepted{}
@@ -52,6 +129,7 @@ AuditModifyAccepted describes a response with status code 202, with default head
 Accepted
 */
 type AuditModifyAccepted struct {
+	Payload *models.AuditJobLinkResponse
 }
 
 // IsSuccess returns true when this audit modify accepted response has a 2xx status code
@@ -79,15 +157,33 @@ func (o *AuditModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the audit modify accepted response
+func (o *AuditModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *AuditModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}][%d] auditModifyAccepted ", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}][%d] auditModifyAccepted %s", 202, payload)
 }
 
 func (o *AuditModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}][%d] auditModifyAccepted ", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}][%d] auditModifyAccepted %s", 202, payload)
+}
+
+func (o *AuditModifyAccepted) GetPayload() *models.AuditJobLinkResponse {
+	return o.Payload
 }
 
 func (o *AuditModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.AuditJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }
@@ -146,11 +242,6 @@ type AuditModifyDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the audit modify default response
-func (o *AuditModifyDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this audit modify default response has a 2xx status code
 func (o *AuditModifyDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -176,12 +267,19 @@ func (o *AuditModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the audit modify default response
+func (o *AuditModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AuditModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}][%d] audit_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}][%d] audit_modify default %s", o._statusCode, payload)
 }
 
 func (o *AuditModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}][%d] audit_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}][%d] audit_modify default %s", o._statusCode, payload)
 }
 
 func (o *AuditModifyDefault) GetPayload() *models.ErrorResponse {

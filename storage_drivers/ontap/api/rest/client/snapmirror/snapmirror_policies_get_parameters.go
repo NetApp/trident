@@ -158,6 +158,18 @@ type SnapmirrorPoliciesGetParams struct {
 	*/
 	RetentionPrefix *string
 
+	/* RetentionPreserve.
+
+	   Filter by retention.preserve
+	*/
+	RetentionPreserve *bool
+
+	/* RetentionWarn.
+
+	   Filter by retention.warn
+	*/
+	RetentionWarn *int64
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -487,6 +499,28 @@ func (o *SnapmirrorPoliciesGetParams) WithRetentionPrefix(retentionPrefix *strin
 // SetRetentionPrefix adds the retentionPrefix to the snapmirror policies get params
 func (o *SnapmirrorPoliciesGetParams) SetRetentionPrefix(retentionPrefix *string) {
 	o.RetentionPrefix = retentionPrefix
+}
+
+// WithRetentionPreserve adds the retentionPreserve to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithRetentionPreserve(retentionPreserve *bool) *SnapmirrorPoliciesGetParams {
+	o.SetRetentionPreserve(retentionPreserve)
+	return o
+}
+
+// SetRetentionPreserve adds the retentionPreserve to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetRetentionPreserve(retentionPreserve *bool) {
+	o.RetentionPreserve = retentionPreserve
+}
+
+// WithRetentionWarn adds the retentionWarn to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithRetentionWarn(retentionWarn *int64) *SnapmirrorPoliciesGetParams {
+	o.SetRetentionWarn(retentionWarn)
+	return o
+}
+
+// SetRetentionWarn adds the retentionWarn to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetRetentionWarn(retentionWarn *int64) {
+	o.RetentionWarn = retentionWarn
 }
 
 // WithReturnRecords adds the returnRecords to the snapmirror policies get params
@@ -906,6 +940,40 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qRetentionPrefix != "" {
 
 			if err := r.SetQueryParam("retention.prefix", qRetentionPrefix); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RetentionPreserve != nil {
+
+		// query param retention.preserve
+		var qrRetentionPreserve bool
+
+		if o.RetentionPreserve != nil {
+			qrRetentionPreserve = *o.RetentionPreserve
+		}
+		qRetentionPreserve := swag.FormatBool(qrRetentionPreserve)
+		if qRetentionPreserve != "" {
+
+			if err := r.SetQueryParam("retention.preserve", qRetentionPreserve); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RetentionWarn != nil {
+
+		// query param retention.warn
+		var qrRetentionWarn int64
+
+		if o.RetentionWarn != nil {
+			qrRetentionWarn = *o.RetentionWarn
+		}
+		qRetentionWarn := swag.FormatInt64(qrRetentionWarn)
+		if qRetentionWarn != "" {
+
+			if err := r.SetQueryParam("retention.warn", qRetentionWarn); err != nil {
 				return err
 			}
 		}

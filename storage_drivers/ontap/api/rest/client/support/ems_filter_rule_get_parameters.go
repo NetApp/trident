@@ -70,7 +70,7 @@ type EmsFilterRuleGetParams struct {
 
 	/* Index.
 
-	   Filter index
+	   Filter rule index
 	*/
 	Index string
 

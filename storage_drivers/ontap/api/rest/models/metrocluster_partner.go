@@ -24,7 +24,7 @@ type MetroclusterPartner struct {
 	Node *MetroclusterPartnerInlineNode `json:"node,omitempty"`
 
 	// type
-	// Enum: [ha dr aux]
+	// Enum: ["ha","dr","aux"]
 	Type *string `json:"type,omitempty"`
 }
 

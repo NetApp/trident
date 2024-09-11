@@ -104,6 +104,18 @@ type NvmeSubsystemCollectionGetParams struct {
 	*/
 	HostsNqn *string
 
+	/* HostsPriority.
+
+	   Filter by hosts.priority
+	*/
+	HostsPriority *string
+
+	/* HostsTLSKeyType.
+
+	   Filter by hosts.tls.key_type
+	*/
+	HostsTLSKeyType *string
+
 	/* IoQueueDefaultCount.
 
 	   Filter by io_queue.default.count
@@ -358,6 +370,28 @@ func (o *NvmeSubsystemCollectionGetParams) WithHostsNqn(hostsNqn *string) *NvmeS
 // SetHostsNqn adds the hostsNqn to the nvme subsystem collection get params
 func (o *NvmeSubsystemCollectionGetParams) SetHostsNqn(hostsNqn *string) {
 	o.HostsNqn = hostsNqn
+}
+
+// WithHostsPriority adds the hostsPriority to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithHostsPriority(hostsPriority *string) *NvmeSubsystemCollectionGetParams {
+	o.SetHostsPriority(hostsPriority)
+	return o
+}
+
+// SetHostsPriority adds the hostsPriority to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetHostsPriority(hostsPriority *string) {
+	o.HostsPriority = hostsPriority
+}
+
+// WithHostsTLSKeyType adds the hostsTLSKeyType to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithHostsTLSKeyType(hostsTLSKeyType *string) *NvmeSubsystemCollectionGetParams {
+	o.SetHostsTLSKeyType(hostsTLSKeyType)
+	return o
+}
+
+// SetHostsTLSKeyType adds the hostsTlsKeyType to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetHostsTLSKeyType(hostsTLSKeyType *string) {
+	o.HostsTLSKeyType = hostsTLSKeyType
 }
 
 // WithIoQueueDefaultCount adds the ioQueueDefaultCount to the nvme subsystem collection get params
@@ -674,6 +708,40 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qHostsNqn != "" {
 
 			if err := r.SetQueryParam("hosts.nqn", qHostsNqn); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HostsPriority != nil {
+
+		// query param hosts.priority
+		var qrHostsPriority string
+
+		if o.HostsPriority != nil {
+			qrHostsPriority = *o.HostsPriority
+		}
+		qHostsPriority := qrHostsPriority
+		if qHostsPriority != "" {
+
+			if err := r.SetQueryParam("hosts.priority", qHostsPriority); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HostsTLSKeyType != nil {
+
+		// query param hosts.tls.key_type
+		var qrHostsTLSKeyType string
+
+		if o.HostsTLSKeyType != nil {
+			qrHostsTLSKeyType = *o.HostsTLSKeyType
+		}
+		qHostsTLSKeyType := qrHostsTLSKeyType
+		if qHostsTLSKeyType != "" {
+
+			if err := r.SetQueryParam("hosts.tls.key_type", qHostsTLSKeyType); err != nil {
 				return err
 			}
 		}

@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type MediatorCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *MediatorCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewMediatorCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewMediatorCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *MediatorCreateReader) ReadResponse(response runtime.ClientResponse, con
 	}
 }
 
+// NewMediatorCreateCreated creates a MediatorCreateCreated with default headers values
+func NewMediatorCreateCreated() *MediatorCreateCreated {
+	return &MediatorCreateCreated{}
+}
+
+/*
+MediatorCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type MediatorCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.MediatorJobLinkResponse
+}
+
+// IsSuccess returns true when this mediator create created response has a 2xx status code
+func (o *MediatorCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this mediator create created response has a 3xx status code
+func (o *MediatorCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this mediator create created response has a 4xx status code
+func (o *MediatorCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this mediator create created response has a 5xx status code
+func (o *MediatorCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this mediator create created response a status code equal to that given
+func (o *MediatorCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the mediator create created response
+func (o *MediatorCreateCreated) Code() int {
+	return 201
+}
+
+func (o *MediatorCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/mediators][%d] mediatorCreateCreated %s", 201, payload)
+}
+
+func (o *MediatorCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/mediators][%d] mediatorCreateCreated %s", 201, payload)
+}
+
+func (o *MediatorCreateCreated) GetPayload() *models.MediatorJobLinkResponse {
+	return o.Payload
+}
+
+func (o *MediatorCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.MediatorJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewMediatorCreateAccepted creates a MediatorCreateAccepted with default headers values
 func NewMediatorCreateAccepted() *MediatorCreateAccepted {
 	return &MediatorCreateAccepted{}
@@ -57,7 +146,7 @@ type MediatorCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.MediatorJobLinkResponse
 }
 
 // IsSuccess returns true when this mediator create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *MediatorCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the mediator create accepted response
+func (o *MediatorCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *MediatorCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /cluster/mediators][%d] mediatorCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/mediators][%d] mediatorCreateAccepted %s", 202, payload)
 }
 
 func (o *MediatorCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /cluster/mediators][%d] mediatorCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/mediators][%d] mediatorCreateAccepted %s", 202, payload)
 }
 
-func (o *MediatorCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *MediatorCreateAccepted) GetPayload() *models.MediatorJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *MediatorCreateAccepted) readResponse(response runtime.ClientResponse, c
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.MediatorJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -131,16 +227,15 @@ func NewMediatorCreateDefault(code int) *MediatorCreateDefault {
 | Error code  |  Description |
 |-------------|--------------|
 | 13369351    | Update to mediator failed. Reason: does not authorized for that command. Check that the peer cluster and mediator are reachable.|
+| 2430758     | Mediator cannot be added. Reason: Some of the nodes in the cluster have incorrect MetroCluster IP configuration.|
+| 2430734     | Unable to add Mediator. Reason : Authentication failed.|
+| 2430774     | Failed to add Mediator. Reason : Node is not reachable or does not exist.|
+| 2432871     | Failed to add Mediator. Reason : Some of the parameters in the request is invalid.|
 */
 type MediatorCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the mediator create default response
-func (o *MediatorCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this mediator create default response has a 2xx status code
@@ -168,12 +263,19 @@ func (o *MediatorCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the mediator create default response
+func (o *MediatorCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MediatorCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /cluster/mediators][%d] mediator_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/mediators][%d] mediator_create default %s", o._statusCode, payload)
 }
 
 func (o *MediatorCreateDefault) String() string {
-	return fmt.Sprintf("[POST /cluster/mediators][%d] mediator_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/mediators][%d] mediator_create default %s", o._statusCode, payload)
 }
 
 func (o *MediatorCreateDefault) GetPayload() *models.ErrorResponse {

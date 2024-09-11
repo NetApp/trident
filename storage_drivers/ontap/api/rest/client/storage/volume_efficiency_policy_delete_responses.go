@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *VolumeEfficiencyPolicyDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the volume efficiency policy delete o k response
+func (o *VolumeEfficiencyPolicyDeleteOK) Code() int {
+	return 200
+}
+
 func (o *VolumeEfficiencyPolicyDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyDeleteOK", 200)
 }
 
 func (o *VolumeEfficiencyPolicyDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyDeleteOK", 200)
 }
 
 func (o *VolumeEfficiencyPolicyDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,19 +112,14 @@ func NewVolumeEfficiencyPolicyDeleteDefault(code int) *VolumeEfficiencyPolicyDel
 
 | Error Code | Description |
 | ---------  | ----------- |
+|  918702    | The specified operation on the volume efficiency policies endpoint is not supported on this platform. |
 |  6881346   | The policy was not deleted because the policy is in use by at least one volume. |
-|  6881347   | This operation cannot be performed because the specified policy is owned by the cluster admin. |
 |  6881431   | The specified policy is a predefined policy and cannot be deleted. |
 */
 type VolumeEfficiencyPolicyDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the volume efficiency policy delete default response
-func (o *VolumeEfficiencyPolicyDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this volume efficiency policy delete default response has a 2xx status code
@@ -146,12 +147,19 @@ func (o *VolumeEfficiencyPolicyDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the volume efficiency policy delete default response
+func (o *VolumeEfficiencyPolicyDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VolumeEfficiencyPolicyDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *VolumeEfficiencyPolicyDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *VolumeEfficiencyPolicyDeleteDefault) GetPayload() *models.ErrorResponse {

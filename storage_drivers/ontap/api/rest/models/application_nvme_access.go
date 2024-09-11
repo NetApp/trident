@@ -168,7 +168,7 @@ type ApplicationNvmeAccessInlineBackingStorage struct {
 
 	// Backing storage type
 	// Read Only: true
-	// Enum: [namespace]
+	// Enum: ["namespace"]
 	Type *string `json:"type,omitempty"`
 
 	// Backing storage UUID

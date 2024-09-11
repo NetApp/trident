@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *CifsSymlinkMappingModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs symlink mapping modify o k response
+func (o *CifsSymlinkMappingModifyOK) Code() int {
+	return 200
+}
+
 func (o *CifsSymlinkMappingModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifsSymlinkMappingModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifsSymlinkMappingModifyOK", 200)
 }
 
 func (o *CifsSymlinkMappingModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifsSymlinkMappingModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifsSymlinkMappingModifyOK", 200)
 }
 
 func (o *CifsSymlinkMappingModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,19 +112,16 @@ func NewCifsSymlinkMappingModifyDefault(code int) *CifsSymlinkMappingModifyDefau
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 655437     | Failed to modify the symlink mapping with locality "local" because the target share does not exist for the specified SVM |
 | 655573     | Failed to modify the symlink mapping to target path because it contains illegal characters or is too long |
 | 655575     | Failed to modify the symlink mapping to target server because it contains illegal characters or is too long |
-| 655547     | Failed to modify symlink mapping becasue administrative share cannot be used as target share |
+| 655547     | Failed to modify symlink mapping because administrative share cannot be used as target share |
+| 656481     | Failed to modify the widelink because the target share does not exist for the specified SVM |
 */
 type CifsSymlinkMappingModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cifs symlink mapping modify default response
-func (o *CifsSymlinkMappingModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cifs symlink mapping modify default response has a 2xx status code
@@ -146,12 +149,19 @@ func (o *CifsSymlinkMappingModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs symlink mapping modify default response
+func (o *CifsSymlinkMappingModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsSymlinkMappingModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifs_symlink_mapping_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifs_symlink_mapping_modify default %s", o._statusCode, payload)
 }
 
 func (o *CifsSymlinkMappingModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifs_symlink_mapping_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifs_symlink_mapping_modify default %s", o._statusCode, payload)
 }
 
 func (o *CifsSymlinkMappingModifyDefault) GetPayload() *models.ErrorResponse {

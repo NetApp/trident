@@ -13,7 +13,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// SnapshotPolicyScheduleReference This is a reference to the Snapshot copy policy schedule.
+// SnapshotPolicyScheduleReference This is a reference to the snapshot policy schedule.
 //
 // swagger:model snapshot_policy_schedule_reference
 type SnapshotPolicyScheduleReference struct {

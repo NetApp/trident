@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type LocalCifsUsersAndGroupsImportCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *LocalCifsUsersAndGroupsImportCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewLocalCifsUsersAndGroupsImportCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewLocalCifsUsersAndGroupsImportCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *LocalCifsUsersAndGroupsImportCreateReader) ReadResponse(response runtim
 	}
 }
 
+// NewLocalCifsUsersAndGroupsImportCreateCreated creates a LocalCifsUsersAndGroupsImportCreateCreated with default headers values
+func NewLocalCifsUsersAndGroupsImportCreateCreated() *LocalCifsUsersAndGroupsImportCreateCreated {
+	return &LocalCifsUsersAndGroupsImportCreateCreated{}
+}
+
+/*
+LocalCifsUsersAndGroupsImportCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type LocalCifsUsersAndGroupsImportCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.LocalCifsUsersAndGroupsImportJobLinkResponse
+}
+
+// IsSuccess returns true when this local cifs users and groups import create created response has a 2xx status code
+func (o *LocalCifsUsersAndGroupsImportCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this local cifs users and groups import create created response has a 3xx status code
+func (o *LocalCifsUsersAndGroupsImportCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this local cifs users and groups import create created response has a 4xx status code
+func (o *LocalCifsUsersAndGroupsImportCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this local cifs users and groups import create created response has a 5xx status code
+func (o *LocalCifsUsersAndGroupsImportCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this local cifs users and groups import create created response a status code equal to that given
+func (o *LocalCifsUsersAndGroupsImportCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the local cifs users and groups import create created response
+func (o *LocalCifsUsersAndGroupsImportCreateCreated) Code() int {
+	return 201
+}
+
+func (o *LocalCifsUsersAndGroupsImportCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportCreateCreated %s", 201, payload)
+}
+
+func (o *LocalCifsUsersAndGroupsImportCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportCreateCreated %s", 201, payload)
+}
+
+func (o *LocalCifsUsersAndGroupsImportCreateCreated) GetPayload() *models.LocalCifsUsersAndGroupsImportJobLinkResponse {
+	return o.Payload
+}
+
+func (o *LocalCifsUsersAndGroupsImportCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.LocalCifsUsersAndGroupsImportJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewLocalCifsUsersAndGroupsImportCreateAccepted creates a LocalCifsUsersAndGroupsImportCreateAccepted with default headers values
 func NewLocalCifsUsersAndGroupsImportCreateAccepted() *LocalCifsUsersAndGroupsImportCreateAccepted {
 	return &LocalCifsUsersAndGroupsImportCreateAccepted{}
@@ -57,7 +146,7 @@ type LocalCifsUsersAndGroupsImportCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.LocalCifsUsersAndGroupsImportJobLinkResponse
 }
 
 // IsSuccess returns true when this local cifs users and groups import create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *LocalCifsUsersAndGroupsImportCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the local cifs users and groups import create accepted response
+func (o *LocalCifsUsersAndGroupsImportCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *LocalCifsUsersAndGroupsImportCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportCreateAccepted %s", 202, payload)
 }
 
 func (o *LocalCifsUsersAndGroupsImportCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportCreateAccepted %s", 202, payload)
 }
 
-func (o *LocalCifsUsersAndGroupsImportCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *LocalCifsUsersAndGroupsImportCreateAccepted) GetPayload() *models.LocalCifsUsersAndGroupsImportJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *LocalCifsUsersAndGroupsImportCreateAccepted) readResponse(response runt
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.LocalCifsUsersAndGroupsImportJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -131,6 +227,7 @@ func NewLocalCifsUsersAndGroupsImportCreateDefault(code int) *LocalCifsUsersAndG
 | Error Code | Description |
 | ---------- | ----------- |
 | 655688     | Invalid file decryption password. Valid password characters are: a-z, A-Z, and 0-9. |
+| 655660     | This operation is only permitted on data SVMs. |
 | 655661     | URI username, URI password and the file decryption password cannot exceed 128 characters. |
 | 655689     | File decryption password cannot be empty. |
 | 655399     | CIFS server does not exist. |
@@ -138,7 +235,7 @@ func NewLocalCifsUsersAndGroupsImportCreateDefault(code int) *LocalCifsUsersAndG
 | 655685     | Cluster is busy processing a local users and groups transition task. |
 | 655687     | Unknown file schema version. |
 | 655690     | Processing the import file failed. Check the file decryption password, compression format and content. |
-| 655691     | Error occured before processing the file. Verify the input parameters. |
+| 655691     | Error occurred before processing the file. Verify the input parameters. |
 | 655692     | Domain name that qualifies the local users and groups must match the CIFS server name. |
 | 655693     | All local users and local groups must be prefixed with the NetBIOS domain name. |
 | 655693     | Well-known user of group will not be present in this SVM. |
@@ -149,17 +246,12 @@ func NewLocalCifsUsersAndGroupsImportCreateDefault(code int) *LocalCifsUsersAndG
 | 655700     | Failed processing a field index of a line in the input bulk import file. |
 | 655701     | Unknown element type. |
 | 655702     | Invalid URI. |
-| 655703     | Failed to download the import file. Network error occured. |
+| 655703     | Failed to download the import file. Network error occurred. |
 */
 type LocalCifsUsersAndGroupsImportCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the local cifs users and groups import create default response
-func (o *LocalCifsUsersAndGroupsImportCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this local cifs users and groups import create default response has a 2xx status code
@@ -187,12 +279,19 @@ func (o *LocalCifsUsersAndGroupsImportCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the local cifs users and groups import create default response
+func (o *LocalCifsUsersAndGroupsImportCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LocalCifsUsersAndGroupsImportCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] local_cifs_users_and_groups_import_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] local_cifs_users_and_groups_import_create default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsUsersAndGroupsImportCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] local_cifs_users_and_groups_import_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] local_cifs_users_and_groups_import_create default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsUsersAndGroupsImportCreateDefault) GetPayload() *models.ErrorResponse {

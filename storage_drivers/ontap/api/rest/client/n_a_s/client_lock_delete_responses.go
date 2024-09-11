@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ClientLockDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the client lock delete o k response
+func (o *ClientLockDeleteOK) Code() int {
+	return 200
+}
+
 func (o *ClientLockDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/locks/{uuid}][%d] clientLockDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/locks/{uuid}][%d] clientLockDeleteOK", 200)
 }
 
 func (o *ClientLockDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/locks/{uuid}][%d] clientLockDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/locks/{uuid}][%d] clientLockDeleteOK", 200)
 }
 
 func (o *ClientLockDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type ClientLockDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the client lock delete default response
-func (o *ClientLockDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this client lock delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *ClientLockDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the client lock delete default response
+func (o *ClientLockDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClientLockDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/locks/{uuid}][%d] client_lock_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/locks/{uuid}][%d] client_lock_delete default %s", o._statusCode, payload)
 }
 
 func (o *ClientLockDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/locks/{uuid}][%d] client_lock_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/locks/{uuid}][%d] client_lock_delete default %s", o._statusCode, payload)
 }
 
 func (o *ClientLockDeleteDefault) GetPayload() *models.ErrorResponse {

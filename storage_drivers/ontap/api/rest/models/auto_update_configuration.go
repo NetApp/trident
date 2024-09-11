@@ -25,7 +25,7 @@ type AutoUpdateConfiguration struct {
 
 	// The action to be taken by the alert source as specified by the user.
 	// Example: confirm
-	// Enum: [confirm dismiss automatic]
+	// Enum: ["confirm","dismiss","automatic"]
 	Action *string `json:"action,omitempty"`
 
 	// Category for the configuration row.
@@ -260,6 +260,7 @@ func (m *AutoUpdateConfiguration) UnmarshalBinary(b []byte) error {
 // | ---------- | ----------- |
 // | 131072401 | Storage Firmware |
 // | 131072402 | SP/BMC Firmware |
+// | 131072403 | System Files |
 //
 // swagger:model auto_update_configuration_inline_description
 type AutoUpdateConfigurationInlineDescription struct {

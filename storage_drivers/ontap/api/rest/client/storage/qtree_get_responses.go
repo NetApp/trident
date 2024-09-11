@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *QtreeGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the qtree get o k response
+func (o *QtreeGetOK) Code() int {
+	return 200
+}
+
 func (o *QtreeGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/qtrees/{volume.uuid}/{id}][%d] qtreeGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/qtrees/{volume.uuid}/{id}][%d] qtreeGetOK %s", 200, payload)
 }
 
 func (o *QtreeGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/qtrees/{volume.uuid}/{id}][%d] qtreeGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/qtrees/{volume.uuid}/{id}][%d] qtreeGetOK %s", 200, payload)
 }
 
 func (o *QtreeGetOK) GetPayload() *models.Qtree {
@@ -119,17 +127,16 @@ func NewQtreeGetDefault(code int) *QtreeGetDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 918235 | A volume with UUID was not found. |
+| 2621462 | The specified SVM does not exist. |
+| 5242889 | Failed to get the qtree from volume. |
 | 5242956 | Failed to obtain a qtree with ID. |
+| 5242965 | Invalid qtree path. The volume name component of the qtree path, must be the same as the volume specified with the parameter. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type QtreeGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the qtree get default response
-func (o *QtreeGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this qtree get default response has a 2xx status code
@@ -157,12 +164,19 @@ func (o *QtreeGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the qtree get default response
+func (o *QtreeGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *QtreeGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/qtrees/{volume.uuid}/{id}][%d] qtree_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/qtrees/{volume.uuid}/{id}][%d] qtree_get default %s", o._statusCode, payload)
 }
 
 func (o *QtreeGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/qtrees/{volume.uuid}/{id}][%d] qtree_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/qtrees/{volume.uuid}/{id}][%d] qtree_get default %s", o._statusCode, payload)
 }
 
 func (o *QtreeGetDefault) GetPayload() *models.ErrorResponse {

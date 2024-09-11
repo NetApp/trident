@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *StorageSwitchGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the storage switch get o k response
+func (o *StorageSwitchGetOK) Code() int {
+	return 200
+}
+
 func (o *StorageSwitchGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/switches/{name}][%d] storageSwitchGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/switches/{name}][%d] storageSwitchGetOK %s", 200, payload)
 }
 
 func (o *StorageSwitchGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/switches/{name}][%d] storageSwitchGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/switches/{name}][%d] storageSwitchGetOK %s", 200, payload)
 }
 
 func (o *StorageSwitchGetOK) GetPayload() *models.StorageSwitch {
@@ -122,11 +130,6 @@ type StorageSwitchGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the storage switch get default response
-func (o *StorageSwitchGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this storage switch get default response has a 2xx status code
 func (o *StorageSwitchGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *StorageSwitchGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the storage switch get default response
+func (o *StorageSwitchGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *StorageSwitchGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/switches/{name}][%d] storage_switch_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/switches/{name}][%d] storage_switch_get default %s", o._statusCode, payload)
 }
 
 func (o *StorageSwitchGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/switches/{name}][%d] storage_switch_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/switches/{name}][%d] storage_switch_get default %s", o._statusCode, payload)
 }
 
 func (o *StorageSwitchGetDefault) GetPayload() *models.ErrorResponse {

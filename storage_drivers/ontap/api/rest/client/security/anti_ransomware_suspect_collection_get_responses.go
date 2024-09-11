@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *AntiRansomwareSuspectCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the anti ransomware suspect collection get o k response
+func (o *AntiRansomwareSuspectCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *AntiRansomwareSuspectCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/anti-ransomware/suspects][%d] antiRansomwareSuspectCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/anti-ransomware/suspects][%d] antiRansomwareSuspectCollectionGetOK %s", 200, payload)
 }
 
 func (o *AntiRansomwareSuspectCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /security/anti-ransomware/suspects][%d] antiRansomwareSuspectCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/anti-ransomware/suspects][%d] antiRansomwareSuspectCollectionGetOK %s", 200, payload)
 }
 
 func (o *AntiRansomwareSuspectCollectionGetOK) GetPayload() *models.AntiRansomwareSuspectResponse {
@@ -122,11 +130,6 @@ type AntiRansomwareSuspectCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the anti ransomware suspect collection get default response
-func (o *AntiRansomwareSuspectCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this anti ransomware suspect collection get default response has a 2xx status code
 func (o *AntiRansomwareSuspectCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *AntiRansomwareSuspectCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the anti ransomware suspect collection get default response
+func (o *AntiRansomwareSuspectCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AntiRansomwareSuspectCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/anti-ransomware/suspects][%d] anti_ransomware_suspect_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/anti-ransomware/suspects][%d] anti_ransomware_suspect_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *AntiRansomwareSuspectCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/anti-ransomware/suspects][%d] anti_ransomware_suspect_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/anti-ransomware/suspects][%d] anti_ransomware_suspect_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *AntiRansomwareSuspectCollectionGetDefault) GetPayload() *models.ErrorResponse {

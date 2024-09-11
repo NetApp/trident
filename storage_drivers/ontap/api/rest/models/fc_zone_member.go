@@ -42,7 +42,7 @@ type FcZoneMember struct {
 	//
 	// Example: port_name
 	// Read Only: true
-	// Enum: [port_id port_name domain_id_port node_name fabric_port_name interface domain_interface ip_address symbolic_node_name device_alias]
+	// Enum: ["port_id","port_name","domain_id_port","node_name","fabric_port_name","interface","domain_interface","ip_address","symbolic_node_name","device_alias"]
 	Type *string `json:"type,omitempty"`
 }
 

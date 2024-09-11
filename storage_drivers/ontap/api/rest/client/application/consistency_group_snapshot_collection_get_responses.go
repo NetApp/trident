@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ConsistencyGroupSnapshotCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the consistency group snapshot collection get o k response
+func (o *ConsistencyGroupSnapshotCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *ConsistencyGroupSnapshotCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotCollectionGetOK %s", 200, payload)
 }
 
 func (o *ConsistencyGroupSnapshotCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotCollectionGetOK %s", 200, payload)
 }
 
 func (o *ConsistencyGroupSnapshotCollectionGetOK) GetPayload() *models.ConsistencyGroupSnapshotResponse {
@@ -122,11 +130,6 @@ type ConsistencyGroupSnapshotCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the consistency group snapshot collection get default response
-func (o *ConsistencyGroupSnapshotCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this consistency group snapshot collection get default response has a 2xx status code
 func (o *ConsistencyGroupSnapshotCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *ConsistencyGroupSnapshotCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the consistency group snapshot collection get default response
+func (o *ConsistencyGroupSnapshotCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ConsistencyGroupSnapshotCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistency_group_snapshot_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistency_group_snapshot_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ConsistencyGroupSnapshotCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistency_group_snapshot_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistency_group_snapshot_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ConsistencyGroupSnapshotCollectionGetDefault) GetPayload() *models.ErrorResponse {

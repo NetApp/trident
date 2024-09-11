@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *LicenseDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the license delete o k response
+func (o *LicenseDeleteOK) Code() int {
+	return 200
+}
+
 func (o *LicenseDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /cluster/licensing/licenses/{name}][%d] licenseDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /cluster/licensing/licenses/{name}][%d] licenseDeleteOK", 200)
 }
 
 func (o *LicenseDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /cluster/licensing/licenses/{name}][%d] licenseDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /cluster/licensing/licenses/{name}][%d] licenseDeleteOK", 200)
 }
 
 func (o *LicenseDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -115,16 +121,12 @@ func NewLicenseDeleteDefault(code int) *LicenseDeleteDefault {
 | 1115406 | Capacity pool licenses cannot be deleted |
 | 1115564 | Package is part of a NLFv2 license and cannot be removed individually |
 | 66846823 | A FlexCache license that is still in use cannot be deleted |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type LicenseDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the license delete default response
-func (o *LicenseDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this license delete default response has a 2xx status code
@@ -152,12 +154,19 @@ func (o *LicenseDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the license delete default response
+func (o *LicenseDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LicenseDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /cluster/licensing/licenses/{name}][%d] license_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/licensing/licenses/{name}][%d] license_delete default %s", o._statusCode, payload)
 }
 
 func (o *LicenseDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /cluster/licensing/licenses/{name}][%d] license_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/licensing/licenses/{name}][%d] license_delete default %s", o._statusCode, payload)
 }
 
 func (o *LicenseDeleteDefault) GetPayload() *models.ErrorResponse {

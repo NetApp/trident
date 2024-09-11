@@ -66,14 +66,14 @@ type ConsistencyGroupSnapshotCreateParams struct {
 
 	/* Action.
 
-	   Initiates the Snapshot copy create operation. The start of the Snapshot copy operation can optionally use a timeout value specified by "action_timeout". The Snapshot copy is commited by calling PATCH on the Snapshot copy href link with action specified as "commit".
+	   Initiates the snapshot create operation. The start of the snapshot operation can optionally use a timeout value specified by "action_timeout". The snapshot is committed by calling PATCH on the snapshot href link with action specified as "commit".
 
 	*/
 	Action *string
 
 	/* ActionTimeout.
 
-	   Duration to complete the 2-phase Snapshot copy operation. This also specifies the maximum duration that the write-fence remains in effect on the volumes associated with this consistency group. Default is 7 seconds with a valid range of 1 to 90 seconds.
+	   Duration to complete the 2-phase snapshot operation. This also specifies the maximum duration that the write-fence remains in effect on the volumes associated with this consistency group. Default is 7 seconds with a valid range of 5 to 120 seconds.
 
 	*/
 	ActionTimeout *int64
@@ -87,7 +87,7 @@ type ConsistencyGroupSnapshotCreateParams struct {
 
 	/* Info.
 
-	   Information regarding a consistency group's Snapshot copy.
+	   Information regarding a consistency group's snapshot.
 
 	*/
 	Info *models.ConsistencyGroupSnapshot

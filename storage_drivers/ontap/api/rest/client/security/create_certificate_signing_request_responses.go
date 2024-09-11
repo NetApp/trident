@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CreateCertificateSigningRequestOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the create certificate signing request o k response
+func (o *CreateCertificateSigningRequestOK) Code() int {
+	return 200
+}
+
 func (o *CreateCertificateSigningRequestOK) Error() string {
-	return fmt.Sprintf("[POST /security/certificate-signing-request][%d] createCertificateSigningRequestOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/certificate-signing-request][%d] createCertificateSigningRequestOK %s", 200, payload)
 }
 
 func (o *CreateCertificateSigningRequestOK) String() string {
-	return fmt.Sprintf("[POST /security/certificate-signing-request][%d] createCertificateSigningRequestOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/certificate-signing-request][%d] createCertificateSigningRequestOK %s", 200, payload)
 }
 
 func (o *CreateCertificateSigningRequestOK) GetPayload() *models.CertificateSigningRequest {
@@ -126,18 +134,15 @@ func NewCreateCertificateSigningRequestDefault(code int) *CreateCertificateSigni
 | 3735714 | Security strength bits length is not supported in FIPS mode. |
 | 3735715 | Certificate creation requires a common name or SAN extensions. |
 | 3735741 | Key size is not applicable with the EC encryption algorithm. |
+| 3735750 | Cannot supply "critical" as the only value in a list of extension values. |
 | 52560173 | Hash function is not supported for digital signatures. |
 | 52560423 | Failed to read the relative distinguished names. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type CreateCertificateSigningRequestDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the create certificate signing request default response
-func (o *CreateCertificateSigningRequestDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this create certificate signing request default response has a 2xx status code
@@ -165,12 +170,19 @@ func (o *CreateCertificateSigningRequestDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the create certificate signing request default response
+func (o *CreateCertificateSigningRequestDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CreateCertificateSigningRequestDefault) Error() string {
-	return fmt.Sprintf("[POST /security/certificate-signing-request][%d] create_certificate_signing_request default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/certificate-signing-request][%d] create_certificate_signing_request default %s", o._statusCode, payload)
 }
 
 func (o *CreateCertificateSigningRequestDefault) String() string {
-	return fmt.Sprintf("[POST /security/certificate-signing-request][%d] create_certificate_signing_request default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/certificate-signing-request][%d] create_certificate_signing_request default %s", o._statusCode, payload)
 }
 
 func (o *CreateCertificateSigningRequestDefault) GetPayload() *models.ErrorResponse {

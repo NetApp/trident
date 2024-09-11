@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -25,6 +26,12 @@ func (o *FlexcacheOriginModifyReader) ReadResponse(response runtime.ClientRespon
 	switch response.Code() {
 	case 200:
 		result := NewFlexcacheOriginModifyOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
+	case 202:
+		result := NewFlexcacheOriginModifyAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -52,7 +59,7 @@ FlexcacheOriginModifyOK describes a response with status code 200, with default 
 OK
 */
 type FlexcacheOriginModifyOK struct {
-	Payload *models.JobLinkResponse
+	Payload *models.FlexcacheOriginJobLinkResponse
 }
 
 // IsSuccess returns true when this flexcache origin modify o k response has a 2xx status code
@@ -80,21 +87,98 @@ func (o *FlexcacheOriginModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the flexcache origin modify o k response
+func (o *FlexcacheOriginModifyOK) Code() int {
+	return 200
+}
+
 func (o *FlexcacheOriginModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/flexcache/origins/{uuid}][%d] flexcacheOriginModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/flexcache/origins/{uuid}][%d] flexcacheOriginModifyOK %s", 200, payload)
 }
 
 func (o *FlexcacheOriginModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /storage/flexcache/origins/{uuid}][%d] flexcacheOriginModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/flexcache/origins/{uuid}][%d] flexcacheOriginModifyOK %s", 200, payload)
 }
 
-func (o *FlexcacheOriginModifyOK) GetPayload() *models.JobLinkResponse {
+func (o *FlexcacheOriginModifyOK) GetPayload() *models.FlexcacheOriginJobLinkResponse {
 	return o.Payload
 }
 
 func (o *FlexcacheOriginModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.FlexcacheOriginJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewFlexcacheOriginModifyAccepted creates a FlexcacheOriginModifyAccepted with default headers values
+func NewFlexcacheOriginModifyAccepted() *FlexcacheOriginModifyAccepted {
+	return &FlexcacheOriginModifyAccepted{}
+}
+
+/*
+FlexcacheOriginModifyAccepted describes a response with status code 202, with default header values.
+
+Accepted
+*/
+type FlexcacheOriginModifyAccepted struct {
+	Payload *models.FlexcacheOriginJobLinkResponse
+}
+
+// IsSuccess returns true when this flexcache origin modify accepted response has a 2xx status code
+func (o *FlexcacheOriginModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this flexcache origin modify accepted response has a 3xx status code
+func (o *FlexcacheOriginModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this flexcache origin modify accepted response has a 4xx status code
+func (o *FlexcacheOriginModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this flexcache origin modify accepted response has a 5xx status code
+func (o *FlexcacheOriginModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this flexcache origin modify accepted response a status code equal to that given
+func (o *FlexcacheOriginModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
+// Code gets the status code for the flexcache origin modify accepted response
+func (o *FlexcacheOriginModifyAccepted) Code() int {
+	return 202
+}
+
+func (o *FlexcacheOriginModifyAccepted) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/flexcache/origins/{uuid}][%d] flexcacheOriginModifyAccepted %s", 202, payload)
+}
+
+func (o *FlexcacheOriginModifyAccepted) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/flexcache/origins/{uuid}][%d] flexcacheOriginModifyAccepted %s", 202, payload)
+}
+
+func (o *FlexcacheOriginModifyAccepted) GetPayload() *models.FlexcacheOriginJobLinkResponse {
+	return o.Payload
+}
+
+func (o *FlexcacheOriginModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.FlexcacheOriginJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -128,11 +212,6 @@ type FlexcacheOriginModifyDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the flexcache origin modify default response
-func (o *FlexcacheOriginModifyDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this flexcache origin modify default response has a 2xx status code
 func (o *FlexcacheOriginModifyDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -158,12 +237,19 @@ func (o *FlexcacheOriginModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the flexcache origin modify default response
+func (o *FlexcacheOriginModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FlexcacheOriginModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/flexcache/origins/{uuid}][%d] flexcache_origin_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/flexcache/origins/{uuid}][%d] flexcache_origin_modify default %s", o._statusCode, payload)
 }
 
 func (o *FlexcacheOriginModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /storage/flexcache/origins/{uuid}][%d] flexcache_origin_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/flexcache/origins/{uuid}][%d] flexcache_origin_modify default %s", o._statusCode, payload)
 }
 
 func (o *FlexcacheOriginModifyDefault) GetPayload() *models.ErrorResponse {

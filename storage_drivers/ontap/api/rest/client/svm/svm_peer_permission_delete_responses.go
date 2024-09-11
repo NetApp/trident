@@ -6,6 +6,7 @@ package svm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SvmPeerPermissionDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the svm peer permission delete o k response
+func (o *SvmPeerPermissionDeleteOK) Code() int {
+	return 200
+}
+
 func (o *SvmPeerPermissionDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svmPeerPermissionDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svmPeerPermissionDeleteOK", 200)
 }
 
 func (o *SvmPeerPermissionDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svmPeerPermissionDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svmPeerPermissionDeleteOK", 200)
 }
 
 func (o *SvmPeerPermissionDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -118,11 +124,6 @@ type SvmPeerPermissionDeleteDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the svm peer permission delete default response
-func (o *SvmPeerPermissionDeleteDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this svm peer permission delete default response has a 2xx status code
 func (o *SvmPeerPermissionDeleteDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -148,12 +149,19 @@ func (o *SvmPeerPermissionDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the svm peer permission delete default response
+func (o *SvmPeerPermissionDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SvmPeerPermissionDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svm_peer_permission_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svm_peer_permission_delete default %s", o._statusCode, payload)
 }
 
 func (o *SvmPeerPermissionDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svm_peer_permission_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svm_peer_permission_delete default %s", o._statusCode, payload)
 }
 
 func (o *SvmPeerPermissionDeleteDefault) GetPayload() *models.ErrorResponse {

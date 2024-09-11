@@ -32,6 +32,7 @@ type FcZone struct {
 
 	// An array of Fibre Channel zone members.
 	//
+	// Read Only: true
 	FcZoneInlineMembers []*FcZoneInlineMembersInlineArrayItem `json:"members,omitempty"`
 
 	// The name of the Fibre Channel zone.
@@ -215,6 +216,10 @@ func (m *FcZone) contextValidateFabric(ctx context.Context, formats strfmt.Regis
 }
 
 func (m *FcZone) contextValidateFcZoneInlineMembers(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "members", "body", []*FcZoneInlineMembersInlineArrayItem(m.FcZoneInlineMembers)); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(m.FcZoneInlineMembers); i++ {
 
@@ -665,7 +670,7 @@ type FcZoneInlineMembersInlineArrayItem struct {
 	//
 	// Example: port_name
 	// Read Only: true
-	// Enum: [port_id port_name domain_id_port node_name fabric_port_name interface domain_interface ip_address symbolic_node_name device_alias]
+	// Enum: ["port_id","port_name","domain_id_port","node_name","fabric_port_name","interface","domain_interface","ip_address","symbolic_node_name","device_alias"]
 	Type *string `json:"type,omitempty"`
 }
 

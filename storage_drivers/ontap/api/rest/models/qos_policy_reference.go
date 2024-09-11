@@ -11,6 +11,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // QosPolicyReference When "min_throughput_iops", "min_throughput_mbps", "max_throughput_iops" or "max_throughput_mbps" attributes are specified, the storage object is assigned to an auto-generated QoS policy group. If the attributes are later modified, the auto-generated QoS policy-group attributes are modified. Attributes can be removed by specifying "0" and policy group by specifying "none". Upon deletion of the storage object or if the attributes are removed, then the QoS policy-group is also removed.
@@ -23,18 +24,26 @@ type QosPolicyReference struct {
 
 	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 10000
+	// Maximum: 2.147483647e+09
+	// Minimum: 0
 	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
 	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
+	// Maximum: 4.194303e+06
+	// Minimum: 0
 	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
 	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 2000
+	// Maximum: 2.147483647e+09
+	// Minimum: 0
 	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
 	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
+	// Maximum: 4.194303e+06
+	// Minimum: 0
 	MinThroughputMbps *int64 `json:"min_throughput_mbps,omitempty"`
 
 	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
@@ -51,6 +60,22 @@ func (m *QosPolicyReference) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMaxThroughputIops(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMaxThroughputMbps(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMinThroughputIops(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMinThroughputMbps(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -72,6 +97,70 @@ func (m *QosPolicyReference) validateLinks(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *QosPolicyReference) validateMaxThroughputIops(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxThroughputIops) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("max_throughput_iops", "body", *m.MaxThroughputIops, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("max_throughput_iops", "body", *m.MaxThroughputIops, 2.147483647e+09, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *QosPolicyReference) validateMaxThroughputMbps(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxThroughputMbps) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("max_throughput_mbps", "body", *m.MaxThroughputMbps, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("max_throughput_mbps", "body", *m.MaxThroughputMbps, 4.194303e+06, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *QosPolicyReference) validateMinThroughputIops(formats strfmt.Registry) error {
+	if swag.IsZero(m.MinThroughputIops) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("min_throughput_iops", "body", *m.MinThroughputIops, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("min_throughput_iops", "body", *m.MinThroughputIops, 2.147483647e+09, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *QosPolicyReference) validateMinThroughputMbps(formats strfmt.Registry) error {
+	if swag.IsZero(m.MinThroughputMbps) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("min_throughput_mbps", "body", *m.MinThroughputMbps, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("min_throughput_mbps", "body", *m.MinThroughputMbps, 4.194303e+06, false); err != nil {
+		return err
 	}
 
 	return nil

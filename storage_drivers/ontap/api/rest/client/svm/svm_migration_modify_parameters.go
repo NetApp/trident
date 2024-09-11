@@ -67,7 +67,7 @@ type SvmMigrationModifyParams struct {
 	/* Action.
 
 	     The pause action pauses the SVM migration. This action stops data transfer and configuration replication. This operation must be performed on the destination cluster.
-	The resume action resumes an SVM migration from a paused or failed state. This operation must be performed on the destination cluster.
+	The resume action resumes an SVM migration from a paused or failed state. If the SVM migration is in a cleanup_failed state, volume placement is ignored. This operation must be performed on the destination cluster.
 	The cutover action triggers the cutover of an SVM from the source cluster to the destination cluster.
 	The source_clean up action performs a clean up of the SVM on the source cluster.
 

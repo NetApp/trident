@@ -8,6 +8,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -41,14 +42,14 @@ type VolumeStatisticsReference struct {
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: ["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *VolumeStatisticsReferenceInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1986,6 +1987,22 @@ func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineRead) ContextValidate(ct
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateVolumeProtocolLatencyHistogramCounts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeProtocolLatencyHistogramLabels(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeProtocolSizeHistogramCounts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeProtocolSizeHistogramLabels(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -2005,6 +2022,58 @@ func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineRead) contextValidateTot
 
 	if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"read"+"."+"total_time", "body", m.TotalTime); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineRead) contextValidateVolumeProtocolLatencyHistogramCounts(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolLatencyHistogramCounts); i++ {
+
+		if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"read"+"."+"volume_protocol_latency_histogram_counts"+"."+strconv.Itoa(i), "body", m.VolumeProtocolLatencyHistogramCounts[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineRead) contextValidateVolumeProtocolLatencyHistogramLabels(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolLatencyHistogramLabels); i++ {
+
+		if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"read"+"."+"volume_protocol_latency_histogram_labels"+"."+strconv.Itoa(i), "body", m.VolumeProtocolLatencyHistogramLabels[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineRead) contextValidateVolumeProtocolSizeHistogramCounts(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolSizeHistogramCounts); i++ {
+
+		if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"read"+"."+"volume_protocol_size_histogram_counts"+"."+strconv.Itoa(i), "body", m.VolumeProtocolSizeHistogramCounts[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineRead) contextValidateVolumeProtocolSizeHistogramLabels(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolSizeHistogramLabels); i++ {
+
+		if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"read"+"."+"volume_protocol_size_histogram_labels"+"."+strconv.Itoa(i), "body", m.VolumeProtocolSizeHistogramLabels[i]); err != nil {
+			return err
+		}
+
 	}
 
 	return nil
@@ -2329,6 +2398,22 @@ func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineWrite) ContextValidate(c
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateVolumeProtocolLatencyHistogramCounts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeProtocolLatencyHistogramLabels(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeProtocolSizeHistogramCounts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeProtocolSizeHistogramLabels(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -2348,6 +2433,58 @@ func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineWrite) contextValidateTo
 
 	if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"write"+"."+"total_time", "body", m.TotalTime); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineWrite) contextValidateVolumeProtocolLatencyHistogramCounts(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolLatencyHistogramCounts); i++ {
+
+		if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"write"+"."+"volume_protocol_latency_histogram_counts"+"."+strconv.Itoa(i), "body", m.VolumeProtocolLatencyHistogramCounts[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineWrite) contextValidateVolumeProtocolLatencyHistogramLabels(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolLatencyHistogramLabels); i++ {
+
+		if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"write"+"."+"volume_protocol_latency_histogram_labels"+"."+strconv.Itoa(i), "body", m.VolumeProtocolLatencyHistogramLabels[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineWrite) contextValidateVolumeProtocolSizeHistogramCounts(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolSizeHistogramCounts); i++ {
+
+		if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"write"+"."+"volume_protocol_size_histogram_counts"+"."+strconv.Itoa(i), "body", m.VolumeProtocolSizeHistogramCounts[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineWrite) contextValidateVolumeProtocolSizeHistogramLabels(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolSizeHistogramLabels); i++ {
+
+		if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"write"+"."+"volume_protocol_size_histogram_labels"+"."+strconv.Itoa(i), "body", m.VolumeProtocolSizeHistogramLabels[i]); err != nil {
+			return err
+		}
+
 	}
 
 	return nil
@@ -2385,11 +2522,11 @@ type VolumeStatisticsReferenceInlineCloud struct {
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: ["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]
 	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -2709,7 +2846,7 @@ type VolumeStatisticsReferenceInlineCloudInlineIopsRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -2763,7 +2900,7 @@ type VolumeStatisticsReferenceInlineCloudInlineLatencyRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -2817,11 +2954,11 @@ type VolumeStatisticsReferenceInlineFlexcacheRaw struct {
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: ["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]
 	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -3063,7 +3200,7 @@ type VolumeStatisticsReferenceInlineIopsRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -3117,7 +3254,7 @@ type VolumeStatisticsReferenceInlineLatencyRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -4594,6 +4731,22 @@ func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineRead) ContextValidate(ctx
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateVolumeProtocolLatencyHistogramCounts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeProtocolLatencyHistogramLabels(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeProtocolSizeHistogramCounts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeProtocolSizeHistogramLabels(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -4613,6 +4766,58 @@ func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineRead) contextValidateTota
 
 	if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"read"+"."+"total_time", "body", m.TotalTime); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineRead) contextValidateVolumeProtocolLatencyHistogramCounts(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolLatencyHistogramCounts); i++ {
+
+		if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"read"+"."+"volume_protocol_latency_histogram_counts"+"."+strconv.Itoa(i), "body", m.VolumeProtocolLatencyHistogramCounts[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineRead) contextValidateVolumeProtocolLatencyHistogramLabels(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolLatencyHistogramLabels); i++ {
+
+		if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"read"+"."+"volume_protocol_latency_histogram_labels"+"."+strconv.Itoa(i), "body", m.VolumeProtocolLatencyHistogramLabels[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineRead) contextValidateVolumeProtocolSizeHistogramCounts(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolSizeHistogramCounts); i++ {
+
+		if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"read"+"."+"volume_protocol_size_histogram_counts"+"."+strconv.Itoa(i), "body", m.VolumeProtocolSizeHistogramCounts[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineRead) contextValidateVolumeProtocolSizeHistogramLabels(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolSizeHistogramLabels); i++ {
+
+		if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"read"+"."+"volume_protocol_size_histogram_labels"+"."+strconv.Itoa(i), "body", m.VolumeProtocolSizeHistogramLabels[i]); err != nil {
+			return err
+		}
+
 	}
 
 	return nil
@@ -4937,6 +5142,22 @@ func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineWrite) ContextValidate(ct
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateVolumeProtocolLatencyHistogramCounts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeProtocolLatencyHistogramLabels(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeProtocolSizeHistogramCounts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeProtocolSizeHistogramLabels(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -4956,6 +5177,58 @@ func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineWrite) contextValidateTot
 
 	if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"write"+"."+"total_time", "body", m.TotalTime); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineWrite) contextValidateVolumeProtocolLatencyHistogramCounts(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolLatencyHistogramCounts); i++ {
+
+		if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"write"+"."+"volume_protocol_latency_histogram_counts"+"."+strconv.Itoa(i), "body", m.VolumeProtocolLatencyHistogramCounts[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineWrite) contextValidateVolumeProtocolLatencyHistogramLabels(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolLatencyHistogramLabels); i++ {
+
+		if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"write"+"."+"volume_protocol_latency_histogram_labels"+"."+strconv.Itoa(i), "body", m.VolumeProtocolLatencyHistogramLabels[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineWrite) contextValidateVolumeProtocolSizeHistogramCounts(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolSizeHistogramCounts); i++ {
+
+		if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"write"+"."+"volume_protocol_size_histogram_counts"+"."+strconv.Itoa(i), "body", m.VolumeProtocolSizeHistogramCounts[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineWrite) contextValidateVolumeProtocolSizeHistogramLabels(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeProtocolSizeHistogramLabels); i++ {
+
+		if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"write"+"."+"volume_protocol_size_histogram_labels"+"."+strconv.Itoa(i), "body", m.VolumeProtocolSizeHistogramLabels[i]); err != nil {
+			return err
+		}
+
 	}
 
 	return nil
@@ -4995,7 +5268,7 @@ type VolumeStatisticsReferenceInlineThroughputRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }

@@ -24,12 +24,22 @@ type GcpKms struct {
 	// links
 	Links *GcpKmsInlineLinks `json:"_links,omitempty"`
 
-	// Google Cloud application's service account credentials required to access the specified KMS. It is a JSON file containing an email address and the private key of the service account holder.
-	// Example: { type: service_account, project_id: project-id, private_key_id: key-id, private_key: -----BEGIN PRIVATE KEY-----\nprivate-key\n-----END PRIVATE KEY-----\n, client_email: service-account-email, client_id: client-id, auth_uri: https://accounts.google.com/o/oauth2/auth, token_uri: https://accounts.google.com/o/oauth2/token, auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs, client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/service-account-email }
+	// Google Cloud application's service account credentials required to access the specified KMS. The client_email and private_key fields of the service account holder are required.
+	// Example: {\"private_key\":\"ValidPrivateKey\",\"client_email\":\"my@account.email.com\"}
 	// Format: password
 	ApplicationCredentials *strfmt.Password `json:"application_credentials,omitempty"`
 
+	// Google Cloud KMS caller account email
+	// Example: myaccount@myproject.com
+	// Read Only: true
+	CallerAccount *string `json:"caller_account,omitempty"`
+
+	// Google Cloud KMS host subdomain.
+	// Example: cloudkms.googleapis.com
+	CloudkmsHost *string `json:"cloudkms_host,omitempty"`
+
 	// gcp kms inline ekmip reachability
+	// Read Only: true
 	GcpKmsInlineEkmipReachability []*GcpKmsInlineEkmipReachabilityInlineArrayItem `json:"ekmip_reachability,omitempty"`
 
 	// google reachability
@@ -46,6 +56,22 @@ type GcpKms struct {
 	// Google Cloud KMS key ring name of the deployed Google Cloud application.
 	// Example: gcpapp1-keyring
 	KeyRingName *string `json:"key_ring_name,omitempty"`
+
+	// Open authorization server host name.
+	// Example: oauth2.googleapis.com
+	OauthHost *string `json:"oauth_host,omitempty"`
+
+	// Open authorization URL for the access token.
+	// Example: https://oauth2.googleapis.com/token
+	OauthURL *string `json:"oauth_url,omitempty"`
+
+	// Authorization server and Google Cloud KMS port number.
+	// Example: 443
+	Port *int64 `json:"port,omitempty"`
+
+	// Google Cloud KMS account to impersonate.
+	// Example: myserviceaccount@myproject.iam.gserviceaccount.com
+	PrivilegedAccount *string `json:"privileged_account,omitempty"`
 
 	// Google Cloud project (application) ID of the deployed Google Cloud application that has appropriate access to the Google Cloud KMS.
 	// Example: gcpapp1
@@ -65,7 +91,7 @@ type GcpKms struct {
 
 	// Type of proxy.
 	// Example: http
-	// Enum: [http https]
+	// Enum: ["http","https"]
 	ProxyType *string `json:"proxy_type,omitempty"`
 
 	// Proxy username.
@@ -74,7 +100,7 @@ type GcpKms struct {
 
 	// Set to "svm" for interfaces owned by an SVM. Otherwise, set to "cluster".
 	// Read Only: true
-	// Enum: [svm cluster]
+	// Enum: ["svm","cluster"]
 	Scope *string `json:"scope,omitempty"`
 
 	// state
@@ -87,6 +113,12 @@ type GcpKms struct {
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
 	UUID *string `json:"uuid,omitempty"`
+
+	// Verify the identity of the Google Cloud KMS host name.
+	VerifyHost *bool `json:"verify_host,omitempty"`
+
+	// Verify the identity of the Google Cloud KMS IP address.
+	VerifyIP *bool `json:"verify_ip,omitempty"`
 }
 
 // Validate validates this gcp kms
@@ -355,6 +387,10 @@ func (m *GcpKms) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateCallerAccount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateGcpKmsInlineEkmipReachability(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -399,7 +435,20 @@ func (m *GcpKms) contextValidateLinks(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
+func (m *GcpKms) contextValidateCallerAccount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "caller_account", "body", m.CallerAccount); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *GcpKms) contextValidateGcpKmsInlineEkmipReachability(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ekmip_reachability", "body", []*GcpKmsInlineEkmipReachabilityInlineArrayItem(m.GcpKmsInlineEkmipReachability)); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(m.GcpKmsInlineEkmipReachability); i++ {
 
@@ -796,8 +845,13 @@ func (m *GcpKmsInlineGoogleReachability) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validates this gcp kms inline google reachability based on context it is used
+// ContextValidate validate this gcp kms inline google reachability based on the context it is used
 func (m *GcpKmsInlineGoogleReachability) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -928,8 +982,13 @@ func (m *GcpKmsInlineState) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this gcp kms inline state based on context it is used
+// ContextValidate validate this gcp kms inline state based on the context it is used
 func (m *GcpKmsInlineState) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -951,7 +1010,7 @@ func (m *GcpKmsInlineState) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GcpKmsInlineSvm gcp kms inline svm
+// GcpKmsInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model gcp_kms_inline_svm
 type GcpKmsInlineSvm struct {
@@ -959,12 +1018,12 @@ type GcpKmsInlineSvm struct {
 	// links
 	Links *GcpKmsInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

@@ -61,7 +61,7 @@ type CifsServiceSecurity struct {
 	// * ntlmv2_krb                  Accepts NTLMv2 and Kerberos
 	// * krb                         Accepts Kerberos only
 	//
-	// Enum: [lm_ntlm_ntlmv2_krb ntlm_ntlmv2_krb ntlmv2_krb krb]
+	// Enum: ["lm_ntlm_ntlmv2_krb","ntlm_ntlmv2_krb","ntlmv2_krb","krb"]
 	LmCompatibilityLevel *string `json:"lm_compatibility_level,omitempty"`
 
 	// Specifies what level of access an anonymous user is granted. An anonymous user (also known as a "null user") can list or enumerate certain types of system information from Windows hosts on the network, including user names and details, account policies, and share names. Access for the anonymous user can be controlled by specifying one of three access restriction settings.
@@ -70,7 +70,7 @@ type CifsServiceSecurity struct {
 	//  * no_enumeration   - Enumeration is restricted for an anonymous user.
 	//  * no_access        - All access is restricted for an anonymous user.
 	//
-	// Enum: [no_restriction no_enumeration no_access]
+	// Enum: ["no_restriction","no_enumeration","no_access"]
 	RestrictAnonymous *string `json:"restrict_anonymous,omitempty"`
 
 	// Specifies client session security for AD LDAP connections.
@@ -79,7 +79,7 @@ type CifsServiceSecurity struct {
 	//   * sign - Sign LDAP traffic.
 	//   * seal - Seal and Sign LDAP traffic
 	//
-	// Enum: [none sign seal]
+	// Enum: ["none","sign","seal"]
 	SessionSecurity *string `json:"session_security,omitempty"`
 
 	// Specifies whether encryption is required for incoming CIFS traffic.

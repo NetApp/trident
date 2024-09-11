@@ -6,6 +6,7 @@ package svm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SvmMigrationGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the svm migration get o k response
+func (o *SvmMigrationGetOK) Code() int {
+	return 200
+}
+
 func (o *SvmMigrationGetOK) Error() string {
-	return fmt.Sprintf("[GET /svm/migrations/{uuid}][%d] svmMigrationGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/migrations/{uuid}][%d] svmMigrationGetOK %s", 200, payload)
 }
 
 func (o *SvmMigrationGetOK) String() string {
-	return fmt.Sprintf("[GET /svm/migrations/{uuid}][%d] svmMigrationGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/migrations/{uuid}][%d] svmMigrationGetOK %s", 200, payload)
 }
 
 func (o *SvmMigrationGetOK) GetPayload() *models.SvmMigration {
@@ -112,19 +120,23 @@ func NewSvmMigrationGetDefault(code int) *SvmMigrationGetDefault {
 }
 
 /*
-SvmMigrationGetDefault describes a response with status code -1, with default header values.
+	SvmMigrationGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 13172783 | Migrate RDB lookup failed |
+| 13173739 | Migrate pause operation failed. Retry pause operation using REST API PATCH method \\"/api/svm/migrations/<migration_uuid>?action=pause\\". Reason: {Reason} |
+| 13173740 | Migrate abort operation failed. Retry abort operation by using REST API DELETE method \\"/api/svm/migrations/<migration_uuid>\\". Reason: {Reason} |
+| 13173741 | Migrate failed. Retry the migrate by running the resume operation using REST API PATCH method \\"/api/svm/migrations/<migration_uuid>?action=resume\\". Reason: {Reason} |
+| 13173742 | Migrate operation status: {Reason}. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SvmMigrationGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the svm migration get default response
-func (o *SvmMigrationGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this svm migration get default response has a 2xx status code
@@ -152,12 +164,19 @@ func (o *SvmMigrationGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the svm migration get default response
+func (o *SvmMigrationGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SvmMigrationGetDefault) Error() string {
-	return fmt.Sprintf("[GET /svm/migrations/{uuid}][%d] svm_migration_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/migrations/{uuid}][%d] svm_migration_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmMigrationGetDefault) String() string {
-	return fmt.Sprintf("[GET /svm/migrations/{uuid}][%d] svm_migration_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/migrations/{uuid}][%d] svm_migration_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmMigrationGetDefault) GetPayload() *models.ErrorResponse {

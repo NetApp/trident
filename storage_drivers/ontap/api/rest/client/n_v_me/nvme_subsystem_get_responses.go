@@ -6,6 +6,7 @@ package n_v_me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NvmeSubsystemGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nvme subsystem get o k response
+func (o *NvmeSubsystemGetOK) Code() int {
+	return 200
+}
+
 func (o *NvmeSubsystemGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{uuid}][%d] nvmeSubsystemGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{uuid}][%d] nvmeSubsystemGetOK %s", 200, payload)
 }
 
 func (o *NvmeSubsystemGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{uuid}][%d] nvmeSubsystemGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{uuid}][%d] nvmeSubsystemGetOK %s", 200, payload)
 }
 
 func (o *NvmeSubsystemGetOK) GetPayload() *models.NvmeSubsystem {
@@ -112,19 +120,19 @@ func NewNvmeSubsystemGetDefault(code int) *NvmeSubsystemGetDefault {
 }
 
 /*
-NvmeSubsystemGetDefault describes a response with status code -1, with default header values.
+	NvmeSubsystemGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 72090001 | The NVMe subsystem does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NvmeSubsystemGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nvme subsystem get default response
-func (o *NvmeSubsystemGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nvme subsystem get default response has a 2xx status code
@@ -152,12 +160,19 @@ func (o *NvmeSubsystemGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nvme subsystem get default response
+func (o *NvmeSubsystemGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NvmeSubsystemGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{uuid}][%d] nvme_subsystem_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{uuid}][%d] nvme_subsystem_get default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{uuid}][%d] nvme_subsystem_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{uuid}][%d] nvme_subsystem_get default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemGetDefault) GetPayload() *models.ErrorResponse {

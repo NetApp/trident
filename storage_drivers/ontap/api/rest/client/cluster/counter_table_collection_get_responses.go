@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CounterTableCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the counter table collection get o k response
+func (o *CounterTableCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *CounterTableCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/counter/tables][%d] counterTableCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/counter/tables][%d] counterTableCollectionGetOK %s", 200, payload)
 }
 
 func (o *CounterTableCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/counter/tables][%d] counterTableCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/counter/tables][%d] counterTableCollectionGetOK %s", 200, payload)
 }
 
 func (o *CounterTableCollectionGetOK) GetPayload() *models.CounterTableResponse {
@@ -119,16 +127,12 @@ func NewCounterTableCollectionGetDefault(code int) *CounterTableCollectionGetDef
 | Error Code | Description |
 | ---------- | ----------- |
 | 8585368 | The system has not completed it's initialization |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type CounterTableCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the counter table collection get default response
-func (o *CounterTableCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this counter table collection get default response has a 2xx status code
@@ -156,12 +160,19 @@ func (o *CounterTableCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the counter table collection get default response
+func (o *CounterTableCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CounterTableCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/counter/tables][%d] counter_table_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/counter/tables][%d] counter_table_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *CounterTableCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/counter/tables][%d] counter_table_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/counter/tables][%d] counter_table_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *CounterTableCollectionGetDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *VscanOnAccessCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the vscan on access create created response
+func (o *VscanOnAccessCreateCreated) Code() int {
+	return 201
+}
+
 func (o *VscanOnAccessCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-access-policies][%d] vscanOnAccessCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-access-policies][%d] vscanOnAccessCreateCreated %s", 201, payload)
 }
 
 func (o *VscanOnAccessCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-access-policies][%d] vscanOnAccessCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-access-policies][%d] vscanOnAccessCreateCreated %s", 201, payload)
 }
 
 func (o *VscanOnAccessCreateCreated) GetPayload() *models.VscanOnAccessResponse {
@@ -144,11 +152,6 @@ type VscanOnAccessCreateDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the vscan on access create default response
-func (o *VscanOnAccessCreateDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this vscan on access create default response has a 2xx status code
 func (o *VscanOnAccessCreateDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -174,12 +177,19 @@ func (o *VscanOnAccessCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the vscan on access create default response
+func (o *VscanOnAccessCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VscanOnAccessCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-access-policies][%d] vscan_on_access_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-access-policies][%d] vscan_on_access_create default %s", o._statusCode, payload)
 }
 
 func (o *VscanOnAccessCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-access-policies][%d] vscan_on_access_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-access-policies][%d] vscan_on_access_create default %s", o._statusCode, payload)
 }
 
 func (o *VscanOnAccessCreateDefault) GetPayload() *models.ErrorResponse {

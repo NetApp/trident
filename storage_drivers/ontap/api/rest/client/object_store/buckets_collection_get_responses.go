@@ -6,6 +6,7 @@ package object_store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *BucketsCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the buckets collection get o k response
+func (o *BucketsCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *BucketsCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/buckets][%d] bucketsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/buckets][%d] bucketsCollectionGetOK %s", 200, payload)
 }
 
 func (o *BucketsCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/buckets][%d] bucketsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/buckets][%d] bucketsCollectionGetOK %s", 200, payload)
 }
 
 func (o *BucketsCollectionGetOK) GetPayload() *models.S3BucketSvmResponse {
@@ -122,11 +130,6 @@ type BucketsCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the buckets collection get default response
-func (o *BucketsCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this buckets collection get default response has a 2xx status code
 func (o *BucketsCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *BucketsCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the buckets collection get default response
+func (o *BucketsCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *BucketsCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/buckets][%d] buckets_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/buckets][%d] buckets_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *BucketsCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/buckets][%d] buckets_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/buckets][%d] buckets_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *BucketsCollectionGetDefault) GetPayload() *models.ErrorResponse {

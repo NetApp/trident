@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *IPServicePolicyModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ip service policy modify o k response
+func (o *IPServicePolicyModifyOK) Code() int {
+	return 200
+}
+
 func (o *IPServicePolicyModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /network/ip/service-policies/{uuid}][%d] ipServicePolicyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/ip/service-policies/{uuid}][%d] ipServicePolicyModifyOK", 200)
 }
 
 func (o *IPServicePolicyModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /network/ip/service-policies/{uuid}][%d] ipServicePolicyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/ip/service-policies/{uuid}][%d] ipServicePolicyModifyOK", 200)
 }
 
 func (o *IPServicePolicyModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,6 +113,8 @@ func NewIPServicePolicyModifyDefault(code int) *IPServicePolicyModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 1376669 | Port must reside in the same IPspace as the interface's SVM. |
+| 2621740 | An unexpected error when trying to determine whether the target Vserver was locked or not on this cluster. |
+| 53281911 | Modifying the service policy is disallowed because policies on this SVM are managed by the system |
 | 53281929 | Service policies cannot combine block and file services. |
 | 53281930 | Service policies maintained by the system cannot be renamed. |
 | 53281931 | Service policy names cannot start with "default-". |
@@ -115,16 +123,15 @@ func NewIPServicePolicyModifyDefault(code int) *IPServicePolicyModifyDefault {
 | 53281934 | An SVM-scoped service cannot be added to a Cluster-scoped service policy. |
 | 53281952 | The service policy on an SVM cannot be updated to include a block service. Use built-in service policies for SAN services. |
 | 53281953 | The service policy on an SVM cannot be updated to include a new service. |
+| 53281960 | Service cannot be removed from the service policy because it is used by one or more interfaces. |
+| 53281961 | Service cannot be removed from the service policy because it is used by one or more interfaces. |
+| 53281963 | Service cannot be removed from the service policy because it is used by one or more interfaces. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IPServicePolicyModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ip service policy modify default response
-func (o *IPServicePolicyModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ip service policy modify default response has a 2xx status code
@@ -152,12 +159,19 @@ func (o *IPServicePolicyModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ip service policy modify default response
+func (o *IPServicePolicyModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IPServicePolicyModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /network/ip/service-policies/{uuid}][%d] ip_service_policy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/ip/service-policies/{uuid}][%d] ip_service_policy_modify default %s", o._statusCode, payload)
 }
 
 func (o *IPServicePolicyModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /network/ip/service-policies/{uuid}][%d] ip_service_policy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/ip/service-policies/{uuid}][%d] ip_service_policy_modify default %s", o._statusCode, payload)
 }
 
 func (o *IPServicePolicyModifyDefault) GetPayload() *models.ErrorResponse {

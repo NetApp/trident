@@ -25,18 +25,18 @@ type RaidGroupDisk struct {
 
 	// The position of the disk within the RAID group.
 	// Read Only: true
-	// Enum: [data parity dparity tparity copy]
+	// Enum: ["data","parity","dparity","tparity","copy"]
 	Position *string `json:"position,omitempty"`
 
 	// The state of the disk within the RAID group.
 	// Read Only: true
-	// Enum: [normal failed zeroing copy replacing evacuating prefail offline reconstructing]
+	// Enum: ["normal","failed","zeroing","copy","replacing","evacuating","prefail","offline","reconstructing"]
 	State *string `json:"state,omitempty"`
 
 	// Disk interface type
 	// Example: ssd
 	// Read Only: true
-	// Enum: [ata bsas fcal fsas lun sas msata ssd vmdisk unknown ssd_cap ssd_nvm ssd_zns]
+	// Enum: ["ata","bsas","fcal","fsas","lun","sas","msata","ssd","vmdisk","unknown","ssd_cap","ssd_nvm","ssd_zns"]
 	Type *string `json:"type,omitempty"`
 
 	// Size in bytes that is usable by the aggregate.
@@ -564,7 +564,7 @@ func (m *RaidGroupDisk) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// RaidGroupDiskInlineDisk raid group disk inline disk
+// RaidGroupDiskInlineDisk Disk
 //
 // swagger:model raid_group_disk_inline_disk
 type RaidGroupDiskInlineDisk struct {

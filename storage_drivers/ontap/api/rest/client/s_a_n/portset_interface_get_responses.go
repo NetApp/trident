@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *PortsetInterfaceGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the portset interface get o k response
+func (o *PortsetInterfaceGetOK) Code() int {
+	return 200
+}
+
 func (o *PortsetInterfaceGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}][%d] portsetInterfaceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}][%d] portsetInterfaceGetOK %s", 200, payload)
 }
 
 func (o *PortsetInterfaceGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}][%d] portsetInterfaceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}][%d] portsetInterfaceGetOK %s", 200, payload)
 }
 
 func (o *PortsetInterfaceGetOK) GetPayload() *models.PortsetInterface {
@@ -120,16 +128,12 @@ func NewPortsetInterfaceGetDefault(code int) *PortsetInterfaceGetDefault {
 | ---------- | ----------- |
 | 4 | The interface is not a member of the portset. |
 | 5374908 | The portset specified in the URI does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type PortsetInterfaceGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the portset interface get default response
-func (o *PortsetInterfaceGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this portset interface get default response has a 2xx status code
@@ -157,12 +161,19 @@ func (o *PortsetInterfaceGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the portset interface get default response
+func (o *PortsetInterfaceGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *PortsetInterfaceGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}][%d] portset_interface_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}][%d] portset_interface_get default %s", o._statusCode, payload)
 }
 
 func (o *PortsetInterfaceGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}][%d] portset_interface_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}][%d] portset_interface_get default %s", o._statusCode, payload)
 }
 
 func (o *PortsetInterfaceGetDefault) GetPayload() *models.ErrorResponse {

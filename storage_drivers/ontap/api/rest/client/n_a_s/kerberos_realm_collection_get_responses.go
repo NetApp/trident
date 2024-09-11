@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *KerberosRealmCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the kerberos realm collection get o k response
+func (o *KerberosRealmCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *KerberosRealmCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/kerberos/realms][%d] kerberosRealmCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/kerberos/realms][%d] kerberosRealmCollectionGetOK %s", 200, payload)
 }
 
 func (o *KerberosRealmCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/kerberos/realms][%d] kerberosRealmCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/kerberos/realms][%d] kerberosRealmCollectionGetOK %s", 200, payload)
 }
 
 func (o *KerberosRealmCollectionGetOK) GetPayload() *models.KerberosRealmResponse {
@@ -122,11 +130,6 @@ type KerberosRealmCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the kerberos realm collection get default response
-func (o *KerberosRealmCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this kerberos realm collection get default response has a 2xx status code
 func (o *KerberosRealmCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *KerberosRealmCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the kerberos realm collection get default response
+func (o *KerberosRealmCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *KerberosRealmCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/kerberos/realms][%d] kerberos_realm_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/kerberos/realms][%d] kerberos_realm_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *KerberosRealmCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/kerberos/realms][%d] kerberos_realm_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/kerberos/realms][%d] kerberos_realm_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *KerberosRealmCollectionGetDefault) GetPayload() *models.ErrorResponse {

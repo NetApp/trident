@@ -6,6 +6,7 @@ package svm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SvmPeerPermissionInstanceGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the svm peer permission instance get o k response
+func (o *SvmPeerPermissionInstanceGetOK) Code() int {
+	return 200
+}
+
 func (o *SvmPeerPermissionInstanceGetOK) Error() string {
-	return fmt.Sprintf("[GET /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svmPeerPermissionInstanceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svmPeerPermissionInstanceGetOK %s", 200, payload)
 }
 
 func (o *SvmPeerPermissionInstanceGetOK) String() string {
-	return fmt.Sprintf("[GET /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svmPeerPermissionInstanceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svmPeerPermissionInstanceGetOK %s", 200, payload)
 }
 
 func (o *SvmPeerPermissionInstanceGetOK) GetPayload() *models.SvmPeerPermission {
@@ -130,11 +138,6 @@ type SvmPeerPermissionInstanceGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the svm peer permission instance get default response
-func (o *SvmPeerPermissionInstanceGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this svm peer permission instance get default response has a 2xx status code
 func (o *SvmPeerPermissionInstanceGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -160,12 +163,19 @@ func (o *SvmPeerPermissionInstanceGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the svm peer permission instance get default response
+func (o *SvmPeerPermissionInstanceGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SvmPeerPermissionInstanceGetDefault) Error() string {
-	return fmt.Sprintf("[GET /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svm_peer_permission_instance_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svm_peer_permission_instance_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmPeerPermissionInstanceGetDefault) String() string {
-	return fmt.Sprintf("[GET /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svm_peer_permission_instance_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svm_peer_permission_instance_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmPeerPermissionInstanceGetDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *TokenModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the token modify o k response
+func (o *TokenModifyOK) Code() int {
+	return 200
+}
+
 func (o *TokenModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/file/clone/tokens/{node.uuid}/{uuid}][%d] tokenModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/file/clone/tokens/{node.uuid}/{uuid}][%d] tokenModifyOK", 200)
 }
 
 func (o *TokenModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /storage/file/clone/tokens/{node.uuid}/{uuid}][%d] tokenModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/file/clone/tokens/{node.uuid}/{uuid}][%d] tokenModifyOK", 200)
 }
 
 func (o *TokenModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -100,19 +106,20 @@ func NewTokenModifyDefault(code int) *TokenModifyDefault {
 }
 
 /*
-TokenModifyDefault describes a response with status code -1, with default header values.
+	TokenModifyDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 13565958 | Failed to get information about token `uuid` for node `node.name`. |
+| 13565960 | Failed to modify token expiry limit for node `node.name`. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type TokenModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the token modify default response
-func (o *TokenModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this token modify default response has a 2xx status code
@@ -140,12 +147,19 @@ func (o *TokenModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the token modify default response
+func (o *TokenModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *TokenModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/file/clone/tokens/{node.uuid}/{uuid}][%d] token_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/file/clone/tokens/{node.uuid}/{uuid}][%d] token_modify default %s", o._statusCode, payload)
 }
 
 func (o *TokenModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /storage/file/clone/tokens/{node.uuid}/{uuid}][%d] token_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/file/clone/tokens/{node.uuid}/{uuid}][%d] token_modify default %s", o._statusCode, payload)
 }
 
 func (o *TokenModifyDefault) GetPayload() *models.ErrorResponse {

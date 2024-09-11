@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ChassisGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the chassis get o k response
+func (o *ChassisGetOK) Code() int {
+	return 200
+}
+
 func (o *ChassisGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/chassis/{id}][%d] chassisGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/chassis/{id}][%d] chassisGetOK %s", 200, payload)
 }
 
 func (o *ChassisGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/chassis/{id}][%d] chassisGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/chassis/{id}][%d] chassisGetOK %s", 200, payload)
 }
 
 func (o *ChassisGetOK) GetPayload() *models.Chassis {
@@ -122,11 +130,6 @@ type ChassisGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the chassis get default response
-func (o *ChassisGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this chassis get default response has a 2xx status code
 func (o *ChassisGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *ChassisGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the chassis get default response
+func (o *ChassisGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ChassisGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/chassis/{id}][%d] chassis_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/chassis/{id}][%d] chassis_get default %s", o._statusCode, payload)
 }
 
 func (o *ChassisGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/chassis/{id}][%d] chassis_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/chassis/{id}][%d] chassis_get default %s", o._statusCode, payload)
 }
 
 func (o *ChassisGetDefault) GetPayload() *models.ErrorResponse {

@@ -92,6 +92,12 @@ type LunMapCollectionGetParams struct {
 	*/
 	IgroupProtocol *string
 
+	/* IgroupReplicated.
+
+	   Filter by igroup.replicated
+	*/
+	IgroupReplicated *bool
+
 	/* IgroupUUID.
 
 	   Filter by igroup.uuid
@@ -121,6 +127,12 @@ type LunMapCollectionGetParams struct {
 	   Filter by lun.node.uuid
 	*/
 	LunNodeUUID *string
+
+	/* LunSmbcReplicated.
+
+	   Filter by lun.smbc.replicated
+	*/
+	LunSmbcReplicated *bool
 
 	/* LunUUID.
 
@@ -302,6 +314,17 @@ func (o *LunMapCollectionGetParams) SetIgroupProtocol(igroupProtocol *string) {
 	o.IgroupProtocol = igroupProtocol
 }
 
+// WithIgroupReplicated adds the igroupReplicated to the lun map collection get params
+func (o *LunMapCollectionGetParams) WithIgroupReplicated(igroupReplicated *bool) *LunMapCollectionGetParams {
+	o.SetIgroupReplicated(igroupReplicated)
+	return o
+}
+
+// SetIgroupReplicated adds the igroupReplicated to the lun map collection get params
+func (o *LunMapCollectionGetParams) SetIgroupReplicated(igroupReplicated *bool) {
+	o.IgroupReplicated = igroupReplicated
+}
+
 // WithIgroupUUID adds the igroupUUID to the lun map collection get params
 func (o *LunMapCollectionGetParams) WithIgroupUUID(igroupUUID *string) *LunMapCollectionGetParams {
 	o.SetIgroupUUID(igroupUUID)
@@ -355,6 +378,17 @@ func (o *LunMapCollectionGetParams) WithLunNodeUUID(lunNodeUUID *string) *LunMap
 // SetLunNodeUUID adds the lunNodeUuid to the lun map collection get params
 func (o *LunMapCollectionGetParams) SetLunNodeUUID(lunNodeUUID *string) {
 	o.LunNodeUUID = lunNodeUUID
+}
+
+// WithLunSmbcReplicated adds the lunSmbcReplicated to the lun map collection get params
+func (o *LunMapCollectionGetParams) WithLunSmbcReplicated(lunSmbcReplicated *bool) *LunMapCollectionGetParams {
+	o.SetLunSmbcReplicated(lunSmbcReplicated)
+	return o
+}
+
+// SetLunSmbcReplicated adds the lunSmbcReplicated to the lun map collection get params
+func (o *LunMapCollectionGetParams) SetLunSmbcReplicated(lunSmbcReplicated *bool) {
+	o.LunSmbcReplicated = lunSmbcReplicated
 }
 
 // WithLunUUID adds the lunUUID to the lun map collection get params
@@ -543,6 +577,23 @@ func (o *LunMapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.IgroupReplicated != nil {
+
+		// query param igroup.replicated
+		var qrIgroupReplicated bool
+
+		if o.IgroupReplicated != nil {
+			qrIgroupReplicated = *o.IgroupReplicated
+		}
+		qIgroupReplicated := swag.FormatBool(qrIgroupReplicated)
+		if qIgroupReplicated != "" {
+
+			if err := r.SetQueryParam("igroup.replicated", qIgroupReplicated); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.IgroupUUID != nil {
 
 		// query param igroup.uuid
@@ -623,6 +674,23 @@ func (o *LunMapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qLunNodeUUID != "" {
 
 			if err := r.SetQueryParam("lun.node.uuid", qLunNodeUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LunSmbcReplicated != nil {
+
+		// query param lun.smbc.replicated
+		var qrLunSmbcReplicated bool
+
+		if o.LunSmbcReplicated != nil {
+			qrLunSmbcReplicated = *o.LunSmbcReplicated
+		}
+		qLunSmbcReplicated := swag.FormatBool(qrLunSmbcReplicated)
+		if qLunSmbcReplicated != "" {
+
+			if err := r.SetQueryParam("lun.smbc.replicated", qLunSmbcReplicated); err != nil {
 				return err
 			}
 		}

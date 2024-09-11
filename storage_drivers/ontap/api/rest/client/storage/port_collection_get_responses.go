@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *PortCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the port collection get o k response
+func (o *PortCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *PortCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/ports][%d] portCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/ports][%d] portCollectionGetOK %s", 200, payload)
 }
 
 func (o *PortCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/ports][%d] portCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/ports][%d] portCollectionGetOK %s", 200, payload)
 }
 
 func (o *PortCollectionGetOK) GetPayload() *models.StoragePortResponse {
@@ -122,11 +130,6 @@ type PortCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the port collection get default response
-func (o *PortCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this port collection get default response has a 2xx status code
 func (o *PortCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *PortCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the port collection get default response
+func (o *PortCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *PortCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/ports][%d] port_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/ports][%d] port_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PortCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/ports][%d] port_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/ports][%d] port_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PortCollectionGetDefault) GetPayload() *models.ErrorResponse {

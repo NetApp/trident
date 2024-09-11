@@ -648,7 +648,7 @@ func (c RestClient) setVolumeSizeByNameAndStyle(ctx context.Context, volumeName,
 
 	params.SetInfo(volumeInfo)
 
-	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	_, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -656,7 +656,8 @@ func (c RestClient) setVolumeSizeByNameAndStyle(ctx context.Context, volumeName,
 		return fmt.Errorf("unexpected response from volume modify")
 	}
 
-	return c.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromVolumeJobLink(volumeModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // mountVolumeByNameAndStyle mounts a volume at the specified junction
@@ -692,7 +693,7 @@ func (c RestClient) mountVolumeByNameAndStyle(ctx context.Context, volumeName, j
 	}
 	params.SetInfo(volumeInfo)
 
-	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	_, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -700,7 +701,8 @@ func (c RestClient) mountVolumeByNameAndStyle(ctx context.Context, volumeName, j
 		return fmt.Errorf("unexpected response from volume modify")
 	}
 
-	return c.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromVolumeJobLink(volumeModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // unmountVolumeByNameAndStyle umounts a volume
@@ -742,7 +744,7 @@ func (c RestClient) unmountVolumeByNameAndStyle(
 	}
 	params.SetInfo(volumeInfo)
 
-	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	_, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -750,7 +752,8 @@ func (c RestClient) unmountVolumeByNameAndStyle(
 		return fmt.Errorf("unexpected response from volume modify")
 	}
 
-	return c.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromVolumeJobLink(volumeModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // RenameVolumeByNameAndStyle changes the name of a FlexVol (but not a FlexGroup!)
@@ -780,7 +783,7 @@ func (c RestClient) renameVolumeByNameAndStyle(ctx context.Context, volumeName, 
 
 	params.SetInfo(volumeInfo)
 
-	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	_, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -788,7 +791,8 @@ func (c RestClient) renameVolumeByNameAndStyle(ctx context.Context, volumeName, 
 		return fmt.Errorf("unexpected response from volume modify")
 	}
 
-	return c.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromVolumeJobLink(volumeModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // destroyVolumeByNameAndStyle destroys a volume
@@ -810,7 +814,7 @@ func (c RestClient) destroyVolumeByNameAndStyle(ctx context.Context, name, style
 	params.HTTPClient = c.httpClient
 	params.UUID = *volume.UUID
 
-	volumeDeleteAccepted, err := c.api.Storage.VolumeDelete(params, c.authInfo)
+	_, volumeDeleteAccepted, err := c.api.Storage.VolumeDelete(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -818,7 +822,8 @@ func (c RestClient) destroyVolumeByNameAndStyle(ctx context.Context, name, style
 		return fmt.Errorf("unexpected response from volume create")
 	}
 
-	return c.PollJobStatus(ctx, volumeDeleteAccepted.Payload)
+	jobLink := getGenericJobLinkFromVolumeJobLink(volumeDeleteAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 func (c RestClient) modifyVolumeExportPolicyByNameAndStyle(
@@ -848,7 +853,7 @@ func (c RestClient) modifyVolumeExportPolicyByNameAndStyle(
 	volumeInfo := &models.Volume{Nas: nasInfo}
 	params.SetInfo(volumeInfo)
 
-	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	_, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -856,7 +861,8 @@ func (c RestClient) modifyVolumeExportPolicyByNameAndStyle(
 		return fmt.Errorf("unexpected response from volume modify")
 	}
 
-	return c.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromVolumeJobLink(volumeModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 func (c RestClient) modifyVolumeUnixPermissionsByNameAndStyle(
@@ -898,7 +904,7 @@ func (c RestClient) modifyVolumeUnixPermissionsByNameAndStyle(
 	volumeInfo.Nas = volumeNas
 	params.SetInfo(volumeInfo)
 
-	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	_, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -906,7 +912,8 @@ func (c RestClient) modifyVolumeUnixPermissionsByNameAndStyle(
 		return fmt.Errorf("unexpected response from volume modify")
 	}
 
-	return c.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromVolumeJobLink(volumeModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // setVolumeCommentByNameAndStyle sets a volume's comment to the supplied value
@@ -940,7 +947,7 @@ func (c RestClient) setVolumeCommentByNameAndStyle(
 
 	params.SetInfo(volumeInfo)
 
-	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	_, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -948,7 +955,8 @@ func (c RestClient) setVolumeCommentByNameAndStyle(
 		return fmt.Errorf("unexpected response from volume modify")
 	}
 
-	return c.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromVolumeJobLink(volumeModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // convertUnixPermissions turns "rwx" into "7" and so on, if possible, otherwise returns the string
@@ -1027,7 +1035,7 @@ func (c RestClient) setVolumeQosPolicyGroupNameByNameAndStyle(
 	}
 	params.SetInfo(volumeInfo)
 
-	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	_, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -1035,7 +1043,8 @@ func (c RestClient) setVolumeQosPolicyGroupNameByNameAndStyle(
 		return fmt.Errorf("unexpected response from volume modify")
 	}
 
-	return c.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromVolumeJobLink(volumeModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // startCloneSplitByNameAndStyle starts splitting the clone
@@ -1065,7 +1074,7 @@ func (c RestClient) startCloneSplitByNameAndStyle(ctx context.Context, volumeNam
 
 	params.SetInfo(volumeInfo)
 
-	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	_, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -1073,7 +1082,8 @@ func (c RestClient) startCloneSplitByNameAndStyle(ctx context.Context, volumeNam
 		return fmt.Errorf("unexpected response from volume modify")
 	}
 
-	return c.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromVolumeJobLink(volumeModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // restoreSnapshotByNameAndStyle restores a volume to a snapshot as a non-blocking operation
@@ -1102,7 +1112,7 @@ func (c RestClient) restoreSnapshotByNameAndStyle(
 	params.UUID = uuid
 	params.RestoreToSnapshotName = &snapshotName
 
-	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	_, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -1110,7 +1120,8 @@ func (c RestClient) restoreSnapshotByNameAndStyle(
 		return fmt.Errorf("unexpected response from volume modify")
 	}
 
-	return c.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromVolumeJobLink(volumeModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 func (c RestClient) createCloneNAS(
@@ -1140,7 +1151,8 @@ func (c RestClient) createCloneNAS(
 
 	params.SetInfo(volumeInfo)
 
-	return c.api.Storage.VolumeCreate(params, c.authInfo)
+	_, volumeCreateAccepted, err := c.api.Storage.VolumeCreate(params, c.authInfo)
+	return volumeCreateAccepted, err
 }
 
 // listAllVolumeNamesBackedBySnapshot returns the names of all volumes backed by the specified snapshot
@@ -1265,7 +1277,7 @@ func (c RestClient) createVolumeByStyle(
 
 	params.SetInfo(volumeInfo)
 
-	volumeCreateAccepted, err := c.api.Storage.VolumeCreate(params, c.authInfo)
+	_, volumeCreateAccepted, err := c.api.Storage.VolumeCreate(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -1276,7 +1288,8 @@ func (c RestClient) createVolumeByStyle(
 	// Sample ZAPI error: API status: failed, Reason: Size \"1GB\" (\"1073741824B\") is too small.Minimum size is \"400GB\" (\"429496729600B\").,Code: 13115
 	// Sample REST error: API State: failure, Message: Size \"1GB\" (\"1073741824B\") is too small.Minimum size is \"400GB\" (\"429496729600B\").,Code: 917534
 
-	if pollErr := c.PollJobStatus(ctx, volumeCreateAccepted.Payload); pollErr != nil {
+	jobLink := getGenericJobLinkFromVolumeJobLink(volumeCreateAccepted.Payload)
+	if pollErr := c.PollJobStatus(ctx, jobLink); pollErr != nil {
 		apiError, message, code := ExtractError(pollErr)
 		if apiError == "failure" && code == FLEXGROUP_VOLUME_SIZE_ERROR_REST {
 			return errors.InvalidInputError(message)
@@ -1553,7 +1566,8 @@ func (c RestClient) SnapshotCreate(
 
 	params.SetInfo(snapshotInfo)
 
-	return c.api.Storage.SnapshotCreate(params, c.authInfo)
+	_, snapshotCreateAccepted, err := c.api.Storage.SnapshotCreate(params, c.authInfo)
+	return snapshotCreateAccepted, err
 }
 
 // SnapshotCreateAndWait creates a snapshot and waits on the job to complete
@@ -1566,7 +1580,8 @@ func (c RestClient) SnapshotCreateAndWait(ctx context.Context, volumeUUID, snaps
 		return fmt.Errorf("could not create snapshot: %v", "unexpected result")
 	}
 
-	return c.PollJobStatus(ctx, snapshotCreateResult.Payload)
+	jobLink := getGenericJobLinkFromSnapshotJobLink(snapshotCreateResult.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // SnapshotList lists snapshots
@@ -1670,7 +1685,8 @@ func (c RestClient) SnapshotDelete(
 	params.VolumeUUID = volumeUUID
 	params.UUID = snapshotUUID
 
-	return c.api.Storage.SnapshotDelete(params, c.authInfo)
+	_, snapshotDeleteAccepted, err := c.api.Storage.SnapshotDelete(params, c.authInfo)
+	return snapshotDeleteAccepted, err
 }
 
 // SnapshotRestoreVolume restores a volume to a snapshot as a non-blocking operation
@@ -1708,7 +1724,7 @@ func (c RestClient) VolumeModifySnapshotDirectoryAccess(ctx context.Context, vol
 	volumeInfo.SnapshotDirectoryAccessEnabled = utils.Ptr(enable)
 	params.SetInfo(volumeInfo)
 
-	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	_, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -1716,7 +1732,8 @@ func (c RestClient) VolumeModifySnapshotDirectoryAccess(ctx context.Context, vol
 		return fmt.Errorf("unexpected response from volume modify")
 	}
 
-	return c.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromVolumeJobLink(volumeModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // VolumeListAllBackedBySnapshot returns the names of all FlexVols backed by the specified snapshot
@@ -1749,7 +1766,8 @@ func (c RestClient) VolumeCloneCreateAsync(ctx context.Context, cloneName, sourc
 	}
 
 	// NOTE the callers of this function should perform their own existence checks based on type (vol or flexgroup)
-	return c.PollJobStatus(ctx, cloneCreateResult.Payload)
+	jobLink := getGenericJobLinkFromVolumeJobLink(cloneCreateResult.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -2280,11 +2298,11 @@ func (c RestClient) LunCloneCreate(
 
 	params.SetInfo(lunInfo)
 
-	lunCreateAccepted, err := c.api.San.LunCreate(params, c.authInfo)
+	lunCreateCreated, _, err := c.api.San.LunCreate(params, c.authInfo)
 	if err != nil {
 		return err
 	}
-	if lunCreateAccepted == nil {
+	if lunCreateCreated == nil {
 		return fmt.Errorf("unexpected response from LUN create")
 	}
 
@@ -2324,11 +2342,11 @@ func (c RestClient) LunCreate(
 
 	params.SetInfo(lunInfo)
 
-	lunCreateAccepted, err := c.api.San.LunCreate(params, c.authInfo)
+	lunCreateCreated, _, err := c.api.San.LunCreate(params, c.authInfo)
 	if err != nil {
 		return err
 	}
-	if lunCreateAccepted == nil {
+	if lunCreateCreated == nil {
 		return fmt.Errorf("unexpected response from LUN create")
 	}
 
@@ -2424,7 +2442,7 @@ func (c RestClient) LunDelete(
 	params.HTTPClient = c.httpClient
 	params.UUID = lunUUID
 
-	lunDeleteResult, err := c.api.San.LunDelete(params, c.authInfo)
+	lunDeleteResult, _, err := c.api.San.LunDelete(params, c.authInfo)
 	if err != nil {
 		return fmt.Errorf("could not delete lun; %v", err)
 	}
@@ -2485,7 +2503,7 @@ func (c RestClient) LunSetComment(
 
 	params.SetInfo(lunInfo)
 
-	lunModifyOK, err := c.api.San.LunModify(params, c.authInfo)
+	lunModifyOK, _, err := c.api.San.LunModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -2564,7 +2582,7 @@ func (c RestClient) LunSetAttribute(
 		}
 		params.Info = attrInfo
 
-		lunAttrCreateOK, err := c.api.San.LunAttributeCreate(params, c.authInfo)
+		lunAttrCreateOK, _, err := c.api.San.LunAttributeCreate(params, c.authInfo)
 		if err != nil {
 			return err
 		}
@@ -2631,7 +2649,7 @@ func (c RestClient) LunSetQosPolicyGroup(
 
 	params.SetInfo(lunInfo)
 
-	lunModifyOK, err := c.api.San.LunModify(params, c.authInfo)
+	lunModifyOK, _, err := c.api.San.LunModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -2672,7 +2690,7 @@ func (c RestClient) LunRename(
 
 	params.SetInfo(lunInfo)
 
-	lunModifyOK, err := c.api.San.LunModify(params, c.authInfo)
+	lunModifyOK, _, err := c.api.San.LunModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -2945,7 +2963,7 @@ func (c RestClient) LunSetSize(
 
 	params.SetInfo(lunInfo)
 
-	lunModifyOK, err := c.api.San.LunModify(params, c.authInfo)
+	lunModifyOK, _, err := c.api.San.LunModify(params, c.authInfo)
 	if err != nil {
 		return 0, err
 	}
@@ -3204,6 +3222,46 @@ func (c RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkRe
 	default:
 		return fmt.Errorf("unexpected job state %v", jobState)
 	}
+}
+
+func getGenericJobLinkFromVolumeJobLink(volJobLink *models.VolumeJobLinkResponse) *models.JobLinkResponse {
+	var jobLink *models.JobLinkResponse = &models.JobLinkResponse{}
+	if volJobLink != nil {
+		jobLink.Job = volJobLink.Job
+	}
+	return jobLink
+}
+
+func getGenericJobLinkFromSnapshotJobLink(snapshotJobLink *models.SnapshotJobLinkResponse) *models.JobLinkResponse {
+	var jobLink *models.JobLinkResponse = &models.JobLinkResponse{}
+	if snapshotJobLink != nil {
+		jobLink.Job = snapshotJobLink.Job
+	}
+	return jobLink
+}
+
+func getGenericJobLinkFromQtreeJobLink(qtreeJobLink *models.QtreeJobLinkResponse) *models.JobLinkResponse {
+	var jobLink *models.JobLinkResponse = &models.JobLinkResponse{}
+	if qtreeJobLink != nil {
+		jobLink.Job = qtreeJobLink.Job
+	}
+	return jobLink
+}
+
+func getGenericJobLinkFromQuotaRuleJobLink(quotaRuleJobLink *models.QuotaRuleJobLinkResponse) *models.JobLinkResponse {
+	var jobLink *models.JobLinkResponse = &models.JobLinkResponse{}
+	if quotaRuleJobLink != nil {
+		jobLink.Job = quotaRuleJobLink.Job
+	}
+	return jobLink
+}
+
+func getGenericJobLinkFromSMRJobLink(smrJobLink *models.SnapmirrorRelationshipJobLinkResponse) *models.JobLinkResponse {
+	var jobLink *models.JobLinkResponse = &models.JobLinkResponse{}
+	if smrJobLink != nil {
+		jobLink.Job = smrJobLink.Job
+	}
+	return jobLink
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -3980,7 +4038,7 @@ func (c RestClient) FlexGroupDestroy(ctx context.Context, name string) error {
 	params.HTTPClient = c.httpClient
 	params.UUID = *volume.UUID
 
-	volumeDeleteAccepted, err := c.api.Storage.VolumeDelete(params, c.authInfo)
+	_, volumeDeleteAccepted, err := c.api.Storage.VolumeDelete(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -3988,7 +4046,8 @@ func (c RestClient) FlexGroupDestroy(ctx context.Context, name string) error {
 		return fmt.Errorf("unexpected response from volume delete")
 	}
 
-	return c.PollJobStatus(ctx, volumeDeleteAccepted.Payload)
+	jobLink := getGenericJobLinkFromVolumeJobLink(volumeDeleteAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // FlexGroupExists tests for the existence of a FlexGroup
@@ -4045,7 +4104,7 @@ func (c RestClient) FlexGroupVolumeModifySnapshotDirectoryAccess(
 	volumeInfo.SnapshotDirectoryAccessEnabled = utils.Ptr(enable)
 	params.SetInfo(volumeInfo)
 
-	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	_, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -4053,7 +4112,8 @@ func (c RestClient) FlexGroupVolumeModifySnapshotDirectoryAccess(
 		return fmt.Errorf("unexpected response from volume modify")
 	}
 
-	return c.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromVolumeJobLink(volumeModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 func (c RestClient) FlexGroupModifyUnixPermissions(ctx context.Context, volumeName, unixPermissions string) error {
@@ -4137,7 +4197,7 @@ func (c RestClient) QtreeCreate(
 
 	params.SetInfo(qtreeInfo)
 
-	createAccepted, err := c.api.Storage.QtreeCreate(params, c.authInfo)
+	_, createAccepted, err := c.api.Storage.QtreeCreate(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -4145,7 +4205,8 @@ func (c RestClient) QtreeCreate(
 		return fmt.Errorf("unexpected response from qtree create")
 	}
 
-	if pollErr := c.PollJobStatus(ctx, createAccepted.Payload); pollErr != nil {
+	jobLink := getGenericJobLinkFromQtreeJobLink(createAccepted.Payload)
+	if pollErr := c.PollJobStatus(ctx, jobLink); pollErr != nil {
 		return pollErr
 	}
 
@@ -4212,7 +4273,7 @@ func (c RestClient) QtreeRename(ctx context.Context, path, newPath string) error
 
 	params.SetInfo(qtreeInfo)
 
-	modifyAccepted, err := c.api.Storage.QtreeModify(params, c.authInfo)
+	_, modifyAccepted, err := c.api.Storage.QtreeModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -4220,7 +4281,8 @@ func (c RestClient) QtreeRename(ctx context.Context, path, newPath string) error
 		return fmt.Errorf("unexpected response from qtree modify")
 	}
 
-	return c.PollJobStatus(ctx, modifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromQtreeJobLink(modifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // QtreeDestroyAsync destroys a qtree in the background
@@ -4248,7 +4310,7 @@ func (c RestClient) QtreeDestroyAsync(ctx context.Context, path string, force bo
 	params.SetID(strconv.FormatInt(*qtree.ID, 10))
 	params.SetVolumeUUID(*qtree.Volume.UUID)
 
-	deleteAccepted, err := c.api.Storage.QtreeDelete(params, c.authInfo)
+	_, deleteAccepted, err := c.api.Storage.QtreeDelete(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -4256,7 +4318,8 @@ func (c RestClient) QtreeDestroyAsync(ctx context.Context, path string, force bo
 		return fmt.Errorf("unexpected response from quota delete")
 	}
 
-	return c.PollJobStatus(ctx, deleteAccepted.Payload)
+	jobLink := getGenericJobLinkFromQtreeJobLink(deleteAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // QtreeList returns the names of all Qtrees whose names match the supplied prefix
@@ -4668,7 +4731,7 @@ func (c RestClient) QtreeModifyExportPolicy(ctx context.Context, name, volumeNam
 
 	params.SetInfo(qtreeInfo)
 
-	modifyAccepted, err := c.api.Storage.QtreeModify(params, c.authInfo)
+	_, modifyAccepted, err := c.api.Storage.QtreeModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -4676,7 +4739,8 @@ func (c RestClient) QtreeModifyExportPolicy(ctx context.Context, name, volumeNam
 		return fmt.Errorf("unexpected response from qtree modify")
 	}
 
-	return c.PollJobStatus(ctx, modifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromQtreeJobLink(modifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // QuotaOn enables quotas on a Flexvol
@@ -4723,7 +4787,7 @@ func (c RestClient) quotaModify(ctx context.Context, volumeName string, quotaEna
 
 	params.SetInfo(volumeInfo)
 
-	modifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	_, modifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -4731,7 +4795,8 @@ func (c RestClient) quotaModify(ctx context.Context, volumeName string, quotaEna
 		return fmt.Errorf("unexpected response from volume modify")
 	}
 
-	return c.PollJobStatus(ctx, modifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromVolumeJobLink(modifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // QuotaSetEntry updates (or creates) a quota rule with an optional hard disk limit
@@ -4774,7 +4839,7 @@ func (c RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, qu
 	}
 	params.SetInfo(quotaRuleInfo)
 
-	modifyAccepted, err := c.api.Storage.QuotaRuleModify(params, c.authInfo)
+	_, modifyAccepted, err := c.api.Storage.QuotaRuleModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -4782,7 +4847,8 @@ func (c RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, qu
 		return fmt.Errorf("unexpected response from quota rule modify")
 	}
 
-	return c.PollJobStatus(ctx, modifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromQuotaRuleJobLink(modifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // QuotaAddEntry creates a quota rule with an optional hard disk limit
@@ -4817,7 +4883,7 @@ func (c RestClient) QuotaAddEntry(ctx context.Context, volumeName, qtreeName, qu
 
 	params.SetInfo(quotaRuleInfo)
 
-	createAccepted, err := c.api.Storage.QuotaRuleCreate(params, c.authInfo)
+	_, createAccepted, err := c.api.Storage.QuotaRuleCreate(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -4825,7 +4891,8 @@ func (c RestClient) QuotaAddEntry(ctx context.Context, volumeName, qtreeName, qu
 		return fmt.Errorf("unexpected response from quota rule create")
 	}
 
-	return c.PollJobStatus(ctx, createAccepted.Payload)
+	jobLink := getGenericJobLinkFromQuotaRuleJobLink(createAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // QuotaGetEntry returns the disk limit for a single qtree
@@ -5181,7 +5248,7 @@ func (c RestClient) SnapmirrorCreate(
 		Destination: &models.SnapmirrorEndpoint{
 			Path: utils.Ptr(fmt.Sprintf("%s:%s", c.SVMName(), localFlexvolName)),
 		},
-		Source: &models.SnapmirrorEndpoint{
+		Source: &models.SnapmirrorSourceEndpoint{
 			Path: utils.Ptr(fmt.Sprintf("%s:%s", remoteSVMName, remoteFlexvolName)),
 		},
 	}
@@ -5198,7 +5265,7 @@ func (c RestClient) SnapmirrorCreate(
 
 	params.SetInfo(info)
 
-	snapmirrorRelationshipCreateAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipCreate(params, c.authInfo)
+	_, snapmirrorRelationshipCreateAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipCreate(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -5207,7 +5274,8 @@ func (c RestClient) SnapmirrorCreate(
 		return fmt.Errorf("unexpected response from snapmirror relationship create")
 	}
 
-	return c.PollJobStatus(ctx, snapmirrorRelationshipCreateAccepted.Payload)
+	jobLink := getGenericJobLinkFromSMRJobLink(snapmirrorRelationshipCreateAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 func (c RestClient) SnapmirrorInitialize(
@@ -5276,7 +5344,7 @@ func (c RestClient) SnapmirrorResync(
 		}
 	}
 
-	snapmirrorRelationshipModifyAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipModify(params, c.authInfo)
+	_, snapmirrorRelationshipModifyAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -5284,7 +5352,8 @@ func (c RestClient) SnapmirrorResync(
 		return fmt.Errorf("unexpected response from snapmirror relationship modify")
 	}
 
-	return c.PollJobStatus(ctx, snapmirrorRelationshipModifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromSMRJobLink(snapmirrorRelationshipModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 func (c RestClient) SnapmirrorBreak(
@@ -5316,7 +5385,7 @@ func (c RestClient) SnapmirrorBreak(
 		params.Info.RestoreToSnapshot = utils.Ptr(snapshotName)
 	}
 
-	snapmirrorRelationshipModifyAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipModify(params, c.authInfo)
+	_, snapmirrorRelationshipModifyAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -5324,7 +5393,8 @@ func (c RestClient) SnapmirrorBreak(
 		return fmt.Errorf("unexpected response from snapmirror relationship modify")
 	}
 
-	return c.PollJobStatus(ctx, snapmirrorRelationshipModifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromSMRJobLink(snapmirrorRelationshipModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 func (c RestClient) SnapmirrorQuiesce(
@@ -5352,7 +5422,7 @@ func (c RestClient) SnapmirrorQuiesce(
 		State: utils.Ptr(models.SnapmirrorRelationshipStatePaused),
 	}
 
-	snapmirrorRelationshipModifyAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipModify(params, c.authInfo)
+	_, snapmirrorRelationshipModifyAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -5360,7 +5430,8 @@ func (c RestClient) SnapmirrorQuiesce(
 		return fmt.Errorf("unexpected response from snapmirror relationship modify")
 	}
 
-	return c.PollJobStatus(ctx, snapmirrorRelationshipModifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromSMRJobLink(snapmirrorRelationshipModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 func (c RestClient) SnapmirrorAbort(
@@ -5388,7 +5459,7 @@ func (c RestClient) SnapmirrorAbort(
 		State: utils.Ptr(models.SnapmirrorRelationshipInlineTransferStateAborted),
 	}
 
-	snapmirrorRelationshipModifyAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipModify(params, c.authInfo)
+	_, snapmirrorRelationshipModifyAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -5396,7 +5467,8 @@ func (c RestClient) SnapmirrorAbort(
 		return fmt.Errorf("unexpected response from snapmirror relationship modify")
 	}
 
-	return c.PollJobStatus(ctx, snapmirrorRelationshipModifyAccepted.Payload)
+	jobLink := getGenericJobLinkFromSMRJobLink(snapmirrorRelationshipModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // SnapmirrorRelease removes all local snapmirror relationship metadata from the source vserver
@@ -5421,7 +5493,7 @@ func (c RestClient) SnapmirrorRelease(ctx context.Context, sourceFlexvolName, so
 	params.SetUUID(string(*relationship.UUID))
 	params.WithSourceOnly(utils.Ptr(true))
 
-	snapmirrorRelationshipDeleteAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipDelete(params, c.authInfo)
+	_, snapmirrorRelationshipDeleteAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipDelete(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -5429,7 +5501,8 @@ func (c RestClient) SnapmirrorRelease(ctx context.Context, sourceFlexvolName, so
 		return fmt.Errorf("unexpected response from snapmirror relationship delete")
 	}
 
-	return c.PollJobStatus(ctx, snapmirrorRelationshipDeleteAccepted.Payload)
+	jobLink := getGenericJobLinkFromSMRJobLink(snapmirrorRelationshipDeleteAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // Intended to be from the destination vserver
@@ -5466,7 +5539,7 @@ func (c RestClient) SnapmirrorDeleteViaDestination(
 	params.SetUUID(relationshipUUID)
 	params.WithDestinationOnly(utils.Ptr(true))
 
-	snapmirrorRelationshipDeleteAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipDelete(params, c.authInfo)
+	_, snapmirrorRelationshipDeleteAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipDelete(params, c.authInfo)
 	if err != nil {
 		if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
 			if restErr.Error != nil && restErr.Error.Code != nil && *restErr.Error.Code != ENTRY_DOESNT_EXIST {
@@ -5482,7 +5555,7 @@ func (c RestClient) SnapmirrorDeleteViaDestination(
 	params2.SetHTTPClient(c.httpClient)
 	params2.SetUUID(relationshipUUID)
 	params2.WithSourceInfoOnly(utils.Ptr(true))
-	snapmirrorRelationshipDeleteAccepted, err = c.api.Snapmirror.SnapmirrorRelationshipDelete(params2, c.authInfo)
+	_, snapmirrorRelationshipDeleteAccepted, err = c.api.Snapmirror.SnapmirrorRelationshipDelete(params2, c.authInfo)
 	if err != nil {
 		if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
 			if restErr.Error != nil && restErr.Error.Code != nil && *restErr.Error.Code == ENTRY_DOESNT_EXIST {
@@ -5496,7 +5569,8 @@ func (c RestClient) SnapmirrorDeleteViaDestination(
 		return fmt.Errorf("unexpected response from snapmirror relationship delete")
 	}
 
-	return c.PollJobStatus(ctx, snapmirrorRelationshipDeleteAccepted.Payload)
+	jobLink := getGenericJobLinkFromSMRJobLink(snapmirrorRelationshipDeleteAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // Intended to be from the destination vserver
@@ -5524,7 +5598,7 @@ func (c RestClient) SnapmirrorDelete(
 	params.SetUUID(string(*relationship.UUID))
 	params.WithDestinationOnly(utils.Ptr(true))
 
-	snapmirrorRelationshipDeleteAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipDelete(params, c.authInfo)
+	_, snapmirrorRelationshipDeleteAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipDelete(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -5532,7 +5606,8 @@ func (c RestClient) SnapmirrorDelete(
 		return fmt.Errorf("unexpected response from snapmirror relationship delete")
 	}
 
-	return c.PollJobStatus(ctx, snapmirrorRelationshipDeleteAccepted.Payload)
+	jobLink := getGenericJobLinkFromSMRJobLink(snapmirrorRelationshipDeleteAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 func (c RestClient) IsVserverDRCapable(ctx context.Context) (bool, error) {
@@ -5787,13 +5862,13 @@ func (c RestClient) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (
 
 	params.SetInfo(nsInfo)
 
-	nsCreateAccepted, err := c.api.NvMe.NvmeNamespaceCreate(params, c.authInfo)
+	nsCreateCreated, _, err := c.api.NvMe.NvmeNamespaceCreate(params, c.authInfo)
 	if err != nil {
 		return "", err
 	}
 
-	if nsCreateAccepted.IsSuccess() {
-		nsResponse := nsCreateAccepted.GetPayload()
+	if nsCreateCreated.IsSuccess() {
+		nsResponse := nsCreateCreated.GetPayload()
 		// Verify that the created namespace is the same as the one we requested.
 		if nsResponse != nil && nsResponse.NumRecords != nil && *nsResponse.NumRecords == 1 &&
 			*nsResponse.NvmeNamespaceResponseInlineRecords[0].Name == ns.Name {
@@ -5802,7 +5877,7 @@ func (c RestClient) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (
 		return "", fmt.Errorf("namespace create call succeeded but newly created namespace not found")
 	}
 
-	return "", fmt.Errorf("namespace create failed with error %v", nsCreateAccepted.Error())
+	return "", fmt.Errorf("namespace create failed with error %v", nsCreateCreated.Error())
 }
 
 // NVMeNamespaceSetSize updates the namespace size to newSize.
@@ -5817,7 +5892,7 @@ func (c RestClient) NVMeNamespaceSetSize(ctx context.Context, nsUUID string, new
 		},
 	}
 
-	nsModify, err := c.api.NvMe.NvmeNamespaceModify(params, c.authInfo)
+	nsModify, _, err := c.api.NvMe.NvmeNamespaceModify(params, c.authInfo)
 	if err != nil {
 		return fmt.Errorf("namespace resize failed; %v", err)
 	}

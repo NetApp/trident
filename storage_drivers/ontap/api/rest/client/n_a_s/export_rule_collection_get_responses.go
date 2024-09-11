@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ExportRuleCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the export rule collection get o k response
+func (o *ExportRuleCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *ExportRuleCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules][%d] exportRuleCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules][%d] exportRuleCollectionGetOK %s", 200, payload)
 }
 
 func (o *ExportRuleCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules][%d] exportRuleCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules][%d] exportRuleCollectionGetOK %s", 200, payload)
 }
 
 func (o *ExportRuleCollectionGetOK) GetPayload() *models.ExportRuleResponse {
@@ -112,19 +120,25 @@ func NewExportRuleCollectionGetDefault(code int) *ExportRuleCollectionGetDefault
 }
 
 /*
-ExportRuleCollectionGetDefault describes a response with status code -1, with default header values.
+	ExportRuleCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 262194     | The expression is missing a value |
+| 262197     | The value provided is invalid for the field |
+| 2621462    | The specified SVM name does not exist |
+| 2621519    | SVM name is invalid. The SVM name must begin with a letter or an underscore. If the SVM is of type \"sync-source\", the maximum supported length is 41. Otherwise, the maximum supported length is 47 |
+| 2621643    | The specified SVM name is too long |
+| 2621685    | SVM name length cannot be zero |
+| 2621706    | The specified SVM UUID is incorrect for the specified SVM name |
+| 6691623    | User is not authorized |
 */
 type ExportRuleCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the export rule collection get default response
-func (o *ExportRuleCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this export rule collection get default response has a 2xx status code
@@ -152,12 +166,19 @@ func (o *ExportRuleCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the export rule collection get default response
+func (o *ExportRuleCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ExportRuleCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules][%d] export_rule_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules][%d] export_rule_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ExportRuleCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules][%d] export_rule_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules][%d] export_rule_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ExportRuleCollectionGetDefault) GetPayload() *models.ErrorResponse {

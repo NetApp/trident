@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *EmsDestinationCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the ems destination create created response
+func (o *EmsDestinationCreateCreated) Code() int {
+	return 201
+}
+
 func (o *EmsDestinationCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /support/ems/destinations][%d] emsDestinationCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/ems/destinations][%d] emsDestinationCreateCreated %s", 201, payload)
 }
 
 func (o *EmsDestinationCreateCreated) String() string {
-	return fmt.Sprintf("[POST /support/ems/destinations][%d] emsDestinationCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/ems/destinations][%d] emsDestinationCreateCreated %s", 201, payload)
 }
 
 func (o *EmsDestinationCreateCreated) GetPayload() *models.EmsDestinationResponse {
@@ -130,36 +138,34 @@ func NewEmsDestinationCreateDefault(code int) *EmsDestinationCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 983179     | The value for the destination field cannot be empty |
-| 983180     | The destination name provided cannot be empty |
-| 983181     | The destination name provided cannot contain spaces |
-| 983182     | The destination name provided is invalid. The destination name must contain between 2 and 64 characters and start and end with an alphanumeric symbol or _(underscore). The allowed special characters are _(underscore) and -(hyphen) |
-| 983104     | The syslog destination provided is invalid |
-| 983116     | The number of notifications has reached maximum capacity |
-| 983117     | The number of destinations has reached maximum capacity |
-| 983129     | The rest-api destination provided must contain a valid scheme, such as http// or https// |
-| 983130     | The rest-api destination provided contains an invalid URL |
-| 983131     | The rest-api destination provided contains an invalid IPv6 URL |
-| 983144     | The security certificate information provided is incomplete. Provide the certificate and serial number |
-| 983145     | The rest-api destination provided has an 'http://' scheme. It is invalid to provide certificate information |
-| 983149     | New SNMP destinations cannot be created |
-| 983152     | Default destinations cannot be modified or removed |
-| 983153     | The security certificate provided does not exist |
-| 983154     | The necessary private key is not installed on the system |
-| 983170     | Connectivity check is not supported for the specified destination type on the node |
-| 983171     | Connectivity check failed for the specified destination on the node |
-| 983176     | Connectivity check is only supported for TCP-based syslog destinations |
-| 983184     | A provided property cannot be configured on the requested destination type |
+| 983104 | The syslog destination provided is invalid |
+| 983107 | A provided filter does not exist |
+| 983116 | The number of notifications has reached maximum capacity |
+| 983117 | The number of destinations has reached maximum capacity |
+| 983129 | The rest-api destination provided must contain a valid scheme, such as http// or https// |
+| 983130 | The rest-api destination provided contains an invalid URL |
+| 983131 | The rest-api destination provided contains an invalid IPv6 URL |
+| 983144 | The security certificate information provided is incomplete. Provide the certificate and serial number |
+| 983145 | The rest-api destination provided has an 'http://' scheme. It is invalid to provide certificate information |
+| 983149 | New SNMP destinations cannot be created |
+| 983152 | Default destinations cannot be modified or removed |
+| 983153 | The security certificate provided does not exist |
+| 983154 | The necessary private key is not installed on the system |
+| 983170 | Connectivity check is not supported for the specified destination type on the node |
+| 983171 | Connectivity check failed for the specified destination on the node |
+| 983176 | Connectivity check is only supported for TCP-based syslog destinations |
+| 983179 | The value for the destination field cannot be empty |
+| 983180 | The destination name provided cannot be empty |
+| 983181 | The destination name provided cannot contain spaces |
+| 983182 | The destination name provided is invalid. The destination name must contain between 2 and 64 characters and start and end with an alphanumeric symbol or _(underscore). The allowed special characters are _(underscore) and -(hyphen) |
+| 983184 | A provided property cannot be configured on the requested destination type |
+| 983200 | Access control role compatibility issue with provided filters |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type EmsDestinationCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ems destination create default response
-func (o *EmsDestinationCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ems destination create default response has a 2xx status code
@@ -187,12 +193,19 @@ func (o *EmsDestinationCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ems destination create default response
+func (o *EmsDestinationCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *EmsDestinationCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /support/ems/destinations][%d] ems_destination_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/ems/destinations][%d] ems_destination_create default %s", o._statusCode, payload)
 }
 
 func (o *EmsDestinationCreateDefault) String() string {
-	return fmt.Sprintf("[POST /support/ems/destinations][%d] ems_destination_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/ems/destinations][%d] ems_destination_create default %s", o._statusCode, payload)
 }
 
 func (o *EmsDestinationCreateDefault) GetPayload() *models.ErrorResponse {

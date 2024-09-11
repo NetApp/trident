@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type MediatorDeleteReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *MediatorDeleteReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewMediatorDeleteOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewMediatorDeleteAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *MediatorDeleteReader) ReadResponse(response runtime.ClientResponse, con
 	}
 }
 
+// NewMediatorDeleteOK creates a MediatorDeleteOK with default headers values
+func NewMediatorDeleteOK() *MediatorDeleteOK {
+	return &MediatorDeleteOK{}
+}
+
+/*
+MediatorDeleteOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type MediatorDeleteOK struct {
+	Payload *models.MediatorJobLinkResponse
+}
+
+// IsSuccess returns true when this mediator delete o k response has a 2xx status code
+func (o *MediatorDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this mediator delete o k response has a 3xx status code
+func (o *MediatorDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this mediator delete o k response has a 4xx status code
+func (o *MediatorDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this mediator delete o k response has a 5xx status code
+func (o *MediatorDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this mediator delete o k response a status code equal to that given
+func (o *MediatorDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the mediator delete o k response
+func (o *MediatorDeleteOK) Code() int {
+	return 200
+}
+
+func (o *MediatorDeleteOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/mediators/{uuid}][%d] mediatorDeleteOK %s", 200, payload)
+}
+
+func (o *MediatorDeleteOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/mediators/{uuid}][%d] mediatorDeleteOK %s", 200, payload)
+}
+
+func (o *MediatorDeleteOK) GetPayload() *models.MediatorJobLinkResponse {
+	return o.Payload
+}
+
+func (o *MediatorDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.MediatorJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewMediatorDeleteAccepted creates a MediatorDeleteAccepted with default headers values
 func NewMediatorDeleteAccepted() *MediatorDeleteAccepted {
 	return &MediatorDeleteAccepted{}
@@ -52,7 +129,7 @@ MediatorDeleteAccepted describes a response with status code 202, with default h
 Accepted
 */
 type MediatorDeleteAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.MediatorJobLinkResponse
 }
 
 // IsSuccess returns true when this mediator delete accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *MediatorDeleteAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the mediator delete accepted response
+func (o *MediatorDeleteAccepted) Code() int {
+	return 202
+}
+
 func (o *MediatorDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /cluster/mediators/{uuid}][%d] mediatorDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/mediators/{uuid}][%d] mediatorDeleteAccepted %s", 202, payload)
 }
 
 func (o *MediatorDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /cluster/mediators/{uuid}][%d] mediatorDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/mediators/{uuid}][%d] mediatorDeleteAccepted %s", 202, payload)
 }
 
-func (o *MediatorDeleteAccepted) GetPayload() *models.JobLinkResponse {
+func (o *MediatorDeleteAccepted) GetPayload() *models.MediatorJobLinkResponse {
 	return o.Payload
 }
 
 func (o *MediatorDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.MediatorJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -126,11 +210,6 @@ type MediatorDeleteDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the mediator delete default response
-func (o *MediatorDeleteDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this mediator delete default response has a 2xx status code
 func (o *MediatorDeleteDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -156,12 +235,19 @@ func (o *MediatorDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the mediator delete default response
+func (o *MediatorDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MediatorDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /cluster/mediators/{uuid}][%d] mediator_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/mediators/{uuid}][%d] mediator_delete default %s", o._statusCode, payload)
 }
 
 func (o *MediatorDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /cluster/mediators/{uuid}][%d] mediator_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/mediators/{uuid}][%d] mediator_delete default %s", o._statusCode, payload)
 }
 
 func (o *MediatorDeleteDefault) GetPayload() *models.ErrorResponse {

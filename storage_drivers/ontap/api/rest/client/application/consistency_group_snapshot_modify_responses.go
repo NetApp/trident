@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,17 @@ func (o *ConsistencyGroupSnapshotModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the consistency group snapshot modify o k response
+func (o *ConsistencyGroupSnapshotModifyOK) Code() int {
+	return 200
+}
+
 func (o *ConsistencyGroupSnapshotModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotModifyOK", 200)
 }
 
 func (o *ConsistencyGroupSnapshotModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotModifyOK", 200)
 }
 
 func (o *ConsistencyGroupSnapshotModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -136,12 +142,17 @@ func (o *ConsistencyGroupSnapshotModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the consistency group snapshot modify accepted response
+func (o *ConsistencyGroupSnapshotModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *ConsistencyGroupSnapshotModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotModifyAccepted ", 202)
+	return fmt.Sprintf("[PATCH /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotModifyAccepted", 202)
 }
 
 func (o *ConsistencyGroupSnapshotModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotModifyAccepted ", 202)
+	return fmt.Sprintf("[PATCH /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotModifyAccepted", 202)
 }
 
 func (o *ConsistencyGroupSnapshotModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -157,19 +168,23 @@ func NewConsistencyGroupSnapshotModifyDefault(code int) *ConsistencyGroupSnapsho
 }
 
 /*
-ConsistencyGroupSnapshotModifyDefault describes a response with status code -1, with default header values.
+	ConsistencyGroupSnapshotModifyDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 53411925 | Failed to find a previously initiated two-phase snapshot operation for consistency group. |
+| 53412015 | SnapLock expiry time cannot be before the current expiry time. |
+| 53412016 | Snapshot is not retained by SnapLock. |
+| 53412017 | The operation is not supported on this platform. |
+| 53412027 | Failed to update the snapshot policy because the snapshot policies are not supported on the destination consistency group of SnapMirror active sync relationships. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ConsistencyGroupSnapshotModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the consistency group snapshot modify default response
-func (o *ConsistencyGroupSnapshotModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this consistency group snapshot modify default response has a 2xx status code
@@ -197,12 +212,19 @@ func (o *ConsistencyGroupSnapshotModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the consistency group snapshot modify default response
+func (o *ConsistencyGroupSnapshotModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ConsistencyGroupSnapshotModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistency_group_snapshot_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistency_group_snapshot_modify default %s", o._statusCode, payload)
 }
 
 func (o *ConsistencyGroupSnapshotModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistency_group_snapshot_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistency_group_snapshot_modify default %s", o._statusCode, payload)
 }
 
 func (o *ConsistencyGroupSnapshotModifyDefault) GetPayload() *models.ErrorResponse {

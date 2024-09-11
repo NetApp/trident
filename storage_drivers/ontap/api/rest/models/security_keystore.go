@@ -20,15 +20,34 @@ import (
 // swagger:model security_keystore
 type SecurityKeystore struct {
 
-	// Indicates whether the keystore is onboard or external.
+	// configuration
+	Configuration *SecurityKeystoreInlineConfiguration `json:"configuration,omitempty"`
+
+	// Indicates whether the configuration is enabled.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Indicates whether the keystore is onboard or external. * 'onboard' - Onboard Key Database * 'external' - External Key Database, including KMIP and Cloud Key Management Systems
+	//
+	// Read Only: true
+	// Enum: ["onboard","external"]
 	Location *string `json:"location,omitempty"`
+
+	// scope
+	Scope *NetworkScopeReadonly `json:"scope,omitempty"`
+
+	// State of the keystore: * 'active' - The key manager is active and serving new and existing keys. * 'mixed' - The key manager has a mixed configuration. New keys can't be created. * 'svm_kek_rekey' - An SVM key encryption key (KEK) rekey is in progress. New keys can't be created. * 'blocked' - The key manager is blocked and cannot serve new and existing keys. * 'switching' - Switching the enabled key manager keystore configuration. Some operations are blocked. * 'initializing' - The key manager is being initialized. All operations are blocked. * 'disabling' - The key manager is being disabled. All operations are blocked.
+	//
+	// Read Only: true
+	// Enum: ["active","mixed","svm_kek_rekey","blocked","switching","initializing","disabling"]
+	State *string `json:"state,omitempty"`
 
 	// svm
 	Svm *SecurityKeystoreInlineSvm `json:"svm,omitempty"`
 
 	// Type of keystore that is configured: * 'okm' - Onboard Key Manager * 'kmip' - External Key Manager * 'akv' - Azure Key Vault Key Management Service * 'gcp' - Google Cloud Platform Key Management Service * 'aws' - Amazon Web Service Key Management Service * 'ikp' - IBM Key Protect Key Management Service
 	//
-	// Enum: [okm kmip akv gcp aws ikp]
+	// Read Only: true
+	// Enum: ["okm","kmip","akv","gcp","aws","ikp"]
 	Type *string `json:"type,omitempty"`
 
 	// uuid
@@ -39,6 +58,22 @@ type SecurityKeystore struct {
 // Validate validates this security keystore
 func (m *SecurityKeystore) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateConfiguration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLocation(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScope(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateSvm(formats); err != nil {
 		res = append(res, err)
@@ -51,6 +86,202 @@ func (m *SecurityKeystore) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *SecurityKeystore) validateConfiguration(formats strfmt.Registry) error {
+	if swag.IsZero(m.Configuration) { // not required
+		return nil
+	}
+
+	if m.Configuration != nil {
+		if err := m.Configuration.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var securityKeystoreTypeLocationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["onboard","external"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		securityKeystoreTypeLocationPropEnum = append(securityKeystoreTypeLocationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// security_keystore
+	// SecurityKeystore
+	// location
+	// Location
+	// onboard
+	// END DEBUGGING
+	// SecurityKeystoreLocationOnboard captures enum value "onboard"
+	SecurityKeystoreLocationOnboard string = "onboard"
+
+	// BEGIN DEBUGGING
+	// security_keystore
+	// SecurityKeystore
+	// location
+	// Location
+	// external
+	// END DEBUGGING
+	// SecurityKeystoreLocationExternal captures enum value "external"
+	SecurityKeystoreLocationExternal string = "external"
+)
+
+// prop value enum
+func (m *SecurityKeystore) validateLocationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, securityKeystoreTypeLocationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SecurityKeystore) validateLocation(formats strfmt.Registry) error {
+	if swag.IsZero(m.Location) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateLocationEnum("location", "body", *m.Location); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SecurityKeystore) validateScope(formats strfmt.Registry) error {
+	if swag.IsZero(m.Scope) { // not required
+		return nil
+	}
+
+	if m.Scope != nil {
+		if err := m.Scope.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("scope")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var securityKeystoreTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["active","mixed","svm_kek_rekey","blocked","switching","initializing","disabling"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		securityKeystoreTypeStatePropEnum = append(securityKeystoreTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// security_keystore
+	// SecurityKeystore
+	// state
+	// State
+	// active
+	// END DEBUGGING
+	// SecurityKeystoreStateActive captures enum value "active"
+	SecurityKeystoreStateActive string = "active"
+
+	// BEGIN DEBUGGING
+	// security_keystore
+	// SecurityKeystore
+	// state
+	// State
+	// mixed
+	// END DEBUGGING
+	// SecurityKeystoreStateMixed captures enum value "mixed"
+	SecurityKeystoreStateMixed string = "mixed"
+
+	// BEGIN DEBUGGING
+	// security_keystore
+	// SecurityKeystore
+	// state
+	// State
+	// svm_kek_rekey
+	// END DEBUGGING
+	// SecurityKeystoreStateSvmKekRekey captures enum value "svm_kek_rekey"
+	SecurityKeystoreStateSvmKekRekey string = "svm_kek_rekey"
+
+	// BEGIN DEBUGGING
+	// security_keystore
+	// SecurityKeystore
+	// state
+	// State
+	// blocked
+	// END DEBUGGING
+	// SecurityKeystoreStateBlocked captures enum value "blocked"
+	SecurityKeystoreStateBlocked string = "blocked"
+
+	// BEGIN DEBUGGING
+	// security_keystore
+	// SecurityKeystore
+	// state
+	// State
+	// switching
+	// END DEBUGGING
+	// SecurityKeystoreStateSwitching captures enum value "switching"
+	SecurityKeystoreStateSwitching string = "switching"
+
+	// BEGIN DEBUGGING
+	// security_keystore
+	// SecurityKeystore
+	// state
+	// State
+	// initializing
+	// END DEBUGGING
+	// SecurityKeystoreStateInitializing captures enum value "initializing"
+	SecurityKeystoreStateInitializing string = "initializing"
+
+	// BEGIN DEBUGGING
+	// security_keystore
+	// SecurityKeystore
+	// state
+	// State
+	// disabling
+	// END DEBUGGING
+	// SecurityKeystoreStateDisabling captures enum value "disabling"
+	SecurityKeystoreStateDisabling string = "disabling"
+)
+
+// prop value enum
+func (m *SecurityKeystore) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, securityKeystoreTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SecurityKeystore) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -171,7 +402,27 @@ func (m *SecurityKeystore) validateType(formats strfmt.Registry) error {
 func (m *SecurityKeystore) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateConfiguration(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLocation(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateScope(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -185,6 +436,52 @@ func (m *SecurityKeystore) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
+func (m *SecurityKeystore) contextValidateConfiguration(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Configuration != nil {
+		if err := m.Configuration.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *SecurityKeystore) contextValidateLocation(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "location", "body", m.Location); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SecurityKeystore) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Scope != nil {
+		if err := m.Scope.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("scope")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *SecurityKeystore) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *SecurityKeystore) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
@@ -194,6 +491,15 @@ func (m *SecurityKeystore) contextValidateSvm(ctx context.Context, formats strfm
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SecurityKeystore) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
+		return err
 	}
 
 	return nil
@@ -226,7 +532,187 @@ func (m *SecurityKeystore) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityKeystoreInlineSvm security keystore inline svm
+// SecurityKeystoreInlineConfiguration Security keystore object reference.
+//
+// swagger:model security_keystore_inline_configuration
+type SecurityKeystoreInlineConfiguration struct {
+
+	// links
+	Links *SecurityKeystoreInlineConfigurationInlineLinks `json:"_links,omitempty"`
+
+	// Name of the configuration.
+	// Example: default
+	Name *string `json:"name,omitempty"`
+
+	// Keystore UUID.
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563434
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this security keystore inline configuration
+func (m *SecurityKeystoreInlineConfiguration) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SecurityKeystoreInlineConfiguration) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this security keystore inline configuration based on the context it is used
+func (m *SecurityKeystoreInlineConfiguration) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SecurityKeystoreInlineConfiguration) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SecurityKeystoreInlineConfiguration) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SecurityKeystoreInlineConfiguration) UnmarshalBinary(b []byte) error {
+	var res SecurityKeystoreInlineConfiguration
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SecurityKeystoreInlineConfigurationInlineLinks security keystore inline configuration inline links
+//
+// swagger:model security_keystore_inline_configuration_inline__links
+type SecurityKeystoreInlineConfigurationInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this security keystore inline configuration inline links
+func (m *SecurityKeystoreInlineConfigurationInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SecurityKeystoreInlineConfigurationInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this security keystore inline configuration inline links based on the context it is used
+func (m *SecurityKeystoreInlineConfigurationInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SecurityKeystoreInlineConfigurationInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SecurityKeystoreInlineConfigurationInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SecurityKeystoreInlineConfigurationInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityKeystoreInlineConfigurationInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SecurityKeystoreInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model security_keystore_inline_svm
 type SecurityKeystoreInlineSvm struct {
@@ -234,12 +720,12 @@ type SecurityKeystoreInlineSvm struct {
 	// links
 	Links *SecurityKeystoreInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

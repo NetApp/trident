@@ -116,12 +116,6 @@ type StorageBridgeCollectionGetParams struct {
 	*/
 	ErrorsReasonMessage *string
 
-	/* ErrorsReasonTarget.
-
-	   Filter by errors.reason.target
-	*/
-	ErrorsReasonTarget *string
-
 	/* ErrorsSeverity.
 
 	   Filter by errors.severity
@@ -253,12 +247,6 @@ type StorageBridgeCollectionGetParams struct {
 	   Filter by last_reboot.reason.message
 	*/
 	LastRebootReasonMessage *string
-
-	/* LastRebootReasonTarget.
-
-	   Filter by last_reboot.reason.target
-	*/
-	LastRebootReasonTarget *string
 
 	/* LastRebootTime.
 
@@ -694,17 +682,6 @@ func (o *StorageBridgeCollectionGetParams) SetErrorsReasonMessage(errorsReasonMe
 	o.ErrorsReasonMessage = errorsReasonMessage
 }
 
-// WithErrorsReasonTarget adds the errorsReasonTarget to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithErrorsReasonTarget(errorsReasonTarget *string) *StorageBridgeCollectionGetParams {
-	o.SetErrorsReasonTarget(errorsReasonTarget)
-	return o
-}
-
-// SetErrorsReasonTarget adds the errorsReasonTarget to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetErrorsReasonTarget(errorsReasonTarget *string) {
-	o.ErrorsReasonTarget = errorsReasonTarget
-}
-
 // WithErrorsSeverity adds the errorsSeverity to the storage bridge collection get params
 func (o *StorageBridgeCollectionGetParams) WithErrorsSeverity(errorsSeverity *string) *StorageBridgeCollectionGetParams {
 	o.SetErrorsSeverity(errorsSeverity)
@@ -945,17 +922,6 @@ func (o *StorageBridgeCollectionGetParams) WithLastRebootReasonMessage(lastReboo
 // SetLastRebootReasonMessage adds the lastRebootReasonMessage to the storage bridge collection get params
 func (o *StorageBridgeCollectionGetParams) SetLastRebootReasonMessage(lastRebootReasonMessage *string) {
 	o.LastRebootReasonMessage = lastRebootReasonMessage
-}
-
-// WithLastRebootReasonTarget adds the lastRebootReasonTarget to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithLastRebootReasonTarget(lastRebootReasonTarget *string) *StorageBridgeCollectionGetParams {
-	o.SetLastRebootReasonTarget(lastRebootReasonTarget)
-	return o
-}
-
-// SetLastRebootReasonTarget adds the lastRebootReasonTarget to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetLastRebootReasonTarget(lastRebootReasonTarget *string) {
-	o.LastRebootReasonTarget = lastRebootReasonTarget
 }
 
 // WithLastRebootTime adds the lastRebootTime to the storage bridge collection get params
@@ -1603,23 +1569,6 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ErrorsReasonTarget != nil {
-
-		// query param errors.reason.target
-		var qrErrorsReasonTarget string
-
-		if o.ErrorsReasonTarget != nil {
-			qrErrorsReasonTarget = *o.ErrorsReasonTarget
-		}
-		qErrorsReasonTarget := qrErrorsReasonTarget
-		if qErrorsReasonTarget != "" {
-
-			if err := r.SetQueryParam("errors.reason.target", qErrorsReasonTarget); err != nil {
-				return err
-			}
-		}
-	}
-
 	if o.ErrorsSeverity != nil {
 
 		// query param errors.severity
@@ -1983,23 +1932,6 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qLastRebootReasonMessage != "" {
 
 			if err := r.SetQueryParam("last_reboot.reason.message", qLastRebootReasonMessage); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.LastRebootReasonTarget != nil {
-
-		// query param last_reboot.reason.target
-		var qrLastRebootReasonTarget string
-
-		if o.LastRebootReasonTarget != nil {
-			qrLastRebootReasonTarget = *o.LastRebootReasonTarget
-		}
-		qLastRebootReasonTarget := qrLastRebootReasonTarget
-		if qLastRebootReasonTarget != "" {
-
-			if err := r.SetQueryParam("last_reboot.reason.target", qLastRebootReasonTarget); err != nil {
 				return err
 			}
 		}

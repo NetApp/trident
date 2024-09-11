@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type AuditCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *AuditCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewAuditCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewAuditCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *AuditCreateReader) ReadResponse(response runtime.ClientResponse, consum
 	}
 }
 
+// NewAuditCreateCreated creates a AuditCreateCreated with default headers values
+func NewAuditCreateCreated() *AuditCreateCreated {
+	return &AuditCreateCreated{}
+}
+
+/*
+AuditCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type AuditCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.AuditJobLinkResponse
+}
+
+// IsSuccess returns true when this audit create created response has a 2xx status code
+func (o *AuditCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this audit create created response has a 3xx status code
+func (o *AuditCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this audit create created response has a 4xx status code
+func (o *AuditCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this audit create created response has a 5xx status code
+func (o *AuditCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this audit create created response a status code equal to that given
+func (o *AuditCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the audit create created response
+func (o *AuditCreateCreated) Code() int {
+	return 201
+}
+
+func (o *AuditCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/audit][%d] auditCreateCreated %s", 201, payload)
+}
+
+func (o *AuditCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/audit][%d] auditCreateCreated %s", 201, payload)
+}
+
+func (o *AuditCreateCreated) GetPayload() *models.AuditJobLinkResponse {
+	return o.Payload
+}
+
+func (o *AuditCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.AuditJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewAuditCreateAccepted creates a AuditCreateAccepted with default headers values
 func NewAuditCreateAccepted() *AuditCreateAccepted {
 	return &AuditCreateAccepted{}
@@ -57,7 +146,7 @@ type AuditCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.AuditResponse
+	Payload *models.AuditJobLinkResponse
 }
 
 // IsSuccess returns true when this audit create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *AuditCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the audit create accepted response
+func (o *AuditCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *AuditCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /protocols/audit][%d] auditCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/audit][%d] auditCreateAccepted %s", 202, payload)
 }
 
 func (o *AuditCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /protocols/audit][%d] auditCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/audit][%d] auditCreateAccepted %s", 202, payload)
 }
 
-func (o *AuditCreateAccepted) GetPayload() *models.AuditResponse {
+func (o *AuditCreateAccepted) GetPayload() *models.AuditJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *AuditCreateAccepted) readResponse(response runtime.ClientResponse, cons
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.AuditResponse)
+	o.Payload = new(models.AuditJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -164,11 +260,6 @@ type AuditCreateDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the audit create default response
-func (o *AuditCreateDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this audit create default response has a 2xx status code
 func (o *AuditCreateDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -194,12 +285,19 @@ func (o *AuditCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the audit create default response
+func (o *AuditCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AuditCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/audit][%d] audit_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/audit][%d] audit_create default %s", o._statusCode, payload)
 }
 
 func (o *AuditCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/audit][%d] audit_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/audit][%d] audit_create default %s", o._statusCode, payload)
 }
 
 func (o *AuditCreateDefault) GetPayload() *models.ErrorResponse {

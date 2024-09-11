@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *IscsiCredentialsCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the iscsi credentials create created response
+func (o *IscsiCredentialsCreateCreated) Code() int {
+	return 201
+}
+
 func (o *IscsiCredentialsCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/iscsi/credentials][%d] iscsiCredentialsCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/iscsi/credentials][%d] iscsiCredentialsCreateCreated %s", 201, payload)
 }
 
 func (o *IscsiCredentialsCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/san/iscsi/credentials][%d] iscsiCredentialsCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/iscsi/credentials][%d] iscsiCredentialsCreateCreated %s", 201, payload)
 }
 
 func (o *IscsiCredentialsCreateCreated) GetPayload() *models.IscsiCredentialsResponse {
@@ -149,16 +157,12 @@ func NewIscsiCredentialsCreateDefault(code int) *IscsiCredentialsCreateDefault {
 | 5374855 | The value for property `initiator_address.ranges.start` is greater than the value for property `initiator_address.ranges.end`. |
 | 5374856 | The value for property `initiator_address.ranges.start` does not belong to the same IP address family as the value for property `initiator_address.ranges.end`. |
 | 5374900 | Setting the CHAP authentication properties are not supported with authentication types _none_ or _deny_. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IscsiCredentialsCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the iscsi credentials create default response
-func (o *IscsiCredentialsCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this iscsi credentials create default response has a 2xx status code
@@ -186,12 +190,19 @@ func (o *IscsiCredentialsCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the iscsi credentials create default response
+func (o *IscsiCredentialsCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IscsiCredentialsCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/iscsi/credentials][%d] iscsi_credentials_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/iscsi/credentials][%d] iscsi_credentials_create default %s", o._statusCode, payload)
 }
 
 func (o *IscsiCredentialsCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/san/iscsi/credentials][%d] iscsi_credentials_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/iscsi/credentials][%d] iscsi_credentials_create default %s", o._statusCode, payload)
 }
 
 func (o *IscsiCredentialsCreateDefault) GetPayload() *models.ErrorResponse {

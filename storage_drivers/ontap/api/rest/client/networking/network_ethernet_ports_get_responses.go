@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NetworkEthernetPortsGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the network ethernet ports get o k response
+func (o *NetworkEthernetPortsGetOK) Code() int {
+	return 200
+}
+
 func (o *NetworkEthernetPortsGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/ethernet/ports][%d] networkEthernetPortsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/ports][%d] networkEthernetPortsGetOK %s", 200, payload)
 }
 
 func (o *NetworkEthernetPortsGetOK) String() string {
-	return fmt.Sprintf("[GET /network/ethernet/ports][%d] networkEthernetPortsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/ports][%d] networkEthernetPortsGetOK %s", 200, payload)
 }
 
 func (o *NetworkEthernetPortsGetOK) GetPayload() *models.PortResponse {
@@ -122,11 +130,6 @@ type NetworkEthernetPortsGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the network ethernet ports get default response
-func (o *NetworkEthernetPortsGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this network ethernet ports get default response has a 2xx status code
 func (o *NetworkEthernetPortsGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NetworkEthernetPortsGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the network ethernet ports get default response
+func (o *NetworkEthernetPortsGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetworkEthernetPortsGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/ethernet/ports][%d] network_ethernet_ports_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/ports][%d] network_ethernet_ports_get default %s", o._statusCode, payload)
 }
 
 func (o *NetworkEthernetPortsGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/ethernet/ports][%d] network_ethernet_ports_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/ports][%d] network_ethernet_ports_get default %s", o._statusCode, payload)
 }
 
 func (o *NetworkEthernetPortsGetDefault) GetPayload() *models.ErrorResponse {

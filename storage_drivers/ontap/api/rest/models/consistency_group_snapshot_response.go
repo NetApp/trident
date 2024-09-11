@@ -167,45 +167,80 @@ type ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem struct {
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
-	// Comment for the Snapshot copy.
+	// Comment for the snapshot.
 	//
-	// Example: My Snapshot copy comment
+	// Example: My snapshot comment
 	Comment *string `json:"comment,omitempty"`
 
 	// consistency group
 	ConsistencyGroup *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineConsistencyGroup `json:"consistency_group,omitempty"`
 
-	// Consistency type. This is for categorization purposes only. A Snapshot copy should not be set to 'application consistent' unless the host application is quiesced for the Snapshot copy. Valid in POST.
+	// Consistency type. This is for categorization purposes only. A snapshot should not be set to 'application consistent' unless the host application is quiesced for the snapshot. Valid in POST.
 	//
 	// Example: crash
-	// Enum: [crash application]
+	// Enum: ["crash","application"]
 	ConsistencyType *string `json:"consistency_type,omitempty"`
 
 	// Time the snapshot copy was created
 	//
-	// Example: 2020-10-25T11:20:00Z
+	// Example: 2020-10-25 11:20:00
+	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
 
-	// Indicates whether the Snapshot copy taken is partial or not.
+	// Indicates whether the snapshot taken is partial or not.
 	//
 	// Example: false
+	// Read Only: true
 	IsPartial *bool `json:"is_partial,omitempty"`
 
-	// List of volumes which are not in the Snapshot copy.
+	// The list of LUNs in this snapshot.
 	//
+	// Read Only: true
+	Luns []*ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0 `json:"luns"`
+
+	// List of LUNs that are not in the snapshot.
+	//
+	// Read Only: true
+	MissingLuns []*LunReference `json:"missing_luns"`
+
+	// List of NVMe namespaces that are not in the snapshot.
+	//
+	// Read Only: true
+	MissingNamespaces []*ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0 `json:"missing_namespaces"`
+
+	// List of volumes which are not in the snapshot.
+	//
+	// Read Only: true
 	MissingVolumes []*VolumeReference `json:"missing_volumes"`
 
-	// Name of the Snapshot copy.
+	// Name of the snapshot.
 	//
 	Name *string `json:"name,omitempty"`
 
-	// Snapmirror Label for the Snapshot copy.
+	// The list of NVMe namespaces in this snapshot.
+	//
+	// Read Only: true
+	Namespaces []*ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0 `json:"namespaces"`
+
+	// Space reclaimed when the snapshot is deleted, in bytes.
+	// Read Only: true
+	ReclaimableSpace *int64 `json:"reclaimable_space,omitempty"`
+
+	// Size of the consistency group if this snapshot is restored.
+	// Example: 4096
+	// Read Only: true
+	RestoreSize *int64 `json:"restore_size,omitempty"`
+
+	// snaplock
+	Snaplock *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineSnaplock `json:"snaplock,omitempty"`
+
+	// Snapmirror Label for the snapshot.
 	//
 	// Example: sm_label
 	SnapmirrorLabel *string `json:"snapmirror_label,omitempty"`
 
-	// List of volume and snapshot identifiers for each volume in the Snapshot copy.
+	// List of volume and snapshot identifiers for each volume in the snapshot.
 	//
 	// Read Only: true
 	SnapshotVolumes []*ConsistencyGroupVolumeSnapshot `json:"snapshot_volumes"`
@@ -214,11 +249,16 @@ type ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem struct {
 	//
 	Svm *SvmReference `json:"svm,omitempty"`
 
-	// The unique identifier of the Snapshot copy. The UUID is generated
-	// by ONTAP when the Snapshot copy is created.
+	// The unique identifier of the snapshot. The UUID is generated
+	// by ONTAP when the snapshot is created.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	// Read Only: true
 	UUID *string `json:"uuid,omitempty"`
+
+	// Specifies whether a write fence will be taken when creating the snapshot. The default is false if there is only one volume in the consistency group, otherwise the default is true.
+	//
+	WriteFence *bool `json:"write_fence,omitempty"`
 }
 
 // Validate validates this consistency group snapshot response inline records inline array item
@@ -241,7 +281,27 @@ func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) Validate(
 		res = append(res, err)
 	}
 
+	if err := m.validateLuns(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMissingLuns(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMissingNamespaces(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateMissingVolumes(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNamespaces(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnaplock(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -361,6 +421,78 @@ func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) validateC
 	return nil
 }
 
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) validateLuns(formats strfmt.Registry) error {
+	if swag.IsZero(m.Luns) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Luns); i++ {
+		if swag.IsZero(m.Luns[i]) { // not required
+			continue
+		}
+
+		if m.Luns[i] != nil {
+			if err := m.Luns[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("luns" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) validateMissingLuns(formats strfmt.Registry) error {
+	if swag.IsZero(m.MissingLuns) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.MissingLuns); i++ {
+		if swag.IsZero(m.MissingLuns[i]) { // not required
+			continue
+		}
+
+		if m.MissingLuns[i] != nil {
+			if err := m.MissingLuns[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("missing_luns" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) validateMissingNamespaces(formats strfmt.Registry) error {
+	if swag.IsZero(m.MissingNamespaces) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.MissingNamespaces); i++ {
+		if swag.IsZero(m.MissingNamespaces[i]) { // not required
+			continue
+		}
+
+		if m.MissingNamespaces[i] != nil {
+			if err := m.MissingNamespaces[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("missing_namespaces" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) validateMissingVolumes(formats strfmt.Registry) error {
 	if swag.IsZero(m.MissingVolumes) { // not required
 		return nil
@@ -380,6 +512,47 @@ func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) validateM
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) validateNamespaces(formats strfmt.Registry) error {
+	if swag.IsZero(m.Namespaces) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Namespaces); i++ {
+		if swag.IsZero(m.Namespaces[i]) { // not required
+			continue
+		}
+
+		if m.Namespaces[i] != nil {
+			if err := m.Namespaces[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("namespaces" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) validateSnaplock(formats strfmt.Registry) error {
+	if swag.IsZero(m.Snaplock) { // not required
+		return nil
+	}
+
+	if m.Snaplock != nil {
+		if err := m.Snaplock.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snaplock")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -438,7 +611,43 @@ func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) ContextVa
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateCreateTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsPartial(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLuns(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMissingLuns(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMissingNamespaces(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateMissingVolumes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNamespaces(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateReclaimableSpace(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRestoreSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSnaplock(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -447,6 +656,10 @@ func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) ContextVa
 	}
 
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -484,7 +697,95 @@ func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextVa
 	return nil
 }
 
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextValidateCreateTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "create_time", "body", m.CreateTime); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextValidateIsPartial(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "is_partial", "body", m.IsPartial); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextValidateLuns(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "luns", "body", []*ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0(m.Luns)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Luns); i++ {
+
+		if m.Luns[i] != nil {
+			if err := m.Luns[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("luns" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextValidateMissingLuns(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "missing_luns", "body", []*LunReference(m.MissingLuns)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.MissingLuns); i++ {
+
+		if m.MissingLuns[i] != nil {
+			if err := m.MissingLuns[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("missing_luns" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextValidateMissingNamespaces(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "missing_namespaces", "body", []*ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0(m.MissingNamespaces)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.MissingNamespaces); i++ {
+
+		if m.MissingNamespaces[i] != nil {
+			if err := m.MissingNamespaces[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("missing_namespaces" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextValidateMissingVolumes(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "missing_volumes", "body", []*VolumeReference(m.MissingVolumes)); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(m.MissingVolumes); i++ {
 
@@ -497,6 +798,60 @@ func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextVa
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextValidateNamespaces(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "namespaces", "body", []*ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0(m.Namespaces)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Namespaces); i++ {
+
+		if m.Namespaces[i] != nil {
+			if err := m.Namespaces[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("namespaces" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextValidateReclaimableSpace(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "reclaimable_space", "body", m.ReclaimableSpace); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextValidateRestoreSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "restore_size", "body", m.RestoreSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextValidateSnaplock(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Snaplock != nil {
+		if err := m.Snaplock.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snaplock")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -538,6 +893,15 @@ func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextVa
 	return nil
 }
 
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -556,7 +920,7 @@ func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) Unmarshal
 	return nil
 }
 
-// ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineConsistencyGroup The consistency group of the Snapshot copy.
+// ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineConsistencyGroup The consistency group of the snapshot.
 //
 // swagger:model consistency_group_snapshot_response_inline_records_inline_array_item_inline_consistency_group
 type ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineConsistencyGroup struct {
@@ -643,6 +1007,669 @@ func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineConsi
 // UnmarshalBinary interface implementation
 func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineConsistencyGroup) UnmarshalBinary(b []byte) error {
 	var res ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineConsistencyGroup
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0 A reference to a LUN.
+//
+// swagger:model ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0
+type ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0 struct {
+
+	// links
+	Links *ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0Links `json:"_links,omitempty"`
+
+	// The name of a LUN.
+	// ### Platform Specifics
+	// * **Unified ONTAP**:
+	// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.
+	// * **ASA r2**:
+	// LUN names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.
+	//
+	// Example: /vol/volume1/lun1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the LUN.
+	//
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this consistency group snapshot response records items0 luns items0
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this consistency group snapshot response records items0 luns items0 based on the context it is used
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0Links consistency group snapshot response records items0 luns items0 links
+//
+// swagger:model ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0Links
+type ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this consistency group snapshot response records items0 luns items0 links
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this consistency group snapshot response records items0 luns items0 links based on the context it is used
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0Links) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupSnapshotResponseRecordsItems0LunsItems0Links
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0 A reference to a namespace.
+//
+// swagger:model ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0
+type ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0 struct {
+
+	// links
+	Links *ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0Links `json:"_links,omitempty"`
+
+	// The name of an NVMe namespace.
+	// ### Platform Specifics
+	// * **Unified ONTAP**:
+	// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.
+	// * **ASA r2**:
+	// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.
+	//
+	// Example: /vol/volume1/namespace1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the NVMe namespace.
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this consistency group snapshot response records items0 missing namespaces items0
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this consistency group snapshot response records items0 missing namespaces items0 based on the context it is used
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0Links consistency group snapshot response records items0 missing namespaces items0 links
+//
+// swagger:model ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0Links
+type ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this consistency group snapshot response records items0 missing namespaces items0 links
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this consistency group snapshot response records items0 missing namespaces items0 links based on the context it is used
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0Links) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupSnapshotResponseRecordsItems0MissingNamespacesItems0Links
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0 A reference to a namespace.
+//
+// swagger:model ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0
+type ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0 struct {
+
+	// links
+	Links *ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0Links `json:"_links,omitempty"`
+
+	// The name of an NVMe namespace.
+	// ### Platform Specifics
+	// * **Unified ONTAP**:
+	// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.
+	// * **ASA r2**:
+	// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.
+	//
+	// Example: /vol/volume1/namespace1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the NVMe namespace.
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this consistency group snapshot response records items0 namespaces items0
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this consistency group snapshot response records items0 namespaces items0 based on the context it is used
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0Links consistency group snapshot response records items0 namespaces items0 links
+//
+// swagger:model ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0Links
+type ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this consistency group snapshot response records items0 namespaces items0 links
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this consistency group snapshot response records items0 namespaces items0 links based on the context it is used
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0Links) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupSnapshotResponseRecordsItems0NamespacesItems0Links
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineSnaplock SnapLock Snapshot attributes.
+//
+// swagger:model consistency_group_snapshot_response_inline_records_inline_array_item_inline_snaplock
+type ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineSnaplock struct {
+
+	// Indicates whether a SnapLock snapshot has expired.
+	// Example: true
+	// Read Only: true
+	Expired *bool `json:"expired,omitempty"`
+
+	// SnapLock expiry time for the snapshot, if the snapshot is taken on a consistency-group. A snapshot is not allowed to be deleted until the SnapLock ComplianceClock time goes beyond this expiry time.
+	// Example: 2019-02-04 19:00:00
+	// Format: date-time
+	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
+
+	// Indicates the remaining SnapLock expiry time of a locked snapshot, in iso8601 period format. This field is set only when the remaining time interval is less than 136 years.
+	// Example: PT3H27M45S
+	// Read Only: true
+	TimeUntilExpiry *string `json:"time_until_expiry,omitempty"`
+}
+
+// Validate validates this consistency group snapshot response inline records inline array item inline snaplock
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineSnaplock) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateExpiryTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineSnaplock) validateExpiryTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExpiryTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("snaplock"+"."+"expiry_time", "body", "date-time", m.ExpiryTime.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this consistency group snapshot response inline records inline array item inline snaplock based on the context it is used
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineSnaplock) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateExpired(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimeUntilExpiry(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineSnaplock) contextValidateExpired(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "snaplock"+"."+"expired", "body", m.Expired); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineSnaplock) contextValidateTimeUntilExpiry(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "snaplock"+"."+"time_until_expiry", "body", m.TimeUntilExpiry); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineSnaplock) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineSnaplock) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineSnaplock
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

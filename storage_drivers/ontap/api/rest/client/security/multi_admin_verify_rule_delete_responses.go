@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *MultiAdminVerifyRuleDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the multi admin verify rule delete o k response
+func (o *MultiAdminVerifyRuleDeleteOK) Code() int {
+	return 200
+}
+
 func (o *MultiAdminVerifyRuleDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multiAdminVerifyRuleDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multiAdminVerifyRuleDeleteOK", 200)
 }
 
 func (o *MultiAdminVerifyRuleDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multiAdminVerifyRuleDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multiAdminVerifyRuleDeleteOK", 200)
 }
 
 func (o *MultiAdminVerifyRuleDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,16 +113,12 @@ func NewMultiAdminVerifyRuleDeleteDefault(code int) *MultiAdminVerifyRuleDeleteD
 | Error Code | Description |
 | ---------- | ----------- |
 | 262310 | System rules cannot be deleted or have their query modified. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type MultiAdminVerifyRuleDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the multi admin verify rule delete default response
-func (o *MultiAdminVerifyRuleDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this multi admin verify rule delete default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *MultiAdminVerifyRuleDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the multi admin verify rule delete default response
+func (o *MultiAdminVerifyRuleDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MultiAdminVerifyRuleDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multi_admin_verify_rule_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multi_admin_verify_rule_delete default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyRuleDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multi_admin_verify_rule_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multi_admin_verify_rule_delete default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyRuleDeleteDefault) GetPayload() *models.ErrorResponse {

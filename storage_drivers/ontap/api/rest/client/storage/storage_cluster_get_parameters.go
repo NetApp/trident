@@ -62,6 +62,180 @@ StorageClusterGetParams contains all the parameters to send to the API endpoint
 */
 type StorageClusterGetParams struct {
 
+	/* BlockStorageAvailable.
+
+	   Filter by block_storage.available
+	*/
+	BlockStorageAvailable *int64
+
+	/* BlockStorageInactiveData.
+
+	   Filter by block_storage.inactive_data
+	*/
+	BlockStorageInactiveData *int64
+
+	/* BlockStorageMediasAvailable.
+
+	   Filter by block_storage.medias.available
+	*/
+	BlockStorageMediasAvailable *int64
+
+	/* BlockStorageMediasEfficiencyLogicalUsed.
+
+	   Filter by block_storage.medias.efficiency.logical_used
+	*/
+	BlockStorageMediasEfficiencyLogicalUsed *int64
+
+	/* BlockStorageMediasEfficiencyRatio.
+
+	   Filter by block_storage.medias.efficiency.ratio
+	*/
+	BlockStorageMediasEfficiencyRatio *float64
+
+	/* BlockStorageMediasEfficiencySavings.
+
+	   Filter by block_storage.medias.efficiency.savings
+	*/
+	BlockStorageMediasEfficiencySavings *int64
+
+	/* BlockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed.
+
+	   Filter by block_storage.medias.efficiency_without_snapshots.logical_used
+	*/
+	BlockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed *int64
+
+	/* BlockStorageMediasEfficiencyWithoutSnapshotsRatio.
+
+	   Filter by block_storage.medias.efficiency_without_snapshots.ratio
+	*/
+	BlockStorageMediasEfficiencyWithoutSnapshotsRatio *float64
+
+	/* BlockStorageMediasEfficiencyWithoutSnapshotsSavings.
+
+	   Filter by block_storage.medias.efficiency_without_snapshots.savings
+	*/
+	BlockStorageMediasEfficiencyWithoutSnapshotsSavings *int64
+
+	/* BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed.
+
+	   Filter by block_storage.medias.efficiency_without_snapshots_flexclones.logical_used
+	*/
+	BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed *int64
+
+	/* BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio.
+
+	   Filter by block_storage.medias.efficiency_without_snapshots_flexclones.ratio
+	*/
+	BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio *float64
+
+	/* BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings.
+
+	   Filter by block_storage.medias.efficiency_without_snapshots_flexclones.savings
+	*/
+	BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings *int64
+
+	/* BlockStorageMediasPhysicalUsed.
+
+	   Filter by block_storage.medias.physical_used
+	*/
+	BlockStorageMediasPhysicalUsed *int64
+
+	/* BlockStorageMediasSize.
+
+	   Filter by block_storage.medias.size
+	*/
+	BlockStorageMediasSize *int64
+
+	/* BlockStorageMediasType.
+
+	   Filter by block_storage.medias.type
+	*/
+	BlockStorageMediasType *string
+
+	/* BlockStorageMediasUsed.
+
+	   Filter by block_storage.medias.used
+	*/
+	BlockStorageMediasUsed *int64
+
+	/* BlockStoragePhysicalUsed.
+
+	   Filter by block_storage.physical_used
+	*/
+	BlockStoragePhysicalUsed *int64
+
+	/* BlockStorageSize.
+
+	   Filter by block_storage.size
+	*/
+	BlockStorageSize *int64
+
+	/* BlockStorageUsed.
+
+	   Filter by block_storage.used
+	*/
+	BlockStorageUsed *int64
+
+	/* CloudStorageUsed.
+
+	   Filter by cloud_storage.used
+	*/
+	CloudStorageUsed *int64
+
+	/* EfficiencyLogicalUsed.
+
+	   Filter by efficiency.logical_used
+	*/
+	EfficiencyLogicalUsed *int64
+
+	/* EfficiencyRatio.
+
+	   Filter by efficiency.ratio
+	*/
+	EfficiencyRatio *float64
+
+	/* EfficiencySavings.
+
+	   Filter by efficiency.savings
+	*/
+	EfficiencySavings *int64
+
+	/* EfficiencyWithoutSnapshotsLogicalUsed.
+
+	   Filter by efficiency_without_snapshots.logical_used
+	*/
+	EfficiencyWithoutSnapshotsLogicalUsed *int64
+
+	/* EfficiencyWithoutSnapshotsRatio.
+
+	   Filter by efficiency_without_snapshots.ratio
+	*/
+	EfficiencyWithoutSnapshotsRatio *float64
+
+	/* EfficiencyWithoutSnapshotsSavings.
+
+	   Filter by efficiency_without_snapshots.savings
+	*/
+	EfficiencyWithoutSnapshotsSavings *int64
+
+	/* EfficiencyWithoutSnapshotsFlexclonesLogicalUsed.
+
+	   Filter by efficiency_without_snapshots_flexclones.logical_used
+	*/
+	EfficiencyWithoutSnapshotsFlexclonesLogicalUsed *int64
+
+	/* EfficiencyWithoutSnapshotsFlexclonesRatio.
+
+	   Filter by efficiency_without_snapshots_flexclones.ratio
+	*/
+	EfficiencyWithoutSnapshotsFlexclonesRatio *float64
+
+	/* EfficiencyWithoutSnapshotsFlexclonesSavings.
+
+	   Filter by efficiency_without_snapshots_flexclones.savings
+	*/
+	EfficiencyWithoutSnapshotsFlexclonesSavings *int64
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -121,6 +295,325 @@ func (o *StorageClusterGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithBlockStorageAvailable adds the blockStorageAvailable to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageAvailable(blockStorageAvailable *int64) *StorageClusterGetParams {
+	o.SetBlockStorageAvailable(blockStorageAvailable)
+	return o
+}
+
+// SetBlockStorageAvailable adds the blockStorageAvailable to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageAvailable(blockStorageAvailable *int64) {
+	o.BlockStorageAvailable = blockStorageAvailable
+}
+
+// WithBlockStorageInactiveData adds the blockStorageInactiveData to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageInactiveData(blockStorageInactiveData *int64) *StorageClusterGetParams {
+	o.SetBlockStorageInactiveData(blockStorageInactiveData)
+	return o
+}
+
+// SetBlockStorageInactiveData adds the blockStorageInactiveData to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageInactiveData(blockStorageInactiveData *int64) {
+	o.BlockStorageInactiveData = blockStorageInactiveData
+}
+
+// WithBlockStorageMediasAvailable adds the blockStorageMediasAvailable to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageMediasAvailable(blockStorageMediasAvailable *int64) *StorageClusterGetParams {
+	o.SetBlockStorageMediasAvailable(blockStorageMediasAvailable)
+	return o
+}
+
+// SetBlockStorageMediasAvailable adds the blockStorageMediasAvailable to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageMediasAvailable(blockStorageMediasAvailable *int64) {
+	o.BlockStorageMediasAvailable = blockStorageMediasAvailable
+}
+
+// WithBlockStorageMediasEfficiencyLogicalUsed adds the blockStorageMediasEfficiencyLogicalUsed to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageMediasEfficiencyLogicalUsed(blockStorageMediasEfficiencyLogicalUsed *int64) *StorageClusterGetParams {
+	o.SetBlockStorageMediasEfficiencyLogicalUsed(blockStorageMediasEfficiencyLogicalUsed)
+	return o
+}
+
+// SetBlockStorageMediasEfficiencyLogicalUsed adds the blockStorageMediasEfficiencyLogicalUsed to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageMediasEfficiencyLogicalUsed(blockStorageMediasEfficiencyLogicalUsed *int64) {
+	o.BlockStorageMediasEfficiencyLogicalUsed = blockStorageMediasEfficiencyLogicalUsed
+}
+
+// WithBlockStorageMediasEfficiencyRatio adds the blockStorageMediasEfficiencyRatio to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageMediasEfficiencyRatio(blockStorageMediasEfficiencyRatio *float64) *StorageClusterGetParams {
+	o.SetBlockStorageMediasEfficiencyRatio(blockStorageMediasEfficiencyRatio)
+	return o
+}
+
+// SetBlockStorageMediasEfficiencyRatio adds the blockStorageMediasEfficiencyRatio to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageMediasEfficiencyRatio(blockStorageMediasEfficiencyRatio *float64) {
+	o.BlockStorageMediasEfficiencyRatio = blockStorageMediasEfficiencyRatio
+}
+
+// WithBlockStorageMediasEfficiencySavings adds the blockStorageMediasEfficiencySavings to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageMediasEfficiencySavings(blockStorageMediasEfficiencySavings *int64) *StorageClusterGetParams {
+	o.SetBlockStorageMediasEfficiencySavings(blockStorageMediasEfficiencySavings)
+	return o
+}
+
+// SetBlockStorageMediasEfficiencySavings adds the blockStorageMediasEfficiencySavings to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageMediasEfficiencySavings(blockStorageMediasEfficiencySavings *int64) {
+	o.BlockStorageMediasEfficiencySavings = blockStorageMediasEfficiencySavings
+}
+
+// WithBlockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed adds the blockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed(blockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed *int64) *StorageClusterGetParams {
+	o.SetBlockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed(blockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed)
+	return o
+}
+
+// SetBlockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed adds the blockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed(blockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed *int64) {
+	o.BlockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed = blockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed
+}
+
+// WithBlockStorageMediasEfficiencyWithoutSnapshotsRatio adds the blockStorageMediasEfficiencyWithoutSnapshotsRatio to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageMediasEfficiencyWithoutSnapshotsRatio(blockStorageMediasEfficiencyWithoutSnapshotsRatio *float64) *StorageClusterGetParams {
+	o.SetBlockStorageMediasEfficiencyWithoutSnapshotsRatio(blockStorageMediasEfficiencyWithoutSnapshotsRatio)
+	return o
+}
+
+// SetBlockStorageMediasEfficiencyWithoutSnapshotsRatio adds the blockStorageMediasEfficiencyWithoutSnapshotsRatio to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageMediasEfficiencyWithoutSnapshotsRatio(blockStorageMediasEfficiencyWithoutSnapshotsRatio *float64) {
+	o.BlockStorageMediasEfficiencyWithoutSnapshotsRatio = blockStorageMediasEfficiencyWithoutSnapshotsRatio
+}
+
+// WithBlockStorageMediasEfficiencyWithoutSnapshotsSavings adds the blockStorageMediasEfficiencyWithoutSnapshotsSavings to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageMediasEfficiencyWithoutSnapshotsSavings(blockStorageMediasEfficiencyWithoutSnapshotsSavings *int64) *StorageClusterGetParams {
+	o.SetBlockStorageMediasEfficiencyWithoutSnapshotsSavings(blockStorageMediasEfficiencyWithoutSnapshotsSavings)
+	return o
+}
+
+// SetBlockStorageMediasEfficiencyWithoutSnapshotsSavings adds the blockStorageMediasEfficiencyWithoutSnapshotsSavings to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageMediasEfficiencyWithoutSnapshotsSavings(blockStorageMediasEfficiencyWithoutSnapshotsSavings *int64) {
+	o.BlockStorageMediasEfficiencyWithoutSnapshotsSavings = blockStorageMediasEfficiencyWithoutSnapshotsSavings
+}
+
+// WithBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed adds the blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed(blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed *int64) *StorageClusterGetParams {
+	o.SetBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed(blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed)
+	return o
+}
+
+// SetBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed adds the blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed(blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed *int64) {
+	o.BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed = blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed
+}
+
+// WithBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio adds the blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio(blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio *float64) *StorageClusterGetParams {
+	o.SetBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio(blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio)
+	return o
+}
+
+// SetBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio adds the blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio(blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio *float64) {
+	o.BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio = blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio
+}
+
+// WithBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings adds the blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings(blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings *int64) *StorageClusterGetParams {
+	o.SetBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings(blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings)
+	return o
+}
+
+// SetBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings adds the blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings(blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings *int64) {
+	o.BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings = blockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings
+}
+
+// WithBlockStorageMediasPhysicalUsed adds the blockStorageMediasPhysicalUsed to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageMediasPhysicalUsed(blockStorageMediasPhysicalUsed *int64) *StorageClusterGetParams {
+	o.SetBlockStorageMediasPhysicalUsed(blockStorageMediasPhysicalUsed)
+	return o
+}
+
+// SetBlockStorageMediasPhysicalUsed adds the blockStorageMediasPhysicalUsed to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageMediasPhysicalUsed(blockStorageMediasPhysicalUsed *int64) {
+	o.BlockStorageMediasPhysicalUsed = blockStorageMediasPhysicalUsed
+}
+
+// WithBlockStorageMediasSize adds the blockStorageMediasSize to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageMediasSize(blockStorageMediasSize *int64) *StorageClusterGetParams {
+	o.SetBlockStorageMediasSize(blockStorageMediasSize)
+	return o
+}
+
+// SetBlockStorageMediasSize adds the blockStorageMediasSize to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageMediasSize(blockStorageMediasSize *int64) {
+	o.BlockStorageMediasSize = blockStorageMediasSize
+}
+
+// WithBlockStorageMediasType adds the blockStorageMediasType to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageMediasType(blockStorageMediasType *string) *StorageClusterGetParams {
+	o.SetBlockStorageMediasType(blockStorageMediasType)
+	return o
+}
+
+// SetBlockStorageMediasType adds the blockStorageMediasType to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageMediasType(blockStorageMediasType *string) {
+	o.BlockStorageMediasType = blockStorageMediasType
+}
+
+// WithBlockStorageMediasUsed adds the blockStorageMediasUsed to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageMediasUsed(blockStorageMediasUsed *int64) *StorageClusterGetParams {
+	o.SetBlockStorageMediasUsed(blockStorageMediasUsed)
+	return o
+}
+
+// SetBlockStorageMediasUsed adds the blockStorageMediasUsed to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageMediasUsed(blockStorageMediasUsed *int64) {
+	o.BlockStorageMediasUsed = blockStorageMediasUsed
+}
+
+// WithBlockStoragePhysicalUsed adds the blockStoragePhysicalUsed to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStoragePhysicalUsed(blockStoragePhysicalUsed *int64) *StorageClusterGetParams {
+	o.SetBlockStoragePhysicalUsed(blockStoragePhysicalUsed)
+	return o
+}
+
+// SetBlockStoragePhysicalUsed adds the blockStoragePhysicalUsed to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStoragePhysicalUsed(blockStoragePhysicalUsed *int64) {
+	o.BlockStoragePhysicalUsed = blockStoragePhysicalUsed
+}
+
+// WithBlockStorageSize adds the blockStorageSize to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageSize(blockStorageSize *int64) *StorageClusterGetParams {
+	o.SetBlockStorageSize(blockStorageSize)
+	return o
+}
+
+// SetBlockStorageSize adds the blockStorageSize to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageSize(blockStorageSize *int64) {
+	o.BlockStorageSize = blockStorageSize
+}
+
+// WithBlockStorageUsed adds the blockStorageUsed to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageUsed(blockStorageUsed *int64) *StorageClusterGetParams {
+	o.SetBlockStorageUsed(blockStorageUsed)
+	return o
+}
+
+// SetBlockStorageUsed adds the blockStorageUsed to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageUsed(blockStorageUsed *int64) {
+	o.BlockStorageUsed = blockStorageUsed
+}
+
+// WithCloudStorageUsed adds the cloudStorageUsed to the storage cluster get params
+func (o *StorageClusterGetParams) WithCloudStorageUsed(cloudStorageUsed *int64) *StorageClusterGetParams {
+	o.SetCloudStorageUsed(cloudStorageUsed)
+	return o
+}
+
+// SetCloudStorageUsed adds the cloudStorageUsed to the storage cluster get params
+func (o *StorageClusterGetParams) SetCloudStorageUsed(cloudStorageUsed *int64) {
+	o.CloudStorageUsed = cloudStorageUsed
+}
+
+// WithEfficiencyLogicalUsed adds the efficiencyLogicalUsed to the storage cluster get params
+func (o *StorageClusterGetParams) WithEfficiencyLogicalUsed(efficiencyLogicalUsed *int64) *StorageClusterGetParams {
+	o.SetEfficiencyLogicalUsed(efficiencyLogicalUsed)
+	return o
+}
+
+// SetEfficiencyLogicalUsed adds the efficiencyLogicalUsed to the storage cluster get params
+func (o *StorageClusterGetParams) SetEfficiencyLogicalUsed(efficiencyLogicalUsed *int64) {
+	o.EfficiencyLogicalUsed = efficiencyLogicalUsed
+}
+
+// WithEfficiencyRatio adds the efficiencyRatio to the storage cluster get params
+func (o *StorageClusterGetParams) WithEfficiencyRatio(efficiencyRatio *float64) *StorageClusterGetParams {
+	o.SetEfficiencyRatio(efficiencyRatio)
+	return o
+}
+
+// SetEfficiencyRatio adds the efficiencyRatio to the storage cluster get params
+func (o *StorageClusterGetParams) SetEfficiencyRatio(efficiencyRatio *float64) {
+	o.EfficiencyRatio = efficiencyRatio
+}
+
+// WithEfficiencySavings adds the efficiencySavings to the storage cluster get params
+func (o *StorageClusterGetParams) WithEfficiencySavings(efficiencySavings *int64) *StorageClusterGetParams {
+	o.SetEfficiencySavings(efficiencySavings)
+	return o
+}
+
+// SetEfficiencySavings adds the efficiencySavings to the storage cluster get params
+func (o *StorageClusterGetParams) SetEfficiencySavings(efficiencySavings *int64) {
+	o.EfficiencySavings = efficiencySavings
+}
+
+// WithEfficiencyWithoutSnapshotsLogicalUsed adds the efficiencyWithoutSnapshotsLogicalUsed to the storage cluster get params
+func (o *StorageClusterGetParams) WithEfficiencyWithoutSnapshotsLogicalUsed(efficiencyWithoutSnapshotsLogicalUsed *int64) *StorageClusterGetParams {
+	o.SetEfficiencyWithoutSnapshotsLogicalUsed(efficiencyWithoutSnapshotsLogicalUsed)
+	return o
+}
+
+// SetEfficiencyWithoutSnapshotsLogicalUsed adds the efficiencyWithoutSnapshotsLogicalUsed to the storage cluster get params
+func (o *StorageClusterGetParams) SetEfficiencyWithoutSnapshotsLogicalUsed(efficiencyWithoutSnapshotsLogicalUsed *int64) {
+	o.EfficiencyWithoutSnapshotsLogicalUsed = efficiencyWithoutSnapshotsLogicalUsed
+}
+
+// WithEfficiencyWithoutSnapshotsRatio adds the efficiencyWithoutSnapshotsRatio to the storage cluster get params
+func (o *StorageClusterGetParams) WithEfficiencyWithoutSnapshotsRatio(efficiencyWithoutSnapshotsRatio *float64) *StorageClusterGetParams {
+	o.SetEfficiencyWithoutSnapshotsRatio(efficiencyWithoutSnapshotsRatio)
+	return o
+}
+
+// SetEfficiencyWithoutSnapshotsRatio adds the efficiencyWithoutSnapshotsRatio to the storage cluster get params
+func (o *StorageClusterGetParams) SetEfficiencyWithoutSnapshotsRatio(efficiencyWithoutSnapshotsRatio *float64) {
+	o.EfficiencyWithoutSnapshotsRatio = efficiencyWithoutSnapshotsRatio
+}
+
+// WithEfficiencyWithoutSnapshotsSavings adds the efficiencyWithoutSnapshotsSavings to the storage cluster get params
+func (o *StorageClusterGetParams) WithEfficiencyWithoutSnapshotsSavings(efficiencyWithoutSnapshotsSavings *int64) *StorageClusterGetParams {
+	o.SetEfficiencyWithoutSnapshotsSavings(efficiencyWithoutSnapshotsSavings)
+	return o
+}
+
+// SetEfficiencyWithoutSnapshotsSavings adds the efficiencyWithoutSnapshotsSavings to the storage cluster get params
+func (o *StorageClusterGetParams) SetEfficiencyWithoutSnapshotsSavings(efficiencyWithoutSnapshotsSavings *int64) {
+	o.EfficiencyWithoutSnapshotsSavings = efficiencyWithoutSnapshotsSavings
+}
+
+// WithEfficiencyWithoutSnapshotsFlexclonesLogicalUsed adds the efficiencyWithoutSnapshotsFlexclonesLogicalUsed to the storage cluster get params
+func (o *StorageClusterGetParams) WithEfficiencyWithoutSnapshotsFlexclonesLogicalUsed(efficiencyWithoutSnapshotsFlexclonesLogicalUsed *int64) *StorageClusterGetParams {
+	o.SetEfficiencyWithoutSnapshotsFlexclonesLogicalUsed(efficiencyWithoutSnapshotsFlexclonesLogicalUsed)
+	return o
+}
+
+// SetEfficiencyWithoutSnapshotsFlexclonesLogicalUsed adds the efficiencyWithoutSnapshotsFlexclonesLogicalUsed to the storage cluster get params
+func (o *StorageClusterGetParams) SetEfficiencyWithoutSnapshotsFlexclonesLogicalUsed(efficiencyWithoutSnapshotsFlexclonesLogicalUsed *int64) {
+	o.EfficiencyWithoutSnapshotsFlexclonesLogicalUsed = efficiencyWithoutSnapshotsFlexclonesLogicalUsed
+}
+
+// WithEfficiencyWithoutSnapshotsFlexclonesRatio adds the efficiencyWithoutSnapshotsFlexclonesRatio to the storage cluster get params
+func (o *StorageClusterGetParams) WithEfficiencyWithoutSnapshotsFlexclonesRatio(efficiencyWithoutSnapshotsFlexclonesRatio *float64) *StorageClusterGetParams {
+	o.SetEfficiencyWithoutSnapshotsFlexclonesRatio(efficiencyWithoutSnapshotsFlexclonesRatio)
+	return o
+}
+
+// SetEfficiencyWithoutSnapshotsFlexclonesRatio adds the efficiencyWithoutSnapshotsFlexclonesRatio to the storage cluster get params
+func (o *StorageClusterGetParams) SetEfficiencyWithoutSnapshotsFlexclonesRatio(efficiencyWithoutSnapshotsFlexclonesRatio *float64) {
+	o.EfficiencyWithoutSnapshotsFlexclonesRatio = efficiencyWithoutSnapshotsFlexclonesRatio
+}
+
+// WithEfficiencyWithoutSnapshotsFlexclonesSavings adds the efficiencyWithoutSnapshotsFlexclonesSavings to the storage cluster get params
+func (o *StorageClusterGetParams) WithEfficiencyWithoutSnapshotsFlexclonesSavings(efficiencyWithoutSnapshotsFlexclonesSavings *int64) *StorageClusterGetParams {
+	o.SetEfficiencyWithoutSnapshotsFlexclonesSavings(efficiencyWithoutSnapshotsFlexclonesSavings)
+	return o
+}
+
+// SetEfficiencyWithoutSnapshotsFlexclonesSavings adds the efficiencyWithoutSnapshotsFlexclonesSavings to the storage cluster get params
+func (o *StorageClusterGetParams) SetEfficiencyWithoutSnapshotsFlexclonesSavings(efficiencyWithoutSnapshotsFlexclonesSavings *int64) {
+	o.EfficiencyWithoutSnapshotsFlexclonesSavings = efficiencyWithoutSnapshotsFlexclonesSavings
+}
+
 // WithFields adds the fields to the storage cluster get params
 func (o *StorageClusterGetParams) WithFields(fields []string) *StorageClusterGetParams {
 	o.SetFields(fields)
@@ -139,6 +632,499 @@ func (o *StorageClusterGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		return err
 	}
 	var res []error
+
+	if o.BlockStorageAvailable != nil {
+
+		// query param block_storage.available
+		var qrBlockStorageAvailable int64
+
+		if o.BlockStorageAvailable != nil {
+			qrBlockStorageAvailable = *o.BlockStorageAvailable
+		}
+		qBlockStorageAvailable := swag.FormatInt64(qrBlockStorageAvailable)
+		if qBlockStorageAvailable != "" {
+
+			if err := r.SetQueryParam("block_storage.available", qBlockStorageAvailable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageInactiveData != nil {
+
+		// query param block_storage.inactive_data
+		var qrBlockStorageInactiveData int64
+
+		if o.BlockStorageInactiveData != nil {
+			qrBlockStorageInactiveData = *o.BlockStorageInactiveData
+		}
+		qBlockStorageInactiveData := swag.FormatInt64(qrBlockStorageInactiveData)
+		if qBlockStorageInactiveData != "" {
+
+			if err := r.SetQueryParam("block_storage.inactive_data", qBlockStorageInactiveData); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageMediasAvailable != nil {
+
+		// query param block_storage.medias.available
+		var qrBlockStorageMediasAvailable int64
+
+		if o.BlockStorageMediasAvailable != nil {
+			qrBlockStorageMediasAvailable = *o.BlockStorageMediasAvailable
+		}
+		qBlockStorageMediasAvailable := swag.FormatInt64(qrBlockStorageMediasAvailable)
+		if qBlockStorageMediasAvailable != "" {
+
+			if err := r.SetQueryParam("block_storage.medias.available", qBlockStorageMediasAvailable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageMediasEfficiencyLogicalUsed != nil {
+
+		// query param block_storage.medias.efficiency.logical_used
+		var qrBlockStorageMediasEfficiencyLogicalUsed int64
+
+		if o.BlockStorageMediasEfficiencyLogicalUsed != nil {
+			qrBlockStorageMediasEfficiencyLogicalUsed = *o.BlockStorageMediasEfficiencyLogicalUsed
+		}
+		qBlockStorageMediasEfficiencyLogicalUsed := swag.FormatInt64(qrBlockStorageMediasEfficiencyLogicalUsed)
+		if qBlockStorageMediasEfficiencyLogicalUsed != "" {
+
+			if err := r.SetQueryParam("block_storage.medias.efficiency.logical_used", qBlockStorageMediasEfficiencyLogicalUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageMediasEfficiencyRatio != nil {
+
+		// query param block_storage.medias.efficiency.ratio
+		var qrBlockStorageMediasEfficiencyRatio float64
+
+		if o.BlockStorageMediasEfficiencyRatio != nil {
+			qrBlockStorageMediasEfficiencyRatio = *o.BlockStorageMediasEfficiencyRatio
+		}
+		qBlockStorageMediasEfficiencyRatio := swag.FormatFloat64(qrBlockStorageMediasEfficiencyRatio)
+		if qBlockStorageMediasEfficiencyRatio != "" {
+
+			if err := r.SetQueryParam("block_storage.medias.efficiency.ratio", qBlockStorageMediasEfficiencyRatio); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageMediasEfficiencySavings != nil {
+
+		// query param block_storage.medias.efficiency.savings
+		var qrBlockStorageMediasEfficiencySavings int64
+
+		if o.BlockStorageMediasEfficiencySavings != nil {
+			qrBlockStorageMediasEfficiencySavings = *o.BlockStorageMediasEfficiencySavings
+		}
+		qBlockStorageMediasEfficiencySavings := swag.FormatInt64(qrBlockStorageMediasEfficiencySavings)
+		if qBlockStorageMediasEfficiencySavings != "" {
+
+			if err := r.SetQueryParam("block_storage.medias.efficiency.savings", qBlockStorageMediasEfficiencySavings); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed != nil {
+
+		// query param block_storage.medias.efficiency_without_snapshots.logical_used
+		var qrBlockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed int64
+
+		if o.BlockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed != nil {
+			qrBlockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed = *o.BlockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed
+		}
+		qBlockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed := swag.FormatInt64(qrBlockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed)
+		if qBlockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed != "" {
+
+			if err := r.SetQueryParam("block_storage.medias.efficiency_without_snapshots.logical_used", qBlockStorageMediasEfficiencyWithoutSnapshotsLogicalUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageMediasEfficiencyWithoutSnapshotsRatio != nil {
+
+		// query param block_storage.medias.efficiency_without_snapshots.ratio
+		var qrBlockStorageMediasEfficiencyWithoutSnapshotsRatio float64
+
+		if o.BlockStorageMediasEfficiencyWithoutSnapshotsRatio != nil {
+			qrBlockStorageMediasEfficiencyWithoutSnapshotsRatio = *o.BlockStorageMediasEfficiencyWithoutSnapshotsRatio
+		}
+		qBlockStorageMediasEfficiencyWithoutSnapshotsRatio := swag.FormatFloat64(qrBlockStorageMediasEfficiencyWithoutSnapshotsRatio)
+		if qBlockStorageMediasEfficiencyWithoutSnapshotsRatio != "" {
+
+			if err := r.SetQueryParam("block_storage.medias.efficiency_without_snapshots.ratio", qBlockStorageMediasEfficiencyWithoutSnapshotsRatio); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageMediasEfficiencyWithoutSnapshotsSavings != nil {
+
+		// query param block_storage.medias.efficiency_without_snapshots.savings
+		var qrBlockStorageMediasEfficiencyWithoutSnapshotsSavings int64
+
+		if o.BlockStorageMediasEfficiencyWithoutSnapshotsSavings != nil {
+			qrBlockStorageMediasEfficiencyWithoutSnapshotsSavings = *o.BlockStorageMediasEfficiencyWithoutSnapshotsSavings
+		}
+		qBlockStorageMediasEfficiencyWithoutSnapshotsSavings := swag.FormatInt64(qrBlockStorageMediasEfficiencyWithoutSnapshotsSavings)
+		if qBlockStorageMediasEfficiencyWithoutSnapshotsSavings != "" {
+
+			if err := r.SetQueryParam("block_storage.medias.efficiency_without_snapshots.savings", qBlockStorageMediasEfficiencyWithoutSnapshotsSavings); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed != nil {
+
+		// query param block_storage.medias.efficiency_without_snapshots_flexclones.logical_used
+		var qrBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed int64
+
+		if o.BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed != nil {
+			qrBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed = *o.BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed
+		}
+		qBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed := swag.FormatInt64(qrBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed)
+		if qBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed != "" {
+
+			if err := r.SetQueryParam("block_storage.medias.efficiency_without_snapshots_flexclones.logical_used", qBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesLogicalUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio != nil {
+
+		// query param block_storage.medias.efficiency_without_snapshots_flexclones.ratio
+		var qrBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio float64
+
+		if o.BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio != nil {
+			qrBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio = *o.BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio
+		}
+		qBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio := swag.FormatFloat64(qrBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio)
+		if qBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio != "" {
+
+			if err := r.SetQueryParam("block_storage.medias.efficiency_without_snapshots_flexclones.ratio", qBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesRatio); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings != nil {
+
+		// query param block_storage.medias.efficiency_without_snapshots_flexclones.savings
+		var qrBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings int64
+
+		if o.BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings != nil {
+			qrBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings = *o.BlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings
+		}
+		qBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings := swag.FormatInt64(qrBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings)
+		if qBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings != "" {
+
+			if err := r.SetQueryParam("block_storage.medias.efficiency_without_snapshots_flexclones.savings", qBlockStorageMediasEfficiencyWithoutSnapshotsFlexclonesSavings); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageMediasPhysicalUsed != nil {
+
+		// query param block_storage.medias.physical_used
+		var qrBlockStorageMediasPhysicalUsed int64
+
+		if o.BlockStorageMediasPhysicalUsed != nil {
+			qrBlockStorageMediasPhysicalUsed = *o.BlockStorageMediasPhysicalUsed
+		}
+		qBlockStorageMediasPhysicalUsed := swag.FormatInt64(qrBlockStorageMediasPhysicalUsed)
+		if qBlockStorageMediasPhysicalUsed != "" {
+
+			if err := r.SetQueryParam("block_storage.medias.physical_used", qBlockStorageMediasPhysicalUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageMediasSize != nil {
+
+		// query param block_storage.medias.size
+		var qrBlockStorageMediasSize int64
+
+		if o.BlockStorageMediasSize != nil {
+			qrBlockStorageMediasSize = *o.BlockStorageMediasSize
+		}
+		qBlockStorageMediasSize := swag.FormatInt64(qrBlockStorageMediasSize)
+		if qBlockStorageMediasSize != "" {
+
+			if err := r.SetQueryParam("block_storage.medias.size", qBlockStorageMediasSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageMediasType != nil {
+
+		// query param block_storage.medias.type
+		var qrBlockStorageMediasType string
+
+		if o.BlockStorageMediasType != nil {
+			qrBlockStorageMediasType = *o.BlockStorageMediasType
+		}
+		qBlockStorageMediasType := qrBlockStorageMediasType
+		if qBlockStorageMediasType != "" {
+
+			if err := r.SetQueryParam("block_storage.medias.type", qBlockStorageMediasType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageMediasUsed != nil {
+
+		// query param block_storage.medias.used
+		var qrBlockStorageMediasUsed int64
+
+		if o.BlockStorageMediasUsed != nil {
+			qrBlockStorageMediasUsed = *o.BlockStorageMediasUsed
+		}
+		qBlockStorageMediasUsed := swag.FormatInt64(qrBlockStorageMediasUsed)
+		if qBlockStorageMediasUsed != "" {
+
+			if err := r.SetQueryParam("block_storage.medias.used", qBlockStorageMediasUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStoragePhysicalUsed != nil {
+
+		// query param block_storage.physical_used
+		var qrBlockStoragePhysicalUsed int64
+
+		if o.BlockStoragePhysicalUsed != nil {
+			qrBlockStoragePhysicalUsed = *o.BlockStoragePhysicalUsed
+		}
+		qBlockStoragePhysicalUsed := swag.FormatInt64(qrBlockStoragePhysicalUsed)
+		if qBlockStoragePhysicalUsed != "" {
+
+			if err := r.SetQueryParam("block_storage.physical_used", qBlockStoragePhysicalUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageSize != nil {
+
+		// query param block_storage.size
+		var qrBlockStorageSize int64
+
+		if o.BlockStorageSize != nil {
+			qrBlockStorageSize = *o.BlockStorageSize
+		}
+		qBlockStorageSize := swag.FormatInt64(qrBlockStorageSize)
+		if qBlockStorageSize != "" {
+
+			if err := r.SetQueryParam("block_storage.size", qBlockStorageSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageUsed != nil {
+
+		// query param block_storage.used
+		var qrBlockStorageUsed int64
+
+		if o.BlockStorageUsed != nil {
+			qrBlockStorageUsed = *o.BlockStorageUsed
+		}
+		qBlockStorageUsed := swag.FormatInt64(qrBlockStorageUsed)
+		if qBlockStorageUsed != "" {
+
+			if err := r.SetQueryParam("block_storage.used", qBlockStorageUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloudStorageUsed != nil {
+
+		// query param cloud_storage.used
+		var qrCloudStorageUsed int64
+
+		if o.CloudStorageUsed != nil {
+			qrCloudStorageUsed = *o.CloudStorageUsed
+		}
+		qCloudStorageUsed := swag.FormatInt64(qrCloudStorageUsed)
+		if qCloudStorageUsed != "" {
+
+			if err := r.SetQueryParam("cloud_storage.used", qCloudStorageUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyLogicalUsed != nil {
+
+		// query param efficiency.logical_used
+		var qrEfficiencyLogicalUsed int64
+
+		if o.EfficiencyLogicalUsed != nil {
+			qrEfficiencyLogicalUsed = *o.EfficiencyLogicalUsed
+		}
+		qEfficiencyLogicalUsed := swag.FormatInt64(qrEfficiencyLogicalUsed)
+		if qEfficiencyLogicalUsed != "" {
+
+			if err := r.SetQueryParam("efficiency.logical_used", qEfficiencyLogicalUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyRatio != nil {
+
+		// query param efficiency.ratio
+		var qrEfficiencyRatio float64
+
+		if o.EfficiencyRatio != nil {
+			qrEfficiencyRatio = *o.EfficiencyRatio
+		}
+		qEfficiencyRatio := swag.FormatFloat64(qrEfficiencyRatio)
+		if qEfficiencyRatio != "" {
+
+			if err := r.SetQueryParam("efficiency.ratio", qEfficiencyRatio); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencySavings != nil {
+
+		// query param efficiency.savings
+		var qrEfficiencySavings int64
+
+		if o.EfficiencySavings != nil {
+			qrEfficiencySavings = *o.EfficiencySavings
+		}
+		qEfficiencySavings := swag.FormatInt64(qrEfficiencySavings)
+		if qEfficiencySavings != "" {
+
+			if err := r.SetQueryParam("efficiency.savings", qEfficiencySavings); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyWithoutSnapshotsLogicalUsed != nil {
+
+		// query param efficiency_without_snapshots.logical_used
+		var qrEfficiencyWithoutSnapshotsLogicalUsed int64
+
+		if o.EfficiencyWithoutSnapshotsLogicalUsed != nil {
+			qrEfficiencyWithoutSnapshotsLogicalUsed = *o.EfficiencyWithoutSnapshotsLogicalUsed
+		}
+		qEfficiencyWithoutSnapshotsLogicalUsed := swag.FormatInt64(qrEfficiencyWithoutSnapshotsLogicalUsed)
+		if qEfficiencyWithoutSnapshotsLogicalUsed != "" {
+
+			if err := r.SetQueryParam("efficiency_without_snapshots.logical_used", qEfficiencyWithoutSnapshotsLogicalUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyWithoutSnapshotsRatio != nil {
+
+		// query param efficiency_without_snapshots.ratio
+		var qrEfficiencyWithoutSnapshotsRatio float64
+
+		if o.EfficiencyWithoutSnapshotsRatio != nil {
+			qrEfficiencyWithoutSnapshotsRatio = *o.EfficiencyWithoutSnapshotsRatio
+		}
+		qEfficiencyWithoutSnapshotsRatio := swag.FormatFloat64(qrEfficiencyWithoutSnapshotsRatio)
+		if qEfficiencyWithoutSnapshotsRatio != "" {
+
+			if err := r.SetQueryParam("efficiency_without_snapshots.ratio", qEfficiencyWithoutSnapshotsRatio); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyWithoutSnapshotsSavings != nil {
+
+		// query param efficiency_without_snapshots.savings
+		var qrEfficiencyWithoutSnapshotsSavings int64
+
+		if o.EfficiencyWithoutSnapshotsSavings != nil {
+			qrEfficiencyWithoutSnapshotsSavings = *o.EfficiencyWithoutSnapshotsSavings
+		}
+		qEfficiencyWithoutSnapshotsSavings := swag.FormatInt64(qrEfficiencyWithoutSnapshotsSavings)
+		if qEfficiencyWithoutSnapshotsSavings != "" {
+
+			if err := r.SetQueryParam("efficiency_without_snapshots.savings", qEfficiencyWithoutSnapshotsSavings); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyWithoutSnapshotsFlexclonesLogicalUsed != nil {
+
+		// query param efficiency_without_snapshots_flexclones.logical_used
+		var qrEfficiencyWithoutSnapshotsFlexclonesLogicalUsed int64
+
+		if o.EfficiencyWithoutSnapshotsFlexclonesLogicalUsed != nil {
+			qrEfficiencyWithoutSnapshotsFlexclonesLogicalUsed = *o.EfficiencyWithoutSnapshotsFlexclonesLogicalUsed
+		}
+		qEfficiencyWithoutSnapshotsFlexclonesLogicalUsed := swag.FormatInt64(qrEfficiencyWithoutSnapshotsFlexclonesLogicalUsed)
+		if qEfficiencyWithoutSnapshotsFlexclonesLogicalUsed != "" {
+
+			if err := r.SetQueryParam("efficiency_without_snapshots_flexclones.logical_used", qEfficiencyWithoutSnapshotsFlexclonesLogicalUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyWithoutSnapshotsFlexclonesRatio != nil {
+
+		// query param efficiency_without_snapshots_flexclones.ratio
+		var qrEfficiencyWithoutSnapshotsFlexclonesRatio float64
+
+		if o.EfficiencyWithoutSnapshotsFlexclonesRatio != nil {
+			qrEfficiencyWithoutSnapshotsFlexclonesRatio = *o.EfficiencyWithoutSnapshotsFlexclonesRatio
+		}
+		qEfficiencyWithoutSnapshotsFlexclonesRatio := swag.FormatFloat64(qrEfficiencyWithoutSnapshotsFlexclonesRatio)
+		if qEfficiencyWithoutSnapshotsFlexclonesRatio != "" {
+
+			if err := r.SetQueryParam("efficiency_without_snapshots_flexclones.ratio", qEfficiencyWithoutSnapshotsFlexclonesRatio); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyWithoutSnapshotsFlexclonesSavings != nil {
+
+		// query param efficiency_without_snapshots_flexclones.savings
+		var qrEfficiencyWithoutSnapshotsFlexclonesSavings int64
+
+		if o.EfficiencyWithoutSnapshotsFlexclonesSavings != nil {
+			qrEfficiencyWithoutSnapshotsFlexclonesSavings = *o.EfficiencyWithoutSnapshotsFlexclonesSavings
+		}
+		qEfficiencyWithoutSnapshotsFlexclonesSavings := swag.FormatInt64(qrEfficiencyWithoutSnapshotsFlexclonesSavings)
+		if qEfficiencyWithoutSnapshotsFlexclonesSavings != "" {
+
+			if err := r.SetQueryParam("efficiency_without_snapshots_flexclones.savings", qEfficiencyWithoutSnapshotsFlexclonesSavings); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.Fields != nil {
 

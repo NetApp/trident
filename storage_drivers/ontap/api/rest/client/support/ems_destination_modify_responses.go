@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *EmsDestinationModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ems destination modify o k response
+func (o *EmsDestinationModifyOK) Code() int {
+	return 200
+}
+
 func (o *EmsDestinationModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /support/ems/destinations/{name}][%d] emsDestinationModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/ems/destinations/{name}][%d] emsDestinationModifyOK %s", 200, payload)
 }
 
 func (o *EmsDestinationModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /support/ems/destinations/{name}][%d] emsDestinationModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/ems/destinations/{name}][%d] emsDestinationModifyOK %s", 200, payload)
 }
 
 func (o *EmsDestinationModifyOK) GetPayload() *models.EmsDestination {
@@ -118,32 +126,30 @@ func NewEmsDestinationModifyDefault(code int) *EmsDestinationModifyDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 983088     | The destination name provided cannot be empty |
-| 983089     | The destination name provided cannot contain spaces |
-| 983094     | The destination name provided is invalid. The destination name must contain between 2 and 64 characters and start and end with an alphanumeric symbol or _(underscore). The allowed special characters are _(underscore) and -(hyphen) |
-| 983104     | The syslog destination provided is invalid |
-| 983116     | The number of notifications has reached maximum capacity |
-| 983117     | The number of destinations has reached maximum capacity |
-| 983129     | The rest-api destination must contain a valid scheme, such as http// or https// |
-| 983130     | The rest-api destination provided contains an invalid URL |
-| 983131     | The rest-api destination provided contains an invalid IPv6 URL |
-| 983142     | The security certificate provided does not exist |
-| 983143     | The private security key provided does not exist |
-| 983144     | The security certificate information provided is incomplete. Provide the certificate and serial number |
-| 983145     | The rest-api destination provided has an 'http://' scheme. It is invalid to provide certificate information |
-| 983150     | The type of an existing destination cannot be changed |
-| 983152     | Default destinations cannot be modified or removed |
-| 983184     | A provided property cannot be configured on the requested destination type |
+| 983088 | The destination name provided cannot be empty |
+| 983089 | The destination name provided cannot contain spaces |
+| 983094 | The destination name provided is invalid. The destination name must contain between 2 and 64 characters and start and end with an alphanumeric symbol or _(underscore). The allowed special characters are _(underscore) and -(hyphen) |
+| 983104 | The syslog destination provided is invalid |
+| 983107 | A provided filter does not exist |
+| 983116 | The number of notifications has reached maximum capacity |
+| 983117 | The number of destinations has reached maximum capacity |
+| 983129 | The rest-api destination must contain a valid scheme, such as http// or https// |
+| 983130 | The rest-api destination provided contains an invalid URL |
+| 983131 | The rest-api destination provided contains an invalid IPv6 URL |
+| 983142 | The security certificate provided does not exist |
+| 983143 | The private security key provided does not exist |
+| 983144 | The security certificate information provided is incomplete. Provide the certificate and serial number |
+| 983145 | The rest-api destination provided has an 'http://' scheme. It is invalid to provide certificate information |
+| 983150 | The type of an existing destination cannot be changed |
+| 983152 | Default destinations cannot be modified or removed |
+| 983184 | A provided property cannot be configured on the requested destination type |
+| 983200 | Access control role compatibility issue with provided filters |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type EmsDestinationModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ems destination modify default response
-func (o *EmsDestinationModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ems destination modify default response has a 2xx status code
@@ -171,12 +177,19 @@ func (o *EmsDestinationModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ems destination modify default response
+func (o *EmsDestinationModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *EmsDestinationModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /support/ems/destinations/{name}][%d] ems_destination_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/ems/destinations/{name}][%d] ems_destination_modify default %s", o._statusCode, payload)
 }
 
 func (o *EmsDestinationModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /support/ems/destinations/{name}][%d] ems_destination_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/ems/destinations/{name}][%d] ems_destination_modify default %s", o._statusCode, payload)
 }
 
 func (o *EmsDestinationModifyDefault) GetPayload() *models.ErrorResponse {

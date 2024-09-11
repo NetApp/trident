@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *FpolicyEventDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fpolicy event delete o k response
+func (o *FpolicyEventDeleteOK) Code() int {
+	return 200
+}
+
 func (o *FpolicyEventDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicyEventDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicyEventDeleteOK", 200)
 }
 
 func (o *FpolicyEventDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicyEventDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicyEventDeleteOK", 200)
 }
 
 func (o *FpolicyEventDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -114,11 +120,6 @@ type FpolicyEventDeleteDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the fpolicy event delete default response
-func (o *FpolicyEventDeleteDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this fpolicy event delete default response has a 2xx status code
 func (o *FpolicyEventDeleteDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -144,12 +145,19 @@ func (o *FpolicyEventDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fpolicy event delete default response
+func (o *FpolicyEventDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FpolicyEventDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicy_event_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicy_event_delete default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyEventDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicy_event_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicy_event_delete default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyEventDeleteDefault) GetPayload() *models.ErrorResponse {

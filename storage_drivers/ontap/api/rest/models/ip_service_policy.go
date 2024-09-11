@@ -39,7 +39,7 @@ type IPServicePolicy struct {
 	Name *string `json:"name,omitempty"`
 
 	// Set to "svm" for interfaces owned by an SVM. Otherwise, set to "cluster".
-	// Enum: [svm cluster]
+	// Enum: ["svm","cluster"]
 	Scope *string `json:"scope,omitempty"`
 
 	// svm
@@ -351,7 +351,7 @@ type IPServicePolicyInlineIpspace struct {
 	Links *IPServicePolicyInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
-	// Example: exchange
+	// Example: Default
 	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
@@ -608,7 +608,7 @@ func (m *IPServicePolicyInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPServicePolicyInlineSvm ip service policy inline svm
+// IPServicePolicyInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model ip_service_policy_inline_svm
 type IPServicePolicyInlineSvm struct {
@@ -616,12 +616,12 @@ type IPServicePolicyInlineSvm struct {
 	// links
 	Links *IPServicePolicyInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

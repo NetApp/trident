@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SnapshotPolicyScheduleCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snapshot policy schedule collection get o k response
+func (o *SnapshotPolicyScheduleCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *SnapshotPolicyScheduleCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/snapshot-policies/{snapshot_policy.uuid}/schedules][%d] snapshotPolicyScheduleCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snapshot-policies/{snapshot_policy.uuid}/schedules][%d] snapshotPolicyScheduleCollectionGetOK %s", 200, payload)
 }
 
 func (o *SnapshotPolicyScheduleCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/snapshot-policies/{snapshot_policy.uuid}/schedules][%d] snapshotPolicyScheduleCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snapshot-policies/{snapshot_policy.uuid}/schedules][%d] snapshotPolicyScheduleCollectionGetOK %s", 200, payload)
 }
 
 func (o *SnapshotPolicyScheduleCollectionGetOK) GetPayload() *models.SnapshotPolicyScheduleResponse {
@@ -122,11 +130,6 @@ type SnapshotPolicyScheduleCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the snapshot policy schedule collection get default response
-func (o *SnapshotPolicyScheduleCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this snapshot policy schedule collection get default response has a 2xx status code
 func (o *SnapshotPolicyScheduleCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SnapshotPolicyScheduleCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snapshot policy schedule collection get default response
+func (o *SnapshotPolicyScheduleCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnapshotPolicyScheduleCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/snapshot-policies/{snapshot_policy.uuid}/schedules][%d] snapshot_policy_schedule_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snapshot-policies/{snapshot_policy.uuid}/schedules][%d] snapshot_policy_schedule_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotPolicyScheduleCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/snapshot-policies/{snapshot_policy.uuid}/schedules][%d] snapshot_policy_schedule_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snapshot-policies/{snapshot_policy.uuid}/schedules][%d] snapshot_policy_schedule_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotPolicyScheduleCollectionGetDefault) GetPayload() *models.ErrorResponse {

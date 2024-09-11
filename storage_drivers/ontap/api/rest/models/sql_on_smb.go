@@ -478,7 +478,7 @@ func (m *SQLOnSmbInlineDb) UnmarshalBinary(b []byte) error {
 type SQLOnSmbInlineDbInlineStorageService struct {
 
 	// The storage service of the DB.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -694,7 +694,7 @@ func (m *SQLOnSmbInlineLog) UnmarshalBinary(b []byte) error {
 type SQLOnSmbInlineLogInlineStorageService struct {
 
 	// The storage service of the log DB.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -807,11 +807,11 @@ func (m *SQLOnSmbInlineLogInlineStorageService) UnmarshalBinary(b []byte) error 
 type SQLOnSmbInlineProtectionType struct {
 
 	// The local RPO of the application.
-	// Enum: [hourly none]
+	// Enum: ["hourly","none"]
 	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
-	// Enum: [none zero]
+	// Enum: ["none","zero"]
 	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 
@@ -1063,7 +1063,7 @@ func (m *SQLOnSmbInlineTempDb) UnmarshalBinary(b []byte) error {
 type SQLOnSmbInlineTempDbInlineStorageService struct {
 
 	// The storage service of the temp DB.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 

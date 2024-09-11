@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SnapshotGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snapshot get o k response
+func (o *SnapshotGetOK) Code() int {
+	return 200
+}
+
 func (o *SnapshotGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshotGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshotGetOK %s", 200, payload)
 }
 
 func (o *SnapshotGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshotGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshotGetOK %s", 200, payload)
 }
 
 func (o *SnapshotGetOK) GetPayload() *models.Snapshot {
@@ -120,20 +128,15 @@ func NewSnapshotGetDefault(code int) *SnapshotGetDefault {
 | ---------- | ----------- |
 | 2          | An invalid value was entered for one of the fields. |
 | 262197     | An invalid field was specified in the request. |
-| 1638473    | Snapshot copy tag not found. |
-| 1638503    | The Snapshot copy does not exist on the specified volume. |
-| 1638600    | The Snapshot copy does not exist. |
-| 1638615    | Bulk operations for Snapshot copies are not supported on multiple SVMs. |
+| 1638473    | Snapshot tag not found. |
+| 1638503    | The snapshot does not exist on the specified volume. |
+| 1638600    | The snapshot does not exist. |
+| 1638615    | Bulk operations for snapshots are not supported on multiple SVMs. |
 */
 type SnapshotGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snapshot get default response
-func (o *SnapshotGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snapshot get default response has a 2xx status code
@@ -161,12 +164,19 @@ func (o *SnapshotGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snapshot get default response
+func (o *SnapshotGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnapshotGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshot_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshot_get default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshot_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshot_get default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotGetDefault) GetPayload() *models.ErrorResponse {

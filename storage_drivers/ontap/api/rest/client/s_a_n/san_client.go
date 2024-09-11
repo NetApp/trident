@@ -32,23 +32,27 @@ type ClientService interface {
 
 	FcLoginGet(params *FcLoginGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcLoginGetOK, error)
 
-	FcpCollectionPerformanceMetricsGet(params *FcpCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcpCollectionPerformanceMetricsGetOK, error)
-
 	FcpServiceCollectionGet(params *FcpServiceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcpServiceCollectionGetOK, error)
 
 	FcpServiceCreate(params *FcpServiceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcpServiceCreateCreated, error)
 
 	FcpServiceDelete(params *FcpServiceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcpServiceDeleteOK, error)
 
+	FcpServiceDeleteCollection(params *FcpServiceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcpServiceDeleteCollectionOK, error)
+
 	FcpServiceGet(params *FcpServiceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcpServiceGetOK, error)
 
 	FcpServiceModify(params *FcpServiceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcpServiceModifyOK, error)
+
+	FcpServiceModifyCollection(params *FcpServiceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcpServiceModifyCollectionOK, error)
 
 	IgroupCollectionGet(params *IgroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupCollectionGetOK, error)
 
 	IgroupCreate(params *IgroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupCreateCreated, error)
 
 	IgroupDelete(params *IgroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupDeleteOK, error)
+
+	IgroupDeleteCollection(params *IgroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupDeleteCollectionOK, error)
 
 	IgroupGet(params *IgroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupGetOK, error)
 
@@ -58,11 +62,17 @@ type ClientService interface {
 
 	IgroupInitiatorDelete(params *IgroupInitiatorDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupInitiatorDeleteOK, error)
 
+	IgroupInitiatorDeleteCollection(params *IgroupInitiatorDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupInitiatorDeleteCollectionOK, error)
+
 	IgroupInitiatorGet(params *IgroupInitiatorGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupInitiatorGetOK, error)
 
 	IgroupInitiatorModify(params *IgroupInitiatorModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupInitiatorModifyOK, error)
 
+	IgroupInitiatorModifyCollection(params *IgroupInitiatorModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupInitiatorModifyCollectionOK, error)
+
 	IgroupModify(params *IgroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupModifyOK, error)
+
+	IgroupModifyCollection(params *IgroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupModifyCollectionOK, error)
 
 	IgroupNestedCollectionGet(params *IgroupNestedCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupNestedCollectionGetOK, error)
 
@@ -70,9 +80,13 @@ type ClientService interface {
 
 	IgroupNestedDelete(params *IgroupNestedDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupNestedDeleteOK, error)
 
+	IgroupNestedDeleteCollection(params *IgroupNestedDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupNestedDeleteCollectionOK, error)
+
 	IgroupNestedGet(params *IgroupNestedGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupNestedGetOK, error)
 
-	IscsiCollectionPerformanceMetricsGet(params *IscsiCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiCollectionPerformanceMetricsGetOK, error)
+	InitiatorCollectionGet(params *InitiatorCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*InitiatorCollectionGetOK, error)
+
+	InitiatorGet(params *InitiatorGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*InitiatorGetOK, error)
 
 	IscsiCredentialsCollectionGet(params *IscsiCredentialsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiCredentialsCollectionGetOK, error)
 
@@ -80,9 +94,13 @@ type ClientService interface {
 
 	IscsiCredentialsDelete(params *IscsiCredentialsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiCredentialsDeleteOK, error)
 
+	IscsiCredentialsDeleteCollection(params *IscsiCredentialsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiCredentialsDeleteCollectionOK, error)
+
 	IscsiCredentialsGet(params *IscsiCredentialsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiCredentialsGetOK, error)
 
 	IscsiCredentialsModify(params *IscsiCredentialsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiCredentialsModifyOK, error)
+
+	IscsiCredentialsModifyCollection(params *IscsiCredentialsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiCredentialsModifyCollectionOK, error)
 
 	IscsiServiceCollectionGet(params *IscsiServiceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiServiceCollectionGetOK, error)
 
@@ -90,9 +108,13 @@ type ClientService interface {
 
 	IscsiServiceDelete(params *IscsiServiceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiServiceDeleteOK, error)
 
+	IscsiServiceDeleteCollection(params *IscsiServiceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiServiceDeleteCollectionOK, error)
+
 	IscsiServiceGet(params *IscsiServiceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiServiceGetOK, error)
 
 	IscsiServiceModify(params *IscsiServiceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiServiceModifyOK, error)
+
+	IscsiServiceModifyCollection(params *IscsiServiceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiServiceModifyCollectionOK, error)
 
 	IscsiSessionCollectionGet(params *IscsiSessionCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiSessionCollectionGetOK, error)
 
@@ -100,21 +122,31 @@ type ClientService interface {
 
 	LunAttributeCollectionGet(params *LunAttributeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeCollectionGetOK, error)
 
-	LunAttributeCreate(params *LunAttributeCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeCreateCreated, error)
+	LunAttributeCreate(params *LunAttributeCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeCreateCreated, *LunAttributeCreateAccepted, error)
 
 	LunAttributeDelete(params *LunAttributeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeDeleteOK, error)
+
+	LunAttributeDeleteCollection(params *LunAttributeDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeDeleteCollectionOK, error)
 
 	LunAttributeGet(params *LunAttributeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeGetOK, error)
 
 	LunAttributeModify(params *LunAttributeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeModifyOK, error)
 
+	LunAttributeModifyCollection(params *LunAttributeModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeModifyCollectionOK, error)
+
 	LunCollectionGet(params *LunCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunCollectionGetOK, error)
 
-	LunCollectionPerformanceMetricsGet(params *LunCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunCollectionPerformanceMetricsGetOK, error)
+	LunCreate(params *LunCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunCreateCreated, *LunCreateAccepted, error)
 
-	LunCreate(params *LunCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunCreateCreated, error)
+	LunDelete(params *LunDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunDeleteOK, *LunDeleteAccepted, error)
 
-	LunDelete(params *LunDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunDeleteOK, error)
+	LunDeleteCollection(params *LunDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunDeleteCollectionOK, *LunDeleteCollectionAccepted, error)
+
+	LunFormDataDelete(params *LunFormDataDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunFormDataDeleteOK, *LunFormDataDeleteAccepted, error)
+
+	LunFormDataGet(params *LunFormDataGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunFormDataGetOK, error)
+
+	LunFormDataModify(params *LunFormDataModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunFormDataModifyOK, *LunFormDataModifyAccepted, error)
 
 	LunGet(params *LunGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunGetOK, error)
 
@@ -124,6 +156,8 @@ type ClientService interface {
 
 	LunMapDelete(params *LunMapDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapDeleteOK, error)
 
+	LunMapDeleteCollection(params *LunMapDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapDeleteCollectionOK, error)
+
 	LunMapGet(params *LunMapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapGetOK, error)
 
 	LunMapReportingNodeCollectionGet(params *LunMapReportingNodeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeCollectionGetOK, error)
@@ -132,15 +166,33 @@ type ClientService interface {
 
 	LunMapReportingNodeDelete(params *LunMapReportingNodeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeDeleteOK, error)
 
+	LunMapReportingNodeDeleteCollection(params *LunMapReportingNodeDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeDeleteCollectionOK, error)
+
 	LunMapReportingNodeGet(params *LunMapReportingNodeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeGetOK, error)
 
-	LunModify(params *LunModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunModifyOK, error)
+	LunModify(params *LunModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunModifyOK, *LunModifyAccepted, error)
+
+	LunModifyCollection(params *LunModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunModifyCollectionOK, *LunModifyCollectionAccepted, error)
+
+	PerformanceFcpMetricCollectionGet(params *PerformanceFcpMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcpMetricCollectionGetOK, error)
+
+	PerformanceFcpMetricGet(params *PerformanceFcpMetricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcpMetricGetOK, error)
+
+	PerformanceIscsiMetricCollectionGet(params *PerformanceIscsiMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceIscsiMetricCollectionGetOK, error)
+
+	PerformanceIscsiMetricGet(params *PerformanceIscsiMetricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceIscsiMetricGetOK, error)
+
+	PerformanceLunMetricCollectionGet(params *PerformanceLunMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceLunMetricCollectionGetOK, error)
+
+	PerformanceLunMetricGet(params *PerformanceLunMetricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceLunMetricGetOK, error)
 
 	PortsetCollectionGet(params *PortsetCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetCollectionGetOK, error)
 
 	PortsetCreate(params *PortsetCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetCreateCreated, error)
 
 	PortsetDelete(params *PortsetDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetDeleteOK, error)
+
+	PortsetDeleteCollection(params *PortsetDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetDeleteCollectionOK, error)
 
 	PortsetGet(params *PortsetGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetGetOK, error)
 
@@ -150,13 +202,41 @@ type ClientService interface {
 
 	PortsetInterfaceDelete(params *PortsetInterfaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceDeleteOK, error)
 
+	PortsetInterfaceDeleteCollection(params *PortsetInterfaceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceDeleteCollectionOK, error)
+
 	PortsetInterfaceGet(params *PortsetInterfaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceGetOK, error)
+
+	StorageUnitCollectionGet(params *StorageUnitCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitCollectionGetOK, error)
+
+	StorageUnitCreate(params *StorageUnitCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitCreateCreated, *StorageUnitCreateAccepted, error)
+
+	StorageUnitGet(params *StorageUnitGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitGetOK, error)
+
+	StorageUnitModify(params *StorageUnitModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitModifyOK, *StorageUnitModifyAccepted, error)
+
+	StorageUnitModifyCollection(params *StorageUnitModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitModifyCollectionOK, *StorageUnitModifyCollectionAccepted, error)
+
+	StorageUnitSnapshotCollectionGet(params *StorageUnitSnapshotCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitSnapshotCollectionGetOK, error)
+
+	StorageUnitSnapshotCreate(params *StorageUnitSnapshotCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitSnapshotCreateCreated, *StorageUnitSnapshotCreateAccepted, error)
+
+	StorageUnitSnapshotDelete(params *StorageUnitSnapshotDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitSnapshotDeleteOK, *StorageUnitSnapshotDeleteAccepted, error)
+
+	StorageUnitSnapshotDeleteCollection(params *StorageUnitSnapshotDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitSnapshotDeleteCollectionOK, *StorageUnitSnapshotDeleteCollectionAccepted, error)
+
+	StorageUnitSnapshotGet(params *StorageUnitSnapshotGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitSnapshotGetOK, error)
+
+	StorageUnitSnapshotModify(params *StorageUnitSnapshotModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitSnapshotModifyOK, *StorageUnitSnapshotModifyAccepted, error)
+
+	StorageUnitSnapshotModifyCollection(params *StorageUnitSnapshotModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitSnapshotModifyCollectionOK, *StorageUnitSnapshotModifyCollectionAccepted, error)
 
 	VvolBindingCollectionGet(params *VvolBindingCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingCollectionGetOK, error)
 
 	VvolBindingCreate(params *VvolBindingCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingCreateCreated, error)
 
 	VvolBindingDelete(params *VvolBindingDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingDeleteOK, error)
+
+	VvolBindingDeleteCollection(params *VvolBindingDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingDeleteCollectionOK, error)
 
 	VvolBindingGet(params *VvolBindingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingGetOK, error)
 
@@ -165,6 +245,8 @@ type ClientService interface {
 	WwpnAliasCreate(params *WwpnAliasCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WwpnAliasCreateCreated, error)
 
 	WwpnAliasDelete(params *WwpnAliasDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WwpnAliasDeleteOK, error)
+
+	WwpnAliasDeleteCollection(params *WwpnAliasDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WwpnAliasDeleteCollectionOK, error)
 
 	WwpnAliasGet(params *WwpnAliasGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WwpnAliasGetOK, error)
 
@@ -189,8 +271,8 @@ func (a *Client) FcLoginCollectionGet(params *FcLoginCollectionGetParams, authIn
 		ID:                 "fc_login_collection_get",
 		Method:             "GET",
 		PathPattern:        "/network/fc/logins",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcLoginCollectionGetReader{formats: a.formats},
@@ -233,8 +315,8 @@ func (a *Client) FcLoginGet(params *FcLoginGetParams, authInfo runtime.ClientAut
 		ID:                 "fc_login_get",
 		Method:             "GET",
 		PathPattern:        "/network/fc/logins/{interface.uuid}/{initiator.wwpn}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcLoginGetReader{formats: a.formats},
@@ -260,44 +342,6 @@ func (a *Client) FcLoginGet(params *FcLoginGetParams, authInfo runtime.ClientAut
 }
 
 /*
-FcpCollectionPerformanceMetricsGet Retrieves historical performance metrics for the FC Protocol service of an SVM.
-*/
-func (a *Client) FcpCollectionPerformanceMetricsGet(params *FcpCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcpCollectionPerformanceMetricsGetOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewFcpCollectionPerformanceMetricsGetParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "fcp_collection_performance_metrics_get",
-		Method:             "GET",
-		PathPattern:        "/protocols/san/fcp/services/{svm.uuid}/metrics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &FcpCollectionPerformanceMetricsGetReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*FcpCollectionPerformanceMetricsGetOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*FcpCollectionPerformanceMetricsGetDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
 	FcpServiceCollectionGet Retrieves FC Protocol services.
 
 ### Expensive properties
@@ -318,8 +362,8 @@ func (a *Client) FcpServiceCollectionGet(params *FcpServiceCollectionGetParams, 
 		ID:                 "fcp_service_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/fcp/services",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcpServiceCollectionGetReader{formats: a.formats},
@@ -347,6 +391,9 @@ func (a *Client) FcpServiceCollectionGet(params *FcpServiceCollectionGetParams, 
 /*
 	FcpServiceCreate Creates an FC Protocol service.
 
+### Platform Specifics
+* **Unified ONTAP**: POST and DELETE must be used to manage the FC Protocol service for access to the FC Protocol.
+* **ASA r2**: POST and DELETE are not supported. The FC Protocol service is automatically created and deleted with the SVM.
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the FC Protocol service.
 ### Related ONTAP commands
@@ -363,8 +410,8 @@ func (a *Client) FcpServiceCreate(params *FcpServiceCreateParams, authInfo runti
 		ID:                 "fcp_service_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/san/fcp/services",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcpServiceCreateReader{formats: a.formats},
@@ -392,6 +439,9 @@ func (a *Client) FcpServiceCreate(params *FcpServiceCreateParams, authInfo runti
 /*
 	FcpServiceDelete Deletes an FC Protocol service. An FC Protocol service must be disabled before it can be deleted.
 
+### Platform Specifics
+* **Unified ONTAP**: POST and DELETE must be used to manage the FC Protocol service for access to the FC Protocol.
+* **ASA r2**: POST and DELETE are not supported. The FC Protocol service is automatically created and deleted with the SVM.
 ### Related ONTAP commands
 * `vserver fcp delete`
 ### Learn more
@@ -406,8 +456,8 @@ func (a *Client) FcpServiceDelete(params *FcpServiceDeleteParams, authInfo runti
 		ID:                 "fcp_service_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/san/fcp/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcpServiceDeleteReader{formats: a.formats},
@@ -433,6 +483,44 @@ func (a *Client) FcpServiceDelete(params *FcpServiceDeleteParams, authInfo runti
 }
 
 /*
+FcpServiceDeleteCollection fcp service delete collection API
+*/
+func (a *Client) FcpServiceDeleteCollection(params *FcpServiceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcpServiceDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFcpServiceDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fcp_service_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/san/fcp/services",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FcpServiceDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FcpServiceDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FcpServiceDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	FcpServiceGet Retrieves an FC Protocol service.
 
 ### Related ONTAP commands
@@ -449,8 +537,8 @@ func (a *Client) FcpServiceGet(params *FcpServiceGetParams, authInfo runtime.Cli
 		ID:                 "fcp_service_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/fcp/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcpServiceGetReader{formats: a.formats},
@@ -494,8 +582,8 @@ func (a *Client) FcpServiceModify(params *FcpServiceModifyParams, authInfo runti
 		ID:                 "fcp_service_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/san/fcp/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FcpServiceModifyReader{formats: a.formats},
@@ -517,6 +605,44 @@ func (a *Client) FcpServiceModify(params *FcpServiceModifyParams, authInfo runti
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*FcpServiceModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+FcpServiceModifyCollection fcp service modify collection API
+*/
+func (a *Client) FcpServiceModifyCollection(params *FcpServiceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcpServiceModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFcpServiceModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fcp_service_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/san/fcp/services",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FcpServiceModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FcpServiceModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FcpServiceModifyCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -545,8 +671,8 @@ func (a *Client) IgroupCollectionGet(params *IgroupCollectionGetParams, authInfo
 		ID:                 "igroup_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/igroups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IgroupCollectionGetReader{formats: a.formats},
@@ -597,8 +723,8 @@ func (a *Client) IgroupCreate(params *IgroupCreateParams, authInfo runtime.Clien
 		ID:                 "igroup_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/san/igroups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IgroupCreateReader{formats: a.formats},
@@ -640,8 +766,8 @@ func (a *Client) IgroupDelete(params *IgroupDeleteParams, authInfo runtime.Clien
 		ID:                 "igroup_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/san/igroups/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IgroupDeleteReader{formats: a.formats},
@@ -667,14 +793,52 @@ func (a *Client) IgroupDelete(params *IgroupDeleteParams, authInfo runtime.Clien
 }
 
 /*
+IgroupDeleteCollection igroup delete collection API
+*/
+func (a *Client) IgroupDeleteCollection(params *IgroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIgroupDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "igroup_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/san/igroups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IgroupDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IgroupDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IgroupDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	IgroupGet Retrieves an initiator group.
 
 ### Expensive properties
 There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `connectivity_tracking.*`
 * `igroups.*`
 * `lun_maps.*`
 * `parent_igroups.*`
-* `connectivity_tracking.*`
 ### Related ONTAP commands
 * `lun igroup show`
 * `lun mapping show`
@@ -690,8 +854,8 @@ func (a *Client) IgroupGet(params *IgroupGetParams, authInfo runtime.ClientAuthI
 		ID:                 "igroup_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/igroups/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IgroupGetReader{formats: a.formats},
@@ -717,11 +881,9 @@ func (a *Client) IgroupGet(params *IgroupGetParams, authInfo runtime.ClientAuthI
 }
 
 /*
-	IgroupInitiatorCollectionGet Retrieves initiators of an initiator group.
+	IgroupInitiatorCollectionGet Retrieves initiators of an initiator group.<br/>
 
-This API only reports initiators owned directly by the initiator group.
-Initiators of nested initiator groups are not included in this
-collection.
+This API only reports initiators owned directly by the initiator group. Initiators of nested initiator groups are not included in this collection.
 ### Expensive properties
 There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `connectivity_tracking.*`
@@ -739,8 +901,8 @@ func (a *Client) IgroupInitiatorCollectionGet(params *IgroupInitiatorCollectionG
 		ID:                 "igroup_initiator_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/igroups/{igroup.uuid}/initiators",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IgroupInitiatorCollectionGetReader{formats: a.formats},
@@ -766,10 +928,9 @@ func (a *Client) IgroupInitiatorCollectionGet(params *IgroupInitiatorCollectionG
 }
 
 /*
-	IgroupInitiatorCreate Adds one or more initiators to an initiator group.
+	IgroupInitiatorCreate Adds one or more initiators to an initiator group.<br/>
 
-This API does not support adding initiators to an initiator group that
-already contains nested initiator groups.
+This API does not support adding initiators to an initiator group that already contains nested initiator groups.
 ### Required properties
 * `name` or `records.name` - Initiator name(s) to add to the initiator group.
 ### Related ONTAP commands
@@ -786,8 +947,8 @@ func (a *Client) IgroupInitiatorCreate(params *IgroupInitiatorCreateParams, auth
 		ID:                 "igroup_initiator_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/san/igroups/{igroup.uuid}/initiators",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IgroupInitiatorCreateReader{formats: a.formats},
@@ -813,11 +974,9 @@ func (a *Client) IgroupInitiatorCreate(params *IgroupInitiatorCreateParams, auth
 }
 
 /*
-	IgroupInitiatorDelete Deletes an initiator from an initiator group.
+	IgroupInitiatorDelete Deletes an initiator from an initiator group.<br/>
 
-This API only supports removal of initiators owned directly by the
-initiator group. Initiators of nested initiator groups must be
-removed on the initiator group that directly owns the initiator.
+This API only supports removal of initiators owned directly by the initiator group. Initiators of nested initiator groups must be removed on the initiator group that directly owns the initiator.
 ### Related ONTAP commands
 * `lun igroup remove`
 ### Learn more
@@ -832,8 +991,8 @@ func (a *Client) IgroupInitiatorDelete(params *IgroupInitiatorDeleteParams, auth
 		ID:                 "igroup_initiator_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/san/igroups/{igroup.uuid}/initiators/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IgroupInitiatorDeleteReader{formats: a.formats},
@@ -859,10 +1018,47 @@ func (a *Client) IgroupInitiatorDelete(params *IgroupInitiatorDeleteParams, auth
 }
 
 /*
-	IgroupInitiatorGet Retrieves an initiator of an initiator group.
+IgroupInitiatorDeleteCollection igroup initiator delete collection API
+*/
+func (a *Client) IgroupInitiatorDeleteCollection(params *IgroupInitiatorDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupInitiatorDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIgroupInitiatorDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "igroup_initiator_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/san/igroups/{igroup.uuid}/initiators",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IgroupInitiatorDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
 
-This API only reports initiators owned directly by the initiator group.
-Initiators of nested initiator groups are not part of this collection.
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IgroupInitiatorDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IgroupInitiatorDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	IgroupInitiatorGet Retrieves an initiator of an initiator group.<br/>
+
+This API only reports initiators owned directly by the initiator group. Initiators of nested initiator groups are not part of this collection.
 ### Expensive properties
 There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `connectivity_tracking.*`
@@ -880,8 +1076,8 @@ func (a *Client) IgroupInitiatorGet(params *IgroupInitiatorGetParams, authInfo r
 		ID:                 "igroup_initiator_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/igroups/{igroup.uuid}/initiators/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IgroupInitiatorGetReader{formats: a.formats},
@@ -907,11 +1103,9 @@ func (a *Client) IgroupInitiatorGet(params *IgroupInitiatorGetParams, authInfo r
 }
 
 /*
-	IgroupInitiatorModify Updates an initiator of an initiator group.
+	IgroupInitiatorModify Updates an initiator of an initiator group.<br/>
 
-This API only supports modification of initiators owned directly by the
-initiator group. Initiators of nested initiator groups must be
-modified on the initiator group that directly owns the initiator.
+This API only supports modification of initiators owned directly by the initiator group. Initiators of nested initiator groups must be modified on the initiator group that directly owns the initiator.
 ### Related ONTAP commands
 * `lun igroup initiator modify`
 ### Learn more
@@ -926,8 +1120,8 @@ func (a *Client) IgroupInitiatorModify(params *IgroupInitiatorModifyParams, auth
 		ID:                 "igroup_initiator_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/san/igroups/{igroup.uuid}/initiators/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IgroupInitiatorModifyReader{formats: a.formats},
@@ -953,6 +1147,44 @@ func (a *Client) IgroupInitiatorModify(params *IgroupInitiatorModifyParams, auth
 }
 
 /*
+IgroupInitiatorModifyCollection igroup initiator modify collection API
+*/
+func (a *Client) IgroupInitiatorModifyCollection(params *IgroupInitiatorModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupInitiatorModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIgroupInitiatorModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "igroup_initiator_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/san/igroups/{igroup.uuid}/initiators",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IgroupInitiatorModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IgroupInitiatorModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IgroupInitiatorModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	IgroupModify Updates an initiator group.
 
 ### Related ONTAP commands
@@ -972,8 +1204,8 @@ func (a *Client) IgroupModify(params *IgroupModifyParams, authInfo runtime.Clien
 		ID:                 "igroup_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/san/igroups/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IgroupModifyReader{formats: a.formats},
@@ -999,11 +1231,47 @@ func (a *Client) IgroupModify(params *IgroupModifyParams, authInfo runtime.Clien
 }
 
 /*
-	IgroupNestedCollectionGet Retrieves nested initiator groups of an initiator group.
+IgroupModifyCollection igroup modify collection API
+*/
+func (a *Client) IgroupModifyCollection(params *IgroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIgroupModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "igroup_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/san/igroups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IgroupModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
 
-This API only reports the nested initiator groups that are direct
-children of the initiator group. Further nested initiator groups are
-reported by their direct parent initiator group.
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IgroupModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IgroupModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	IgroupNestedCollectionGet Retrieves nested initiator groups of an initiator group.<br/>
+
+This API only reports the nested initiator groups that are direct children of the initiator group. Further nested initiator groups are reported by their direct parent initiator group.
 ### Related ONTAP commands
 * `lun igroup show`
 ### Learn more
@@ -1018,8 +1286,8 @@ func (a *Client) IgroupNestedCollectionGet(params *IgroupNestedCollectionGetPara
 		ID:                 "igroup_nested_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/igroups/{igroup.uuid}/igroups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IgroupNestedCollectionGetReader{formats: a.formats},
@@ -1045,12 +1313,8 @@ func (a *Client) IgroupNestedCollectionGet(params *IgroupNestedCollectionGetPara
 }
 
 /*
-	IgroupNestedCreate Adds one or more nested initiator groups to an initiator group. A single
+	IgroupNestedCreate Adds one or more nested initiator groups to an initiator group. A single nested initiator group can be added by directly specifying the name or UUID. Multiple nested initiator groups can be added by specifying the names or UUIDs in the records array. Nested initiator groups cannot be added to an initiator group that already directly contains initiators.
 
-nested initiator group can be added by directly specifying the name or
-UUID. Multiple nested initiator groups can be added by specifying the
-names or UUIDs in the records array. Nested initiator groups cannot be
-added to an initiator group that already directly contains initiators.
 ### Required properties
 * `name` and/or `uuid` or `records` - Nested initiator groups to add to the initiator group.
 ### Related ONTAP commands
@@ -1067,8 +1331,8 @@ func (a *Client) IgroupNestedCreate(params *IgroupNestedCreateParams, authInfo r
 		ID:                 "igroup_nested_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/san/igroups/{igroup.uuid}/igroups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IgroupNestedCreateReader{formats: a.formats},
@@ -1094,13 +1358,9 @@ func (a *Client) IgroupNestedCreate(params *IgroupNestedCreateParams, authInfo r
 }
 
 /*
-	IgroupNestedDelete Removes a nested initiator group from an initiator group. This API does
+	IgroupNestedDelete Removes a nested initiator group from an initiator group. This API does not delete the nested initiator group itself. It removes the relationship between a parent and child initiator group.<br/>
 
-not delete the nested initiator group itself. It removes the relationship
-between a parent and child initiator group.
-This API only supports removal of initiator groups owned directly by the
-initiator group. Further nested initiator groups must be removed from the
-direct parent initiator group.
+This API only supports removal of initiator groups owned directly by the initiator group. Further nested initiator groups must be removed from the direct parent initiator group.
 ### Related ONTAP commands
 * `lun igroup remove`
 ### Learn more
@@ -1115,8 +1375,8 @@ func (a *Client) IgroupNestedDelete(params *IgroupNestedDeleteParams, authInfo r
 		ID:                 "igroup_nested_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/san/igroups/{igroup.uuid}/igroups/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IgroupNestedDeleteReader{formats: a.formats},
@@ -1142,11 +1402,47 @@ func (a *Client) IgroupNestedDelete(params *IgroupNestedDeleteParams, authInfo r
 }
 
 /*
-	IgroupNestedGet Retrieves a nested initiator group of an initiator group.
+IgroupNestedDeleteCollection igroup nested delete collection API
+*/
+func (a *Client) IgroupNestedDeleteCollection(params *IgroupNestedDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupNestedDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIgroupNestedDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "igroup_nested_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/san/igroups/{igroup.uuid}/igroups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IgroupNestedDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
 
-This API only reports the nested initiator groups that are direct
-children of the initiator group. Further nested initiator groups are
-reported by their direct parent initiator group.
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IgroupNestedDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IgroupNestedDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	IgroupNestedGet Retrieves a nested initiator group of an initiator group.<br/>
+
+This API only reports the nested initiator groups that are direct children of the initiator group. Further nested initiator groups are reported by their direct parent initiator group.
 ### Related ONTAP commands
 * `lun igroup show`
 ### Learn more
@@ -1161,8 +1457,8 @@ func (a *Client) IgroupNestedGet(params *IgroupNestedGetParams, authInfo runtime
 		ID:                 "igroup_nested_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/igroups/{igroup.uuid}/igroups/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IgroupNestedGetReader{formats: a.formats},
@@ -1188,22 +1484,27 @@ func (a *Client) IgroupNestedGet(params *IgroupNestedGetParams, authInfo runtime
 }
 
 /*
-IscsiCollectionPerformanceMetricsGet Retrieves historical performance metrics for the iSCSI protocol of an SVM.
+	InitiatorCollectionGet Retrieves initiators.
+
+### Related ONTAP commands
+* `lun igroup initiator show`
+### Learn more
+* [`DOC /protocols/san/initiators`](#docs-SAN-protocols_san_initiators)
 */
-func (a *Client) IscsiCollectionPerformanceMetricsGet(params *IscsiCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiCollectionPerformanceMetricsGetOK, error) {
+func (a *Client) InitiatorCollectionGet(params *InitiatorCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*InitiatorCollectionGetOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewIscsiCollectionPerformanceMetricsGetParams()
+		params = NewInitiatorCollectionGetParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "iscsi_collection_performance_metrics_get",
+		ID:                 "initiator_collection_get",
 		Method:             "GET",
-		PathPattern:        "/protocols/san/iscsi/services/{svm.uuid}/metrics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		PathPattern:        "/protocols/san/initiators",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
-		Reader:             &IscsiCollectionPerformanceMetricsGetReader{formats: a.formats},
+		Reader:             &InitiatorCollectionGetReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -1216,12 +1517,55 @@ func (a *Client) IscsiCollectionPerformanceMetricsGet(params *IscsiCollectionPer
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*IscsiCollectionPerformanceMetricsGetOK)
+	success, ok := result.(*InitiatorCollectionGetOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*IscsiCollectionPerformanceMetricsGetDefault)
+	unexpectedSuccess := result.(*InitiatorCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	InitiatorGet Retrieves an initiator.
+
+### Related ONTAP commands
+* `lun igroup initiator show`
+### Learn more
+* [`DOC /protocols/san/initiators`](#docs-SAN-protocols_san_initiators)
+*/
+func (a *Client) InitiatorGet(params *InitiatorGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*InitiatorGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewInitiatorGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "initiator_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/san/initiators/{svm.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &InitiatorGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*InitiatorGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*InitiatorGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -1242,8 +1586,8 @@ func (a *Client) IscsiCredentialsCollectionGet(params *IscsiCredentialsCollectio
 		ID:                 "iscsi_credentials_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/iscsi/credentials",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IscsiCredentialsCollectionGetReader{formats: a.formats},
@@ -1294,8 +1638,8 @@ func (a *Client) IscsiCredentialsCreate(params *IscsiCredentialsCreateParams, au
 		ID:                 "iscsi_credentials_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/san/iscsi/credentials",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IscsiCredentialsCreateReader{formats: a.formats},
@@ -1337,8 +1681,8 @@ func (a *Client) IscsiCredentialsDelete(params *IscsiCredentialsDeleteParams, au
 		ID:                 "iscsi_credentials_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/san/iscsi/credentials/{svm.uuid}/{initiator}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IscsiCredentialsDeleteReader{formats: a.formats},
@@ -1364,6 +1708,44 @@ func (a *Client) IscsiCredentialsDelete(params *IscsiCredentialsDeleteParams, au
 }
 
 /*
+IscsiCredentialsDeleteCollection iscsi credentials delete collection API
+*/
+func (a *Client) IscsiCredentialsDeleteCollection(params *IscsiCredentialsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiCredentialsDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIscsiCredentialsDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "iscsi_credentials_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/san/iscsi/credentials",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IscsiCredentialsDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IscsiCredentialsDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IscsiCredentialsDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	IscsiCredentialsGet Retrieves specified iSCSI credentials.
 
 ### Related ONTAP commands
@@ -1380,8 +1762,8 @@ func (a *Client) IscsiCredentialsGet(params *IscsiCredentialsGetParams, authInfo
 		ID:                 "iscsi_credentials_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/iscsi/credentials/{svm.uuid}/{initiator}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IscsiCredentialsGetReader{formats: a.formats},
@@ -1426,8 +1808,8 @@ func (a *Client) IscsiCredentialsModify(params *IscsiCredentialsModifyParams, au
 		ID:                 "iscsi_credentials_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/san/iscsi/credentials/{svm.uuid}/{initiator}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IscsiCredentialsModifyReader{formats: a.formats},
@@ -1453,6 +1835,44 @@ func (a *Client) IscsiCredentialsModify(params *IscsiCredentialsModifyParams, au
 }
 
 /*
+IscsiCredentialsModifyCollection iscsi credentials modify collection API
+*/
+func (a *Client) IscsiCredentialsModifyCollection(params *IscsiCredentialsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiCredentialsModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIscsiCredentialsModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "iscsi_credentials_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/san/iscsi/credentials",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IscsiCredentialsModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IscsiCredentialsModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IscsiCredentialsModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	IscsiServiceCollectionGet Retrieves iSCSI services.
 
 ### Expensive properties
@@ -1473,8 +1893,8 @@ func (a *Client) IscsiServiceCollectionGet(params *IscsiServiceCollectionGetPara
 		ID:                 "iscsi_service_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/iscsi/services",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IscsiServiceCollectionGetReader{formats: a.formats},
@@ -1502,6 +1922,9 @@ func (a *Client) IscsiServiceCollectionGet(params *IscsiServiceCollectionGetPara
 /*
 	IscsiServiceCreate Creates an iSCSI service.
 
+### Platform Specifics
+* **Unified ONTAP**: POST and DELETE must be used to manage the iSCSI service for access to the iSCSI protocol.
+* **ASA r2**: POST and DELETE are not supported. The iSCSI service is automatically created and deleted with the SVM.
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the iSCSI service.
 ### Related ONTAP commands
@@ -1518,8 +1941,8 @@ func (a *Client) IscsiServiceCreate(params *IscsiServiceCreateParams, authInfo r
 		ID:                 "iscsi_service_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/san/iscsi/services",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IscsiServiceCreateReader{formats: a.formats},
@@ -1547,6 +1970,9 @@ func (a *Client) IscsiServiceCreate(params *IscsiServiceCreateParams, authInfo r
 /*
 	IscsiServiceDelete Deletes an iSCSI service. An iSCSI service must be disabled before it can be deleted.
 
+### Platform Specifics
+* **Unified ONTAP**: POST and DELETE must be used to manage the iSCSI service for access to the iSCSI protocol.
+* **ASA r2**: POST and DELETE are not supported. The iSCSI service is automatically created and deleted with the SVM.
 ### Related ONTAP commands
 * `vserver iscsi delete`
 ### Learn more
@@ -1561,8 +1987,8 @@ func (a *Client) IscsiServiceDelete(params *IscsiServiceDeleteParams, authInfo r
 		ID:                 "iscsi_service_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/san/iscsi/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IscsiServiceDeleteReader{formats: a.formats},
@@ -1588,6 +2014,44 @@ func (a *Client) IscsiServiceDelete(params *IscsiServiceDeleteParams, authInfo r
 }
 
 /*
+IscsiServiceDeleteCollection iscsi service delete collection API
+*/
+func (a *Client) IscsiServiceDeleteCollection(params *IscsiServiceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiServiceDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIscsiServiceDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "iscsi_service_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/san/iscsi/services",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IscsiServiceDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IscsiServiceDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IscsiServiceDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	IscsiServiceGet Retrieves an iSCSI service.
 
 ### Related ONTAP commands
@@ -1604,8 +2068,8 @@ func (a *Client) IscsiServiceGet(params *IscsiServiceGetParams, authInfo runtime
 		ID:                 "iscsi_service_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/iscsi/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IscsiServiceGetReader{formats: a.formats},
@@ -1649,8 +2113,8 @@ func (a *Client) IscsiServiceModify(params *IscsiServiceModifyParams, authInfo r
 		ID:                 "iscsi_service_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/san/iscsi/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IscsiServiceModifyReader{formats: a.formats},
@@ -1676,6 +2140,44 @@ func (a *Client) IscsiServiceModify(params *IscsiServiceModifyParams, authInfo r
 }
 
 /*
+IscsiServiceModifyCollection iscsi service modify collection API
+*/
+func (a *Client) IscsiServiceModifyCollection(params *IscsiServiceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiServiceModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIscsiServiceModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "iscsi_service_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/san/iscsi/services",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IscsiServiceModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IscsiServiceModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IscsiServiceModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	IscsiSessionCollectionGet Retrieves iSCSI sessions.
 
 ### Related ONTAP commands
@@ -1694,8 +2196,8 @@ func (a *Client) IscsiSessionCollectionGet(params *IscsiSessionCollectionGetPara
 		ID:                 "iscsi_session_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/iscsi/sessions",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IscsiSessionCollectionGetReader{formats: a.formats},
@@ -1739,8 +2241,8 @@ func (a *Client) IscsiSessionGet(params *IscsiSessionGetParams, authInfo runtime
 		ID:                 "iscsi_session_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/iscsi/sessions/{svm.uuid}/{tpgroup}/{tsih}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &IscsiSessionGetReader{formats: a.formats},
@@ -1780,8 +2282,8 @@ func (a *Client) LunAttributeCollectionGet(params *LunAttributeCollectionGetPara
 		ID:                 "lun_attribute_collection_get",
 		Method:             "GET",
 		PathPattern:        "/storage/luns/{lun.uuid}/attributes",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunAttributeCollectionGetReader{formats: a.formats},
@@ -1815,7 +2317,7 @@ func (a *Client) LunAttributeCollectionGet(params *LunAttributeCollectionGetPara
 ### Learn more
 * [`DOC /storage/luns/{lun.uuid}/attributes`](#docs-SAN-storage_luns_{lun.uuid}_attributes)
 */
-func (a *Client) LunAttributeCreate(params *LunAttributeCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeCreateCreated, error) {
+func (a *Client) LunAttributeCreate(params *LunAttributeCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeCreateCreated, *LunAttributeCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewLunAttributeCreateParams()
@@ -1824,8 +2326,8 @@ func (a *Client) LunAttributeCreate(params *LunAttributeCreateParams, authInfo r
 		ID:                 "lun_attribute_create",
 		Method:             "POST",
 		PathPattern:        "/storage/luns/{lun.uuid}/attributes",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunAttributeCreateReader{formats: a.formats},
@@ -1839,15 +2341,17 @@ func (a *Client) LunAttributeCreate(params *LunAttributeCreateParams, authInfo r
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*LunAttributeCreateCreated)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *LunAttributeCreateCreated:
+		return value, nil, nil
+	case *LunAttributeCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*LunAttributeCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1865,8 +2369,8 @@ func (a *Client) LunAttributeDelete(params *LunAttributeDeleteParams, authInfo r
 		ID:                 "lun_attribute_delete",
 		Method:             "DELETE",
 		PathPattern:        "/storage/luns/{lun.uuid}/attributes/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunAttributeDeleteReader{formats: a.formats},
@@ -1892,6 +2396,44 @@ func (a *Client) LunAttributeDelete(params *LunAttributeDeleteParams, authInfo r
 }
 
 /*
+LunAttributeDeleteCollection lun attribute delete collection API
+*/
+func (a *Client) LunAttributeDeleteCollection(params *LunAttributeDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunAttributeDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_attribute_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/storage/luns/{lun.uuid}/attributes",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunAttributeDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LunAttributeDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunAttributeDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	LunAttributeGet Retrieves a LUN attribute.
 
 ### Learn more
@@ -1906,8 +2448,8 @@ func (a *Client) LunAttributeGet(params *LunAttributeGetParams, authInfo runtime
 		ID:                 "lun_attribute_get",
 		Method:             "GET",
 		PathPattern:        "/storage/luns/{lun.uuid}/attributes/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunAttributeGetReader{formats: a.formats},
@@ -1947,8 +2489,8 @@ func (a *Client) LunAttributeModify(params *LunAttributeModifyParams, authInfo r
 		ID:                 "lun_attribute_modify",
 		Method:             "PATCH",
 		PathPattern:        "/storage/luns/{lun.uuid}/attributes/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunAttributeModifyReader{formats: a.formats},
@@ -1974,6 +2516,44 @@ func (a *Client) LunAttributeModify(params *LunAttributeModifyParams, authInfo r
 }
 
 /*
+LunAttributeModifyCollection lun attribute modify collection API
+*/
+func (a *Client) LunAttributeModifyCollection(params *LunAttributeModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunAttributeModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_attribute_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/storage/luns/{lun.uuid}/attributes",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunAttributeModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LunAttributeModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunAttributeModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	LunCollectionGet Retrieves LUNs.
 
 ### Expensive properties
@@ -1983,6 +2563,9 @@ There is an added computational cost to retrieving values for these properties. 
 * `copy.*`
 * `lun_maps.*`
 * `movement.*`
+* `space.physical_used`
+* `space.physical_used_by_snapshots`
+* `space.efficiency_ratio`
 * `statistics.*`
 * `vvol.bindings.*`
 * `metric.*`
@@ -2005,8 +2588,8 @@ func (a *Client) LunCollectionGet(params *LunCollectionGetParams, authInfo runti
 		ID:                 "lun_collection_get",
 		Method:             "GET",
 		PathPattern:        "/storage/luns",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunCollectionGetReader{formats: a.formats},
@@ -2032,44 +2615,6 @@ func (a *Client) LunCollectionGet(params *LunCollectionGetParams, authInfo runti
 }
 
 /*
-LunCollectionPerformanceMetricsGet Retrieves historical performance metrics for a LUN.
-*/
-func (a *Client) LunCollectionPerformanceMetricsGet(params *LunCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunCollectionPerformanceMetricsGetOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewLunCollectionPerformanceMetricsGetParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "lun_collection_performance_metrics_get",
-		Method:             "GET",
-		PathPattern:        "/storage/luns/{uuid}/metrics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &LunCollectionPerformanceMetricsGetReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*LunCollectionPerformanceMetricsGetOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*LunCollectionPerformanceMetricsGetDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
 	LunCreate Creates a LUN.
 
 ### Required properties
@@ -2089,10 +2634,13 @@ If not specified in POST, the follow default property values are assigned.
 * `lun copy start`
 * `volume file clone autodelete`
 * `volume file clone create`
+### Platform Specifics
+* **ASA r2**: The `name` property is required when creating a new LUN. The name must start with an alphabetic character (a to z or A to Z) or an underscore (_). The name must be 203 characters or less in length. The `location` properties are not supported.
+POST is asynchronous when creating a new LUN. It is synchronous when converting a namespace to a LUN via the `convert` property.
 ### Learn more
 * [`DOC /storage/luns`](#docs-SAN-storage_luns)
 */
-func (a *Client) LunCreate(params *LunCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunCreateCreated, error) {
+func (a *Client) LunCreate(params *LunCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunCreateCreated, *LunCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewLunCreateParams()
@@ -2101,8 +2649,8 @@ func (a *Client) LunCreate(params *LunCreateParams, authInfo runtime.ClientAuthI
 		ID:                 "lun_create",
 		Method:             "POST",
 		PathPattern:        "/storage/luns",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunCreateReader{formats: a.formats},
@@ -2116,15 +2664,17 @@ func (a *Client) LunCreate(params *LunCreateParams, authInfo runtime.ClientAuthI
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*LunCreateCreated)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *LunCreateCreated:
+		return value, nil, nil
+	case *LunCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*LunCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -2133,10 +2683,12 @@ func (a *Client) LunCreate(params *LunCreateParams, authInfo runtime.ClientAuthI
 ### Related ONTAP commands
 * `lun copy cancel`
 * `lun delete`
+### Platform Specifics
+* **ASA r2**: DELETE is asynchronous.
 ### Learn more
 * [`DOC /storage/luns`](#docs-SAN-storage_luns)
 */
-func (a *Client) LunDelete(params *LunDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunDeleteOK, error) {
+func (a *Client) LunDelete(params *LunDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunDeleteOK, *LunDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewLunDeleteParams()
@@ -2145,8 +2697,8 @@ func (a *Client) LunDelete(params *LunDeleteParams, authInfo runtime.ClientAuthI
 		ID:                 "lun_delete",
 		Method:             "DELETE",
 		PathPattern:        "/storage/luns/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunDeleteReader{formats: a.formats},
@@ -2160,15 +2712,228 @@ func (a *Client) LunDelete(params *LunDeleteParams, authInfo runtime.ClientAuthI
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *LunDeleteOK:
+		return value, nil, nil
+	case *LunDeleteAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunDeleteDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+LunDeleteCollection lun delete collection API
+*/
+func (a *Client) LunDeleteCollection(params *LunDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunDeleteCollectionOK, *LunDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/storage/luns",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *LunDeleteCollectionOK:
+		return value, nil, nil
+	case *LunDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	LunFormDataDelete Deletes a LUN.
+
+### Related ONTAP commands
+* `lun copy cancel`
+* `lun delete`
+### Platform Specifics
+* **ASA r2**: DELETE is asynchronous.
+### Learn more
+* [`DOC /storage/luns`](#docs-SAN-storage_luns)
+*/
+func (a *Client) LunFormDataDelete(params *LunFormDataDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunFormDataDeleteOK, *LunFormDataDeleteAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunFormDataDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_form_data_delete",
+		Method:             "DELETE",
+		PathPattern:        "//storage/luns/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunFormDataDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *LunFormDataDeleteOK:
+		return value, nil, nil
+	case *LunFormDataDeleteAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunFormDataDeleteDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	LunFormDataGet Retrieves a LUN's properties or a LUN's data.<br/>
+
+LUN data read requests are distinguished by the header entry `Accept: multipart/form-data`. When this header entry is provided, query parameters `data.offset` and `data.size` are required and used to specify the portion of the LUN's data to read; no other query parameters are allowed. Reads are limited to one megabyte (1MB) per request. Data is returned as `multipart/form-data` content with exactly one form entry containing the data. The form entry has content type `application/octet-stream`.
+### Expensive properties
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `attributes.*`
+* `auto_delete`
+* `copy.*`
+* `lun_maps.*`
+* `movement.*`
+* `space.physical_used`
+* `space.physical_used_by_snapshots`
+* `space.efficiency_ratio`
+* `statistics.*`
+* `vvol.bindings.*`
+* `metric.*`
+### Related ONTAP commands
+* `lun bind show`
+* `lun copy show`
+* `lun mapping show`
+* `lun move show`
+* `lun show`
+* `volume file clone show-autodelete`
+### Learn more
+* [`DOC /storage/luns`](#docs-SAN-storage_luns)
+*/
+func (a *Client) LunFormDataGet(params *LunFormDataGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunFormDataGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunFormDataGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_form_data_get",
+		Method:             "GET",
+		PathPattern:        "//storage/luns/{uuid}",
+		ProducesMediaTypes: []string{"multipart/form-data"},
+		ConsumesMediaTypes: []string{"multipart/form-data"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunFormDataGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*LunDeleteOK)
+	success, ok := result.(*LunFormDataGetOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*LunDeleteDefault)
+	unexpectedSuccess := result.(*LunFormDataGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	LunFormDataModify Updates an existing LUN in one of several ways:
+
+- Updates the properties of a LUN.
+- Writes data to a LUN. LUN data write requests are distinguished by the header entry `Content-Type: multipart/form-data`. When this header entry is provided, query parameter `data.offset` is required and used to specify the location within the LUN at which to write the data; no other query parameters are allowed. The request body must be `multipart/form-data` content with exactly one form entry containing the data to write. The content type entry of the form data is ignored and always treated as `application/octet-stream`. Writes are limited to one megabyte (1MB) per request.
+- Overwrites the contents of a LUN as a clone of another.
+- Begins the movement of a LUN between volumes. PATCH can also pause and resume the movement of a LUN between volumes that is already in active.
+### Related ONTAP commands
+* `lun copy modify`
+* `lun copy pause`
+* `lun copy resume`
+* `lun modify`
+* `lun move-in-volume`
+* `lun move modify`
+* `lun move pause`
+* `lun move resume`
+* `lun move start`
+* `lun resize`
+* `volume file clone autodelete`
+### Platform Specifics
+* **ASA r2**: PATCH is asynchronous when modifying `name` or `qos_policy`.
+### Learn more
+* [`DOC /storage/luns`](#docs-SAN-storage_luns)
+*/
+func (a *Client) LunFormDataModify(params *LunFormDataModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunFormDataModifyOK, *LunFormDataModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunFormDataModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_form_data_modify",
+		Method:             "PATCH",
+		PathPattern:        "//storage/luns/{uuid}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"multipart/form-data"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunFormDataModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *LunFormDataModifyOK:
+		return value, nil, nil
+	case *LunFormDataModifyAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunFormDataModifyDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -2182,6 +2947,9 @@ There is an added computational cost to retrieving values for these properties. 
 * `copy.*`
 * `lun_maps.*`
 * `movement.*`
+* `space.physical_used`
+* `space.physical_used_by_snapshots`
+* `space.efficiency_ratio`
 * `statistics.*`
 * `vvol.bindings.*`
 * `metric.*`
@@ -2204,8 +2972,8 @@ func (a *Client) LunGet(params *LunGetParams, authInfo runtime.ClientAuthInfoWri
 		ID:                 "lun_get",
 		Method:             "GET",
 		PathPattern:        "/storage/luns/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json", "multipart/form-data"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json", "multipart/form-data"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunGetReader{formats: a.formats},
@@ -2247,8 +3015,8 @@ func (a *Client) LunMapCollectionGet(params *LunMapCollectionGetParams, authInfo
 		ID:                 "lun_map_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/lun-maps",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunMapCollectionGetReader{formats: a.formats},
@@ -2297,8 +3065,8 @@ func (a *Client) LunMapCreate(params *LunMapCreateParams, authInfo runtime.Clien
 		ID:                 "lun_map_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/san/lun-maps",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunMapCreateReader{formats: a.formats},
@@ -2340,8 +3108,8 @@ func (a *Client) LunMapDelete(params *LunMapDeleteParams, authInfo runtime.Clien
 		ID:                 "lun_map_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunMapDeleteReader{formats: a.formats},
@@ -2367,6 +3135,44 @@ func (a *Client) LunMapDelete(params *LunMapDeleteParams, authInfo runtime.Clien
 }
 
 /*
+LunMapDeleteCollection lun map delete collection API
+*/
+func (a *Client) LunMapDeleteCollection(params *LunMapDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunMapDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_map_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/san/lun-maps",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunMapDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LunMapDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunMapDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	LunMapGet Retrieves a LUN map.
 
 ### Related ONTAP commands
@@ -2383,8 +3189,8 @@ func (a *Client) LunMapGet(params *LunMapGetParams, authInfo runtime.ClientAuthI
 		ID:                 "lun_map_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunMapGetReader{formats: a.formats},
@@ -2426,8 +3232,8 @@ func (a *Client) LunMapReportingNodeCollectionGet(params *LunMapReportingNodeCol
 		ID:                 "lun_map_reporting_node_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunMapReportingNodeCollectionGetReader{formats: a.formats},
@@ -2471,8 +3277,8 @@ func (a *Client) LunMapReportingNodeCreate(params *LunMapReportingNodeCreatePara
 		ID:                 "lun_map_reporting_node_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunMapReportingNodeCreateReader{formats: a.formats},
@@ -2514,8 +3320,8 @@ func (a *Client) LunMapReportingNodeDelete(params *LunMapReportingNodeDeletePara
 		ID:                 "lun_map_reporting_node_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunMapReportingNodeDeleteReader{formats: a.formats},
@@ -2541,6 +3347,44 @@ func (a *Client) LunMapReportingNodeDelete(params *LunMapReportingNodeDeletePara
 }
 
 /*
+LunMapReportingNodeDeleteCollection lun map reporting node delete collection API
+*/
+func (a *Client) LunMapReportingNodeDeleteCollection(params *LunMapReportingNodeDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunMapReportingNodeDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_map_reporting_node_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunMapReportingNodeDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LunMapReportingNodeDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunMapReportingNodeDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	LunMapReportingNodeGet Retrieves a LUN map reporting node.
 
 ### Related ONTAP commands
@@ -2557,8 +3401,8 @@ func (a *Client) LunMapReportingNodeGet(params *LunMapReportingNodeGetParams, au
 		ID:                 "lun_map_reporting_node_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunMapReportingNodeGetReader{formats: a.formats},
@@ -2602,10 +3446,12 @@ func (a *Client) LunMapReportingNodeGet(params *LunMapReportingNodeGetParams, au
 * `lun move start`
 * `lun resize`
 * `volume file clone autodelete`
+### Platform Specifics
+* **ASA r2**: PATCH is asynchronous when modifying `name` or `qos_policy`.
 ### Learn more
 * [`DOC /storage/luns`](#docs-SAN-storage_luns)
 */
-func (a *Client) LunModify(params *LunModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunModifyOK, error) {
+func (a *Client) LunModify(params *LunModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunModifyOK, *LunModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewLunModifyParams()
@@ -2614,7 +3460,7 @@ func (a *Client) LunModify(params *LunModifyParams, authInfo runtime.ClientAuthI
 		ID:                 "lun_modify",
 		Method:             "PATCH",
 		PathPattern:        "/storage/luns/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
 		ConsumesMediaTypes: []string{"application/json", "multipart/form-data"},
 		Schemes:            []string{"https"},
 		Params:             params,
@@ -2629,14 +3475,284 @@ func (a *Client) LunModify(params *LunModifyParams, authInfo runtime.ClientAuthI
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *LunModifyOK:
+		return value, nil, nil
+	case *LunModifyAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunModifyDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+LunModifyCollection lun modify collection API
+*/
+func (a *Client) LunModifyCollection(params *LunModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunModifyCollectionOK, *LunModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/storage/luns",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "multipart/form-data"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *LunModifyCollectionOK:
+		return value, nil, nil
+	case *LunModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+PerformanceFcpMetricCollectionGet Retrieves historical performance metrics for the FC Protocol service of an SVM.
+*/
+func (a *Client) PerformanceFcpMetricCollectionGet(params *PerformanceFcpMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcpMetricCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPerformanceFcpMetricCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "performance_fcp_metric_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/san/fcp/services/{svm.uuid}/metrics",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PerformanceFcpMetricCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*LunModifyOK)
+	success, ok := result.(*PerformanceFcpMetricCollectionGetOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*LunModifyDefault)
+	unexpectedSuccess := result.(*PerformanceFcpMetricCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+PerformanceFcpMetricGet Retrieves historical performance metrics for the FC Protocol service of an SVM for a specific time.
+*/
+func (a *Client) PerformanceFcpMetricGet(params *PerformanceFcpMetricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcpMetricGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPerformanceFcpMetricGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "performance_fcp_metric_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/san/fcp/services/{svm.uuid}/metrics/{timestamp}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PerformanceFcpMetricGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PerformanceFcpMetricGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PerformanceFcpMetricGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+PerformanceIscsiMetricCollectionGet Retrieves historical performance metrics for the iSCSI protocol service of an SVM.
+*/
+func (a *Client) PerformanceIscsiMetricCollectionGet(params *PerformanceIscsiMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceIscsiMetricCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPerformanceIscsiMetricCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "performance_iscsi_metric_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/san/iscsi/services/{svm.uuid}/metrics",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PerformanceIscsiMetricCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PerformanceIscsiMetricCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PerformanceIscsiMetricCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+PerformanceIscsiMetricGet Retrieves historical performance metrics for the iSCSI protocol service of an SVM for a specific time.
+*/
+func (a *Client) PerformanceIscsiMetricGet(params *PerformanceIscsiMetricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceIscsiMetricGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPerformanceIscsiMetricGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "performance_iscsi_metric_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/san/iscsi/services/{svm.uuid}/metrics/{timestamp}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PerformanceIscsiMetricGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PerformanceIscsiMetricGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PerformanceIscsiMetricGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+PerformanceLunMetricCollectionGet Retrieves historical performance metrics for a LUN.
+*/
+func (a *Client) PerformanceLunMetricCollectionGet(params *PerformanceLunMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceLunMetricCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPerformanceLunMetricCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "performance_lun_metric_collection_get",
+		Method:             "GET",
+		PathPattern:        "/storage/luns/{lun.uuid}/metrics",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PerformanceLunMetricCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PerformanceLunMetricCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PerformanceLunMetricCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+PerformanceLunMetricGet Retrieves historical performance metrics for a LUN for a specific time.
+*/
+func (a *Client) PerformanceLunMetricGet(params *PerformanceLunMetricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceLunMetricGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPerformanceLunMetricGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "performance_lun_metric_get",
+		Method:             "GET",
+		PathPattern:        "/storage/luns/{lun.uuid}/metrics/{timestamp}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PerformanceLunMetricGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PerformanceLunMetricGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PerformanceLunMetricGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -2657,8 +3773,8 @@ func (a *Client) PortsetCollectionGet(params *PortsetCollectionGetParams, authIn
 		ID:                 "portset_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/portsets",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PortsetCollectionGetReader{formats: a.formats},
@@ -2709,8 +3825,8 @@ func (a *Client) PortsetCreate(params *PortsetCreateParams, authInfo runtime.Cli
 		ID:                 "portset_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/san/portsets",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PortsetCreateReader{formats: a.formats},
@@ -2752,8 +3868,8 @@ func (a *Client) PortsetDelete(params *PortsetDeleteParams, authInfo runtime.Cli
 		ID:                 "portset_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/san/portsets/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PortsetDeleteReader{formats: a.formats},
@@ -2779,6 +3895,44 @@ func (a *Client) PortsetDelete(params *PortsetDeleteParams, authInfo runtime.Cli
 }
 
 /*
+PortsetDeleteCollection portset delete collection API
+*/
+func (a *Client) PortsetDeleteCollection(params *PortsetDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPortsetDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "portset_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/san/portsets",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PortsetDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PortsetDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PortsetDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	PortsetGet Retrieves a portset.
 
 ### Related ONTAP commands
@@ -2795,8 +3949,8 @@ func (a *Client) PortsetGet(params *PortsetGetParams, authInfo runtime.ClientAut
 		ID:                 "portset_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/portsets/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PortsetGetReader{formats: a.formats},
@@ -2838,8 +3992,8 @@ func (a *Client) PortsetInterfaceCollectionGet(params *PortsetInterfaceCollectio
 		ID:                 "portset_interface_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/portsets/{portset.uuid}/interfaces",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PortsetInterfaceCollectionGetReader{formats: a.formats},
@@ -2883,8 +4037,8 @@ func (a *Client) PortsetInterfaceCreate(params *PortsetInterfaceCreateParams, au
 		ID:                 "portset_interface_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/san/portsets/{portset.uuid}/interfaces",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PortsetInterfaceCreateReader{formats: a.formats},
@@ -2926,8 +4080,8 @@ func (a *Client) PortsetInterfaceDelete(params *PortsetInterfaceDeleteParams, au
 		ID:                 "portset_interface_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/san/portsets/{portset.uuid}/interfaces/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PortsetInterfaceDeleteReader{formats: a.formats},
@@ -2953,6 +4107,44 @@ func (a *Client) PortsetInterfaceDelete(params *PortsetInterfaceDeleteParams, au
 }
 
 /*
+PortsetInterfaceDeleteCollection portset interface delete collection API
+*/
+func (a *Client) PortsetInterfaceDeleteCollection(params *PortsetInterfaceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPortsetInterfaceDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "portset_interface_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/san/portsets/{portset.uuid}/interfaces",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PortsetInterfaceDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PortsetInterfaceDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PortsetInterfaceDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	PortsetInterfaceGet Retrieves a network interface of a portset.
 
 ### Related ONTAP commands
@@ -2969,8 +4161,8 @@ func (a *Client) PortsetInterfaceGet(params *PortsetInterfaceGetParams, authInfo
 		ID:                 "portset_interface_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/portsets/{portset.uuid}/interfaces/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PortsetInterfaceGetReader{formats: a.formats},
@@ -2996,6 +4188,554 @@ func (a *Client) PortsetInterfaceGet(params *PortsetInterfaceGetParams, authInfo
 }
 
 /*
+	StorageUnitCollectionGet Retrieves storage units.
+
+### Expensive properties
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `statistics.*`
+* `metric.*`
+* `maps.*`
+* `space.physical_used`
+* `space.physical_used_by_snapshots`
+* `clone.source.snapshot.name`
+* `clone.source.snapshot.uuid`
+* `clone.split_complete_percent`
+* `clone.split_estimate`
+* `clone.split_initiated`
+* `clone.match_source_storage_tier`
+* `clone.inherited_physical_used`
+* `clone.inherited_savings`
+### Learn more
+* [`DOC /storage/storage-units`](#docs-SAN-storage_storage-units)
+*/
+func (a *Client) StorageUnitCollectionGet(params *StorageUnitCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_collection_get",
+		Method:             "GET",
+		PathPattern:        "/storage/storage-units",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StorageUnitCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	StorageUnitCreate Creates a storage unit.<br/>
+
+A storage unit can only be directly created as a clone of an existing storage unit. To create a new storage unit that is not a clone of another, use /api/storage/luns or /api/storage/namespaces.
+### Required properties
+* `svm.uuid` or `svm.name` - Existing SVM in which to create the storage unit.
+* `name` - The name of the storage unit.
+* `clone` - Identifiers of the parent storage unit or storage unit snapshot from which to clone a new storage unit.
+### Learn more
+* [`DOC /storage/storage-units`](#docs-SAN-storage_storage-units)
+*/
+func (a *Client) StorageUnitCreate(params *StorageUnitCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitCreateCreated, *StorageUnitCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_create",
+		Method:             "POST",
+		PathPattern:        "/storage/storage-units",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *StorageUnitCreateCreated:
+		return value, nil, nil
+	case *StorageUnitCreateAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitCreateDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	StorageUnitGet Retrieves a storage unit's properties.<br/>
+
+### Expensive properties
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `statistics.*`
+* `metric.*`
+* `maps.*`
+* `space.physical_used`
+* `space.physical_used_by_snapshots`
+* `clone.source.snapshot.name`
+* `clone.source.snapshot.uuid`
+* `clone.split_complete_percent`
+* `clone.split_estimate`
+* `clone.split_initiated`
+* `clone.match_source_storage_tier`
+* `clone.inherited_physical_used`
+* `clone.inherited_savings`
+### Learn more
+* [`DOC /storage/storage-units`](#docs-SAN-storage_storage-units)
+*/
+func (a *Client) StorageUnitGet(params *StorageUnitGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_get",
+		Method:             "GET",
+		PathPattern:        "/storage/storage-units/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StorageUnitGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	StorageUnitModify Modify an existing storage unit.<br/>
+
+Storage unit modification supports the following:
+* `restore_to` - Restores the storage unit to a prior snapshot. These properties are specified in the query.
+* `clone.split_initiated` - Initiates a clone split operation.
+### Learn more
+* [`DOC /storage/storage-units`](#docs-SAN-storage_storage-units)
+*/
+func (a *Client) StorageUnitModify(params *StorageUnitModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitModifyOK, *StorageUnitModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_modify",
+		Method:             "PATCH",
+		PathPattern:        "/storage/storage-units/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *StorageUnitModifyOK:
+		return value, nil, nil
+	case *StorageUnitModifyAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitModifyDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+StorageUnitModifyCollection storage unit modify collection API
+*/
+func (a *Client) StorageUnitModifyCollection(params *StorageUnitModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitModifyCollectionOK, *StorageUnitModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/storage/storage-units",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *StorageUnitModifyCollectionOK:
+		return value, nil, nil
+	case *StorageUnitModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	StorageUnitSnapshotCollectionGet Retrieves the collection of volume snapshots.
+
+### Expensive properties
+There is an added computational cost to retrieving the amount of reclaimable space for snapshots, as the calculation is done on demand based on the list of snapshots provided.
+* `reclaimable_space`
+* `delta`
+### Learn more
+* [`DOC /storage/storage-units/{storage_unit.uuid}/snapshots`](#docs-SAN-storage_storage-units_{storage_unit.uuid}_snapshots)
+*/
+func (a *Client) StorageUnitSnapshotCollectionGet(params *StorageUnitSnapshotCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitSnapshotCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitSnapshotCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_snapshot_collection_get",
+		Method:             "GET",
+		PathPattern:        "/storage/storage-units/{storage_unit.uuid}/snapshots",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitSnapshotCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StorageUnitSnapshotCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitSnapshotCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	StorageUnitSnapshotCreate Creates a storage unit snapshot.
+
+### Required properties
+* `name` - Name of the snapshot to be created.
+### Recommended optional properties
+* `comment` - Comment associated with the snapshot.
+* `expiry_time` - Snapshots with an expiry time set are not allowed to be deleted until the retention time is reached.
+* `snapmirror_label` - Label for SnapMirror operations.
+* `snaplock_expiry_time` - Expiry time for snapshot locking enabled volumes.
+### Learn more
+* [`DOC /storage/storage-units/{storage_unit.uuid}/snapshots`](#docs-SAN-storage_storage-units_{storage_unit.uuid}_snapshots)
+*/
+func (a *Client) StorageUnitSnapshotCreate(params *StorageUnitSnapshotCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitSnapshotCreateCreated, *StorageUnitSnapshotCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitSnapshotCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_snapshot_create",
+		Method:             "POST",
+		PathPattern:        "/storage/storage-units/{storage_unit.uuid}/snapshots",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitSnapshotCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *StorageUnitSnapshotCreateCreated:
+		return value, nil, nil
+	case *StorageUnitSnapshotCreateAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitSnapshotCreateDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	StorageUnitSnapshotDelete Deletes a storage unit snapshot.
+
+### Learn more
+* [`DOC /storage/storage-units/{storage_unit.uuid}/snapshots`](#docs-SAN-storage_storage-units_{storage_unit.uuid}_snapshots)
+*/
+func (a *Client) StorageUnitSnapshotDelete(params *StorageUnitSnapshotDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitSnapshotDeleteOK, *StorageUnitSnapshotDeleteAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitSnapshotDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_snapshot_delete",
+		Method:             "DELETE",
+		PathPattern:        "/storage/storage-units/{storage_unit.uuid}/snapshots/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitSnapshotDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *StorageUnitSnapshotDeleteOK:
+		return value, nil, nil
+	case *StorageUnitSnapshotDeleteAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitSnapshotDeleteDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+StorageUnitSnapshotDeleteCollection storage unit snapshot delete collection API
+*/
+func (a *Client) StorageUnitSnapshotDeleteCollection(params *StorageUnitSnapshotDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitSnapshotDeleteCollectionOK, *StorageUnitSnapshotDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitSnapshotDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_snapshot_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/storage/storage-units/{storage_unit.uuid}/snapshots",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitSnapshotDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *StorageUnitSnapshotDeleteCollectionOK:
+		return value, nil, nil
+	case *StorageUnitSnapshotDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitSnapshotDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	StorageUnitSnapshotGet Retrieves details of a specific storage unit snapshot.
+
+### Learn more
+* [`DOC /storage/storage-units/{storage_unit.uuid}/snapshots`](#docs-SAN-storage_storage-units_{storage_unit.uuid}_snapshots)
+*/
+func (a *Client) StorageUnitSnapshotGet(params *StorageUnitSnapshotGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitSnapshotGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitSnapshotGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_snapshot_get",
+		Method:             "GET",
+		PathPattern:        "/storage/storage-units/{storage_unit.uuid}/snapshots/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitSnapshotGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StorageUnitSnapshotGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitSnapshotGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	StorageUnitSnapshotModify Updates a storage unit snapshot.
+
+### Learn more
+* [`DOC /storage/storage-units/{storage_unit.uuid}/snapshots`](#docs-SAN-storage_storage-units_{storage_unit.uuid}_snapshots)
+*/
+func (a *Client) StorageUnitSnapshotModify(params *StorageUnitSnapshotModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitSnapshotModifyOK, *StorageUnitSnapshotModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitSnapshotModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_snapshot_modify",
+		Method:             "PATCH",
+		PathPattern:        "/storage/storage-units/{storage_unit.uuid}/snapshots/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitSnapshotModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *StorageUnitSnapshotModifyOK:
+		return value, nil, nil
+	case *StorageUnitSnapshotModifyAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitSnapshotModifyDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+StorageUnitSnapshotModifyCollection storage unit snapshot modify collection API
+*/
+func (a *Client) StorageUnitSnapshotModifyCollection(params *StorageUnitSnapshotModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitSnapshotModifyCollectionOK, *StorageUnitSnapshotModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitSnapshotModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_snapshot_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/storage/storage-units/{storage_unit.uuid}/snapshots",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitSnapshotModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *StorageUnitSnapshotModifyCollectionOK:
+		return value, nil, nil
+	case *StorageUnitSnapshotModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitSnapshotModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	VvolBindingCollectionGet Retrieves vVol bindings.
 
 ### Related ONTAP commands
@@ -3011,8 +4751,8 @@ func (a *Client) VvolBindingCollectionGet(params *VvolBindingCollectionGetParams
 		ID:                 "vvol_binding_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/vvol-bindings",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VvolBindingCollectionGetReader{formats: a.formats},
@@ -3058,8 +4798,8 @@ func (a *Client) VvolBindingCreate(params *VvolBindingCreateParams, authInfo run
 		ID:                 "vvol_binding_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/san/vvol-bindings",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VvolBindingCreateReader{formats: a.formats},
@@ -3101,8 +4841,8 @@ func (a *Client) VvolBindingDelete(params *VvolBindingDeleteParams, authInfo run
 		ID:                 "vvol_binding_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VvolBindingDeleteReader{formats: a.formats},
@@ -3128,6 +4868,44 @@ func (a *Client) VvolBindingDelete(params *VvolBindingDeleteParams, authInfo run
 }
 
 /*
+VvolBindingDeleteCollection vvol binding delete collection API
+*/
+func (a *Client) VvolBindingDeleteCollection(params *VvolBindingDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewVvolBindingDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "vvol_binding_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/san/vvol-bindings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &VvolBindingDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*VvolBindingDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*VvolBindingDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	VvolBindingGet Retrieves a vVol binding.
 
 ### Related ONTAP commands
@@ -3144,8 +4922,8 @@ func (a *Client) VvolBindingGet(params *VvolBindingGetParams, authInfo runtime.C
 		ID:                 "vvol_binding_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VvolBindingGetReader{formats: a.formats},
@@ -3187,8 +4965,8 @@ func (a *Client) WwpnAliasCollectionGet(params *WwpnAliasCollectionGetParams, au
 		ID:                 "wwpn_alias_collection_get",
 		Method:             "GET",
 		PathPattern:        "/network/fc/wwpn-aliases",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &WwpnAliasCollectionGetReader{formats: a.formats},
@@ -3234,8 +5012,8 @@ func (a *Client) WwpnAliasCreate(params *WwpnAliasCreateParams, authInfo runtime
 		ID:                 "wwpn_alias_create",
 		Method:             "POST",
 		PathPattern:        "/network/fc/wwpn-aliases",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &WwpnAliasCreateReader{formats: a.formats},
@@ -3277,8 +5055,8 @@ func (a *Client) WwpnAliasDelete(params *WwpnAliasDeleteParams, authInfo runtime
 		ID:                 "wwpn_alias_delete",
 		Method:             "DELETE",
 		PathPattern:        "/network/fc/wwpn-aliases/{svm.uuid}/{alias}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &WwpnAliasDeleteReader{formats: a.formats},
@@ -3304,6 +5082,44 @@ func (a *Client) WwpnAliasDelete(params *WwpnAliasDeleteParams, authInfo runtime
 }
 
 /*
+WwpnAliasDeleteCollection wwpn alias delete collection API
+*/
+func (a *Client) WwpnAliasDeleteCollection(params *WwpnAliasDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WwpnAliasDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewWwpnAliasDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "wwpn_alias_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/network/fc/wwpn-aliases",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &WwpnAliasDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*WwpnAliasDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*WwpnAliasDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	WwpnAliasGet Retrieves an FC WWPN alias.
 
 ### Related ONTAP commands
@@ -3320,8 +5136,8 @@ func (a *Client) WwpnAliasGet(params *WwpnAliasGetParams, authInfo runtime.Clien
 		ID:                 "wwpn_alias_get",
 		Method:             "GET",
 		PathPattern:        "/network/fc/wwpn-aliases/{svm.uuid}/{alias}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &WwpnAliasGetReader{formats: a.formats},

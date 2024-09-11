@@ -41,7 +41,8 @@ type LocalHost struct {
 	Owner *LocalHostInlineOwner `json:"owner,omitempty"`
 
 	// Scope of the entity. Set to "cluster" for cluster owned objects and to "svm" for SVM owned objects.
-	// Enum: [cluster svm]
+	// Read Only: true
+	// Enum: ["cluster","svm"]
 	Scope *string `json:"scope,omitempty"`
 }
 
@@ -189,6 +190,10 @@ func (m *LocalHost) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateScope(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -218,6 +223,15 @@ func (m *LocalHost) contextValidateOwner(ctx context.Context, formats strfmt.Reg
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *LocalHost) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "scope", "body", m.Scope); err != nil {
+		return err
 	}
 
 	return nil
@@ -327,7 +341,7 @@ func (m *LocalHostInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LocalHostInlineOwner local host inline owner
+// LocalHostInlineOwner SVM, applies only to SVM-scoped objects.
 //
 // swagger:model local_host_inline_owner
 type LocalHostInlineOwner struct {
@@ -335,12 +349,12 @@ type LocalHostInlineOwner struct {
 	// links
 	Links *LocalHostInlineOwnerInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

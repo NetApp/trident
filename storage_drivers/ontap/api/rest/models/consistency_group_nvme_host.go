@@ -7,9 +7,12 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // ConsistencyGroupNvmeHost The NVMe host provisioned to access NVMe namespaces mapped to a subsystem.
@@ -17,19 +20,178 @@ import (
 // swagger:model consistency_group_nvme_host
 type ConsistencyGroupNvmeHost struct {
 
-	// The NVMe qualified name (NQN) used to identify the NVMe storage target. Not allowed in POST when the `records` property is used.
+	// dh hmac chap
+	DhHmacChap *ConsistencyGroupNvmeHostDhHmacChap `json:"dh_hmac_chap,omitempty"`
+
+	// The NVMe qualified name (NQN) used to identify the NVMe storage target.
 	//
 	// Example: nqn.1992-01.example.com:string
 	Nqn *string `json:"nqn,omitempty"`
+
+	// The host priority setting allocates appropriate NVMe I/O queues (count and depth) for the host to submit I/O commands. Absence of this property in GET implies io_queue count and I/O queue depth are being used.
+	//
+	// Enum: ["regular","high"]
+	Priority *string `json:"priority,omitempty"`
+
+	// tls
+	TLS *ConsistencyGroupNvmeHostInlineTLS `json:"tls,omitempty"`
 }
 
 // Validate validates this consistency group nvme host
 func (m *ConsistencyGroupNvmeHost) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateDhHmacChap(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePriority(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTLS(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this consistency group nvme host based on context it is used
+func (m *ConsistencyGroupNvmeHost) validateDhHmacChap(formats strfmt.Registry) error {
+	if swag.IsZero(m.DhHmacChap) { // not required
+		return nil
+	}
+
+	if m.DhHmacChap != nil {
+		if err := m.DhHmacChap.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("dh_hmac_chap")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var consistencyGroupNvmeHostTypePriorityPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["regular","high"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		consistencyGroupNvmeHostTypePriorityPropEnum = append(consistencyGroupNvmeHostTypePriorityPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// consistency_group_nvme_host
+	// ConsistencyGroupNvmeHost
+	// priority
+	// Priority
+	// regular
+	// END DEBUGGING
+	// ConsistencyGroupNvmeHostPriorityRegular captures enum value "regular"
+	ConsistencyGroupNvmeHostPriorityRegular string = "regular"
+
+	// BEGIN DEBUGGING
+	// consistency_group_nvme_host
+	// ConsistencyGroupNvmeHost
+	// priority
+	// Priority
+	// high
+	// END DEBUGGING
+	// ConsistencyGroupNvmeHostPriorityHigh captures enum value "high"
+	ConsistencyGroupNvmeHostPriorityHigh string = "high"
+)
+
+// prop value enum
+func (m *ConsistencyGroupNvmeHost) validatePriorityEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, consistencyGroupNvmeHostTypePriorityPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupNvmeHost) validatePriority(formats strfmt.Registry) error {
+	if swag.IsZero(m.Priority) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validatePriorityEnum("priority", "body", *m.Priority); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupNvmeHost) validateTLS(formats strfmt.Registry) error {
+	if swag.IsZero(m.TLS) { // not required
+		return nil
+	}
+
+	if m.TLS != nil {
+		if err := m.TLS.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("tls")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this consistency group nvme host based on the context it is used
 func (m *ConsistencyGroupNvmeHost) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDhHmacChap(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTLS(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupNvmeHost) contextValidateDhHmacChap(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.DhHmacChap != nil {
+		if err := m.DhHmacChap.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("dh_hmac_chap")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupNvmeHost) contextValidateTLS(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.TLS != nil {
+		if err := m.TLS.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("tls")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -44,6 +206,124 @@ func (m *ConsistencyGroupNvmeHost) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ConsistencyGroupNvmeHost) UnmarshalBinary(b []byte) error {
 	var res ConsistencyGroupNvmeHost
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupNvmeHostInlineTLS A container for the configuration for NVMe/TCP-TLS transport session for the host.
+//
+// swagger:model consistency_group_nvme_host_inline_tls
+type ConsistencyGroupNvmeHostInlineTLS struct {
+
+	// A user supplied pre-shared key (PSK) value in PSK Interchange Format. Optional in POST.</br>
+	// The values for property `key_type` and property `configured_psk` must logically agree. This property is only allowed when `key_type` is `configured`. If `configured_psk` is supplied and `key_type` is unset, `key_type` defaults to `configured`.</br>
+	// This property is write-only. The `key_type` property can be used to identify if a configured PSK has been set for the host, but the PSK value cannot be read. To change the value, the host must be deleted from the subsystem and re-added.
+	//
+	// Example: NVMeTLSkey-1:01:VRLbtnN9AQb2WXW3c9+wEf/DRLz0QuLdbYvEhwtdWwNf9LrZ:
+	ConfiguredPsk *string `json:"configured_psk,omitempty"`
+
+	// The method by which the TLS pre-shared key (PSK) is configured for the host. Optional in POST.</br>
+	// The values for property `key_type` and property `configured_psk` must logically agree.</br>
+	// Possible values:
+	// - `none` - TLS is not configured for the host connection. No value is allowed for property `configured_psk`.
+	// - `configured` - A user supplied PSK is configured for the NVMe/TCP-TLS transport connection between the host and the NVMe subsystem. A valid value for property `configured_psk` is required.
+	// </br>
+	// This property defaults to `none` unless a value is supplied for `configured_psk` in which case it defaults to `configured`.
+	//
+	// Example: configured
+	// Enum: ["none","configured"]
+	KeyType *string `json:"key_type,omitempty"`
+}
+
+// Validate validates this consistency group nvme host inline tls
+func (m *ConsistencyGroupNvmeHostInlineTLS) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateKeyType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var consistencyGroupNvmeHostInlineTlsTypeKeyTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["none","configured"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		consistencyGroupNvmeHostInlineTlsTypeKeyTypePropEnum = append(consistencyGroupNvmeHostInlineTlsTypeKeyTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// consistency_group_nvme_host_inline_tls
+	// ConsistencyGroupNvmeHostInlineTLS
+	// key_type
+	// KeyType
+	// none
+	// END DEBUGGING
+	// ConsistencyGroupNvmeHostInlineTLSKeyTypeNone captures enum value "none"
+	ConsistencyGroupNvmeHostInlineTLSKeyTypeNone string = "none"
+
+	// BEGIN DEBUGGING
+	// consistency_group_nvme_host_inline_tls
+	// ConsistencyGroupNvmeHostInlineTLS
+	// key_type
+	// KeyType
+	// configured
+	// END DEBUGGING
+	// ConsistencyGroupNvmeHostInlineTLSKeyTypeConfigured captures enum value "configured"
+	ConsistencyGroupNvmeHostInlineTLSKeyTypeConfigured string = "configured"
+)
+
+// prop value enum
+func (m *ConsistencyGroupNvmeHostInlineTLS) validateKeyTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, consistencyGroupNvmeHostInlineTlsTypeKeyTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupNvmeHostInlineTLS) validateKeyType(formats strfmt.Registry) error {
+	if swag.IsZero(m.KeyType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateKeyTypeEnum("tls"+"."+"key_type", "body", *m.KeyType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this consistency group nvme host inline tls based on context it is used
+func (m *ConsistencyGroupNvmeHostInlineTLS) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupNvmeHostInlineTLS) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupNvmeHostInlineTLS) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupNvmeHostInlineTLS
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

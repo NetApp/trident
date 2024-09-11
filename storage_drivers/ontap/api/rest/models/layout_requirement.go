@@ -34,7 +34,7 @@ type LayoutRequirement struct {
 
 	// RAID type.
 	// Read Only: true
-	// Enum: [raid_dp raid_tec raid4 raid0]
+	// Enum: ["raid_dp","raid_tec","raid4","raid0"]
 	RaidType *string `json:"raid_type,omitempty"`
 }
 

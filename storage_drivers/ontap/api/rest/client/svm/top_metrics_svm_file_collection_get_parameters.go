@@ -176,7 +176,7 @@ type TopMetricsSvmFileCollectionGetParams struct {
 
 	/* TopMetric.
 
-	   IO activity type
+	   I/O activity type
 
 	   Default: "iops.read"
 	*/

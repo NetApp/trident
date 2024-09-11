@@ -6,6 +6,7 @@ package ndmp
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NdmpSvmModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ndmp svm modify o k response
+func (o *NdmpSvmModifyOK) Code() int {
+	return 200
+}
+
 func (o *NdmpSvmModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/ndmp/svms/{svm.uuid}][%d] ndmpSvmModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/ndmp/svms/{svm.uuid}][%d] ndmpSvmModifyOK %s", 200, payload)
 }
 
 func (o *NdmpSvmModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/ndmp/svms/{svm.uuid}][%d] ndmpSvmModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/ndmp/svms/{svm.uuid}][%d] ndmpSvmModifyOK %s", 200, payload)
 }
 
 func (o *NdmpSvmModifyOK) GetPayload() *models.NdmpSvm {
@@ -112,17 +120,19 @@ func NewNdmpSvmModifyDefault(code int) *NdmpSvmModifyDefault {
 }
 
 /*
-NdmpSvmModifyDefault describes a response with status code -1, with default header values.
+	NdmpSvmModifyDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response codes
+
+| Error code  |  Description |
+|-------------|--------------|
+| 65601536    | The operation is not supported because NDMP SVM-aware mode is disabled.|
+| 65601551    | Authentication type \"plaintext_sso\" cannot be combined with other authentication types.|
 */
 type NdmpSvmModifyDefault struct {
 	_statusCode int
-}
 
-// Code gets the status code for the ndmp svm modify default response
-func (o *NdmpSvmModifyDefault) Code() int {
-	return o._statusCode
+	Payload *models.ErrorResponse
 }
 
 // IsSuccess returns true when this ndmp svm modify default response has a 2xx status code
@@ -150,15 +160,33 @@ func (o *NdmpSvmModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ndmp svm modify default response
+func (o *NdmpSvmModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NdmpSvmModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/ndmp/svms/{svm.uuid}][%d] ndmp_svm_modify default ", o._statusCode)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/ndmp/svms/{svm.uuid}][%d] ndmp_svm_modify default %s", o._statusCode, payload)
 }
 
 func (o *NdmpSvmModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/ndmp/svms/{svm.uuid}][%d] ndmp_svm_modify default ", o._statusCode)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/ndmp/svms/{svm.uuid}][%d] ndmp_svm_modify default %s", o._statusCode, payload)
+}
+
+func (o *NdmpSvmModifyDefault) GetPayload() *models.ErrorResponse {
+	return o.Payload
 }
 
 func (o *NdmpSvmModifyDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ErrorResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *FpolicyEventsGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fpolicy events get o k response
+func (o *FpolicyEventsGetOK) Code() int {
+	return 200
+}
+
 func (o *FpolicyEventsGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicyEventsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicyEventsGetOK %s", 200, payload)
 }
 
 func (o *FpolicyEventsGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicyEventsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicyEventsGetOK %s", 200, payload)
 }
 
 func (o *FpolicyEventsGetOK) GetPayload() *models.FpolicyEvent {
@@ -122,11 +130,6 @@ type FpolicyEventsGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the fpolicy events get default response
-func (o *FpolicyEventsGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this fpolicy events get default response has a 2xx status code
 func (o *FpolicyEventsGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *FpolicyEventsGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fpolicy events get default response
+func (o *FpolicyEventsGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FpolicyEventsGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicy_events_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicy_events_get default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyEventsGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicy_events_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicy_events_get default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyEventsGetDefault) GetPayload() *models.ErrorResponse {

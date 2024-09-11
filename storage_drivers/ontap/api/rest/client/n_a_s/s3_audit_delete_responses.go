@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type S3AuditDeleteReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *S3AuditDeleteReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewS3AuditDeleteOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewS3AuditDeleteAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -39,6 +46,62 @@ func (o *S3AuditDeleteReader) ReadResponse(response runtime.ClientResponse, cons
 		}
 		return nil, result
 	}
+}
+
+// NewS3AuditDeleteOK creates a S3AuditDeleteOK with default headers values
+func NewS3AuditDeleteOK() *S3AuditDeleteOK {
+	return &S3AuditDeleteOK{}
+}
+
+/*
+S3AuditDeleteOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type S3AuditDeleteOK struct {
+}
+
+// IsSuccess returns true when this s3 audit delete o k response has a 2xx status code
+func (o *S3AuditDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 audit delete o k response has a 3xx status code
+func (o *S3AuditDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 audit delete o k response has a 4xx status code
+func (o *S3AuditDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 audit delete o k response has a 5xx status code
+func (o *S3AuditDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 audit delete o k response a status code equal to that given
+func (o *S3AuditDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the s3 audit delete o k response
+func (o *S3AuditDeleteOK) Code() int {
+	return 200
+}
+
+func (o *S3AuditDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3AuditDeleteOK", 200)
+}
+
+func (o *S3AuditDeleteOK) String() string {
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3AuditDeleteOK", 200)
+}
+
+func (o *S3AuditDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	return nil
 }
 
 // NewS3AuditDeleteAccepted creates a S3AuditDeleteAccepted with default headers values
@@ -79,12 +142,17 @@ func (o *S3AuditDeleteAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the s3 audit delete accepted response
+func (o *S3AuditDeleteAccepted) Code() int {
+	return 202
+}
+
 func (o *S3AuditDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3AuditDeleteAccepted ", 202)
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3AuditDeleteAccepted", 202)
 }
 
 func (o *S3AuditDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3AuditDeleteAccepted ", 202)
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3AuditDeleteAccepted", 202)
 }
 
 func (o *S3AuditDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,17 +176,13 @@ func NewS3AuditDeleteDefault(code int) *S3AuditDeleteDefault {
 | ---------- | ----------- |
 | 140902420 | Failed to delete audit configuration for the SVM. |
 | 140902421 | Failed to delete audit configuration for the SVM because audit is enabled for the SVM. |
-| 140902422 | Failed to delete audit configuration for the SVM because final conolidation is in progress. Wait a few mintues, and try the operation again. |
+| 140902422 | Failed to delete audit configuration for the SVM because final consolidation is in progress. Wait a few minutes, and try the operation again. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type S3AuditDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the s3 audit delete default response
-func (o *S3AuditDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this s3 audit delete default response has a 2xx status code
@@ -146,12 +210,19 @@ func (o *S3AuditDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the s3 audit delete default response
+func (o *S3AuditDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *S3AuditDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_delete default %s", o._statusCode, payload)
 }
 
 func (o *S3AuditDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_delete default %s", o._statusCode, payload)
 }
 
 func (o *S3AuditDeleteDefault) GetPayload() *models.ErrorResponse {

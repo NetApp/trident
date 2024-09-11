@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *FpolicyEngineCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the fpolicy engine create created response
+func (o *FpolicyEngineCreateCreated) Code() int {
+	return 201
+}
+
 func (o *FpolicyEngineCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/engines][%d] fpolicyEngineCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/engines][%d] fpolicyEngineCreateCreated %s", 201, payload)
 }
 
 func (o *FpolicyEngineCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/engines][%d] fpolicyEngineCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/engines][%d] fpolicyEngineCreateCreated %s", 201, payload)
 }
 
 func (o *FpolicyEngineCreateCreated) GetPayload() *models.FpolicyEngineResponse {
@@ -132,16 +140,13 @@ func NewFpolicyEngineCreateDefault(code int) *FpolicyEngineCreateDefault {
 | ---------- | ----------- |
 | 9764885    | The primary secondary server has a redundant IP address |
 | 9764953    | The name of the FPolicy engine is "native" which is reserved by the system |
+| 9765011    | The resiliency feature is not supported with mandatory screening |
+| 9765012    | The specified resiliency directory path does not exist |
 */
 type FpolicyEngineCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the fpolicy engine create default response
-func (o *FpolicyEngineCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this fpolicy engine create default response has a 2xx status code
@@ -169,12 +174,19 @@ func (o *FpolicyEngineCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fpolicy engine create default response
+func (o *FpolicyEngineCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FpolicyEngineCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/engines][%d] fpolicy_engine_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/engines][%d] fpolicy_engine_create default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyEngineCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/engines][%d] fpolicy_engine_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/engines][%d] fpolicy_engine_create default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyEngineCreateDefault) GetPayload() *models.ErrorResponse {

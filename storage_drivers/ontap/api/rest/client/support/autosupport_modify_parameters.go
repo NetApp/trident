@@ -14,6 +14,7 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
@@ -63,6 +64,13 @@ AutosupportModifyParams contains all the parameters to send to the API endpoint
 */
 type AutosupportModifyParams struct {
 
+	/* Force.
+
+	   Set the force flag to true to modify some of the AutoSupport configurations that are otherwise blocked when the automatic update feature is enabled. Without this flag set to true, an attempt to disable AutoSupport, modify the transport to SMTP, or disable the AutoSupport OnDemand feature fails if the automatic update feature is enabled.
+
+	*/
+	Force *bool
+
 	/* Info.
 
 	   Info specification
@@ -86,7 +94,18 @@ func (o *AutosupportModifyParams) WithDefaults() *AutosupportModifyParams {
 //
 // All values with no default are reset to their zero value.
 func (o *AutosupportModifyParams) SetDefaults() {
-	// no default values defined for this parameter
+	var (
+		forceDefault = bool(false)
+	)
+
+	val := AutosupportModifyParams{
+		Force: &forceDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the autosupport modify params
@@ -122,6 +141,17 @@ func (o *AutosupportModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithForce adds the force to the autosupport modify params
+func (o *AutosupportModifyParams) WithForce(force *bool) *AutosupportModifyParams {
+	o.SetForce(force)
+	return o
+}
+
+// SetForce adds the force to the autosupport modify params
+func (o *AutosupportModifyParams) SetForce(force *bool) {
+	o.Force = force
+}
+
 // WithInfo adds the info to the autosupport modify params
 func (o *AutosupportModifyParams) WithInfo(info *models.Autosupport) *AutosupportModifyParams {
 	o.SetInfo(info)
@@ -140,6 +170,23 @@ func (o *AutosupportModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 		return err
 	}
 	var res []error
+
+	if o.Force != nil {
+
+		// query param force
+		var qrForce bool
+
+		if o.Force != nil {
+			qrForce = *o.Force
+		}
+		qForce := swag.FormatBool(qrForce)
+		if qForce != "" {
+
+			if err := r.SetQueryParam("force", qForce); err != nil {
+				return err
+			}
+		}
+	}
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err

@@ -74,6 +74,24 @@ type KerberosRealmCollectionGetParams struct {
 	*/
 	AdServerName *string
 
+	/* AdminServerAddress.
+
+	   Filter by admin_server.address
+	*/
+	AdminServerAddress *string
+
+	/* AdminServerPort.
+
+	   Filter by admin_server.port
+	*/
+	AdminServerPort *int64
+
+	/* ClockSkew.
+
+	   Filter by clock_skew
+	*/
+	ClockSkew *int64
+
 	/* Comment.
 
 	   Filter by comment
@@ -127,6 +145,18 @@ type KerberosRealmCollectionGetParams struct {
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
 	OrderBy []string
+
+	/* PasswordServerAddress.
+
+	   Filter by password_server.address
+	*/
+	PasswordServerAddress *string
+
+	/* PasswordServerPort.
+
+	   Filter by password_server.port
+	*/
+	PasswordServerPort *int64
 
 	/* ReturnRecords.
 
@@ -245,6 +275,39 @@ func (o *KerberosRealmCollectionGetParams) SetAdServerName(adServerName *string)
 	o.AdServerName = adServerName
 }
 
+// WithAdminServerAddress adds the adminServerAddress to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithAdminServerAddress(adminServerAddress *string) *KerberosRealmCollectionGetParams {
+	o.SetAdminServerAddress(adminServerAddress)
+	return o
+}
+
+// SetAdminServerAddress adds the adminServerAddress to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetAdminServerAddress(adminServerAddress *string) {
+	o.AdminServerAddress = adminServerAddress
+}
+
+// WithAdminServerPort adds the adminServerPort to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithAdminServerPort(adminServerPort *int64) *KerberosRealmCollectionGetParams {
+	o.SetAdminServerPort(adminServerPort)
+	return o
+}
+
+// SetAdminServerPort adds the adminServerPort to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetAdminServerPort(adminServerPort *int64) {
+	o.AdminServerPort = adminServerPort
+}
+
+// WithClockSkew adds the clockSkew to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithClockSkew(clockSkew *int64) *KerberosRealmCollectionGetParams {
+	o.SetClockSkew(clockSkew)
+	return o
+}
+
+// SetClockSkew adds the clockSkew to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetClockSkew(clockSkew *int64) {
+	o.ClockSkew = clockSkew
+}
+
 // WithComment adds the comment to the kerberos realm collection get params
 func (o *KerberosRealmCollectionGetParams) WithComment(comment *string) *KerberosRealmCollectionGetParams {
 	o.SetComment(comment)
@@ -344,6 +407,28 @@ func (o *KerberosRealmCollectionGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
 }
 
+// WithPasswordServerAddress adds the passwordServerAddress to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithPasswordServerAddress(passwordServerAddress *string) *KerberosRealmCollectionGetParams {
+	o.SetPasswordServerAddress(passwordServerAddress)
+	return o
+}
+
+// SetPasswordServerAddress adds the passwordServerAddress to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetPasswordServerAddress(passwordServerAddress *string) {
+	o.PasswordServerAddress = passwordServerAddress
+}
+
+// WithPasswordServerPort adds the passwordServerPort to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithPasswordServerPort(passwordServerPort *int64) *KerberosRealmCollectionGetParams {
+	o.SetPasswordServerPort(passwordServerPort)
+	return o
+}
+
+// SetPasswordServerPort adds the passwordServerPort to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetPasswordServerPort(passwordServerPort *int64) {
+	o.PasswordServerPort = passwordServerPort
+}
+
 // WithReturnRecords adds the returnRecords to the kerberos realm collection get params
 func (o *KerberosRealmCollectionGetParams) WithReturnRecords(returnRecords *bool) *KerberosRealmCollectionGetParams {
 	o.SetReturnRecords(returnRecords)
@@ -425,6 +510,57 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qAdServerName != "" {
 
 			if err := r.SetQueryParam("ad_server.name", qAdServerName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AdminServerAddress != nil {
+
+		// query param admin_server.address
+		var qrAdminServerAddress string
+
+		if o.AdminServerAddress != nil {
+			qrAdminServerAddress = *o.AdminServerAddress
+		}
+		qAdminServerAddress := qrAdminServerAddress
+		if qAdminServerAddress != "" {
+
+			if err := r.SetQueryParam("admin_server.address", qAdminServerAddress); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AdminServerPort != nil {
+
+		// query param admin_server.port
+		var qrAdminServerPort int64
+
+		if o.AdminServerPort != nil {
+			qrAdminServerPort = *o.AdminServerPort
+		}
+		qAdminServerPort := swag.FormatInt64(qrAdminServerPort)
+		if qAdminServerPort != "" {
+
+			if err := r.SetQueryParam("admin_server.port", qAdminServerPort); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ClockSkew != nil {
+
+		// query param clock_skew
+		var qrClockSkew int64
+
+		if o.ClockSkew != nil {
+			qrClockSkew = *o.ClockSkew
+		}
+		qClockSkew := swag.FormatInt64(qrClockSkew)
+		if qClockSkew != "" {
+
+			if err := r.SetQueryParam("clock_skew", qClockSkew); err != nil {
 				return err
 			}
 		}
@@ -568,6 +704,40 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.PasswordServerAddress != nil {
+
+		// query param password_server.address
+		var qrPasswordServerAddress string
+
+		if o.PasswordServerAddress != nil {
+			qrPasswordServerAddress = *o.PasswordServerAddress
+		}
+		qPasswordServerAddress := qrPasswordServerAddress
+		if qPasswordServerAddress != "" {
+
+			if err := r.SetQueryParam("password_server.address", qPasswordServerAddress); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PasswordServerPort != nil {
+
+		// query param password_server.port
+		var qrPasswordServerPort int64
+
+		if o.PasswordServerPort != nil {
+			qrPasswordServerPort = *o.PasswordServerPort
+		}
+		qPasswordServerPort := swag.FormatInt64(qrPasswordServerPort)
+		if qPasswordServerPort != "" {
+
+			if err := r.SetQueryParam("password_server.port", qPasswordServerPort); err != nil {
+				return err
+			}
 		}
 	}
 

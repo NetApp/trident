@@ -56,7 +56,7 @@ type StoragePort struct {
 
 	// Operational mode of a non-dedicated Ethernet port
 	// Example: storage
-	// Enum: [network storage]
+	// Enum: ["network","storage"]
 	Mode *string `json:"mode,omitempty"`
 
 	// name
@@ -89,13 +89,13 @@ type StoragePort struct {
 	// state
 	// Example: online
 	// Read Only: true
-	// Enum: [online offline error]
+	// Enum: ["online","offline","error"]
 	State *string `json:"state,omitempty"`
 
 	// type
 	// Example: sas
 	// Read Only: true
-	// Enum: [sas fc enet]
+	// Enum: ["sas","fc","enet"]
 	Type *string `json:"type,omitempty"`
 
 	// World Wide Name
@@ -665,15 +665,124 @@ type StoragePortInlineCable struct {
 	// serial number
 	// Example: 616930439
 	SerialNumber *string `json:"serial_number,omitempty"`
+
+	// transceiver
+	// Example: mini_sas_hd
+	// Enum: ["qsfp","qsfp_plus","qsfp28","mini_sas_hd","sfp"]
+	Transceiver *string `json:"transceiver,omitempty"`
+
+	// vendor
+	// Example: Molex Inc.
+	Vendor *string `json:"vendor,omitempty"`
 }
 
 // Validate validates this storage port inline cable
 func (m *StoragePortInlineCable) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateTransceiver(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this storage port inline cable based on context it is used
+var storagePortInlineCableTypeTransceiverPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["qsfp","qsfp_plus","qsfp28","mini_sas_hd","sfp"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		storagePortInlineCableTypeTransceiverPropEnum = append(storagePortInlineCableTypeTransceiverPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// storage_port_inline_cable
+	// StoragePortInlineCable
+	// transceiver
+	// Transceiver
+	// qsfp
+	// END DEBUGGING
+	// StoragePortInlineCableTransceiverQsfp captures enum value "qsfp"
+	StoragePortInlineCableTransceiverQsfp string = "qsfp"
+
+	// BEGIN DEBUGGING
+	// storage_port_inline_cable
+	// StoragePortInlineCable
+	// transceiver
+	// Transceiver
+	// qsfp_plus
+	// END DEBUGGING
+	// StoragePortInlineCableTransceiverQsfpPlus captures enum value "qsfp_plus"
+	StoragePortInlineCableTransceiverQsfpPlus string = "qsfp_plus"
+
+	// BEGIN DEBUGGING
+	// storage_port_inline_cable
+	// StoragePortInlineCable
+	// transceiver
+	// Transceiver
+	// qsfp28
+	// END DEBUGGING
+	// StoragePortInlineCableTransceiverQsfp28 captures enum value "qsfp28"
+	StoragePortInlineCableTransceiverQsfp28 string = "qsfp28"
+
+	// BEGIN DEBUGGING
+	// storage_port_inline_cable
+	// StoragePortInlineCable
+	// transceiver
+	// Transceiver
+	// mini_sas_hd
+	// END DEBUGGING
+	// StoragePortInlineCableTransceiverMiniSasHd captures enum value "mini_sas_hd"
+	StoragePortInlineCableTransceiverMiniSasHd string = "mini_sas_hd"
+
+	// BEGIN DEBUGGING
+	// storage_port_inline_cable
+	// StoragePortInlineCable
+	// transceiver
+	// Transceiver
+	// sfp
+	// END DEBUGGING
+	// StoragePortInlineCableTransceiverSfp captures enum value "sfp"
+	StoragePortInlineCableTransceiverSfp string = "sfp"
+)
+
+// prop value enum
+func (m *StoragePortInlineCable) validateTransceiverEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storagePortInlineCableTypeTransceiverPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *StoragePortInlineCable) validateTransceiver(formats strfmt.Registry) error {
+	if swag.IsZero(m.Transceiver) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTransceiverEnum("cable"+"."+"transceiver", "body", *m.Transceiver); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this storage port inline cable based on the context it is used
 func (m *StoragePortInlineCable) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -712,8 +821,13 @@ func (m *StoragePortInlineError) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this storage port inline error based on context it is used
+// ContextValidate validate this storage port inline error based on the context it is used
 func (m *StoragePortInlineError) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 

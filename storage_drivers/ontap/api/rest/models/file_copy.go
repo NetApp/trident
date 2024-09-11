@@ -29,15 +29,16 @@ type FileCopy struct {
 	// Specifies whether the source file should be held quiescent for the duration of the copy operation.
 	HoldQuiescence *bool `json:"hold_quiescence,omitempty"`
 
-	// The maximum amount of data (in bytes) that can be transferred per second in support of this operation.
+	// Maximum amount of data, in bytes that can be transferred per second in support of this operation. A non-zero value less than 1MB/s is set to 1MB/s. A non-zero value greater than 1MB/s is truncated to the nearest integral megabyte value. If unspecified, the default value is "0" which means no range is set for the data transfer.
 	MaxThroughput *int64 `json:"max_throughput,omitempty"`
 
 	// The maximum amount of time (in seconds) that the source reference file can be quiesced before the corresponding destination file must be made available for read-write traffic.
 	// Example: 10
 	ReferenceCutoverTime *int64 `json:"reference_cutover_time,omitempty"`
 
-	// reference file
-	ReferenceFile *FileCopyInlineReferenceFile `json:"reference_file,omitempty"`
+	// The source reference file. If a reference file is specified, data for other files being copied will be transferred as a difference from the reference file. This can save bandwidth and destination storage if the specified source files share blocks. If provided, this input must match one of the source file paths. This input need not be provided if only one source file is specified.
+	// Example: svm1:volume1/file1
+	ReferencePath *string `json:"reference_path,omitempty"`
 }
 
 // Validate validates this file copy
@@ -45,10 +46,6 @@ func (m *FileCopy) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateFileCopyInlineFilesToCopy(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateReferenceFile(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -82,32 +79,11 @@ func (m *FileCopy) validateFileCopyInlineFilesToCopy(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *FileCopy) validateReferenceFile(formats strfmt.Registry) error {
-	if swag.IsZero(m.ReferenceFile) { // not required
-		return nil
-	}
-
-	if m.ReferenceFile != nil {
-		if err := m.ReferenceFile.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("reference_file")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
 // ContextValidate validate this file copy based on the context it is used
 func (m *FileCopy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateFileCopyInlineFilesToCopy(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateReferenceFile(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -130,20 +106,6 @@ func (m *FileCopy) contextValidateFileCopyInlineFilesToCopy(ctx context.Context,
 			}
 		}
 
-	}
-
-	return nil
-}
-
-func (m *FileCopy) contextValidateReferenceFile(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.ReferenceFile != nil {
-		if err := m.ReferenceFile.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("reference_file")
-			}
-			return err
-		}
 	}
 
 	return nil
@@ -288,275 +250,6 @@ func (m *FileCopyInlineFilesToCopyInlineArrayItem) MarshalBinary() ([]byte, erro
 // UnmarshalBinary interface implementation
 func (m *FileCopyInlineFilesToCopyInlineArrayItem) UnmarshalBinary(b []byte) error {
 	var res FileCopyInlineFilesToCopyInlineArrayItem
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// FileCopyInlineReferenceFile file copy inline reference file
-//
-// swagger:model file_copy_inline_reference_file
-type FileCopyInlineReferenceFile struct {
-
-	// The source reference file. If a reference file is specified, data for other files being copied will be transferred as a difference from the reference file. This can save bandwidth and destination storage if the specified source files share blocks. If provided, this input must match one of the source file paths. This input need not be provided if only one source file is specified.
-	Path *string `json:"path,omitempty"`
-
-	// volume
-	Volume *FileCopyInlineReferenceFileInlineVolume `json:"volume,omitempty"`
-}
-
-// Validate validates this file copy inline reference file
-func (m *FileCopyInlineReferenceFile) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateVolume(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *FileCopyInlineReferenceFile) validateVolume(formats strfmt.Registry) error {
-	if swag.IsZero(m.Volume) { // not required
-		return nil
-	}
-
-	if m.Volume != nil {
-		if err := m.Volume.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("reference_file" + "." + "volume")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this file copy inline reference file based on the context it is used
-func (m *FileCopyInlineReferenceFile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateVolume(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *FileCopyInlineReferenceFile) contextValidateVolume(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Volume != nil {
-		if err := m.Volume.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("reference_file" + "." + "volume")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *FileCopyInlineReferenceFile) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *FileCopyInlineReferenceFile) UnmarshalBinary(b []byte) error {
-	var res FileCopyInlineReferenceFile
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// FileCopyInlineReferenceFileInlineVolume file copy inline reference file inline volume
-//
-// swagger:model file_copy_inline_reference_file_inline_volume
-type FileCopyInlineReferenceFileInlineVolume struct {
-
-	// links
-	Links *FileCopyInlineReferenceFileInlineVolumeInlineLinks `json:"_links,omitempty"`
-
-	// The name of the volume.
-	// Example: volume1
-	Name *string `json:"name,omitempty"`
-
-	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
-	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID *string `json:"uuid,omitempty"`
-}
-
-// Validate validates this file copy inline reference file inline volume
-func (m *FileCopyInlineReferenceFileInlineVolume) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *FileCopyInlineReferenceFileInlineVolume) validateLinks(formats strfmt.Registry) error {
-	if swag.IsZero(m.Links) { // not required
-		return nil
-	}
-
-	if m.Links != nil {
-		if err := m.Links.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("reference_file" + "." + "volume" + "." + "_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this file copy inline reference file inline volume based on the context it is used
-func (m *FileCopyInlineReferenceFileInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateLinks(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *FileCopyInlineReferenceFileInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Links != nil {
-		if err := m.Links.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("reference_file" + "." + "volume" + "." + "_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *FileCopyInlineReferenceFileInlineVolume) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *FileCopyInlineReferenceFileInlineVolume) UnmarshalBinary(b []byte) error {
-	var res FileCopyInlineReferenceFileInlineVolume
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// FileCopyInlineReferenceFileInlineVolumeInlineLinks file copy inline reference file inline volume inline links
-//
-// swagger:model file_copy_inline_reference_file_inline_volume_inline__links
-type FileCopyInlineReferenceFileInlineVolumeInlineLinks struct {
-
-	// self
-	Self *Href `json:"self,omitempty"`
-}
-
-// Validate validates this file copy inline reference file inline volume inline links
-func (m *FileCopyInlineReferenceFileInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateSelf(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *FileCopyInlineReferenceFileInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
-	if swag.IsZero(m.Self) { // not required
-		return nil
-	}
-
-	if m.Self != nil {
-		if err := m.Self.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("reference_file" + "." + "volume" + "." + "_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this file copy inline reference file inline volume inline links based on the context it is used
-func (m *FileCopyInlineReferenceFileInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateSelf(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *FileCopyInlineReferenceFileInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Self != nil {
-		if err := m.Self.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("reference_file" + "." + "volume" + "." + "_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *FileCopyInlineReferenceFileInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *FileCopyInlineReferenceFileInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
-	var res FileCopyInlineReferenceFileInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

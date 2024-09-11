@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *VvolBindingGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the vvol binding get o k response
+func (o *VvolBindingGetOK) Code() int {
+	return 200
+}
+
 func (o *VvolBindingGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvolBindingGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvolBindingGetOK %s", 200, payload)
 }
 
 func (o *VvolBindingGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvolBindingGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvolBindingGetOK %s", 200, payload)
 }
 
 func (o *VvolBindingGetOK) GetPayload() *models.VvolBinding {
@@ -119,16 +127,12 @@ func NewVvolBindingGetDefault(code int) *VvolBindingGetDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 4 | The vVol binding was not found. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type VvolBindingGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the vvol binding get default response
-func (o *VvolBindingGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this vvol binding get default response has a 2xx status code
@@ -156,12 +160,19 @@ func (o *VvolBindingGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the vvol binding get default response
+func (o *VvolBindingGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VvolBindingGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvol_binding_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvol_binding_get default %s", o._statusCode, payload)
 }
 
 func (o *VvolBindingGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvol_binding_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvol_binding_get default %s", o._statusCode, payload)
 }
 
 func (o *VvolBindingGetDefault) GetPayload() *models.ErrorResponse {

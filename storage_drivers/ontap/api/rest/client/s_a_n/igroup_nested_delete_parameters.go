@@ -65,11 +65,7 @@ type IgroupNestedDeleteParams struct {
 	/* AllowDeleteWhileMapped.
 
 	     Allows the deletion of a nested initiator group from of a mapped initiator group.<br/>
-	Deleting a nested initiator group from a mapped initiator group means
-	that the LUNs, to which the initiator group is mapped, are no longer
-	available to the initiators nested below the initiator group being
-	removed.  This might cause a disruption in the availability of
-	data.<br/>
+	Deleting a nested initiator group from a mapped initiator group means that the LUNs, to which the initiator group is mapped, are no longer available to the initiators nested below the initiator group being removed.  This might cause a disruption in the availability of data.<br/>
 	<b>This parameter should be used with caution.</b>
 
 	*/

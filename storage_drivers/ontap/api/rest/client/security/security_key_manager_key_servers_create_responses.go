@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *SecurityKeyManagerKeyServersCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the security key manager key servers create created response
+func (o *SecurityKeyManagerKeyServersCreateCreated) Code() int {
+	return 201
+}
+
 func (o *SecurityKeyManagerKeyServersCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/key-managers/{uuid}/key-servers][%d] securityKeyManagerKeyServersCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers/{uuid}/key-servers][%d] securityKeyManagerKeyServersCreateCreated %s", 201, payload)
 }
 
 func (o *SecurityKeyManagerKeyServersCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/key-managers/{uuid}/key-servers][%d] securityKeyManagerKeyServersCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers/{uuid}/key-servers][%d] securityKeyManagerKeyServersCreateCreated %s", 201, payload)
 }
 
 func (o *SecurityKeyManagerKeyServersCreateCreated) GetPayload() *models.KeyServerResponse {
@@ -134,27 +142,23 @@ func NewSecurityKeyManagerKeyServersCreateDefault(code int) *SecurityKeyManagerK
 | 65536042 | Cannot add key server because it is already a secondary key server. |
 | 65536600 | Cannot add a key server while a node is out quorum. |
 | 65536821 | The certificate is not installed. |
-| 65536822 | Multitenant key management is not supported in the current cluster version. |
 | 65536824 | Multitenant key management is not supported in MetroCluster configurations. |
 | 65536828 | External key management is not enabled for the SVM. |
 | 65536834 | Failed to get existing key-server details for the SVM. |
 | 65536852 | Failed to query supported KMIP protocol versions. |
 | 65536870 | Key management servers are already configured. |
+| 65536870 | The key management servers already exist. |
 | 65536871 | Duplicate key management servers exist. |
-| 65536921 | The following issues were found. Unable to execute command on KMIP server. |
+| 65536921 | Unable to execute the command on the KMIP server. |
 | 66060338 | Unable to establish secure connection to KMIP server due to incorrect server_ca certificates. |
 | 66060339 | Unable to establish secure connection to KMIP server due to incorrect client certificates. |
 | 66060340 | Unable to establish secure connection to KMIP server due to Cryptsoft error. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SecurityKeyManagerKeyServersCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security key manager key servers create default response
-func (o *SecurityKeyManagerKeyServersCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security key manager key servers create default response has a 2xx status code
@@ -182,12 +186,19 @@ func (o *SecurityKeyManagerKeyServersCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security key manager key servers create default response
+func (o *SecurityKeyManagerKeyServersCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityKeyManagerKeyServersCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/key-managers/{uuid}/key-servers][%d] security_key_manager_key_servers_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers/{uuid}/key-servers][%d] security_key_manager_key_servers_create default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeyManagerKeyServersCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/key-managers/{uuid}/key-servers][%d] security_key_manager_key_servers_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers/{uuid}/key-servers][%d] security_key_manager_key_servers_create default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeyManagerKeyServersCreateDefault) GetPayload() *models.ErrorResponse {

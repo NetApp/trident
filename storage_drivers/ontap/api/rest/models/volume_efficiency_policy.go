@@ -16,6 +16,7 @@ import (
 )
 
 // VolumeEfficiencyPolicy volume efficiency policy
+// Example: {"comment":"string","duration":5,"enabled":true,"name":"default","qos_policy":"background","schedule":"daily","svm":{"name":"svm1","uuid":"02c9e252-41be-11e9-81d5-00a0986138f7"},"type":"scheduled"}
 //
 // swagger:model volume_efficiency_policy
 type VolumeEfficiencyPolicy struct {
@@ -27,37 +28,32 @@ type VolumeEfficiencyPolicy struct {
 	Comment *string `json:"comment,omitempty"`
 
 	// This field is used with the policy type "scheduled" to indicate the allowed duration for a session, in hours. Possible value is a number between 0 and 999 inclusive. Default is unlimited indicated by value 0.
-	// Example: 5
 	Duration *int64 `json:"duration,omitempty"`
 
 	// Is the volume efficiency policy enabled?
-	// Example: true
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// Name of the volume efficiency policy.
-	// Example: default
 	Name *string `json:"name,omitempty"`
 
 	// QoS policy for the sis operation. Possible values are background and best_effort. In background, sis operation will run in background with minimal or no impact on data serving client operations. In best_effort, sis operations may have some impact on data serving client operations.
-	// Enum: [background best_effort]
+	// Enum: ["background","best_effort"]
 	QosPolicy *string `json:"qos_policy,omitempty"`
 
 	// schedule
 	Schedule *VolumeEfficiencyPolicyInlineSchedule `json:"schedule,omitempty"`
 
-	// This field is used with the policy type "threshold" to indicate the threshold percentage for triggering the volume efficiency policy. It is mutuallly exclusive of the schedule.
-	// Example: 30
+	// This field is used with the policy type "threshold" to indicate the threshold percentage for triggering the volume efficiency policy. It is mutually exclusive of the schedule.
 	StartThresholdPercent *int64 `json:"start_threshold_percent,omitempty"`
 
 	// svm
 	Svm *VolumeEfficiencyPolicyInlineSvm `json:"svm,omitempty"`
 
 	// Type of volume efficiency policy.
-	// Enum: [threshold scheduled]
+	// Enum: ["scheduled","threshold"]
 	Type *string `json:"type,omitempty"`
 
 	// Unique identifier of volume efficiency policy.
-	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
 	UUID *string `json:"uuid,omitempty"`
 }
@@ -203,7 +199,7 @@ var volumeEfficiencyPolicyTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["threshold","scheduled"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["scheduled","threshold"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -218,20 +214,20 @@ const (
 	// VolumeEfficiencyPolicy
 	// type
 	// Type
-	// threshold
+	// scheduled
 	// END DEBUGGING
-	// VolumeEfficiencyPolicyTypeThreshold captures enum value "threshold"
-	VolumeEfficiencyPolicyTypeThreshold string = "threshold"
+	// VolumeEfficiencyPolicyTypeScheduled captures enum value "scheduled"
+	VolumeEfficiencyPolicyTypeScheduled string = "scheduled"
 
 	// BEGIN DEBUGGING
 	// volume_efficiency_policy
 	// VolumeEfficiencyPolicy
 	// type
 	// Type
-	// scheduled
+	// threshold
 	// END DEBUGGING
-	// VolumeEfficiencyPolicyTypeScheduled captures enum value "scheduled"
-	VolumeEfficiencyPolicyTypeScheduled string = "scheduled"
+	// VolumeEfficiencyPolicyTypeThreshold captures enum value "threshold"
+	VolumeEfficiencyPolicyTypeThreshold string = "threshold"
 )
 
 // prop value enum
@@ -442,7 +438,6 @@ func (m *VolumeEfficiencyPolicyInlineLinks) UnmarshalBinary(b []byte) error {
 type VolumeEfficiencyPolicyInlineSchedule struct {
 
 	// Schedule at which volume efficiency policies are captured on the SVM. Some common schedules already defined in the system are hourly, daily, weekly, at 5 minute intervals, and at 8 hour intervals. Volume efficiency policies with custom schedules can be referenced.
-	// Example: daily
 	Name *string `json:"name,omitempty"`
 }
 
@@ -474,7 +469,7 @@ func (m *VolumeEfficiencyPolicyInlineSchedule) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeEfficiencyPolicyInlineSvm volume efficiency policy inline svm
+// VolumeEfficiencyPolicyInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model volume_efficiency_policy_inline_svm
 type VolumeEfficiencyPolicyInlineSvm struct {
@@ -482,12 +477,12 @@ type VolumeEfficiencyPolicyInlineSvm struct {
 	// links
 	Links *VolumeEfficiencyPolicyInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SSHGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ssh get o k response
+func (o *SSHGetOK) Code() int {
+	return 200
+}
+
 func (o *SSHGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/ssh][%d] sshGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ssh][%d] sshGetOK %s", 200, payload)
 }
 
 func (o *SSHGetOK) String() string {
-	return fmt.Sprintf("[GET /security/ssh][%d] sshGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ssh][%d] sshGetOK %s", 200, payload)
 }
 
 func (o *SSHGetOK) GetPayload() *models.ClusterSSHServer {
@@ -122,11 +130,6 @@ type SSHGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the ssh get default response
-func (o *SSHGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this ssh get default response has a 2xx status code
 func (o *SSHGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SSHGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ssh get default response
+func (o *SSHGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SSHGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/ssh][%d] ssh_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ssh][%d] ssh_get default %s", o._statusCode, payload)
 }
 
 func (o *SSHGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/ssh][%d] ssh_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ssh][%d] ssh_get default %s", o._statusCode, payload)
 }
 
 func (o *SSHGetDefault) GetPayload() *models.ErrorResponse {

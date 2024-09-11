@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *IscsiCredentialsModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the iscsi credentials modify o k response
+func (o *IscsiCredentialsModifyOK) Code() int {
+	return 200
+}
+
 func (o *IscsiCredentialsModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsiCredentialsModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsiCredentialsModifyOK", 200)
 }
 
 func (o *IscsiCredentialsModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsiCredentialsModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsiCredentialsModifyOK", 200)
 }
 
 func (o *IscsiCredentialsModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -118,16 +124,12 @@ func NewIscsiCredentialsModifyDefault(code int) *IscsiCredentialsModifyDefault {
 | 5374856 | The value for property `initiator_address.ranges.start` does not belong to the same IP address family as the value for property `initiator_address.ranges.end`. |
 | 5374895 | The iSCSI security credential does not exist on the specified SVM. |
 | 5374900 | Setting the CHAP authentication properties are not supported with authentication types _none_ or _deny_. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IscsiCredentialsModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the iscsi credentials modify default response
-func (o *IscsiCredentialsModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this iscsi credentials modify default response has a 2xx status code
@@ -155,12 +157,19 @@ func (o *IscsiCredentialsModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the iscsi credentials modify default response
+func (o *IscsiCredentialsModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IscsiCredentialsModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsi_credentials_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsi_credentials_modify default %s", o._statusCode, payload)
 }
 
 func (o *IscsiCredentialsModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsi_credentials_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsi_credentials_modify default %s", o._statusCode, payload)
 }
 
 func (o *IscsiCredentialsModifyDefault) GetPayload() *models.ErrorResponse {

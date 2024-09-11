@@ -295,6 +295,9 @@ type EmsDestinationResponseInlineRecordsInlineArrayItem struct {
 	// links
 	Links *EmsDestinationResponseInlineRecordsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
+	// access control role
+	AccessControlRole *EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRole `json:"access_control_role,omitempty"`
+
 	// certificate
 	Certificate *EmsDestinationResponseInlineRecordsInlineArrayItemInlineCertificate `json:"certificate,omitempty"`
 
@@ -322,7 +325,7 @@ type EmsDestinationResponseInlineRecordsInlineArrayItem struct {
 
 	// Type of destination. Valid in POST.
 	// Example: email
-	// Enum: [snmp email syslog rest_api]
+	// Enum: ["snmp","email","syslog","rest_api"]
 	Type *string `json:"type,omitempty"`
 }
 
@@ -331,6 +334,10 @@ func (m *EmsDestinationResponseInlineRecordsInlineArrayItem) Validate(formats st
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAccessControlRole(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -369,6 +376,23 @@ func (m *EmsDestinationResponseInlineRecordsInlineArrayItem) validateLinks(forma
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *EmsDestinationResponseInlineRecordsInlineArrayItem) validateAccessControlRole(formats strfmt.Registry) error {
+	if swag.IsZero(m.AccessControlRole) { // not required
+		return nil
+	}
+
+	if m.AccessControlRole != nil {
+		if err := m.AccessControlRole.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("access_control_role")
 			}
 			return err
 		}
@@ -536,6 +560,10 @@ func (m *EmsDestinationResponseInlineRecordsInlineArrayItem) ContextValidate(ctx
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAccessControlRole(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateCertificate(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -568,6 +596,20 @@ func (m *EmsDestinationResponseInlineRecordsInlineArrayItem) contextValidateLink
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *EmsDestinationResponseInlineRecordsInlineArrayItem) contextValidateAccessControlRole(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AccessControlRole != nil {
+		if err := m.AccessControlRole.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("access_control_role")
 			}
 			return err
 		}
@@ -663,6 +705,182 @@ func (m *EmsDestinationResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b [
 	return nil
 }
 
+// EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRole Indicates the access control role that created the event destination and is used to control access to the destination based on role-based access control (RBAC) rules. If created by the 'admin' user, the field is unset.
+//
+// swagger:model ems_destination_response_inline_records_inline_array_item_inline_access_control_role
+type EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRole struct {
+
+	// links
+	Links *EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRoleInlineLinks `json:"_links,omitempty"`
+
+	// Role name
+	// Example: admin
+	Name *string `json:"name,omitempty"`
+}
+
+// Validate validates this ems destination response inline records inline array item inline access control role
+func (m *EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRole) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRole) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("access_control_role" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this ems destination response inline records inline array item inline access control role based on the context it is used
+func (m *EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRole) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRole) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("access_control_role" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRole) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRole) UnmarshalBinary(b []byte) error {
+	var res EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRole
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRoleInlineLinks ems destination response inline records inline array item inline access control role inline links
+//
+// swagger:model ems_destination_response_inline_records_inline_array_item_inline_access_control_role_inline__links
+type EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRoleInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this ems destination response inline records inline array item inline access control role inline links
+func (m *EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRoleInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRoleInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("access_control_role" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this ems destination response inline records inline array item inline access control role inline links based on the context it is used
+func (m *EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRoleInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRoleInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("access_control_role" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRoleInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRoleInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EmsDestinationResponseInlineRecordsInlineArrayItemInlineAccessControlRoleInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // EmsDestinationResponseInlineRecordsInlineArrayItemInlineCertificate Specifies the client-side certificate used by the ONTAP system when mutual authentication is required. This object is only applicable for __rest_api__ type destinations. Both the `ca` and `serial_number` fields must be specified when configuring a certificate in a PATCH or POST request. The `name` field is read-only and cannot be used to configure a client-side certificate.
 //
 // swagger:model ems_destination_response_inline_records_inline_array_item_inline_certificate
@@ -678,7 +896,6 @@ type EmsDestinationResponseInlineRecordsInlineArrayItemInlineCertificate struct 
 	Ca *string `json:"ca,omitempty"`
 
 	// Certificate name
-	// Example: cert1
 	// Read Only: true
 	Name *string `json:"name,omitempty"`
 
@@ -917,7 +1134,7 @@ type EmsDestinationResponseInlineRecordsInlineArrayItemInlineConnectivity struct
 	// Current connectivity state.
 	// Example: fail
 	// Read Only: true
-	// Enum: [success fail not_supported]
+	// Enum: ["success","fail","not_supported"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -1224,7 +1441,7 @@ func (m *EmsDestinationResponseRecordsItems0ConnectivityErrorsItems0) UnmarshalB
 	return nil
 }
 
-// EmsDestinationResponseRecordsItems0ConnectivityErrorsItems0Message ems destination response records items0 connectivity errors items0 message
+// EmsDestinationResponseRecordsItems0ConnectivityErrorsItems0Message Information to be displayed to the user.
 //
 // swagger:model EmsDestinationResponseRecordsItems0ConnectivityErrorsItems0Message
 type EmsDestinationResponseRecordsItems0ConnectivityErrorsItems0Message struct {
@@ -1890,7 +2107,7 @@ type EmsDestinationResponseInlineRecordsInlineArrayItemInlineSyslog struct {
 	Port *int64 `json:"port,omitempty"`
 
 	// Syslog Transport Protocol.
-	// Enum: [udp_unencrypted tcp_unencrypted tcp_encrypted]
+	// Enum: ["udp_unencrypted","tcp_unencrypted","tcp_encrypted"]
 	Transport *string `json:"transport,omitempty"`
 }
 
@@ -2048,17 +2265,17 @@ type EmsDestinationResponseInlineRecordsInlineArrayItemInlineSyslogInlineFormat 
 
 	// Syslog Hostname Format Override. The supported hostname formats are no_override (hostname format based on the syslog.format.message property i.e. fqdn if syslog.format.message is rfc_5424, hostname_only if syslog.format.message is legacy_netapp), fqdn (Fully Qualified Domain Name) and hostname_only.
 	//
-	// Enum: [no_override fqdn hostname_only]
+	// Enum: ["no_override","fqdn","hostname_only"]
 	HostnameOverride *string `json:"hostname_override,omitempty"`
 
 	// Syslog Message Format. The supported message formats are legacy_netapp (format: &lt;PRIVAL&gt;TIMESTAMP [HOSTNAME:Event-name:Event-severity]: MSG) and rfc_5424 (format: &lt;PRIVAL&gt;VERSION TIMESTAMP HOSTNAME Event-source - Event-name - MSG).
 	//
-	// Enum: [legacy_netapp rfc_5424]
+	// Enum: ["legacy_netapp","rfc_5424"]
 	Message *string `json:"message,omitempty"`
 
 	// Syslog Timestamp Format Override. The supported timestamp formats are no_override (timestamp format based on the syslog.format.message property i.e. rfc_3164 if syslog.format.message is legacy_netapp, iso_8601_local_time if syslog.format.message is rfc_5424), rfc_3164 (format: Mmm dd hh:mm:ss), iso_8601_local_time (format: YYYY-MM-DDThh:mm:ss+/-hh:mm) and iso_8601_utc (format: YYYY-MM-DDThh:mm:ssZ).
 	//
-	// Enum: [no_override rfc_3164 iso_8601_local_time iso_8601_utc]
+	// Enum: ["no_override","rfc_3164","iso_8601_local_time","iso_8601_utc"]
 	TimestampOverride *string `json:"timestamp_override,omitempty"`
 }
 

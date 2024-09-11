@@ -38,6 +38,9 @@ type MultiAdminVerifyRequest struct {
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
 
+	// Specifies that the operation is executed automatically on final approval.
+	ExecuteOnApproval *bool `json:"execute_on_approval,omitempty"`
+
 	// execution expiry time
 	// Read Only: true
 	// Format: date-time
@@ -76,7 +79,7 @@ type MultiAdminVerifyRequest struct {
 	RequiredApprovers *int64 `json:"required_approvers,omitempty"`
 
 	// The state of the request. PATCH supports approved and vetoed. The state only changes after setting to approved once no more approvers are required.
-	// Enum: [pending approved vetoed expired executed]
+	// Enum: ["pending","approved","vetoed","expired","executed"]
 	State *string `json:"state,omitempty"`
 
 	// The user that created the request. Automatically set by ONTAP.
@@ -470,12 +473,12 @@ type MultiAdminVerifyRequestInlineOwner struct {
 	// links
 	Links *MultiAdminVerifyRequestInlineOwnerInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

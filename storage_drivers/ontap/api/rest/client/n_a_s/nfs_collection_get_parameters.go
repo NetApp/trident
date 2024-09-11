@@ -452,6 +452,12 @@ type NfsCollectionGetParams struct {
 	*/
 	ProtocolV3FeaturesFsidChange *bool
 
+	/* ProtocolV3FeaturesHideSnapshotEnabled.
+
+	   Filter by protocol.v3_features.hide_snapshot_enabled
+	*/
+	ProtocolV3FeaturesHideSnapshotEnabled *bool
+
 	/* ProtocolV3FeaturesMountDaemonPort.
 
 	   Filter by protocol.v3_features.mount_daemon_port
@@ -512,6 +518,12 @@ type NfsCollectionGetParams struct {
 	*/
 	ProtocolV40FeaturesReadDelegationEnabled *bool
 
+	/* ProtocolV40FeaturesReferralsEnabled.
+
+	   Filter by protocol.v40_features.referrals_enabled
+	*/
+	ProtocolV40FeaturesReferralsEnabled *bool
+
 	/* ProtocolV40FeaturesWriteDelegationEnabled.
 
 	   Filter by protocol.v40_features.write_delegation_enabled
@@ -554,6 +566,12 @@ type NfsCollectionGetParams struct {
 	*/
 	ProtocolV41FeaturesReadDelegationEnabled *bool
 
+	/* ProtocolV41FeaturesReferralsEnabled.
+
+	   Filter by protocol.v41_features.referrals_enabled
+	*/
+	ProtocolV41FeaturesReferralsEnabled *bool
+
 	/* ProtocolV41FeaturesTrunkingEnabled.
 
 	   Filter by protocol.v41_features.trunking_enabled
@@ -590,11 +608,41 @@ type NfsCollectionGetParams struct {
 	*/
 	ProtocolV464bitIdentifiersEnabled *bool
 
+	/* ProtocolV4FsidChange.
+
+	   Filter by protocol.v4_fsid_change
+	*/
+	ProtocolV4FsidChange *bool
+
+	/* ProtocolV4GraceSeconds.
+
+	   Filter by protocol.v4_grace_seconds
+	*/
+	ProtocolV4GraceSeconds *int64
+
 	/* ProtocolV4IDDomain.
 
 	   Filter by protocol.v4_id_domain
 	*/
 	ProtocolV4IDDomain *string
+
+	/* ProtocolV4LeaseSeconds.
+
+	   Filter by protocol.v4_lease_seconds
+	*/
+	ProtocolV4LeaseSeconds *int64
+
+	/* ProtocolV4SessionSlotReplyCacheSize.
+
+	   Filter by protocol.v4_session_slot_reply_cache_size
+	*/
+	ProtocolV4SessionSlotReplyCacheSize *int64
+
+	/* ProtocolV4SessionSlots.
+
+	   Filter by protocol.v4_session_slots
+	*/
+	ProtocolV4SessionSlots *int64
 
 	/* ProtocolAccessRulesAuthType.
 
@@ -1801,6 +1849,17 @@ func (o *NfsCollectionGetParams) SetProtocolV3FeaturesFsidChange(protocolV3Featu
 	o.ProtocolV3FeaturesFsidChange = protocolV3FeaturesFsidChange
 }
 
+// WithProtocolV3FeaturesHideSnapshotEnabled adds the protocolV3FeaturesHideSnapshotEnabled to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV3FeaturesHideSnapshotEnabled(protocolV3FeaturesHideSnapshotEnabled *bool) *NfsCollectionGetParams {
+	o.SetProtocolV3FeaturesHideSnapshotEnabled(protocolV3FeaturesHideSnapshotEnabled)
+	return o
+}
+
+// SetProtocolV3FeaturesHideSnapshotEnabled adds the protocolV3FeaturesHideSnapshotEnabled to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV3FeaturesHideSnapshotEnabled(protocolV3FeaturesHideSnapshotEnabled *bool) {
+	o.ProtocolV3FeaturesHideSnapshotEnabled = protocolV3FeaturesHideSnapshotEnabled
+}
+
 // WithProtocolV3FeaturesMountDaemonPort adds the protocolV3FeaturesMountDaemonPort to the nfs collection get params
 func (o *NfsCollectionGetParams) WithProtocolV3FeaturesMountDaemonPort(protocolV3FeaturesMountDaemonPort *int64) *NfsCollectionGetParams {
 	o.SetProtocolV3FeaturesMountDaemonPort(protocolV3FeaturesMountDaemonPort)
@@ -1911,6 +1970,17 @@ func (o *NfsCollectionGetParams) SetProtocolV40FeaturesReadDelegationEnabled(pro
 	o.ProtocolV40FeaturesReadDelegationEnabled = protocolV40FeaturesReadDelegationEnabled
 }
 
+// WithProtocolV40FeaturesReferralsEnabled adds the protocolV40FeaturesReferralsEnabled to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV40FeaturesReferralsEnabled(protocolV40FeaturesReferralsEnabled *bool) *NfsCollectionGetParams {
+	o.SetProtocolV40FeaturesReferralsEnabled(protocolV40FeaturesReferralsEnabled)
+	return o
+}
+
+// SetProtocolV40FeaturesReferralsEnabled adds the protocolV40FeaturesReferralsEnabled to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV40FeaturesReferralsEnabled(protocolV40FeaturesReferralsEnabled *bool) {
+	o.ProtocolV40FeaturesReferralsEnabled = protocolV40FeaturesReferralsEnabled
+}
+
 // WithProtocolV40FeaturesWriteDelegationEnabled adds the protocolV40FeaturesWriteDelegationEnabled to the nfs collection get params
 func (o *NfsCollectionGetParams) WithProtocolV40FeaturesWriteDelegationEnabled(protocolV40FeaturesWriteDelegationEnabled *bool) *NfsCollectionGetParams {
 	o.SetProtocolV40FeaturesWriteDelegationEnabled(protocolV40FeaturesWriteDelegationEnabled)
@@ -1988,6 +2058,17 @@ func (o *NfsCollectionGetParams) SetProtocolV41FeaturesReadDelegationEnabled(pro
 	o.ProtocolV41FeaturesReadDelegationEnabled = protocolV41FeaturesReadDelegationEnabled
 }
 
+// WithProtocolV41FeaturesReferralsEnabled adds the protocolV41FeaturesReferralsEnabled to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV41FeaturesReferralsEnabled(protocolV41FeaturesReferralsEnabled *bool) *NfsCollectionGetParams {
+	o.SetProtocolV41FeaturesReferralsEnabled(protocolV41FeaturesReferralsEnabled)
+	return o
+}
+
+// SetProtocolV41FeaturesReferralsEnabled adds the protocolV41FeaturesReferralsEnabled to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV41FeaturesReferralsEnabled(protocolV41FeaturesReferralsEnabled *bool) {
+	o.ProtocolV41FeaturesReferralsEnabled = protocolV41FeaturesReferralsEnabled
+}
+
 // WithProtocolV41FeaturesTrunkingEnabled adds the protocolV41FeaturesTrunkingEnabled to the nfs collection get params
 func (o *NfsCollectionGetParams) WithProtocolV41FeaturesTrunkingEnabled(protocolV41FeaturesTrunkingEnabled *bool) *NfsCollectionGetParams {
 	o.SetProtocolV41FeaturesTrunkingEnabled(protocolV41FeaturesTrunkingEnabled)
@@ -2054,6 +2135,28 @@ func (o *NfsCollectionGetParams) SetProtocolV464bitIdentifiersEnabled(protocolV4
 	o.ProtocolV464bitIdentifiersEnabled = protocolV464bitIdentifiersEnabled
 }
 
+// WithProtocolV4FsidChange adds the protocolV4FsidChange to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV4FsidChange(protocolV4FsidChange *bool) *NfsCollectionGetParams {
+	o.SetProtocolV4FsidChange(protocolV4FsidChange)
+	return o
+}
+
+// SetProtocolV4FsidChange adds the protocolV4FsidChange to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV4FsidChange(protocolV4FsidChange *bool) {
+	o.ProtocolV4FsidChange = protocolV4FsidChange
+}
+
+// WithProtocolV4GraceSeconds adds the protocolV4GraceSeconds to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV4GraceSeconds(protocolV4GraceSeconds *int64) *NfsCollectionGetParams {
+	o.SetProtocolV4GraceSeconds(protocolV4GraceSeconds)
+	return o
+}
+
+// SetProtocolV4GraceSeconds adds the protocolV4GraceSeconds to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV4GraceSeconds(protocolV4GraceSeconds *int64) {
+	o.ProtocolV4GraceSeconds = protocolV4GraceSeconds
+}
+
 // WithProtocolV4IDDomain adds the protocolV4IDDomain to the nfs collection get params
 func (o *NfsCollectionGetParams) WithProtocolV4IDDomain(protocolV4IDDomain *string) *NfsCollectionGetParams {
 	o.SetProtocolV4IDDomain(protocolV4IDDomain)
@@ -2063,6 +2166,39 @@ func (o *NfsCollectionGetParams) WithProtocolV4IDDomain(protocolV4IDDomain *stri
 // SetProtocolV4IDDomain adds the protocolV4IdDomain to the nfs collection get params
 func (o *NfsCollectionGetParams) SetProtocolV4IDDomain(protocolV4IDDomain *string) {
 	o.ProtocolV4IDDomain = protocolV4IDDomain
+}
+
+// WithProtocolV4LeaseSeconds adds the protocolV4LeaseSeconds to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV4LeaseSeconds(protocolV4LeaseSeconds *int64) *NfsCollectionGetParams {
+	o.SetProtocolV4LeaseSeconds(protocolV4LeaseSeconds)
+	return o
+}
+
+// SetProtocolV4LeaseSeconds adds the protocolV4LeaseSeconds to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV4LeaseSeconds(protocolV4LeaseSeconds *int64) {
+	o.ProtocolV4LeaseSeconds = protocolV4LeaseSeconds
+}
+
+// WithProtocolV4SessionSlotReplyCacheSize adds the protocolV4SessionSlotReplyCacheSize to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV4SessionSlotReplyCacheSize(protocolV4SessionSlotReplyCacheSize *int64) *NfsCollectionGetParams {
+	o.SetProtocolV4SessionSlotReplyCacheSize(protocolV4SessionSlotReplyCacheSize)
+	return o
+}
+
+// SetProtocolV4SessionSlotReplyCacheSize adds the protocolV4SessionSlotReplyCacheSize to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV4SessionSlotReplyCacheSize(protocolV4SessionSlotReplyCacheSize *int64) {
+	o.ProtocolV4SessionSlotReplyCacheSize = protocolV4SessionSlotReplyCacheSize
+}
+
+// WithProtocolV4SessionSlots adds the protocolV4SessionSlots to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV4SessionSlots(protocolV4SessionSlots *int64) *NfsCollectionGetParams {
+	o.SetProtocolV4SessionSlots(protocolV4SessionSlots)
+	return o
+}
+
+// SetProtocolV4SessionSlots adds the protocolV4SessionSlots to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV4SessionSlots(protocolV4SessionSlots *int64) {
+	o.ProtocolV4SessionSlots = protocolV4SessionSlots
 }
 
 // WithProtocolAccessRulesAuthType adds the protocolAccessRulesAuthType to the nfs collection get params
@@ -3925,6 +4061,23 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.ProtocolV3FeaturesHideSnapshotEnabled != nil {
+
+		// query param protocol.v3_features.hide_snapshot_enabled
+		var qrProtocolV3FeaturesHideSnapshotEnabled bool
+
+		if o.ProtocolV3FeaturesHideSnapshotEnabled != nil {
+			qrProtocolV3FeaturesHideSnapshotEnabled = *o.ProtocolV3FeaturesHideSnapshotEnabled
+		}
+		qProtocolV3FeaturesHideSnapshotEnabled := swag.FormatBool(qrProtocolV3FeaturesHideSnapshotEnabled)
+		if qProtocolV3FeaturesHideSnapshotEnabled != "" {
+
+			if err := r.SetQueryParam("protocol.v3_features.hide_snapshot_enabled", qProtocolV3FeaturesHideSnapshotEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ProtocolV3FeaturesMountDaemonPort != nil {
 
 		// query param protocol.v3_features.mount_daemon_port
@@ -4095,6 +4248,23 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.ProtocolV40FeaturesReferralsEnabled != nil {
+
+		// query param protocol.v40_features.referrals_enabled
+		var qrProtocolV40FeaturesReferralsEnabled bool
+
+		if o.ProtocolV40FeaturesReferralsEnabled != nil {
+			qrProtocolV40FeaturesReferralsEnabled = *o.ProtocolV40FeaturesReferralsEnabled
+		}
+		qProtocolV40FeaturesReferralsEnabled := swag.FormatBool(qrProtocolV40FeaturesReferralsEnabled)
+		if qProtocolV40FeaturesReferralsEnabled != "" {
+
+			if err := r.SetQueryParam("protocol.v40_features.referrals_enabled", qProtocolV40FeaturesReferralsEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ProtocolV40FeaturesWriteDelegationEnabled != nil {
 
 		// query param protocol.v40_features.write_delegation_enabled
@@ -4214,6 +4384,23 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.ProtocolV41FeaturesReferralsEnabled != nil {
+
+		// query param protocol.v41_features.referrals_enabled
+		var qrProtocolV41FeaturesReferralsEnabled bool
+
+		if o.ProtocolV41FeaturesReferralsEnabled != nil {
+			qrProtocolV41FeaturesReferralsEnabled = *o.ProtocolV41FeaturesReferralsEnabled
+		}
+		qProtocolV41FeaturesReferralsEnabled := swag.FormatBool(qrProtocolV41FeaturesReferralsEnabled)
+		if qProtocolV41FeaturesReferralsEnabled != "" {
+
+			if err := r.SetQueryParam("protocol.v41_features.referrals_enabled", qProtocolV41FeaturesReferralsEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ProtocolV41FeaturesTrunkingEnabled != nil {
 
 		// query param protocol.v41_features.trunking_enabled
@@ -4316,6 +4503,40 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.ProtocolV4FsidChange != nil {
+
+		// query param protocol.v4_fsid_change
+		var qrProtocolV4FsidChange bool
+
+		if o.ProtocolV4FsidChange != nil {
+			qrProtocolV4FsidChange = *o.ProtocolV4FsidChange
+		}
+		qProtocolV4FsidChange := swag.FormatBool(qrProtocolV4FsidChange)
+		if qProtocolV4FsidChange != "" {
+
+			if err := r.SetQueryParam("protocol.v4_fsid_change", qProtocolV4FsidChange); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV4GraceSeconds != nil {
+
+		// query param protocol.v4_grace_seconds
+		var qrProtocolV4GraceSeconds int64
+
+		if o.ProtocolV4GraceSeconds != nil {
+			qrProtocolV4GraceSeconds = *o.ProtocolV4GraceSeconds
+		}
+		qProtocolV4GraceSeconds := swag.FormatInt64(qrProtocolV4GraceSeconds)
+		if qProtocolV4GraceSeconds != "" {
+
+			if err := r.SetQueryParam("protocol.v4_grace_seconds", qProtocolV4GraceSeconds); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ProtocolV4IDDomain != nil {
 
 		// query param protocol.v4_id_domain
@@ -4328,6 +4549,57 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qProtocolV4IDDomain != "" {
 
 			if err := r.SetQueryParam("protocol.v4_id_domain", qProtocolV4IDDomain); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV4LeaseSeconds != nil {
+
+		// query param protocol.v4_lease_seconds
+		var qrProtocolV4LeaseSeconds int64
+
+		if o.ProtocolV4LeaseSeconds != nil {
+			qrProtocolV4LeaseSeconds = *o.ProtocolV4LeaseSeconds
+		}
+		qProtocolV4LeaseSeconds := swag.FormatInt64(qrProtocolV4LeaseSeconds)
+		if qProtocolV4LeaseSeconds != "" {
+
+			if err := r.SetQueryParam("protocol.v4_lease_seconds", qProtocolV4LeaseSeconds); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV4SessionSlotReplyCacheSize != nil {
+
+		// query param protocol.v4_session_slot_reply_cache_size
+		var qrProtocolV4SessionSlotReplyCacheSize int64
+
+		if o.ProtocolV4SessionSlotReplyCacheSize != nil {
+			qrProtocolV4SessionSlotReplyCacheSize = *o.ProtocolV4SessionSlotReplyCacheSize
+		}
+		qProtocolV4SessionSlotReplyCacheSize := swag.FormatInt64(qrProtocolV4SessionSlotReplyCacheSize)
+		if qProtocolV4SessionSlotReplyCacheSize != "" {
+
+			if err := r.SetQueryParam("protocol.v4_session_slot_reply_cache_size", qProtocolV4SessionSlotReplyCacheSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV4SessionSlots != nil {
+
+		// query param protocol.v4_session_slots
+		var qrProtocolV4SessionSlots int64
+
+		if o.ProtocolV4SessionSlots != nil {
+			qrProtocolV4SessionSlots = *o.ProtocolV4SessionSlots
+		}
+		qProtocolV4SessionSlots := swag.FormatInt64(qrProtocolV4SessionSlots)
+		if qProtocolV4SessionSlots != "" {
+
+			if err := r.SetQueryParam("protocol.v4_session_slots", qProtocolV4SessionSlots); err != nil {
 				return err
 			}
 		}

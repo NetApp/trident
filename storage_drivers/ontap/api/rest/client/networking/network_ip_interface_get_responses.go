@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NetworkIPInterfaceGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the network Ip interface get o k response
+func (o *NetworkIPInterfaceGetOK) Code() int {
+	return 200
+}
+
 func (o *NetworkIPInterfaceGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/ip/interfaces/{uuid}][%d] networkIpInterfaceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/interfaces/{uuid}][%d] networkIpInterfaceGetOK %s", 200, payload)
 }
 
 func (o *NetworkIPInterfaceGetOK) String() string {
-	return fmt.Sprintf("[GET /network/ip/interfaces/{uuid}][%d] networkIpInterfaceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/interfaces/{uuid}][%d] networkIpInterfaceGetOK %s", 200, payload)
 }
 
 func (o *NetworkIPInterfaceGetOK) GetPayload() *models.IPInterface {
@@ -122,11 +130,6 @@ type NetworkIPInterfaceGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the network ip interface get default response
-func (o *NetworkIPInterfaceGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this network ip interface get default response has a 2xx status code
 func (o *NetworkIPInterfaceGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NetworkIPInterfaceGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the network ip interface get default response
+func (o *NetworkIPInterfaceGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetworkIPInterfaceGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/ip/interfaces/{uuid}][%d] network_ip_interface_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/interfaces/{uuid}][%d] network_ip_interface_get default %s", o._statusCode, payload)
 }
 
 func (o *NetworkIPInterfaceGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/ip/interfaces/{uuid}][%d] network_ip_interface_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/interfaces/{uuid}][%d] network_ip_interface_get default %s", o._statusCode, payload)
 }
 
 func (o *NetworkIPInterfaceGetDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *VscanModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the vscan modify o k response
+func (o *VscanModifyOK) Code() int {
+	return 200
+}
+
 func (o *VscanModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}][%d] vscanModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}][%d] vscanModifyOK", 200)
 }
 
 func (o *VscanModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}][%d] vscanModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}][%d] vscanModifyOK", 200)
 }
 
 func (o *VscanModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,18 +113,16 @@ func NewVscanModifyDefault(code int) *VscanModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 10027015   | Attempting to enable a Vscan but no active scanner-pool exists for the specified SVM
+| 10027009   | Attempting to enable a Vscan for an SVM for which it's already enabled
+| 10027010   | Attempting to disable a Vscan for an SVM for which it's already disabled
 | 10027011   | Attempting to enable a Vscan for an SVM for which no CIFS server exists
 | 10027023   | Attempting to enable a Vscan for an SVM for which no active Vscan On-Access policy exists
+| 10027012   | Cannot enable Vscan on an administrative SVM.
 */
 type VscanModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the vscan modify default response
-func (o *VscanModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this vscan modify default response has a 2xx status code
@@ -146,12 +150,19 @@ func (o *VscanModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the vscan modify default response
+func (o *VscanModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VscanModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}][%d] vscan_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}][%d] vscan_modify default %s", o._statusCode, payload)
 }
 
 func (o *VscanModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}][%d] vscan_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}][%d] vscan_modify default %s", o._statusCode, payload)
 }
 
 func (o *VscanModifyDefault) GetPayload() *models.ErrorResponse {

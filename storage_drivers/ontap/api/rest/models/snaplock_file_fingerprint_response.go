@@ -27,7 +27,7 @@ type SnaplockFileFingerprintResponse struct {
 	NumRecords *int64 `json:"num_records,omitempty"`
 
 	// snaplock file fingerprint response inline records
-	SnaplockFileFingerprintResponseInlineRecords []*SnaplockFileFingerprint `json:"records,omitempty"`
+	SnaplockFileFingerprintResponseInlineRecords []*SnaplockFileFingerprintGet `json:"records,omitempty"`
 }
 
 // Validate validates this snaplock file fingerprint response

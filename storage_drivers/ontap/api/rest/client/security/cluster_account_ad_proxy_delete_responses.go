@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ClusterAccountAdProxyDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cluster account ad proxy delete o k response
+func (o *ClusterAccountAdProxyDeleteOK) Code() int {
+	return 200
+}
+
 func (o *ClusterAccountAdProxyDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyDeleteOK", 200)
 }
 
 func (o *ClusterAccountAdProxyDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyDeleteOK", 200)
 }
 
 func (o *ClusterAccountAdProxyDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type ClusterAccountAdProxyDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cluster account ad proxy delete default response
-func (o *ClusterAccountAdProxyDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cluster account ad proxy delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *ClusterAccountAdProxyDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster account ad proxy delete default response
+func (o *ClusterAccountAdProxyDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterAccountAdProxyDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_delete default %s", o._statusCode, payload)
 }
 
 func (o *ClusterAccountAdProxyDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_delete default %s", o._statusCode, payload)
 }
 
 func (o *ClusterAccountAdProxyDeleteDefault) GetPayload() *models.ErrorResponse {

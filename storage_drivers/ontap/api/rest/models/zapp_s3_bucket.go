@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -20,6 +21,9 @@ import (
 // swagger:model zapp_s3_bucket
 type ZappS3Bucket struct {
 
+	// protection type
+	ProtectionType *ZappS3BucketInlineProtectionType `json:"protection_type,omitempty"`
+
 	// The list of application components to be created.
 	// Required: true
 	// Max Items: 10
@@ -31,6 +35,10 @@ type ZappS3Bucket struct {
 func (m *ZappS3Bucket) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateProtectionType(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateZappS3BucketInlineApplicationComponents(formats); err != nil {
 		res = append(res, err)
 	}
@@ -38,6 +46,23 @@ func (m *ZappS3Bucket) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ZappS3Bucket) validateProtectionType(formats strfmt.Registry) error {
+	if swag.IsZero(m.ProtectionType) { // not required
+		return nil
+	}
+
+	if m.ProtectionType != nil {
+		if err := m.ProtectionType.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("protection_type")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -80,6 +105,10 @@ func (m *ZappS3Bucket) validateZappS3BucketInlineApplicationComponents(formats s
 func (m *ZappS3Bucket) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateProtectionType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateZappS3BucketInlineApplicationComponents(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -87,6 +116,20 @@ func (m *ZappS3Bucket) ContextValidate(ctx context.Context, formats strfmt.Regis
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ZappS3Bucket) contextValidateProtectionType(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ProtectionType != nil {
+		if err := m.ProtectionType.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("protection_type")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -119,6 +162,109 @@ func (m *ZappS3Bucket) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ZappS3Bucket) UnmarshalBinary(b []byte) error {
 	var res ZappS3Bucket
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ZappS3BucketInlineProtectionType zapp s3 bucket inline protection type
+//
+// swagger:model zapp_s3_bucket_inline_protection_type
+type ZappS3BucketInlineProtectionType struct {
+
+	// The remote RPO of the application.
+	// Enum: ["none","zero"]
+	RemoteRpo *string `json:"remote_rpo,omitempty"`
+}
+
+// Validate validates this zapp s3 bucket inline protection type
+func (m *ZappS3BucketInlineProtectionType) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateRemoteRpo(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var zappS3BucketInlineProtectionTypeTypeRemoteRpoPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["none","zero"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		zappS3BucketInlineProtectionTypeTypeRemoteRpoPropEnum = append(zappS3BucketInlineProtectionTypeTypeRemoteRpoPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// zapp_s3_bucket_inline_protection_type
+	// ZappS3BucketInlineProtectionType
+	// remote_rpo
+	// RemoteRpo
+	// none
+	// END DEBUGGING
+	// ZappS3BucketInlineProtectionTypeRemoteRpoNone captures enum value "none"
+	ZappS3BucketInlineProtectionTypeRemoteRpoNone string = "none"
+
+	// BEGIN DEBUGGING
+	// zapp_s3_bucket_inline_protection_type
+	// ZappS3BucketInlineProtectionType
+	// remote_rpo
+	// RemoteRpo
+	// zero
+	// END DEBUGGING
+	// ZappS3BucketInlineProtectionTypeRemoteRpoZero captures enum value "zero"
+	ZappS3BucketInlineProtectionTypeRemoteRpoZero string = "zero"
+)
+
+// prop value enum
+func (m *ZappS3BucketInlineProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, zappS3BucketInlineProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ZappS3BucketInlineProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
+	if swag.IsZero(m.RemoteRpo) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", *m.RemoteRpo); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this zapp s3 bucket inline protection type based on context it is used
+func (m *ZappS3BucketInlineProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ZappS3BucketInlineProtectionType) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ZappS3BucketInlineProtectionType) UnmarshalBinary(b []byte) error {
+	var res ZappS3BucketInlineProtectionType
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

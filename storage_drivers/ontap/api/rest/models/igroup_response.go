@@ -26,6 +26,7 @@ type IgroupResponse struct {
 	IgroupResponseInlineRecords []*Igroup `json:"records,omitempty"`
 
 	// The number of records in the response.
+	//
 	// Example: 1
 	NumRecords *int64 `json:"num_records,omitempty"`
 }

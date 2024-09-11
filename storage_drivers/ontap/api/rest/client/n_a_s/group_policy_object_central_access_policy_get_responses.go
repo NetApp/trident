@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *GroupPolicyObjectCentralAccessPolicyGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the group policy object central access policy get o k response
+func (o *GroupPolicyObjectCentralAccessPolicyGetOK) Code() int {
+	return 200
+}
+
 func (o *GroupPolicyObjectCentralAccessPolicyGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/central-access-policies/{name}][%d] groupPolicyObjectCentralAccessPolicyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/central-access-policies/{name}][%d] groupPolicyObjectCentralAccessPolicyGetOK %s", 200, payload)
 }
 
 func (o *GroupPolicyObjectCentralAccessPolicyGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/central-access-policies/{name}][%d] groupPolicyObjectCentralAccessPolicyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/central-access-policies/{name}][%d] groupPolicyObjectCentralAccessPolicyGetOK %s", 200, payload)
 }
 
 func (o *GroupPolicyObjectCentralAccessPolicyGetOK) GetPayload() *models.GroupPolicyObjectCentralAccessPolicy {
@@ -122,11 +130,6 @@ type GroupPolicyObjectCentralAccessPolicyGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the group policy object central access policy get default response
-func (o *GroupPolicyObjectCentralAccessPolicyGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this group policy object central access policy get default response has a 2xx status code
 func (o *GroupPolicyObjectCentralAccessPolicyGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *GroupPolicyObjectCentralAccessPolicyGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the group policy object central access policy get default response
+func (o *GroupPolicyObjectCentralAccessPolicyGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *GroupPolicyObjectCentralAccessPolicyGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/central-access-policies/{name}][%d] group_policy_object_central_access_policy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/central-access-policies/{name}][%d] group_policy_object_central_access_policy_get default %s", o._statusCode, payload)
 }
 
 func (o *GroupPolicyObjectCentralAccessPolicyGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/central-access-policies/{name}][%d] group_policy_object_central_access_policy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/central-access-policies/{name}][%d] group_policy_object_central_access_policy_get default %s", o._statusCode, payload)
 }
 
 func (o *GroupPolicyObjectCentralAccessPolicyGetDefault) GetPayload() *models.ErrorResponse {

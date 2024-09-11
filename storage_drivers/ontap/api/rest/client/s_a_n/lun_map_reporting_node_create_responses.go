@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *LunMapReportingNodeCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the lun map reporting node create created response
+func (o *LunMapReportingNodeCreateCreated) Code() int {
+	return 201
+}
+
 func (o *LunMapReportingNodeCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes][%d] lunMapReportingNodeCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes][%d] lunMapReportingNodeCreateCreated %s", 201, payload)
 }
 
 func (o *LunMapReportingNodeCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes][%d] lunMapReportingNodeCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes][%d] lunMapReportingNodeCreateCreated %s", 201, payload)
 }
 
 func (o *LunMapReportingNodeCreateCreated) GetPayload() *models.LunMapReportingNodeResponse {
@@ -136,16 +144,12 @@ func NewLunMapReportingNodeCreateDefault(code int) *LunMapReportingNodeCreateDef
 | 5374921 | The specified cluster node name and UUID do not refer to the same cluster node. |
 | 5374922 | The specified LUN map does not exist. |
 | 5374923 | A cluster node `uuid` or `name` must be specified to add a reporting node. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type LunMapReportingNodeCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the lun map reporting node create default response
-func (o *LunMapReportingNodeCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this lun map reporting node create default response has a 2xx status code
@@ -173,12 +177,19 @@ func (o *LunMapReportingNodeCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the lun map reporting node create default response
+func (o *LunMapReportingNodeCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LunMapReportingNodeCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes][%d] lun_map_reporting_node_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes][%d] lun_map_reporting_node_create default %s", o._statusCode, payload)
 }
 
 func (o *LunMapReportingNodeCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes][%d] lun_map_reporting_node_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes][%d] lun_map_reporting_node_create default %s", o._statusCode, payload)
 }
 
 func (o *LunMapReportingNodeCreateDefault) GetPayload() *models.ErrorResponse {

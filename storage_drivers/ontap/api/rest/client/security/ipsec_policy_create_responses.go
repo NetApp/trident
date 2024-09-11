@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *IpsecPolicyCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the ipsec policy create created response
+func (o *IpsecPolicyCreateCreated) Code() int {
+	return 201
+}
+
 func (o *IpsecPolicyCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/ipsec/policies][%d] ipsecPolicyCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/ipsec/policies][%d] ipsecPolicyCreateCreated %s", 201, payload)
 }
 
 func (o *IpsecPolicyCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/ipsec/policies][%d] ipsecPolicyCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/ipsec/policies][%d] ipsecPolicyCreateCreated %s", 201, payload)
 }
 
 func (o *IpsecPolicyCreateCreated) GetPayload() *models.IpsecPolicyResponse {
@@ -133,37 +141,53 @@ func NewIpsecPolicyCreateDefault(code int) *IpsecPolicyCreateDefault {
 | 66257099 | Only one protocol can be specified. |
 | 66257100 | Only one local port can be specified. |
 | 66257101 | Only one remote port can be specified. |
+| 66257102 | Internet Key Exchange version 1 (IKEv1) is not supported. |
 | 66257104 | IPsec policy with same name already exists in this SVM. |
 | 66257107 | The specified pre-shared key is not a valid hexadecimal string. |
 | 66257109 | The specified pre-shared key is not a valid Base64 encoded binary string. |
 | 66257110 | Failed to a create policy sequencing value. |
-| 66257111 | The IPsec policy with action ESP TRANSPORT provides packet protection and requires a secret key or certificate for authentication. |
 | 66257112 | The IPsec policy with the action specified does not provide packet protection and the authentication method provided for the policy will be ignored. |
 | 66257113 | Only one local IP subnet can be specified. |
 | 66257114 | Only one remote IP subnet can be specified. |
 | 66257115 | Port ranges containing more than one port are not supported. |
 | 66257117 | IPsec is not supported on the SVM specified in the policy, IPsec is supported on data SVMs only. |
 | 66257120 | The subnet selector must be a host address (An IPv4 address with a 32-bit netmask or an IPv6 address with a 128-bit netmask). |
-| 66257121 | The maximum limit of IPsec Policies has reached for the specified SVM. |
+| 66257121 | The maximum limit of IPsec policies has been reached for the specified SVM. |
 | 66257125 | The local_endpoint.address must be specified with local_endpoint.netmask. |
 | 66257126 | The remote_endpoint.address must be specified with remote_endpoint.netmask. |
-| 66257132 | Invalid value for port field. Value should be in range <1-65535>. |
+| 66257127 | The local subnet must be configured as a non-zero subnet. |
+| 66257128 | Invalid ANY wildcard subnet. |
+| 66257129 | A specific local or remote port number is required when the remote subnet is configured as an ANY wildcard subnet. |
+| 66257130 | The maximum limit of IPsec policies has been reached for the cluster. |
+| 66257131 | ESP in UDPv6 Encapsulation is not supported. |
+| 66257132 | Invalid value for port field. Value should be in range <0-65535>. |
 | 66257133 | A pre-shared key is needed for the PSK authentication method. Use the secret_key option to specify a key. |
 | 66257134 | An end-entity certificate is needed for the PKI authentication method. Use the certificate.uuid option to specify an end-entity certificate. |
+| 66257135 | The specified certificate is not found on the SVM. |
+| 66257136 | A certificate is not needed for the PSK authentication method. |
 | 66257137 | A pre-shared key is not needed for the PKI authentication method. |
+| 66257138 | Remote identity is required when using certificate verification. |
 | 66257139 | Certificate with the specified UUID was not found. |
 | 66257140 | Only certificates with a client or server type are supported. |
+| 66257142 | Failed to create IPsec policy because the specified SVM is being migrated. |
+| 66257143 | Invalid IPsec policy provided. The subnet must be non-empty. |
+| 66257144 | The IPsec policy actions ESP TRANSPORT and ESP UDP each provide packet protection and requires a secret key or certificate for authentication. |
+| 66257148 | The policy name does not meet required ASCII-range characters length. |
+| 66257199 | Not all of the nodes in the cluster are running a version that supports the IPsec feature. |
+| 66257200 | The shared key does not meet required ASCII-range characters length. |
+| 66257201 | Support for the feature available with effective cluster version or later. |
+| 66257202 | The specified SVM name is invalid. |
+| 66257203 | The specified SVM UUID is invalid. |
+| 66257204 | The specified IPspace UUID and IPspace name refer to different IPspaces. |
+| 66257205 | The specified SVM must exist in the specified IPspace. |
+| 66257305 | The certificate UUID does not match the provided certificate name. |
 | 66257396 | IPsec is not supported for the admin SVM in a MetroCluster configuration. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IpsecPolicyCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ipsec policy create default response
-func (o *IpsecPolicyCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ipsec policy create default response has a 2xx status code
@@ -191,12 +215,19 @@ func (o *IpsecPolicyCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ipsec policy create default response
+func (o *IpsecPolicyCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IpsecPolicyCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/ipsec/policies][%d] ipsec_policy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/ipsec/policies][%d] ipsec_policy_create default %s", o._statusCode, payload)
 }
 
 func (o *IpsecPolicyCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/ipsec/policies][%d] ipsec_policy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/ipsec/policies][%d] ipsec_policy_create default %s", o._statusCode, payload)
 }
 
 func (o *IpsecPolicyCreateDefault) GetPayload() *models.ErrorResponse {

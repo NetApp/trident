@@ -64,6 +64,12 @@ SecurityKeyManagerCreateParams contains all the parameters to send to the API en
 */
 type SecurityKeyManagerCreateParams struct {
 
+	/* CreateInactive.
+
+	   Indicates whether to create an active or inactive configuration.
+	*/
+	CreateInactive *bool
+
 	/* Info.
 
 	   Info specification
@@ -75,6 +81,12 @@ type SecurityKeyManagerCreateParams struct {
 	   The default is false.  If set to true, the records are returned.
 	*/
 	ReturnRecords *bool
+
+	/* ReturnTimeout.
+
+	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
+	*/
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -95,10 +107,13 @@ func (o *SecurityKeyManagerCreateParams) WithDefaults() *SecurityKeyManagerCreat
 func (o *SecurityKeyManagerCreateParams) SetDefaults() {
 	var (
 		returnRecordsDefault = bool(false)
+
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := SecurityKeyManagerCreateParams{
 		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -140,6 +155,17 @@ func (o *SecurityKeyManagerCreateParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithCreateInactive adds the createInactive to the security key manager create params
+func (o *SecurityKeyManagerCreateParams) WithCreateInactive(createInactive *bool) *SecurityKeyManagerCreateParams {
+	o.SetCreateInactive(createInactive)
+	return o
+}
+
+// SetCreateInactive adds the createInactive to the security key manager create params
+func (o *SecurityKeyManagerCreateParams) SetCreateInactive(createInactive *bool) {
+	o.CreateInactive = createInactive
+}
+
 // WithInfo adds the info to the security key manager create params
 func (o *SecurityKeyManagerCreateParams) WithInfo(info *models.SecurityKeyManager) *SecurityKeyManagerCreateParams {
 	o.SetInfo(info)
@@ -162,6 +188,17 @@ func (o *SecurityKeyManagerCreateParams) SetReturnRecords(returnRecords *bool) {
 	o.ReturnRecords = returnRecords
 }
 
+// WithReturnTimeout adds the returnTimeout to the security key manager create params
+func (o *SecurityKeyManagerCreateParams) WithReturnTimeout(returnTimeout *int64) *SecurityKeyManagerCreateParams {
+	o.SetReturnTimeout(returnTimeout)
+	return o
+}
+
+// SetReturnTimeout adds the returnTimeout to the security key manager create params
+func (o *SecurityKeyManagerCreateParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *SecurityKeyManagerCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -169,6 +206,23 @@ func (o *SecurityKeyManagerCreateParams) WriteToRequest(r runtime.ClientRequest,
 		return err
 	}
 	var res []error
+
+	if o.CreateInactive != nil {
+
+		// query param create_inactive
+		var qrCreateInactive bool
+
+		if o.CreateInactive != nil {
+			qrCreateInactive = *o.CreateInactive
+		}
+		qCreateInactive := swag.FormatBool(qrCreateInactive)
+		if qCreateInactive != "" {
+
+			if err := r.SetQueryParam("create_inactive", qCreateInactive); err != nil {
+				return err
+			}
+		}
+	}
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err
@@ -187,6 +241,23 @@ func (o *SecurityKeyManagerCreateParams) WriteToRequest(r runtime.ClientRequest,
 		if qReturnRecords != "" {
 
 			if err := r.SetQueryParam("return_records", qReturnRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnTimeout != nil {
+
+		// query param return_timeout
+		var qrReturnTimeout int64
+
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
+		}
+		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
+		if qReturnTimeout != "" {
+
+			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
 				return err
 			}
 		}

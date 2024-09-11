@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *RolePrivilegeCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the role privilege create created response
+func (o *RolePrivilegeCreateCreated) Code() int {
+	return 201
+}
+
 func (o *RolePrivilegeCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/roles/{owner.uuid}/{name}/privileges][%d] rolePrivilegeCreateCreated ", 201)
+	return fmt.Sprintf("[POST /security/roles/{owner.uuid}/{name}/privileges][%d] rolePrivilegeCreateCreated", 201)
 }
 
 func (o *RolePrivilegeCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/roles/{owner.uuid}/{name}/privileges][%d] rolePrivilegeCreateCreated ", 201)
+	return fmt.Sprintf("[POST /security/roles/{owner.uuid}/{name}/privileges][%d] rolePrivilegeCreateCreated", 201)
 }
 
 func (o *RolePrivilegeCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -117,30 +123,30 @@ func NewRolePrivilegeCreateDefault(code int) *RolePrivilegeCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 1263347 | Cannot modify pre-defined roles. |
 | 5636129 | A role with given name has not been defined. |
 | 5636143 | A Vserver admin cannot use the API with this access level. |
 | 5636144 | The value specified for the access level is not valid. |
+| 5636168 | This role is mapped to a rest-role and cannot be modified directly. Modifications must be done with rest-role. |
 | 5636169 | A character in the URI is not valid. |
 | 5636170 | The URI does not exist. |
 | 5636173 | This feature requires an effective cluster version of 9.6 or later. |
 | 5636175 | Vserver admin cannot have access to given API. |
-| 5636184 | Expanded REST roles for granular resource control feature is currently disabled. |
+| 5636184 | The expanded REST roles for granular resource control feature is currently disabled. |
 | 5636185 | The specified UUID was not found. |
 | 5636186 | Expanded REST roles for granular resource control requires an effective cluster version of 9.10.1 or later. |
+| 5636192 | The query parameter cannot be specified for the privileges tuple with API endpoint entries. |
+| 5636200 | The specified value of the access parameter is invalid, if a command or command directory is specified in the path parameter. |
 | 13434890 | Vserver-ID failed for Vserver roles. |
 | 13434891 | UUID LookUp failed for Vserver roles. |
 | 13434892 | Roles is a required field. |
 | 13434893 | The SVM does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type RolePrivilegeCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the role privilege create default response
-func (o *RolePrivilegeCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this role privilege create default response has a 2xx status code
@@ -168,12 +174,19 @@ func (o *RolePrivilegeCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the role privilege create default response
+func (o *RolePrivilegeCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *RolePrivilegeCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/roles/{owner.uuid}/{name}/privileges][%d] role_privilege_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/roles/{owner.uuid}/{name}/privileges][%d] role_privilege_create default %s", o._statusCode, payload)
 }
 
 func (o *RolePrivilegeCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/roles/{owner.uuid}/{name}/privileges][%d] role_privilege_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/roles/{owner.uuid}/{name}/privileges][%d] role_privilege_create default %s", o._statusCode, payload)
 }
 
 func (o *RolePrivilegeCreateDefault) GetPayload() *models.ErrorResponse {

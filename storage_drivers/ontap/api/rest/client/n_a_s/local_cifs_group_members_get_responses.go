@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *LocalCifsGroupMembersGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the local cifs group members get o k response
+func (o *LocalCifsGroupMembersGetOK) Code() int {
+	return 200
+}
+
 func (o *LocalCifsGroupMembersGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] localCifsGroupMembersGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] localCifsGroupMembersGetOK %s", 200, payload)
 }
 
 func (o *LocalCifsGroupMembersGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] localCifsGroupMembersGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] localCifsGroupMembersGetOK %s", 200, payload)
 }
 
 func (o *LocalCifsGroupMembersGetOK) GetPayload() *models.LocalCifsGroupMembers {
@@ -122,11 +130,6 @@ type LocalCifsGroupMembersGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the local cifs group members get default response
-func (o *LocalCifsGroupMembersGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this local cifs group members get default response has a 2xx status code
 func (o *LocalCifsGroupMembersGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *LocalCifsGroupMembersGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the local cifs group members get default response
+func (o *LocalCifsGroupMembersGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LocalCifsGroupMembersGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] local_cifs_group_members_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] local_cifs_group_members_get default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsGroupMembersGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] local_cifs_group_members_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] local_cifs_group_members_get default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsGroupMembersGetDefault) GetPayload() *models.ErrorResponse {

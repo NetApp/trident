@@ -6,6 +6,7 @@ package svm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SvmPeerInstanceGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the svm peer instance get o k response
+func (o *SvmPeerInstanceGetOK) Code() int {
+	return 200
+}
+
 func (o *SvmPeerInstanceGetOK) Error() string {
-	return fmt.Sprintf("[GET /svm/peers/{uuid}][%d] svmPeerInstanceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/peers/{uuid}][%d] svmPeerInstanceGetOK %s", 200, payload)
 }
 
 func (o *SvmPeerInstanceGetOK) String() string {
-	return fmt.Sprintf("[GET /svm/peers/{uuid}][%d] svmPeerInstanceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/peers/{uuid}][%d] svmPeerInstanceGetOK %s", 200, payload)
 }
 
 func (o *SvmPeerInstanceGetOK) GetPayload() *models.SvmPeer {
@@ -121,6 +129,7 @@ func NewSvmPeerInstanceGetDefault(code int) *SvmPeerInstanceGetDefault {
 | Error codes | Description |
 | ----------- | ----------- |
 | 26345578    | Internal error. Unable to retrieve local or peer SVM name. |
+| 9896086     | Peer SVM name conflicts with one of the following: a peer SVM in an existing SVM peer relationship, a local SVM, or an IPSpace. Use the \"name\" property to uniquely specify the peer SVM alias name. |
 ```
 <br/>
 */
@@ -128,11 +137,6 @@ type SvmPeerInstanceGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the svm peer instance get default response
-func (o *SvmPeerInstanceGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this svm peer instance get default response has a 2xx status code
@@ -160,12 +164,19 @@ func (o *SvmPeerInstanceGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the svm peer instance get default response
+func (o *SvmPeerInstanceGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SvmPeerInstanceGetDefault) Error() string {
-	return fmt.Sprintf("[GET /svm/peers/{uuid}][%d] svm_peer_instance_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/peers/{uuid}][%d] svm_peer_instance_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmPeerInstanceGetDefault) String() string {
-	return fmt.Sprintf("[GET /svm/peers/{uuid}][%d] svm_peer_instance_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/peers/{uuid}][%d] svm_peer_instance_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmPeerInstanceGetDefault) GetPayload() *models.ErrorResponse {

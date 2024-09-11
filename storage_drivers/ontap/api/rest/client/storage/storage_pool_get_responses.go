@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *StoragePoolGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the storage pool get o k response
+func (o *StoragePoolGetOK) Code() int {
+	return 200
+}
+
 func (o *StoragePoolGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/pools/{uuid}][%d] storagePoolGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/pools/{uuid}][%d] storagePoolGetOK %s", 200, payload)
 }
 
 func (o *StoragePoolGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/pools/{uuid}][%d] storagePoolGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/pools/{uuid}][%d] storagePoolGetOK %s", 200, payload)
 }
 
 func (o *StoragePoolGetOK) GetPayload() *models.StoragePool {
@@ -120,16 +128,12 @@ func NewStoragePoolGetDefault(code int) *StoragePoolGetDefault {
 | ---------- | ----------- |
 | 11206662 | There is no storage pool matching the specified UUID or name. |
 | 11215856 | The specified storage pool is not healthy. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type StoragePoolGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the storage pool get default response
-func (o *StoragePoolGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this storage pool get default response has a 2xx status code
@@ -157,12 +161,19 @@ func (o *StoragePoolGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the storage pool get default response
+func (o *StoragePoolGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *StoragePoolGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/pools/{uuid}][%d] storage_pool_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/pools/{uuid}][%d] storage_pool_get default %s", o._statusCode, payload)
 }
 
 func (o *StoragePoolGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/pools/{uuid}][%d] storage_pool_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/pools/{uuid}][%d] storage_pool_get default %s", o._statusCode, payload)
 }
 
 func (o *StoragePoolGetDefault) GetPayload() *models.ErrorResponse {

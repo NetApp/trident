@@ -22,17 +22,20 @@ import (
 type ZappS3BucketApplicationComponents struct {
 
 	// The type of bucket.
-	// Enum: [nas s3]
+	// Enum: ["nas","s3"]
 	BucketEndpointType *string `json:"bucket_endpoint_type,omitempty"`
 
 	// Prefer lower latency storage under similar media costs.
-	// Enum: [false true]
+	// Enum: [false,true]
 	CapacityTier *bool `json:"capacity_tier,omitempty"`
 
 	// Object Store Server Bucket Description Usage: &lt;(size 1..256)&gt;
 	// Max Length: 256
 	// Min Length: 1
 	Comment *string `json:"comment,omitempty"`
+
+	// Specifies the default retention period that is applied to objects while committing them to the WORM state without an associated retention period. The retention period can be in years, or days. The retention period value represents a duration and must be specified in the ISO-8601 duration format. A period specified for years and days is represented in the ISO-8601 format as quot;Plt;num&gt;Y&quot; and quot;Plt;num&gt;D&quot; respectively, for example &quot;P10Y&quot; represents a duration of 10 years. The period string must contain only a single time element that is, either years, or days. A duration which combines different periods is not supported, for example &quot;P1Y10D&quot; is not supported. Usage: {{&lt;integer&gt; days|years} | none}
+	DefaultRetentionPeriod *string `json:"default_retention_period,omitempty"`
 
 	// The name of the application component.
 	// Required: true
@@ -46,6 +49,10 @@ type ZappS3BucketApplicationComponents struct {
 	// qos
 	Qos *ZappS3BucketApplicationComponentsInlineQos `json:"qos,omitempty"`
 
+	// The lock mode of the bucket. &lt;br&gt;compliance &dash; A SnapLock Compliance (SLC) bucket provides the highest level of WORM protection and an administrator cannot destroy a compliance bucket if it contains unexpired WORM objects. &lt;br&gt; governance &dash; An administrator can delete a Governance bucket.&lt;br&gt; no_lock &dash; Indicates the bucket does not support object locking. For s3 type buckets, the default value is no_lock.
+	// Enum: ["compliance","governance","no_lock"]
+	RetentionMode *string `json:"retention_mode,omitempty"`
+
 	// The total size of the S3 Bucket, split across the member components. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
 	Size *int64 `json:"size,omitempty"`
 
@@ -57,7 +64,7 @@ type ZappS3BucketApplicationComponents struct {
 	UUID *string `json:"uuid,omitempty"`
 
 	// Bucket Versioning State. For nas type buckets, this field is not set. For s3 type buckets, the default value is disabled.
-	// Enum: [disabled enabled suspended]
+	// Enum: ["disabled","enabled","suspended"]
 	VersioningState *string `json:"versioning_state,omitempty"`
 
 	// The list of S3 objectstore policies to be created.
@@ -90,6 +97,10 @@ func (m *ZappS3BucketApplicationComponents) Validate(formats strfmt.Registry) er
 	}
 
 	if err := m.validateQos(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRetentionMode(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -249,6 +260,72 @@ func (m *ZappS3BucketApplicationComponents) validateQos(formats strfmt.Registry)
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var zappS3BucketApplicationComponentsTypeRetentionModePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["compliance","governance","no_lock"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		zappS3BucketApplicationComponentsTypeRetentionModePropEnum = append(zappS3BucketApplicationComponentsTypeRetentionModePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// zapp_s3_bucket_application_components
+	// ZappS3BucketApplicationComponents
+	// retention_mode
+	// RetentionMode
+	// compliance
+	// END DEBUGGING
+	// ZappS3BucketApplicationComponentsRetentionModeCompliance captures enum value "compliance"
+	ZappS3BucketApplicationComponentsRetentionModeCompliance string = "compliance"
+
+	// BEGIN DEBUGGING
+	// zapp_s3_bucket_application_components
+	// ZappS3BucketApplicationComponents
+	// retention_mode
+	// RetentionMode
+	// governance
+	// END DEBUGGING
+	// ZappS3BucketApplicationComponentsRetentionModeGovernance captures enum value "governance"
+	ZappS3BucketApplicationComponentsRetentionModeGovernance string = "governance"
+
+	// BEGIN DEBUGGING
+	// zapp_s3_bucket_application_components
+	// ZappS3BucketApplicationComponents
+	// retention_mode
+	// RetentionMode
+	// no_lock
+	// END DEBUGGING
+	// ZappS3BucketApplicationComponentsRetentionModeNoLock captures enum value "no_lock"
+	ZappS3BucketApplicationComponentsRetentionModeNoLock string = "no_lock"
+)
+
+// prop value enum
+func (m *ZappS3BucketApplicationComponents) validateRetentionModeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, zappS3BucketApplicationComponentsTypeRetentionModePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ZappS3BucketApplicationComponents) validateRetentionMode(formats strfmt.Registry) error {
+	if swag.IsZero(m.RetentionMode) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateRetentionModeEnum("retention_mode", "body", *m.RetentionMode); err != nil {
+		return err
 	}
 
 	return nil
@@ -688,7 +765,7 @@ func (m *ZappS3BucketApplicationComponentsInlineQosInlinePolicy) UnmarshalBinary
 type ZappS3BucketApplicationComponentsInlineStorageService struct {
 
 	// The storage service of the application component.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 

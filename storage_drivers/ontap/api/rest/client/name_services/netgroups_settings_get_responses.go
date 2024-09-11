@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NetgroupsSettingsGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the netgroups settings get o k response
+func (o *NetgroupsSettingsGetOK) Code() int {
+	return 200
+}
+
 func (o *NetgroupsSettingsGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/cache/netgroup/settings/{svm.uuid}][%d] netgroupsSettingsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/netgroup/settings/{svm.uuid}][%d] netgroupsSettingsGetOK %s", 200, payload)
 }
 
 func (o *NetgroupsSettingsGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/cache/netgroup/settings/{svm.uuid}][%d] netgroupsSettingsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/netgroup/settings/{svm.uuid}][%d] netgroupsSettingsGetOK %s", 200, payload)
 }
 
 func (o *NetgroupsSettingsGetOK) GetPayload() *models.NetgroupsSettings {
@@ -122,11 +130,6 @@ type NetgroupsSettingsGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the netgroups settings get default response
-func (o *NetgroupsSettingsGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this netgroups settings get default response has a 2xx status code
 func (o *NetgroupsSettingsGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NetgroupsSettingsGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the netgroups settings get default response
+func (o *NetgroupsSettingsGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetgroupsSettingsGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/cache/netgroup/settings/{svm.uuid}][%d] netgroups_settings_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/netgroup/settings/{svm.uuid}][%d] netgroups_settings_get default %s", o._statusCode, payload)
 }
 
 func (o *NetgroupsSettingsGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/cache/netgroup/settings/{svm.uuid}][%d] netgroups_settings_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/cache/netgroup/settings/{svm.uuid}][%d] netgroups_settings_get default %s", o._statusCode, payload)
 }
 
 func (o *NetgroupsSettingsGetDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package object_store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type S3BucketDeleteReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *S3BucketDeleteReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewS3BucketDeleteOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewS3BucketDeleteAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *S3BucketDeleteReader) ReadResponse(response runtime.ClientResponse, con
 	}
 }
 
+// NewS3BucketDeleteOK creates a S3BucketDeleteOK with default headers values
+func NewS3BucketDeleteOK() *S3BucketDeleteOK {
+	return &S3BucketDeleteOK{}
+}
+
+/*
+S3BucketDeleteOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type S3BucketDeleteOK struct {
+	Payload *models.S3BucketJobLinkResponse
+}
+
+// IsSuccess returns true when this s3 bucket delete o k response has a 2xx status code
+func (o *S3BucketDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 bucket delete o k response has a 3xx status code
+func (o *S3BucketDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 bucket delete o k response has a 4xx status code
+func (o *S3BucketDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 bucket delete o k response has a 5xx status code
+func (o *S3BucketDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 bucket delete o k response a status code equal to that given
+func (o *S3BucketDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the s3 bucket delete o k response
+func (o *S3BucketDeleteOK) Code() int {
+	return 200
+}
+
+func (o *S3BucketDeleteOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/s3/buckets/{svm.uuid}/{uuid}][%d] s3BucketDeleteOK %s", 200, payload)
+}
+
+func (o *S3BucketDeleteOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/s3/buckets/{svm.uuid}/{uuid}][%d] s3BucketDeleteOK %s", 200, payload)
+}
+
+func (o *S3BucketDeleteOK) GetPayload() *models.S3BucketJobLinkResponse {
+	return o.Payload
+}
+
+func (o *S3BucketDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.S3BucketJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewS3BucketDeleteAccepted creates a S3BucketDeleteAccepted with default headers values
 func NewS3BucketDeleteAccepted() *S3BucketDeleteAccepted {
 	return &S3BucketDeleteAccepted{}
@@ -52,7 +129,7 @@ S3BucketDeleteAccepted describes a response with status code 202, with default h
 Accepted
 */
 type S3BucketDeleteAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.S3BucketJobLinkResponse
 }
 
 // IsSuccess returns true when this s3 bucket delete accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *S3BucketDeleteAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the s3 bucket delete accepted response
+func (o *S3BucketDeleteAccepted) Code() int {
+	return 202
+}
+
 func (o *S3BucketDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/s3/buckets/{svm.uuid}/{uuid}][%d] s3BucketDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/s3/buckets/{svm.uuid}/{uuid}][%d] s3BucketDeleteAccepted %s", 202, payload)
 }
 
 func (o *S3BucketDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /protocols/s3/buckets/{svm.uuid}/{uuid}][%d] s3BucketDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/s3/buckets/{svm.uuid}/{uuid}][%d] s3BucketDeleteAccepted %s", 202, payload)
 }
 
-func (o *S3BucketDeleteAccepted) GetPayload() *models.JobLinkResponse {
+func (o *S3BucketDeleteAccepted) GetPayload() *models.S3BucketJobLinkResponse {
 	return o.Payload
 }
 
 func (o *S3BucketDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.S3BucketJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -131,11 +215,6 @@ type S3BucketDeleteDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the s3 bucket delete default response
-func (o *S3BucketDeleteDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this s3 bucket delete default response has a 2xx status code
 func (o *S3BucketDeleteDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -161,12 +240,19 @@ func (o *S3BucketDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the s3 bucket delete default response
+func (o *S3BucketDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *S3BucketDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/s3/buckets/{svm.uuid}/{uuid}][%d] s3_bucket_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/s3/buckets/{svm.uuid}/{uuid}][%d] s3_bucket_delete default %s", o._statusCode, payload)
 }
 
 func (o *S3BucketDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/s3/buckets/{svm.uuid}/{uuid}][%d] s3_bucket_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/s3/buckets/{svm.uuid}/{uuid}][%d] s3_bucket_delete default %s", o._statusCode, payload)
 }
 
 func (o *S3BucketDeleteDefault) GetPayload() *models.ErrorResponse {

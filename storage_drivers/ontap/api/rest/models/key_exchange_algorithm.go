@@ -34,11 +34,8 @@ const (
 	// KeyExchangeAlgorithmDiffieHellmanGroupExchangeSha256 captures enum value "diffie_hellman_group_exchange_sha256"
 	KeyExchangeAlgorithmDiffieHellmanGroupExchangeSha256 KeyExchangeAlgorithm = "diffie_hellman_group_exchange_sha256"
 
-	// KeyExchangeAlgorithmDiffieHellmanGroupExchangeSha1 captures enum value "diffie_hellman_group_exchange_sha1"
-	KeyExchangeAlgorithmDiffieHellmanGroupExchangeSha1 KeyExchangeAlgorithm = "diffie_hellman_group_exchange_sha1"
-
-	// KeyExchangeAlgorithmDiffieHellmanGroup14Sha1 captures enum value "diffie_hellman_group14_sha1"
-	KeyExchangeAlgorithmDiffieHellmanGroup14Sha1 KeyExchangeAlgorithm = "diffie_hellman_group14_sha1"
+	// KeyExchangeAlgorithmCurve25519DashSha256 captures enum value "curve25519-sha256"
+	KeyExchangeAlgorithmCurve25519DashSha256 KeyExchangeAlgorithm = "curve25519-sha256"
 
 	// KeyExchangeAlgorithmEcdhSha2Nistp256 captures enum value "ecdh_sha2_nistp256"
 	KeyExchangeAlgorithmEcdhSha2Nistp256 KeyExchangeAlgorithm = "ecdh_sha2_nistp256"
@@ -48,6 +45,12 @@ const (
 
 	// KeyExchangeAlgorithmEcdhSha2Nistp521 captures enum value "ecdh_sha2_nistp521"
 	KeyExchangeAlgorithmEcdhSha2Nistp521 KeyExchangeAlgorithm = "ecdh_sha2_nistp521"
+
+	// KeyExchangeAlgorithmDiffieHellmanGroup16Sha512 captures enum value "diffie_hellman_group16_sha512"
+	KeyExchangeAlgorithmDiffieHellmanGroup16Sha512 KeyExchangeAlgorithm = "diffie_hellman_group16_sha512"
+
+	// KeyExchangeAlgorithmDiffieHellmanGroup18Sha512 captures enum value "diffie_hellman_group18_sha512"
+	KeyExchangeAlgorithmDiffieHellmanGroup18Sha512 KeyExchangeAlgorithm = "diffie_hellman_group18_sha512"
 )
 
 // for schema
@@ -55,7 +58,7 @@ var keyExchangeAlgorithmEnum []interface{}
 
 func init() {
 	var res []KeyExchangeAlgorithm
-	if err := json.Unmarshal([]byte(`["diffie_hellman_group_exchange_sha256","diffie_hellman_group_exchange_sha1","diffie_hellman_group14_sha1","ecdh_sha2_nistp256","ecdh_sha2_nistp384","ecdh_sha2_nistp521"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["diffie_hellman_group_exchange_sha256","curve25519-sha256","ecdh_sha2_nistp256","ecdh_sha2_nistp384","ecdh_sha2_nistp521","diffie_hellman_group16_sha512","diffie_hellman_group18_sha512"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

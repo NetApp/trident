@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type MetroclusterInterconnectModifyReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *MetroclusterInterconnectModifyReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewMetroclusterInterconnectModifyOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewMetroclusterInterconnectModifyAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *MetroclusterInterconnectModifyReader) ReadResponse(response runtime.Cli
 	}
 }
 
+// NewMetroclusterInterconnectModifyOK creates a MetroclusterInterconnectModifyOK with default headers values
+func NewMetroclusterInterconnectModifyOK() *MetroclusterInterconnectModifyOK {
+	return &MetroclusterInterconnectModifyOK{}
+}
+
+/*
+MetroclusterInterconnectModifyOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type MetroclusterInterconnectModifyOK struct {
+	Payload *models.MetroclusterInterconnectJobLinkResponse
+}
+
+// IsSuccess returns true when this metrocluster interconnect modify o k response has a 2xx status code
+func (o *MetroclusterInterconnectModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this metrocluster interconnect modify o k response has a 3xx status code
+func (o *MetroclusterInterconnectModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this metrocluster interconnect modify o k response has a 4xx status code
+func (o *MetroclusterInterconnectModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this metrocluster interconnect modify o k response has a 5xx status code
+func (o *MetroclusterInterconnectModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this metrocluster interconnect modify o k response a status code equal to that given
+func (o *MetroclusterInterconnectModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the metrocluster interconnect modify o k response
+func (o *MetroclusterInterconnectModifyOK) Code() int {
+	return 200
+}
+
+func (o *MetroclusterInterconnectModifyOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metroclusterInterconnectModifyOK %s", 200, payload)
+}
+
+func (o *MetroclusterInterconnectModifyOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metroclusterInterconnectModifyOK %s", 200, payload)
+}
+
+func (o *MetroclusterInterconnectModifyOK) GetPayload() *models.MetroclusterInterconnectJobLinkResponse {
+	return o.Payload
+}
+
+func (o *MetroclusterInterconnectModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.MetroclusterInterconnectJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewMetroclusterInterconnectModifyAccepted creates a MetroclusterInterconnectModifyAccepted with default headers values
 func NewMetroclusterInterconnectModifyAccepted() *MetroclusterInterconnectModifyAccepted {
 	return &MetroclusterInterconnectModifyAccepted{}
@@ -52,7 +129,7 @@ MetroclusterInterconnectModifyAccepted describes a response with status code 202
 Accepted
 */
 type MetroclusterInterconnectModifyAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.MetroclusterInterconnectJobLinkResponse
 }
 
 // IsSuccess returns true when this metrocluster interconnect modify accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *MetroclusterInterconnectModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the metrocluster interconnect modify accepted response
+func (o *MetroclusterInterconnectModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *MetroclusterInterconnectModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metroclusterInterconnectModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metroclusterInterconnectModifyAccepted %s", 202, payload)
 }
 
 func (o *MetroclusterInterconnectModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metroclusterInterconnectModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metroclusterInterconnectModifyAccepted %s", 202, payload)
 }
 
-func (o *MetroclusterInterconnectModifyAccepted) GetPayload() *models.JobLinkResponse {
+func (o *MetroclusterInterconnectModifyAccepted) GetPayload() *models.MetroclusterInterconnectJobLinkResponse {
 	return o.Payload
 }
 
 func (o *MetroclusterInterconnectModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.MetroclusterInterconnectJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -119,16 +203,17 @@ func NewMetroclusterInterconnectModifyDefault(code int) *MetroclusterInterconnec
 | Error Code | Description |
 | ---------- | ----------- |
 | 2425734 | An internal error has occurred. Wait a few minutes, and try the operation again. For further assistance, contact technical support. |
+| 2430347 | The interface is already configured for port "adapter" with IP address "interfaces.address" on node "node.name". To configure a new IP address, run the "metrocluster configuration-settings interface delete" command to delete this interface and then run the "metrocluster configuration-settings interface create" command with the new IP address. |
+| 2430348 | The interface is already configured for port "adapter" with gateway "interfaces.gateway" on node "node.name". To configure a new gateway or no gateway, run the "metrocluster configuration-settings interface delete" command to delete this interface and then run the "metrocluster configuration-settings interface create" command with the new gateway or no gateway. |
+| 2430352 | The interface is already configured for port "adapter" with netmask "interfaces.netmask" on node "node.name". To configure a new netmask, run the "metrocluster configuration-settings interface delete" command to delete this interface and then run the "metrocluster configuration-settings interface create" command with the new netmask. |
+| 2430445 | Configuration for the interface "port" on node "node.name" in cluster "cluster" does not exist. Use the "metrocluster configuration-settings interface show" command to list the valid interfaces configured for MetroCluster over IP. |
+| 2432885 | Unable to modify the interface for adapter "port". Reason&#58; At least one interface parameter is required to modify the interface. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type MetroclusterInterconnectModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the metrocluster interconnect modify default response
-func (o *MetroclusterInterconnectModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this metrocluster interconnect modify default response has a 2xx status code
@@ -156,12 +241,19 @@ func (o *MetroclusterInterconnectModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the metrocluster interconnect modify default response
+func (o *MetroclusterInterconnectModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MetroclusterInterconnectModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metrocluster_interconnect_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metrocluster_interconnect_modify default %s", o._statusCode, payload)
 }
 
 func (o *MetroclusterInterconnectModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metrocluster_interconnect_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metrocluster_interconnect_modify default %s", o._statusCode, payload)
 }
 
 func (o *MetroclusterInterconnectModifyDefault) GetPayload() *models.ErrorResponse {

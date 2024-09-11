@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *ExportRuleClientsCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the export rule clients create created response
+func (o *ExportRuleClientsCreateCreated) Code() int {
+	return 201
+}
+
 func (o *ExportRuleClientsCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients][%d] exportRuleClientsCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients][%d] exportRuleClientsCreateCreated %s", 201, payload)
 }
 
 func (o *ExportRuleClientsCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients][%d] exportRuleClientsCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients][%d] exportRuleClientsCreateCreated %s", 201, payload)
 }
 
 func (o *ExportRuleClientsCreateCreated) GetPayload() *models.ExportClientResponse {
@@ -130,6 +138,7 @@ func NewExportRuleClientsCreateDefault(code int) *ExportRuleClientsCreateDefault
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 262196     | Field 'svm.name' is not supported in the body of POST request |
 | 1703954    | Export policy does not exist |
 | 1704036    | Invalid clientmatch:  missing domain name |
 | 1704037    | Invalid clientmatch:  missing network name |
@@ -142,19 +151,15 @@ func NewExportRuleClientsCreateDefault(code int) *ExportRuleClientsCreateDefault
 | 1704044    | Invalid clientmatch: invalid characters in host name |
 | 1704045    | Invalid clientmatch: invalid characters in domain name |
 | 1704050    | Invalid clientmatch: the clientmatch list contains a duplicate string. Duplicate strings in a clientmatch list are not supported |
-| 1704051    | Warning: Not adding any new strings to the clientmatch field for ruleindex. All of the match strings are already in the clientmatch list |
+| 1704054    | Invalid clientmatch: invalid characters in netgroup name. Valid characters for a netgroup name are 0-9, A-Z, a-z, ".", "_" and "-" |
 | 1704064    | Clientmatch host name too long |
 | 1704065    | Clientmatch domain name too long |
+| 6691623    | User is not authorized |
 */
 type ExportRuleClientsCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the export rule clients create default response
-func (o *ExportRuleClientsCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this export rule clients create default response has a 2xx status code
@@ -182,12 +187,19 @@ func (o *ExportRuleClientsCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the export rule clients create default response
+func (o *ExportRuleClientsCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ExportRuleClientsCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients][%d] export_rule_clients_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients][%d] export_rule_clients_create default %s", o._statusCode, payload)
 }
 
 func (o *ExportRuleClientsCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients][%d] export_rule_clients_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients][%d] export_rule_clients_create default %s", o._statusCode, payload)
 }
 
 func (o *ExportRuleClientsCreateDefault) GetPayload() *models.ErrorResponse {

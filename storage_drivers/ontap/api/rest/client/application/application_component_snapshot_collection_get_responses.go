@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ApplicationComponentSnapshotCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the application component snapshot collection get o k response
+func (o *ApplicationComponentSnapshotCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *ApplicationComponentSnapshotCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] applicationComponentSnapshotCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] applicationComponentSnapshotCollectionGetOK %s", 200, payload)
 }
 
 func (o *ApplicationComponentSnapshotCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] applicationComponentSnapshotCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] applicationComponentSnapshotCollectionGetOK %s", 200, payload)
 }
 
 func (o *ApplicationComponentSnapshotCollectionGetOK) GetPayload() *models.ApplicationComponentSnapshotResponse {
@@ -122,11 +130,6 @@ type ApplicationComponentSnapshotCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the application component snapshot collection get default response
-func (o *ApplicationComponentSnapshotCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this application component snapshot collection get default response has a 2xx status code
 func (o *ApplicationComponentSnapshotCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *ApplicationComponentSnapshotCollectionGetDefault) IsCode(code int) bool
 	return o._statusCode == code
 }
 
+// Code gets the status code for the application component snapshot collection get default response
+func (o *ApplicationComponentSnapshotCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ApplicationComponentSnapshotCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] application_component_snapshot_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] application_component_snapshot_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationComponentSnapshotCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] application_component_snapshot_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{component.uuid}/snapshots][%d] application_component_snapshot_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationComponentSnapshotCollectionGetDefault) GetPayload() *models.ErrorResponse {

@@ -34,7 +34,7 @@ type Disk struct {
 	// Disk class
 	// Example: solid_state
 	// Read Only: true
-	// Enum: [unknown capacity performance archive solid_state array virtual]
+	// Enum: ["unknown","capacity","performance","archive","solid_state","array","virtual"]
 	Class *string `json:"class,omitempty"`
 
 	// Security standard that the device is certified to.
@@ -45,7 +45,7 @@ type Disk struct {
 	// Type of overlying disk container
 	// Example: spare
 	// Read Only: true
-	// Enum: [aggregate broken foreign labelmaint maintenance shared spare unassigned unknown unsupported remote mediator]
+	// Enum: ["aggregate","broken","foreign","labelmaint","maintenance","shared","spare","unassigned","unknown","unsupported","remote","mediator"]
 	ContainerType *string `json:"container_type,omitempty"`
 
 	// Standard that the device supports for encryption control.
@@ -74,7 +74,7 @@ type Disk struct {
 	// Effective Disk type
 	// Example: vmdisk
 	// Read Only: true
-	// Enum: [ata fcal lun msata sas bsas ssd ssd_nvm ssd_zns ssd_cap fsas vmdisk unknown]
+	// Enum: ["ata","fcal","lun","msata","sas","bsas","ssd","ssd_nvm","ssd_zns","ssd_cap","fsas","vmdisk","unknown"]
 	EffectiveType *string `json:"effective_type,omitempty"`
 
 	// This field should only be set as a query parameter in a PATCH operation. It is input only and won't be returned by a subsequent GET.
@@ -102,6 +102,11 @@ type Disk struct {
 	//
 	// Read Only: true
 	Local *bool `json:"local,omitempty"`
+
+	// Physical location of the disk
+	// Example: node-01
+	// Read Only: true
+	Location *string `json:"location,omitempty"`
 
 	// model
 	// Example: X421_HCOBE450A10
@@ -131,7 +136,7 @@ type Disk struct {
 
 	// Pool to which disk is assigned
 	// Example: pool0
-	// Enum: [pool0 pool1 failed none]
+	// Enum: ["pool0","pool1","failed","none"]
 	Pool *string `json:"pool,omitempty"`
 
 	// Mode of drive data protection and FIPS compliance. Possible values are:
@@ -143,7 +148,7 @@ type Disk struct {
 	//
 	// Example: data
 	// Read Only: true
-	// Enum: [open data part full miss]
+	// Enum: ["open","data","part","full","miss"]
 	ProtectionMode *string `json:"protection_mode,omitempty"`
 
 	// Percentage of rated life used
@@ -160,6 +165,9 @@ type Disk struct {
 	// Example: 15000
 	// Read Only: true
 	Rpm *int64 `json:"rpm,omitempty"`
+
+	// Confirms spare disk sanitization (non-cryptographically).
+	SanitizeSpare *bool `json:"sanitize_spare,omitempty"`
 
 	// Number of sectors on the disk.
 	// Example: 1172123568
@@ -180,11 +188,14 @@ type Disk struct {
 
 	// State
 	// Example: present
-	// Enum: [broken copy maintenance partner pending present reconstructing removed spare unfail zeroing]
+	// Enum: ["broken","copy","maintenance","partner","pending","present","reconstructing","removed","spare","unfail","zeroing"]
 	State *string `json:"state,omitempty"`
 
 	// stats
 	Stats *DiskInlineStats `json:"stats,omitempty"`
+
+	// storage availability zone
+	StorageAvailabilityZone *DiskInlineStorageAvailabilityZone `json:"storage_availability_zone,omitempty"`
 
 	// storage pool
 	StoragePool *DiskInlineStoragePool `json:"storage_pool,omitempty"`
@@ -192,7 +203,7 @@ type Disk struct {
 	// Disk interface type
 	// Example: ssd
 	// Read Only: true
-	// Enum: [ata bsas fcal fsas lun sas msata ssd vmdisk unknown ssd_cap ssd_nvm ssd_zns]
+	// Enum: ["ata","bsas","fcal","fsas","lun","sas","msata","ssd","vmdisk","unknown","ssd_cap","ssd_nvm","ssd_zns"]
 	Type *string `json:"type,omitempty"`
 
 	// The unique identifier for a disk
@@ -283,6 +294,10 @@ func (m *Disk) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateStats(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageAvailabilityZone(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1248,6 +1263,23 @@ func (m *Disk) validateStats(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Disk) validateStorageAvailabilityZone(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageAvailabilityZone) { // not required
+		return nil
+	}
+
+	if m.StorageAvailabilityZone != nil {
+		if err := m.StorageAvailabilityZone.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_availability_zone")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Disk) validateStoragePool(formats strfmt.Registry) error {
 	if swag.IsZero(m.StoragePool) { // not required
 		return nil
@@ -1520,6 +1552,10 @@ func (m *Disk) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateLocation(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateModel(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1577,6 +1613,10 @@ func (m *Disk) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 	}
 
 	if err := m.contextValidateStats(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStorageAvailabilityZone(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1822,6 +1862,15 @@ func (m *Disk) contextValidateLocal(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
+func (m *Disk) contextValidateLocation(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "location", "body", m.Location); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Disk) contextValidateModel(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "model", "body", m.Model); err != nil {
@@ -1977,6 +2026,20 @@ func (m *Disk) contextValidateStats(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
+func (m *Disk) contextValidateStorageAvailabilityZone(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.StorageAvailabilityZone != nil {
+		if err := m.StorageAvailabilityZone.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_availability_zone")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Disk) contextValidateStoragePool(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StoragePool != nil {
@@ -2059,7 +2122,7 @@ func (m *Disk) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskInlineAggregatesInlineArrayItem disk inline aggregates inline array item
+// DiskInlineAggregatesInlineArrayItem Aggregate
 //
 // swagger:model disk_inline_aggregates_inline_array_item
 type DiskInlineAggregatesInlineArrayItem struct {
@@ -2258,8 +2321,13 @@ func (m *DiskInlineDrNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this disk inline dr node based on context it is used
+// ContextValidate validate this disk inline dr node based on the context it is used
 func (m *DiskInlineDrNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -2736,7 +2804,7 @@ func (m *DiskInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
 // swagger:model disk_inline_outage
 type DiskInlineOutage struct {
 
-	// Indicates whether RAID maintains the state of this disk as failed accross reboots.
+	// Indicates whether RAID maintains the state of this disk as failed across reboots.
 	// Read Only: true
 	PersistentlyFailed *bool `json:"persistently_failed,omitempty"`
 
@@ -3139,6 +3207,49 @@ func (m *DiskInlineStats) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// DiskInlineStorageAvailabilityZone disk inline storage availability zone
+//
+// swagger:model disk_inline_storage_availability_zone
+type DiskInlineStorageAvailabilityZone struct {
+
+	// Storage Availability Zone UUID that the device is attached to.
+	// Example: cf73de77-526d-11ec-af4e-0050568e9df0
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this disk inline storage availability zone
+func (m *DiskInlineStorageAvailabilityZone) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this disk inline storage availability zone based on the context it is used
+func (m *DiskInlineStorageAvailabilityZone) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *DiskInlineStorageAvailabilityZone) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *DiskInlineStorageAvailabilityZone) UnmarshalBinary(b []byte) error {
+	var res DiskInlineStorageAvailabilityZone
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // DiskInlineStoragePool Shared Storage Pool
 //
 // swagger:model disk_inline_storage_pool
@@ -3338,6 +3449,10 @@ type DiskInlineVirtual struct {
 	// Example: nviet12122018113936ps
 	// Read Only: true
 	StorageAccount *string `json:"storage_account,omitempty"`
+
+	// Target address of the virtual disk.
+	// Read Only: true
+	TargetAddress *string `json:"target_address,omitempty"`
 }
 
 // Validate validates this disk inline virtual
@@ -3358,6 +3473,10 @@ func (m *DiskInlineVirtual) ContextValidate(ctx context.Context, formats strfmt.
 	}
 
 	if err := m.contextValidateStorageAccount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTargetAddress(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3388,6 +3507,15 @@ func (m *DiskInlineVirtual) contextValidateObject(ctx context.Context, formats s
 func (m *DiskInlineVirtual) contextValidateStorageAccount(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "virtual"+"."+"storage_account", "body", m.StorageAccount); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DiskInlineVirtual) contextValidateTargetAddress(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "virtual"+"."+"target_address", "body", m.TargetAddress); err != nil {
 		return err
 	}
 

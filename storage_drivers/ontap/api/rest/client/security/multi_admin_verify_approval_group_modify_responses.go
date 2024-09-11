@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *MultiAdminVerifyApprovalGroupModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the multi admin verify approval group modify o k response
+func (o *MultiAdminVerifyApprovalGroupModifyOK) Code() int {
+	return 200
+}
+
 func (o *MultiAdminVerifyApprovalGroupModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multiAdminVerifyApprovalGroupModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multiAdminVerifyApprovalGroupModifyOK", 200)
 }
 
 func (o *MultiAdminVerifyApprovalGroupModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multiAdminVerifyApprovalGroupModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multiAdminVerifyApprovalGroupModifyOK", 200)
 }
 
 func (o *MultiAdminVerifyApprovalGroupModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,16 +114,13 @@ func NewMultiAdminVerifyApprovalGroupModifyDefault(code int) *MultiAdminVerifyAp
 | ---------- | ----------- |
 | 262331 | At least one approver is required. |
 | 262332 | An add or remove list is required. |
+| 262333 | Invalid user in approval group. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type MultiAdminVerifyApprovalGroupModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the multi admin verify approval group modify default response
-func (o *MultiAdminVerifyApprovalGroupModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this multi admin verify approval group modify default response has a 2xx status code
@@ -145,12 +148,19 @@ func (o *MultiAdminVerifyApprovalGroupModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the multi admin verify approval group modify default response
+func (o *MultiAdminVerifyApprovalGroupModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MultiAdminVerifyApprovalGroupModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multi_admin_verify_approval_group_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multi_admin_verify_approval_group_modify default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyApprovalGroupModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multi_admin_verify_approval_group_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multi_admin_verify_approval_group_modify default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyApprovalGroupModifyDefault) GetPayload() *models.ErrorResponse {

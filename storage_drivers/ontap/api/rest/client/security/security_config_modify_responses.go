@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type SecurityConfigModifyReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *SecurityConfigModifyReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewSecurityConfigModifyOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewSecurityConfigModifyAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *SecurityConfigModifyReader) ReadResponse(response runtime.ClientRespons
 	}
 }
 
+// NewSecurityConfigModifyOK creates a SecurityConfigModifyOK with default headers values
+func NewSecurityConfigModifyOK() *SecurityConfigModifyOK {
+	return &SecurityConfigModifyOK{}
+}
+
+/*
+SecurityConfigModifyOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type SecurityConfigModifyOK struct {
+	Payload *models.SecurityConfigJobLinkResponse
+}
+
+// IsSuccess returns true when this security config modify o k response has a 2xx status code
+func (o *SecurityConfigModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security config modify o k response has a 3xx status code
+func (o *SecurityConfigModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security config modify o k response has a 4xx status code
+func (o *SecurityConfigModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security config modify o k response has a 5xx status code
+func (o *SecurityConfigModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security config modify o k response a status code equal to that given
+func (o *SecurityConfigModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the security config modify o k response
+func (o *SecurityConfigModifyOK) Code() int {
+	return 200
+}
+
+func (o *SecurityConfigModifyOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security][%d] securityConfigModifyOK %s", 200, payload)
+}
+
+func (o *SecurityConfigModifyOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security][%d] securityConfigModifyOK %s", 200, payload)
+}
+
+func (o *SecurityConfigModifyOK) GetPayload() *models.SecurityConfigJobLinkResponse {
+	return o.Payload
+}
+
+func (o *SecurityConfigModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.SecurityConfigJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewSecurityConfigModifyAccepted creates a SecurityConfigModifyAccepted with default headers values
 func NewSecurityConfigModifyAccepted() *SecurityConfigModifyAccepted {
 	return &SecurityConfigModifyAccepted{}
@@ -52,7 +129,7 @@ SecurityConfigModifyAccepted describes a response with status code 202, with def
 Accepted
 */
 type SecurityConfigModifyAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.SecurityConfigJobLinkResponse
 }
 
 // IsSuccess returns true when this security config modify accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *SecurityConfigModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the security config modify accepted response
+func (o *SecurityConfigModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *SecurityConfigModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /security][%d] securityConfigModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security][%d] securityConfigModifyAccepted %s", 202, payload)
 }
 
 func (o *SecurityConfigModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /security][%d] securityConfigModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security][%d] securityConfigModifyAccepted %s", 202, payload)
 }
 
-func (o *SecurityConfigModifyAccepted) GetPayload() *models.JobLinkResponse {
+func (o *SecurityConfigModifyAccepted) GetPayload() *models.SecurityConfigJobLinkResponse {
 	return o.Payload
 }
 
 func (o *SecurityConfigModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.SecurityConfigJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -119,23 +203,48 @@ func NewSecurityConfigModifyDefault(code int) *SecurityConfigModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 5636142 | This operation is not supported in a mixed-release cluster. |
+| 5636145 | This operation is not supported when cluster security is configured with FIPS mode. |
 | 52428817 | SSLv3 is not supported when FIPS is enabled. |
 | 52428824 | TLSv1 is not supported when FIPS is enabled. |
 | 52428830 | Cannot enable FIPS-compliant mode because the configured minimum security strength for certificates is not compatible. |
 | 52428832 | TLSv1.1 is not supported when FIPS is enabled. |
 | 52559974 | Cannot enable FIPS-compliant mode because a certificate that is not FIPS-compliant is in use. |
+| 65536987 | One or more key servers are unavailable. |
+| 196608047 | Operation is not allowed when volume move is in progress. |
+| 196608070 | Key manager is not configured on the cluster. Configure either an external Key Management Server or an onboard key manager. |
 | 196608081 | Cannot start software encryption conversion while there are data volumes in the cluster. |
 | 196608082 | The operation is not valid when the MetroCluster is in switchover mode. |
+| 196608368 | Failed to perform the requested operation. One or more data volume in offline state. |
+| 196608369 | Conversion cannot be enabled because the cluster contains read-only or primordial logical data-protection volumes. Retry the patch operation after deleting those volumes. |
+| 196608370 | The PATCH request to enable conversion failed because one or more volumes are already queued for the encryption conversion operation. |
+| 196608372 | An automated ONTAP update is in progress, retry the PATCH request after it is completed. |
+| 196608373 | Unable to perform the encryption operation because of a mixed-release cluster. Complete the upgrade or revert operation, then try the PATCH request again. |
+| 196608374 | Failed to perform the requested operation. One or more SVMs not in admin running state. |
+| 196608375 | Failed to perform the requested operation. One or more volume is of temporary type. |
+| 196608376 | Internal error. Could not get volume encryption information. |
+| 196608377 | Internal error. The Volume Location Database (VLDB) is inconsistent. Contact support personnel to resolve this issue. |
+| 196608378 | Failed to perform the requested operation. Data SVM Key manager configuration is in mixed state. |
+| 196608379 | Internal error. The encryption metadata for the volume is inconsistent. Contact technical support for assistance. |
+| 196608380 | Failed to perform the requested operation. Wafliron is currently active. |
+| 196608381 | Failed to perform the requested operation. A clone split operation is in progress. |
+| 196608382 | Failed to perform the requested operation. A volume rehost operation is in progress. |
+| 196608383 | Failed to perform the requested operation. The cluster contains one or more SnapLock volume. |
+| 196608384 | The PATCH request to start rekey failed because the cluster contains one or more plain text volumes. Retry the PATCH request after converting the existing plain text volumes to encrypted volumes. |
+| 196608385 | Failed to perform the requested operation. Keystore configuration is being switched. Wait until the keystore is in the active state and then try the PATCH request again. |
+| 196608386 | Failed to perform the requested operation. Rekey operation for one or more SVMs is in progress. Wait until the keystore is in the active state and then try the PATCH request again. |
+| 196608387 | \"software_data_encryption.conversion_enabled\" cannot be set to \"false\" in a PATCH request. |
+| 196608388 | Both \"software_data_encryption.conversion_enabled\" and \"software_data_encryption.disabled_by_default\" cannot be set to \"true\" in a single PATCH request. |
+| 196608389 | Both \"software_data_encryption.conversion_enabled\" and \"software_data_encryption.rekey\" cannot be set to \"true\" in a single PATCH request. |
+| 196608390 | \"software_data_encryption.rekey\" cannot be set to \"false\" in a PATCH request. |
+| 196608391 | Both \"software_data_encryption.rekey\" and \"software_data_encryption.disabled_by_default\" cannot be set to \"true\" in a single PATCH request. |
+| 196608392 | The PATCH request for cluster level rekey requires an effective cluster version of 9.16.1 or later. |
+| 196608393 | The PATCH request for cluster level rekey is not supported on this platform. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SecurityConfigModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security config modify default response
-func (o *SecurityConfigModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security config modify default response has a 2xx status code
@@ -163,12 +272,19 @@ func (o *SecurityConfigModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security config modify default response
+func (o *SecurityConfigModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityConfigModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security][%d] security_config_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security][%d] security_config_modify default %s", o._statusCode, payload)
 }
 
 func (o *SecurityConfigModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security][%d] security_config_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security][%d] security_config_modify default %s", o._statusCode, payload)
 }
 
 func (o *SecurityConfigModifyDefault) GetPayload() *models.ErrorResponse {

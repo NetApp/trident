@@ -73,7 +73,7 @@ type Port struct {
 
 	// Reachability status of the port. Enum value "ok" is the only acceptable value for a PATCH request to repair a port.
 	// Example: ok
-	// Enum: [ok repairable not_repairable]
+	// Enum: ["ok","repairable","not_repairable"]
 	Reachability *string `json:"reachability,omitempty"`
 
 	// Link speed in Mbps
@@ -83,14 +83,14 @@ type Port struct {
 
 	// Operational state of the port. The state is set to 'down' if the operational state of the port is down. The state is set to 'up' if the link state of the port is up and the port is healthy. The state is set to 'up' if the link state of the port is up and configured to ignore health status. The state is 'degraded' if the link state of the port is up, and the port is not healthy.
 	// Read Only: true
-	// Enum: [up down degraded]
+	// Enum: ["up","down","degraded"]
 	State *string `json:"state,omitempty"`
 
 	// statistics
 	Statistics *PortInlineStatistics `json:"statistics,omitempty"`
 
 	// Type of physical or virtual port
-	// Enum: [vlan physical lag pvlan]
+	// Enum: ["vlan","physical","lag","pvlan"]
 	Type *string `json:"type,omitempty"`
 
 	// Port UUID
@@ -1190,7 +1190,7 @@ type PortInlineDiscoveredDevicesInlineArrayItem struct {
 
 	// The protocol used to identify the discovered device. This can have a value of CDP or LLDP.
 	// Example: cdp
-	// Enum: [cdp lldp]
+	// Enum: ["cdp","lldp"]
 	Protocol *string `json:"protocol,omitempty"`
 
 	// The number of seconds until the discovered device entry expires and is removed.
@@ -1200,7 +1200,7 @@ type PortInlineDiscoveredDevicesInlineArrayItem struct {
 	// Example: FastEthernet0/12
 	RemotePort *string `json:"remote_port,omitempty"`
 
-	// Additional name used to identifiy a specific piece of equipment.
+	// Additional name used to identify a specific piece of equipment.
 	SystemName *string `json:"system_name,omitempty"`
 
 	// The version of the software running on the discovered device.
@@ -1409,14 +1409,14 @@ type PortInlineLag struct {
 	ActivePorts []*PortLagActivePortsItems0 `json:"active_ports,omitempty"`
 
 	// Policy for mapping flows to ports for outbound packets through a LAG (ifgrp).
-	// Enum: [port ip mac sequential]
+	// Enum: ["port","ip","mac","sequential"]
 	DistributionPolicy *string `json:"distribution_policy,omitempty"`
 
 	// Array of ports belonging to the LAG, regardless of their state.
 	MemberPorts []*PortLagMemberPortsItems0 `json:"member_ports,omitempty"`
 
 	// Determines how the ports interact with the switch.
-	// Enum: [multimode_lacp multimode singlemode]
+	// Enum: ["multimode_lacp","multimode","singlemode"]
 	Mode *string `json:"mode,omitempty"`
 }
 
@@ -1712,7 +1712,7 @@ func (m *PortInlineLag) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortLagActivePortsItems0 port lag active ports items0
+// PortLagActivePortsItems0 Port UUID along with readable names. Either the UUID or both names may be supplied on input.
 //
 // swagger:model PortLagActivePortsItems0
 type PortLagActivePortsItems0 struct {
@@ -1972,7 +1972,7 @@ func (m *PortLagActivePortsItems0Node) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortLagMemberPortsItems0 port lag member ports items0
+// PortLagMemberPortsItems0 Port UUID along with readable names. Either the UUID or both names may be supplied on input.
 //
 // swagger:model PortLagMemberPortsItems0
 type PortLagMemberPortsItems0 struct {
@@ -2329,19 +2329,19 @@ type PortInlineMetric struct {
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
-	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
+	// Enum: ["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]
 	Duration *string `json:"duration,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: ["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *PortInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
@@ -2817,7 +2817,7 @@ type PortInlineMetricInlineThroughput struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -3300,14 +3300,14 @@ type PortInlineStatistics struct {
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: ["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *PortInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the throughput_raw performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
@@ -3597,7 +3597,7 @@ type PortInlineStatisticsInlineDevice struct {
 	ReceiveRaw *PortInlineStatisticsInlineDeviceInlineReceiveRaw `json:"receive_raw,omitempty"`
 
 	// The timestamp when the device specific counters were collected.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 
@@ -3842,7 +3842,7 @@ type PortInlineStatisticsInlineThroughputRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -3885,8 +3885,8 @@ type PortInlineVlan struct {
 
 	// VLAN ID
 	// Example: 100
-	// Maximum: 4095
-	// Minimum: 0
+	// Maximum: 4094
+	// Minimum: 1
 	Tag *int64 `json:"tag,omitempty"`
 }
 
@@ -3930,11 +3930,11 @@ func (m *PortInlineVlan) validateTag(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("vlan"+"."+"tag", "body", *m.Tag, 0, false); err != nil {
+	if err := validate.MinimumInt("vlan"+"."+"tag", "body", *m.Tag, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("vlan"+"."+"tag", "body", *m.Tag, 4095, false); err != nil {
+	if err := validate.MaximumInt("vlan"+"."+"tag", "body", *m.Tag, 4094, false); err != nil {
 		return err
 	}
 
@@ -3987,7 +3987,7 @@ func (m *PortInlineVlan) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortInlineVlanInlineBasePort port inline vlan inline base port
+// PortInlineVlanInlineBasePort Port UUID along with readable names. Either the UUID or both names may be supplied on input.
 //
 // swagger:model port_inline_vlan_inline_base_port
 type PortInlineVlanInlineBasePort struct {

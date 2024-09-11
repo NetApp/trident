@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *IpsecPolicyGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ipsec policy get o k response
+func (o *IpsecPolicyGetOK) Code() int {
+	return 200
+}
+
 func (o *IpsecPolicyGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/ipsec/policies/{uuid}][%d] ipsecPolicyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/policies/{uuid}][%d] ipsecPolicyGetOK %s", 200, payload)
 }
 
 func (o *IpsecPolicyGetOK) String() string {
-	return fmt.Sprintf("[GET /security/ipsec/policies/{uuid}][%d] ipsecPolicyGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/policies/{uuid}][%d] ipsecPolicyGetOK %s", 200, payload)
 }
 
 func (o *IpsecPolicyGetOK) GetPayload() *models.IpsecPolicy {
@@ -112,23 +120,14 @@ func NewIpsecPolicyGetDefault(code int) *IpsecPolicyGetDefault {
 }
 
 /*
-	IpsecPolicyGetDefault describes a response with status code -1, with default header values.
+IpsecPolicyGetDefault describes a response with status code -1, with default header values.
 
-	ONTAP Error Response Codes
-
-| Error Code | Description |
-| ---------- | ----------- |
-| 66257116 | IPsec policy with the specified UUID was not found. |
+Error
 */
 type IpsecPolicyGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ipsec policy get default response
-func (o *IpsecPolicyGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ipsec policy get default response has a 2xx status code
@@ -156,12 +155,19 @@ func (o *IpsecPolicyGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ipsec policy get default response
+func (o *IpsecPolicyGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IpsecPolicyGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/ipsec/policies/{uuid}][%d] ipsec_policy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/policies/{uuid}][%d] ipsec_policy_get default %s", o._statusCode, payload)
 }
 
 func (o *IpsecPolicyGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/ipsec/policies/{uuid}][%d] ipsec_policy_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/policies/{uuid}][%d] ipsec_policy_get default %s", o._statusCode, payload)
 }
 
 func (o *IpsecPolicyGetDefault) GetPayload() *models.ErrorResponse {

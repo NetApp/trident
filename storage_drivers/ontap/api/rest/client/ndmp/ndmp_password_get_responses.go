@@ -6,6 +6,7 @@ package ndmp
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NdmpPasswordGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ndmp password get o k response
+func (o *NdmpPasswordGetOK) Code() int {
+	return 200
+}
+
 func (o *NdmpPasswordGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}/passwords/{user}][%d] ndmpPasswordGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}/passwords/{user}][%d] ndmpPasswordGetOK %s", 200, payload)
 }
 
 func (o *NdmpPasswordGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}/passwords/{user}][%d] ndmpPasswordGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}/passwords/{user}][%d] ndmpPasswordGetOK %s", 200, payload)
 }
 
 func (o *NdmpPasswordGetOK) GetPayload() *models.NdmpPassword {
@@ -112,19 +120,20 @@ func NewNdmpPasswordGetDefault(code int) *NdmpPasswordGetDefault {
 }
 
 /*
-NdmpPasswordGetDefault describes a response with status code -1, with default header values.
+	NdmpPasswordGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response codes
+
+| Error code  |  Description |
+|-------------|--------------|
+| 65601536    | The operation is not supported because NDMP SVM-aware mode is disabled.|
+| 65601560    | An NDMP-specific password is not supported for authentication type \"plaintext_sso\".|
+| 65601587    | The NDMP protocol is not supported on this platform.|
 */
 type NdmpPasswordGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ndmp password get default response
-func (o *NdmpPasswordGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ndmp password get default response has a 2xx status code
@@ -152,12 +161,19 @@ func (o *NdmpPasswordGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ndmp password get default response
+func (o *NdmpPasswordGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NdmpPasswordGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}/passwords/{user}][%d] ndmp_password_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}/passwords/{user}][%d] ndmp_password_get default %s", o._statusCode, payload)
 }
 
 func (o *NdmpPasswordGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}/passwords/{user}][%d] ndmp_password_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}/passwords/{user}][%d] ndmp_password_get default %s", o._statusCode, payload)
 }
 
 func (o *NdmpPasswordGetDefault) GetPayload() *models.ErrorResponse {

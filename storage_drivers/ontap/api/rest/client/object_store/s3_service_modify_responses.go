@@ -6,6 +6,7 @@ package object_store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *S3ServiceModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the s3 service modify o k response
+func (o *S3ServiceModifyOK) Code() int {
+	return 200
+}
+
 func (o *S3ServiceModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}][%d] s3ServiceModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}][%d] s3ServiceModifyOK", 200)
 }
 
 func (o *S3ServiceModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}][%d] s3ServiceModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}][%d] s3ServiceModifyOK", 200)
 }
 
 func (o *S3ServiceModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,18 +112,17 @@ func NewS3ServiceModifyDefault(code int) *S3ServiceModifyDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 92405789   | The specified object server name contains invalid characters. Valid characters for an object store server name are 0-9, A-Z, a-z, \".\", and \"-\". |
-| 92405790   | Object store server names must have between 1 and 15 characters. |
+| 92405789   | The name \\\"{object server name}\\\" is not valid. A valid object server name must be a fully qualified domain name. |
+| 92405790   | Object store server name is not valid. Object store server names must have between 3 and 253 characters.  |
+| 92406151   | Set the enabled field of the server to "down" before modifying following fields: {field name} |
+| 92406231   | One or more object store buckets exist with a default retention period greater than the \\\"max_lock_retention_period\\\" specified. Check the default retention period set for each bucket in the specified SVM and try the operation again.
+| 92406237   | One or more object store buckets exist with a default retention period less than the \\\"min_lock_retention_period\\\" specified. Check the default retention period set for each bucket in the specified SVM and try the operation again.
+| 92406238   | The value for the \\\"min_lock_retention_period\\\" parameter cannot be greater than the \\\"max_lock_retention_period\\\" parameter for the object store server for SVM \\\"vs1\\\".
 */
 type S3ServiceModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the s3 service modify default response
-func (o *S3ServiceModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this s3 service modify default response has a 2xx status code
@@ -145,12 +150,19 @@ func (o *S3ServiceModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the s3 service modify default response
+func (o *S3ServiceModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *S3ServiceModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}][%d] s3_service_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}][%d] s3_service_modify default %s", o._statusCode, payload)
 }
 
 func (o *S3ServiceModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}][%d] s3_service_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}][%d] s3_service_modify default %s", o._statusCode, payload)
 }
 
 func (o *S3ServiceModifyDefault) GetPayload() *models.ErrorResponse {

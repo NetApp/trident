@@ -16,17 +16,28 @@ import (
 )
 
 // ConsistencyGroupNamespace An NVMe namespace is a collection of addressable logical blocks presented to hosts connected to the storage virtual machine using the NVMe over Fabrics protocol.<br/>
-// In ONTAP, an NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
-// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. NVMe namespaces support being cloned. An NVMe namespace cannot be renamed, resized, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace. See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
-// An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.
+// An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.<br/>
+// See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.
+// ## Platform Specifics
+// ### Unified ONTAP
+// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
+// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. An NVMe namespace can then be resized or cloned. An NVMe namespace cannot be renamed, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace.
+// ### ASA r2
+// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+// An NVMe namespace can be created to a specified size. An NVMe namespace can then be renamed, resized, or cloned. NVMe namespaces support the assignment of a QoS policy for performance management.<br/>
+// **Note**: NVMe namespace related REST API examples use the Unified ONTAP form for NVMe namespace names. On ASA r2, the ASA r2 format must be used.
 //
 // swagger:model consistency_group_namespace
 type ConsistencyGroupNamespace struct {
 
+	// * **Unified ONTAP**:
 	// This property marks the NVMe namespace for auto deletion when the volume containing the namespace runs out of space. This is most commonly set on namespace clones.<br/>
 	// When set to _true_, the NVMe namespace becomes eligible for automatic deletion when the volume runs out of space. Auto deletion only occurs when the volume containing the namespace is also configured for auto deletion and free space in the volume decreases below a particular threshold.<br/>
 	// This property is optional in POST and PATCH. The default value for a new NVMe namespace is _false_.<br/>
 	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// * **ASA r2**:
+	// This property is not supported. It cannot be set in POST or PATCH and will not be returned by GET.
 	//
 	AutoDelete *bool `json:"auto_delete,omitempty"`
 
@@ -37,18 +48,25 @@ type ConsistencyGroupNamespace struct {
 	Comment *string `json:"comment,omitempty"`
 
 	// The time the NVMe namespace was created.
-	// Example: 2018-06-04T19:00:00Z
+	// Example: 2018-06-04 19:00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
 
-	// The enabled state of the NVMe namespace. Certain error conditions cause the namespace to become disabled. If the namespace is disabled, you can check the `state` property to determine what error disabled the namespace. An NVMe namespace is enabled automatically when it is created.
+	// The enabled state of the NVMe namespace. Certain error conditions cause the namespace to become disabled. If the namespace is disabled, check the `status.state` property to determine what error disabled the namespace. An NVMe namespace is enabled automatically when it is created.
 	//
 	// Read Only: true
 	Enabled *bool `json:"enabled,omitempty"`
 
-	// The fully qualified path name of the NVMe namespace composed of a "/vol" prefix, the volume name, the (optional) qtree name and base name of the namespace. Valid in POST.<br/>
-	// NVMe namespaces do not support rename, or movement between volumes.
+	// The name of the NVMe namespace.
+	// ### Platform Specifics
+	// * **Unified ONTAP**:
+	// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
+	// Renaming an NVMe namespace is not supported. Valid in POST.
+	// * **ASA r2**:
+	// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+	// Renaming an NVMe namespace is supported. Valid in POST and PATCH.
 	//
 	// Example: /vol/volume1/qtree1/namespace1
 	Name *string `json:"name,omitempty"`
@@ -56,7 +74,7 @@ type ConsistencyGroupNamespace struct {
 	// The operating system type of the NVMe namespace.<br/>
 	// Required in POST when creating an NVMe namespace that is not a clone of another. Disallowed in POST when creating a namespace clone.
 	//
-	// Enum: [aix linux vmware windows]
+	// Enum: ["aix","linux","vmware","windows"]
 	OsType *string `json:"os_type,omitempty"`
 
 	// provisioning options
@@ -433,7 +451,7 @@ func (m *ConsistencyGroupNamespace) UnmarshalBinary(b []byte) error {
 type ConsistencyGroupNamespaceInlineProvisioningOptions struct {
 
 	// Operation to perform
-	// Enum: [create]
+	// Enum: ["create"]
 	Action *string `json:"action,omitempty"`
 
 	// Number of elements to perform the operation on.
@@ -532,7 +550,7 @@ type ConsistencyGroupNamespaceInlineSpace struct {
 	// Valid in POST when creating an NVMe namespace that is not a clone of another. Disallowed in POST when creating a namespace clone.
 	//  Valid in POST.
 	//
-	// Enum: [512 4096]
+	// Enum: [512,4096]
 	BlockSize *int64 `json:"block_size,omitempty"`
 
 	// guarantee
@@ -551,6 +569,7 @@ type ConsistencyGroupNamespaceInlineSpace struct {
 	// This value is the total space consumed in the volume by the NVMe namespace, including filesystem overhead, but excluding prefix and suffix streams. Due to internal filesystem overhead and the many ways NVMe filesystems and applications utilize blocks within a namespace, this value does not necessarily reflect actual consumption/availability from the perspective of the filesystem or application. Without specific knowledge of how the namespace blocks are utilized outside of ONTAP, this property should not be used as an indicator for an out-of-space condition.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
 	//
+	// Read Only: true
 	Used *int64 `json:"used,omitempty"`
 }
 
@@ -650,6 +669,10 @@ func (m *ConsistencyGroupNamespaceInlineSpace) ContextValidate(ctx context.Conte
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -665,6 +688,15 @@ func (m *ConsistencyGroupNamespaceInlineSpace) contextValidateGuarantee(ctx cont
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupNamespaceInlineSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"used", "body", m.Used); err != nil {
+		return err
 	}
 
 	return nil
@@ -701,6 +733,7 @@ type ConsistencyGroupNamespaceInlineSpaceInlineGuarantee struct {
 	// Reports if the NVMe namespace is space guaranteed.<br/>
 	// This property is _true_ if a space guarantee is requested and the containing volume and aggregate support the request. This property is _false_ if a space guarantee is not requested or if a space guarantee is requested and either the containing volume and aggregate do not support the request.
 	//
+	// Read Only: true
 	Reserved *bool `json:"reserved,omitempty"`
 }
 
@@ -709,8 +742,26 @@ func (m *ConsistencyGroupNamespaceInlineSpaceInlineGuarantee) Validate(formats s
 	return nil
 }
 
-// ContextValidate validates this consistency group namespace inline space inline guarantee based on context it is used
+// ContextValidate validate this consistency group namespace inline space inline guarantee based on the context it is used
 func (m *ConsistencyGroupNamespaceInlineSpaceInlineGuarantee) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateReserved(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupNamespaceInlineSpaceInlineGuarantee) contextValidateReserved(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"guarantee"+"."+"reserved", "body", m.Reserved); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -739,7 +790,7 @@ type ConsistencyGroupNamespaceInlineStatus struct {
 
 	// The state of the volume and aggregate that contain the NVMe namespace. Namespaces are only available when their containers are available.
 	//
-	// Enum: [online aggregate_offline volume_offline]
+	// Enum: ["online","aggregate_offline","volume_offline"]
 	ContainerState *string `json:"container_state,omitempty"`
 
 	// Reports if the NVMe namespace is mapped to an NVMe subsystem.<br/>
@@ -754,7 +805,7 @@ type ConsistencyGroupNamespaceInlineStatus struct {
 	// The state of the NVMe namespace. Normal states for a namespace are _online_ and _offline_. Other states indicate errors.
 	//
 	// Example: online
-	// Enum: [nvfail offline online space_error]
+	// Enum: ["nvfail","offline","online","space_error"]
 	State *string `json:"state,omitempty"`
 }
 

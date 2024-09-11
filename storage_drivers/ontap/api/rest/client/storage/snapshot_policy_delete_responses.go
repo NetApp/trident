@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SnapshotPolicyDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snapshot policy delete o k response
+func (o *SnapshotPolicyDeleteOK) Code() int {
+	return 200
+}
+
 func (o *SnapshotPolicyDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{uuid}][%d] snapshotPolicyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{uuid}][%d] snapshotPolicyDeleteOK", 200)
 }
 
 func (o *SnapshotPolicyDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{uuid}][%d] snapshotPolicyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{uuid}][%d] snapshotPolicyDeleteOK", 200)
 }
 
 func (o *SnapshotPolicyDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,17 +115,12 @@ func NewSnapshotPolicyDeleteDefault(code int) *SnapshotPolicyDeleteDefault {
 | 1638415    | Cannot delete policy. Reason: Policy is in use by at least one volume. |
 | 1638416    | Cannot delete policy. Reason: Cannot verify whether policy is in use. |
 | 1638430    | Cannot delete policy. Reason: Policy is in use by at least one Vserver. |
-| 1638430    | Cannot delete built-in policy. |
+| 1638431    | Cannot delete built-in policy. |
 */
 type SnapshotPolicyDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snapshot policy delete default response
-func (o *SnapshotPolicyDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snapshot policy delete default response has a 2xx status code
@@ -147,12 +148,19 @@ func (o *SnapshotPolicyDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snapshot policy delete default response
+func (o *SnapshotPolicyDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnapshotPolicyDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{uuid}][%d] snapshot_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{uuid}][%d] snapshot_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotPolicyDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{uuid}][%d] snapshot_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{uuid}][%d] snapshot_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotPolicyDeleteDefault) GetPayload() *models.ErrorResponse {

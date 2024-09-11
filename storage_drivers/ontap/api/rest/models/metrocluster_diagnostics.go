@@ -365,14 +365,14 @@ type MetroclusterDiagnosticsInlineAggregate struct {
 
 	// Status of diagnostic operation for this component.
 	// Read Only: true
-	// Enum: [ok warning not_run not_applicable]
+	// Enum: ["ok","warning","not_run","not_applicable"]
 	State *string `json:"state,omitempty"`
 
 	// summary
 	Summary *MetroclusterDiagnosticsInlineAggregateInlineSummary `json:"summary,omitempty"`
 
 	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-10T14:35:16-08:00
+	// Example: 2016-03-10 22:35:16
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -715,14 +715,14 @@ type MetroclusterDiagnosticsInlineCluster struct {
 
 	// Status of diagnostic operation for this component.
 	// Read Only: true
-	// Enum: [ok warning not_run not_applicable]
+	// Enum: ["ok","warning","not_run","not_applicable"]
 	State *string `json:"state,omitempty"`
 
 	// summary
 	Summary *MetroclusterDiagnosticsInlineClusterInlineSummary `json:"summary,omitempty"`
 
 	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-10T14:35:16-08:00
+	// Example: 2016-03-10 22:35:16
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1061,14 +1061,14 @@ type MetroclusterDiagnosticsInlineConfigReplication struct {
 
 	// Status of diagnostic operation for this component.
 	// Read Only: true
-	// Enum: [ok warning not_run not_applicable]
+	// Enum: ["ok","warning","not_run","not_applicable"]
 	State *string `json:"state,omitempty"`
 
 	// summary
 	Summary *MetroclusterDiagnosticsInlineConfigReplicationInlineSummary `json:"summary,omitempty"`
 
 	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-14T14:35:16-08:00
+	// Example: 2016-03-14 22:35:16
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1357,14 +1357,14 @@ type MetroclusterDiagnosticsInlineConnection struct {
 
 	// Status of diagnostic operation for this component.
 	// Read Only: true
-	// Enum: [ok warning not_run not_applicable]
+	// Enum: ["ok","warning","not_run","not_applicable"]
 	State *string `json:"state,omitempty"`
 
 	// summary
 	Summary *MetroclusterDiagnosticsInlineConnectionInlineSummary `json:"summary,omitempty"`
 
 	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-10T14:35:16-08:00
+	// Example: 2016-03-10 22:35:16
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1703,14 +1703,14 @@ type MetroclusterDiagnosticsInlineInterface struct {
 
 	// Status of diagnostic operation for this component.
 	// Read Only: true
-	// Enum: [ok warning not_run not_applicable]
+	// Enum: ["ok","warning","not_run","not_applicable"]
 	State *string `json:"state,omitempty"`
 
 	// summary
 	Summary *MetroclusterDiagnosticsInlineInterfaceInlineSummary `json:"summary,omitempty"`
 
 	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-10T14:35:16-08:00
+	// Example: 2016-03-10 22:35:16
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1999,14 +1999,14 @@ type MetroclusterDiagnosticsInlineNode struct {
 
 	// Status of diagnostic operation for this component.
 	// Read Only: true
-	// Enum: [ok warning not_run not_applicable]
+	// Enum: ["ok","warning","not_run","not_applicable"]
 	State *string `json:"state,omitempty"`
 
 	// summary
 	Summary *MetroclusterDiagnosticsInlineNodeInlineSummary `json:"summary,omitempty"`
 
 	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-10T14:35:16-08:00
+	// Example: 2016-03-10 22:35:16
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -2349,14 +2349,14 @@ type MetroclusterDiagnosticsInlineVolume struct {
 
 	// Status of diagnostic operation for this component.
 	// Read Only: true
-	// Enum: [ok warning not_run not_applicable]
+	// Enum: ["ok","warning","not_run","not_applicable"]
 	State *string `json:"state,omitempty"`
 
 	// summary
 	Summary *MetroclusterDiagnosticsInlineVolumeInlineSummary `json:"summary,omitempty"`
 
 	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-10T14:35:16-08:00
+	// Example: 2016-03-10 22:35:16
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`

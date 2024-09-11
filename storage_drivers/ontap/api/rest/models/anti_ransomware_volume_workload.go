@@ -25,10 +25,20 @@ type AntiRansomwareVolumeWorkload struct {
 	// Read Only: true
 	AntiRansomwareVolumeWorkloadInlineFileExtensionsObserved []*string `json:"file_extensions_observed,omitempty"`
 
+	// New file extensions observed in the volume during surge.
+	// Read Only: true
+	AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensions []*AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensionsInlineArrayItem `json:"newly_observed_file_extensions,omitempty"`
+
 	// Count of types of file extensions observed in the volume.
 	// Example: 3
 	// Read Only: true
 	FileExtensionTypesCount *int64 `json:"file_extension_types_count,omitempty"`
+
+	// historical statistics
+	HistoricalStatistics *AntiRansomwareVolumeWorkloadInlineHistoricalStatistics `json:"historical_statistics,omitempty"`
+
+	// surge statistics
+	SurgeStatistics *AntiRansomwareVolumeWorkloadInlineSurgeStatistics `json:"surge_statistics,omitempty"`
 
 	// surge usage
 	SurgeUsage *AntiRansomwareVolumeWorkloadInlineSurgeUsage `json:"surge_usage,omitempty"`
@@ -41,6 +51,18 @@ type AntiRansomwareVolumeWorkload struct {
 func (m *AntiRansomwareVolumeWorkload) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateAntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensions(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateHistoricalStatistics(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSurgeStatistics(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSurgeUsage(formats); err != nil {
 		res = append(res, err)
 	}
@@ -52,6 +74,64 @@ func (m *AntiRansomwareVolumeWorkload) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkload) validateAntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensions(formats strfmt.Registry) error {
+	if swag.IsZero(m.AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensions) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensions); i++ {
+		if swag.IsZero(m.AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensions[i]) { // not required
+			continue
+		}
+
+		if m.AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensions[i] != nil {
+			if err := m.AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensions[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("newly_observed_file_extensions" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkload) validateHistoricalStatistics(formats strfmt.Registry) error {
+	if swag.IsZero(m.HistoricalStatistics) { // not required
+		return nil
+	}
+
+	if m.HistoricalStatistics != nil {
+		if err := m.HistoricalStatistics.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("historical_statistics")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkload) validateSurgeStatistics(formats strfmt.Registry) error {
+	if swag.IsZero(m.SurgeStatistics) { // not required
+		return nil
+	}
+
+	if m.SurgeStatistics != nil {
+		if err := m.SurgeStatistics.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("surge_statistics")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -97,7 +177,19 @@ func (m *AntiRansomwareVolumeWorkload) ContextValidate(ctx context.Context, form
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensions(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateFileExtensionTypesCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateHistoricalStatistics(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSurgeStatistics(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -124,10 +216,60 @@ func (m *AntiRansomwareVolumeWorkload) contextValidateAntiRansomwareVolumeWorklo
 	return nil
 }
 
+func (m *AntiRansomwareVolumeWorkload) contextValidateAntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensions(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "newly_observed_file_extensions", "body", []*AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensionsInlineArrayItem(m.AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensions)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensions); i++ {
+
+		if m.AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensions[i] != nil {
+			if err := m.AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensions[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("newly_observed_file_extensions" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *AntiRansomwareVolumeWorkload) contextValidateFileExtensionTypesCount(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "file_extension_types_count", "body", m.FileExtensionTypesCount); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkload) contextValidateHistoricalStatistics(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.HistoricalStatistics != nil {
+		if err := m.HistoricalStatistics.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("historical_statistics")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkload) contextValidateSurgeStatistics(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.SurgeStatistics != nil {
+		if err := m.SurgeStatistics.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("surge_statistics")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -179,7 +321,380 @@ func (m *AntiRansomwareVolumeWorkload) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AntiRansomwareVolumeWorkloadInlineSurgeUsage Usage values of the volume's workload during surge.
+// AntiRansomwareVolumeWorkloadInlineHistoricalStatistics Typical usage values of volume workload.
+//
+// swagger:model anti_ransomware_volume_workload_inline_historical_statistics
+type AntiRansomwareVolumeWorkloadInlineHistoricalStatistics struct {
+
+	// Typical peak rate of file creates per minute in the workload of the volume.
+	// Example: 50
+	// Read Only: true
+	FileCreatePeakRatePerMinute *int64 `json:"file_create_peak_rate_per_minute,omitempty"`
+
+	// Typical peak rate of file deletes per minute in the workload of the volume.
+	// Example: 10
+	// Read Only: true
+	FileDeletePeakRatePerMinute *int64 `json:"file_delete_peak_rate_per_minute,omitempty"`
+
+	// Typical peak rate of file renames per minute in the workload of the volume.
+	// Example: 5
+	// Read Only: true
+	FileRenamePeakRatePerMinute *int64 `json:"file_rename_peak_rate_per_minute,omitempty"`
+
+	// Typical peak percentage of high entropy data writes in the volume.
+	// Example: 10
+	// Read Only: true
+	HighEntropyDataWritePeakPercent *int64 `json:"high_entropy_data_write_peak_percent,omitempty"`
+
+	// Typical peak high entropy data write rate in the volume, in KBs per minute.
+	// Example: 1200
+	// Read Only: true
+	HighEntropyDataWritePeakRateKbPerMinute *int64 `json:"high_entropy_data_write_peak_rate_kb_per_minute,omitempty"`
+}
+
+// Validate validates this anti ransomware volume workload inline historical statistics
+func (m *AntiRansomwareVolumeWorkloadInlineHistoricalStatistics) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this anti ransomware volume workload inline historical statistics based on the context it is used
+func (m *AntiRansomwareVolumeWorkloadInlineHistoricalStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateFileCreatePeakRatePerMinute(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFileDeletePeakRatePerMinute(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFileRenamePeakRatePerMinute(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateHighEntropyDataWritePeakPercent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateHighEntropyDataWritePeakRateKbPerMinute(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkloadInlineHistoricalStatistics) contextValidateFileCreatePeakRatePerMinute(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "historical_statistics"+"."+"file_create_peak_rate_per_minute", "body", m.FileCreatePeakRatePerMinute); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkloadInlineHistoricalStatistics) contextValidateFileDeletePeakRatePerMinute(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "historical_statistics"+"."+"file_delete_peak_rate_per_minute", "body", m.FileDeletePeakRatePerMinute); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkloadInlineHistoricalStatistics) contextValidateFileRenamePeakRatePerMinute(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "historical_statistics"+"."+"file_rename_peak_rate_per_minute", "body", m.FileRenamePeakRatePerMinute); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkloadInlineHistoricalStatistics) contextValidateHighEntropyDataWritePeakPercent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "historical_statistics"+"."+"high_entropy_data_write_peak_percent", "body", m.HighEntropyDataWritePeakPercent); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkloadInlineHistoricalStatistics) contextValidateHighEntropyDataWritePeakRateKbPerMinute(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "historical_statistics"+"."+"high_entropy_data_write_peak_rate_kb_per_minute", "body", m.HighEntropyDataWritePeakRateKbPerMinute); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *AntiRansomwareVolumeWorkloadInlineHistoricalStatistics) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *AntiRansomwareVolumeWorkloadInlineHistoricalStatistics) UnmarshalBinary(b []byte) error {
+	var res AntiRansomwareVolumeWorkloadInlineHistoricalStatistics
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensionsInlineArrayItem anti ransomware volume workload inline newly observed file extensions inline array item
+//
+// swagger:model anti_ransomware_volume_workload_inline_newly_observed_file_extensions_inline_array_item
+type AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensionsInlineArrayItem struct {
+
+	// Count of newly observed file extensions.
+	// Example: [20]
+	// Read Only: true
+	Count *int64 `json:"count,omitempty"`
+
+	// Name of the newly observed file extension.
+	// Example: ["lockile"]
+	// Read Only: true
+	Name *string `json:"name,omitempty"`
+}
+
+// Validate validates this anti ransomware volume workload inline newly observed file extensions inline array item
+func (m *AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensionsInlineArrayItem) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this anti ransomware volume workload inline newly observed file extensions inline array item based on the context it is used
+func (m *AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensionsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensionsInlineArrayItem) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "count", "body", m.Count); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensionsInlineArrayItem) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensionsInlineArrayItem) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensionsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res AntiRansomwareVolumeWorkloadInlineNewlyObservedFileExtensionsInlineArrayItem
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// AntiRansomwareVolumeWorkloadInlineSurgeStatistics Usage values of the volume's workload during surge.
+//
+// swagger:model anti_ransomware_volume_workload_inline_surge_statistics
+type AntiRansomwareVolumeWorkloadInlineSurgeStatistics struct {
+
+	// Peak rate of file creates per minute in the workload of the volume during surge.
+	// Example: 10
+	// Read Only: true
+	FileCreatePeakRatePerMinute *int64 `json:"file_create_peak_rate_per_minute,omitempty"`
+
+	// Peak rate of file deletes per minute in the workload of the volume during surge.
+	// Example: 50
+	// Read Only: true
+	FileDeletePeakRatePerMinute *int64 `json:"file_delete_peak_rate_per_minute,omitempty"`
+
+	// Peak rate of file renames per minute in the workload of the volume during surge.
+	// Example: 30
+	// Read Only: true
+	FileRenamePeakRatePerMinute *int64 `json:"file_rename_peak_rate_per_minute,omitempty"`
+
+	// Peak percentage of high entropy data writes in the volume during surge.
+	// Example: 30
+	// Read Only: true
+	HighEntropyDataWritePeakPercent *int64 `json:"high_entropy_data_write_peak_percent,omitempty"`
+
+	// Peak high entropy data write rate in the volume during surge, in KBs per minute.
+	// Example: 2500
+	// Read Only: true
+	HighEntropyDataWritePeakRateKbPerMinute *int64 `json:"high_entropy_data_write_peak_rate_kb_per_minute,omitempty"`
+
+	// Timestamp at which the first surge in the volume's workload is observed.
+	// Example: 2021-12-01 17:46:20
+	// Read Only: true
+	// Format: date-time
+	Time *strfmt.DateTime `json:"time,omitempty"`
+}
+
+// Validate validates this anti ransomware volume workload inline surge statistics
+func (m *AntiRansomwareVolumeWorkloadInlineSurgeStatistics) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkloadInlineSurgeStatistics) validateTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.Time) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("surge_statistics"+"."+"time", "body", "date-time", m.Time.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this anti ransomware volume workload inline surge statistics based on the context it is used
+func (m *AntiRansomwareVolumeWorkloadInlineSurgeStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateFileCreatePeakRatePerMinute(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFileDeletePeakRatePerMinute(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFileRenamePeakRatePerMinute(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateHighEntropyDataWritePeakPercent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateHighEntropyDataWritePeakRateKbPerMinute(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkloadInlineSurgeStatistics) contextValidateFileCreatePeakRatePerMinute(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "surge_statistics"+"."+"file_create_peak_rate_per_minute", "body", m.FileCreatePeakRatePerMinute); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkloadInlineSurgeStatistics) contextValidateFileDeletePeakRatePerMinute(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "surge_statistics"+"."+"file_delete_peak_rate_per_minute", "body", m.FileDeletePeakRatePerMinute); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkloadInlineSurgeStatistics) contextValidateFileRenamePeakRatePerMinute(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "surge_statistics"+"."+"file_rename_peak_rate_per_minute", "body", m.FileRenamePeakRatePerMinute); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkloadInlineSurgeStatistics) contextValidateHighEntropyDataWritePeakPercent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "surge_statistics"+"."+"high_entropy_data_write_peak_percent", "body", m.HighEntropyDataWritePeakPercent); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkloadInlineSurgeStatistics) contextValidateHighEntropyDataWritePeakRateKbPerMinute(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "surge_statistics"+"."+"high_entropy_data_write_peak_rate_kb_per_minute", "body", m.HighEntropyDataWritePeakRateKbPerMinute); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolumeWorkloadInlineSurgeStatistics) contextValidateTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "surge_statistics"+"."+"time", "body", m.Time); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *AntiRansomwareVolumeWorkloadInlineSurgeStatistics) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *AntiRansomwareVolumeWorkloadInlineSurgeStatistics) UnmarshalBinary(b []byte) error {
+	var res AntiRansomwareVolumeWorkloadInlineSurgeStatistics
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// AntiRansomwareVolumeWorkloadInlineSurgeUsage Usage values of the volume's workload during surge. This object is no longer supported use surge_statistics instead.
 //
 // swagger:model anti_ransomware_volume_workload_inline_surge_usage
 type AntiRansomwareVolumeWorkloadInlineSurgeUsage struct {
@@ -214,7 +729,7 @@ type AntiRansomwareVolumeWorkloadInlineSurgeUsage struct {
 	NewlyObservedFileExtensions []*AntiRansomwareVolumeWorkloadSurgeUsageNewlyObservedFileExtensionsItems0 `json:"newly_observed_file_extensions,omitempty"`
 
 	// Timestamp at which the first surge in the volume's workload is observed.
-	// Example: 2021-12-01T23:16:20+05:30
+	// Example: 2021-12-01 17:46:20
 	// Read Only: true
 	// Format: date-time
 	Time *strfmt.DateTime `json:"time,omitempty"`
@@ -412,7 +927,7 @@ func (m *AntiRansomwareVolumeWorkloadInlineSurgeUsage) UnmarshalBinary(b []byte)
 type AntiRansomwareVolumeWorkloadSurgeUsageNewlyObservedFileExtensionsItems0 struct {
 
 	// Count of newly observed file extensions.
-	// Example: ["20"]
+	// Example: [20]
 	// Read Only: true
 	Count *int64 `json:"count,omitempty"`
 
@@ -481,7 +996,7 @@ func (m *AntiRansomwareVolumeWorkloadSurgeUsageNewlyObservedFileExtensionsItems0
 	return nil
 }
 
-// AntiRansomwareVolumeWorkloadInlineTypicalUsage Typical usage values of volume workload.
+// AntiRansomwareVolumeWorkloadInlineTypicalUsage Typical usage values of volume workload. This object is no longer supported use historical_statistics instead.
 //
 // swagger:model anti_ransomware_volume_workload_inline_typical_usage
 type AntiRansomwareVolumeWorkloadInlineTypicalUsage struct {

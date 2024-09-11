@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SecuritySamlSpDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the security saml sp delete o k response
+func (o *SecuritySamlSpDeleteOK) Code() int {
+	return 200
+}
+
 func (o *SecuritySamlSpDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /security/authentication/cluster/saml-sp][%d] securitySamlSpDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/authentication/cluster/saml-sp][%d] securitySamlSpDeleteOK", 200)
 }
 
 func (o *SecuritySamlSpDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /security/authentication/cluster/saml-sp][%d] securitySamlSpDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/authentication/cluster/saml-sp][%d] securitySamlSpDeleteOK", 200)
 }
 
 func (o *SecuritySamlSpDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,16 +113,12 @@ func NewSecuritySamlSpDeleteDefault(code int) *SecuritySamlSpDeleteDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 12320803 | SAML must be disabled before the configuration can be removed. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SecuritySamlSpDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security saml sp delete default response
-func (o *SecuritySamlSpDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security saml sp delete default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *SecuritySamlSpDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security saml sp delete default response
+func (o *SecuritySamlSpDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecuritySamlSpDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /security/authentication/cluster/saml-sp][%d] security_saml_sp_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/authentication/cluster/saml-sp][%d] security_saml_sp_delete default %s", o._statusCode, payload)
 }
 
 func (o *SecuritySamlSpDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /security/authentication/cluster/saml-sp][%d] security_saml_sp_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/authentication/cluster/saml-sp][%d] security_saml_sp_delete default %s", o._statusCode, payload)
 }
 
 func (o *SecuritySamlSpDeleteDefault) GetPayload() *models.ErrorResponse {

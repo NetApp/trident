@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type QuotaRuleCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *QuotaRuleCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewQuotaRuleCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewQuotaRuleCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *QuotaRuleCreateReader) ReadResponse(response runtime.ClientResponse, co
 	}
 }
 
+// NewQuotaRuleCreateCreated creates a QuotaRuleCreateCreated with default headers values
+func NewQuotaRuleCreateCreated() *QuotaRuleCreateCreated {
+	return &QuotaRuleCreateCreated{}
+}
+
+/*
+QuotaRuleCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type QuotaRuleCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.QuotaRuleJobLinkResponse
+}
+
+// IsSuccess returns true when this quota rule create created response has a 2xx status code
+func (o *QuotaRuleCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this quota rule create created response has a 3xx status code
+func (o *QuotaRuleCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this quota rule create created response has a 4xx status code
+func (o *QuotaRuleCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this quota rule create created response has a 5xx status code
+func (o *QuotaRuleCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this quota rule create created response a status code equal to that given
+func (o *QuotaRuleCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the quota rule create created response
+func (o *QuotaRuleCreateCreated) Code() int {
+	return 201
+}
+
+func (o *QuotaRuleCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/quota/rules][%d] quotaRuleCreateCreated %s", 201, payload)
+}
+
+func (o *QuotaRuleCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/quota/rules][%d] quotaRuleCreateCreated %s", 201, payload)
+}
+
+func (o *QuotaRuleCreateCreated) GetPayload() *models.QuotaRuleJobLinkResponse {
+	return o.Payload
+}
+
+func (o *QuotaRuleCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.QuotaRuleJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewQuotaRuleCreateAccepted creates a QuotaRuleCreateAccepted with default headers values
 func NewQuotaRuleCreateAccepted() *QuotaRuleCreateAccepted {
 	return &QuotaRuleCreateAccepted{}
@@ -57,7 +146,7 @@ type QuotaRuleCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.QuotaRuleJobLinkResponse
 }
 
 // IsSuccess returns true when this quota rule create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *QuotaRuleCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the quota rule create accepted response
+func (o *QuotaRuleCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *QuotaRuleCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /storage/quota/rules][%d] quotaRuleCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/quota/rules][%d] quotaRuleCreateAccepted %s", 202, payload)
 }
 
 func (o *QuotaRuleCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /storage/quota/rules][%d] quotaRuleCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/quota/rules][%d] quotaRuleCreateAccepted %s", 202, payload)
 }
 
-func (o *QuotaRuleCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *QuotaRuleCreateAccepted) GetPayload() *models.QuotaRuleJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *QuotaRuleCreateAccepted) readResponse(response runtime.ClientResponse, 
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.QuotaRuleJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -136,6 +232,8 @@ func NewQuotaRuleCreateDefault(code int) *QuotaRuleCreateDefault {
 | 2621462 | The specified SVM does not exist. |
 | 2621706 | The specified `svm.uuid` and `svm.name` do not refer to the same SVM. |
 | 2621707 | No SVM was specified. Either `svm.name` or `svm.uuid` must be supplied. |
+| 5308469 | User mapping can be specified only for a user quota rule. |
+| 5308496 | The specified user name was not found. |
 | 5308501 | Mapping from Windows user to UNIX user for user rule was unsuccessful. |
 | 5308502 | Mapping from UNIX user to Windows user for user rule was unsuccessful. |
 | 5308552 | Failed to get default quota policy name for SVM. |
@@ -150,16 +248,12 @@ func NewQuotaRuleCreateDefault(code int) *QuotaRuleCreateDefault {
 | 5308573 | Input value is greater than limit for field. |
 | 5308574 | Input value is out of range for field. |
 | 5308575 | Input value is incorrectly larger than listed field. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type QuotaRuleCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the quota rule create default response
-func (o *QuotaRuleCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this quota rule create default response has a 2xx status code
@@ -187,12 +281,19 @@ func (o *QuotaRuleCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the quota rule create default response
+func (o *QuotaRuleCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *QuotaRuleCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/quota/rules][%d] quota_rule_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/quota/rules][%d] quota_rule_create default %s", o._statusCode, payload)
 }
 
 func (o *QuotaRuleCreateDefault) String() string {
-	return fmt.Sprintf("[POST /storage/quota/rules][%d] quota_rule_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/quota/rules][%d] quota_rule_create default %s", o._statusCode, payload)
 }
 
 func (o *QuotaRuleCreateDefault) GetPayload() *models.ErrorResponse {

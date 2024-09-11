@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *LdapGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ldap get o k response
+func (o *LdapGetOK) Code() int {
+	return 200
+}
+
 func (o *LdapGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/ldap/{svm.uuid}][%d] ldapGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/ldap/{svm.uuid}][%d] ldapGetOK %s", 200, payload)
 }
 
 func (o *LdapGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/ldap/{svm.uuid}][%d] ldapGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/ldap/{svm.uuid}][%d] ldapGetOK %s", 200, payload)
 }
 
 func (o *LdapGetOK) GetPayload() *models.LdapService {
@@ -122,11 +130,6 @@ type LdapGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the ldap get default response
-func (o *LdapGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this ldap get default response has a 2xx status code
 func (o *LdapGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *LdapGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ldap get default response
+func (o *LdapGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LdapGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/ldap/{svm.uuid}][%d] ldap_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/ldap/{svm.uuid}][%d] ldap_get default %s", o._statusCode, payload)
 }
 
 func (o *LdapGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/ldap/{svm.uuid}][%d] ldap_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/ldap/{svm.uuid}][%d] ldap_get default %s", o._statusCode, payload)
 }
 
 func (o *LdapGetDefault) GetPayload() *models.ErrorResponse {

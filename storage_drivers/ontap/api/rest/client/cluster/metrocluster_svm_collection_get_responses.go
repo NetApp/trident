@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *MetroclusterSvmCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the metrocluster svm collection get o k response
+func (o *MetroclusterSvmCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *MetroclusterSvmCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/svms][%d] metroclusterSvmCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/svms][%d] metroclusterSvmCollectionGetOK %s", 200, payload)
 }
 
 func (o *MetroclusterSvmCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/svms][%d] metroclusterSvmCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/svms][%d] metroclusterSvmCollectionGetOK %s", 200, payload)
 }
 
 func (o *MetroclusterSvmCollectionGetOK) GetPayload() *models.MetroclusterSvmResponse {
@@ -122,11 +130,6 @@ type MetroclusterSvmCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the metrocluster svm collection get default response
-func (o *MetroclusterSvmCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this metrocluster svm collection get default response has a 2xx status code
 func (o *MetroclusterSvmCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *MetroclusterSvmCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the metrocluster svm collection get default response
+func (o *MetroclusterSvmCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MetroclusterSvmCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/svms][%d] metrocluster_svm_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/svms][%d] metrocluster_svm_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *MetroclusterSvmCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/svms][%d] metrocluster_svm_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/svms][%d] metrocluster_svm_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *MetroclusterSvmCollectionGetDefault) GetPayload() *models.ErrorResponse {

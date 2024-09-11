@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *FcPortGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fc port get o k response
+func (o *FcPortGetOK) Code() int {
+	return 200
+}
+
 func (o *FcPortGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/fc/ports/{uuid}][%d] fcPortGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/ports/{uuid}][%d] fcPortGetOK %s", 200, payload)
 }
 
 func (o *FcPortGetOK) String() string {
-	return fmt.Sprintf("[GET /network/fc/ports/{uuid}][%d] fcPortGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/ports/{uuid}][%d] fcPortGetOK %s", 200, payload)
 }
 
 func (o *FcPortGetOK) GetPayload() *models.FcPort {
@@ -122,11 +130,6 @@ type FcPortGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the fc port get default response
-func (o *FcPortGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this fc port get default response has a 2xx status code
 func (o *FcPortGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *FcPortGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fc port get default response
+func (o *FcPortGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FcPortGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/fc/ports/{uuid}][%d] fc_port_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/ports/{uuid}][%d] fc_port_get default %s", o._statusCode, payload)
 }
 
 func (o *FcPortGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/fc/ports/{uuid}][%d] fc_port_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/ports/{uuid}][%d] fc_port_get default %s", o._statusCode, payload)
 }
 
 func (o *FcPortGetDefault) GetPayload() *models.ErrorResponse {

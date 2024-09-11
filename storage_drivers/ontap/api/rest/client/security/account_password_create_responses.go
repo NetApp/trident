@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *AccountPasswordCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the account password create created response
+func (o *AccountPasswordCreateCreated) Code() int {
+	return 201
+}
+
 func (o *AccountPasswordCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/authentication/password][%d] accountPasswordCreateCreated ", 201)
+	return fmt.Sprintf("[POST /security/authentication/password][%d] accountPasswordCreateCreated", 201)
 }
 
 func (o *AccountPasswordCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/authentication/password][%d] accountPasswordCreateCreated ", 201)
+	return fmt.Sprintf("[POST /security/authentication/password][%d] accountPasswordCreateCreated", 201)
 }
 
 func (o *AccountPasswordCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -125,16 +131,12 @@ func NewAccountPasswordCreateDefault(code int) *AccountPasswordCreateDefault {
 | 7077925 | The new password must be different to the old password. |
 | 7077940 | The password exceeds maximum supported length. |
 | 7077941 | Defined password composition exceeds the maximum password length of 128 characters. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AccountPasswordCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the account password create default response
-func (o *AccountPasswordCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this account password create default response has a 2xx status code
@@ -162,12 +164,19 @@ func (o *AccountPasswordCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the account password create default response
+func (o *AccountPasswordCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AccountPasswordCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/authentication/password][%d] account_password_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/password][%d] account_password_create default %s", o._statusCode, payload)
 }
 
 func (o *AccountPasswordCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/authentication/password][%d] account_password_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/password][%d] account_password_create default %s", o._statusCode, payload)
 }
 
 func (o *AccountPasswordCreateDefault) GetPayload() *models.ErrorResponse {

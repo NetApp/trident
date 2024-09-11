@@ -27,7 +27,7 @@ type VdiOnSan struct {
 
 	// The name of the hypervisor hosting the application.
 	// Required: true
-	// Enum: [hyper_v vmware xen]
+	// Enum: ["hyper_v","vmware","xen"]
 	Hypervisor *string `json:"hypervisor"`
 
 	// The name of the initiator group through which the contents of this application will be accessed. Modification of this parameter is a disruptive operation. All LUNs in the application component will be unmapped from the current igroup and re-mapped to the new igroup.
@@ -448,7 +448,7 @@ func (m *VdiOnSanInlineDesktops) UnmarshalBinary(b []byte) error {
 type VdiOnSanInlineDesktopsInlineStorageService struct {
 
 	// The storage service of the desktops.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -561,11 +561,11 @@ func (m *VdiOnSanInlineDesktopsInlineStorageService) UnmarshalBinary(b []byte) e
 type VdiOnSanInlineProtectionType struct {
 
 	// The local RPO of the application.
-	// Enum: [hourly none]
+	// Enum: ["hourly","none"]
 	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
-	// Enum: [none zero]
+	// Enum: ["none","zero"]
 	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 

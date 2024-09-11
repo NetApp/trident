@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *IscsiServiceCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the iscsi service create created response
+func (o *IscsiServiceCreateCreated) Code() int {
+	return 201
+}
+
 func (o *IscsiServiceCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/iscsi/services][%d] iscsiServiceCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/iscsi/services][%d] iscsiServiceCreateCreated %s", 201, payload)
 }
 
 func (o *IscsiServiceCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/san/iscsi/services][%d] iscsiServiceCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/iscsi/services][%d] iscsiServiceCreateCreated %s", 201, payload)
 }
 
 func (o *IscsiServiceCreateCreated) GetPayload() *models.IscsiServiceResponse {
@@ -138,16 +146,13 @@ func NewIscsiServiceCreateDefault(code int) *IscsiServiceCreateDefault {
 | 5373966 | An iSCSI service cannot be created in an SVM that is configured for NVMe. |
 | 5374077 | An iSCSI service already exists for the specified SVM. |
 | 5374893 | The SVM is stopped. The SVM must be running to create an iSCSI service. |
+| 5376452 | Service POST and DELETE are not supported on ASA r2. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IscsiServiceCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the iscsi service create default response
-func (o *IscsiServiceCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this iscsi service create default response has a 2xx status code
@@ -175,12 +180,19 @@ func (o *IscsiServiceCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the iscsi service create default response
+func (o *IscsiServiceCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IscsiServiceCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/iscsi/services][%d] iscsi_service_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/iscsi/services][%d] iscsi_service_create default %s", o._statusCode, payload)
 }
 
 func (o *IscsiServiceCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/san/iscsi/services][%d] iscsi_service_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/iscsi/services][%d] iscsi_service_create default %s", o._statusCode, payload)
 }
 
 func (o *IscsiServiceCreateDefault) GetPayload() *models.ErrorResponse {

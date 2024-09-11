@@ -25,7 +25,7 @@ type SnaplockFileFingerprint struct {
 
 	// The digest algorithm which is used for the fingerprint computation
 	// Example: sha256
-	// Enum: [md5 sha256]
+	// Enum: ["md5","sha256"]
 	Algorithm *string `json:"algorithm,omitempty"`
 
 	// The digest value of data of the file. The fingerprint is base64 encoded. This field is not included if the scope is metadata-only.
@@ -41,7 +41,7 @@ type SnaplockFileFingerprint struct {
 	// The type of the file.
 	// Example: worm
 	// Read Only: true
-	// Enum: [worm worm_appendable worm_active_log worm_log regular]
+	// Enum: ["worm","worm_appendable","worm_active_log","worm_log","regular"]
 	FileType *string `json:"file_type,omitempty"`
 
 	// A unique identifier for the fingerprint operation
@@ -61,13 +61,13 @@ type SnaplockFileFingerprint struct {
 	// The scope of the file which is used for the fingerprint computation
 	// Example: data_only
 	// Read Only: true
-	// Enum: [data_and_metadata data_only metadata_only]
+	// Enum: ["data_and_metadata","data_only","metadata_only"]
 	Scope *string `json:"scope,omitempty"`
 
 	// Specifies the status of fingerprint operation.
 	// Example: completed
 	// Read Only: true
-	// Enum: [in_progress failed aborting completed]
+	// Enum: ["in_progress","failed","aborting","completed"]
 	State *string `json:"state,omitempty"`
 
 	// svm
@@ -709,7 +709,7 @@ func (m *SnaplockFileFingerprintInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockFileFingerprintInlineSvm snaplock file fingerprint inline svm
+// SnaplockFileFingerprintInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model snaplock_file_fingerprint_inline_svm
 type SnaplockFileFingerprintInlineSvm struct {
@@ -717,12 +717,12 @@ type SnaplockFileFingerprintInlineSvm struct {
 	// links
 	Links *SnaplockFileFingerprintInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -899,7 +899,7 @@ type SnaplockFileFingerprintInlineVolume struct {
 	// links
 	Links *SnaplockFileFingerprintInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

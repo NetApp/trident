@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ExportPolicyDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the export policy delete o k response
+func (o *ExportPolicyDeleteOK) Code() int {
+	return 200
+}
+
 func (o *ExportPolicyDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{id}][%d] exportPolicyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{id}][%d] exportPolicyDeleteOK", 200)
 }
 
 func (o *ExportPolicyDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{id}][%d] exportPolicyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{id}][%d] exportPolicyDeleteOK", 200)
 }
 
 func (o *ExportPolicyDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -112,16 +118,12 @@ func NewExportPolicyDeleteDefault(code int) *ExportPolicyDeleteDefault {
 | 1703947    | Cannot delete default ruleset.  This ruleset will be deleted when the owning Vserver is deleted|
 | 1703952    | Invalid ruleset name provided. No spaces are allowed in a ruleset name|
 | 1703953    | This ruleset is in use by a qtree export policy.  It cannot be deleted until all qtree policies that refer to it are first deleted|
+| 1704047    | The export policy name cannot be longer than 256 characters |
 */
 type ExportPolicyDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the export policy delete default response
-func (o *ExportPolicyDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this export policy delete default response has a 2xx status code
@@ -149,12 +151,19 @@ func (o *ExportPolicyDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the export policy delete default response
+func (o *ExportPolicyDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ExportPolicyDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{id}][%d] export_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{id}][%d] export_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *ExportPolicyDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{id}][%d] export_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{id}][%d] export_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *ExportPolicyDeleteDefault) GetPayload() *models.ErrorResponse {

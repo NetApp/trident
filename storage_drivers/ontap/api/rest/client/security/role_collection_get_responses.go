@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *RoleCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the role collection get o k response
+func (o *RoleCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *RoleCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/roles][%d] roleCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/roles][%d] roleCollectionGetOK %s", 200, payload)
 }
 
 func (o *RoleCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /security/roles][%d] roleCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/roles][%d] roleCollectionGetOK %s", 200, payload)
 }
 
 func (o *RoleCollectionGetOK) GetPayload() *models.RoleResponse {
@@ -122,11 +130,6 @@ type RoleCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the role collection get default response
-func (o *RoleCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this role collection get default response has a 2xx status code
 func (o *RoleCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *RoleCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the role collection get default response
+func (o *RoleCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *RoleCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/roles][%d] role_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/roles][%d] role_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *RoleCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/roles][%d] role_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/roles][%d] role_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *RoleCollectionGetDefault) GetPayload() *models.ErrorResponse {

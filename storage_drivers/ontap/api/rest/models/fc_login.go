@@ -38,7 +38,7 @@ type FcLogin struct {
 	// The data protocol used to perform the login.
 	//
 	// Read Only: true
-	// Enum: [fc_nvme fcp]
+	// Enum: ["fc_nvme","fcp"]
 	Protocol *string `json:"protocol,omitempty"`
 
 	// svm
@@ -1043,7 +1043,7 @@ func (m *FcLoginInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcLoginInlineSvm fc login inline svm
+// FcLoginInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model fc_login_inline_svm
 type FcLoginInlineSvm struct {
@@ -1051,12 +1051,12 @@ type FcLoginInlineSvm struct {
 	// links
 	Links *FcLoginInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

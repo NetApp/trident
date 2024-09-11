@@ -36,6 +36,7 @@ type SnaplockLitigation struct {
 	Path *string `json:"path,omitempty"`
 
 	// snaplock litigation inline operations
+	// Read Only: true
 	SnaplockLitigationInlineOperations []*SnaplockLegalHoldOperation `json:"operations,omitempty"`
 
 	// svm
@@ -201,6 +202,10 @@ func (m *SnaplockLitigation) contextValidateID(ctx context.Context, formats strf
 
 func (m *SnaplockLitigation) contextValidateSnaplockLitigationInlineOperations(ctx context.Context, formats strfmt.Registry) error {
 
+	if err := validate.ReadOnly(ctx, "operations", "body", []*SnaplockLegalHoldOperation(m.SnaplockLitigationInlineOperations)); err != nil {
+		return err
+	}
+
 	for i := 0; i < len(m.SnaplockLitigationInlineOperations); i++ {
 
 		if m.SnaplockLitigationInlineOperations[i] != nil {
@@ -349,7 +354,7 @@ func (m *SnaplockLitigationInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockLitigationInlineSvm snaplock litigation inline svm
+// SnaplockLitigationInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model snaplock_litigation_inline_svm
 type SnaplockLitigationInlineSvm struct {
@@ -357,12 +362,12 @@ type SnaplockLitigationInlineSvm struct {
 	// links
 	Links *SnaplockLitigationInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -539,7 +544,7 @@ type SnaplockLitigationInlineVolume struct {
 	// links
 	Links *SnaplockLitigationInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

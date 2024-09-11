@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,17 @@ func (o *ConsistencyGroupSnapshotDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the consistency group snapshot delete o k response
+func (o *ConsistencyGroupSnapshotDeleteOK) Code() int {
+	return 200
+}
+
 func (o *ConsistencyGroupSnapshotDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotDeleteOK", 200)
 }
 
 func (o *ConsistencyGroupSnapshotDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotDeleteOK", 200)
 }
 
 func (o *ConsistencyGroupSnapshotDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -136,12 +142,17 @@ func (o *ConsistencyGroupSnapshotDeleteAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the consistency group snapshot delete accepted response
+func (o *ConsistencyGroupSnapshotDeleteAccepted) Code() int {
+	return 202
+}
+
 func (o *ConsistencyGroupSnapshotDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotDeleteAccepted ", 202)
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotDeleteAccepted", 202)
 }
 
 func (o *ConsistencyGroupSnapshotDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotDeleteAccepted ", 202)
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotDeleteAccepted", 202)
 }
 
 func (o *ConsistencyGroupSnapshotDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -157,19 +168,20 @@ func NewConsistencyGroupSnapshotDeleteDefault(code int) *ConsistencyGroupSnapsho
 }
 
 /*
-ConsistencyGroupSnapshotDeleteDefault describes a response with status code -1, with default header values.
+	ConsistencyGroupSnapshotDeleteDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 53412007 | Failed to delete the snapshot because it has not expired or is locked. |
+| 53412008 | Failed to delete the consistency group snapshot because it is currently used as a reference for a replication relationship. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ConsistencyGroupSnapshotDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the consistency group snapshot delete default response
-func (o *ConsistencyGroupSnapshotDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this consistency group snapshot delete default response has a 2xx status code
@@ -197,12 +209,19 @@ func (o *ConsistencyGroupSnapshotDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the consistency group snapshot delete default response
+func (o *ConsistencyGroupSnapshotDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ConsistencyGroupSnapshotDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistency_group_snapshot_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistency_group_snapshot_delete default %s", o._statusCode, payload)
 }
 
 func (o *ConsistencyGroupSnapshotDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistency_group_snapshot_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistency_group_snapshot_delete default %s", o._statusCode, payload)
 }
 
 func (o *ConsistencyGroupSnapshotDeleteDefault) GetPayload() *models.ErrorResponse {

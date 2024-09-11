@@ -252,6 +252,12 @@ type SwitchPortCollectionGetParams struct {
 	*/
 	VlanID *int64
 
+	/* VpcPeerLink.
+
+	   Filter by vpc_peer_link
+	*/
+	VpcPeerLink *bool
+
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -658,6 +664,17 @@ func (o *SwitchPortCollectionGetParams) WithVlanID(vlanID *int64) *SwitchPortCol
 // SetVlanID adds the vlanId to the switch port collection get params
 func (o *SwitchPortCollectionGetParams) SetVlanID(vlanID *int64) {
 	o.VlanID = vlanID
+}
+
+// WithVpcPeerLink adds the vpcPeerLink to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithVpcPeerLink(vpcPeerLink *bool) *SwitchPortCollectionGetParams {
+	o.SetVpcPeerLink(vpcPeerLink)
+	return o
+}
+
+// SetVpcPeerLink adds the vpcPeerLink to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetVpcPeerLink(vpcPeerLink *bool) {
+	o.VpcPeerLink = vpcPeerLink
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -1178,6 +1195,23 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		if qVlanID != "" {
 
 			if err := r.SetQueryParam("vlan_id", qVlanID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VpcPeerLink != nil {
+
+		// query param vpc_peer_link
+		var qrVpcPeerLink bool
+
+		if o.VpcPeerLink != nil {
+			qrVpcPeerLink = *o.VpcPeerLink
+		}
+		qVpcPeerLink := swag.FormatBool(qrVpcPeerLink)
+		if qVpcPeerLink != "" {
+
+			if err := r.SetQueryParam("vpc_peer_link", qVpcPeerLink); err != nil {
 				return err
 			}
 		}

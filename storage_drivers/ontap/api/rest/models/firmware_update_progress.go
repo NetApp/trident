@@ -29,7 +29,7 @@ type FirmwareUpdateProgress struct {
 
 	// Specifies the type of update.
 	// Read Only: true
-	// Enum: [manual_update automatic_update]
+	// Enum: ["manual_update","automatic_update"]
 	UpdateType *string `json:"update_type,omitempty"`
 
 	// zip file name

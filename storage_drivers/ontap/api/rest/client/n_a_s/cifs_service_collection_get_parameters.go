@@ -25,7 +25,7 @@ import (
 // To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewCifsServiceCollectionGetParams() *CifsServiceCollectionGetParams {
 	return &CifsServiceCollectionGetParams{
-		timeout: cr.DefaultTimeout,
+		requestTimeout: cr.DefaultTimeout,
 	}
 }
 
@@ -33,7 +33,7 @@ func NewCifsServiceCollectionGetParams() *CifsServiceCollectionGetParams {
 // with the ability to set a timeout on a request.
 func NewCifsServiceCollectionGetParamsWithTimeout(timeout time.Duration) *CifsServiceCollectionGetParams {
 	return &CifsServiceCollectionGetParams{
-		timeout: timeout,
+		requestTimeout: timeout,
 	}
 }
 
@@ -62,6 +62,12 @@ CifsServiceCollectionGetParams contains all the parameters to send to the API en
 */
 type CifsServiceCollectionGetParams struct {
 
+	/* AdDomainDefaultSite.
+
+	   Filter by ad_domain.default_site
+	*/
+	AdDomainDefaultSite *string
+
 	/* AdDomainFqdn.
 
 	   Filter by ad_domain.fqdn
@@ -73,6 +79,30 @@ type CifsServiceCollectionGetParams struct {
 	   Filter by ad_domain.organizational_unit
 	*/
 	AdDomainOrganizationalUnit *string
+
+	/* AuthStyle.
+
+	   Filter by auth-style
+	*/
+	AuthStyle *string
+
+	/* AuthUserType.
+
+	   Filter by auth_user_type
+	*/
+	AuthUserType *string
+
+	/* AuthenticationMethod.
+
+	   Filter by authentication_method
+	*/
+	AuthenticationMethod *string
+
+	/* ClientID.
+
+	   Filter by client_id
+	*/
+	ClientID *string
 
 	/* Comment.
 
@@ -103,6 +133,12 @@ type CifsServiceCollectionGetParams struct {
 	   Filter by group_policy_object_enabled
 	*/
 	GroupPolicyObjectEnabled *bool
+
+	/* KeyVaultURI.
+
+	   Filter by key_vault_uri
+	*/
+	KeyVaultURI *string
 
 	/* MaxRecords.
 
@@ -218,6 +254,12 @@ type CifsServiceCollectionGetParams struct {
 	*/
 	NetbiosWinsServers *string
 
+	/* OauthHost.
+
+	   Filter by oauth_host
+	*/
+	OauthHost *string
+
 	/* OptionsAdminToRootMapping.
 
 	   Filter by options.admin_to_root_mapping
@@ -230,11 +272,41 @@ type CifsServiceCollectionGetParams struct {
 	*/
 	OptionsAdvancedSparseFile *bool
 
+	/* OptionsBackupSymlinkEnabled.
+
+	   Filter by options.backup_symlink_enabled
+	*/
+	OptionsBackupSymlinkEnabled *bool
+
+	/* OptionsClientDupDetectionEnabled.
+
+	   Filter by options.client_dup_detection_enabled
+	*/
+	OptionsClientDupDetectionEnabled *bool
+
+	/* OptionsClientVersionReportingEnabled.
+
+	   Filter by options.client_version_reporting_enabled
+	*/
+	OptionsClientVersionReportingEnabled *bool
+
 	/* OptionsCopyOffload.
 
 	   Filter by options.copy_offload
 	*/
 	OptionsCopyOffload *bool
+
+	/* OptionsDacEnabled.
+
+	   Filter by options.dac_enabled
+	*/
+	OptionsDacEnabled *bool
+
+	/* OptionsExportPolicyEnabled.
+
+	   Filter by options.export_policy_enabled
+	*/
+	OptionsExportPolicyEnabled *bool
 
 	/* OptionsFakeOpen.
 
@@ -259,6 +331,42 @@ type CifsServiceCollectionGetParams struct {
 	   Filter by options.large_mtu
 	*/
 	OptionsLargeMtu *bool
+
+	/* OptionsMaxConnectionsPerSession.
+
+	   Filter by options.max_connections_per_session
+	*/
+	OptionsMaxConnectionsPerSession *int64
+
+	/* OptionsMaxLifsPerSession.
+
+	   Filter by options.max_lifs_per_session
+	*/
+	OptionsMaxLifsPerSession *int64
+
+	/* OptionsMaxOpensSameFilePerTree.
+
+	   Filter by options.max_opens_same_file_per_tree
+	*/
+	OptionsMaxOpensSameFilePerTree *int64
+
+	/* OptionsMaxSameTreeConnectPerSession.
+
+	   Filter by options.max_same_tree_connect_per_session
+	*/
+	OptionsMaxSameTreeConnectPerSession *int64
+
+	/* OptionsMaxSameUserSessionsPerConnection.
+
+	   Filter by options.max_same_user_sessions_per_connection
+	*/
+	OptionsMaxSameUserSessionsPerConnection *int64
+
+	/* OptionsMaxWatchesSetPerTree.
+
+	   Filter by options.max_watches_set_per_tree
+	*/
+	OptionsMaxWatchesSetPerTree *int64
 
 	/* OptionsMultichannel.
 
@@ -302,6 +410,12 @@ type CifsServiceCollectionGetParams struct {
 	*/
 	OptionsSmbCredits *int64
 
+	/* OptionsTrustedDomainEnumSearchEnabled.
+
+	   Filter by options.trusted_domain_enum_search_enabled
+	*/
+	OptionsTrustedDomainEnumSearchEnabled *bool
+
 	/* OptionsWidelinkReparseVersions.
 
 	   Filter by options.widelink_reparse_versions
@@ -313,6 +427,30 @@ type CifsServiceCollectionGetParams struct {
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
 	OrderBy []string
+
+	/* ProxyHost.
+
+	   Filter by proxy_host
+	*/
+	ProxyHost *string
+
+	/* ProxyPort.
+
+	   Filter by proxy_port
+	*/
+	ProxyPort *int64
+
+	/* ProxyType.
+
+	   Filter by proxy_type
+	*/
+	ProxyType *string
+
+	/* ProxyUsername.
+
+	   Filter by proxy_username
+	*/
+	ProxyUsername *string
 
 	/* ReturnRecords.
 
@@ -498,9 +636,33 @@ type CifsServiceCollectionGetParams struct {
 	*/
 	SvmUUID *string
 
-	timeout    time.Duration
-	Context    context.Context
-	HTTPClient *http.Client
+	/* TenantID.
+
+	   Filter by tenant_id
+	*/
+	TenantID *string
+
+	/* Timeout.
+
+	   Filter by timeout
+	*/
+	Timeout *int64
+
+	/* VerifyHost.
+
+	   Filter by verify_host
+	*/
+	VerifyHost *bool
+
+	/* Workgroup.
+
+	   Filter by workgroup
+	*/
+	Workgroup *string
+
+	requestTimeout time.Duration
+	Context        context.Context
+	HTTPClient     *http.Client
 }
 
 // WithDefaults hydrates default values in the cifs service collection get params (not the query body).
@@ -526,21 +688,21 @@ func (o *CifsServiceCollectionGetParams) SetDefaults() {
 		ReturnTimeout: &returnTimeoutDefault,
 	}
 
-	val.timeout = o.timeout
+	val.requestTimeout = o.requestTimeout
 	val.Context = o.Context
 	val.HTTPClient = o.HTTPClient
 	*o = val
 }
 
-// WithTimeout adds the timeout to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithTimeout(timeout time.Duration) *CifsServiceCollectionGetParams {
-	o.SetTimeout(timeout)
+// WithRequestTimeout adds the timeout to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithRequestTimeout(timeout time.Duration) *CifsServiceCollectionGetParams {
+	o.SetRequestTimeout(timeout)
 	return o
 }
 
-// SetTimeout adds the timeout to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetTimeout(timeout time.Duration) {
-	o.timeout = timeout
+// SetRequestTimeout adds the timeout to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetRequestTimeout(timeout time.Duration) {
+	o.requestTimeout = timeout
 }
 
 // WithContext adds the context to the cifs service collection get params
@@ -565,6 +727,17 @@ func (o *CifsServiceCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithAdDomainDefaultSite adds the adDomainDefaultSite to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithAdDomainDefaultSite(adDomainDefaultSite *string) *CifsServiceCollectionGetParams {
+	o.SetAdDomainDefaultSite(adDomainDefaultSite)
+	return o
+}
+
+// SetAdDomainDefaultSite adds the adDomainDefaultSite to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetAdDomainDefaultSite(adDomainDefaultSite *string) {
+	o.AdDomainDefaultSite = adDomainDefaultSite
+}
+
 // WithAdDomainFqdn adds the adDomainFqdn to the cifs service collection get params
 func (o *CifsServiceCollectionGetParams) WithAdDomainFqdn(adDomainFqdn *string) *CifsServiceCollectionGetParams {
 	o.SetAdDomainFqdn(adDomainFqdn)
@@ -585,6 +758,50 @@ func (o *CifsServiceCollectionGetParams) WithAdDomainOrganizationalUnit(adDomain
 // SetAdDomainOrganizationalUnit adds the adDomainOrganizationalUnit to the cifs service collection get params
 func (o *CifsServiceCollectionGetParams) SetAdDomainOrganizationalUnit(adDomainOrganizationalUnit *string) {
 	o.AdDomainOrganizationalUnit = adDomainOrganizationalUnit
+}
+
+// WithAuthStyle adds the authStyle to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithAuthStyle(authStyle *string) *CifsServiceCollectionGetParams {
+	o.SetAuthStyle(authStyle)
+	return o
+}
+
+// SetAuthStyle adds the authStyle to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetAuthStyle(authStyle *string) {
+	o.AuthStyle = authStyle
+}
+
+// WithAuthUserType adds the authUserType to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithAuthUserType(authUserType *string) *CifsServiceCollectionGetParams {
+	o.SetAuthUserType(authUserType)
+	return o
+}
+
+// SetAuthUserType adds the authUserType to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetAuthUserType(authUserType *string) {
+	o.AuthUserType = authUserType
+}
+
+// WithAuthenticationMethod adds the authenticationMethod to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithAuthenticationMethod(authenticationMethod *string) *CifsServiceCollectionGetParams {
+	o.SetAuthenticationMethod(authenticationMethod)
+	return o
+}
+
+// SetAuthenticationMethod adds the authenticationMethod to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetAuthenticationMethod(authenticationMethod *string) {
+	o.AuthenticationMethod = authenticationMethod
+}
+
+// WithClientID adds the clientID to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithClientID(clientID *string) *CifsServiceCollectionGetParams {
+	o.SetClientID(clientID)
+	return o
+}
+
+// SetClientID adds the clientId to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetClientID(clientID *string) {
+	o.ClientID = clientID
 }
 
 // WithComment adds the comment to the cifs service collection get params
@@ -640,6 +857,17 @@ func (o *CifsServiceCollectionGetParams) WithGroupPolicyObjectEnabled(groupPolic
 // SetGroupPolicyObjectEnabled adds the groupPolicyObjectEnabled to the cifs service collection get params
 func (o *CifsServiceCollectionGetParams) SetGroupPolicyObjectEnabled(groupPolicyObjectEnabled *bool) {
 	o.GroupPolicyObjectEnabled = groupPolicyObjectEnabled
+}
+
+// WithKeyVaultURI adds the keyVaultURI to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithKeyVaultURI(keyVaultURI *string) *CifsServiceCollectionGetParams {
+	o.SetKeyVaultURI(keyVaultURI)
+	return o
+}
+
+// SetKeyVaultURI adds the keyVaultUri to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetKeyVaultURI(keyVaultURI *string) {
+	o.KeyVaultURI = keyVaultURI
 }
 
 // WithMaxRecords adds the maxRecords to the cifs service collection get params
@@ -851,6 +1079,17 @@ func (o *CifsServiceCollectionGetParams) SetNetbiosWinsServers(netbiosWinsServer
 	o.NetbiosWinsServers = netbiosWinsServers
 }
 
+// WithOauthHost adds the oauthHost to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOauthHost(oauthHost *string) *CifsServiceCollectionGetParams {
+	o.SetOauthHost(oauthHost)
+	return o
+}
+
+// SetOauthHost adds the oauthHost to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOauthHost(oauthHost *string) {
+	o.OauthHost = oauthHost
+}
+
 // WithOptionsAdminToRootMapping adds the optionsAdminToRootMapping to the cifs service collection get params
 func (o *CifsServiceCollectionGetParams) WithOptionsAdminToRootMapping(optionsAdminToRootMapping *bool) *CifsServiceCollectionGetParams {
 	o.SetOptionsAdminToRootMapping(optionsAdminToRootMapping)
@@ -873,6 +1112,39 @@ func (o *CifsServiceCollectionGetParams) SetOptionsAdvancedSparseFile(optionsAdv
 	o.OptionsAdvancedSparseFile = optionsAdvancedSparseFile
 }
 
+// WithOptionsBackupSymlinkEnabled adds the optionsBackupSymlinkEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsBackupSymlinkEnabled(optionsBackupSymlinkEnabled *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsBackupSymlinkEnabled(optionsBackupSymlinkEnabled)
+	return o
+}
+
+// SetOptionsBackupSymlinkEnabled adds the optionsBackupSymlinkEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsBackupSymlinkEnabled(optionsBackupSymlinkEnabled *bool) {
+	o.OptionsBackupSymlinkEnabled = optionsBackupSymlinkEnabled
+}
+
+// WithOptionsClientDupDetectionEnabled adds the optionsClientDupDetectionEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsClientDupDetectionEnabled(optionsClientDupDetectionEnabled *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsClientDupDetectionEnabled(optionsClientDupDetectionEnabled)
+	return o
+}
+
+// SetOptionsClientDupDetectionEnabled adds the optionsClientDupDetectionEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsClientDupDetectionEnabled(optionsClientDupDetectionEnabled *bool) {
+	o.OptionsClientDupDetectionEnabled = optionsClientDupDetectionEnabled
+}
+
+// WithOptionsClientVersionReportingEnabled adds the optionsClientVersionReportingEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsClientVersionReportingEnabled(optionsClientVersionReportingEnabled *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsClientVersionReportingEnabled(optionsClientVersionReportingEnabled)
+	return o
+}
+
+// SetOptionsClientVersionReportingEnabled adds the optionsClientVersionReportingEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsClientVersionReportingEnabled(optionsClientVersionReportingEnabled *bool) {
+	o.OptionsClientVersionReportingEnabled = optionsClientVersionReportingEnabled
+}
+
 // WithOptionsCopyOffload adds the optionsCopyOffload to the cifs service collection get params
 func (o *CifsServiceCollectionGetParams) WithOptionsCopyOffload(optionsCopyOffload *bool) *CifsServiceCollectionGetParams {
 	o.SetOptionsCopyOffload(optionsCopyOffload)
@@ -882,6 +1154,28 @@ func (o *CifsServiceCollectionGetParams) WithOptionsCopyOffload(optionsCopyOfflo
 // SetOptionsCopyOffload adds the optionsCopyOffload to the cifs service collection get params
 func (o *CifsServiceCollectionGetParams) SetOptionsCopyOffload(optionsCopyOffload *bool) {
 	o.OptionsCopyOffload = optionsCopyOffload
+}
+
+// WithOptionsDacEnabled adds the optionsDacEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsDacEnabled(optionsDacEnabled *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsDacEnabled(optionsDacEnabled)
+	return o
+}
+
+// SetOptionsDacEnabled adds the optionsDacEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsDacEnabled(optionsDacEnabled *bool) {
+	o.OptionsDacEnabled = optionsDacEnabled
+}
+
+// WithOptionsExportPolicyEnabled adds the optionsExportPolicyEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsExportPolicyEnabled(optionsExportPolicyEnabled *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsExportPolicyEnabled(optionsExportPolicyEnabled)
+	return o
+}
+
+// SetOptionsExportPolicyEnabled adds the optionsExportPolicyEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsExportPolicyEnabled(optionsExportPolicyEnabled *bool) {
+	o.OptionsExportPolicyEnabled = optionsExportPolicyEnabled
 }
 
 // WithOptionsFakeOpen adds the optionsFakeOpen to the cifs service collection get params
@@ -926,6 +1220,72 @@ func (o *CifsServiceCollectionGetParams) WithOptionsLargeMtu(optionsLargeMtu *bo
 // SetOptionsLargeMtu adds the optionsLargeMtu to the cifs service collection get params
 func (o *CifsServiceCollectionGetParams) SetOptionsLargeMtu(optionsLargeMtu *bool) {
 	o.OptionsLargeMtu = optionsLargeMtu
+}
+
+// WithOptionsMaxConnectionsPerSession adds the optionsMaxConnectionsPerSession to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsMaxConnectionsPerSession(optionsMaxConnectionsPerSession *int64) *CifsServiceCollectionGetParams {
+	o.SetOptionsMaxConnectionsPerSession(optionsMaxConnectionsPerSession)
+	return o
+}
+
+// SetOptionsMaxConnectionsPerSession adds the optionsMaxConnectionsPerSession to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsMaxConnectionsPerSession(optionsMaxConnectionsPerSession *int64) {
+	o.OptionsMaxConnectionsPerSession = optionsMaxConnectionsPerSession
+}
+
+// WithOptionsMaxLifsPerSession adds the optionsMaxLifsPerSession to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsMaxLifsPerSession(optionsMaxLifsPerSession *int64) *CifsServiceCollectionGetParams {
+	o.SetOptionsMaxLifsPerSession(optionsMaxLifsPerSession)
+	return o
+}
+
+// SetOptionsMaxLifsPerSession adds the optionsMaxLifsPerSession to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsMaxLifsPerSession(optionsMaxLifsPerSession *int64) {
+	o.OptionsMaxLifsPerSession = optionsMaxLifsPerSession
+}
+
+// WithOptionsMaxOpensSameFilePerTree adds the optionsMaxOpensSameFilePerTree to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsMaxOpensSameFilePerTree(optionsMaxOpensSameFilePerTree *int64) *CifsServiceCollectionGetParams {
+	o.SetOptionsMaxOpensSameFilePerTree(optionsMaxOpensSameFilePerTree)
+	return o
+}
+
+// SetOptionsMaxOpensSameFilePerTree adds the optionsMaxOpensSameFilePerTree to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsMaxOpensSameFilePerTree(optionsMaxOpensSameFilePerTree *int64) {
+	o.OptionsMaxOpensSameFilePerTree = optionsMaxOpensSameFilePerTree
+}
+
+// WithOptionsMaxSameTreeConnectPerSession adds the optionsMaxSameTreeConnectPerSession to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsMaxSameTreeConnectPerSession(optionsMaxSameTreeConnectPerSession *int64) *CifsServiceCollectionGetParams {
+	o.SetOptionsMaxSameTreeConnectPerSession(optionsMaxSameTreeConnectPerSession)
+	return o
+}
+
+// SetOptionsMaxSameTreeConnectPerSession adds the optionsMaxSameTreeConnectPerSession to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsMaxSameTreeConnectPerSession(optionsMaxSameTreeConnectPerSession *int64) {
+	o.OptionsMaxSameTreeConnectPerSession = optionsMaxSameTreeConnectPerSession
+}
+
+// WithOptionsMaxSameUserSessionsPerConnection adds the optionsMaxSameUserSessionsPerConnection to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsMaxSameUserSessionsPerConnection(optionsMaxSameUserSessionsPerConnection *int64) *CifsServiceCollectionGetParams {
+	o.SetOptionsMaxSameUserSessionsPerConnection(optionsMaxSameUserSessionsPerConnection)
+	return o
+}
+
+// SetOptionsMaxSameUserSessionsPerConnection adds the optionsMaxSameUserSessionsPerConnection to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsMaxSameUserSessionsPerConnection(optionsMaxSameUserSessionsPerConnection *int64) {
+	o.OptionsMaxSameUserSessionsPerConnection = optionsMaxSameUserSessionsPerConnection
+}
+
+// WithOptionsMaxWatchesSetPerTree adds the optionsMaxWatchesSetPerTree to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsMaxWatchesSetPerTree(optionsMaxWatchesSetPerTree *int64) *CifsServiceCollectionGetParams {
+	o.SetOptionsMaxWatchesSetPerTree(optionsMaxWatchesSetPerTree)
+	return o
+}
+
+// SetOptionsMaxWatchesSetPerTree adds the optionsMaxWatchesSetPerTree to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsMaxWatchesSetPerTree(optionsMaxWatchesSetPerTree *int64) {
+	o.OptionsMaxWatchesSetPerTree = optionsMaxWatchesSetPerTree
 }
 
 // WithOptionsMultichannel adds the optionsMultichannel to the cifs service collection get params
@@ -1005,6 +1365,17 @@ func (o *CifsServiceCollectionGetParams) SetOptionsSmbCredits(optionsSmbCredits 
 	o.OptionsSmbCredits = optionsSmbCredits
 }
 
+// WithOptionsTrustedDomainEnumSearchEnabled adds the optionsTrustedDomainEnumSearchEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsTrustedDomainEnumSearchEnabled(optionsTrustedDomainEnumSearchEnabled *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsTrustedDomainEnumSearchEnabled(optionsTrustedDomainEnumSearchEnabled)
+	return o
+}
+
+// SetOptionsTrustedDomainEnumSearchEnabled adds the optionsTrustedDomainEnumSearchEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsTrustedDomainEnumSearchEnabled(optionsTrustedDomainEnumSearchEnabled *bool) {
+	o.OptionsTrustedDomainEnumSearchEnabled = optionsTrustedDomainEnumSearchEnabled
+}
+
 // WithOptionsWidelinkReparseVersions adds the optionsWidelinkReparseVersions to the cifs service collection get params
 func (o *CifsServiceCollectionGetParams) WithOptionsWidelinkReparseVersions(optionsWidelinkReparseVersions *string) *CifsServiceCollectionGetParams {
 	o.SetOptionsWidelinkReparseVersions(optionsWidelinkReparseVersions)
@@ -1025,6 +1396,50 @@ func (o *CifsServiceCollectionGetParams) WithOrderBy(orderBy []string) *CifsServ
 // SetOrderBy adds the orderBy to the cifs service collection get params
 func (o *CifsServiceCollectionGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
+}
+
+// WithProxyHost adds the proxyHost to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithProxyHost(proxyHost *string) *CifsServiceCollectionGetParams {
+	o.SetProxyHost(proxyHost)
+	return o
+}
+
+// SetProxyHost adds the proxyHost to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetProxyHost(proxyHost *string) {
+	o.ProxyHost = proxyHost
+}
+
+// WithProxyPort adds the proxyPort to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithProxyPort(proxyPort *int64) *CifsServiceCollectionGetParams {
+	o.SetProxyPort(proxyPort)
+	return o
+}
+
+// SetProxyPort adds the proxyPort to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetProxyPort(proxyPort *int64) {
+	o.ProxyPort = proxyPort
+}
+
+// WithProxyType adds the proxyType to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithProxyType(proxyType *string) *CifsServiceCollectionGetParams {
+	o.SetProxyType(proxyType)
+	return o
+}
+
+// SetProxyType adds the proxyType to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetProxyType(proxyType *string) {
+	o.ProxyType = proxyType
+}
+
+// WithProxyUsername adds the proxyUsername to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithProxyUsername(proxyUsername *string) *CifsServiceCollectionGetParams {
+	o.SetProxyUsername(proxyUsername)
+	return o
+}
+
+// SetProxyUsername adds the proxyUsername to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetProxyUsername(proxyUsername *string) {
+	o.ProxyUsername = proxyUsername
 }
 
 // WithReturnRecords adds the returnRecords to the cifs service collection get params
@@ -1357,13 +1772,74 @@ func (o *CifsServiceCollectionGetParams) SetSvmUUID(svmUUID *string) {
 	o.SvmUUID = svmUUID
 }
 
+// WithTenantID adds the tenantID to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithTenantID(tenantID *string) *CifsServiceCollectionGetParams {
+	o.SetTenantID(tenantID)
+	return o
+}
+
+// SetTenantID adds the tenantId to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetTenantID(tenantID *string) {
+	o.TenantID = tenantID
+}
+
+// WithTimeout adds the timeout to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithTimeout(timeout *int64) *CifsServiceCollectionGetParams {
+	o.SetTimeout(timeout)
+	return o
+}
+
+// SetTimeout adds the timeout to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetTimeout(timeout *int64) {
+	o.Timeout = timeout
+}
+
+// WithVerifyHost adds the verifyHost to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithVerifyHost(verifyHost *bool) *CifsServiceCollectionGetParams {
+	o.SetVerifyHost(verifyHost)
+	return o
+}
+
+// SetVerifyHost adds the verifyHost to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetVerifyHost(verifyHost *bool) {
+	o.VerifyHost = verifyHost
+}
+
+// WithWorkgroup adds the workgroup to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithWorkgroup(workgroup *string) *CifsServiceCollectionGetParams {
+	o.SetWorkgroup(workgroup)
+	return o
+}
+
+// SetWorkgroup adds the workgroup to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetWorkgroup(workgroup *string) {
+	o.Workgroup = workgroup
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
-	if err := r.SetTimeout(o.timeout); err != nil {
+	if err := r.SetTimeout(o.requestTimeout); err != nil {
 		return err
 	}
 	var res []error
+
+	if o.AdDomainDefaultSite != nil {
+
+		// query param ad_domain.default_site
+		var qrAdDomainDefaultSite string
+
+		if o.AdDomainDefaultSite != nil {
+			qrAdDomainDefaultSite = *o.AdDomainDefaultSite
+		}
+		qAdDomainDefaultSite := qrAdDomainDefaultSite
+		if qAdDomainDefaultSite != "" {
+
+			if err := r.SetQueryParam("ad_domain.default_site", qAdDomainDefaultSite); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.AdDomainFqdn != nil {
 
@@ -1394,6 +1870,74 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qAdDomainOrganizationalUnit != "" {
 
 			if err := r.SetQueryParam("ad_domain.organizational_unit", qAdDomainOrganizationalUnit); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AuthStyle != nil {
+
+		// query param auth-style
+		var qrAuthStyle string
+
+		if o.AuthStyle != nil {
+			qrAuthStyle = *o.AuthStyle
+		}
+		qAuthStyle := qrAuthStyle
+		if qAuthStyle != "" {
+
+			if err := r.SetQueryParam("auth-style", qAuthStyle); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AuthUserType != nil {
+
+		// query param auth_user_type
+		var qrAuthUserType string
+
+		if o.AuthUserType != nil {
+			qrAuthUserType = *o.AuthUserType
+		}
+		qAuthUserType := qrAuthUserType
+		if qAuthUserType != "" {
+
+			if err := r.SetQueryParam("auth_user_type", qAuthUserType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AuthenticationMethod != nil {
+
+		// query param authentication_method
+		var qrAuthenticationMethod string
+
+		if o.AuthenticationMethod != nil {
+			qrAuthenticationMethod = *o.AuthenticationMethod
+		}
+		qAuthenticationMethod := qrAuthenticationMethod
+		if qAuthenticationMethod != "" {
+
+			if err := r.SetQueryParam("authentication_method", qAuthenticationMethod); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ClientID != nil {
+
+		// query param client_id
+		var qrClientID string
+
+		if o.ClientID != nil {
+			qrClientID = *o.ClientID
+		}
+		qClientID := qrClientID
+		if qClientID != "" {
+
+			if err := r.SetQueryParam("client_id", qClientID); err != nil {
 				return err
 			}
 		}
@@ -1473,6 +2017,23 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qGroupPolicyObjectEnabled != "" {
 
 			if err := r.SetQueryParam("group_policy_object_enabled", qGroupPolicyObjectEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.KeyVaultURI != nil {
+
+		// query param key_vault_uri
+		var qrKeyVaultURI string
+
+		if o.KeyVaultURI != nil {
+			qrKeyVaultURI = *o.KeyVaultURI
+		}
+		qKeyVaultURI := qrKeyVaultURI
+		if qKeyVaultURI != "" {
+
+			if err := r.SetQueryParam("key_vault_uri", qKeyVaultURI); err != nil {
 				return err
 			}
 		}
@@ -1801,6 +2362,23 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
+	if o.OauthHost != nil {
+
+		// query param oauth_host
+		var qrOauthHost string
+
+		if o.OauthHost != nil {
+			qrOauthHost = *o.OauthHost
+		}
+		qOauthHost := qrOauthHost
+		if qOauthHost != "" {
+
+			if err := r.SetQueryParam("oauth_host", qOauthHost); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.OptionsAdminToRootMapping != nil {
 
 		// query param options.admin_to_root_mapping
@@ -1835,6 +2413,57 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
+	if o.OptionsBackupSymlinkEnabled != nil {
+
+		// query param options.backup_symlink_enabled
+		var qrOptionsBackupSymlinkEnabled bool
+
+		if o.OptionsBackupSymlinkEnabled != nil {
+			qrOptionsBackupSymlinkEnabled = *o.OptionsBackupSymlinkEnabled
+		}
+		qOptionsBackupSymlinkEnabled := swag.FormatBool(qrOptionsBackupSymlinkEnabled)
+		if qOptionsBackupSymlinkEnabled != "" {
+
+			if err := r.SetQueryParam("options.backup_symlink_enabled", qOptionsBackupSymlinkEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsClientDupDetectionEnabled != nil {
+
+		// query param options.client_dup_detection_enabled
+		var qrOptionsClientDupDetectionEnabled bool
+
+		if o.OptionsClientDupDetectionEnabled != nil {
+			qrOptionsClientDupDetectionEnabled = *o.OptionsClientDupDetectionEnabled
+		}
+		qOptionsClientDupDetectionEnabled := swag.FormatBool(qrOptionsClientDupDetectionEnabled)
+		if qOptionsClientDupDetectionEnabled != "" {
+
+			if err := r.SetQueryParam("options.client_dup_detection_enabled", qOptionsClientDupDetectionEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsClientVersionReportingEnabled != nil {
+
+		// query param options.client_version_reporting_enabled
+		var qrOptionsClientVersionReportingEnabled bool
+
+		if o.OptionsClientVersionReportingEnabled != nil {
+			qrOptionsClientVersionReportingEnabled = *o.OptionsClientVersionReportingEnabled
+		}
+		qOptionsClientVersionReportingEnabled := swag.FormatBool(qrOptionsClientVersionReportingEnabled)
+		if qOptionsClientVersionReportingEnabled != "" {
+
+			if err := r.SetQueryParam("options.client_version_reporting_enabled", qOptionsClientVersionReportingEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.OptionsCopyOffload != nil {
 
 		// query param options.copy_offload
@@ -1847,6 +2476,40 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qOptionsCopyOffload != "" {
 
 			if err := r.SetQueryParam("options.copy_offload", qOptionsCopyOffload); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsDacEnabled != nil {
+
+		// query param options.dac_enabled
+		var qrOptionsDacEnabled bool
+
+		if o.OptionsDacEnabled != nil {
+			qrOptionsDacEnabled = *o.OptionsDacEnabled
+		}
+		qOptionsDacEnabled := swag.FormatBool(qrOptionsDacEnabled)
+		if qOptionsDacEnabled != "" {
+
+			if err := r.SetQueryParam("options.dac_enabled", qOptionsDacEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsExportPolicyEnabled != nil {
+
+		// query param options.export_policy_enabled
+		var qrOptionsExportPolicyEnabled bool
+
+		if o.OptionsExportPolicyEnabled != nil {
+			qrOptionsExportPolicyEnabled = *o.OptionsExportPolicyEnabled
+		}
+		qOptionsExportPolicyEnabled := swag.FormatBool(qrOptionsExportPolicyEnabled)
+		if qOptionsExportPolicyEnabled != "" {
+
+			if err := r.SetQueryParam("options.export_policy_enabled", qOptionsExportPolicyEnabled); err != nil {
 				return err
 			}
 		}
@@ -1915,6 +2578,108 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qOptionsLargeMtu != "" {
 
 			if err := r.SetQueryParam("options.large_mtu", qOptionsLargeMtu); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsMaxConnectionsPerSession != nil {
+
+		// query param options.max_connections_per_session
+		var qrOptionsMaxConnectionsPerSession int64
+
+		if o.OptionsMaxConnectionsPerSession != nil {
+			qrOptionsMaxConnectionsPerSession = *o.OptionsMaxConnectionsPerSession
+		}
+		qOptionsMaxConnectionsPerSession := swag.FormatInt64(qrOptionsMaxConnectionsPerSession)
+		if qOptionsMaxConnectionsPerSession != "" {
+
+			if err := r.SetQueryParam("options.max_connections_per_session", qOptionsMaxConnectionsPerSession); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsMaxLifsPerSession != nil {
+
+		// query param options.max_lifs_per_session
+		var qrOptionsMaxLifsPerSession int64
+
+		if o.OptionsMaxLifsPerSession != nil {
+			qrOptionsMaxLifsPerSession = *o.OptionsMaxLifsPerSession
+		}
+		qOptionsMaxLifsPerSession := swag.FormatInt64(qrOptionsMaxLifsPerSession)
+		if qOptionsMaxLifsPerSession != "" {
+
+			if err := r.SetQueryParam("options.max_lifs_per_session", qOptionsMaxLifsPerSession); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsMaxOpensSameFilePerTree != nil {
+
+		// query param options.max_opens_same_file_per_tree
+		var qrOptionsMaxOpensSameFilePerTree int64
+
+		if o.OptionsMaxOpensSameFilePerTree != nil {
+			qrOptionsMaxOpensSameFilePerTree = *o.OptionsMaxOpensSameFilePerTree
+		}
+		qOptionsMaxOpensSameFilePerTree := swag.FormatInt64(qrOptionsMaxOpensSameFilePerTree)
+		if qOptionsMaxOpensSameFilePerTree != "" {
+
+			if err := r.SetQueryParam("options.max_opens_same_file_per_tree", qOptionsMaxOpensSameFilePerTree); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsMaxSameTreeConnectPerSession != nil {
+
+		// query param options.max_same_tree_connect_per_session
+		var qrOptionsMaxSameTreeConnectPerSession int64
+
+		if o.OptionsMaxSameTreeConnectPerSession != nil {
+			qrOptionsMaxSameTreeConnectPerSession = *o.OptionsMaxSameTreeConnectPerSession
+		}
+		qOptionsMaxSameTreeConnectPerSession := swag.FormatInt64(qrOptionsMaxSameTreeConnectPerSession)
+		if qOptionsMaxSameTreeConnectPerSession != "" {
+
+			if err := r.SetQueryParam("options.max_same_tree_connect_per_session", qOptionsMaxSameTreeConnectPerSession); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsMaxSameUserSessionsPerConnection != nil {
+
+		// query param options.max_same_user_sessions_per_connection
+		var qrOptionsMaxSameUserSessionsPerConnection int64
+
+		if o.OptionsMaxSameUserSessionsPerConnection != nil {
+			qrOptionsMaxSameUserSessionsPerConnection = *o.OptionsMaxSameUserSessionsPerConnection
+		}
+		qOptionsMaxSameUserSessionsPerConnection := swag.FormatInt64(qrOptionsMaxSameUserSessionsPerConnection)
+		if qOptionsMaxSameUserSessionsPerConnection != "" {
+
+			if err := r.SetQueryParam("options.max_same_user_sessions_per_connection", qOptionsMaxSameUserSessionsPerConnection); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsMaxWatchesSetPerTree != nil {
+
+		// query param options.max_watches_set_per_tree
+		var qrOptionsMaxWatchesSetPerTree int64
+
+		if o.OptionsMaxWatchesSetPerTree != nil {
+			qrOptionsMaxWatchesSetPerTree = *o.OptionsMaxWatchesSetPerTree
+		}
+		qOptionsMaxWatchesSetPerTree := swag.FormatInt64(qrOptionsMaxWatchesSetPerTree)
+		if qOptionsMaxWatchesSetPerTree != "" {
+
+			if err := r.SetQueryParam("options.max_watches_set_per_tree", qOptionsMaxWatchesSetPerTree); err != nil {
 				return err
 			}
 		}
@@ -2039,6 +2804,23 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
+	if o.OptionsTrustedDomainEnumSearchEnabled != nil {
+
+		// query param options.trusted_domain_enum_search_enabled
+		var qrOptionsTrustedDomainEnumSearchEnabled bool
+
+		if o.OptionsTrustedDomainEnumSearchEnabled != nil {
+			qrOptionsTrustedDomainEnumSearchEnabled = *o.OptionsTrustedDomainEnumSearchEnabled
+		}
+		qOptionsTrustedDomainEnumSearchEnabled := swag.FormatBool(qrOptionsTrustedDomainEnumSearchEnabled)
+		if qOptionsTrustedDomainEnumSearchEnabled != "" {
+
+			if err := r.SetQueryParam("options.trusted_domain_enum_search_enabled", qOptionsTrustedDomainEnumSearchEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.OptionsWidelinkReparseVersions != nil {
 
 		// query param options.widelink_reparse_versions
@@ -2064,6 +2846,74 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.ProxyHost != nil {
+
+		// query param proxy_host
+		var qrProxyHost string
+
+		if o.ProxyHost != nil {
+			qrProxyHost = *o.ProxyHost
+		}
+		qProxyHost := qrProxyHost
+		if qProxyHost != "" {
+
+			if err := r.SetQueryParam("proxy_host", qProxyHost); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProxyPort != nil {
+
+		// query param proxy_port
+		var qrProxyPort int64
+
+		if o.ProxyPort != nil {
+			qrProxyPort = *o.ProxyPort
+		}
+		qProxyPort := swag.FormatInt64(qrProxyPort)
+		if qProxyPort != "" {
+
+			if err := r.SetQueryParam("proxy_port", qProxyPort); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProxyType != nil {
+
+		// query param proxy_type
+		var qrProxyType string
+
+		if o.ProxyType != nil {
+			qrProxyType = *o.ProxyType
+		}
+		qProxyType := qrProxyType
+		if qProxyType != "" {
+
+			if err := r.SetQueryParam("proxy_type", qProxyType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProxyUsername != nil {
+
+		// query param proxy_username
+		var qrProxyUsername string
+
+		if o.ProxyUsername != nil {
+			qrProxyUsername = *o.ProxyUsername
+		}
+		qProxyUsername := qrProxyUsername
+		if qProxyUsername != "" {
+
+			if err := r.SetQueryParam("proxy_username", qProxyUsername); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -2572,6 +3422,74 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qSvmUUID != "" {
 
 			if err := r.SetQueryParam("svm.uuid", qSvmUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TenantID != nil {
+
+		// query param tenant_id
+		var qrTenantID string
+
+		if o.TenantID != nil {
+			qrTenantID = *o.TenantID
+		}
+		qTenantID := qrTenantID
+		if qTenantID != "" {
+
+			if err := r.SetQueryParam("tenant_id", qTenantID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Timeout != nil {
+
+		// query param timeout
+		var qrTimeout int64
+
+		if o.Timeout != nil {
+			qrTimeout = *o.Timeout
+		}
+		qTimeout := swag.FormatInt64(qrTimeout)
+		if qTimeout != "" {
+
+			if err := r.SetQueryParam("timeout", qTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VerifyHost != nil {
+
+		// query param verify_host
+		var qrVerifyHost bool
+
+		if o.VerifyHost != nil {
+			qrVerifyHost = *o.VerifyHost
+		}
+		qVerifyHost := swag.FormatBool(qrVerifyHost)
+		if qVerifyHost != "" {
+
+			if err := r.SetQueryParam("verify_host", qVerifyHost); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Workgroup != nil {
+
+		// query param workgroup
+		var qrWorkgroup string
+
+		if o.Workgroup != nil {
+			qrWorkgroup = *o.Workgroup
+		}
+		qWorkgroup := qrWorkgroup
+		if qWorkgroup != "" {
+
+			if err := r.SetQueryParam("workgroup", qWorkgroup); err != nil {
 				return err
 			}
 		}

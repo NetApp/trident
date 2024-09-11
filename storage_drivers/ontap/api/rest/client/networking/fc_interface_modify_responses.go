@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *FcInterfaceModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fc interface modify o k response
+func (o *FcInterfaceModifyOK) Code() int {
+	return 200
+}
+
 func (o *FcInterfaceModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /network/fc/interfaces/{uuid}][%d] fcInterfaceModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/fc/interfaces/{uuid}][%d] fcInterfaceModifyOK", 200)
 }
 
 func (o *FcInterfaceModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /network/fc/interfaces/{uuid}][%d] fcInterfaceModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/fc/interfaces/{uuid}][%d] fcInterfaceModifyOK", 200)
 }
 
 func (o *FcInterfaceModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -110,21 +116,20 @@ func NewFcInterfaceModifyDefault(code int) *FcInterfaceModifyDefault {
 | 1966217 | The specified port is not valid on the node provided. |
 | 1966238 | The node or port of an active SAN data interface cannot be changed. |
 | 1966702 | The destination node is not healthy. |
+| 5373982 | An invalid WWN was specified. The length is incorrect. |
+| 5373983 | An invalid WWN was specified. The format is incorrect. |
 | 5374579 | The SAN Kernel Agent on the node is unavailable. |
 | 5374870 | A partial failure occurred; renaming the interface failed. Correct the error and resubmit the request. |
 | 5374871 | The Fibre Channel port identified by the specified UUID does not refer to the same port as that identified by the specified node name and/or port name. |
 | 5374872 | If either `location.port.node.name` or `location.port.name` is supplied, both properties must be supplied. |
+| 5375057 | An FC port with the provided UUID does not exist. |
 | 72089674 | You cannot move a Fibre Channel interface configured for the NVMe over FC data protocol. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type FcInterfaceModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the fc interface modify default response
-func (o *FcInterfaceModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this fc interface modify default response has a 2xx status code
@@ -152,12 +157,19 @@ func (o *FcInterfaceModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fc interface modify default response
+func (o *FcInterfaceModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FcInterfaceModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /network/fc/interfaces/{uuid}][%d] fc_interface_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/fc/interfaces/{uuid}][%d] fc_interface_modify default %s", o._statusCode, payload)
 }
 
 func (o *FcInterfaceModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /network/fc/interfaces/{uuid}][%d] fc_interface_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/fc/interfaces/{uuid}][%d] fc_interface_modify default %s", o._statusCode, payload)
 }
 
 func (o *FcInterfaceModifyDefault) GetPayload() *models.ErrorResponse {

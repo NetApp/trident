@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *VvolBindingDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the vvol binding delete o k response
+func (o *VvolBindingDeleteOK) Code() int {
+	return 200
+}
+
 func (o *VvolBindingDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvolBindingDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvolBindingDeleteOK", 200)
 }
 
 func (o *VvolBindingDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvolBindingDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvolBindingDeleteOK", 200)
 }
 
 func (o *VvolBindingDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,16 +114,12 @@ func NewVvolBindingDeleteDefault(code int) *VvolBindingDeleteDefault {
 | ---------- | ----------- |
 | 5374875 | The vVol binding was not found because the protocol endpoint or vVol LUN was not found. Use to the `target` property of the error object to differentiate between the protocol endpoint LUN and the vVol LUN. |
 | 5374926 | The vVol binding was not found. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type VvolBindingDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the vvol binding delete default response
-func (o *VvolBindingDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this vvol binding delete default response has a 2xx status code
@@ -145,12 +147,19 @@ func (o *VvolBindingDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the vvol binding delete default response
+func (o *VvolBindingDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VvolBindingDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvol_binding_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvol_binding_delete default %s", o._statusCode, payload)
 }
 
 func (o *VvolBindingDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvol_binding_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvol_binding_delete default %s", o._statusCode, payload)
 }
 
 func (o *VvolBindingDeleteDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package n_v_me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NvmeSubsystemMapCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nvme subsystem map collection get o k response
+func (o *NvmeSubsystemMapCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *NvmeSubsystemMapCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nvme/subsystem-maps][%d] nvmeSubsystemMapCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/subsystem-maps][%d] nvmeSubsystemMapCollectionGetOK %s", 200, payload)
 }
 
 func (o *NvmeSubsystemMapCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nvme/subsystem-maps][%d] nvmeSubsystemMapCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/subsystem-maps][%d] nvmeSubsystemMapCollectionGetOK %s", 200, payload)
 }
 
 func (o *NvmeSubsystemMapCollectionGetOK) GetPayload() *models.NvmeSubsystemMapResponse {
@@ -122,11 +130,6 @@ type NvmeSubsystemMapCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the nvme subsystem map collection get default response
-func (o *NvmeSubsystemMapCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this nvme subsystem map collection get default response has a 2xx status code
 func (o *NvmeSubsystemMapCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NvmeSubsystemMapCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nvme subsystem map collection get default response
+func (o *NvmeSubsystemMapCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NvmeSubsystemMapCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nvme/subsystem-maps][%d] nvme_subsystem_map_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/subsystem-maps][%d] nvme_subsystem_map_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemMapCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nvme/subsystem-maps][%d] nvme_subsystem_map_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/subsystem-maps][%d] nvme_subsystem_map_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemMapCollectionGetDefault) GetPayload() *models.ErrorResponse {

@@ -198,12 +198,6 @@ type AutoUpdateStatusCollectionGetParams struct {
 	*/
 	StatusMessage *string
 
-	/* StatusTarget.
-
-	   Filter by status.target
-	*/
-	StatusTarget *string
-
 	/* UUID.
 
 	   Filter by uuid
@@ -517,17 +511,6 @@ func (o *AutoUpdateStatusCollectionGetParams) WithStatusMessage(statusMessage *s
 // SetStatusMessage adds the statusMessage to the auto update status collection get params
 func (o *AutoUpdateStatusCollectionGetParams) SetStatusMessage(statusMessage *string) {
 	o.StatusMessage = statusMessage
-}
-
-// WithStatusTarget adds the statusTarget to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithStatusTarget(statusTarget *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetStatusTarget(statusTarget)
-	return o
-}
-
-// SetStatusTarget adds the statusTarget to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetStatusTarget(statusTarget *string) {
-	o.StatusTarget = statusTarget
 }
 
 // WithUUID adds the uuid to the auto update status collection get params
@@ -906,23 +889,6 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qStatusMessage != "" {
 
 			if err := r.SetQueryParam("status.message", qStatusMessage); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.StatusTarget != nil {
-
-		// query param status.target
-		var qrStatusTarget string
-
-		if o.StatusTarget != nil {
-			qrStatusTarget = *o.StatusTarget
-		}
-		qStatusTarget := qrStatusTarget
-		if qStatusTarget != "" {
-
-			if err := r.SetQueryParam("status.target", qStatusTarget); err != nil {
 				return err
 			}
 		}

@@ -30,7 +30,7 @@ type GivebackStatus struct {
 	// Possible values include no aggregates to giveback(nothing_to_giveback), failed to disable background disk firmware update(BDFU) on source node(failed_bdfu_source), <br/>
 	// giveback delayed as disk firmware update is in progress on source node(delayed_bdfu_source), performing veto checks(running_checks). <br/>
 	//
-	// Enum: [done failed in_progress not_started nothing_to_giveback failed_bdfu_source failed_bdfu_dest delayed_bdfu_source delayed_bdfu_dest running_checks]
+	// Enum: ["done","failed","in_progress","not_started","nothing_to_giveback","failed_bdfu_source","failed_bdfu_dest","delayed_bdfu_source","delayed_bdfu_dest","running_checks"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -482,7 +482,7 @@ type GivebackStatusInlineError struct {
 
 	// Detailed message based on the state.
 	// Read Only: true
-	// Enum: [shutdown not_homes_partner not_sfo failed_limbo offline_failed migrating veto communication_err online_timeout online_failed hdd_to_aff_dest]
+	// Enum: ["shutdown","not_homes_partner","not_sfo","failed_limbo","offline_failed","migrating","veto","communication_err","online_timeout","online_failed","hdd_to_aff_dest"]
 	Message *string `json:"message,omitempty"`
 }
 

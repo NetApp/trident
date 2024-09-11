@@ -6,6 +6,7 @@ package n_v_me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NvmeSubsystemControllerGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nvme subsystem controller get o k response
+func (o *NvmeSubsystemControllerGetOK) Code() int {
+	return 200
+}
+
 func (o *NvmeSubsystemControllerGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nvme/subsystem-controllers/{subsystem.uuid}/{id}][%d] nvmeSubsystemControllerGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/subsystem-controllers/{subsystem.uuid}/{id}][%d] nvmeSubsystemControllerGetOK %s", 200, payload)
 }
 
 func (o *NvmeSubsystemControllerGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nvme/subsystem-controllers/{subsystem.uuid}/{id}][%d] nvmeSubsystemControllerGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/subsystem-controllers/{subsystem.uuid}/{id}][%d] nvmeSubsystemControllerGetOK %s", 200, payload)
 }
 
 func (o *NvmeSubsystemControllerGetOK) GetPayload() *models.NvmeSubsystemController {
@@ -119,16 +127,12 @@ func NewNvmeSubsystemControllerGetDefault(code int) *NvmeSubsystemControllerGetD
 | Error Code | Description |
 | ---------- | ----------- |
 | 72090001 | The supplied subsystem identifier does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NvmeSubsystemControllerGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nvme subsystem controller get default response
-func (o *NvmeSubsystemControllerGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nvme subsystem controller get default response has a 2xx status code
@@ -156,12 +160,19 @@ func (o *NvmeSubsystemControllerGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nvme subsystem controller get default response
+func (o *NvmeSubsystemControllerGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NvmeSubsystemControllerGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nvme/subsystem-controllers/{subsystem.uuid}/{id}][%d] nvme_subsystem_controller_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/subsystem-controllers/{subsystem.uuid}/{id}][%d] nvme_subsystem_controller_get default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemControllerGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nvme/subsystem-controllers/{subsystem.uuid}/{id}][%d] nvme_subsystem_controller_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/subsystem-controllers/{subsystem.uuid}/{id}][%d] nvme_subsystem_controller_get default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemControllerGetDefault) GetPayload() *models.ErrorResponse {

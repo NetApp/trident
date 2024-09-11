@@ -35,7 +35,7 @@ type Chassis struct {
 	ID *string `json:"id,omitempty"`
 
 	// state
-	// Enum: [ok error]
+	// Enum: ["ok","error"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -296,11 +296,11 @@ type ChassisInlineFrusInlineArrayItem struct {
 	ID *string `json:"id,omitempty"`
 
 	// state
-	// Enum: [ok error]
+	// Enum: ["ok","error"]
 	State *string `json:"state,omitempty"`
 
 	// type
-	// Enum: [fan psu]
+	// Enum: ["fan","psu"]
 	Type *string `json:"type,omitempty"`
 }
 
@@ -474,7 +474,7 @@ type ChassisInlineNodesInlineArrayItem struct {
 
 	// The position of the node in the chassis, when viewed from the rear of the system.
 	// Example: top
-	// Enum: [top bottom left right unknown]
+	// Enum: ["top","bottom","left","right","centre","unknown"]
 	Position *string `json:"position,omitempty"`
 
 	// usbs
@@ -549,7 +549,7 @@ var chassisInlineNodesInlineArrayItemTypePositionPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["top","bottom","left","right","unknown"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["top","bottom","left","right","centre","unknown"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -598,6 +598,16 @@ const (
 	// END DEBUGGING
 	// ChassisInlineNodesInlineArrayItemPositionRight captures enum value "right"
 	ChassisInlineNodesInlineArrayItemPositionRight string = "right"
+
+	// BEGIN DEBUGGING
+	// chassis_inline_nodes_inline_array_item
+	// ChassisInlineNodesInlineArrayItem
+	// position
+	// Position
+	// centre
+	// END DEBUGGING
+	// ChassisInlineNodesInlineArrayItemPositionCentre captures enum value "centre"
+	ChassisInlineNodesInlineArrayItemPositionCentre string = "centre"
 
 	// BEGIN DEBUGGING
 	// chassis_inline_nodes_inline_array_item

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *FpolicyEventModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fpolicy event modify o k response
+func (o *FpolicyEventModifyOK) Code() int {
+	return 200
+}
+
 func (o *FpolicyEventModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicyEventModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicyEventModifyOK", 200)
 }
 
 func (o *FpolicyEventModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicyEventModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicyEventModifyOK", 200)
 }
 
 func (o *FpolicyEventModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,17 +115,13 @@ func NewFpolicyEventModifyDefault(code int) *FpolicyEventModifyDefault {
 | 9764929    | The file operation is not supported by the protocol |
 | 9764955    | The filter is not supported by the protocol |
 | 9764930    | The filter is not supported by any of the file operations |
-| 9764946    | The protocol is specifed without file operation or a file operation and filter pair |
+| 9764946    | The protocol is specified without file operation or a file operation and filter pair |
+| 9765048    | The monitor fileop failure option is set without protocol and file operations |
 */
 type FpolicyEventModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the fpolicy event modify default response
-func (o *FpolicyEventModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this fpolicy event modify default response has a 2xx status code
@@ -147,12 +149,19 @@ func (o *FpolicyEventModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fpolicy event modify default response
+func (o *FpolicyEventModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FpolicyEventModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicy_event_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicy_event_modify default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyEventModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicy_event_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicy_event_modify default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyEventModifyDefault) GetPayload() *models.ErrorResponse {

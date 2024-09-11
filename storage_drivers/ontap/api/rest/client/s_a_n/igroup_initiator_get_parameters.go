@@ -77,7 +77,7 @@ type IgroupInitiatorGetParams struct {
 
 	/* Name.
 
-	   Initiator name
+	   The initiator name.
 
 	*/
 	Name string

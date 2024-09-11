@@ -24,11 +24,14 @@ type EmsFilter struct {
 	// links
 	Links *EmsFilterInlineLinks `json:"_links,omitempty"`
 
+	// access control role
+	AccessControlRole *EmsFilterInlineAccessControlRole `json:"access_control_role,omitempty"`
+
 	// Array of event filter rules on which to match.
 	EmsFilterInlineRules []*EmsFilterInlineRulesInlineArrayItem `json:"rules,omitempty"`
 
 	// Filter name
-	// Example: snmp-traphost
+	// Example: wafl-critical-events
 	Name *string `json:"name,omitempty"`
 
 	// Flag indicating system-defined filters.
@@ -42,6 +45,10 @@ func (m *EmsFilter) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAccessControlRole(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,6 +71,23 @@ func (m *EmsFilter) validateLinks(formats strfmt.Registry) error {
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *EmsFilter) validateAccessControlRole(formats strfmt.Registry) error {
+	if swag.IsZero(m.AccessControlRole) { // not required
+		return nil
+	}
+
+	if m.AccessControlRole != nil {
+		if err := m.AccessControlRole.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("access_control_role")
 			}
 			return err
 		}
@@ -104,6 +128,10 @@ func (m *EmsFilter) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAccessControlRole(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateEmsFilterInlineRules(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -124,6 +152,20 @@ func (m *EmsFilter) contextValidateLinks(ctx context.Context, formats strfmt.Reg
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *EmsFilter) contextValidateAccessControlRole(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AccessControlRole != nil {
+		if err := m.AccessControlRole.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("access_control_role")
 			}
 			return err
 		}
@@ -170,6 +212,182 @@ func (m *EmsFilter) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *EmsFilter) UnmarshalBinary(b []byte) error {
 	var res EmsFilter
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// EmsFilterInlineAccessControlRole Indicates the access control role that created the event filter and is used to control access to the filter based on role-based access control (RBAC) rules. If created by the 'admin' user, the field is unset.
+//
+// swagger:model ems_filter_inline_access_control_role
+type EmsFilterInlineAccessControlRole struct {
+
+	// links
+	Links *EmsFilterInlineAccessControlRoleInlineLinks `json:"_links,omitempty"`
+
+	// Role name
+	// Example: admin
+	Name *string `json:"name,omitempty"`
+}
+
+// Validate validates this ems filter inline access control role
+func (m *EmsFilterInlineAccessControlRole) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsFilterInlineAccessControlRole) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("access_control_role" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this ems filter inline access control role based on the context it is used
+func (m *EmsFilterInlineAccessControlRole) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsFilterInlineAccessControlRole) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("access_control_role" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *EmsFilterInlineAccessControlRole) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *EmsFilterInlineAccessControlRole) UnmarshalBinary(b []byte) error {
+	var res EmsFilterInlineAccessControlRole
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// EmsFilterInlineAccessControlRoleInlineLinks ems filter inline access control role inline links
+//
+// swagger:model ems_filter_inline_access_control_role_inline__links
+type EmsFilterInlineAccessControlRoleInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this ems filter inline access control role inline links
+func (m *EmsFilterInlineAccessControlRoleInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsFilterInlineAccessControlRoleInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("access_control_role" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this ems filter inline access control role inline links based on the context it is used
+func (m *EmsFilterInlineAccessControlRoleInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsFilterInlineAccessControlRoleInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("access_control_role" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *EmsFilterInlineAccessControlRoleInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *EmsFilterInlineAccessControlRoleInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EmsFilterInlineAccessControlRoleInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -278,9 +496,12 @@ type EmsFilterInlineRulesInlineArrayItem struct {
 	// message criteria
 	MessageCriteria *EmsFilterInlineRulesInlineArrayItemInlineMessageCriteria `json:"message_criteria,omitempty"`
 
+	// Parameter criteria used to match against events' parameters. Each parameter consists of a name and a value. When multiple parameter criteria are provided in a rule, all must match for the rule to be considered matched. A pattern can include one or more wildcard '*' characters.
+	ParameterCriteria []*EmsFilterRulesItems0ParameterCriteriaItems0 `json:"parameter_criteria"`
+
 	// Rule type
 	// Example: include
-	// Enum: [include exclude]
+	// Enum: ["include","exclude"]
 	Type *string `json:"type,omitempty"`
 }
 
@@ -293,6 +514,10 @@ func (m *EmsFilterInlineRulesInlineArrayItem) Validate(formats strfmt.Registry) 
 	}
 
 	if err := m.validateMessageCriteria(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateParameterCriteria(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -335,6 +560,30 @@ func (m *EmsFilterInlineRulesInlineArrayItem) validateMessageCriteria(formats st
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *EmsFilterInlineRulesInlineArrayItem) validateParameterCriteria(formats strfmt.Registry) error {
+	if swag.IsZero(m.ParameterCriteria) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ParameterCriteria); i++ {
+		if swag.IsZero(m.ParameterCriteria[i]) { // not required
+			continue
+		}
+
+		if m.ParameterCriteria[i] != nil {
+			if err := m.ParameterCriteria[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("parameter_criteria" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -408,6 +657,10 @@ func (m *EmsFilterInlineRulesInlineArrayItem) ContextValidate(ctx context.Contex
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateParameterCriteria(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -437,6 +690,24 @@ func (m *EmsFilterInlineRulesInlineArrayItem) contextValidateMessageCriteria(ctx
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *EmsFilterInlineRulesInlineArrayItem) contextValidateParameterCriteria(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ParameterCriteria); i++ {
+
+		if m.ParameterCriteria[i] != nil {
+			if err := m.ParameterCriteria[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("parameter_criteria" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -555,15 +826,15 @@ type EmsFilterInlineRulesInlineArrayItemInlineMessageCriteria struct {
 	Links *EmsFilterInlineRulesInlineArrayItemInlineMessageCriteriaInlineLinks `json:"_links,omitempty"`
 
 	// Message name filter on which to match. Supports wildcards. Defaults to * if not specified.
-	// Example: callhome.*
+	// Example: wafl.*
 	NamePattern *string `json:"name_pattern,omitempty"`
 
 	// A comma-separated list of severities or a wildcard.
-	// Example: error,informational
+	// Example: emergency,alert,error
 	Severities *string `json:"severities,omitempty"`
 
 	// A comma separated list of snmp_trap_types or a wildcard.
-	// Example: standard|built_in
+	// Example: standard,built_in
 	SnmpTrapTypes *string `json:"snmp_trap_types,omitempty"`
 }
 
@@ -723,6 +994,48 @@ func (m *EmsFilterInlineRulesInlineArrayItemInlineMessageCriteriaInlineLinks) Ma
 // UnmarshalBinary interface implementation
 func (m *EmsFilterInlineRulesInlineArrayItemInlineMessageCriteriaInlineLinks) UnmarshalBinary(b []byte) error {
 	var res EmsFilterInlineRulesInlineArrayItemInlineMessageCriteriaInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// EmsFilterRulesItems0ParameterCriteriaItems0 Criterion used for parameter based filtering
+//
+// swagger:model EmsFilterRulesItems0ParameterCriteriaItems0
+type EmsFilterRulesItems0ParameterCriteriaItems0 struct {
+
+	// Parameter name pattern. Wildcard character '*' is supported.
+	// Example: vol
+	NamePattern *string `json:"name_pattern,omitempty"`
+
+	// Parameter value pattern. Wildcard character '*' is supported.
+	// Example: cloud*
+	ValuePattern *string `json:"value_pattern,omitempty"`
+}
+
+// Validate validates this ems filter rules items0 parameter criteria items0
+func (m *EmsFilterRulesItems0ParameterCriteriaItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this ems filter rules items0 parameter criteria items0 based on context it is used
+func (m *EmsFilterRulesItems0ParameterCriteriaItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *EmsFilterRulesItems0ParameterCriteriaItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *EmsFilterRulesItems0ParameterCriteriaItems0) UnmarshalBinary(b []byte) error {
+	var res EmsFilterRulesItems0ParameterCriteriaItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

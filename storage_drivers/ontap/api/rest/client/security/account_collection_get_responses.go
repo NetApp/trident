@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *AccountCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the account collection get o k response
+func (o *AccountCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *AccountCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/accounts][%d] accountCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/accounts][%d] accountCollectionGetOK %s", 200, payload)
 }
 
 func (o *AccountCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /security/accounts][%d] accountCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/accounts][%d] accountCollectionGetOK %s", 200, payload)
 }
 
 func (o *AccountCollectionGetOK) GetPayload() *models.AccountResponse {
@@ -122,11 +130,6 @@ type AccountCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the account collection get default response
-func (o *AccountCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this account collection get default response has a 2xx status code
 func (o *AccountCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *AccountCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the account collection get default response
+func (o *AccountCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AccountCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/accounts][%d] account_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/accounts][%d] account_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *AccountCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/accounts][%d] account_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/accounts][%d] account_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *AccountCollectionGetDefault) GetPayload() *models.ErrorResponse {

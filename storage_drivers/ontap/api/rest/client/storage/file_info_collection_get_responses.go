@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *FileInfoCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the file info collection get o k response
+func (o *FileInfoCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *FileInfoCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/files/{path}][%d] fileInfoCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/files/{path}][%d] fileInfoCollectionGetOK %s", 200, payload)
 }
 
 func (o *FileInfoCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/files/{path}][%d] fileInfoCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/files/{path}][%d] fileInfoCollectionGetOK %s", 200, payload)
 }
 
 func (o *FileInfoCollectionGetOK) GetPayload() *models.FileInfoResponse {
@@ -112,19 +120,22 @@ func NewFileInfoCollectionGetDefault(code int) *FileInfoCollectionGetDefault {
 }
 
 /*
-FileInfoCollectionGetDefault describes a response with status code -1, with default header values.
+	FileInfoCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 917752 | Volume is offline. |
+| 918235 | A volume with UUID {volume.uuid} was not found. |
+| 6488109 | Operation not supported on FlexCache volumes. |
+| 6684674 | No such file or directory. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type FileInfoCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the file info collection get default response
-func (o *FileInfoCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this file info collection get default response has a 2xx status code
@@ -152,12 +163,19 @@ func (o *FileInfoCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the file info collection get default response
+func (o *FileInfoCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FileInfoCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/files/{path}][%d] file_info_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/files/{path}][%d] file_info_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *FileInfoCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/files/{path}][%d] file_info_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/files/{path}][%d] file_info_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *FileInfoCollectionGetDefault) GetPayload() *models.ErrorResponse {

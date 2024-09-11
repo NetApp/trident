@@ -72,7 +72,7 @@ type SnapmirrorRelationshipTransferCreateParams struct {
 
 	/* RelationshipUUID.
 
-	   Relationship UUID
+	   SnapMirror relationship UUID
 	*/
 	RelationshipUUID string
 

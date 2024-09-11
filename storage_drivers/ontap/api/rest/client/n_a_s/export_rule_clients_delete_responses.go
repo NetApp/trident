@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ExportRuleClientsDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the export rule clients delete o k response
+func (o *ExportRuleClientsDeleteOK) Code() int {
+	return 200
+}
+
 func (o *ExportRuleClientsDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients/{match}][%d] exportRuleClientsDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients/{match}][%d] exportRuleClientsDeleteOK", 200)
 }
 
 func (o *ExportRuleClientsDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients/{match}][%d] exportRuleClientsDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients/{match}][%d] exportRuleClientsDeleteOK", 200)
 }
 
 func (o *ExportRuleClientsDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -118,19 +124,15 @@ func NewExportRuleClientsDeleteDefault(code int) *ExportRuleClientsDeleteDefault
 | 1704044    | Invalid clientmatch: invalid characters in host name |
 | 1704045    | Invalid clientmatch: invalid characters in domain name |
 | 1704050    | Invalid clientmatch: the clientmatch list contains a duplicate string. Duplicate strings in a clientmatch list are not supported |
-| 1704052    | Warning: Not removing any strings from the clientmatch field for ruleindex. None of the match strings were found in the clientmatch list |
+| 1704054    | Invalid clientmatch: invalid characters in netgroup name. Valid characters for a netgroup name are 0-9, A-Z, a-z, ".", "_" and "-" |
 | 1704064    | Clientmatch host name too long |
 | 1704065    | Clientmatch domain name too long |
+| 6691623    | User is not authorized |
 */
 type ExportRuleClientsDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the export rule clients delete default response
-func (o *ExportRuleClientsDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this export rule clients delete default response has a 2xx status code
@@ -158,12 +160,19 @@ func (o *ExportRuleClientsDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the export rule clients delete default response
+func (o *ExportRuleClientsDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ExportRuleClientsDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients/{match}][%d] export_rule_clients_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients/{match}][%d] export_rule_clients_delete default %s", o._statusCode, payload)
 }
 
 func (o *ExportRuleClientsDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients/{match}][%d] export_rule_clients_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients/{match}][%d] export_rule_clients_delete default %s", o._statusCode, payload)
 }
 
 func (o *ExportRuleClientsDeleteDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *LocalCifsUsersAndGroupsImportGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the local cifs users and groups import get o k response
+func (o *LocalCifsUsersAndGroupsImportGetOK) Code() int {
+	return 200
+}
+
 func (o *LocalCifsUsersAndGroupsImportGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportGetOK %s", 200, payload)
 }
 
 func (o *LocalCifsUsersAndGroupsImportGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportGetOK %s", 200, payload)
 }
 
 func (o *LocalCifsUsersAndGroupsImportGetOK) GetPayload() *models.LocalCifsUsersAndGroupsImport {
@@ -122,11 +130,6 @@ type LocalCifsUsersAndGroupsImportGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the local cifs users and groups import get default response
-func (o *LocalCifsUsersAndGroupsImportGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this local cifs users and groups import get default response has a 2xx status code
 func (o *LocalCifsUsersAndGroupsImportGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *LocalCifsUsersAndGroupsImportGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the local cifs users and groups import get default response
+func (o *LocalCifsUsersAndGroupsImportGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LocalCifsUsersAndGroupsImportGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] local_cifs_users_and_groups_import_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] local_cifs_users_and_groups_import_get default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsUsersAndGroupsImportGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] local_cifs_users_and_groups_import_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] local_cifs_users_and_groups_import_get default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsUsersAndGroupsImportGetDefault) GetPayload() *models.ErrorResponse {

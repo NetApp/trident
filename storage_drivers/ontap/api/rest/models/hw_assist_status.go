@@ -27,7 +27,7 @@ type HwAssistStatus struct {
 	Port *int64 `json:"port,omitempty"`
 
 	// The hardware assist monitor status.
-	// Enum: [active inactive]
+	// Enum: ["active","inactive"]
 	State *string `json:"state,omitempty"`
 }
 

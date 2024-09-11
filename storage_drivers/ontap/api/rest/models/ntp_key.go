@@ -26,7 +26,7 @@ type NtpKey struct {
 	// The type of cryptographic hash used to create and verify the NTP's message authentication code appended to each NTP packet header.
 	//
 	// Example: sha1
-	// Enum: [sha1]
+	// Enum: ["sha1"]
 	DigestType *string `json:"digest_type,omitempty"`
 
 	// NTP symmetric authentication key identifier or index number (ID). This ID is included

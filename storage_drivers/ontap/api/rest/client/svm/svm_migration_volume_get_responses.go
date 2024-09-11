@@ -6,6 +6,7 @@ package svm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SvmMigrationVolumeGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the svm migration volume get o k response
+func (o *SvmMigrationVolumeGetOK) Code() int {
+	return 200
+}
+
 func (o *SvmMigrationVolumeGetOK) Error() string {
-	return fmt.Sprintf("[GET /svm/migrations/{svm_migration.uuid}/volumes/{volume.uuid}][%d] svmMigrationVolumeGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/migrations/{svm_migration.uuid}/volumes/{volume.uuid}][%d] svmMigrationVolumeGetOK %s", 200, payload)
 }
 
 func (o *SvmMigrationVolumeGetOK) String() string {
-	return fmt.Sprintf("[GET /svm/migrations/{svm_migration.uuid}/volumes/{volume.uuid}][%d] svmMigrationVolumeGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/migrations/{svm_migration.uuid}/volumes/{volume.uuid}][%d] svmMigrationVolumeGetOK %s", 200, payload)
 }
 
 func (o *SvmMigrationVolumeGetOK) GetPayload() *models.SvmMigrationVolume {
@@ -119,16 +127,12 @@ func NewSvmMigrationVolumeGetDefault(code int) *SvmMigrationVolumeGetDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 13172783 | Migrate RDB lookup failed |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SvmMigrationVolumeGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the svm migration volume get default response
-func (o *SvmMigrationVolumeGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this svm migration volume get default response has a 2xx status code
@@ -156,12 +160,19 @@ func (o *SvmMigrationVolumeGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the svm migration volume get default response
+func (o *SvmMigrationVolumeGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SvmMigrationVolumeGetDefault) Error() string {
-	return fmt.Sprintf("[GET /svm/migrations/{svm_migration.uuid}/volumes/{volume.uuid}][%d] svm_migration_volume_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/migrations/{svm_migration.uuid}/volumes/{volume.uuid}][%d] svm_migration_volume_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmMigrationVolumeGetDefault) String() string {
-	return fmt.Sprintf("[GET /svm/migrations/{svm_migration.uuid}/volumes/{volume.uuid}][%d] svm_migration_volume_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /svm/migrations/{svm_migration.uuid}/volumes/{volume.uuid}][%d] svm_migration_volume_get default %s", o._statusCode, payload)
 }
 
 func (o *SvmMigrationVolumeGetDefault) GetPayload() *models.ErrorResponse {

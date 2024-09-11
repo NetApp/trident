@@ -11,6 +11,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // NfsClientsCache nfs clients cache
@@ -31,6 +32,7 @@ type NfsClientsCache struct {
 
 	// The time interval between refreshing the connected-clients cache. The minimum is 1 hour and the maximum is 8 hours.
 	//
+	// Read Only: true
 	UpdateInterval *string `json:"update_interval,omitempty"`
 }
 
@@ -73,6 +75,10 @@ func (m *NfsClientsCache) ContextValidate(ctx context.Context, formats strfmt.Re
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateUpdateInterval(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -88,6 +94,15 @@ func (m *NfsClientsCache) contextValidateLinks(ctx context.Context, formats strf
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *NfsClientsCache) contextValidateUpdateInterval(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "update_interval", "body", m.UpdateInterval); err != nil {
+		return err
 	}
 
 	return nil

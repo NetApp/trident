@@ -6,6 +6,7 @@ package object_store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *PerformanceS3MetricCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the performance s3 metric collection get o k response
+func (o *PerformanceS3MetricCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *PerformanceS3MetricCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/metrics][%d] performanceS3MetricCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/metrics][%d] performanceS3MetricCollectionGetOK %s", 200, payload)
 }
 
 func (o *PerformanceS3MetricCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/metrics][%d] performanceS3MetricCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/metrics][%d] performanceS3MetricCollectionGetOK %s", 200, payload)
 }
 
 func (o *PerformanceS3MetricCollectionGetOK) GetPayload() *models.PerformanceS3MetricResponse {
@@ -112,19 +120,19 @@ func NewPerformanceS3MetricCollectionGetDefault(code int) *PerformanceS3MetricCo
 }
 
 /*
-PerformanceS3MetricCollectionGetDefault describes a response with status code -1, with default header values.
+	PerformanceS3MetricCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 8586226    | UUID not found. |
+| 8585947    | There are no entries matching your query. |
 */
 type PerformanceS3MetricCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the performance s3 metric collection get default response
-func (o *PerformanceS3MetricCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this performance s3 metric collection get default response has a 2xx status code
@@ -152,12 +160,19 @@ func (o *PerformanceS3MetricCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the performance s3 metric collection get default response
+func (o *PerformanceS3MetricCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *PerformanceS3MetricCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/metrics][%d] performance_s3_metric_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/metrics][%d] performance_s3_metric_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PerformanceS3MetricCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/metrics][%d] performance_s3_metric_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/metrics][%d] performance_s3_metric_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *PerformanceS3MetricCollectionGetDefault) GetPayload() *models.ErrorResponse {

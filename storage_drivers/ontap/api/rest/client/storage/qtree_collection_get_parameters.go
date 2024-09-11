@@ -62,6 +62,12 @@ QtreeCollectionGetParams contains all the parameters to send to the API endpoint
 */
 type QtreeCollectionGetParams struct {
 
+	/* Tags.
+
+	   Filter by _tags
+	*/
+	Tags *string
+
 	/* ExportPolicyID.
 
 	   Filter by export_policy.id
@@ -74,17 +80,17 @@ type QtreeCollectionGetParams struct {
 	*/
 	ExportPolicyName *string
 
+	/* ExtPerformanceMonitoringEnabled.
+
+	   Filter by ext_performance_monitoring.enabled
+	*/
+	ExtPerformanceMonitoringEnabled *bool
+
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
 	Fields []string
-
-	/* FilesystemPath.
-
-	   Filter by filesystem_path
-	*/
-	FilesystemPath *string
 
 	/* GroupID.
 
@@ -109,6 +115,96 @@ type QtreeCollectionGetParams struct {
 	   Limit the number of records returned.
 	*/
 	MaxRecords *int64
+
+	/* MetricDuration.
+
+	   Filter by metric.duration
+	*/
+	MetricDuration *string
+
+	/* MetricIopsOther.
+
+	   Filter by metric.iops.other
+	*/
+	MetricIopsOther *int64
+
+	/* MetricIopsRead.
+
+	   Filter by metric.iops.read
+	*/
+	MetricIopsRead *int64
+
+	/* MetricIopsTotal.
+
+	   Filter by metric.iops.total
+	*/
+	MetricIopsTotal *int64
+
+	/* MetricIopsWrite.
+
+	   Filter by metric.iops.write
+	*/
+	MetricIopsWrite *int64
+
+	/* MetricLatencyOther.
+
+	   Filter by metric.latency.other
+	*/
+	MetricLatencyOther *int64
+
+	/* MetricLatencyRead.
+
+	   Filter by metric.latency.read
+	*/
+	MetricLatencyRead *int64
+
+	/* MetricLatencyTotal.
+
+	   Filter by metric.latency.total
+	*/
+	MetricLatencyTotal *int64
+
+	/* MetricLatencyWrite.
+
+	   Filter by metric.latency.write
+	*/
+	MetricLatencyWrite *int64
+
+	/* MetricStatus.
+
+	   Filter by metric.status
+	*/
+	MetricStatus *string
+
+	/* MetricThroughputOther.
+
+	   Filter by metric.throughput.other
+	*/
+	MetricThroughputOther *int64
+
+	/* MetricThroughputRead.
+
+	   Filter by metric.throughput.read
+	*/
+	MetricThroughputRead *int64
+
+	/* MetricThroughputTotal.
+
+	   Filter by metric.throughput.total
+	*/
+	MetricThroughputTotal *int64
+
+	/* MetricThroughputWrite.
+
+	   Filter by metric.throughput.write
+	*/
+	MetricThroughputWrite *int64
+
+	/* MetricTimestamp.
+
+	   Filter by metric.timestamp
+	*/
+	MetricTimestamp *string
 
 	/* Name.
 
@@ -215,6 +311,30 @@ type QtreeCollectionGetParams struct {
 	   Filter by statistics.iops_raw.write
 	*/
 	StatisticsIopsRawWrite *int64
+
+	/* StatisticsLatencyRawOther.
+
+	   Filter by statistics.latency_raw.other
+	*/
+	StatisticsLatencyRawOther *int64
+
+	/* StatisticsLatencyRawRead.
+
+	   Filter by statistics.latency_raw.read
+	*/
+	StatisticsLatencyRawRead *int64
+
+	/* StatisticsLatencyRawTotal.
+
+	   Filter by statistics.latency_raw.total
+	*/
+	StatisticsLatencyRawTotal *int64
+
+	/* StatisticsLatencyRawWrite.
+
+	   Filter by statistics.latency_raw.write
+	*/
+	StatisticsLatencyRawWrite *int64
 
 	/* StatisticsStatus.
 
@@ -361,6 +481,17 @@ func (o *QtreeCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithTags adds the tags to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithTags(tags *string) *QtreeCollectionGetParams {
+	o.SetTags(tags)
+	return o
+}
+
+// SetTags adds the tags to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetTags(tags *string) {
+	o.Tags = tags
+}
+
 // WithExportPolicyID adds the exportPolicyID to the qtree collection get params
 func (o *QtreeCollectionGetParams) WithExportPolicyID(exportPolicyID *int64) *QtreeCollectionGetParams {
 	o.SetExportPolicyID(exportPolicyID)
@@ -383,6 +514,17 @@ func (o *QtreeCollectionGetParams) SetExportPolicyName(exportPolicyName *string)
 	o.ExportPolicyName = exportPolicyName
 }
 
+// WithExtPerformanceMonitoringEnabled adds the extPerformanceMonitoringEnabled to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithExtPerformanceMonitoringEnabled(extPerformanceMonitoringEnabled *bool) *QtreeCollectionGetParams {
+	o.SetExtPerformanceMonitoringEnabled(extPerformanceMonitoringEnabled)
+	return o
+}
+
+// SetExtPerformanceMonitoringEnabled adds the extPerformanceMonitoringEnabled to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetExtPerformanceMonitoringEnabled(extPerformanceMonitoringEnabled *bool) {
+	o.ExtPerformanceMonitoringEnabled = extPerformanceMonitoringEnabled
+}
+
 // WithFields adds the fields to the qtree collection get params
 func (o *QtreeCollectionGetParams) WithFields(fields []string) *QtreeCollectionGetParams {
 	o.SetFields(fields)
@@ -392,17 +534,6 @@ func (o *QtreeCollectionGetParams) WithFields(fields []string) *QtreeCollectionG
 // SetFields adds the fields to the qtree collection get params
 func (o *QtreeCollectionGetParams) SetFields(fields []string) {
 	o.Fields = fields
-}
-
-// WithFilesystemPath adds the filesystemPath to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithFilesystemPath(filesystemPath *string) *QtreeCollectionGetParams {
-	o.SetFilesystemPath(filesystemPath)
-	return o
-}
-
-// SetFilesystemPath adds the filesystemPath to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetFilesystemPath(filesystemPath *string) {
-	o.FilesystemPath = filesystemPath
 }
 
 // WithGroupID adds the groupID to the qtree collection get params
@@ -447,6 +578,171 @@ func (o *QtreeCollectionGetParams) WithMaxRecords(maxRecords *int64) *QtreeColle
 // SetMaxRecords adds the maxRecords to the qtree collection get params
 func (o *QtreeCollectionGetParams) SetMaxRecords(maxRecords *int64) {
 	o.MaxRecords = maxRecords
+}
+
+// WithMetricDuration adds the metricDuration to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithMetricDuration(metricDuration *string) *QtreeCollectionGetParams {
+	o.SetMetricDuration(metricDuration)
+	return o
+}
+
+// SetMetricDuration adds the metricDuration to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetMetricDuration(metricDuration *string) {
+	o.MetricDuration = metricDuration
+}
+
+// WithMetricIopsOther adds the metricIopsOther to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithMetricIopsOther(metricIopsOther *int64) *QtreeCollectionGetParams {
+	o.SetMetricIopsOther(metricIopsOther)
+	return o
+}
+
+// SetMetricIopsOther adds the metricIopsOther to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetMetricIopsOther(metricIopsOther *int64) {
+	o.MetricIopsOther = metricIopsOther
+}
+
+// WithMetricIopsRead adds the metricIopsRead to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithMetricIopsRead(metricIopsRead *int64) *QtreeCollectionGetParams {
+	o.SetMetricIopsRead(metricIopsRead)
+	return o
+}
+
+// SetMetricIopsRead adds the metricIopsRead to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetMetricIopsRead(metricIopsRead *int64) {
+	o.MetricIopsRead = metricIopsRead
+}
+
+// WithMetricIopsTotal adds the metricIopsTotal to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithMetricIopsTotal(metricIopsTotal *int64) *QtreeCollectionGetParams {
+	o.SetMetricIopsTotal(metricIopsTotal)
+	return o
+}
+
+// SetMetricIopsTotal adds the metricIopsTotal to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetMetricIopsTotal(metricIopsTotal *int64) {
+	o.MetricIopsTotal = metricIopsTotal
+}
+
+// WithMetricIopsWrite adds the metricIopsWrite to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithMetricIopsWrite(metricIopsWrite *int64) *QtreeCollectionGetParams {
+	o.SetMetricIopsWrite(metricIopsWrite)
+	return o
+}
+
+// SetMetricIopsWrite adds the metricIopsWrite to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetMetricIopsWrite(metricIopsWrite *int64) {
+	o.MetricIopsWrite = metricIopsWrite
+}
+
+// WithMetricLatencyOther adds the metricLatencyOther to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithMetricLatencyOther(metricLatencyOther *int64) *QtreeCollectionGetParams {
+	o.SetMetricLatencyOther(metricLatencyOther)
+	return o
+}
+
+// SetMetricLatencyOther adds the metricLatencyOther to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetMetricLatencyOther(metricLatencyOther *int64) {
+	o.MetricLatencyOther = metricLatencyOther
+}
+
+// WithMetricLatencyRead adds the metricLatencyRead to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithMetricLatencyRead(metricLatencyRead *int64) *QtreeCollectionGetParams {
+	o.SetMetricLatencyRead(metricLatencyRead)
+	return o
+}
+
+// SetMetricLatencyRead adds the metricLatencyRead to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetMetricLatencyRead(metricLatencyRead *int64) {
+	o.MetricLatencyRead = metricLatencyRead
+}
+
+// WithMetricLatencyTotal adds the metricLatencyTotal to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithMetricLatencyTotal(metricLatencyTotal *int64) *QtreeCollectionGetParams {
+	o.SetMetricLatencyTotal(metricLatencyTotal)
+	return o
+}
+
+// SetMetricLatencyTotal adds the metricLatencyTotal to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetMetricLatencyTotal(metricLatencyTotal *int64) {
+	o.MetricLatencyTotal = metricLatencyTotal
+}
+
+// WithMetricLatencyWrite adds the metricLatencyWrite to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithMetricLatencyWrite(metricLatencyWrite *int64) *QtreeCollectionGetParams {
+	o.SetMetricLatencyWrite(metricLatencyWrite)
+	return o
+}
+
+// SetMetricLatencyWrite adds the metricLatencyWrite to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetMetricLatencyWrite(metricLatencyWrite *int64) {
+	o.MetricLatencyWrite = metricLatencyWrite
+}
+
+// WithMetricStatus adds the metricStatus to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithMetricStatus(metricStatus *string) *QtreeCollectionGetParams {
+	o.SetMetricStatus(metricStatus)
+	return o
+}
+
+// SetMetricStatus adds the metricStatus to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetMetricStatus(metricStatus *string) {
+	o.MetricStatus = metricStatus
+}
+
+// WithMetricThroughputOther adds the metricThroughputOther to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithMetricThroughputOther(metricThroughputOther *int64) *QtreeCollectionGetParams {
+	o.SetMetricThroughputOther(metricThroughputOther)
+	return o
+}
+
+// SetMetricThroughputOther adds the metricThroughputOther to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetMetricThroughputOther(metricThroughputOther *int64) {
+	o.MetricThroughputOther = metricThroughputOther
+}
+
+// WithMetricThroughputRead adds the metricThroughputRead to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithMetricThroughputRead(metricThroughputRead *int64) *QtreeCollectionGetParams {
+	o.SetMetricThroughputRead(metricThroughputRead)
+	return o
+}
+
+// SetMetricThroughputRead adds the metricThroughputRead to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetMetricThroughputRead(metricThroughputRead *int64) {
+	o.MetricThroughputRead = metricThroughputRead
+}
+
+// WithMetricThroughputTotal adds the metricThroughputTotal to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithMetricThroughputTotal(metricThroughputTotal *int64) *QtreeCollectionGetParams {
+	o.SetMetricThroughputTotal(metricThroughputTotal)
+	return o
+}
+
+// SetMetricThroughputTotal adds the metricThroughputTotal to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetMetricThroughputTotal(metricThroughputTotal *int64) {
+	o.MetricThroughputTotal = metricThroughputTotal
+}
+
+// WithMetricThroughputWrite adds the metricThroughputWrite to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithMetricThroughputWrite(metricThroughputWrite *int64) *QtreeCollectionGetParams {
+	o.SetMetricThroughputWrite(metricThroughputWrite)
+	return o
+}
+
+// SetMetricThroughputWrite adds the metricThroughputWrite to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetMetricThroughputWrite(metricThroughputWrite *int64) {
+	o.MetricThroughputWrite = metricThroughputWrite
+}
+
+// WithMetricTimestamp adds the metricTimestamp to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithMetricTimestamp(metricTimestamp *string) *QtreeCollectionGetParams {
+	o.SetMetricTimestamp(metricTimestamp)
+	return o
+}
+
+// SetMetricTimestamp adds the metricTimestamp to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetMetricTimestamp(metricTimestamp *string) {
+	o.MetricTimestamp = metricTimestamp
 }
 
 // WithName adds the name to the qtree collection get params
@@ -636,6 +932,50 @@ func (o *QtreeCollectionGetParams) SetStatisticsIopsRawWrite(statisticsIopsRawWr
 	o.StatisticsIopsRawWrite = statisticsIopsRawWrite
 }
 
+// WithStatisticsLatencyRawOther adds the statisticsLatencyRawOther to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsLatencyRawOther(statisticsLatencyRawOther *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsLatencyRawOther(statisticsLatencyRawOther)
+	return o
+}
+
+// SetStatisticsLatencyRawOther adds the statisticsLatencyRawOther to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsLatencyRawOther(statisticsLatencyRawOther *int64) {
+	o.StatisticsLatencyRawOther = statisticsLatencyRawOther
+}
+
+// WithStatisticsLatencyRawRead adds the statisticsLatencyRawRead to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsLatencyRawRead(statisticsLatencyRawRead *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsLatencyRawRead(statisticsLatencyRawRead)
+	return o
+}
+
+// SetStatisticsLatencyRawRead adds the statisticsLatencyRawRead to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsLatencyRawRead(statisticsLatencyRawRead *int64) {
+	o.StatisticsLatencyRawRead = statisticsLatencyRawRead
+}
+
+// WithStatisticsLatencyRawTotal adds the statisticsLatencyRawTotal to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsLatencyRawTotal(statisticsLatencyRawTotal *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsLatencyRawTotal(statisticsLatencyRawTotal)
+	return o
+}
+
+// SetStatisticsLatencyRawTotal adds the statisticsLatencyRawTotal to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsLatencyRawTotal(statisticsLatencyRawTotal *int64) {
+	o.StatisticsLatencyRawTotal = statisticsLatencyRawTotal
+}
+
+// WithStatisticsLatencyRawWrite adds the statisticsLatencyRawWrite to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsLatencyRawWrite(statisticsLatencyRawWrite *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsLatencyRawWrite(statisticsLatencyRawWrite)
+	return o
+}
+
+// SetStatisticsLatencyRawWrite adds the statisticsLatencyRawWrite to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsLatencyRawWrite(statisticsLatencyRawWrite *int64) {
+	o.StatisticsLatencyRawWrite = statisticsLatencyRawWrite
+}
+
 // WithStatisticsStatus adds the statisticsStatus to the qtree collection get params
 func (o *QtreeCollectionGetParams) WithStatisticsStatus(statisticsStatus *string) *QtreeCollectionGetParams {
 	o.SetStatisticsStatus(statisticsStatus)
@@ -787,6 +1127,23 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
+	if o.Tags != nil {
+
+		// query param _tags
+		var qrTags string
+
+		if o.Tags != nil {
+			qrTags = *o.Tags
+		}
+		qTags := qrTags
+		if qTags != "" {
+
+			if err := r.SetQueryParam("_tags", qTags); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ExportPolicyID != nil {
 
 		// query param export_policy.id
@@ -821,6 +1178,23 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
+	if o.ExtPerformanceMonitoringEnabled != nil {
+
+		// query param ext_performance_monitoring.enabled
+		var qrExtPerformanceMonitoringEnabled bool
+
+		if o.ExtPerformanceMonitoringEnabled != nil {
+			qrExtPerformanceMonitoringEnabled = *o.ExtPerformanceMonitoringEnabled
+		}
+		qExtPerformanceMonitoringEnabled := swag.FormatBool(qrExtPerformanceMonitoringEnabled)
+		if qExtPerformanceMonitoringEnabled != "" {
+
+			if err := r.SetQueryParam("ext_performance_monitoring.enabled", qExtPerformanceMonitoringEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.Fields != nil {
 
 		// binding items for fields
@@ -829,23 +1203,6 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
-		}
-	}
-
-	if o.FilesystemPath != nil {
-
-		// query param filesystem_path
-		var qrFilesystemPath string
-
-		if o.FilesystemPath != nil {
-			qrFilesystemPath = *o.FilesystemPath
-		}
-		qFilesystemPath := qrFilesystemPath
-		if qFilesystemPath != "" {
-
-			if err := r.SetQueryParam("filesystem_path", qFilesystemPath); err != nil {
-				return err
-			}
 		}
 	}
 
@@ -912,6 +1269,261 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		if qMaxRecords != "" {
 
 			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricDuration != nil {
+
+		// query param metric.duration
+		var qrMetricDuration string
+
+		if o.MetricDuration != nil {
+			qrMetricDuration = *o.MetricDuration
+		}
+		qMetricDuration := qrMetricDuration
+		if qMetricDuration != "" {
+
+			if err := r.SetQueryParam("metric.duration", qMetricDuration); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsOther != nil {
+
+		// query param metric.iops.other
+		var qrMetricIopsOther int64
+
+		if o.MetricIopsOther != nil {
+			qrMetricIopsOther = *o.MetricIopsOther
+		}
+		qMetricIopsOther := swag.FormatInt64(qrMetricIopsOther)
+		if qMetricIopsOther != "" {
+
+			if err := r.SetQueryParam("metric.iops.other", qMetricIopsOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsRead != nil {
+
+		// query param metric.iops.read
+		var qrMetricIopsRead int64
+
+		if o.MetricIopsRead != nil {
+			qrMetricIopsRead = *o.MetricIopsRead
+		}
+		qMetricIopsRead := swag.FormatInt64(qrMetricIopsRead)
+		if qMetricIopsRead != "" {
+
+			if err := r.SetQueryParam("metric.iops.read", qMetricIopsRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsTotal != nil {
+
+		// query param metric.iops.total
+		var qrMetricIopsTotal int64
+
+		if o.MetricIopsTotal != nil {
+			qrMetricIopsTotal = *o.MetricIopsTotal
+		}
+		qMetricIopsTotal := swag.FormatInt64(qrMetricIopsTotal)
+		if qMetricIopsTotal != "" {
+
+			if err := r.SetQueryParam("metric.iops.total", qMetricIopsTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsWrite != nil {
+
+		// query param metric.iops.write
+		var qrMetricIopsWrite int64
+
+		if o.MetricIopsWrite != nil {
+			qrMetricIopsWrite = *o.MetricIopsWrite
+		}
+		qMetricIopsWrite := swag.FormatInt64(qrMetricIopsWrite)
+		if qMetricIopsWrite != "" {
+
+			if err := r.SetQueryParam("metric.iops.write", qMetricIopsWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyOther != nil {
+
+		// query param metric.latency.other
+		var qrMetricLatencyOther int64
+
+		if o.MetricLatencyOther != nil {
+			qrMetricLatencyOther = *o.MetricLatencyOther
+		}
+		qMetricLatencyOther := swag.FormatInt64(qrMetricLatencyOther)
+		if qMetricLatencyOther != "" {
+
+			if err := r.SetQueryParam("metric.latency.other", qMetricLatencyOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyRead != nil {
+
+		// query param metric.latency.read
+		var qrMetricLatencyRead int64
+
+		if o.MetricLatencyRead != nil {
+			qrMetricLatencyRead = *o.MetricLatencyRead
+		}
+		qMetricLatencyRead := swag.FormatInt64(qrMetricLatencyRead)
+		if qMetricLatencyRead != "" {
+
+			if err := r.SetQueryParam("metric.latency.read", qMetricLatencyRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyTotal != nil {
+
+		// query param metric.latency.total
+		var qrMetricLatencyTotal int64
+
+		if o.MetricLatencyTotal != nil {
+			qrMetricLatencyTotal = *o.MetricLatencyTotal
+		}
+		qMetricLatencyTotal := swag.FormatInt64(qrMetricLatencyTotal)
+		if qMetricLatencyTotal != "" {
+
+			if err := r.SetQueryParam("metric.latency.total", qMetricLatencyTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyWrite != nil {
+
+		// query param metric.latency.write
+		var qrMetricLatencyWrite int64
+
+		if o.MetricLatencyWrite != nil {
+			qrMetricLatencyWrite = *o.MetricLatencyWrite
+		}
+		qMetricLatencyWrite := swag.FormatInt64(qrMetricLatencyWrite)
+		if qMetricLatencyWrite != "" {
+
+			if err := r.SetQueryParam("metric.latency.write", qMetricLatencyWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricStatus != nil {
+
+		// query param metric.status
+		var qrMetricStatus string
+
+		if o.MetricStatus != nil {
+			qrMetricStatus = *o.MetricStatus
+		}
+		qMetricStatus := qrMetricStatus
+		if qMetricStatus != "" {
+
+			if err := r.SetQueryParam("metric.status", qMetricStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputOther != nil {
+
+		// query param metric.throughput.other
+		var qrMetricThroughputOther int64
+
+		if o.MetricThroughputOther != nil {
+			qrMetricThroughputOther = *o.MetricThroughputOther
+		}
+		qMetricThroughputOther := swag.FormatInt64(qrMetricThroughputOther)
+		if qMetricThroughputOther != "" {
+
+			if err := r.SetQueryParam("metric.throughput.other", qMetricThroughputOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputRead != nil {
+
+		// query param metric.throughput.read
+		var qrMetricThroughputRead int64
+
+		if o.MetricThroughputRead != nil {
+			qrMetricThroughputRead = *o.MetricThroughputRead
+		}
+		qMetricThroughputRead := swag.FormatInt64(qrMetricThroughputRead)
+		if qMetricThroughputRead != "" {
+
+			if err := r.SetQueryParam("metric.throughput.read", qMetricThroughputRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputTotal != nil {
+
+		// query param metric.throughput.total
+		var qrMetricThroughputTotal int64
+
+		if o.MetricThroughputTotal != nil {
+			qrMetricThroughputTotal = *o.MetricThroughputTotal
+		}
+		qMetricThroughputTotal := swag.FormatInt64(qrMetricThroughputTotal)
+		if qMetricThroughputTotal != "" {
+
+			if err := r.SetQueryParam("metric.throughput.total", qMetricThroughputTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputWrite != nil {
+
+		// query param metric.throughput.write
+		var qrMetricThroughputWrite int64
+
+		if o.MetricThroughputWrite != nil {
+			qrMetricThroughputWrite = *o.MetricThroughputWrite
+		}
+		qMetricThroughputWrite := swag.FormatInt64(qrMetricThroughputWrite)
+		if qMetricThroughputWrite != "" {
+
+			if err := r.SetQueryParam("metric.throughput.write", qMetricThroughputWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricTimestamp != nil {
+
+		// query param metric.timestamp
+		var qrMetricTimestamp string
+
+		if o.MetricTimestamp != nil {
+			qrMetricTimestamp = *o.MetricTimestamp
+		}
+		qMetricTimestamp := qrMetricTimestamp
+		if qMetricTimestamp != "" {
+
+			if err := r.SetQueryParam("metric.timestamp", qMetricTimestamp); err != nil {
 				return err
 			}
 		}
@@ -1195,6 +1807,74 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		if qStatisticsIopsRawWrite != "" {
 
 			if err := r.SetQueryParam("statistics.iops_raw.write", qStatisticsIopsRawWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawOther != nil {
+
+		// query param statistics.latency_raw.other
+		var qrStatisticsLatencyRawOther int64
+
+		if o.StatisticsLatencyRawOther != nil {
+			qrStatisticsLatencyRawOther = *o.StatisticsLatencyRawOther
+		}
+		qStatisticsLatencyRawOther := swag.FormatInt64(qrStatisticsLatencyRawOther)
+		if qStatisticsLatencyRawOther != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.other", qStatisticsLatencyRawOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawRead != nil {
+
+		// query param statistics.latency_raw.read
+		var qrStatisticsLatencyRawRead int64
+
+		if o.StatisticsLatencyRawRead != nil {
+			qrStatisticsLatencyRawRead = *o.StatisticsLatencyRawRead
+		}
+		qStatisticsLatencyRawRead := swag.FormatInt64(qrStatisticsLatencyRawRead)
+		if qStatisticsLatencyRawRead != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.read", qStatisticsLatencyRawRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawTotal != nil {
+
+		// query param statistics.latency_raw.total
+		var qrStatisticsLatencyRawTotal int64
+
+		if o.StatisticsLatencyRawTotal != nil {
+			qrStatisticsLatencyRawTotal = *o.StatisticsLatencyRawTotal
+		}
+		qStatisticsLatencyRawTotal := swag.FormatInt64(qrStatisticsLatencyRawTotal)
+		if qStatisticsLatencyRawTotal != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.total", qStatisticsLatencyRawTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawWrite != nil {
+
+		// query param statistics.latency_raw.write
+		var qrStatisticsLatencyRawWrite int64
+
+		if o.StatisticsLatencyRawWrite != nil {
+			qrStatisticsLatencyRawWrite = *o.StatisticsLatencyRawWrite
+		}
+		qStatisticsLatencyRawWrite := swag.FormatInt64(qrStatisticsLatencyRawWrite)
+		if qStatisticsLatencyRawWrite != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.write", qStatisticsLatencyRawWrite); err != nil {
 				return err
 			}
 		}

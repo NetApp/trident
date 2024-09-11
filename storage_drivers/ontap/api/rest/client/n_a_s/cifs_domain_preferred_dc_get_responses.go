@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CifsDomainPreferredDcGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs domain preferred dc get o k response
+func (o *CifsDomainPreferredDcGetOK) Code() int {
+	return 200
+}
+
 func (o *CifsDomainPreferredDcGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] cifsDomainPreferredDcGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] cifsDomainPreferredDcGetOK %s", 200, payload)
 }
 
 func (o *CifsDomainPreferredDcGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] cifsDomainPreferredDcGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] cifsDomainPreferredDcGetOK %s", 200, payload)
 }
 
 func (o *CifsDomainPreferredDcGetOK) GetPayload() *models.CifsDomainPreferredDc {
@@ -122,11 +130,6 @@ type CifsDomainPreferredDcGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cifs domain preferred dc get default response
-func (o *CifsDomainPreferredDcGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cifs domain preferred dc get default response has a 2xx status code
 func (o *CifsDomainPreferredDcGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *CifsDomainPreferredDcGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs domain preferred dc get default response
+func (o *CifsDomainPreferredDcGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsDomainPreferredDcGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] cifs_domain_preferred_dc_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] cifs_domain_preferred_dc_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsDomainPreferredDcGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] cifs_domain_preferred_dc_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] cifs_domain_preferred_dc_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsDomainPreferredDcGetDefault) GetPayload() *models.ErrorResponse {

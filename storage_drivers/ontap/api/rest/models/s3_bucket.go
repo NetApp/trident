@@ -21,7 +21,7 @@ import (
 // swagger:model s3_bucket
 type S3Bucket struct {
 
-	// If this is set to true, an SVM administrator can manage the S3 service. If it is false, only the cluster administrator can manage the service.
+	// If this is set to true, an SVM administrator can manage the S3 service. If it is false, only the cluster administrator can manage the service. This field cannot be specified in a POST method.
 	Allowed *bool `json:"allowed,omitempty"`
 
 	// audit event selector
@@ -39,10 +39,16 @@ type S3Bucket struct {
 	// Minimum: 1
 	ConstituentsPerAggregate *int64 `json:"constituents_per_aggregate,omitempty"`
 
+	// cors
+	Cors *S3BucketInlineCors `json:"cors,omitempty"`
+
 	// encryption
 	Encryption *S3BucketInlineEncryption `json:"encryption,omitempty"`
 
-	// Specifies the bucket logical used size up to this point.
+	// lifecycle management
+	LifecycleManagement *S3BucketInlineLifecycleManagement `json:"lifecycle_management,omitempty"`
+
+	// Specifies the bucket logical used size up to this point. This field cannot be specified using a POST or PATCH method.
 	// Read Only: true
 	LogicalUsedSize *int64 `json:"logical_used_size,omitempty"`
 
@@ -65,23 +71,29 @@ type S3Bucket struct {
 	// qos policy
 	QosPolicy *S3BucketInlineQosPolicy `json:"qos_policy,omitempty"`
 
-	// Specifies the role of the bucket.
+	// retention
+	Retention *S3BucketInlineRetention `json:"retention,omitempty"`
+
+	// Specifies the role of the bucket. This field cannot be specified using a POST method.
 	// Read Only: true
-	// Enum: [standalone active passive]
+	// Enum: ["standalone","active","passive"]
 	Role *string `json:"role,omitempty"`
 
 	// A list of aggregates for FlexGroup volume constituents where the bucket is hosted. If this option is not specified, the bucket is auto-provisioned as a FlexGroup volume.
 	S3BucketInlineAggregates []*S3BucketInlineAggregatesInlineArrayItem `json:"aggregates,omitempty"`
 
-	// Specifies the bucket size in bytes; ranges from 80MB to 64TB.
+	// Specifies the bucket size in bytes; ranges from 190MB to 62PB.
 	// Example: 1677721600
-	// Maximum: 7.0368744177664e+13
-	// Minimum: 8.388608e+07
+	// Maximum: 6.2672162783232e+16
+	// Minimum: 1.9922944e+08
 	Size *int64 `json:"size,omitempty"`
+
+	// snapshot policy
+	SnapshotPolicy *S3BucketInlineSnapshotPolicy `json:"snapshot_policy,omitempty"`
 
 	// Specifies the storage service level of the FlexGroup volume on which the bucket should be created. Valid values are "value", "performance" or "extreme".
 	// Example: value
-	// Enum: [value performance extreme]
+	// Enum: ["value","performance","extreme"]
 	StorageServiceLevel *string `json:"storage_service_level,omitempty"`
 
 	// svm
@@ -89,8 +101,11 @@ type S3Bucket struct {
 
 	// Specifies the bucket type. Valid values are "s3"and "nas".
 	// Example: s3
-	// Enum: [s3 nas]
+	// Enum: ["s3","nas"]
 	Type *string `json:"type,omitempty"`
+
+	// Specifies whether mirrored aggregates are selected when provisioning a FlexGroup. Only mirrored aggregates are used if this parameter is set to "true" and only unmirrored aggregates are used if this parameter is set to "false". The default value is "true" for a MetroCluster configuration and is "false" for a non-MetroCluster configuration.
+	UseMirroredAggregates *bool `json:"use_mirrored_aggregates,omitempty"`
 
 	// Specifies the unique identifier of the bucket.
 	// Example: 414b29a1-3b26-11e9-bd58-0050568ea055
@@ -100,7 +115,7 @@ type S3Bucket struct {
 
 	// Specifies the versioning state of the bucket. Valid values are "disabled", "enabled" or "suspended". Note that the versioning state cannot be modified to 'disabled' from any other state.
 	// Example: enabled
-	// Enum: [disabled enabled suspended]
+	// Enum: ["disabled","enabled","suspended"]
 	VersioningState *string `json:"versioning_state,omitempty"`
 
 	// volume
@@ -123,7 +138,15 @@ func (m *S3Bucket) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateCors(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateEncryption(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLifecycleManagement(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -143,6 +166,10 @@ func (m *S3Bucket) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateRetention(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateRole(formats); err != nil {
 		res = append(res, err)
 	}
@@ -152,6 +179,10 @@ func (m *S3Bucket) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnapshotPolicy(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -234,6 +265,23 @@ func (m *S3Bucket) validateConstituentsPerAggregate(formats strfmt.Registry) err
 	return nil
 }
 
+func (m *S3Bucket) validateCors(formats strfmt.Registry) error {
+	if swag.IsZero(m.Cors) { // not required
+		return nil
+	}
+
+	if m.Cors != nil {
+		if err := m.Cors.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("cors")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *S3Bucket) validateEncryption(formats strfmt.Registry) error {
 	if swag.IsZero(m.Encryption) { // not required
 		return nil
@@ -243,6 +291,23 @@ func (m *S3Bucket) validateEncryption(formats strfmt.Registry) error {
 		if err := m.Encryption.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("encryption")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3Bucket) validateLifecycleManagement(formats strfmt.Registry) error {
+	if swag.IsZero(m.LifecycleManagement) { // not required
+		return nil
+	}
+
+	if m.LifecycleManagement != nil {
+		if err := m.LifecycleManagement.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("lifecycle_management")
 			}
 			return err
 		}
@@ -310,6 +375,23 @@ func (m *S3Bucket) validateQosPolicy(formats strfmt.Registry) error {
 		if err := m.QosPolicy.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("qos_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3Bucket) validateRetention(formats strfmt.Registry) error {
+	if swag.IsZero(m.Retention) { // not required
+		return nil
+	}
+
+	if m.Retention != nil {
+		if err := m.Retention.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("retention")
 			}
 			return err
 		}
@@ -413,12 +495,29 @@ func (m *S3Bucket) validateSize(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("size", "body", *m.Size, 8.388608e+07, false); err != nil {
+	if err := validate.MinimumInt("size", "body", *m.Size, 1.9922944e+08, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("size", "body", *m.Size, 7.0368744177664e+13, false); err != nil {
+	if err := validate.MaximumInt("size", "body", *m.Size, 6.2672162783232e+16, false); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *S3Bucket) validateSnapshotPolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnapshotPolicy) { // not required
+		return nil
+	}
+
+	if m.SnapshotPolicy != nil {
+		if err := m.SnapshotPolicy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snapshot_policy")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -666,7 +765,15 @@ func (m *S3Bucket) ContextValidate(ctx context.Context, formats strfmt.Registry)
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateCors(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateEncryption(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLifecycleManagement(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -686,11 +793,19 @@ func (m *S3Bucket) ContextValidate(ctx context.Context, formats strfmt.Registry)
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateRetention(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateRole(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateS3BucketInlineAggregates(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSnapshotPolicy(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -726,12 +841,40 @@ func (m *S3Bucket) contextValidateAuditEventSelector(ctx context.Context, format
 	return nil
 }
 
+func (m *S3Bucket) contextValidateCors(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Cors != nil {
+		if err := m.Cors.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("cors")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *S3Bucket) contextValidateEncryption(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Encryption != nil {
 		if err := m.Encryption.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("encryption")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3Bucket) contextValidateLifecycleManagement(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.LifecycleManagement != nil {
+		if err := m.LifecycleManagement.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("lifecycle_management")
 			}
 			return err
 		}
@@ -791,6 +934,20 @@ func (m *S3Bucket) contextValidateQosPolicy(ctx context.Context, formats strfmt.
 	return nil
 }
 
+func (m *S3Bucket) contextValidateRetention(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Retention != nil {
+		if err := m.Retention.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("retention")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *S3Bucket) contextValidateRole(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "role", "body", m.Role); err != nil {
@@ -813,6 +970,20 @@ func (m *S3Bucket) contextValidateS3BucketInlineAggregates(ctx context.Context, 
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *S3Bucket) contextValidateSnapshotPolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.SnapshotPolicy != nil {
+		if err := m.SnapshotPolicy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snapshot_policy")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -873,7 +1044,7 @@ func (m *S3Bucket) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3BucketInlineAggregatesInlineArrayItem s3 bucket inline aggregates inline array item
+// S3BucketInlineAggregatesInlineArrayItem Aggregate
 //
 // swagger:model s3_bucket_inline_aggregates_inline_array_item
 type S3BucketInlineAggregatesInlineArrayItem struct {
@@ -1060,12 +1231,12 @@ type S3BucketInlineAuditEventSelector struct {
 
 	// Specifies read and write access types.
 	//
-	// Enum: [read write all]
+	// Enum: ["read","write","all","none"]
 	Access *string `json:"access,omitempty"`
 
 	// Specifies allow and deny permission types.
 	//
-	// Enum: [deny allow all]
+	// Enum: ["deny","allow","all","none"]
 	Permission *string `json:"permission,omitempty"`
 }
 
@@ -1091,7 +1262,7 @@ var s3BucketInlineAuditEventSelectorTypeAccessPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["read","write","all"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["read","write","all","none"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1130,6 +1301,16 @@ const (
 	// END DEBUGGING
 	// S3BucketInlineAuditEventSelectorAccessAll captures enum value "all"
 	S3BucketInlineAuditEventSelectorAccessAll string = "all"
+
+	// BEGIN DEBUGGING
+	// s3_bucket_inline_audit_event_selector
+	// S3BucketInlineAuditEventSelector
+	// access
+	// Access
+	// none
+	// END DEBUGGING
+	// S3BucketInlineAuditEventSelectorAccessNone captures enum value "none"
+	S3BucketInlineAuditEventSelectorAccessNone string = "none"
 )
 
 // prop value enum
@@ -1157,7 +1338,7 @@ var s3BucketInlineAuditEventSelectorTypePermissionPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["deny","allow","all"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["deny","allow","all","none"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1196,6 +1377,16 @@ const (
 	// END DEBUGGING
 	// S3BucketInlineAuditEventSelectorPermissionAll captures enum value "all"
 	S3BucketInlineAuditEventSelectorPermissionAll string = "all"
+
+	// BEGIN DEBUGGING
+	// s3_bucket_inline_audit_event_selector
+	// S3BucketInlineAuditEventSelector
+	// permission
+	// Permission
+	// none
+	// END DEBUGGING
+	// S3BucketInlineAuditEventSelectorPermissionNone captures enum value "none"
+	S3BucketInlineAuditEventSelectorPermissionNone string = "none"
 )
 
 // prop value enum
@@ -1242,12 +1433,330 @@ func (m *S3BucketInlineAuditEventSelector) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// S3BucketInlineCors Cross-origin resource sharing (CORS) specifies an object associated with a bucket. The CORS configuration enables the bucket to service the cross-origin requests. A request might typically come from an origin with a domain that is different to that of the bucket. By configuring a CORS rule, you can define a combination of allowed origins, HTTP headers and methods that a bucket can use to filter out the cross-origin requests that it can service successfully.
+//
+// swagger:model s3_bucket_inline_cors
+type S3BucketInlineCors struct {
+
+	// Specifies an object store bucket CORS rule.
+	Rules []*S3BucketCorsRulesItems0 `json:"rules,omitempty"`
+}
+
+// Validate validates this s3 bucket inline cors
+func (m *S3BucketInlineCors) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateRules(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketInlineCors) validateRules(formats strfmt.Registry) error {
+	if swag.IsZero(m.Rules) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Rules); i++ {
+		if swag.IsZero(m.Rules[i]) { // not required
+			continue
+		}
+
+		if m.Rules[i] != nil {
+			if err := m.Rules[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("cors" + "." + "rules" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket inline cors based on the context it is used
+func (m *S3BucketInlineCors) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateRules(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketInlineCors) contextValidateRules(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Rules); i++ {
+
+		if m.Rules[i] != nil {
+			if err := m.Rules[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("cors" + "." + "rules" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketInlineCors) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketInlineCors) UnmarshalBinary(b []byte) error {
+	var res S3BucketInlineCors
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketCorsRulesItems0 Information about the CORS rule of an S3 bucket.
+//
+// swagger:model S3BucketCorsRulesItems0
+type S3BucketCorsRulesItems0 struct {
+
+	// links
+	Links *S3BucketCorsRulesItems0Links `json:"_links,omitempty"`
+
+	// An array of HTTP headers allowed in the cross-origin requests.
+	//
+	// Example: ["x-amz-request-id"]
+	AllowedHeaders []*string `json:"allowed_headers"`
+
+	// An array of HTTP methods allowed in the cross-origin requests.
+	//
+	// Example: ["PUT","DELETE"]
+	AllowedMethods []*string `json:"allowed_methods"`
+
+	// List of origins from where a cross-origin request is allowed to originate from for the S3 bucket.
+	//
+	// Example: ["http://www.example.com"]
+	AllowedOrigins []*string `json:"allowed_origins"`
+
+	// List of extra headers sent in the response that customers can access from their applications.
+	//
+	// Example: ["x-amz-date"]
+	ExposeHeaders []*string `json:"expose_headers"`
+
+	// Bucket CORS rule identifier. The length of the name can range from 0 to 256 characters.
+	// Max Length: 256
+	// Min Length: 0
+	ID *string `json:"id,omitempty"`
+
+	// The time in seconds for your browser to cache the preflight response for the specified resource.
+	// Example: 1024
+	MaxAgeSeconds *int64 `json:"max_age_seconds,omitempty"`
+}
+
+// Validate validates this s3 bucket cors rules items0
+func (m *S3BucketCorsRulesItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketCorsRulesItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketCorsRulesItems0) validateID(formats strfmt.Registry) error {
+	if swag.IsZero(m.ID) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("id", "body", *m.ID, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("id", "body", *m.ID, 256); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket cors rules items0 based on the context it is used
+func (m *S3BucketCorsRulesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketCorsRulesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketCorsRulesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketCorsRulesItems0) UnmarshalBinary(b []byte) error {
+	var res S3BucketCorsRulesItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketCorsRulesItems0Links s3 bucket cors rules items0 links
+//
+// swagger:model S3BucketCorsRulesItems0Links
+type S3BucketCorsRulesItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this s3 bucket cors rules items0 links
+func (m *S3BucketCorsRulesItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketCorsRulesItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket cors rules items0 links based on the context it is used
+func (m *S3BucketCorsRulesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketCorsRulesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketCorsRulesItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketCorsRulesItems0Links) UnmarshalBinary(b []byte) error {
+	var res S3BucketCorsRulesItems0Links
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // S3BucketInlineEncryption s3 bucket inline encryption
 //
 // swagger:model s3_bucket_inline_encryption
 type S3BucketInlineEncryption struct {
 
-	// Specifies whether encryption is enabled on the bucket. By default, encryption is disabled on a bucket.
+	// Specifies whether encryption is enabled on the bucket. By default, encryption is disabled on a bucket. This field cannot be specified in a POST method.
 	Enabled *bool `json:"enabled,omitempty"`
 }
 
@@ -1277,6 +1786,1498 @@ func (m *S3BucketInlineEncryption) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *S3BucketInlineEncryption) UnmarshalBinary(b []byte) error {
 	var res S3BucketInlineEncryption
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketInlineLifecycleManagement Lifecycle management is implemented as an object associated with a bucket. It defines rules to be applied against objects within a bucket. These rules are applied in the background and can delete objects.
+//
+// swagger:model s3_bucket_inline_lifecycle_management
+type S3BucketInlineLifecycleManagement struct {
+
+	// Specifies an object store lifecycle management policy.
+	Rules []*S3BucketLifecycleManagementRulesItems0 `json:"rules,omitempty"`
+}
+
+// Validate validates this s3 bucket inline lifecycle management
+func (m *S3BucketInlineLifecycleManagement) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateRules(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketInlineLifecycleManagement) validateRules(formats strfmt.Registry) error {
+	if swag.IsZero(m.Rules) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Rules); i++ {
+		if swag.IsZero(m.Rules[i]) { // not required
+			continue
+		}
+
+		if m.Rules[i] != nil {
+			if err := m.Rules[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("lifecycle_management" + "." + "rules" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket inline lifecycle management based on the context it is used
+func (m *S3BucketInlineLifecycleManagement) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateRules(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketInlineLifecycleManagement) contextValidateRules(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Rules); i++ {
+
+		if m.Rules[i] != nil {
+			if err := m.Rules[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("lifecycle_management" + "." + "rules" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketInlineLifecycleManagement) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketInlineLifecycleManagement) UnmarshalBinary(b []byte) error {
+	var res S3BucketInlineLifecycleManagement
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketLifecycleManagementRulesItems0 Information about the lifecycle management rule of a bucket.
+//
+// swagger:model S3BucketLifecycleManagementRulesItems0
+type S3BucketLifecycleManagementRulesItems0 struct {
+
+	// links
+	Links *S3BucketLifecycleManagementRulesItems0Links `json:"_links,omitempty"`
+
+	// abort incomplete multipart upload
+	AbortIncompleteMultipartUpload *S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUpload `json:"abort_incomplete_multipart_upload,omitempty"`
+
+	// Specifies the name of the bucket. Bucket name is a string that can only contain the following combination of ASCII-range alphanumeric characters 0-9, a-z, ".", and "-".
+	// Example: bucket1
+	// Max Length: 63
+	// Min Length: 3
+	BucketName *string `json:"bucket_name,omitempty"`
+
+	// Specifies whether or not the associated rule is enabled.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// expiration
+	Expiration *S3BucketLifecycleManagementRulesItems0Expiration `json:"expiration,omitempty"`
+
+	// Bucket lifecycle management rule identifier. The length of the name can range from 0 to 256 characters.
+	// Max Length: 256
+	// Min Length: 0
+	Name *string `json:"name,omitempty"`
+
+	// non current version expiration
+	NonCurrentVersionExpiration *S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpiration `json:"non_current_version_expiration,omitempty"`
+
+	// object filter
+	ObjectFilter *S3BucketLifecycleManagementRulesItems0ObjectFilter `json:"object_filter,omitempty"`
+
+	// svm
+	Svm *S3BucketLifecycleManagementRulesItems0Svm `json:"svm,omitempty"`
+
+	// Specifies the unique identifier of the bucket.
+	// Example: 414b29a1-3b26-11e9-bd58-0050568ea055
+	// Read Only: true
+	// Format: uuid
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
+}
+
+// Validate validates this s3 bucket lifecycle management rules items0
+func (m *S3BucketLifecycleManagementRulesItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAbortIncompleteMultipartUpload(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateBucketName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateExpiration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNonCurrentVersionExpiration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateObjectFilter(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSvm(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateUUID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0) validateAbortIncompleteMultipartUpload(formats strfmt.Registry) error {
+	if swag.IsZero(m.AbortIncompleteMultipartUpload) { // not required
+		return nil
+	}
+
+	if m.AbortIncompleteMultipartUpload != nil {
+		if err := m.AbortIncompleteMultipartUpload.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("abort_incomplete_multipart_upload")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0) validateBucketName(formats strfmt.Registry) error {
+	if swag.IsZero(m.BucketName) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("bucket_name", "body", *m.BucketName, 3); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("bucket_name", "body", *m.BucketName, 63); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0) validateExpiration(formats strfmt.Registry) error {
+	if swag.IsZero(m.Expiration) { // not required
+		return nil
+	}
+
+	if m.Expiration != nil {
+		if err := m.Expiration.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("expiration")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("name", "body", *m.Name, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("name", "body", *m.Name, 256); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0) validateNonCurrentVersionExpiration(formats strfmt.Registry) error {
+	if swag.IsZero(m.NonCurrentVersionExpiration) { // not required
+		return nil
+	}
+
+	if m.NonCurrentVersionExpiration != nil {
+		if err := m.NonCurrentVersionExpiration.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("non_current_version_expiration")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0) validateObjectFilter(formats strfmt.Registry) error {
+	if swag.IsZero(m.ObjectFilter) { // not required
+		return nil
+	}
+
+	if m.ObjectFilter != nil {
+		if err := m.ObjectFilter.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("object_filter")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0) validateSvm(formats strfmt.Registry) error {
+	if swag.IsZero(m.Svm) { // not required
+		return nil
+	}
+
+	if m.Svm != nil {
+		if err := m.Svm.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0) validateUUID(formats strfmt.Registry) error {
+	if swag.IsZero(m.UUID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("uuid", "body", "uuid", m.UUID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket lifecycle management rules items0 based on the context it is used
+func (m *S3BucketLifecycleManagementRulesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAbortIncompleteMultipartUpload(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateExpiration(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNonCurrentVersionExpiration(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateObjectFilter(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0) contextValidateAbortIncompleteMultipartUpload(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AbortIncompleteMultipartUpload != nil {
+		if err := m.AbortIncompleteMultipartUpload.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("abort_incomplete_multipart_upload")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0) contextValidateExpiration(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Expiration != nil {
+		if err := m.Expiration.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("expiration")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0) contextValidateNonCurrentVersionExpiration(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.NonCurrentVersionExpiration != nil {
+		if err := m.NonCurrentVersionExpiration.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("non_current_version_expiration")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0) contextValidateObjectFilter(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ObjectFilter != nil {
+		if err := m.ObjectFilter.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("object_filter")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Svm != nil {
+		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0) UnmarshalBinary(b []byte) error {
+	var res S3BucketLifecycleManagementRulesItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUpload Specifies a way to perform abort_incomplete_multipart_upload action on filtered objects within a bucket. It cannot be specified with tags.
+//
+// swagger:model S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUpload
+type S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUpload struct {
+
+	// links
+	Links *S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUploadLinks `json:"_links,omitempty"`
+
+	// Number of days of initiation after which uploads can be aborted.
+	AfterInitiationDays *int64 `json:"after_initiation_days,omitempty"`
+}
+
+// Validate validates this s3 bucket lifecycle management rules items0 abort incomplete multipart upload
+func (m *S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUpload) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUpload) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("abort_incomplete_multipart_upload" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket lifecycle management rules items0 abort incomplete multipart upload based on the context it is used
+func (m *S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUpload) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUpload) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("abort_incomplete_multipart_upload" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUpload) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUpload) UnmarshalBinary(b []byte) error {
+	var res S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUpload
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUploadLinks s3 bucket lifecycle management rules items0 abort incomplete multipart upload links
+//
+// swagger:model S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUploadLinks
+type S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUploadLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this s3 bucket lifecycle management rules items0 abort incomplete multipart upload links
+func (m *S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUploadLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUploadLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("abort_incomplete_multipart_upload" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket lifecycle management rules items0 abort incomplete multipart upload links based on the context it is used
+func (m *S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUploadLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUploadLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("abort_incomplete_multipart_upload" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUploadLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUploadLinks) UnmarshalBinary(b []byte) error {
+	var res S3BucketLifecycleManagementRulesItems0AbortIncompleteMultipartUploadLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketLifecycleManagementRulesItems0Expiration Specifies a way to perform expiration action on filtered objects within a bucket.
+//
+// swagger:model S3BucketLifecycleManagementRulesItems0Expiration
+type S3BucketLifecycleManagementRulesItems0Expiration struct {
+
+	// links
+	Links *S3BucketLifecycleManagementRulesItems0ExpirationLinks `json:"_links,omitempty"`
+
+	// Cleanup object delete markers.
+	ExpiredObjectDeleteMarker *bool `json:"expired_object_delete_marker,omitempty"`
+
+	// Number of days since creation after which objects can be deleted. This cannot be used along with object_expiry_date.
+	// Example: 100
+	ObjectAgeDays *int64 `json:"object_age_days,omitempty"`
+
+	// Specific date from when objects can expire. This cannot be used with object_age_days.
+	// Example: 2039-09-23 00:00:00
+	// Format: date-time
+	ObjectExpiryDate *strfmt.DateTime `json:"object_expiry_date,omitempty"`
+}
+
+// Validate validates this s3 bucket lifecycle management rules items0 expiration
+func (m *S3BucketLifecycleManagementRulesItems0Expiration) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateObjectExpiryDate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0Expiration) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("expiration" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0Expiration) validateObjectExpiryDate(formats strfmt.Registry) error {
+	if swag.IsZero(m.ObjectExpiryDate) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("expiration"+"."+"object_expiry_date", "body", "date-time", m.ObjectExpiryDate.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket lifecycle management rules items0 expiration based on the context it is used
+func (m *S3BucketLifecycleManagementRulesItems0Expiration) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0Expiration) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("expiration" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0Expiration) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0Expiration) UnmarshalBinary(b []byte) error {
+	var res S3BucketLifecycleManagementRulesItems0Expiration
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketLifecycleManagementRulesItems0ExpirationLinks s3 bucket lifecycle management rules items0 expiration links
+//
+// swagger:model S3BucketLifecycleManagementRulesItems0ExpirationLinks
+type S3BucketLifecycleManagementRulesItems0ExpirationLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this s3 bucket lifecycle management rules items0 expiration links
+func (m *S3BucketLifecycleManagementRulesItems0ExpirationLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0ExpirationLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("expiration" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket lifecycle management rules items0 expiration links based on the context it is used
+func (m *S3BucketLifecycleManagementRulesItems0ExpirationLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0ExpirationLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("expiration" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0ExpirationLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0ExpirationLinks) UnmarshalBinary(b []byte) error {
+	var res S3BucketLifecycleManagementRulesItems0ExpirationLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketLifecycleManagementRulesItems0Links s3 bucket lifecycle management rules items0 links
+//
+// swagger:model S3BucketLifecycleManagementRulesItems0Links
+type S3BucketLifecycleManagementRulesItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this s3 bucket lifecycle management rules items0 links
+func (m *S3BucketLifecycleManagementRulesItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket lifecycle management rules items0 links based on the context it is used
+func (m *S3BucketLifecycleManagementRulesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0Links) UnmarshalBinary(b []byte) error {
+	var res S3BucketLifecycleManagementRulesItems0Links
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpiration Specifies a way to perform non_current_version_expiration action on filtered objects within a bucket.
+//
+// swagger:model S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpiration
+type S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpiration struct {
+
+	// links
+	Links *S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpirationLinks `json:"_links,omitempty"`
+
+	// Number of latest non-current versions to be retained.
+	NewNonCurrentVersions *int64 `json:"new_non_current_versions,omitempty"`
+
+	// Number of days after which non-current versions can be deleted.
+	NonCurrentDays *int64 `json:"non_current_days,omitempty"`
+}
+
+// Validate validates this s3 bucket lifecycle management rules items0 non current version expiration
+func (m *S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpiration) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpiration) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("non_current_version_expiration" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket lifecycle management rules items0 non current version expiration based on the context it is used
+func (m *S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpiration) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpiration) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("non_current_version_expiration" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpiration) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpiration) UnmarshalBinary(b []byte) error {
+	var res S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpiration
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpirationLinks s3 bucket lifecycle management rules items0 non current version expiration links
+//
+// swagger:model S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpirationLinks
+type S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpirationLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this s3 bucket lifecycle management rules items0 non current version expiration links
+func (m *S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpirationLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpirationLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("non_current_version_expiration" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket lifecycle management rules items0 non current version expiration links based on the context it is used
+func (m *S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpirationLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpirationLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("non_current_version_expiration" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpirationLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpirationLinks) UnmarshalBinary(b []byte) error {
+	var res S3BucketLifecycleManagementRulesItems0NonCurrentVersionExpirationLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketLifecycleManagementRulesItems0ObjectFilter Specifies a way to filter objects within a bucket.
+//
+// swagger:model S3BucketLifecycleManagementRulesItems0ObjectFilter
+type S3BucketLifecycleManagementRulesItems0ObjectFilter struct {
+
+	// links
+	Links *S3BucketLifecycleManagementRulesItems0ObjectFilterLinks `json:"_links,omitempty"`
+
+	// A prefix that is matched against object-names within a bucket.
+	// Example: /logs
+	Prefix *string `json:"prefix,omitempty"`
+
+	// Size of the object greater than specified for which the corresponding lifecycle rule is to be applied.
+	// Example: 10240
+	SizeGreaterThan *int64 `json:"size_greater_than,omitempty"`
+
+	// Size of the object smaller than specified for which the corresponding lifecycle rule is to be applied.
+	// Example: 10485760
+	SizeLessThan *int64 `json:"size_less_than,omitempty"`
+
+	// An array of key-value paired tags of the form <tag> or <tag=value>.
+	//
+	// Example: ["project1=projA","project2=projB"]
+	Tags []*string `json:"tags"`
+}
+
+// Validate validates this s3 bucket lifecycle management rules items0 object filter
+func (m *S3BucketLifecycleManagementRulesItems0ObjectFilter) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0ObjectFilter) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("object_filter" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket lifecycle management rules items0 object filter based on the context it is used
+func (m *S3BucketLifecycleManagementRulesItems0ObjectFilter) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0ObjectFilter) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("object_filter" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0ObjectFilter) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0ObjectFilter) UnmarshalBinary(b []byte) error {
+	var res S3BucketLifecycleManagementRulesItems0ObjectFilter
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketLifecycleManagementRulesItems0ObjectFilterLinks s3 bucket lifecycle management rules items0 object filter links
+//
+// swagger:model S3BucketLifecycleManagementRulesItems0ObjectFilterLinks
+type S3BucketLifecycleManagementRulesItems0ObjectFilterLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this s3 bucket lifecycle management rules items0 object filter links
+func (m *S3BucketLifecycleManagementRulesItems0ObjectFilterLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0ObjectFilterLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("object_filter" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket lifecycle management rules items0 object filter links based on the context it is used
+func (m *S3BucketLifecycleManagementRulesItems0ObjectFilterLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0ObjectFilterLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("object_filter" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0ObjectFilterLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0ObjectFilterLinks) UnmarshalBinary(b []byte) error {
+	var res S3BucketLifecycleManagementRulesItems0ObjectFilterLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketLifecycleManagementRulesItems0Svm Specifies the name of the SVM where this bucket exists.
+//
+// swagger:model S3BucketLifecycleManagementRulesItems0Svm
+type S3BucketLifecycleManagementRulesItems0Svm struct {
+
+	// links
+	Links *S3BucketLifecycleManagementRulesItems0SvmLinks `json:"_links,omitempty"`
+
+	// The name of the SVM. This field cannot be specified in a PATCH method.
+	//
+	// Example: svm1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
+	//
+	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this s3 bucket lifecycle management rules items0 svm
+func (m *S3BucketLifecycleManagementRulesItems0Svm) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0Svm) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket lifecycle management rules items0 svm based on the context it is used
+func (m *S3BucketLifecycleManagementRulesItems0Svm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0Svm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0Svm) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0Svm) UnmarshalBinary(b []byte) error {
+	var res S3BucketLifecycleManagementRulesItems0Svm
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketLifecycleManagementRulesItems0SvmLinks s3 bucket lifecycle management rules items0 svm links
+//
+// swagger:model S3BucketLifecycleManagementRulesItems0SvmLinks
+type S3BucketLifecycleManagementRulesItems0SvmLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this s3 bucket lifecycle management rules items0 svm links
+func (m *S3BucketLifecycleManagementRulesItems0SvmLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0SvmLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket lifecycle management rules items0 svm links based on the context it is used
+func (m *S3BucketLifecycleManagementRulesItems0SvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketLifecycleManagementRulesItems0SvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0SvmLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketLifecycleManagementRulesItems0SvmLinks) UnmarshalBinary(b []byte) error {
+	var res S3BucketLifecycleManagementRulesItems0SvmLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1389,7 +3390,7 @@ type S3BucketInlineProtectionStatus struct {
 	// destination
 	Destination *S3BucketInlineProtectionStatusInlineDestination `json:"destination,omitempty"`
 
-	// Specifies whether a bucket is a source and if it is protected within ONTAP and/or an external cloud.
+	// Specifies whether a bucket is a source and if it is protected within ONTAP and/or an external cloud. This field cannot be specified using a POST method.
 	// Read Only: true
 	IsProtected *bool `json:"is_protected,omitempty"`
 }
@@ -1489,15 +3490,15 @@ func (m *S3BucketInlineProtectionStatus) UnmarshalBinary(b []byte) error {
 // swagger:model s3_bucket_inline_protection_status_inline_destination
 type S3BucketInlineProtectionStatusInlineDestination struct {
 
-	// Specifies whether a bucket is protected within the Cloud.
+	// Specifies whether a bucket is protected within the Cloud. This field cannot be specified using a POST method.
 	// Read Only: true
 	IsCloud *bool `json:"is_cloud,omitempty"`
 
-	// Specifies whether a bucket is protected on external Cloud providers.
+	// Specifies whether a bucket is protected on external Cloud providers. This field cannot be specified using a POST method.
 	// Read Only: true
 	IsExternalCloud *bool `json:"is_external_cloud,omitempty"`
 
-	// Specifies whether a bucket is protected within ONTAP.
+	// Specifies whether a bucket is protected within ONTAP. This field cannot be specified using a POST method.
 	// Read Only: true
 	IsOntap *bool `json:"is_ontap,omitempty"`
 }
@@ -1574,7 +3575,7 @@ func (m *S3BucketInlineProtectionStatusInlineDestination) UnmarshalBinary(b []by
 	return nil
 }
 
-// S3BucketInlineQosPolicy Specifes "qos_policy.max_throughput_iops" and/or "qos_policy.max_throughput_mbps" or "qos_policy.min_throughput_iops" and/or "qos_policy.min_throughput_mbps". Specifying "min_throughput_iops" or "min_throughput_mbps" is only supported on volumes hosted on a node that is flash optimized. A pre-created QoS policy can also be used by specifying "qos_policy.name" or "qos_policy.uuid" properties. Setting or assigning a QoS policy to a bucket is not supported if its containing volume or SVM already has a QoS policy attached.
+// S3BucketInlineQosPolicy Specifies "qos_policy.max_throughput_iops" and/or "qos_policy.max_throughput_mbps" or "qos_policy.min_throughput_iops" and/or "qos_policy.min_throughput_mbps". Specifying "min_throughput_iops" or "min_throughput_mbps" is only supported on volumes hosted on a node that is flash optimized. A pre-created QoS policy can also be used by specifying "qos_policy.name" or "qos_policy.uuid" properties. Setting or assigning a QoS policy to a bucket is not supported if its containing volume or SVM already has a QoS policy attached.
 //
 // swagger:model s3_bucket_inline_qos_policy
 type S3BucketInlineQosPolicy struct {
@@ -1584,18 +3585,26 @@ type S3BucketInlineQosPolicy struct {
 
 	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 10000
+	// Maximum: 2.147483647e+09
+	// Minimum: 0
 	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
 	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
+	// Maximum: 4.194303e+06
+	// Minimum: 0
 	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
 	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 2000
+	// Maximum: 2.147483647e+09
+	// Minimum: 0
 	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
 	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
+	// Maximum: 4.194303e+06
+	// Minimum: 0
 	MinThroughputMbps *int64 `json:"min_throughput_mbps,omitempty"`
 
 	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
@@ -1612,6 +3621,22 @@ func (m *S3BucketInlineQosPolicy) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMaxThroughputIops(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMaxThroughputMbps(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMinThroughputIops(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMinThroughputMbps(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1633,6 +3658,70 @@ func (m *S3BucketInlineQosPolicy) validateLinks(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketInlineQosPolicy) validateMaxThroughputIops(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxThroughputIops) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("qos_policy"+"."+"max_throughput_iops", "body", *m.MaxThroughputIops, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("qos_policy"+"."+"max_throughput_iops", "body", *m.MaxThroughputIops, 2.147483647e+09, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *S3BucketInlineQosPolicy) validateMaxThroughputMbps(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxThroughputMbps) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("qos_policy"+"."+"max_throughput_mbps", "body", *m.MaxThroughputMbps, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("qos_policy"+"."+"max_throughput_mbps", "body", *m.MaxThroughputMbps, 4.194303e+06, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *S3BucketInlineQosPolicy) validateMinThroughputIops(formats strfmt.Registry) error {
+	if swag.IsZero(m.MinThroughputIops) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("qos_policy"+"."+"min_throughput_iops", "body", *m.MinThroughputIops, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("qos_policy"+"."+"min_throughput_iops", "body", *m.MinThroughputIops, 2.147483647e+09, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *S3BucketInlineQosPolicy) validateMinThroughputMbps(formats strfmt.Registry) error {
+	if swag.IsZero(m.MinThroughputMbps) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("qos_policy"+"."+"min_throughput_mbps", "body", *m.MinThroughputMbps, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("qos_policy"+"."+"min_throughput_mbps", "body", *m.MinThroughputMbps, 4.194303e+06, false); err != nil {
+		return err
 	}
 
 	return nil
@@ -1770,7 +3859,189 @@ func (m *S3BucketInlineQosPolicyInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3BucketInlineSvm s3 bucket inline svm
+// S3BucketInlineRetention Specifies the retention mode and default retention period configured on the bucket.
+//
+// swagger:model s3_bucket_inline_retention
+type S3BucketInlineRetention struct {
+
+	// Specifies the default retention period that is applied to objects while committing them to the WORM state without an associated retention period. The retention period can be in years, or days. The retention period value represents a duration and must be specified in the ISO-8601 duration format.  A period specified for years and days is represented in the ISO-8601 format as "P<num>Y" and "P<num>D" respectively, for example "P10Y" represents a duration of 10 years. The period string must contain only a single time element that is, either years, or days. A duration which combines different periods is not supported, for example "P1Y10D" is not supported.
+	// Example: P10Y
+	DefaultPeriod *string `json:"default_period,omitempty"`
+
+	// The lock mode of the bucket. <br>compliance &dash; A SnapLock Compliance (SLC) bucket provides the highest level of WORM protection and an administrator cannot destroy a compliance bucket if it contains unexpired WORM objects. <br> governance &dash; An administrator can delete a Governance bucket.<br> no_lock &dash; Indicates the bucket does not support object locking.
+	// Example: governance
+	// Enum: ["no_lock","compliance","governance"]
+	Mode *string `json:"mode,omitempty"`
+}
+
+// Validate validates this s3 bucket inline retention
+func (m *S3BucketInlineRetention) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateMode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var s3BucketInlineRetentionTypeModePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["no_lock","compliance","governance"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		s3BucketInlineRetentionTypeModePropEnum = append(s3BucketInlineRetentionTypeModePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// s3_bucket_inline_retention
+	// S3BucketInlineRetention
+	// mode
+	// Mode
+	// no_lock
+	// END DEBUGGING
+	// S3BucketInlineRetentionModeNoLock captures enum value "no_lock"
+	S3BucketInlineRetentionModeNoLock string = "no_lock"
+
+	// BEGIN DEBUGGING
+	// s3_bucket_inline_retention
+	// S3BucketInlineRetention
+	// mode
+	// Mode
+	// compliance
+	// END DEBUGGING
+	// S3BucketInlineRetentionModeCompliance captures enum value "compliance"
+	S3BucketInlineRetentionModeCompliance string = "compliance"
+
+	// BEGIN DEBUGGING
+	// s3_bucket_inline_retention
+	// S3BucketInlineRetention
+	// mode
+	// Mode
+	// governance
+	// END DEBUGGING
+	// S3BucketInlineRetentionModeGovernance captures enum value "governance"
+	S3BucketInlineRetentionModeGovernance string = "governance"
+)
+
+// prop value enum
+func (m *S3BucketInlineRetention) validateModeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, s3BucketInlineRetentionTypeModePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *S3BucketInlineRetention) validateMode(formats strfmt.Registry) error {
+	if swag.IsZero(m.Mode) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateModeEnum("retention"+"."+"mode", "body", *m.Mode); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this s3 bucket inline retention based on context it is used
+func (m *S3BucketInlineRetention) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketInlineRetention) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketInlineRetention) UnmarshalBinary(b []byte) error {
+	var res S3BucketInlineRetention
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketInlineSnapshotPolicy Specifies the bucket snapshot policy.
+//
+// swagger:model s3_bucket_inline_snapshot_policy
+type S3BucketInlineSnapshotPolicy struct {
+
+	// Specifies the name of the snapshot policy.
+	// Example: default-1weekly
+	Name *string `json:"name,omitempty"`
+
+	// Specifies the unique identifier of the snapshot policy.
+	// Example: 3675af31-431c-12fa-114a-20675afebc12
+	// Format: uuid
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
+}
+
+// Validate validates this s3 bucket inline snapshot policy
+func (m *S3BucketInlineSnapshotPolicy) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateUUID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketInlineSnapshotPolicy) validateUUID(formats strfmt.Registry) error {
+	if swag.IsZero(m.UUID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("snapshot_policy"+"."+"uuid", "body", "uuid", m.UUID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this s3 bucket inline snapshot policy based on context it is used
+func (m *S3BucketInlineSnapshotPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketInlineSnapshotPolicy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketInlineSnapshotPolicy) UnmarshalBinary(b []byte) error {
+	var res S3BucketInlineSnapshotPolicy
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model s3_bucket_inline_svm
 type S3BucketInlineSvm struct {
@@ -1778,12 +4049,12 @@ type S3BucketInlineSvm struct {
 	// links
 	Links *S3BucketInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -1960,7 +4231,7 @@ type S3BucketInlineVolume struct {
 	// links
 	Links *S3BucketInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

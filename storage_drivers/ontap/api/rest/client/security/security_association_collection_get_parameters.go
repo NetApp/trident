@@ -122,6 +122,18 @@ type SecurityAssociationCollectionGetParams struct {
 	*/
 	IpsecInboundBytes *int64
 
+	/* IpsecInboundOffloadBytes.
+
+	   Filter by ipsec.inbound.offload_bytes
+	*/
+	IpsecInboundOffloadBytes *int64
+
+	/* IpsecInboundOffloadPackets.
+
+	   Filter by ipsec.inbound.offload_packets
+	*/
+	IpsecInboundOffloadPackets *int64
+
 	/* IpsecInboundPackets.
 
 	   Filter by ipsec.inbound.packets
@@ -139,6 +151,18 @@ type SecurityAssociationCollectionGetParams struct {
 	   Filter by ipsec.outbound.bytes
 	*/
 	IpsecOutboundBytes *int64
+
+	/* IpsecOutboundOffloadBytes.
+
+	   Filter by ipsec.outbound.offload_bytes
+	*/
+	IpsecOutboundOffloadBytes *int64
+
+	/* IpsecOutboundOffloadPackets.
+
+	   Filter by ipsec.outbound.offload_packets
+	*/
+	IpsecOutboundOffloadPackets *int64
 
 	/* IpsecOutboundPackets.
 
@@ -429,6 +453,28 @@ func (o *SecurityAssociationCollectionGetParams) SetIpsecInboundBytes(ipsecInbou
 	o.IpsecInboundBytes = ipsecInboundBytes
 }
 
+// WithIpsecInboundOffloadBytes adds the ipsecInboundOffloadBytes to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIpsecInboundOffloadBytes(ipsecInboundOffloadBytes *int64) *SecurityAssociationCollectionGetParams {
+	o.SetIpsecInboundOffloadBytes(ipsecInboundOffloadBytes)
+	return o
+}
+
+// SetIpsecInboundOffloadBytes adds the ipsecInboundOffloadBytes to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIpsecInboundOffloadBytes(ipsecInboundOffloadBytes *int64) {
+	o.IpsecInboundOffloadBytes = ipsecInboundOffloadBytes
+}
+
+// WithIpsecInboundOffloadPackets adds the ipsecInboundOffloadPackets to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIpsecInboundOffloadPackets(ipsecInboundOffloadPackets *int64) *SecurityAssociationCollectionGetParams {
+	o.SetIpsecInboundOffloadPackets(ipsecInboundOffloadPackets)
+	return o
+}
+
+// SetIpsecInboundOffloadPackets adds the ipsecInboundOffloadPackets to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIpsecInboundOffloadPackets(ipsecInboundOffloadPackets *int64) {
+	o.IpsecInboundOffloadPackets = ipsecInboundOffloadPackets
+}
+
 // WithIpsecInboundPackets adds the ipsecInboundPackets to the security association collection get params
 func (o *SecurityAssociationCollectionGetParams) WithIpsecInboundPackets(ipsecInboundPackets *int64) *SecurityAssociationCollectionGetParams {
 	o.SetIpsecInboundPackets(ipsecInboundPackets)
@@ -460,6 +506,28 @@ func (o *SecurityAssociationCollectionGetParams) WithIpsecOutboundBytes(ipsecOut
 // SetIpsecOutboundBytes adds the ipsecOutboundBytes to the security association collection get params
 func (o *SecurityAssociationCollectionGetParams) SetIpsecOutboundBytes(ipsecOutboundBytes *int64) {
 	o.IpsecOutboundBytes = ipsecOutboundBytes
+}
+
+// WithIpsecOutboundOffloadBytes adds the ipsecOutboundOffloadBytes to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIpsecOutboundOffloadBytes(ipsecOutboundOffloadBytes *int64) *SecurityAssociationCollectionGetParams {
+	o.SetIpsecOutboundOffloadBytes(ipsecOutboundOffloadBytes)
+	return o
+}
+
+// SetIpsecOutboundOffloadBytes adds the ipsecOutboundOffloadBytes to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIpsecOutboundOffloadBytes(ipsecOutboundOffloadBytes *int64) {
+	o.IpsecOutboundOffloadBytes = ipsecOutboundOffloadBytes
+}
+
+// WithIpsecOutboundOffloadPackets adds the ipsecOutboundOffloadPackets to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIpsecOutboundOffloadPackets(ipsecOutboundOffloadPackets *int64) *SecurityAssociationCollectionGetParams {
+	o.SetIpsecOutboundOffloadPackets(ipsecOutboundOffloadPackets)
+	return o
+}
+
+// SetIpsecOutboundOffloadPackets adds the ipsecOutboundOffloadPackets to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIpsecOutboundOffloadPackets(ipsecOutboundOffloadPackets *int64) {
+	o.IpsecOutboundOffloadPackets = ipsecOutboundOffloadPackets
 }
 
 // WithIpsecOutboundPackets adds the ipsecOutboundPackets to the security association collection get params
@@ -832,6 +900,40 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
+	if o.IpsecInboundOffloadBytes != nil {
+
+		// query param ipsec.inbound.offload_bytes
+		var qrIpsecInboundOffloadBytes int64
+
+		if o.IpsecInboundOffloadBytes != nil {
+			qrIpsecInboundOffloadBytes = *o.IpsecInboundOffloadBytes
+		}
+		qIpsecInboundOffloadBytes := swag.FormatInt64(qrIpsecInboundOffloadBytes)
+		if qIpsecInboundOffloadBytes != "" {
+
+			if err := r.SetQueryParam("ipsec.inbound.offload_bytes", qIpsecInboundOffloadBytes); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IpsecInboundOffloadPackets != nil {
+
+		// query param ipsec.inbound.offload_packets
+		var qrIpsecInboundOffloadPackets int64
+
+		if o.IpsecInboundOffloadPackets != nil {
+			qrIpsecInboundOffloadPackets = *o.IpsecInboundOffloadPackets
+		}
+		qIpsecInboundOffloadPackets := swag.FormatInt64(qrIpsecInboundOffloadPackets)
+		if qIpsecInboundOffloadPackets != "" {
+
+			if err := r.SetQueryParam("ipsec.inbound.offload_packets", qIpsecInboundOffloadPackets); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.IpsecInboundPackets != nil {
 
 		// query param ipsec.inbound.packets
@@ -878,6 +980,40 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		if qIpsecOutboundBytes != "" {
 
 			if err := r.SetQueryParam("ipsec.outbound.bytes", qIpsecOutboundBytes); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IpsecOutboundOffloadBytes != nil {
+
+		// query param ipsec.outbound.offload_bytes
+		var qrIpsecOutboundOffloadBytes int64
+
+		if o.IpsecOutboundOffloadBytes != nil {
+			qrIpsecOutboundOffloadBytes = *o.IpsecOutboundOffloadBytes
+		}
+		qIpsecOutboundOffloadBytes := swag.FormatInt64(qrIpsecOutboundOffloadBytes)
+		if qIpsecOutboundOffloadBytes != "" {
+
+			if err := r.SetQueryParam("ipsec.outbound.offload_bytes", qIpsecOutboundOffloadBytes); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IpsecOutboundOffloadPackets != nil {
+
+		// query param ipsec.outbound.offload_packets
+		var qrIpsecOutboundOffloadPackets int64
+
+		if o.IpsecOutboundOffloadPackets != nil {
+			qrIpsecOutboundOffloadPackets = *o.IpsecOutboundOffloadPackets
+		}
+		qIpsecOutboundOffloadPackets := swag.FormatInt64(qrIpsecOutboundOffloadPackets)
+		if qIpsecOutboundOffloadPackets != "" {
+
+			if err := r.SetQueryParam("ipsec.outbound.offload_packets", qIpsecOutboundOffloadPackets); err != nil {
 				return err
 			}
 		}

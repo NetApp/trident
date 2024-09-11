@@ -6,6 +6,7 @@ package snaplock
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SnaplockFileRetentionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snaplock file retention get o k response
+func (o *SnaplockFileRetentionGetOK) Code() int {
+	return 200
+}
+
 func (o *SnaplockFileRetentionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplockFileRetentionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplockFileRetentionGetOK %s", 200, payload)
 }
 
 func (o *SnaplockFileRetentionGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplockFileRetentionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplockFileRetentionGetOK %s", 200, payload)
 }
 
 func (o *SnaplockFileRetentionGetOK) GetPayload() *models.SnaplockFileRetention {
@@ -118,17 +126,17 @@ func NewSnaplockFileRetentionGetDefault(code int) *SnaplockFileRetentionGetDefau
 
 | Error code  |  Description |
 |-------------|--------------|
-| 14090347    | File path must be in the format \"/<dir>/<file path>\"  |
+| 262179      | Unexpected argument \"<file_name>\" |
+| 917864      | Operation not supported |
+| 6691623     | User is not authorized  |
+| 13762592    | Operation not supported on non-SnapLock volume |
+| 14090347    | File path must be in the format \"\/\<dir\>\/\<file path\>\" |
+| 917804      | Path should be given in the format \"\/\vol\/\<volume name>\/\<file path>\".
 */
 type SnaplockFileRetentionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snaplock file retention get default response
-func (o *SnaplockFileRetentionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snaplock file retention get default response has a 2xx status code
@@ -156,12 +164,19 @@ func (o *SnaplockFileRetentionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snaplock file retention get default response
+func (o *SnaplockFileRetentionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnaplockFileRetentionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplock_file_retention_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplock_file_retention_get default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockFileRetentionGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplock_file_retention_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplock_file_retention_get default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockFileRetentionGetDefault) GetPayload() *models.ErrorResponse {

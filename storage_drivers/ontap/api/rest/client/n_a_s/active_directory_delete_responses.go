@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ActiveDirectoryDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the active directory delete o k response
+func (o *ActiveDirectoryDeleteOK) Code() int {
+	return 200
+}
+
 func (o *ActiveDirectoryDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/active-directory/{svm.uuid}][%d] activeDirectoryDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/active-directory/{svm.uuid}][%d] activeDirectoryDeleteOK", 200)
 }
 
 func (o *ActiveDirectoryDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/active-directory/{svm.uuid}][%d] activeDirectoryDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/active-directory/{svm.uuid}][%d] activeDirectoryDeleteOK", 200)
 }
 
 func (o *ActiveDirectoryDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,16 +113,14 @@ func NewActiveDirectoryDeleteDefault(code int) *ActiveDirectoryDeleteDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 655414 | Failed to remove Active Directory machine. |
+| 655431 | Username cannot be empty. |
+| 655432 | Password cannot be empty. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ActiveDirectoryDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the active directory delete default response
-func (o *ActiveDirectoryDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this active directory delete default response has a 2xx status code
@@ -144,12 +148,19 @@ func (o *ActiveDirectoryDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the active directory delete default response
+func (o *ActiveDirectoryDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ActiveDirectoryDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/active-directory/{svm.uuid}][%d] active_directory_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/active-directory/{svm.uuid}][%d] active_directory_delete default %s", o._statusCode, payload)
 }
 
 func (o *ActiveDirectoryDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/active-directory/{svm.uuid}][%d] active_directory_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/active-directory/{svm.uuid}][%d] active_directory_delete default %s", o._statusCode, payload)
 }
 
 func (o *ActiveDirectoryDeleteDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *StorageClusterGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the storage cluster get o k response
+func (o *StorageClusterGetOK) Code() int {
+	return 200
+}
+
 func (o *StorageClusterGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/cluster][%d] storageClusterGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/cluster][%d] storageClusterGetOK %s", 200, payload)
 }
 
 func (o *StorageClusterGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/cluster][%d] storageClusterGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/cluster][%d] storageClusterGetOK %s", 200, payload)
 }
 
 func (o *StorageClusterGetOK) GetPayload() *models.ClusterSpace {
@@ -122,11 +130,6 @@ type StorageClusterGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the storage cluster get default response
-func (o *StorageClusterGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this storage cluster get default response has a 2xx status code
 func (o *StorageClusterGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *StorageClusterGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the storage cluster get default response
+func (o *StorageClusterGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *StorageClusterGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/cluster][%d] storage_cluster_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/cluster][%d] storage_cluster_get default %s", o._statusCode, payload)
 }
 
 func (o *StorageClusterGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/cluster][%d] storage_cluster_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/cluster][%d] storage_cluster_get default %s", o._statusCode, payload)
 }
 
 func (o *StorageClusterGetDefault) GetPayload() *models.ErrorResponse {

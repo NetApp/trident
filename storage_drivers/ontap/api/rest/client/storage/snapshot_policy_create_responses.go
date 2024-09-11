@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *SnapshotPolicyCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the snapshot policy create created response
+func (o *SnapshotPolicyCreateCreated) Code() int {
+	return 201
+}
+
 func (o *SnapshotPolicyCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /storage/snapshot-policies][%d] snapshotPolicyCreateCreated ", 201)
+	return fmt.Sprintf("[POST /storage/snapshot-policies][%d] snapshotPolicyCreateCreated", 201)
 }
 
 func (o *SnapshotPolicyCreateCreated) String() string {
-	return fmt.Sprintf("[POST /storage/snapshot-policies][%d] snapshotPolicyCreateCreated ", 201)
+	return fmt.Sprintf("[POST /storage/snapshot-policies][%d] snapshotPolicyCreateCreated", 201)
 }
 
 func (o *SnapshotPolicyCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -117,26 +123,24 @@ func NewSnapshotPolicyCreateDefault(code int) *SnapshotPolicyCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 1638407    | When adding schedule to a Snapshot copy policy, the count for that schedule must be specified. |
-| 1638408    | When adding schedule to a Snapshot copy policy, the schedule name must be specified. |
+| 1638407    | When adding schedule to a snapshot policy, the count for that schedule must be specified. |
+| 1638408    | When adding schedule to a snapshot policy, the schedule name must be specified. |
 | 1638413    | Schedule not found. |
 | 1638417    | Specified policy name is invalid. |
-| 1638451    | This operation would result in total Snapshot copy count for the policy to exceed maximum supported count. |
+| 1638451    | This operation would result in total snapshot count for the policy to exceed maximum supported count. |
+| 1638506    | Schedule already has a prefix. Cannot associate another prefix to the same schedule. |
 | 1638508    | Another schedule has the same prefix within this policy. |
 | 1638526    | This operation is not supported on a node Vserver. |
 | 1638527    | Policy name already exists. |
 | 1638528    | This operation is not supported in a mixed-version cluster. |
 | 1638531    | This operation is not supported because specified policy is owned by the cluster admin. |
+| 2621706    | The specified SVM UUID and SVM name refer to different SVMs. |
+| 918253     | Incorrect format for the retention period, duration must be in the ISO-8601 format. |
 */
 type SnapshotPolicyCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snapshot policy create default response
-func (o *SnapshotPolicyCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snapshot policy create default response has a 2xx status code
@@ -164,12 +168,19 @@ func (o *SnapshotPolicyCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snapshot policy create default response
+func (o *SnapshotPolicyCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnapshotPolicyCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/snapshot-policies][%d] snapshot_policy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/snapshot-policies][%d] snapshot_policy_create default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotPolicyCreateDefault) String() string {
-	return fmt.Sprintf("[POST /storage/snapshot-policies][%d] snapshot_policy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/snapshot-policies][%d] snapshot_policy_create default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotPolicyCreateDefault) GetPayload() *models.ErrorResponse {

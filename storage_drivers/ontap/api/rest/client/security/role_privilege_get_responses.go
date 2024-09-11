@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *RolePrivilegeGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the role privilege get o k response
+func (o *RolePrivilegeGetOK) Code() int {
+	return 200
+}
+
 func (o *RolePrivilegeGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] rolePrivilegeGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] rolePrivilegeGetOK %s", 200, payload)
 }
 
 func (o *RolePrivilegeGetOK) String() string {
-	return fmt.Sprintf("[GET /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] rolePrivilegeGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] rolePrivilegeGetOK %s", 200, payload)
 }
 
 func (o *RolePrivilegeGetOK) GetPayload() *models.RolePrivilege {
@@ -122,11 +130,6 @@ type RolePrivilegeGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the role privilege get default response
-func (o *RolePrivilegeGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this role privilege get default response has a 2xx status code
 func (o *RolePrivilegeGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *RolePrivilegeGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the role privilege get default response
+func (o *RolePrivilegeGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *RolePrivilegeGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] role_privilege_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] role_privilege_get default %s", o._statusCode, payload)
 }
 
 func (o *RolePrivilegeGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] role_privilege_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] role_privilege_get default %s", o._statusCode, payload)
 }
 
 func (o *RolePrivilegeGetDefault) GetPayload() *models.ErrorResponse {

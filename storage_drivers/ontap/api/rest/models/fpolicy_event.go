@@ -26,8 +26,11 @@ type FpolicyEvent struct {
 	// filters
 	Filters *FpolicyEventInlineFilters `json:"filters,omitempty"`
 
+	// Specifies whether failed file operations monitoring is required.
+	MonitorFileopFailure *bool `json:"monitor_fileop_failure,omitempty"`
+
 	// Specifies the name of the FPolicy event.
-	// Example: event_nfs_close
+	// Example: event_cifs
 	Name *string `json:"name,omitempty"`
 
 	// Protocol for which event is created. If you specify protocol, then you
@@ -37,7 +40,7 @@ type FpolicyEvent struct {
 	//     * nfsv3 - for the NFSv3 protocol.
 	//     * nfsv4 - for the NFSv4 protocol.
 	//
-	// Enum: [cifs nfsv3 nfsv4]
+	// Enum: ["cifs","nfsv3","nfsv4"]
 	Protocol *string `json:"protocol,omitempty"`
 
 	// svm
@@ -277,6 +280,9 @@ func (m *FpolicyEvent) UnmarshalBinary(b []byte) error {
 //
 // swagger:model fpolicy_event_inline_file_operations
 type FpolicyEventInlineFileOperations struct {
+
+	// Access operations
+	Access *bool `json:"access,omitempty"`
 
 	// File close operations
 	Close *bool `json:"close,omitempty"`

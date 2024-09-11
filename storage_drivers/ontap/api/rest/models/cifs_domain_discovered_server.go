@@ -30,7 +30,7 @@ type CifsDomainDiscoveredServer struct {
 
 	// Server Preference
 	//
-	// Enum: [unknown preferred favored adequate]
+	// Enum: ["unknown","preferred","favored","adequate"]
 	Preference *string `json:"preference,omitempty"`
 
 	// Server IP address
@@ -43,12 +43,12 @@ type CifsDomainDiscoveredServer struct {
 
 	// Server Type
 	//
-	// Enum: [unknown kerberos ms_ldap ms_dc ldap]
+	// Enum: ["unknown","kerberos","ms_ldap","ms_dc","ldap"]
 	ServerType *string `json:"server_type,omitempty"`
 
 	// Server status
 	//
-	// Enum: [ok unavailable slow expired undetermined unreachable]
+	// Enum: ["ok","unavailable","slow","expired","undetermined","unreachable"]
 	State *string `json:"state,omitempty"`
 }
 

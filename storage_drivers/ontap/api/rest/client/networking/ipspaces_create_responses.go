@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *IpspacesCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the ipspaces create created response
+func (o *IpspacesCreateCreated) Code() int {
+	return 201
+}
+
 func (o *IpspacesCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /network/ipspaces][%d] ipspacesCreateCreated ", 201)
+	return fmt.Sprintf("[POST /network/ipspaces][%d] ipspacesCreateCreated", 201)
 }
 
 func (o *IpspacesCreateCreated) String() string {
-	return fmt.Sprintf("[POST /network/ipspaces][%d] ipspacesCreateCreated ", 201)
+	return fmt.Sprintf("[POST /network/ipspaces][%d] ipspacesCreateCreated", 201)
 }
 
 func (o *IpspacesCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -117,22 +123,22 @@ func NewIpspacesCreateDefault(code int) *IpspacesCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 1377261 | An IPspace with the same name already exists. |
+| 1966449 | Invalid IPspace name in MetroCluster configurations. |
 | 1966586 | The specified IPspace name is invalid because it is already used by a peered SVM. |
 | 1967102 | A POST operation might have left the configuration in an inconsistent state. Check the configuration. |
-ONTAP Error Response Codes
-| Error Code | Description |
-| ---------- | ----------- |
+| 9240587 | Name cannot be empty. |
+| 9240588 | The name is too long. |
+| 9240589 | Invalid character in name. |
+| 9240590 | The name is reserved by the system. |
 | 9240591 | The name is not valid. The name is already in use by a cluster node, Vserver, or it is the name of the local cluster. |
+| 53281576 | Cannot create IPspace because the maximum number of custom IPspaces has already been reached on the cluster. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IpspacesCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ipspaces create default response
-func (o *IpspacesCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ipspaces create default response has a 2xx status code
@@ -160,12 +166,19 @@ func (o *IpspacesCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ipspaces create default response
+func (o *IpspacesCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IpspacesCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /network/ipspaces][%d] ipspaces_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ipspaces][%d] ipspaces_create default %s", o._statusCode, payload)
 }
 
 func (o *IpspacesCreateDefault) String() string {
-	return fmt.Sprintf("[POST /network/ipspaces][%d] ipspaces_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ipspaces][%d] ipspaces_create default %s", o._statusCode, payload)
 }
 
 func (o *IpspacesCreateDefault) GetPayload() *models.ErrorResponse {

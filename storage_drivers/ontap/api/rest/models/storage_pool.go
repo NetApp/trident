@@ -38,7 +38,7 @@ type StoragePool struct {
 
 	// Storage type for the disks used to create the storage pool.
 	// Read Only: true
-	// Enum: [SSD]
+	// Enum: ["SSD"]
 	StorageType *string `json:"storage_type,omitempty"`
 
 	// Storage pool UUID.
@@ -578,7 +578,7 @@ type StoragePoolInlineHealth struct {
 
 	// The state of the shared storage pool.
 	// Read Only: true
-	// Enum: [normal degraded creating deleting reassigning growing]
+	// Enum: ["normal","degraded","creating","deleting","reassigning","growing"]
 	State *string `json:"state,omitempty"`
 
 	// Indicates why the storage pool is unhealthy. This property is not returned for healthy storage pools.

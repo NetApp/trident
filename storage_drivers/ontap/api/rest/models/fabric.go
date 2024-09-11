@@ -15,7 +15,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// Fabric A Fibre Channel (FC) fabric REST object provides information about an FC network (fabric) connected to the cluster. Logically, the FC fabric also contains FC switches and the FC zones that comprise the active zoneset of the fabric. FC switch and zone infromation is not reported directly in the FC fabric REST object for reasons of scale and flexibility; they are found by querying the FC switches and FC zones REST endpoints.
+// Fabric A Fibre Channel (FC) fabric REST object provides information about an FC network (fabric) connected to the cluster. Logically, the FC fabric also contains FC switches and the FC zones that comprise the active zoneset of the fabric. FC switch and zone information is not reported directly in the FC fabric REST object for reasons of scale and flexibility; they are found by querying the FC switches and FC zones REST endpoints.
 //
 // swagger:model fabric
 type Fabric struct {
@@ -28,6 +28,7 @@ type Fabric struct {
 
 	// An array of the connections between the cluster and the switches Fibre Channel fabric.
 	//
+	// Read Only: true
 	FabricInlineConnections []*FabricInlineConnectionsInlineArrayItem `json:"connections,omitempty"`
 
 	// The world wide name (WWN) of the primary switch of the Fibre Channel (FC) fabric. This is used as a unique identifier for the FC fabric.
@@ -200,6 +201,10 @@ func (m *Fabric) contextValidateCache(ctx context.Context, formats strfmt.Regist
 }
 
 func (m *Fabric) contextValidateFabricInlineConnections(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "connections", "body", []*FabricInlineConnectionsInlineArrayItem(m.FabricInlineConnections)); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(m.FabricInlineConnections); i++ {
 

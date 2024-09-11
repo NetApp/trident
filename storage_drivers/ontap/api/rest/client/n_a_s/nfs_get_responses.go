@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NfsGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nfs get o k response
+func (o *NfsGetOK) Code() int {
+	return 200
+}
+
 func (o *NfsGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}][%d] nfsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}][%d] nfsGetOK %s", 200, payload)
 }
 
 func (o *NfsGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}][%d] nfsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}][%d] nfsGetOK %s", 200, payload)
 }
 
 func (o *NfsGetOK) GetPayload() *models.NfsService {
@@ -122,11 +130,6 @@ type NfsGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the nfs get default response
-func (o *NfsGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this nfs get default response has a 2xx status code
 func (o *NfsGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NfsGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nfs get default response
+func (o *NfsGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NfsGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}][%d] nfs_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}][%d] nfs_get default %s", o._statusCode, payload)
 }
 
 func (o *NfsGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}][%d] nfs_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}][%d] nfs_get default %s", o._statusCode, payload)
 }
 
 func (o *NfsGetDefault) GetPayload() *models.ErrorResponse {

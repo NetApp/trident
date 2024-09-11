@@ -20,7 +20,7 @@ import (
 type ShadowcopySet struct {
 
 	// Request the storage system to keep the snapshot copies taken as a part of the shadow copy set creation.
-	// Example: false
+	// Example: true
 	KeepSnapshots *bool `json:"keep_snapshots,omitempty"`
 
 	// svm
@@ -122,7 +122,7 @@ func (m *ShadowcopySet) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShadowcopySetInlineSvm shadowcopy set inline svm
+// ShadowcopySetInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model shadowcopy_set_inline_svm
 type ShadowcopySetInlineSvm struct {
@@ -130,12 +130,12 @@ type ShadowcopySetInlineSvm struct {
 	// links
 	Links *ShadowcopySetInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

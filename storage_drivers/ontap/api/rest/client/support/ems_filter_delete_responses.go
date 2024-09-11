@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *EmsFilterDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ems filter delete o k response
+func (o *EmsFilterDeleteOK) Code() int {
+	return 200
+}
+
 func (o *EmsFilterDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /support/ems/filters/{name}][%d] emsFilterDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /support/ems/filters/{name}][%d] emsFilterDeleteOK", 200)
 }
 
 func (o *EmsFilterDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /support/ems/filters/{name}][%d] emsFilterDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /support/ems/filters/{name}][%d] emsFilterDeleteOK", 200)
 }
 
 func (o *EmsFilterDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,17 +112,15 @@ func NewEmsFilterDeleteDefault(code int) *EmsFilterDeleteDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 983113     | Default filters cannot be modified or removed |
+| 983113 | Default filters cannot be modified or removed |
+| 983124 | Filter is being referenced by a destination |
+| 983204 | Filter is being used for role-based operations |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type EmsFilterDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ems filter delete default response
-func (o *EmsFilterDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ems filter delete default response has a 2xx status code
@@ -144,12 +148,19 @@ func (o *EmsFilterDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ems filter delete default response
+func (o *EmsFilterDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *EmsFilterDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /support/ems/filters/{name}][%d] ems_filter_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /support/ems/filters/{name}][%d] ems_filter_delete default %s", o._statusCode, payload)
 }
 
 func (o *EmsFilterDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /support/ems/filters/{name}][%d] ems_filter_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /support/ems/filters/{name}][%d] ems_filter_delete default %s", o._statusCode, payload)
 }
 
 func (o *EmsFilterDeleteDefault) GetPayload() *models.ErrorResponse {

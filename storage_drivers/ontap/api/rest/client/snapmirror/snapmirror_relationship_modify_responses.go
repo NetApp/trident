@@ -6,6 +6,7 @@ package snapmirror
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type SnapmirrorRelationshipModifyReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *SnapmirrorRelationshipModifyReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewSnapmirrorRelationshipModifyOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewSnapmirrorRelationshipModifyAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *SnapmirrorRelationshipModifyReader) ReadResponse(response runtime.Clien
 	}
 }
 
+// NewSnapmirrorRelationshipModifyOK creates a SnapmirrorRelationshipModifyOK with default headers values
+func NewSnapmirrorRelationshipModifyOK() *SnapmirrorRelationshipModifyOK {
+	return &SnapmirrorRelationshipModifyOK{}
+}
+
+/*
+SnapmirrorRelationshipModifyOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type SnapmirrorRelationshipModifyOK struct {
+	Payload *models.SnapmirrorRelationshipJobLinkResponse
+}
+
+// IsSuccess returns true when this snapmirror relationship modify o k response has a 2xx status code
+func (o *SnapmirrorRelationshipModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapmirror relationship modify o k response has a 3xx status code
+func (o *SnapmirrorRelationshipModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapmirror relationship modify o k response has a 4xx status code
+func (o *SnapmirrorRelationshipModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapmirror relationship modify o k response has a 5xx status code
+func (o *SnapmirrorRelationshipModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapmirror relationship modify o k response a status code equal to that given
+func (o *SnapmirrorRelationshipModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the snapmirror relationship modify o k response
+func (o *SnapmirrorRelationshipModifyOK) Code() int {
+	return 200
+}
+
+func (o *SnapmirrorRelationshipModifyOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipModifyOK %s", 200, payload)
+}
+
+func (o *SnapmirrorRelationshipModifyOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipModifyOK %s", 200, payload)
+}
+
+func (o *SnapmirrorRelationshipModifyOK) GetPayload() *models.SnapmirrorRelationshipJobLinkResponse {
+	return o.Payload
+}
+
+func (o *SnapmirrorRelationshipModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.SnapmirrorRelationshipJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewSnapmirrorRelationshipModifyAccepted creates a SnapmirrorRelationshipModifyAccepted with default headers values
 func NewSnapmirrorRelationshipModifyAccepted() *SnapmirrorRelationshipModifyAccepted {
 	return &SnapmirrorRelationshipModifyAccepted{}
@@ -52,7 +129,7 @@ SnapmirrorRelationshipModifyAccepted describes a response with status code 202, 
 Accepted
 */
 type SnapmirrorRelationshipModifyAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.SnapmirrorRelationshipJobLinkResponse
 }
 
 // IsSuccess returns true when this snapmirror relationship modify accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *SnapmirrorRelationshipModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the snapmirror relationship modify accepted response
+func (o *SnapmirrorRelationshipModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *SnapmirrorRelationshipModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipModifyAccepted %s", 202, payload)
 }
 
 func (o *SnapmirrorRelationshipModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipModifyAccepted %s", 202, payload)
 }
 
-func (o *SnapmirrorRelationshipModifyAccepted) GetPayload() *models.JobLinkResponse {
+func (o *SnapmirrorRelationshipModifyAccepted) GetPayload() *models.SnapmirrorRelationshipJobLinkResponse {
 	return o.Payload
 }
 
 func (o *SnapmirrorRelationshipModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.SnapmirrorRelationshipJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -158,23 +242,27 @@ func NewSnapmirrorRelationshipModifyDefault(code int) *SnapmirrorRelationshipMod
 | 13304070    | Remote peer cluster requires the dp_rest_support capability to support reversing the direction of a DP relationship. |
 | 13304071    | Failed to access capabilities on remote cluster. |
 | 13304080    | Specified uuid and name do not match. |
-| 13304081    | Modifying a property during the opertaion is not supported. |
+| 13304081    | Modifying a property during the operation is not supported. |
 | 13304082    | The specified properties are mutually exclusive. |
 | 13304083    | The specified property is not supported because all nodes in the cluster are not capable of supporting the property. |
 | 13304086    | Reversing the direction of a SnapMirror relationship associated with a policy containing the property create_snapshot_on_source set to false is not supported. |
 | 6619715     | Modification of relationship is in progress. Retry the command after a few minutes. |
 | 6619699     | Schedule not found. |
 | 13304108    | Schedule not found in the Administrative SVM or the SVM for the relationship. |
+| 13304111    | The SnapMirror active sync relationship consistency groups are nested. Expanding an SnapMirror active sync relationship with a pre-existing DP volume is only supported for flat consistency groups. |
+| 6621458     | The destination Consistency Group is the source of a SnapMirror Synchronous (SM-S) relationship. Sources of SM-S relationships cannot be the destination of any other SnapMirror relationship. |
+| 6621782     | A property of the policy is not valid for relationships between these endpoints. |
+| 13304120    | Values specified for the source.path and destination.path properties do not match the relationship's source.path or destination.path properties.
+
+| 13304003    | IntraCluster flip operation is not supported. |
+| 6621125     | The policy is not valid for relationships with FlexGroup volume endpoints. Only policies without snapshot creation schedules are supported for these relationships. |
+| 13304093    | The property specified is not supported for the specified relationships. |
+| 6622077     | The expand operation has failed on the SnapMirror active sync relationship with specified destination path. |
 */
 type SnapmirrorRelationshipModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snapmirror relationship modify default response
-func (o *SnapmirrorRelationshipModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snapmirror relationship modify default response has a 2xx status code
@@ -202,12 +290,19 @@ func (o *SnapmirrorRelationshipModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snapmirror relationship modify default response
+func (o *SnapmirrorRelationshipModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnapmirrorRelationshipModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /snapmirror/relationships/{uuid}][%d] snapmirror_relationship_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /snapmirror/relationships/{uuid}][%d] snapmirror_relationship_modify default %s", o._statusCode, payload)
 }
 
 func (o *SnapmirrorRelationshipModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /snapmirror/relationships/{uuid}][%d] snapmirror_relationship_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /snapmirror/relationships/{uuid}][%d] snapmirror_relationship_modify default %s", o._statusCode, payload)
 }
 
 func (o *SnapmirrorRelationshipModifyDefault) GetPayload() *models.ErrorResponse {

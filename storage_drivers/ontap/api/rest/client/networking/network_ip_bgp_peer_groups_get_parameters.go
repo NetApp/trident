@@ -152,6 +152,18 @@ type NetworkIPBgpPeerGroupsGetParams struct {
 	*/
 	PeerIsNextHop *bool
 
+	/* PeerMd5Enabled.
+
+	   Filter by peer.md5_enabled
+	*/
+	PeerMd5Enabled *bool
+
+	/* PeerMd5Secret.
+
+	   Filter by peer.md5_secret
+	*/
+	PeerMd5Secret *string
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -410,6 +422,28 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WithPeerIsNextHop(peerIsNextHop *bool)
 // SetPeerIsNextHop adds the peerIsNextHop to the network ip bgp peer groups get params
 func (o *NetworkIPBgpPeerGroupsGetParams) SetPeerIsNextHop(peerIsNextHop *bool) {
 	o.PeerIsNextHop = peerIsNextHop
+}
+
+// WithPeerMd5Enabled adds the peerMd5Enabled to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithPeerMd5Enabled(peerMd5Enabled *bool) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetPeerMd5Enabled(peerMd5Enabled)
+	return o
+}
+
+// SetPeerMd5Enabled adds the peerMd5Enabled to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetPeerMd5Enabled(peerMd5Enabled *bool) {
+	o.PeerMd5Enabled = peerMd5Enabled
+}
+
+// WithPeerMd5Secret adds the peerMd5Secret to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithPeerMd5Secret(peerMd5Secret *string) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetPeerMd5Secret(peerMd5Secret)
+	return o
+}
+
+// SetPeerMd5Secret adds the peerMd5Secret to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetPeerMd5Secret(peerMd5Secret *string) {
+	o.PeerMd5Secret = peerMd5Secret
 }
 
 // WithReturnRecords adds the returnRecords to the network ip bgp peer groups get params
@@ -702,6 +736,40 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		if qPeerIsNextHop != "" {
 
 			if err := r.SetQueryParam("peer.is_next_hop", qPeerIsNextHop); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PeerMd5Enabled != nil {
+
+		// query param peer.md5_enabled
+		var qrPeerMd5Enabled bool
+
+		if o.PeerMd5Enabled != nil {
+			qrPeerMd5Enabled = *o.PeerMd5Enabled
+		}
+		qPeerMd5Enabled := swag.FormatBool(qrPeerMd5Enabled)
+		if qPeerMd5Enabled != "" {
+
+			if err := r.SetQueryParam("peer.md5_enabled", qPeerMd5Enabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PeerMd5Secret != nil {
+
+		// query param peer.md5_secret
+		var qrPeerMd5Secret string
+
+		if o.PeerMd5Secret != nil {
+			qrPeerMd5Secret = *o.PeerMd5Secret
+		}
+		qPeerMd5Secret := qrPeerMd5Secret
+		if qPeerMd5Secret != "" {
+
+			if err := r.SetQueryParam("peer.md5_secret", qPeerMd5Secret); err != nil {
 				return err
 			}
 		}

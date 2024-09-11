@@ -6,6 +6,7 @@ package n_v_me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *NvmeServiceDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nvme service delete o k response
+func (o *NvmeServiceDeleteOK) Code() int {
+	return 200
+}
+
 func (o *NvmeServiceDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceDeleteOK", 200)
 }
 
 func (o *NvmeServiceDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceDeleteOK", 200)
 }
 
 func (o *NvmeServiceDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,20 +113,17 @@ func NewNvmeServiceDeleteDefault(code int) *NvmeServiceDeleteDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621462 | The supplied SVM does not exist. |
+| 5376452 | Service POST and DELETE are not supported on ASA r2. |
 | 72089651 | The supplied SVM does not have an NVMe service. |
 | 72089653 | There are subsystems associated with the NVMe service SVM. The subsystems must be removed before deleting the NVMe service. |
 | 72089654 | There are NVMe-oF LIFs associated with the NVMe service SVM. The LIFs must be removed before deleting the NVMe service. |
 | 72090028 | The NVMe service is enabled. The NVMe service must be disabled before it can be deleted. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NvmeServiceDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nvme service delete default response
-func (o *NvmeServiceDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nvme service delete default response has a 2xx status code
@@ -148,12 +151,19 @@ func (o *NvmeServiceDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nvme service delete default response
+func (o *NvmeServiceDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NvmeServiceDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/nvme/services/{svm.uuid}][%d] nvme_service_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/nvme/services/{svm.uuid}][%d] nvme_service_delete default %s", o._statusCode, payload)
 }
 
 func (o *NvmeServiceDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/nvme/services/{svm.uuid}][%d] nvme_service_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/nvme/services/{svm.uuid}][%d] nvme_service_delete default %s", o._statusCode, payload)
 }
 
 func (o *NvmeServiceDeleteDefault) GetPayload() *models.ErrorResponse {

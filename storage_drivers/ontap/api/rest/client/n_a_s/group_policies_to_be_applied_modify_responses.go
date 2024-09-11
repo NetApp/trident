@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *GroupPoliciesToBeAppliedModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the group policies to be applied modify o k response
+func (o *GroupPoliciesToBeAppliedModifyOK) Code() int {
+	return 200
+}
+
 func (o *GroupPoliciesToBeAppliedModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/group-policies/{svm.uuid}][%d] groupPoliciesToBeAppliedModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/cifs/group-policies/{svm.uuid}][%d] groupPoliciesToBeAppliedModifyOK", 200)
 }
 
 func (o *GroupPoliciesToBeAppliedModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/group-policies/{svm.uuid}][%d] groupPoliciesToBeAppliedModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/cifs/group-policies/{svm.uuid}][%d] groupPoliciesToBeAppliedModifyOK", 200)
 }
 
 func (o *GroupPoliciesToBeAppliedModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -112,16 +118,12 @@ func NewGroupPoliciesToBeAppliedModifyDefault(code int) *GroupPoliciesToBeApplie
 | 4456652 | CIFS server is down for SVM. |
 | 4456851 | An update is already in progress for specified SVM. Wait a few minutes, then try the command again. |
 | 4456852 | Failed to set forced update for specified SVM. Reason: Internal error. Starting normal update. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type GroupPoliciesToBeAppliedModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the group policies to be applied modify default response
-func (o *GroupPoliciesToBeAppliedModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this group policies to be applied modify default response has a 2xx status code
@@ -149,12 +151,19 @@ func (o *GroupPoliciesToBeAppliedModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the group policies to be applied modify default response
+func (o *GroupPoliciesToBeAppliedModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *GroupPoliciesToBeAppliedModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/group-policies/{svm.uuid}][%d] group_policies_to_be_applied_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/group-policies/{svm.uuid}][%d] group_policies_to_be_applied_modify default %s", o._statusCode, payload)
 }
 
 func (o *GroupPoliciesToBeAppliedModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/group-policies/{svm.uuid}][%d] group_policies_to_be_applied_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/group-policies/{svm.uuid}][%d] group_policies_to_be_applied_modify default %s", o._statusCode, payload)
 }
 
 func (o *GroupPoliciesToBeAppliedModifyDefault) GetPayload() *models.ErrorResponse {

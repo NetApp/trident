@@ -36,7 +36,7 @@ type FirmwareDisk struct {
 
 	// Status of the background disk firmware update.
 	// Read Only: true
-	// Enum: [running idle]
+	// Enum: ["running","idle"]
 	UpdateStatus interface{} `json:"update_status,omitempty"`
 }
 

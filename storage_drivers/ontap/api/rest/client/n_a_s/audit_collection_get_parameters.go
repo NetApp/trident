@@ -62,11 +62,29 @@ AuditCollectionGetParams contains all the parameters to send to the API endpoint
 */
 type AuditCollectionGetParams struct {
 
+	/* ChargeQos.
+
+	   Filter by charge_qos
+	*/
+	ChargeQos *bool
+
 	/* Enabled.
 
 	   Filter by enabled
 	*/
 	Enabled *bool
+
+	/* EventsAsyncDelete.
+
+	   Filter by events.async_delete
+	*/
+	EventsAsyncDelete *bool
+
+	/* EventsAuditPolicyChange.
+
+	   Filter by events.audit_policy_change
+	*/
+	EventsAuditPolicyChange *bool
 
 	/* EventsAuthorizationPolicy.
 
@@ -289,6 +307,17 @@ func (o *AuditCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithChargeQos adds the chargeQos to the audit collection get params
+func (o *AuditCollectionGetParams) WithChargeQos(chargeQos *bool) *AuditCollectionGetParams {
+	o.SetChargeQos(chargeQos)
+	return o
+}
+
+// SetChargeQos adds the chargeQos to the audit collection get params
+func (o *AuditCollectionGetParams) SetChargeQos(chargeQos *bool) {
+	o.ChargeQos = chargeQos
+}
+
 // WithEnabled adds the enabled to the audit collection get params
 func (o *AuditCollectionGetParams) WithEnabled(enabled *bool) *AuditCollectionGetParams {
 	o.SetEnabled(enabled)
@@ -298,6 +327,28 @@ func (o *AuditCollectionGetParams) WithEnabled(enabled *bool) *AuditCollectionGe
 // SetEnabled adds the enabled to the audit collection get params
 func (o *AuditCollectionGetParams) SetEnabled(enabled *bool) {
 	o.Enabled = enabled
+}
+
+// WithEventsAsyncDelete adds the eventsAsyncDelete to the audit collection get params
+func (o *AuditCollectionGetParams) WithEventsAsyncDelete(eventsAsyncDelete *bool) *AuditCollectionGetParams {
+	o.SetEventsAsyncDelete(eventsAsyncDelete)
+	return o
+}
+
+// SetEventsAsyncDelete adds the eventsAsyncDelete to the audit collection get params
+func (o *AuditCollectionGetParams) SetEventsAsyncDelete(eventsAsyncDelete *bool) {
+	o.EventsAsyncDelete = eventsAsyncDelete
+}
+
+// WithEventsAuditPolicyChange adds the eventsAuditPolicyChange to the audit collection get params
+func (o *AuditCollectionGetParams) WithEventsAuditPolicyChange(eventsAuditPolicyChange *bool) *AuditCollectionGetParams {
+	o.SetEventsAuditPolicyChange(eventsAuditPolicyChange)
+	return o
+}
+
+// SetEventsAuditPolicyChange adds the eventsAuditPolicyChange to the audit collection get params
+func (o *AuditCollectionGetParams) SetEventsAuditPolicyChange(eventsAuditPolicyChange *bool) {
+	o.EventsAuditPolicyChange = eventsAuditPolicyChange
 }
 
 // WithEventsAuthorizationPolicy adds the eventsAuthorizationPolicy to the audit collection get params
@@ -583,6 +634,23 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
+	if o.ChargeQos != nil {
+
+		// query param charge_qos
+		var qrChargeQos bool
+
+		if o.ChargeQos != nil {
+			qrChargeQos = *o.ChargeQos
+		}
+		qChargeQos := swag.FormatBool(qrChargeQos)
+		if qChargeQos != "" {
+
+			if err := r.SetQueryParam("charge_qos", qChargeQos); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.Enabled != nil {
 
 		// query param enabled
@@ -595,6 +663,40 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		if qEnabled != "" {
 
 			if err := r.SetQueryParam("enabled", qEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EventsAsyncDelete != nil {
+
+		// query param events.async_delete
+		var qrEventsAsyncDelete bool
+
+		if o.EventsAsyncDelete != nil {
+			qrEventsAsyncDelete = *o.EventsAsyncDelete
+		}
+		qEventsAsyncDelete := swag.FormatBool(qrEventsAsyncDelete)
+		if qEventsAsyncDelete != "" {
+
+			if err := r.SetQueryParam("events.async_delete", qEventsAsyncDelete); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EventsAuditPolicyChange != nil {
+
+		// query param events.audit_policy_change
+		var qrEventsAuditPolicyChange bool
+
+		if o.EventsAuditPolicyChange != nil {
+			qrEventsAuditPolicyChange = *o.EventsAuditPolicyChange
+		}
+		qEventsAuditPolicyChange := swag.FormatBool(qrEventsAuditPolicyChange)
+		if qEventsAuditPolicyChange != "" {
+
+			if err := r.SetQueryParam("events.audit_policy_change", qEventsAuditPolicyChange); err != nil {
 				return err
 			}
 		}

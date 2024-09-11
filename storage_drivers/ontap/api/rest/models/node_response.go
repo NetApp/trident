@@ -295,6 +295,11 @@ type NodeResponseInlineRecordsInlineArrayItem struct {
 	// links
 	Links *NodeResponseInlineRecordsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
+	// Anti ransomware version.
+	// Example: 1.0
+	// Read Only: true
+	AntiRansomwareVersion *string `json:"anti_ransomware_version,omitempty"`
+
 	// cluster interface
 	ClusterInterface *NodeResponseInlineRecordsInlineArrayItemInlineClusterInterface `json:"cluster_interface,omitempty"`
 
@@ -308,7 +313,7 @@ type NodeResponseInlineRecordsInlineArrayItem struct {
 	// The current or "wall clock" time of the node in ISO-8601 date, time, and time zone format.
 	// The ISO-8601 date and time are localized based on the ONTAP cluster's timezone setting.
 	//
-	// Example: 2019-04-17T11:49:26-04:00
+	// Example: 2019-04-17 15:49:26
 	// Read Only: true
 	// Format: date-time
 	Date *strfmt.DateTime `json:"date,omitempty"`
@@ -343,7 +348,7 @@ type NodeResponseInlineRecordsInlineArrayItem struct {
 	// * <i>member</i> - Nodes that are members have successfully joined the cluster.
 	//
 	// Read Only: true
-	// Enum: [available joining member]
+	// Enum: ["available","joining","member"]
 	Membership *string `json:"membership,omitempty"`
 
 	// metric
@@ -389,29 +394,39 @@ type NodeResponseInlineRecordsInlineArrayItem struct {
 	// * <i>unknown</i> - Node or its HA partner cannot be contacted and there is no information on the node's state.
 	//
 	// Read Only: true
-	// Enum: [up booting down taken_over waiting_for_giveback degraded unknown]
+	// Enum: ["up","booting","down","taken_over","waiting_for_giveback","degraded","unknown"]
 	State *string `json:"state,omitempty"`
 
 	// statistics
 	Statistics *NodeResponseInlineRecordsInlineArrayItemInlineStatistics `json:"statistics,omitempty"`
 
+	// Storage availability zones associated with the node.
+	// Read Only: true
+	StorageAvailabilityZones []*NodeResponseRecordsItems0StorageAvailabilityZonesItems0 `json:"storage_availability_zones"`
+
 	// The storage configuration in the system. Possible values:
 	// * <i>mixed_path</i>
 	// * <i>single_path</i>
 	// * <i>multi_path</i>
+	// * <i>tri_path</i>
 	// * <i>quad_path</i>
 	// * <i>mixed_path_ha</i>
 	// * <i>single_path_ha</i>
 	// * <i>multi_path_ha</i>
+	// * <i>tri_path_ha</i>
 	// * <i>quad_path_ha</i>
 	// * <i>unknown</i>
+	// * <i>virtual</i>
 	//
 	// Read Only: true
-	// Enum: [unknown single_path multi_path mixed_path quad_path single_path_ha multi_path_ha mixed_path_ha quad_path_ha]
+	// Enum: ["unknown","single_path","multi_path","mixed_path","quad_path","single_path_ha","multi_path_ha","mixed_path_ha","quad_path_ha","tri_path","tri_path_ha","virtual"]
 	StorageConfiguration *string `json:"storage_configuration,omitempty"`
 
+	// system aggregate
+	SystemAggregate *NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregate `json:"system_aggregate,omitempty"`
+
 	// system id
-	// Example: 0537035403
+	// Example: 92027651
 	// Read Only: true
 	SystemID *string `json:"system_id,omitempty"`
 
@@ -519,7 +534,15 @@ func (m *NodeResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Regis
 		res = append(res, err)
 	}
 
+	if err := m.validateStorageAvailabilityZones(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateStorageConfiguration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSystemAggregate(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -994,11 +1017,35 @@ func (m *NodeResponseInlineRecordsInlineArrayItem) validateStatistics(formats st
 	return nil
 }
 
+func (m *NodeResponseInlineRecordsInlineArrayItem) validateStorageAvailabilityZones(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageAvailabilityZones) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.StorageAvailabilityZones); i++ {
+		if swag.IsZero(m.StorageAvailabilityZones[i]) { // not required
+			continue
+		}
+
+		if m.StorageAvailabilityZones[i] != nil {
+			if err := m.StorageAvailabilityZones[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("storage_availability_zones" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 var nodeResponseInlineRecordsInlineArrayItemTypeStorageConfigurationPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["unknown","single_path","multi_path","mixed_path","quad_path","single_path_ha","multi_path_ha","mixed_path_ha","quad_path_ha"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["unknown","single_path","multi_path","mixed_path","quad_path","single_path_ha","multi_path_ha","mixed_path_ha","quad_path_ha","tri_path","tri_path_ha","virtual"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1097,6 +1144,36 @@ const (
 	// END DEBUGGING
 	// NodeResponseInlineRecordsInlineArrayItemStorageConfigurationQuadPathHa captures enum value "quad_path_ha"
 	NodeResponseInlineRecordsInlineArrayItemStorageConfigurationQuadPathHa string = "quad_path_ha"
+
+	// BEGIN DEBUGGING
+	// node_response_inline_records_inline_array_item
+	// NodeResponseInlineRecordsInlineArrayItem
+	// storage_configuration
+	// StorageConfiguration
+	// tri_path
+	// END DEBUGGING
+	// NodeResponseInlineRecordsInlineArrayItemStorageConfigurationTriPath captures enum value "tri_path"
+	NodeResponseInlineRecordsInlineArrayItemStorageConfigurationTriPath string = "tri_path"
+
+	// BEGIN DEBUGGING
+	// node_response_inline_records_inline_array_item
+	// NodeResponseInlineRecordsInlineArrayItem
+	// storage_configuration
+	// StorageConfiguration
+	// tri_path_ha
+	// END DEBUGGING
+	// NodeResponseInlineRecordsInlineArrayItemStorageConfigurationTriPathHa captures enum value "tri_path_ha"
+	NodeResponseInlineRecordsInlineArrayItemStorageConfigurationTriPathHa string = "tri_path_ha"
+
+	// BEGIN DEBUGGING
+	// node_response_inline_records_inline_array_item
+	// NodeResponseInlineRecordsInlineArrayItem
+	// storage_configuration
+	// StorageConfiguration
+	// virtual
+	// END DEBUGGING
+	// NodeResponseInlineRecordsInlineArrayItemStorageConfigurationVirtual captures enum value "virtual"
+	NodeResponseInlineRecordsInlineArrayItemStorageConfigurationVirtual string = "virtual"
 )
 
 // prop value enum
@@ -1115,6 +1192,23 @@ func (m *NodeResponseInlineRecordsInlineArrayItem) validateStorageConfiguration(
 	// value enum
 	if err := m.validateStorageConfigurationEnum("storage_configuration", "body", *m.StorageConfiguration); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseInlineRecordsInlineArrayItem) validateSystemAggregate(formats strfmt.Registry) error {
+	if swag.IsZero(m.SystemAggregate) { // not required
+		return nil
+	}
+
+	if m.SystemAggregate != nil {
+		if err := m.SystemAggregate.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("system_aggregate")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -1171,6 +1265,10 @@ func (m *NodeResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.C
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAntiRansomwareVersion(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1254,7 +1352,15 @@ func (m *NodeResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.C
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateStorageAvailabilityZones(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateStorageConfiguration(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSystemAggregate(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1301,6 +1407,15 @@ func (m *NodeResponseInlineRecordsInlineArrayItem) contextValidateLinks(ctx cont
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *NodeResponseInlineRecordsInlineArrayItem) contextValidateAntiRansomwareVersion(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "anti_ransomware_version", "body", m.AntiRansomwareVersion); err != nil {
+		return err
 	}
 
 	return nil
@@ -1572,10 +1687,46 @@ func (m *NodeResponseInlineRecordsInlineArrayItem) contextValidateStatistics(ctx
 	return nil
 }
 
+func (m *NodeResponseInlineRecordsInlineArrayItem) contextValidateStorageAvailabilityZones(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "storage_availability_zones", "body", []*NodeResponseRecordsItems0StorageAvailabilityZonesItems0(m.StorageAvailabilityZones)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.StorageAvailabilityZones); i++ {
+
+		if m.StorageAvailabilityZones[i] != nil {
+			if err := m.StorageAvailabilityZones[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("storage_availability_zones" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *NodeResponseInlineRecordsInlineArrayItem) contextValidateStorageConfiguration(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "storage_configuration", "body", m.StorageConfiguration); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseInlineRecordsInlineArrayItem) contextValidateSystemAggregate(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.SystemAggregate != nil {
+		if err := m.SystemAggregate.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("system_aggregate")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -2101,7 +2252,7 @@ type NodeResponseInlineRecordsInlineArrayItemInlineController struct {
 
 	// Specifies whether the hardware is currently operating outside of its recommended temperature range. The hardware shuts down if the temperature exceeds critical thresholds.
 	// Read Only: true
-	// Enum: [over normal]
+	// Enum: ["over","normal"]
 	OverTemperature *string `json:"over_temperature,omitempty"`
 }
 
@@ -2964,7 +3115,7 @@ type NodeResponseRecordsItems0ControllerFlashCacheItems0 struct {
 
 	// state
 	// Read Only: true
-	// Enum: [ok erasing erased failed removed]
+	// Enum: ["ok","erasing","erased","failed","removed"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -3237,12 +3388,12 @@ type NodeResponseRecordsItems0ControllerFrusItems0 struct {
 
 	// state
 	// Read Only: true
-	// Enum: [ok error]
+	// Enum: ["ok","error"]
 	State *string `json:"state,omitempty"`
 
 	// type
 	// Read Only: true
-	// Enum: [fan psu pcie disk nvs dimm controller]
+	// Enum: ["fan","psu","pcie","disk","nvs","dimm","controller"]
 	Type *string `json:"type,omitempty"`
 }
 
@@ -3519,8 +3670,13 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineExternalCache) Validate(f
 	return nil
 }
 
-// ContextValidate validates this node response inline records inline array item inline external cache based on context it is used
+// ContextValidate validate this node response inline records inline array item inline external cache based on the context it is used
 func (m *NodeResponseInlineRecordsInlineArrayItemInlineExternalCache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -3569,6 +3725,9 @@ type NodeResponseInlineRecordsInlineArrayItemInlineHa struct {
 
 	// takeover
 	Takeover *NodeResponseInlineRecordsInlineArrayItemInlineHaInlineTakeover `json:"takeover,omitempty"`
+
+	// takeover check
+	TakeoverCheck *NodeResponseInlineRecordsInlineArrayItemInlineHaInlineTakeoverCheck `json:"takeover_check,omitempty"`
 }
 
 // Validate validates this node response inline records inline array item inline ha
@@ -3592,6 +3751,10 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineHa) Validate(formats strf
 	}
 
 	if err := m.validateTakeover(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTakeoverCheck(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3700,6 +3863,23 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineHa) validateTakeover(form
 	return nil
 }
 
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineHa) validateTakeoverCheck(formats strfmt.Registry) error {
+	if swag.IsZero(m.TakeoverCheck) { // not required
+		return nil
+	}
+
+	if m.TakeoverCheck != nil {
+		if err := m.TakeoverCheck.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ha" + "." + "takeover_check")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this node response inline records inline array item inline ha based on the context it is used
 func (m *NodeResponseInlineRecordsInlineArrayItemInlineHa) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -3721,6 +3901,10 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineHa) ContextValidate(ctx c
 	}
 
 	if err := m.contextValidateTakeover(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTakeoverCheck(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3816,6 +4000,20 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineHa) contextValidateTakeov
 	return nil
 }
 
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineHa) contextValidateTakeoverCheck(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.TakeoverCheck != nil {
+		if err := m.TakeoverCheck.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ha" + "." + "takeover_check")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *NodeResponseInlineRecordsInlineArrayItemInlineHa) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -3844,10 +4042,10 @@ type NodeResponseInlineRecordsInlineArrayItemInlineHaInlineGiveback struct {
 
 	// state
 	// Example: failed
-	// Enum: [nothing_to_giveback not_attempted in_progress failed]
+	// Enum: ["nothing_to_giveback","not_attempted","in_progress","failed"]
 	State *string `json:"state,omitempty"`
 
-	// Giveback status of each aggregate.
+	// Giveback status of each aggregate. This property is not supported on the ASA r2 platform.
 	// Read Only: true
 	Status []*NodeResponseRecordsItems0HaGivebackStatusItems0 `json:"status"`
 }
@@ -4063,7 +4261,7 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineHaInlineGiveback) Unmarsh
 	return nil
 }
 
-// NodeResponseInlineRecordsInlineArrayItemInlineHaInlineGivebackInlineFailure Indicates the failure code and message.
+// NodeResponseInlineRecordsInlineArrayItemInlineHaInlineGivebackInlineFailure Indicates the failure code and message. This property is not supported on the ASA r2 platform.
 //
 // swagger:model node_response_inline_records_inline_array_item_inline_ha_inline_giveback_inline_failure
 type NodeResponseInlineRecordsInlineArrayItemInlineHaInlineGivebackInlineFailure struct {
@@ -4125,7 +4323,7 @@ type NodeResponseRecordsItems0HaGivebackStatusItems0 struct {
 	// Possible values include no aggregates to giveback(nothing_to_giveback), failed to disable background disk firmware update(BDFU) on source node(failed_bdfu_source), <br/>
 	// giveback delayed as disk firmware update is in progress on source node(delayed_bdfu_source), performing veto checks(running_checks). <br/>
 	//
-	// Enum: [done failed in_progress not_started nothing_to_giveback failed_bdfu_source failed_bdfu_dest delayed_bdfu_source delayed_bdfu_dest running_checks]
+	// Enum: ["done","failed","in_progress","not_started","nothing_to_giveback","failed_bdfu_source","failed_bdfu_dest","delayed_bdfu_source","delayed_bdfu_dest","running_checks"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -4577,7 +4775,7 @@ type NodeResponseRecordsItems0HaGivebackStatusItems0Error struct {
 
 	// Detailed message based on the state.
 	// Read Only: true
-	// Enum: [shutdown not_homes_partner not_sfo failed_limbo offline_failed migrating veto communication_err online_timeout online_failed hdd_to_aff_dest]
+	// Enum: ["shutdown","not_homes_partner","not_sfo","failed_limbo","offline_failed","migrating","veto","communication_err","online_timeout","online_failed","hdd_to_aff_dest"]
 	Message *string `json:"message,omitempty"`
 }
 
@@ -4807,7 +5005,7 @@ type NodeResponseInlineRecordsInlineArrayItemInlineHaInlineInterconnect struct {
 
 	// Indicates the HA interconnect status.
 	// Read Only: true
-	// Enum: [down up]
+	// Enum: ["down","up"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -5134,7 +5332,7 @@ type NodeResponseRecordsItems0HaPortsItems0 struct {
 	//
 	// Example: active
 	// Read Only: true
-	// Enum: [down initialized armed active reserved]
+	// Enum: ["down","initialized","armed","active","reserved"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -5302,7 +5500,7 @@ type NodeResponseInlineRecordsInlineArrayItemInlineHaInlineTakeover struct {
 
 	// state
 	// Example: failed
-	// Enum: [not_possible not_attempted in_takeover in_progress failed]
+	// Enum: ["not_possible","not_attempted","in_takeover","in_progress","failed"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -5473,7 +5671,88 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineHaInlineTakeover) Unmarsh
 	return nil
 }
 
-// NodeResponseInlineRecordsInlineArrayItemInlineHaInlineTakeoverInlineFailure Indicates the failure code and message.
+// NodeResponseInlineRecordsInlineArrayItemInlineHaInlineTakeoverCheck The takeover check response.
+//
+// swagger:model node_response_inline_records_inline_array_item_inline_ha_inline_takeover_check
+type NodeResponseInlineRecordsInlineArrayItemInlineHaInlineTakeoverCheck struct {
+
+	// Reasons why the takeover is not possible.
+	// Read Only: true
+	Reasons []*string `json:"reasons"`
+
+	// Indicates whether the takeover is possible.
+	// Read Only: true
+	TakeoverPossible *bool `json:"takeover_possible,omitempty"`
+}
+
+// Validate validates this node response inline records inline array item inline ha inline takeover check
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineHaInlineTakeoverCheck) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this node response inline records inline array item inline ha inline takeover check based on the context it is used
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineHaInlineTakeoverCheck) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateReasons(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTakeoverPossible(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineHaInlineTakeoverCheck) contextValidateReasons(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ha"+"."+"takeover_check"+"."+"reasons", "body", []*string(m.Reasons)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Reasons); i++ {
+
+		if err := validate.ReadOnly(ctx, "ha"+"."+"takeover_check"+"."+"reasons"+"."+strconv.Itoa(i), "body", m.Reasons[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineHaInlineTakeoverCheck) contextValidateTakeoverPossible(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ha"+"."+"takeover_check"+"."+"takeover_possible", "body", m.TakeoverPossible); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineHaInlineTakeoverCheck) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineHaInlineTakeoverCheck) UnmarshalBinary(b []byte) error {
+	var res NodeResponseInlineRecordsInlineArrayItemInlineHaInlineTakeoverCheck
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NodeResponseInlineRecordsInlineArrayItemInlineHaInlineTakeoverInlineFailure Indicates the failure code and message. This property is not supported on the ASA r2 platform.
 //
 // swagger:model node_response_inline_records_inline_array_item_inline_ha_inline_takeover_inline_failure
 type NodeResponseInlineRecordsInlineArrayItemInlineHaInlineTakeoverInlineFailure struct {
@@ -5749,7 +6028,7 @@ type NodeResponseInlineRecordsInlineArrayItemInlineHwAssistInlineStatusInlineLoc
 	Port *int64 `json:"port,omitempty"`
 
 	// The hardware assist monitor status.
-	// Enum: [active inactive]
+	// Enum: ["active","inactive"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -5858,7 +6137,7 @@ type NodeResponseInlineRecordsInlineArrayItemInlineHwAssistInlineStatusInlinePar
 	Port *int64 `json:"port,omitempty"`
 
 	// The hardware assist monitor status.
-	// Enum: [active inactive]
+	// Enum: ["active","inactive"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -6041,7 +6320,7 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineLinks) UnmarshalBinary(b 
 	return nil
 }
 
-// NodeResponseInlineRecordsInlineArrayItemInlineManagementInterface The management interface of the node to be added. The subnet mask is set based on the management interface of the cluster or the managment interfaces of other nodes.
+// NodeResponseInlineRecordsInlineArrayItemInlineManagementInterface The management interface of the node to be added. The subnet mask is set based on the management interface of the cluster or the management interfaces of other nodes.
 //
 // swagger:model node_response_inline_records_inline_array_item_inline_management_interface
 type NodeResponseInlineRecordsInlineArrayItemInlineManagementInterface struct {
@@ -6448,7 +6727,7 @@ type NodeResponseInlineRecordsInlineArrayItemInlineMetric struct {
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
-	// Enum: [PT15S PT5M PT30M PT2H P1D]
+	// Enum: ["PT15S","PT5M","PT30M","PT2H","P1D"]
 	Duration *string `json:"duration,omitempty"`
 
 	// Average CPU Utilization for the node
@@ -6457,11 +6736,11 @@ type NodeResponseInlineRecordsInlineArrayItemInlineMetric struct {
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: ["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]
 	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 
@@ -6894,7 +7173,7 @@ type NodeResponseInlineRecordsInlineArrayItemInlineMetrocluster struct {
 
 	// The Metrocluster configuration type
 	// Read Only: true
-	// Enum: [fc fc_2_node ip]
+	// Enum: ["fc","fc_2_node","ip"]
 	Type *string `json:"type,omitempty"`
 }
 
@@ -7141,7 +7420,7 @@ type NodeResponseInlineRecordsInlineArrayItemInlineNvram struct {
 	// * <i>battery_fully_charged</i>
 	//
 	// Read Only: true
-	// Enum: [battery_ok battery_partially_discharged battery_fully_discharged battery_not_present battery_near_end_of_life battery_at_end_of_life battery_unknown battery_over_charged battery_fully_charged]
+	// Enum: ["battery_ok","battery_partially_discharged","battery_fully_discharged","battery_not_present","battery_near_end_of_life","battery_at_end_of_life","battery_unknown","battery_over_charged","battery_fully_charged"]
 	BatteryState *string `json:"battery_state,omitempty"`
 
 	// Vendor specific NVRAM ID of the node.
@@ -7379,12 +7658,12 @@ type NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessor struct {
 
 	// Provides the "update status" of the last service processor update.
 	// Read Only: true
-	// Enum: [failed passed]
+	// Enum: ["failed","passed"]
 	LastUpdateState *string `json:"last_update_state,omitempty"`
 
 	// link status
 	// Read Only: true
-	// Enum: [up down disabled unknown]
+	// Enum: ["up","down","disabled","unknown"]
 	LinkStatus *string `json:"link_status,omitempty"`
 
 	// mac address
@@ -7399,13 +7678,16 @@ type NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessor struct {
 
 	// state
 	// Read Only: true
-	// Enum: [online offline degraded rebooting unknown updating node_offline sp_daemon_offline]
+	// Enum: ["online","offline","degraded","rebooting","unknown","updating","node_offline","sp_daemon_offline"]
 	State *string `json:"state,omitempty"`
 
 	// type
 	// Read Only: true
-	// Enum: [sp none bmc]
+	// Enum: ["sp","none","bmc"]
 	Type *string `json:"type,omitempty"`
+
+	// web service
+	WebService *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineWebService `json:"web_service,omitempty"`
 }
 
 // Validate validates this node response inline records inline array item inline service processor
@@ -7453,6 +7735,10 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessor) Validat
 	}
 
 	if err := m.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateWebService(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -7895,6 +8181,23 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessor) validat
 	return nil
 }
 
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessor) validateWebService(formats strfmt.Registry) error {
+	if swag.IsZero(m.WebService) { // not required
+		return nil
+	}
+
+	if m.WebService != nil {
+		if err := m.WebService.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "web_service")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this node response inline records inline array item inline service processor based on the context it is used
 func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -7952,6 +8255,10 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessor) Context
 	}
 
 	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWebService(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -8122,6 +8429,20 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessor) context
 	return nil
 }
 
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessor) contextValidateWebService(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.WebService != nil {
+		if err := m.WebService.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "web_service")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessor) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -8140,21 +8461,18 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessor) Unmarsh
 	return nil
 }
 
-// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineAPIService Provides the properties of the service processor API service.
+// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineAPIService Provides the properties of the service processor (SP) or baseboard management controller (BMC) API service.
 //
 // swagger:model node_response_inline_records_inline_array_item_inline_service_processor_inline_api_service
 type NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineAPIService struct {
 
-	// Indicates whether the service processor API service is enabled.
-	// Read Only: true
+	// Indicates whether the SP API service of the SP or BMC is enabled or disabled. When the SP API service is disabled, features such as network-based firmware updates and network-based down node log collection are not available, and the slower serial-interface is used for firmware updates and down node log collection.
 	Enabled *bool `json:"enabled,omitempty"`
 
-	// Indicates whether the service processor API service limit access is enabled.
-	// Read Only: true
+	// Restricts SP API service access to cluster nodes only. By default, limit_access is set to true.
 	LimitAccess *bool `json:"limit_access,omitempty"`
 
-	// Indicates the port number of service processor API service.
-	// Read Only: true
+	// Specifies the port number on the SP or BMC used for the SP API service. By default, port 50000 is used.
 	Port *int64 `json:"port,omitempty"`
 }
 
@@ -8167,48 +8485,9 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineAPI
 func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineAPIService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateEnabled(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateLimitAccess(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidatePort(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineAPIService) contextValidateEnabled(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "service_processor"+"."+"api_service"+"."+"enabled", "body", m.Enabled); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineAPIService) contextValidateLimitAccess(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "service_processor"+"."+"api_service"+"."+"limit_access", "body", m.LimitAccess); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineAPIService) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "service_processor"+"."+"api_service"+"."+"port", "body", m.Port); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -8288,7 +8567,7 @@ type NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineBackup 
 
 	// Status of the backup partition.
 	// Read Only: true
-	// Enum: [installed corrupt updating auto_updating none]
+	// Enum: ["installed","corrupt","updating","auto_updating","none"]
 	State *string `json:"state,omitempty"`
 
 	// Firmware version of the backup partition.
@@ -8464,28 +8743,37 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineBac
 	return nil
 }
 
-// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4Interface Object to setup an interface along with its default router.
+// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4Interface Object to set up an interface along with its default router.
 //
 // swagger:model node_response_inline_records_inline_array_item_inline_service_processor_inline_ipv4_interface
 type NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4Interface struct {
 
-	// IPv4 or IPv6 address
+	// IPv4 address
 	// Example: 10.10.10.7
 	Address *string `json:"address,omitempty"`
 
-	// The IPv4 or IPv6 address of the default router.
+	// Indicates whether the IPv4 interfaces is enabled. It expects dhcp_enabled as "true" or values for address, netmask and gateway when set to "true".
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// The IPv4 address of the default router.
 	// Example: 10.1.1.1
 	Gateway *string `json:"gateway,omitempty"`
 
-	// netmask
-	Netmask *IPNetmask `json:"netmask,omitempty"`
+	// Input as IPv4 mask (255.255.0.0). Output is always the netmask length.
+	// Example: 255.255.0.0
+	Netmask *string `json:"netmask,omitempty"`
+
+	// Indicates the setup state of the interface.
+	// Read Only: true
+	// Enum: ["not_setup","succeeded","in_progress","failed"]
+	SetupState *string `json:"setup_state,omitempty"`
 }
 
 // Validate validates this node response inline records inline array item inline service processor inline ipv4 interface
 func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4Interface) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateNetmask(formats); err != nil {
+	if err := m.validateSetupState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -8495,18 +8783,77 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV
 	return nil
 }
 
-func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4Interface) validateNetmask(formats strfmt.Registry) error {
-	if swag.IsZero(m.Netmask) { // not required
+var nodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIpv4InterfaceTypeSetupStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["not_setup","succeeded","in_progress","failed"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIpv4InterfaceTypeSetupStatePropEnum = append(nodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIpv4InterfaceTypeSetupStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// node_response_inline_records_inline_array_item_inline_service_processor_inline_ipv4_interface
+	// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4Interface
+	// setup_state
+	// SetupState
+	// not_setup
+	// END DEBUGGING
+	// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4InterfaceSetupStateNotSetup captures enum value "not_setup"
+	NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4InterfaceSetupStateNotSetup string = "not_setup"
+
+	// BEGIN DEBUGGING
+	// node_response_inline_records_inline_array_item_inline_service_processor_inline_ipv4_interface
+	// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4Interface
+	// setup_state
+	// SetupState
+	// succeeded
+	// END DEBUGGING
+	// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4InterfaceSetupStateSucceeded captures enum value "succeeded"
+	NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4InterfaceSetupStateSucceeded string = "succeeded"
+
+	// BEGIN DEBUGGING
+	// node_response_inline_records_inline_array_item_inline_service_processor_inline_ipv4_interface
+	// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4Interface
+	// setup_state
+	// SetupState
+	// in_progress
+	// END DEBUGGING
+	// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4InterfaceSetupStateInProgress captures enum value "in_progress"
+	NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4InterfaceSetupStateInProgress string = "in_progress"
+
+	// BEGIN DEBUGGING
+	// node_response_inline_records_inline_array_item_inline_service_processor_inline_ipv4_interface
+	// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4Interface
+	// setup_state
+	// SetupState
+	// failed
+	// END DEBUGGING
+	// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4InterfaceSetupStateFailed captures enum value "failed"
+	NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4InterfaceSetupStateFailed string = "failed"
+)
+
+// prop value enum
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4Interface) validateSetupStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIpv4InterfaceTypeSetupStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4Interface) validateSetupState(formats strfmt.Registry) error {
+	if swag.IsZero(m.SetupState) { // not required
 		return nil
 	}
 
-	if m.Netmask != nil {
-		if err := m.Netmask.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("service_processor" + "." + "ipv4_interface" + "." + "netmask")
-			}
-			return err
-		}
+	// value enum
+	if err := m.validateSetupStateEnum("service_processor"+"."+"ipv4_interface"+"."+"setup_state", "body", *m.SetupState); err != nil {
+		return err
 	}
 
 	return nil
@@ -8516,7 +8863,7 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV
 func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4Interface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateNetmask(ctx, formats); err != nil {
+	if err := m.contextValidateSetupState(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -8526,15 +8873,10 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV
 	return nil
 }
 
-func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4Interface) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV4Interface) contextValidateSetupState(ctx context.Context, formats strfmt.Registry) error {
 
-	if m.Netmask != nil {
-		if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("service_processor" + "." + "ipv4_interface" + "." + "netmask")
-			}
-			return err
-		}
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"ipv4_interface"+"."+"setup_state", "body", m.SetupState); err != nil {
+		return err
 	}
 
 	return nil
@@ -8567,22 +8909,144 @@ type NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6Int
 	// Example: fd20:8b1e:b255:5011:10:141:4:97
 	Address *string `json:"address,omitempty"`
 
+	// Indicates whether the IPv6 interfaces is enabled. It expects values for address, netmask and gateway when set to "true".
+	Enabled *bool `json:"enabled,omitempty"`
+
 	// The IPv6 address of the default router.
 	// Example: fd20:8b1e:b255:5011:10::1
 	Gateway *string `json:"gateway,omitempty"`
 
+	// Indicates whether IPv6 RA is enabled.
+	IsIPV6RaEnabled *bool `json:"is_ipv6_ra_enabled,omitempty"`
+
+	// Link local IP address.
+	// Example: FE80::/10
+	LinkLocalIP *string `json:"link_local_ip,omitempty"`
+
 	// The IPv6 netmask/prefix length. The default value is 64 with a valid range of 1 to 127.
 	// Example: 64
 	Netmask *int64 `json:"netmask,omitempty"`
+
+	// Router assigned IP address.
+	// Example: 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+	RouterIP *string `json:"router_ip,omitempty"`
+
+	// Indicates the setup state of the interface.
+	// Read Only: true
+	// Enum: ["not_setup","succeeded","in_progress","failed"]
+	SetupState *string `json:"setup_state,omitempty"`
 }
 
 // Validate validates this node response inline records inline array item inline service processor inline ipv6 interface
 func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6Interface) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSetupState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this node response inline records inline array item inline service processor inline ipv6 interface based on context it is used
+var nodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIpv6InterfaceTypeSetupStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["not_setup","succeeded","in_progress","failed"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIpv6InterfaceTypeSetupStatePropEnum = append(nodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIpv6InterfaceTypeSetupStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// node_response_inline_records_inline_array_item_inline_service_processor_inline_ipv6_interface
+	// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6Interface
+	// setup_state
+	// SetupState
+	// not_setup
+	// END DEBUGGING
+	// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6InterfaceSetupStateNotSetup captures enum value "not_setup"
+	NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6InterfaceSetupStateNotSetup string = "not_setup"
+
+	// BEGIN DEBUGGING
+	// node_response_inline_records_inline_array_item_inline_service_processor_inline_ipv6_interface
+	// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6Interface
+	// setup_state
+	// SetupState
+	// succeeded
+	// END DEBUGGING
+	// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6InterfaceSetupStateSucceeded captures enum value "succeeded"
+	NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6InterfaceSetupStateSucceeded string = "succeeded"
+
+	// BEGIN DEBUGGING
+	// node_response_inline_records_inline_array_item_inline_service_processor_inline_ipv6_interface
+	// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6Interface
+	// setup_state
+	// SetupState
+	// in_progress
+	// END DEBUGGING
+	// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6InterfaceSetupStateInProgress captures enum value "in_progress"
+	NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6InterfaceSetupStateInProgress string = "in_progress"
+
+	// BEGIN DEBUGGING
+	// node_response_inline_records_inline_array_item_inline_service_processor_inline_ipv6_interface
+	// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6Interface
+	// setup_state
+	// SetupState
+	// failed
+	// END DEBUGGING
+	// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6InterfaceSetupStateFailed captures enum value "failed"
+	NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6InterfaceSetupStateFailed string = "failed"
+)
+
+// prop value enum
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6Interface) validateSetupStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIpv6InterfaceTypeSetupStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6Interface) validateSetupState(formats strfmt.Registry) error {
+	if swag.IsZero(m.SetupState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateSetupStateEnum("service_processor"+"."+"ipv6_interface"+"."+"setup_state", "body", *m.SetupState); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this node response inline records inline array item inline service processor inline ipv6 interface based on the context it is used
 func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6Interface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSetupState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineIPV6Interface) contextValidateSetupState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"ipv6_interface"+"."+"setup_state", "body", m.SetupState); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -8615,7 +9079,7 @@ type NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlinePrimary
 
 	// Status of the primary partition.
 	// Read Only: true
-	// Enum: [installed corrupt updating auto_updating none]
+	// Enum: ["installed","corrupt","updating","auto_updating","none"]
 	State *string `json:"state,omitempty"`
 
 	// Firmware version of the primary partition.
@@ -8888,13 +9352,58 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineSSH
 	return nil
 }
 
+// NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineWebService Provides the properties of SP or BMC web service.
+//
+// swagger:model node_response_inline_records_inline_array_item_inline_service_processor_inline_web_service
+type NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineWebService struct {
+
+	// Indicates whether the web service of the SP or BMC is enabled or disabled. When the web service is disabled, features such as network-based firmware updates and network-based down node log collection are not available, and the slower serial-interface is used for firmware updates and down node log collection.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Restricts web service access to cluster nodes only. By default, limit_access is set to true.
+	LimitAccess *bool `json:"limit_access,omitempty"`
+}
+
+// Validate validates this node response inline records inline array item inline service processor inline web service
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineWebService) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this node response inline records inline array item inline service processor inline web service based on the context it is used
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineWebService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineWebService) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineWebService) UnmarshalBinary(b []byte) error {
+	var res NodeResponseInlineRecordsInlineArrayItemInlineServiceProcessorInlineWebService
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // NodeResponseInlineRecordsInlineArrayItemInlineSnaplock SnapLock-related properties.
 //
 // swagger:model node_response_inline_records_inline_array_item_inline_snaplock
 type NodeResponseInlineRecordsInlineArrayItemInlineSnaplock struct {
 
 	// SnapLock compliance clock time.
-	// Example: 2018-06-04T19:00:00Z
+	// Example: 2018-06-04 19:00:00
 	// Format: date-time
 	ComplianceClockTime *strfmt.DateTime `json:"compliance_clock_time,omitempty"`
 }
@@ -8925,8 +9434,13 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineSnaplock) validateComplia
 	return nil
 }
 
-// ContextValidate validates this node response inline records inline array item inline snaplock based on context it is used
+// ContextValidate validate this node response inline records inline array item inline snaplock based on the context it is used
 func (m *NodeResponseInlineRecordsInlineArrayItemInlineSnaplock) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -8963,11 +9477,11 @@ type NodeResponseInlineRecordsInlineArrayItemInlineStatistics struct {
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: ["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]
 	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
@@ -9161,6 +9675,366 @@ func (m *NodeResponseInlineRecordsInlineArrayItemInlineStatistics) UnmarshalBina
 	return nil
 }
 
+// NodeResponseRecordsItems0StorageAvailabilityZonesItems0 node response records items0 storage availability zones items0
+//
+// swagger:model NodeResponseRecordsItems0StorageAvailabilityZonesItems0
+type NodeResponseRecordsItems0StorageAvailabilityZonesItems0 struct {
+
+	// links
+	Links *NodeResponseRecordsItems0StorageAvailabilityZonesItems0Links `json:"_links,omitempty"`
+
+	// The name of the storage availability zone.
+	// Example: storage_availability_zone_1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the storage availability zone.
+	// Example: 9b3ff559-3333-11ef-b420-005056ae6060
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this node response records items0 storage availability zones items0
+func (m *NodeResponseRecordsItems0StorageAvailabilityZonesItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0StorageAvailabilityZonesItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this node response records items0 storage availability zones items0 based on the context it is used
+func (m *NodeResponseRecordsItems0StorageAvailabilityZonesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0StorageAvailabilityZonesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0StorageAvailabilityZonesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0StorageAvailabilityZonesItems0) UnmarshalBinary(b []byte) error {
+	var res NodeResponseRecordsItems0StorageAvailabilityZonesItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NodeResponseRecordsItems0StorageAvailabilityZonesItems0Links node response records items0 storage availability zones items0 links
+//
+// swagger:model NodeResponseRecordsItems0StorageAvailabilityZonesItems0Links
+type NodeResponseRecordsItems0StorageAvailabilityZonesItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this node response records items0 storage availability zones items0 links
+func (m *NodeResponseRecordsItems0StorageAvailabilityZonesItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0StorageAvailabilityZonesItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this node response records items0 storage availability zones items0 links based on the context it is used
+func (m *NodeResponseRecordsItems0StorageAvailabilityZonesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0StorageAvailabilityZonesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0StorageAvailabilityZonesItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0StorageAvailabilityZonesItems0Links) UnmarshalBinary(b []byte) error {
+	var res NodeResponseRecordsItems0StorageAvailabilityZonesItems0Links
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregate Aggregate
+//
+// swagger:model node_response_inline_records_inline_array_item_inline_system_aggregate
+type NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregate struct {
+
+	// links
+	Links *NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregateInlineLinks `json:"_links,omitempty"`
+
+	// name
+	// Example: aggr1
+	Name *string `json:"name,omitempty"`
+
+	// uuid
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this node response inline records inline array item inline system aggregate
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregate) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregate) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("system_aggregate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this node response inline records inline array item inline system aggregate based on the context it is used
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("system_aggregate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregate) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregate) UnmarshalBinary(b []byte) error {
+	var res NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregate
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregateInlineLinks node response inline records inline array item inline system aggregate inline links
+//
+// swagger:model node_response_inline_records_inline_array_item_inline_system_aggregate_inline__links
+type NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregateInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this node response inline records inline array item inline system aggregate inline links
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregateInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregateInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("system_aggregate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this node response inline records inline array item inline system aggregate inline links based on the context it is used
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregateInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregateInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("system_aggregate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregateInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregateInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NodeResponseInlineRecordsInlineArrayItemInlineSystemAggregateInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // NodeResponseInlineRecordsInlineArrayItemInlineVM node response inline records inline array item inline vm
 //
 // swagger:model node_response_inline_records_inline_array_item_inline_vm
@@ -9168,7 +10042,7 @@ type NodeResponseInlineRecordsInlineArrayItemInlineVM struct {
 
 	// Cloud provider where the VM is hosted.
 	// Read Only: true
-	// Enum: [GoogleCloud AWS_S3 Azure_Cloud]
+	// Enum: ["GoogleCloud","AWS_S3","Azure_Cloud"]
 	ProviderType *string `json:"provider_type,omitempty"`
 }
 

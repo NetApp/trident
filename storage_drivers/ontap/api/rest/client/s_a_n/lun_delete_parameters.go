@@ -64,12 +64,18 @@ type LunDeleteParams struct {
 
 	/* AllowDeleteWhileMapped.
 
-	     Allows deletion of a mapped LUN.</br>
-	A mapped LUN might be in use. Deleting a mapped LUN also deletes the LUN map and makes the data no longer available. This might cause a disruption in the availability of data.</br>
+	     Allows deletion of a mapped LUN.<br/>
+	A mapped LUN might be in use. Deleting a mapped LUN also deletes the LUN map and makes the data no longer available. This might cause a disruption in the availability of data.<br/>
 	**This parameter should be used with caution.**
 
 	*/
 	AllowDeleteWhileMapped *bool
+
+	/* ReturnTimeout.
+
+	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
+	*/
+	ReturnTimeout *int64
 
 	/* UUID.
 
@@ -97,10 +103,13 @@ func (o *LunDeleteParams) WithDefaults() *LunDeleteParams {
 func (o *LunDeleteParams) SetDefaults() {
 	var (
 		allowDeleteWhileMappedDefault = bool(false)
+
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := LunDeleteParams{
 		AllowDeleteWhileMapped: &allowDeleteWhileMappedDefault,
+		ReturnTimeout:          &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -153,6 +162,17 @@ func (o *LunDeleteParams) SetAllowDeleteWhileMapped(allowDeleteWhileMapped *bool
 	o.AllowDeleteWhileMapped = allowDeleteWhileMapped
 }
 
+// WithReturnTimeout adds the returnTimeout to the lun delete params
+func (o *LunDeleteParams) WithReturnTimeout(returnTimeout *int64) *LunDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
+	return o
+}
+
+// SetReturnTimeout adds the returnTimeout to the lun delete params
+func (o *LunDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
+}
+
 // WithUUID adds the uuid to the lun delete params
 func (o *LunDeleteParams) WithUUID(uuid string) *LunDeleteParams {
 	o.SetUUID(uuid)
@@ -184,6 +204,23 @@ func (o *LunDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 		if qAllowDeleteWhileMapped != "" {
 
 			if err := r.SetQueryParam("allow_delete_while_mapped", qAllowDeleteWhileMapped); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnTimeout != nil {
+
+		// query param return_timeout
+		var qrReturnTimeout int64
+
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
+		}
+		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
+		if qReturnTimeout != "" {
+
+			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
 				return err
 			}
 		}

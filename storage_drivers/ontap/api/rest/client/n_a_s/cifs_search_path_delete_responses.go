@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *CifsSearchPathDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs search path delete o k response
+func (o *CifsSearchPathDeleteOK) Code() int {
+	return 200
+}
+
 func (o *CifsSearchPathDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifsSearchPathDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifsSearchPathDeleteOK", 200)
 }
 
 func (o *CifsSearchPathDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifsSearchPathDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifsSearchPathDeleteOK", 200)
 }
 
 func (o *CifsSearchPathDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type CifsSearchPathDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cifs search path delete default response
-func (o *CifsSearchPathDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cifs search path delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *CifsSearchPathDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs search path delete default response
+func (o *CifsSearchPathDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsSearchPathDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifs_search_path_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifs_search_path_delete default %s", o._statusCode, payload)
 }
 
 func (o *CifsSearchPathDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifs_search_path_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifs_search_path_delete default %s", o._statusCode, payload)
 }
 
 func (o *CifsSearchPathDeleteDefault) GetPayload() *models.ErrorResponse {

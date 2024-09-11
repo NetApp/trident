@@ -28,6 +28,9 @@ type Fpolicy struct {
 	// fpolicy inline events
 	FpolicyInlineEvents []*FpolicyEvents `json:"events,omitempty"`
 
+	// fpolicy inline persistent stores
+	FpolicyInlinePersistentStores []*FpolicyPersistentStores `json:"persistent_stores,omitempty"`
+
 	// fpolicy inline policies
 	FpolicyInlinePolicies []*FpolicyPolicies `json:"policies,omitempty"`
 
@@ -48,6 +51,10 @@ func (m *Fpolicy) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateFpolicyInlineEvents(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateFpolicyInlinePersistentStores(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -130,6 +137,30 @@ func (m *Fpolicy) validateFpolicyInlineEvents(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Fpolicy) validateFpolicyInlinePersistentStores(formats strfmt.Registry) error {
+	if swag.IsZero(m.FpolicyInlinePersistentStores) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.FpolicyInlinePersistentStores); i++ {
+		if swag.IsZero(m.FpolicyInlinePersistentStores[i]) { // not required
+			continue
+		}
+
+		if m.FpolicyInlinePersistentStores[i] != nil {
+			if err := m.FpolicyInlinePersistentStores[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("persistent_stores" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *Fpolicy) validateFpolicyInlinePolicies(formats strfmt.Registry) error {
 	if swag.IsZero(m.FpolicyInlinePolicies) { // not required
 		return nil
@@ -187,6 +218,10 @@ func (m *Fpolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateFpolicyInlinePersistentStores(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateFpolicyInlinePolicies(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -241,6 +276,24 @@ func (m *Fpolicy) contextValidateFpolicyInlineEvents(ctx context.Context, format
 			if err := m.FpolicyInlineEvents[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("events" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Fpolicy) contextValidateFpolicyInlinePersistentStores(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.FpolicyInlinePersistentStores); i++ {
+
+		if m.FpolicyInlinePersistentStores[i] != nil {
+			if err := m.FpolicyInlinePersistentStores[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("persistent_stores" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -387,7 +440,7 @@ func (m *FpolicyInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyInlineSvm fpolicy inline svm
+// FpolicyInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model fpolicy_inline_svm
 type FpolicyInlineSvm struct {
@@ -395,12 +448,12 @@ type FpolicyInlineSvm struct {
 	// links
 	Links *FpolicyInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

@@ -194,12 +194,6 @@ type QuotaReportCollectionGetParams struct {
 	*/
 	SpaceUsedTotal *int64
 
-	/* Specifier.
-
-	   Filter by specifier
-	*/
-	Specifier *string
-
 	/* SvmName.
 
 	   Filter by svm.name
@@ -541,17 +535,6 @@ func (o *QuotaReportCollectionGetParams) WithSpaceUsedTotal(spaceUsedTotal *int6
 // SetSpaceUsedTotal adds the spaceUsedTotal to the quota report collection get params
 func (o *QuotaReportCollectionGetParams) SetSpaceUsedTotal(spaceUsedTotal *int64) {
 	o.SpaceUsedTotal = spaceUsedTotal
-}
-
-// WithSpecifier adds the specifier to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithSpecifier(specifier *string) *QuotaReportCollectionGetParams {
-	o.SetSpecifier(specifier)
-	return o
-}
-
-// SetSpecifier adds the specifier to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetSpecifier(specifier *string) {
-	o.Specifier = specifier
 }
 
 // WithSvmName adds the svmName to the quota report collection get params
@@ -979,23 +962,6 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qSpaceUsedTotal != "" {
 
 			if err := r.SetQueryParam("space.used.total", qSpaceUsedTotal); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.Specifier != nil {
-
-		// query param specifier
-		var qrSpecifier string
-
-		if o.Specifier != nil {
-			qrSpecifier = *o.Specifier
-		}
-		qSpecifier := qrSpecifier
-		if qSpecifier != "" {
-
-			if err := r.SetQueryParam("specifier", qSpecifier); err != nil {
 				return err
 			}
 		}

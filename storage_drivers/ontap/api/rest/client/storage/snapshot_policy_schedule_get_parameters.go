@@ -70,13 +70,13 @@ type SnapshotPolicyScheduleGetParams struct {
 
 	/* ScheduleUUID.
 
-	   Snapshot copy policy schedule ID
+	   Snapshot policy schedule ID
 	*/
 	ScheduleUUID string
 
 	/* SnapshotPolicyUUID.
 
-	   Snapshot copy policy UUID
+	   Snapshot policy UUID
 	*/
 	SnapshotPolicyUUID string
 

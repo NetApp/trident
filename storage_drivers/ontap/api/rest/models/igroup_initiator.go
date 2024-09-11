@@ -47,6 +47,9 @@ type IgroupInitiator struct {
 	// Max Length: 96
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
+
+	// proximity
+	Proximity *IgroupInitiatorInlineProximity `json:"proximity,omitempty"`
 }
 
 // Validate validates this igroup initiator
@@ -74,6 +77,10 @@ func (m *IgroupInitiator) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProximity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -190,6 +197,23 @@ func (m *IgroupInitiator) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *IgroupInitiator) validateProximity(formats strfmt.Registry) error {
+	if swag.IsZero(m.Proximity) { // not required
+		return nil
+	}
+
+	if m.Proximity != nil {
+		if err := m.Proximity.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("proximity")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this igroup initiator based on the context it is used
 func (m *IgroupInitiator) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -207,6 +231,10 @@ func (m *IgroupInitiator) ContextValidate(ctx context.Context, formats strfmt.Re
 	}
 
 	if err := m.contextValidateIgroupInitiatorInlineRecords(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProximity(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -276,6 +304,20 @@ func (m *IgroupInitiator) contextValidateIgroupInitiatorInlineRecords(ctx contex
 	return nil
 }
 
+func (m *IgroupInitiator) contextValidateProximity(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Proximity != nil {
+		if err := m.Proximity.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("proximity")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *IgroupInitiator) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -304,8 +346,9 @@ type IgroupInitiatorInlineConnectivityTracking struct {
 	Alerts []*IgroupInitiatorConnectivityTrackingAlertsItems0 `json:"alerts,omitempty"`
 
 	// Connection state.
+	//
 	// Read Only: true
-	// Enum: [full none partial no_lun_maps]
+	// Enum: ["full","none","partial","no_lun_maps"]
 	ConnectionState *string `json:"connection_state,omitempty"`
 
 	// connections
@@ -651,11 +694,6 @@ type IgroupInitiatorConnectivityTrackingAlertsItems0Summary struct {
 	// Example: entry doesn't exist
 	// Read Only: true
 	Message *string `json:"message,omitempty"`
-
-	// The target parameter that caused the error.
-	// Example: uuid
-	// Read Only: true
-	Target *string `json:"target,omitempty"`
 }
 
 // Validate validates this igroup initiator connectivity tracking alerts items0 summary
@@ -712,10 +750,6 @@ func (m *IgroupInitiatorConnectivityTrackingAlertsItems0Summary) ContextValidate
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateTarget(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -756,15 +790,6 @@ func (m *IgroupInitiatorConnectivityTrackingAlertsItems0Summary) contextValidate
 func (m *IgroupInitiatorConnectivityTrackingAlertsItems0Summary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "summary"+"."+"message", "body", m.Message); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *IgroupInitiatorConnectivityTrackingAlertsItems0Summary) contextValidateTarget(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "summary"+"."+"target", "body", m.Target); err != nil {
 		return err
 	}
 
@@ -934,6 +959,7 @@ func (m *IgroupInitiatorConnectivityTrackingConnectionsItems0) UnmarshalBinary(b
 type IgroupInitiatorConnectivityTrackingConnectionsItems0LoginsItems0 struct {
 
 	// True if the initiator is currently logged in to this connection's interface.
+	//
 	// Read Only: true
 	Connected *bool `json:"connected,omitempty"`
 
@@ -941,7 +967,8 @@ type IgroupInitiatorConnectivityTrackingConnectionsItems0LoginsItems0 struct {
 	Interface *IgroupInitiatorConnectivityTrackingConnectionsItems0LoginsItems0Interface `json:"interface,omitempty"`
 
 	// The last time this initiator logged in. Logins not seen for 48 hours are cleared and not reported.
-	// Example: 2021-03-14T05:19:00Z
+	//
+	// Example: 2021-03-14 05:19:00
 	// Read Only: true
 	// Format: date-time
 	LastSeenTime *strfmt.DateTime `json:"last_seen_time,omitempty"`
@@ -1395,7 +1422,7 @@ func (m *IgroupInitiatorConnectivityTrackingConnectionsItems0LoginsItems0Interfa
 	return nil
 }
 
-// IgroupInitiatorConnectivityTrackingConnectionsItems0LoginsItems0InterfaceIP igroup initiator connectivity tracking connections items0 logins items0 interface IP
+// IgroupInitiatorConnectivityTrackingConnectionsItems0LoginsItems0InterfaceIP A network interface. Either UUID or name may be supplied on input.
 //
 // swagger:model IgroupInitiatorConnectivityTrackingConnectionsItems0LoginsItems0InterfaceIP
 type IgroupInitiatorConnectivityTrackingConnectionsItems0LoginsItems0InterfaceIP struct {
@@ -2176,6 +2203,291 @@ func (m *IgroupInitiatorInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// IgroupInitiatorInlineProximity Properties that define to what SVMs the initiator is proximal. This information is used to properly report active optimized and active non-optimized network paths via ALUA. If no configuration has been specified for an initiator, the sub-object will not be present in GET.<br/>
+// These properties can be set via initiator group POST and PATCH and apply to all instances of the initiator in all initiator groups in the SVM and its peers. The `proximity` sub-object for an initiator is set in POST and PATCH in its entirety and replaces any previously set proximity for the initiator within the SVM for the initiator within the SVM. The `local_svm` property must always be set to `true` or `false` when setting the `proximity` property. To clear any previously set proximity, POST or PATCH the `proximity` object to `null`.
+//
+// swagger:model igroup_initiator_inline_proximity
+type IgroupInitiatorInlineProximity struct {
+
+	// A boolean that indicates if the initiator is proximal to the SVM of the containing initiator group. This is required for any POST or PATCH that includes the `proximity` sub-object.
+	//
+	LocalSvm *bool `json:"local_svm,omitempty"`
+
+	// An array of remote peer SVMs to which the initiator is proximal.
+	//
+	PeerSvms []*IgroupInitiatorProximityPeerSvmsItems0 `json:"peer_svms,omitempty"`
+}
+
+// Validate validates this igroup initiator inline proximity
+func (m *IgroupInitiatorInlineProximity) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validatePeerSvms(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorInlineProximity) validatePeerSvms(formats strfmt.Registry) error {
+	if swag.IsZero(m.PeerSvms) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.PeerSvms); i++ {
+		if swag.IsZero(m.PeerSvms[i]) { // not required
+			continue
+		}
+
+		if m.PeerSvms[i] != nil {
+			if err := m.PeerSvms[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("proximity" + "." + "peer_svms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup initiator inline proximity based on the context it is used
+func (m *IgroupInitiatorInlineProximity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidatePeerSvms(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorInlineProximity) contextValidatePeerSvms(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.PeerSvms); i++ {
+
+		if m.PeerSvms[i] != nil {
+			if err := m.PeerSvms[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("proximity" + "." + "peer_svms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorInlineProximity) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorInlineProximity) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorInlineProximity
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInitiatorProximityPeerSvmsItems0 A reference to an SVM peer relationship.
+//
+// swagger:model IgroupInitiatorProximityPeerSvmsItems0
+type IgroupInitiatorProximityPeerSvmsItems0 struct {
+
+	// links
+	Links *IgroupInitiatorProximityPeerSvmsItems0Links `json:"_links,omitempty"`
+
+	// The local name of the peer SVM. This name is unique among all local and peer SVMs.
+	//
+	// Example: peer1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM peer relationship. This is the UUID of the relationship, not the UUID of the peer SVM itself.
+	//
+	// Example: 4204cf77-4c82-9bdb-5644-b5a841c097a9
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this igroup initiator proximity peer svms items0
+func (m *IgroupInitiatorProximityPeerSvmsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorProximityPeerSvmsItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup initiator proximity peer svms items0 based on the context it is used
+func (m *IgroupInitiatorProximityPeerSvmsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorProximityPeerSvmsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorProximityPeerSvmsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorProximityPeerSvmsItems0) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorProximityPeerSvmsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInitiatorProximityPeerSvmsItems0Links igroup initiator proximity peer svms items0 links
+//
+// swagger:model IgroupInitiatorProximityPeerSvmsItems0Links
+type IgroupInitiatorProximityPeerSvmsItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this igroup initiator proximity peer svms items0 links
+func (m *IgroupInitiatorProximityPeerSvmsItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorProximityPeerSvmsItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup initiator proximity peer svms items0 links based on the context it is used
+func (m *IgroupInitiatorProximityPeerSvmsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorProximityPeerSvmsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorProximityPeerSvmsItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorProximityPeerSvmsItems0Links) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorProximityPeerSvmsItems0Links
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // IgroupInitiatorInlineRecordsInlineArrayItem igroup initiator inline records inline array item
 //
 // swagger:model igroup_initiator_inline_records_inline_array_item
@@ -2197,6 +2509,9 @@ type IgroupInitiatorInlineRecordsInlineArrayItem struct {
 	// Max Length: 96
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
+
+	// proximity
+	Proximity *IgroupInitiatorInlineRecordsInlineArrayItemInlineProximity `json:"proximity,omitempty"`
 }
 
 // Validate validates this igroup initiator inline records inline array item
@@ -2212,6 +2527,10 @@ func (m *IgroupInitiatorInlineRecordsInlineArrayItem) Validate(formats strfmt.Re
 	}
 
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProximity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2270,11 +2589,32 @@ func (m *IgroupInitiatorInlineRecordsInlineArrayItem) validateName(formats strfm
 	return nil
 }
 
+func (m *IgroupInitiatorInlineRecordsInlineArrayItem) validateProximity(formats strfmt.Registry) error {
+	if swag.IsZero(m.Proximity) { // not required
+		return nil
+	}
+
+	if m.Proximity != nil {
+		if err := m.Proximity.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("proximity")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this igroup initiator inline records inline array item based on the context it is used
 func (m *IgroupInitiatorInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProximity(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2290,6 +2630,20 @@ func (m *IgroupInitiatorInlineRecordsInlineArrayItem) contextValidateLinks(ctx c
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IgroupInitiatorInlineRecordsInlineArrayItem) contextValidateProximity(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Proximity != nil {
+		if err := m.Proximity.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("proximity")
 			}
 			return err
 		}
@@ -2395,6 +2749,291 @@ func (m *IgroupInitiatorInlineRecordsInlineArrayItemInlineLinks) MarshalBinary()
 // UnmarshalBinary interface implementation
 func (m *IgroupInitiatorInlineRecordsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
 	var res IgroupInitiatorInlineRecordsInlineArrayItemInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInitiatorInlineRecordsInlineArrayItemInlineProximity Properties that define to what SVMs the initiator is proximal. This information is used to properly report active optimized and active non-optimized network paths via ALUA. If no configuration has been specified for an initiator, the sub-object will not be present in GET.<br/>
+// These properties can be set via initiator group POST and PATCH and apply to all instances of the initiator in all initiator groups in the SVM and its peers. The `proximity` sub-object for an initiator is set in POST and PATCH in its entirety and replaces any previously set proximity for the initiator within the SVM for the initiator within the SVM. The `local_svm` property must always be set to `true` or `false` when setting the `proximity` property. To clear any previously set proximity, POST or PATCH the `proximity` object to `null`.
+//
+// swagger:model igroup_initiator_inline_records_inline_array_item_inline_proximity
+type IgroupInitiatorInlineRecordsInlineArrayItemInlineProximity struct {
+
+	// A boolean that indicates if the initiator is proximal to the SVM of the containing initiator group. This is required for any POST or PATCH that includes the `proximity` sub-object.
+	//
+	LocalSvm *bool `json:"local_svm,omitempty"`
+
+	// An array of remote peer SVMs to which the initiator is proximal.
+	//
+	PeerSvms []*IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0 `json:"peer_svms"`
+}
+
+// Validate validates this igroup initiator inline records inline array item inline proximity
+func (m *IgroupInitiatorInlineRecordsInlineArrayItemInlineProximity) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validatePeerSvms(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorInlineRecordsInlineArrayItemInlineProximity) validatePeerSvms(formats strfmt.Registry) error {
+	if swag.IsZero(m.PeerSvms) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.PeerSvms); i++ {
+		if swag.IsZero(m.PeerSvms[i]) { // not required
+			continue
+		}
+
+		if m.PeerSvms[i] != nil {
+			if err := m.PeerSvms[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("proximity" + "." + "peer_svms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup initiator inline records inline array item inline proximity based on the context it is used
+func (m *IgroupInitiatorInlineRecordsInlineArrayItemInlineProximity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidatePeerSvms(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorInlineRecordsInlineArrayItemInlineProximity) contextValidatePeerSvms(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.PeerSvms); i++ {
+
+		if m.PeerSvms[i] != nil {
+			if err := m.PeerSvms[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("proximity" + "." + "peer_svms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorInlineRecordsInlineArrayItemInlineProximity) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorInlineRecordsInlineArrayItemInlineProximity) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorInlineRecordsInlineArrayItemInlineProximity
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0 A reference to an SVM peer relationship.
+//
+// swagger:model IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0
+type IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0 struct {
+
+	// links
+	Links *IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0Links `json:"_links,omitempty"`
+
+	// The local name of the peer SVM. This name is unique among all local and peer SVMs.
+	//
+	// Example: peer1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM peer relationship. This is the UUID of the relationship, not the UUID of the peer SVM itself.
+	//
+	// Example: 4204cf77-4c82-9bdb-5644-b5a841c097a9
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this igroup initiator records items0 proximity peer svms items0
+func (m *IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup initiator records items0 proximity peer svms items0 based on the context it is used
+func (m *IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0Links igroup initiator records items0 proximity peer svms items0 links
+//
+// swagger:model IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0Links
+type IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this igroup initiator records items0 proximity peer svms items0 links
+func (m *IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup initiator records items0 proximity peer svms items0 links based on the context it is used
+func (m *IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0Links) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorRecordsItems0ProximityPeerSvmsItems0Links
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

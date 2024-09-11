@@ -25,7 +25,7 @@ type CertificateSigningRequest struct {
 	Links *CertificateSigningRequestInlineLinks `json:"_links,omitempty"`
 
 	// Asymmetric Encryption Algorithm.
-	// Enum: [rsa ecc]
+	// Enum: ["rsa","ec"]
 	Algorithm *string `json:"algorithm,omitempty"`
 
 	// A Certificate Signing Request (CSR) provided to a CA for obtaining a CA-signed certificate.
@@ -40,14 +40,14 @@ type CertificateSigningRequest struct {
 	GeneratedPrivateKey *string `json:"generated_private_key,omitempty"`
 
 	// Hashing function.
-	// Enum: [sha256 sha224 sha384 sha512]
+	// Enum: ["sha256","sha224","sha384","sha512"]
 	HashFunction *string `json:"hash_function,omitempty"`
 
 	// A list of key usage extensions.
 	KeyUsages []*string `json:"key_usages,omitempty"`
 
 	// Security strength of the certificate in bits.
-	// Enum: [112 128 192]
+	// Enum: [112,128,192]
 	SecurityStrength *int64 `json:"security_strength,omitempty"`
 
 	// subject alternatives
@@ -117,7 +117,7 @@ var certificateSigningRequestTypeAlgorithmPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["rsa","ecc"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["rsa","ec"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -142,10 +142,10 @@ const (
 	// CertificateSigningRequest
 	// algorithm
 	// Algorithm
-	// ecc
+	// ec
 	// END DEBUGGING
-	// CertificateSigningRequestAlgorithmEcc captures enum value "ecc"
-	CertificateSigningRequestAlgorithmEcc string = "ecc"
+	// CertificateSigningRequestAlgorithmEc captures enum value "ec"
+	CertificateSigningRequestAlgorithmEc string = "ec"
 )
 
 // prop value enum
@@ -173,7 +173,7 @@ var certificateSigningRequestExtendedKeyUsagesItemsEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["serverauth","clientauth","timestamping","anyextendedkeyusage","critical"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["serverauth","clientauth","timestamping","dvcs","ocspsigning","codesigning","emailprotection","anyextendedkeyusage","critical"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

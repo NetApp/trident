@@ -27,18 +27,26 @@ type ClusterSSHServer struct {
 	// Example: ["aes256_ctr","aes192_ctr","aes128_ctr"]
 	ClusterSSHServerInlineCiphers []*Cipher `json:"ciphers,omitempty"`
 
+	// Host key algorithms. The host key algorithm 'ssh_ed25519' can be configured only in non-FIPS mode.
+	// Example: ["ecdsa_sha2_nistp256","ssh_rsa"]
+	ClusterSSHServerInlineHostKeyAlgorithms []*HostKeyAlgorithm `json:"host_key_algorithms,omitempty"`
+
 	// Key exchange algorithms.
-	// Example: ["diffie_hellman_group_exchange_sha256","diffie_hellman_group14_sha1"]
+	// Example: ["diffie_hellman_group_exchange_sha256","ecdh_sha2_nistp256","diffie_hellman_group18_sha512"]
 	ClusterSSHServerInlineKeyExchangeAlgorithms []*KeyExchangeAlgorithm `json:"key_exchange_algorithms,omitempty"`
 
 	// MAC algorithms.
-	// Example: ["hmac_sha1","hmac_sha2_512_etm"]
+	// Example: ["hmac_sha2_512","hmac_sha2_512_etm"]
 	ClusterSSHServerInlineMacAlgorithms []*MacAlgorithm `json:"mac_algorithms,omitempty"`
 
 	// Maximum connections allowed per second.
 	// Maximum: 70
 	// Minimum: 1
 	ConnectionsPerSecond *int64 `json:"connections_per_second,omitempty"`
+
+	// Enables or disables the _ssh-rsa_ signature scheme, which uses the SHA-1 hash algorithm, for RSA keys in public key algorithms. If this flag is _false_, older SSH implementations might fail to authenticate using RSA keys. This flag should be enabled only as a temporary measure until legacy SSH client implementations can be upgraded or reconfigured with another key type, for example: ECDSA.
+	//
+	IsRsaInPublickeyAlgorithmsEnabled *bool `json:"is_rsa_in_publickey_algorithms_enabled,omitempty"`
 
 	// Maximum authentication retries allowed before closing the connection.
 	// Maximum: 6
@@ -65,6 +73,10 @@ func (m *ClusterSSHServer) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateClusterSSHServerInlineCiphers(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateClusterSSHServerInlineHostKeyAlgorithms(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -129,6 +141,30 @@ func (m *ClusterSSHServer) validateClusterSSHServerInlineCiphers(formats strfmt.
 			if err := m.ClusterSSHServerInlineCiphers[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("ciphers" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ClusterSSHServer) validateClusterSSHServerInlineHostKeyAlgorithms(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClusterSSHServerInlineHostKeyAlgorithms) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ClusterSSHServerInlineHostKeyAlgorithms); i++ {
+		if swag.IsZero(m.ClusterSSHServerInlineHostKeyAlgorithms[i]) { // not required
+			continue
+		}
+
+		if m.ClusterSSHServerInlineHostKeyAlgorithms[i] != nil {
+			if err := m.ClusterSSHServerInlineHostKeyAlgorithms[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("host_key_algorithms" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -263,6 +299,10 @@ func (m *ClusterSSHServer) ContextValidate(ctx context.Context, formats strfmt.R
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateClusterSSHServerInlineHostKeyAlgorithms(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateClusterSSHServerInlineKeyExchangeAlgorithms(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -299,6 +339,24 @@ func (m *ClusterSSHServer) contextValidateClusterSSHServerInlineCiphers(ctx cont
 			if err := m.ClusterSSHServerInlineCiphers[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("ciphers" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ClusterSSHServer) contextValidateClusterSSHServerInlineHostKeyAlgorithms(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ClusterSSHServerInlineHostKeyAlgorithms); i++ {
+
+		if m.ClusterSSHServerInlineHostKeyAlgorithms[i] != nil {
+			if err := m.ClusterSSHServerInlineHostKeyAlgorithms[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("host_key_algorithms" + "." + strconv.Itoa(i))
 				}
 				return err
 			}

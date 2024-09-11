@@ -7,7 +7,6 @@ package models
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -21,17 +20,9 @@ import (
 type AzureKeyVaultKey struct {
 
 	// Key identifier of the AKV key encryption key.
-	// Example: https://keyvault1.vault.azure.net/keys/key1
+	// Example: https://keyvault1.vault.azure.net/keys/key1/12345678901234567890123456789012
 	// Format: uri
 	KeyID *strfmt.URI `json:"key_id,omitempty"`
-
-	// Set to "svm" for interfaces owned by an SVM. Otherwise, set to "cluster".
-	// Read Only: true
-	// Enum: [svm cluster]
-	Scope *string `json:"scope,omitempty"`
-
-	// svm
-	Svm *AzureKeyVaultKeyInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this azure key vault key
@@ -39,14 +30,6 @@ func (m *AzureKeyVaultKey) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateKeyID(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateScope(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSvm(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -68,117 +51,8 @@ func (m *AzureKeyVaultKey) validateKeyID(formats strfmt.Registry) error {
 	return nil
 }
 
-var azureKeyVaultKeyTypeScopePropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["svm","cluster"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		azureKeyVaultKeyTypeScopePropEnum = append(azureKeyVaultKeyTypeScopePropEnum, v)
-	}
-}
-
-const (
-
-	// BEGIN DEBUGGING
-	// azure_key_vault_key
-	// AzureKeyVaultKey
-	// scope
-	// Scope
-	// svm
-	// END DEBUGGING
-	// AzureKeyVaultKeyScopeSvm captures enum value "svm"
-	AzureKeyVaultKeyScopeSvm string = "svm"
-
-	// BEGIN DEBUGGING
-	// azure_key_vault_key
-	// AzureKeyVaultKey
-	// scope
-	// Scope
-	// cluster
-	// END DEBUGGING
-	// AzureKeyVaultKeyScopeCluster captures enum value "cluster"
-	AzureKeyVaultKeyScopeCluster string = "cluster"
-)
-
-// prop value enum
-func (m *AzureKeyVaultKey) validateScopeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, azureKeyVaultKeyTypeScopePropEnum, true); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *AzureKeyVaultKey) validateScope(formats strfmt.Registry) error {
-	if swag.IsZero(m.Scope) { // not required
-		return nil
-	}
-
-	// value enum
-	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *AzureKeyVaultKey) validateSvm(formats strfmt.Registry) error {
-	if swag.IsZero(m.Svm) { // not required
-		return nil
-	}
-
-	if m.Svm != nil {
-		if err := m.Svm.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("svm")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this azure key vault key based on the context it is used
+// ContextValidate validates this azure key vault key based on context it is used
 func (m *AzureKeyVaultKey) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateScope(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateSvm(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *AzureKeyVaultKey) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "scope", "body", m.Scope); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *AzureKeyVaultKey) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Svm != nil {
-		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("svm")
-			}
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -193,188 +67,6 @@ func (m *AzureKeyVaultKey) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *AzureKeyVaultKey) UnmarshalBinary(b []byte) error {
 	var res AzureKeyVaultKey
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// AzureKeyVaultKeyInlineSvm azure key vault key inline svm
-//
-// swagger:model azure_key_vault_key_inline_svm
-type AzureKeyVaultKeyInlineSvm struct {
-
-	// links
-	Links *AzureKeyVaultKeyInlineSvmInlineLinks `json:"_links,omitempty"`
-
-	// The name of the SVM.
-	//
-	// Example: svm1
-	Name *string `json:"name,omitempty"`
-
-	// The unique identifier of the SVM.
-	//
-	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID *string `json:"uuid,omitempty"`
-}
-
-// Validate validates this azure key vault key inline svm
-func (m *AzureKeyVaultKeyInlineSvm) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *AzureKeyVaultKeyInlineSvm) validateLinks(formats strfmt.Registry) error {
-	if swag.IsZero(m.Links) { // not required
-		return nil
-	}
-
-	if m.Links != nil {
-		if err := m.Links.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("svm" + "." + "_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this azure key vault key inline svm based on the context it is used
-func (m *AzureKeyVaultKeyInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateLinks(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *AzureKeyVaultKeyInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Links != nil {
-		if err := m.Links.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("svm" + "." + "_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *AzureKeyVaultKeyInlineSvm) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *AzureKeyVaultKeyInlineSvm) UnmarshalBinary(b []byte) error {
-	var res AzureKeyVaultKeyInlineSvm
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// AzureKeyVaultKeyInlineSvmInlineLinks azure key vault key inline svm inline links
-//
-// swagger:model azure_key_vault_key_inline_svm_inline__links
-type AzureKeyVaultKeyInlineSvmInlineLinks struct {
-
-	// self
-	Self *Href `json:"self,omitempty"`
-}
-
-// Validate validates this azure key vault key inline svm inline links
-func (m *AzureKeyVaultKeyInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateSelf(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *AzureKeyVaultKeyInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
-	if swag.IsZero(m.Self) { // not required
-		return nil
-	}
-
-	if m.Self != nil {
-		if err := m.Self.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("svm" + "." + "_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this azure key vault key inline svm inline links based on the context it is used
-func (m *AzureKeyVaultKeyInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateSelf(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *AzureKeyVaultKeyInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Self != nil {
-		if err := m.Self.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("svm" + "." + "_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *AzureKeyVaultKeyInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *AzureKeyVaultKeyInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
-	var res AzureKeyVaultKeyInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

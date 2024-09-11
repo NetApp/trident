@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SnmpGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snmp get o k response
+func (o *SnmpGetOK) Code() int {
+	return 200
+}
+
 func (o *SnmpGetOK) Error() string {
-	return fmt.Sprintf("[GET /support/snmp][%d] snmpGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/snmp][%d] snmpGetOK %s", 200, payload)
 }
 
 func (o *SnmpGetOK) String() string {
-	return fmt.Sprintf("[GET /support/snmp][%d] snmpGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/snmp][%d] snmpGetOK %s", 200, payload)
 }
 
 func (o *SnmpGetOK) GetPayload() *models.Snmp {
@@ -122,11 +130,6 @@ type SnmpGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the snmp get default response
-func (o *SnmpGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this snmp get default response has a 2xx status code
 func (o *SnmpGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SnmpGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snmp get default response
+func (o *SnmpGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnmpGetDefault) Error() string {
-	return fmt.Sprintf("[GET /support/snmp][%d] snmp_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/snmp][%d] snmp_get default %s", o._statusCode, payload)
 }
 
 func (o *SnmpGetDefault) String() string {
-	return fmt.Sprintf("[GET /support/snmp][%d] snmp_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/snmp][%d] snmp_get default %s", o._statusCode, payload)
 }
 
 func (o *SnmpGetDefault) GetPayload() *models.ErrorResponse {

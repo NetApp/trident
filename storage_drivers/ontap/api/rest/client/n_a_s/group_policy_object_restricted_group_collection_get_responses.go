@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *GroupPolicyObjectRestrictedGroupCollectionGetOK) IsCode(code int) bool 
 	return code == 200
 }
 
+// Code gets the status code for the group policy object restricted group collection get o k response
+func (o *GroupPolicyObjectRestrictedGroupCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *GroupPolicyObjectRestrictedGroupCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/restricted-groups][%d] groupPolicyObjectRestrictedGroupCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/restricted-groups][%d] groupPolicyObjectRestrictedGroupCollectionGetOK %s", 200, payload)
 }
 
 func (o *GroupPolicyObjectRestrictedGroupCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/restricted-groups][%d] groupPolicyObjectRestrictedGroupCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/restricted-groups][%d] groupPolicyObjectRestrictedGroupCollectionGetOK %s", 200, payload)
 }
 
 func (o *GroupPolicyObjectRestrictedGroupCollectionGetOK) GetPayload() *models.GroupPolicyObjectRestrictedGroupResponse {
@@ -122,11 +130,6 @@ type GroupPolicyObjectRestrictedGroupCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the group policy object restricted group collection get default response
-func (o *GroupPolicyObjectRestrictedGroupCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this group policy object restricted group collection get default response has a 2xx status code
 func (o *GroupPolicyObjectRestrictedGroupCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *GroupPolicyObjectRestrictedGroupCollectionGetDefault) IsCode(code int) 
 	return o._statusCode == code
 }
 
+// Code gets the status code for the group policy object restricted group collection get default response
+func (o *GroupPolicyObjectRestrictedGroupCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *GroupPolicyObjectRestrictedGroupCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/restricted-groups][%d] group_policy_object_restricted_group_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/restricted-groups][%d] group_policy_object_restricted_group_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *GroupPolicyObjectRestrictedGroupCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/restricted-groups][%d] group_policy_object_restricted_group_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/restricted-groups][%d] group_policy_object_restricted_group_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *GroupPolicyObjectRestrictedGroupCollectionGetDefault) GetPayload() *models.ErrorResponse {

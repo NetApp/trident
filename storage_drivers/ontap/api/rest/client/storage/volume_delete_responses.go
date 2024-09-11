@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type VolumeDeleteReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *VolumeDeleteReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewVolumeDeleteOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewVolumeDeleteAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *VolumeDeleteReader) ReadResponse(response runtime.ClientResponse, consu
 	}
 }
 
+// NewVolumeDeleteOK creates a VolumeDeleteOK with default headers values
+func NewVolumeDeleteOK() *VolumeDeleteOK {
+	return &VolumeDeleteOK{}
+}
+
+/*
+VolumeDeleteOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type VolumeDeleteOK struct {
+	Payload *models.VolumeJobLinkResponse
+}
+
+// IsSuccess returns true when this volume delete o k response has a 2xx status code
+func (o *VolumeDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this volume delete o k response has a 3xx status code
+func (o *VolumeDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this volume delete o k response has a 4xx status code
+func (o *VolumeDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this volume delete o k response has a 5xx status code
+func (o *VolumeDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this volume delete o k response a status code equal to that given
+func (o *VolumeDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the volume delete o k response
+func (o *VolumeDeleteOK) Code() int {
+	return 200
+}
+
+func (o *VolumeDeleteOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/volumes/{uuid}][%d] volumeDeleteOK %s", 200, payload)
+}
+
+func (o *VolumeDeleteOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/volumes/{uuid}][%d] volumeDeleteOK %s", 200, payload)
+}
+
+func (o *VolumeDeleteOK) GetPayload() *models.VolumeJobLinkResponse {
+	return o.Payload
+}
+
+func (o *VolumeDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.VolumeJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewVolumeDeleteAccepted creates a VolumeDeleteAccepted with default headers values
 func NewVolumeDeleteAccepted() *VolumeDeleteAccepted {
 	return &VolumeDeleteAccepted{}
@@ -52,7 +129,7 @@ VolumeDeleteAccepted describes a response with status code 202, with default hea
 Accepted
 */
 type VolumeDeleteAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.VolumeJobLinkResponse
 }
 
 // IsSuccess returns true when this volume delete accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *VolumeDeleteAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the volume delete accepted response
+func (o *VolumeDeleteAccepted) Code() int {
+	return 202
+}
+
 func (o *VolumeDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /storage/volumes/{uuid}][%d] volumeDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/volumes/{uuid}][%d] volumeDeleteAccepted %s", 202, payload)
 }
 
 func (o *VolumeDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /storage/volumes/{uuid}][%d] volumeDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/volumes/{uuid}][%d] volumeDeleteAccepted %s", 202, payload)
 }
 
-func (o *VolumeDeleteAccepted) GetPayload() *models.JobLinkResponse {
+func (o *VolumeDeleteAccepted) GetPayload() *models.VolumeJobLinkResponse {
 	return o.Payload
 }
 
 func (o *VolumeDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.VolumeJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -112,19 +196,30 @@ func NewVolumeDeleteDefault(code int) *VolumeDeleteDefault {
 }
 
 /*
-VolumeDeleteDefault describes a response with status code -1, with default header values.
+	VolumeDeleteDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 460770 | \[Job \"jobid\"\] Job failed. |
+| 524615 | Failed to delete volume because it has one or more clones. |
+| 917531 | Cannot delete the root volume because the SVM contains other volumes. |
+| 918667 | Volume \"name\" in SVM \"svm.name\" cannot be taken offline because it is configured to hold audit logs. |
+| 918693 | Volume \"name\" in SVM \"svm.name\" cannot be taken offline because it is configured to hold audit logs. |
+| 918701 | The specified operation on the volume endpoint is not supported on this platform. |
+| 13107349 | Operation is only supported on flexible volumes and FlexGroup volumes. |
+| 65537463 | Volume encryption keys (VEK) cannot be created or deleted for data Vserver \\\"{0}\\\". External key management has been configured for data Vserver \\\"{0}\\\" but ONTAP is not able to encrypt or decrypt with the key manager. Resolve the external key manager key issues at the key manager's portal before creating any new encrypted volumes. |
+| 65537529 | Encrypted volumes cannot be created or deleted for Vserver \\\"{0}\\\" as a rekey operation for the vserver is in progress. Try creating the encrypted volume again after some time. If the problem persists, run the rekey operation again after some time. |
+| 65537600 | Encrypted volumes cannot be created or deleted for Vserver \\\"{0}\\\" while the enabled keystore configuration is being switched. If a previous attempt to switch the keystore configuration failed, or was interrupted, the system will continue to prevent encrypted volume creation for Vserver \\\"{0}\\\". Use the \\\"security key-manager keystore enable\\\" command to re-run and complete the operation. |
+| 65539430 | Cannot create or delete volumes on Vserver \\\"{0}\\\" while the keystore is being initialized. Wait until the keystore is in the active state, and rerun the volume operation. |
+| 65539431 | Cannot create or delete volumes on Vserver \\\"{0}\\\" while the keystore is being disabled. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type VolumeDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the volume delete default response
-func (o *VolumeDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this volume delete default response has a 2xx status code
@@ -152,12 +247,19 @@ func (o *VolumeDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the volume delete default response
+func (o *VolumeDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VolumeDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /storage/volumes/{uuid}][%d] volume_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/volumes/{uuid}][%d] volume_delete default %s", o._statusCode, payload)
 }
 
 func (o *VolumeDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /storage/volumes/{uuid}][%d] volume_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/volumes/{uuid}][%d] volume_delete default %s", o._statusCode, payload)
 }
 
 func (o *VolumeDeleteDefault) GetPayload() *models.ErrorResponse {

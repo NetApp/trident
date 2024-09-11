@@ -62,6 +62,12 @@ NodesGetParams contains all the parameters to send to the API endpoint
 */
 type NodesGetParams struct {
 
+	/* AntiRansomwareVersion.
+
+	   Filter by anti_ransomware_version
+	*/
+	AntiRansomwareVersion *string
+
 	/* ClusterInterfacesIPAddress.
 
 	   Filter by cluster_interfaces.ip.address
@@ -380,6 +386,18 @@ type NodesGetParams struct {
 	*/
 	HaTakeoverState *string
 
+	/* HaTakeoverCheckReasons.
+
+	   Filter by ha.takeover_check.reasons
+	*/
+	HaTakeoverCheckReasons *string
+
+	/* HaTakeoverCheckTakeoverPossible.
+
+	   Filter by ha.takeover_check.takeover_possible
+	*/
+	HaTakeoverCheckTakeoverPossible *bool
+
 	/* HwAssistStatusEnabled.
 
 	   Filter by hw_assist.status.enabled
@@ -642,6 +660,12 @@ type NodesGetParams struct {
 	*/
 	ServiceProcessorIPV4InterfaceAddress *string
 
+	/* ServiceProcessorIPV4InterfaceEnabled.
+
+	   Filter by service_processor.ipv4_interface.enabled
+	*/
+	ServiceProcessorIPV4InterfaceEnabled *bool
+
 	/* ServiceProcessorIPV4InterfaceGateway.
 
 	   Filter by service_processor.ipv4_interface.gateway
@@ -654,11 +678,23 @@ type NodesGetParams struct {
 	*/
 	ServiceProcessorIPV4InterfaceNetmask *string
 
+	/* ServiceProcessorIPV4InterfaceSetupState.
+
+	   Filter by service_processor.ipv4_interface.setup_state
+	*/
+	ServiceProcessorIPV4InterfaceSetupState *string
+
 	/* ServiceProcessorIPV6InterfaceAddress.
 
 	   Filter by service_processor.ipv6_interface.address
 	*/
 	ServiceProcessorIPV6InterfaceAddress *string
+
+	/* ServiceProcessorIPV6InterfaceEnabled.
+
+	   Filter by service_processor.ipv6_interface.enabled
+	*/
+	ServiceProcessorIPV6InterfaceEnabled *bool
 
 	/* ServiceProcessorIPV6InterfaceGateway.
 
@@ -666,11 +702,35 @@ type NodesGetParams struct {
 	*/
 	ServiceProcessorIPV6InterfaceGateway *string
 
+	/* ServiceProcessorIPV6InterfaceIsIPV6RaEnabled.
+
+	   Filter by service_processor.ipv6_interface.is_ipv6_ra_enabled
+	*/
+	ServiceProcessorIPV6InterfaceIsIPV6RaEnabled *bool
+
+	/* ServiceProcessorIPV6InterfaceLinkLocalIP.
+
+	   Filter by service_processor.ipv6_interface.link_local_ip
+	*/
+	ServiceProcessorIPV6InterfaceLinkLocalIP *string
+
 	/* ServiceProcessorIPV6InterfaceNetmask.
 
 	   Filter by service_processor.ipv6_interface.netmask
 	*/
 	ServiceProcessorIPV6InterfaceNetmask *int64
+
+	/* ServiceProcessorIPV6InterfaceRouterIP.
+
+	   Filter by service_processor.ipv6_interface.router_ip
+	*/
+	ServiceProcessorIPV6InterfaceRouterIP *string
+
+	/* ServiceProcessorIPV6InterfaceSetupState.
+
+	   Filter by service_processor.ipv6_interface.setup_state
+	*/
+	ServiceProcessorIPV6InterfaceSetupState *string
 
 	/* ServiceProcessorIsIPConfigured.
 
@@ -732,6 +792,18 @@ type NodesGetParams struct {
 	*/
 	ServiceProcessorType *string
 
+	/* ServiceProcessorWebServiceEnabled.
+
+	   Filter by service_processor.web_service.enabled
+	*/
+	ServiceProcessorWebServiceEnabled *bool
+
+	/* ServiceProcessorWebServiceLimitAccess.
+
+	   Filter by service_processor.web_service.limit_access
+	*/
+	ServiceProcessorWebServiceLimitAccess *bool
+
 	/* SnaplockComplianceClockTime.
 
 	   Filter by snaplock.compliance_clock_time
@@ -768,11 +840,35 @@ type NodesGetParams struct {
 	*/
 	StatisticsTimestamp *string
 
+	/* StorageAvailabilityZonesName.
+
+	   Filter by storage_availability_zones.name
+	*/
+	StorageAvailabilityZonesName *string
+
+	/* StorageAvailabilityZonesUUID.
+
+	   Filter by storage_availability_zones.uuid
+	*/
+	StorageAvailabilityZonesUUID *string
+
 	/* StorageConfiguration.
 
 	   Filter by storage_configuration
 	*/
 	StorageConfiguration *string
+
+	/* SystemAggregateName.
+
+	   Filter by system_aggregate.name
+	*/
+	SystemAggregateName *string
+
+	/* SystemAggregateUUID.
+
+	   Filter by system_aggregate.uuid
+	*/
+	SystemAggregateUUID *string
 
 	/* SystemID.
 
@@ -899,6 +995,17 @@ func (o *NodesGetParams) WithHTTPClient(client *http.Client) *NodesGetParams {
 // SetHTTPClient adds the HTTPClient to the nodes get params
 func (o *NodesGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithAntiRansomwareVersion adds the antiRansomwareVersion to the nodes get params
+func (o *NodesGetParams) WithAntiRansomwareVersion(antiRansomwareVersion *string) *NodesGetParams {
+	o.SetAntiRansomwareVersion(antiRansomwareVersion)
+	return o
+}
+
+// SetAntiRansomwareVersion adds the antiRansomwareVersion to the nodes get params
+func (o *NodesGetParams) SetAntiRansomwareVersion(antiRansomwareVersion *string) {
+	o.AntiRansomwareVersion = antiRansomwareVersion
 }
 
 // WithClusterInterfacesIPAddress adds the clusterInterfacesIPAddress to the nodes get params
@@ -1484,6 +1591,28 @@ func (o *NodesGetParams) SetHaTakeoverState(haTakeoverState *string) {
 	o.HaTakeoverState = haTakeoverState
 }
 
+// WithHaTakeoverCheckReasons adds the haTakeoverCheckReasons to the nodes get params
+func (o *NodesGetParams) WithHaTakeoverCheckReasons(haTakeoverCheckReasons *string) *NodesGetParams {
+	o.SetHaTakeoverCheckReasons(haTakeoverCheckReasons)
+	return o
+}
+
+// SetHaTakeoverCheckReasons adds the haTakeoverCheckReasons to the nodes get params
+func (o *NodesGetParams) SetHaTakeoverCheckReasons(haTakeoverCheckReasons *string) {
+	o.HaTakeoverCheckReasons = haTakeoverCheckReasons
+}
+
+// WithHaTakeoverCheckTakeoverPossible adds the haTakeoverCheckTakeoverPossible to the nodes get params
+func (o *NodesGetParams) WithHaTakeoverCheckTakeoverPossible(haTakeoverCheckTakeoverPossible *bool) *NodesGetParams {
+	o.SetHaTakeoverCheckTakeoverPossible(haTakeoverCheckTakeoverPossible)
+	return o
+}
+
+// SetHaTakeoverCheckTakeoverPossible adds the haTakeoverCheckTakeoverPossible to the nodes get params
+func (o *NodesGetParams) SetHaTakeoverCheckTakeoverPossible(haTakeoverCheckTakeoverPossible *bool) {
+	o.HaTakeoverCheckTakeoverPossible = haTakeoverCheckTakeoverPossible
+}
+
 // WithHwAssistStatusEnabled adds the hwAssistStatusEnabled to the nodes get params
 func (o *NodesGetParams) WithHwAssistStatusEnabled(hwAssistStatusEnabled *bool) *NodesGetParams {
 	o.SetHwAssistStatusEnabled(hwAssistStatusEnabled)
@@ -1957,6 +2086,17 @@ func (o *NodesGetParams) SetServiceProcessorIPV4InterfaceAddress(serviceProcesso
 	o.ServiceProcessorIPV4InterfaceAddress = serviceProcessorIPV4InterfaceAddress
 }
 
+// WithServiceProcessorIPV4InterfaceEnabled adds the serviceProcessorIPV4InterfaceEnabled to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPV4InterfaceEnabled(serviceProcessorIPV4InterfaceEnabled *bool) *NodesGetParams {
+	o.SetServiceProcessorIPV4InterfaceEnabled(serviceProcessorIPV4InterfaceEnabled)
+	return o
+}
+
+// SetServiceProcessorIPV4InterfaceEnabled adds the serviceProcessorIpv4InterfaceEnabled to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPV4InterfaceEnabled(serviceProcessorIPV4InterfaceEnabled *bool) {
+	o.ServiceProcessorIPV4InterfaceEnabled = serviceProcessorIPV4InterfaceEnabled
+}
+
 // WithServiceProcessorIPV4InterfaceGateway adds the serviceProcessorIPV4InterfaceGateway to the nodes get params
 func (o *NodesGetParams) WithServiceProcessorIPV4InterfaceGateway(serviceProcessorIPV4InterfaceGateway *string) *NodesGetParams {
 	o.SetServiceProcessorIPV4InterfaceGateway(serviceProcessorIPV4InterfaceGateway)
@@ -1979,6 +2119,17 @@ func (o *NodesGetParams) SetServiceProcessorIPV4InterfaceNetmask(serviceProcesso
 	o.ServiceProcessorIPV4InterfaceNetmask = serviceProcessorIPV4InterfaceNetmask
 }
 
+// WithServiceProcessorIPV4InterfaceSetupState adds the serviceProcessorIPV4InterfaceSetupState to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPV4InterfaceSetupState(serviceProcessorIPV4InterfaceSetupState *string) *NodesGetParams {
+	o.SetServiceProcessorIPV4InterfaceSetupState(serviceProcessorIPV4InterfaceSetupState)
+	return o
+}
+
+// SetServiceProcessorIPV4InterfaceSetupState adds the serviceProcessorIpv4InterfaceSetupState to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPV4InterfaceSetupState(serviceProcessorIPV4InterfaceSetupState *string) {
+	o.ServiceProcessorIPV4InterfaceSetupState = serviceProcessorIPV4InterfaceSetupState
+}
+
 // WithServiceProcessorIPV6InterfaceAddress adds the serviceProcessorIPV6InterfaceAddress to the nodes get params
 func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceAddress(serviceProcessorIPV6InterfaceAddress *string) *NodesGetParams {
 	o.SetServiceProcessorIPV6InterfaceAddress(serviceProcessorIPV6InterfaceAddress)
@@ -1988,6 +2139,17 @@ func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceAddress(serviceProcess
 // SetServiceProcessorIPV6InterfaceAddress adds the serviceProcessorIpv6InterfaceAddress to the nodes get params
 func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceAddress(serviceProcessorIPV6InterfaceAddress *string) {
 	o.ServiceProcessorIPV6InterfaceAddress = serviceProcessorIPV6InterfaceAddress
+}
+
+// WithServiceProcessorIPV6InterfaceEnabled adds the serviceProcessorIPV6InterfaceEnabled to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceEnabled(serviceProcessorIPV6InterfaceEnabled *bool) *NodesGetParams {
+	o.SetServiceProcessorIPV6InterfaceEnabled(serviceProcessorIPV6InterfaceEnabled)
+	return o
+}
+
+// SetServiceProcessorIPV6InterfaceEnabled adds the serviceProcessorIpv6InterfaceEnabled to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceEnabled(serviceProcessorIPV6InterfaceEnabled *bool) {
+	o.ServiceProcessorIPV6InterfaceEnabled = serviceProcessorIPV6InterfaceEnabled
 }
 
 // WithServiceProcessorIPV6InterfaceGateway adds the serviceProcessorIPV6InterfaceGateway to the nodes get params
@@ -2001,6 +2163,28 @@ func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceGateway(serviceProcesso
 	o.ServiceProcessorIPV6InterfaceGateway = serviceProcessorIPV6InterfaceGateway
 }
 
+// WithServiceProcessorIPV6InterfaceIsIPV6RaEnabled adds the serviceProcessorIPV6InterfaceIsIPV6RaEnabled to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceIsIPV6RaEnabled(serviceProcessorIPV6InterfaceIsIPV6RaEnabled *bool) *NodesGetParams {
+	o.SetServiceProcessorIPV6InterfaceIsIPV6RaEnabled(serviceProcessorIPV6InterfaceIsIPV6RaEnabled)
+	return o
+}
+
+// SetServiceProcessorIPV6InterfaceIsIPV6RaEnabled adds the serviceProcessorIpv6InterfaceIsIpv6RaEnabled to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceIsIPV6RaEnabled(serviceProcessorIPV6InterfaceIsIPV6RaEnabled *bool) {
+	o.ServiceProcessorIPV6InterfaceIsIPV6RaEnabled = serviceProcessorIPV6InterfaceIsIPV6RaEnabled
+}
+
+// WithServiceProcessorIPV6InterfaceLinkLocalIP adds the serviceProcessorIPV6InterfaceLinkLocalIP to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceLinkLocalIP(serviceProcessorIPV6InterfaceLinkLocalIP *string) *NodesGetParams {
+	o.SetServiceProcessorIPV6InterfaceLinkLocalIP(serviceProcessorIPV6InterfaceLinkLocalIP)
+	return o
+}
+
+// SetServiceProcessorIPV6InterfaceLinkLocalIP adds the serviceProcessorIpv6InterfaceLinkLocalIp to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceLinkLocalIP(serviceProcessorIPV6InterfaceLinkLocalIP *string) {
+	o.ServiceProcessorIPV6InterfaceLinkLocalIP = serviceProcessorIPV6InterfaceLinkLocalIP
+}
+
 // WithServiceProcessorIPV6InterfaceNetmask adds the serviceProcessorIPV6InterfaceNetmask to the nodes get params
 func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceNetmask(serviceProcessorIPV6InterfaceNetmask *int64) *NodesGetParams {
 	o.SetServiceProcessorIPV6InterfaceNetmask(serviceProcessorIPV6InterfaceNetmask)
@@ -2010,6 +2194,28 @@ func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceNetmask(serviceProcess
 // SetServiceProcessorIPV6InterfaceNetmask adds the serviceProcessorIpv6InterfaceNetmask to the nodes get params
 func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceNetmask(serviceProcessorIPV6InterfaceNetmask *int64) {
 	o.ServiceProcessorIPV6InterfaceNetmask = serviceProcessorIPV6InterfaceNetmask
+}
+
+// WithServiceProcessorIPV6InterfaceRouterIP adds the serviceProcessorIPV6InterfaceRouterIP to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceRouterIP(serviceProcessorIPV6InterfaceRouterIP *string) *NodesGetParams {
+	o.SetServiceProcessorIPV6InterfaceRouterIP(serviceProcessorIPV6InterfaceRouterIP)
+	return o
+}
+
+// SetServiceProcessorIPV6InterfaceRouterIP adds the serviceProcessorIpv6InterfaceRouterIp to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceRouterIP(serviceProcessorIPV6InterfaceRouterIP *string) {
+	o.ServiceProcessorIPV6InterfaceRouterIP = serviceProcessorIPV6InterfaceRouterIP
+}
+
+// WithServiceProcessorIPV6InterfaceSetupState adds the serviceProcessorIPV6InterfaceSetupState to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceSetupState(serviceProcessorIPV6InterfaceSetupState *string) *NodesGetParams {
+	o.SetServiceProcessorIPV6InterfaceSetupState(serviceProcessorIPV6InterfaceSetupState)
+	return o
+}
+
+// SetServiceProcessorIPV6InterfaceSetupState adds the serviceProcessorIpv6InterfaceSetupState to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceSetupState(serviceProcessorIPV6InterfaceSetupState *string) {
+	o.ServiceProcessorIPV6InterfaceSetupState = serviceProcessorIPV6InterfaceSetupState
 }
 
 // WithServiceProcessorIsIPConfigured adds the serviceProcessorIsIPConfigured to the nodes get params
@@ -2122,6 +2328,28 @@ func (o *NodesGetParams) SetServiceProcessorType(serviceProcessorType *string) {
 	o.ServiceProcessorType = serviceProcessorType
 }
 
+// WithServiceProcessorWebServiceEnabled adds the serviceProcessorWebServiceEnabled to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorWebServiceEnabled(serviceProcessorWebServiceEnabled *bool) *NodesGetParams {
+	o.SetServiceProcessorWebServiceEnabled(serviceProcessorWebServiceEnabled)
+	return o
+}
+
+// SetServiceProcessorWebServiceEnabled adds the serviceProcessorWebServiceEnabled to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorWebServiceEnabled(serviceProcessorWebServiceEnabled *bool) {
+	o.ServiceProcessorWebServiceEnabled = serviceProcessorWebServiceEnabled
+}
+
+// WithServiceProcessorWebServiceLimitAccess adds the serviceProcessorWebServiceLimitAccess to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorWebServiceLimitAccess(serviceProcessorWebServiceLimitAccess *bool) *NodesGetParams {
+	o.SetServiceProcessorWebServiceLimitAccess(serviceProcessorWebServiceLimitAccess)
+	return o
+}
+
+// SetServiceProcessorWebServiceLimitAccess adds the serviceProcessorWebServiceLimitAccess to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorWebServiceLimitAccess(serviceProcessorWebServiceLimitAccess *bool) {
+	o.ServiceProcessorWebServiceLimitAccess = serviceProcessorWebServiceLimitAccess
+}
+
 // WithSnaplockComplianceClockTime adds the snaplockComplianceClockTime to the nodes get params
 func (o *NodesGetParams) WithSnaplockComplianceClockTime(snaplockComplianceClockTime *string) *NodesGetParams {
 	o.SetSnaplockComplianceClockTime(snaplockComplianceClockTime)
@@ -2188,6 +2416,28 @@ func (o *NodesGetParams) SetStatisticsTimestamp(statisticsTimestamp *string) {
 	o.StatisticsTimestamp = statisticsTimestamp
 }
 
+// WithStorageAvailabilityZonesName adds the storageAvailabilityZonesName to the nodes get params
+func (o *NodesGetParams) WithStorageAvailabilityZonesName(storageAvailabilityZonesName *string) *NodesGetParams {
+	o.SetStorageAvailabilityZonesName(storageAvailabilityZonesName)
+	return o
+}
+
+// SetStorageAvailabilityZonesName adds the storageAvailabilityZonesName to the nodes get params
+func (o *NodesGetParams) SetStorageAvailabilityZonesName(storageAvailabilityZonesName *string) {
+	o.StorageAvailabilityZonesName = storageAvailabilityZonesName
+}
+
+// WithStorageAvailabilityZonesUUID adds the storageAvailabilityZonesUUID to the nodes get params
+func (o *NodesGetParams) WithStorageAvailabilityZonesUUID(storageAvailabilityZonesUUID *string) *NodesGetParams {
+	o.SetStorageAvailabilityZonesUUID(storageAvailabilityZonesUUID)
+	return o
+}
+
+// SetStorageAvailabilityZonesUUID adds the storageAvailabilityZonesUuid to the nodes get params
+func (o *NodesGetParams) SetStorageAvailabilityZonesUUID(storageAvailabilityZonesUUID *string) {
+	o.StorageAvailabilityZonesUUID = storageAvailabilityZonesUUID
+}
+
 // WithStorageConfiguration adds the storageConfiguration to the nodes get params
 func (o *NodesGetParams) WithStorageConfiguration(storageConfiguration *string) *NodesGetParams {
 	o.SetStorageConfiguration(storageConfiguration)
@@ -2197,6 +2447,28 @@ func (o *NodesGetParams) WithStorageConfiguration(storageConfiguration *string) 
 // SetStorageConfiguration adds the storageConfiguration to the nodes get params
 func (o *NodesGetParams) SetStorageConfiguration(storageConfiguration *string) {
 	o.StorageConfiguration = storageConfiguration
+}
+
+// WithSystemAggregateName adds the systemAggregateName to the nodes get params
+func (o *NodesGetParams) WithSystemAggregateName(systemAggregateName *string) *NodesGetParams {
+	o.SetSystemAggregateName(systemAggregateName)
+	return o
+}
+
+// SetSystemAggregateName adds the systemAggregateName to the nodes get params
+func (o *NodesGetParams) SetSystemAggregateName(systemAggregateName *string) {
+	o.SystemAggregateName = systemAggregateName
+}
+
+// WithSystemAggregateUUID adds the systemAggregateUUID to the nodes get params
+func (o *NodesGetParams) WithSystemAggregateUUID(systemAggregateUUID *string) *NodesGetParams {
+	o.SetSystemAggregateUUID(systemAggregateUUID)
+	return o
+}
+
+// SetSystemAggregateUUID adds the systemAggregateUuid to the nodes get params
+func (o *NodesGetParams) SetSystemAggregateUUID(systemAggregateUUID *string) {
+	o.SystemAggregateUUID = systemAggregateUUID
 }
 
 // WithSystemID adds the systemID to the nodes get params
@@ -2316,6 +2588,23 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		return err
 	}
 	var res []error
+
+	if o.AntiRansomwareVersion != nil {
+
+		// query param anti_ransomware_version
+		var qrAntiRansomwareVersion string
+
+		if o.AntiRansomwareVersion != nil {
+			qrAntiRansomwareVersion = *o.AntiRansomwareVersion
+		}
+		qAntiRansomwareVersion := qrAntiRansomwareVersion
+		if qAntiRansomwareVersion != "" {
+
+			if err := r.SetQueryParam("anti_ransomware_version", qAntiRansomwareVersion); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.ClusterInterfacesIPAddress != nil {
 
@@ -3212,6 +3501,40 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
+	if o.HaTakeoverCheckReasons != nil {
+
+		// query param ha.takeover_check.reasons
+		var qrHaTakeoverCheckReasons string
+
+		if o.HaTakeoverCheckReasons != nil {
+			qrHaTakeoverCheckReasons = *o.HaTakeoverCheckReasons
+		}
+		qHaTakeoverCheckReasons := qrHaTakeoverCheckReasons
+		if qHaTakeoverCheckReasons != "" {
+
+			if err := r.SetQueryParam("ha.takeover_check.reasons", qHaTakeoverCheckReasons); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaTakeoverCheckTakeoverPossible != nil {
+
+		// query param ha.takeover_check.takeover_possible
+		var qrHaTakeoverCheckTakeoverPossible bool
+
+		if o.HaTakeoverCheckTakeoverPossible != nil {
+			qrHaTakeoverCheckTakeoverPossible = *o.HaTakeoverCheckTakeoverPossible
+		}
+		qHaTakeoverCheckTakeoverPossible := swag.FormatBool(qrHaTakeoverCheckTakeoverPossible)
+		if qHaTakeoverCheckTakeoverPossible != "" {
+
+			if err := r.SetQueryParam("ha.takeover_check.takeover_possible", qHaTakeoverCheckTakeoverPossible); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.HwAssistStatusEnabled != nil {
 
 		// query param hw_assist.status.enabled
@@ -3937,6 +4260,23 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
+	if o.ServiceProcessorIPV4InterfaceEnabled != nil {
+
+		// query param service_processor.ipv4_interface.enabled
+		var qrServiceProcessorIPV4InterfaceEnabled bool
+
+		if o.ServiceProcessorIPV4InterfaceEnabled != nil {
+			qrServiceProcessorIPV4InterfaceEnabled = *o.ServiceProcessorIPV4InterfaceEnabled
+		}
+		qServiceProcessorIPV4InterfaceEnabled := swag.FormatBool(qrServiceProcessorIPV4InterfaceEnabled)
+		if qServiceProcessorIPV4InterfaceEnabled != "" {
+
+			if err := r.SetQueryParam("service_processor.ipv4_interface.enabled", qServiceProcessorIPV4InterfaceEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ServiceProcessorIPV4InterfaceGateway != nil {
 
 		// query param service_processor.ipv4_interface.gateway
@@ -3971,6 +4311,23 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
+	if o.ServiceProcessorIPV4InterfaceSetupState != nil {
+
+		// query param service_processor.ipv4_interface.setup_state
+		var qrServiceProcessorIPV4InterfaceSetupState string
+
+		if o.ServiceProcessorIPV4InterfaceSetupState != nil {
+			qrServiceProcessorIPV4InterfaceSetupState = *o.ServiceProcessorIPV4InterfaceSetupState
+		}
+		qServiceProcessorIPV4InterfaceSetupState := qrServiceProcessorIPV4InterfaceSetupState
+		if qServiceProcessorIPV4InterfaceSetupState != "" {
+
+			if err := r.SetQueryParam("service_processor.ipv4_interface.setup_state", qServiceProcessorIPV4InterfaceSetupState); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ServiceProcessorIPV6InterfaceAddress != nil {
 
 		// query param service_processor.ipv6_interface.address
@@ -3983,6 +4340,23 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		if qServiceProcessorIPV6InterfaceAddress != "" {
 
 			if err := r.SetQueryParam("service_processor.ipv6_interface.address", qServiceProcessorIPV6InterfaceAddress); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorIPV6InterfaceEnabled != nil {
+
+		// query param service_processor.ipv6_interface.enabled
+		var qrServiceProcessorIPV6InterfaceEnabled bool
+
+		if o.ServiceProcessorIPV6InterfaceEnabled != nil {
+			qrServiceProcessorIPV6InterfaceEnabled = *o.ServiceProcessorIPV6InterfaceEnabled
+		}
+		qServiceProcessorIPV6InterfaceEnabled := swag.FormatBool(qrServiceProcessorIPV6InterfaceEnabled)
+		if qServiceProcessorIPV6InterfaceEnabled != "" {
+
+			if err := r.SetQueryParam("service_processor.ipv6_interface.enabled", qServiceProcessorIPV6InterfaceEnabled); err != nil {
 				return err
 			}
 		}
@@ -4005,6 +4379,40 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
+	if o.ServiceProcessorIPV6InterfaceIsIPV6RaEnabled != nil {
+
+		// query param service_processor.ipv6_interface.is_ipv6_ra_enabled
+		var qrServiceProcessorIPV6InterfaceIsIPV6RaEnabled bool
+
+		if o.ServiceProcessorIPV6InterfaceIsIPV6RaEnabled != nil {
+			qrServiceProcessorIPV6InterfaceIsIPV6RaEnabled = *o.ServiceProcessorIPV6InterfaceIsIPV6RaEnabled
+		}
+		qServiceProcessorIPV6InterfaceIsIPV6RaEnabled := swag.FormatBool(qrServiceProcessorIPV6InterfaceIsIPV6RaEnabled)
+		if qServiceProcessorIPV6InterfaceIsIPV6RaEnabled != "" {
+
+			if err := r.SetQueryParam("service_processor.ipv6_interface.is_ipv6_ra_enabled", qServiceProcessorIPV6InterfaceIsIPV6RaEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorIPV6InterfaceLinkLocalIP != nil {
+
+		// query param service_processor.ipv6_interface.link_local_ip
+		var qrServiceProcessorIPV6InterfaceLinkLocalIP string
+
+		if o.ServiceProcessorIPV6InterfaceLinkLocalIP != nil {
+			qrServiceProcessorIPV6InterfaceLinkLocalIP = *o.ServiceProcessorIPV6InterfaceLinkLocalIP
+		}
+		qServiceProcessorIPV6InterfaceLinkLocalIP := qrServiceProcessorIPV6InterfaceLinkLocalIP
+		if qServiceProcessorIPV6InterfaceLinkLocalIP != "" {
+
+			if err := r.SetQueryParam("service_processor.ipv6_interface.link_local_ip", qServiceProcessorIPV6InterfaceLinkLocalIP); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ServiceProcessorIPV6InterfaceNetmask != nil {
 
 		// query param service_processor.ipv6_interface.netmask
@@ -4017,6 +4425,40 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		if qServiceProcessorIPV6InterfaceNetmask != "" {
 
 			if err := r.SetQueryParam("service_processor.ipv6_interface.netmask", qServiceProcessorIPV6InterfaceNetmask); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorIPV6InterfaceRouterIP != nil {
+
+		// query param service_processor.ipv6_interface.router_ip
+		var qrServiceProcessorIPV6InterfaceRouterIP string
+
+		if o.ServiceProcessorIPV6InterfaceRouterIP != nil {
+			qrServiceProcessorIPV6InterfaceRouterIP = *o.ServiceProcessorIPV6InterfaceRouterIP
+		}
+		qServiceProcessorIPV6InterfaceRouterIP := qrServiceProcessorIPV6InterfaceRouterIP
+		if qServiceProcessorIPV6InterfaceRouterIP != "" {
+
+			if err := r.SetQueryParam("service_processor.ipv6_interface.router_ip", qServiceProcessorIPV6InterfaceRouterIP); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorIPV6InterfaceSetupState != nil {
+
+		// query param service_processor.ipv6_interface.setup_state
+		var qrServiceProcessorIPV6InterfaceSetupState string
+
+		if o.ServiceProcessorIPV6InterfaceSetupState != nil {
+			qrServiceProcessorIPV6InterfaceSetupState = *o.ServiceProcessorIPV6InterfaceSetupState
+		}
+		qServiceProcessorIPV6InterfaceSetupState := qrServiceProcessorIPV6InterfaceSetupState
+		if qServiceProcessorIPV6InterfaceSetupState != "" {
+
+			if err := r.SetQueryParam("service_processor.ipv6_interface.setup_state", qServiceProcessorIPV6InterfaceSetupState); err != nil {
 				return err
 			}
 		}
@@ -4192,6 +4634,40 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
+	if o.ServiceProcessorWebServiceEnabled != nil {
+
+		// query param service_processor.web_service.enabled
+		var qrServiceProcessorWebServiceEnabled bool
+
+		if o.ServiceProcessorWebServiceEnabled != nil {
+			qrServiceProcessorWebServiceEnabled = *o.ServiceProcessorWebServiceEnabled
+		}
+		qServiceProcessorWebServiceEnabled := swag.FormatBool(qrServiceProcessorWebServiceEnabled)
+		if qServiceProcessorWebServiceEnabled != "" {
+
+			if err := r.SetQueryParam("service_processor.web_service.enabled", qServiceProcessorWebServiceEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorWebServiceLimitAccess != nil {
+
+		// query param service_processor.web_service.limit_access
+		var qrServiceProcessorWebServiceLimitAccess bool
+
+		if o.ServiceProcessorWebServiceLimitAccess != nil {
+			qrServiceProcessorWebServiceLimitAccess = *o.ServiceProcessorWebServiceLimitAccess
+		}
+		qServiceProcessorWebServiceLimitAccess := swag.FormatBool(qrServiceProcessorWebServiceLimitAccess)
+		if qServiceProcessorWebServiceLimitAccess != "" {
+
+			if err := r.SetQueryParam("service_processor.web_service.limit_access", qServiceProcessorWebServiceLimitAccess); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SnaplockComplianceClockTime != nil {
 
 		// query param snaplock.compliance_clock_time
@@ -4294,6 +4770,40 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
+	if o.StorageAvailabilityZonesName != nil {
+
+		// query param storage_availability_zones.name
+		var qrStorageAvailabilityZonesName string
+
+		if o.StorageAvailabilityZonesName != nil {
+			qrStorageAvailabilityZonesName = *o.StorageAvailabilityZonesName
+		}
+		qStorageAvailabilityZonesName := qrStorageAvailabilityZonesName
+		if qStorageAvailabilityZonesName != "" {
+
+			if err := r.SetQueryParam("storage_availability_zones.name", qStorageAvailabilityZonesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StorageAvailabilityZonesUUID != nil {
+
+		// query param storage_availability_zones.uuid
+		var qrStorageAvailabilityZonesUUID string
+
+		if o.StorageAvailabilityZonesUUID != nil {
+			qrStorageAvailabilityZonesUUID = *o.StorageAvailabilityZonesUUID
+		}
+		qStorageAvailabilityZonesUUID := qrStorageAvailabilityZonesUUID
+		if qStorageAvailabilityZonesUUID != "" {
+
+			if err := r.SetQueryParam("storage_availability_zones.uuid", qStorageAvailabilityZonesUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.StorageConfiguration != nil {
 
 		// query param storage_configuration
@@ -4306,6 +4816,40 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		if qStorageConfiguration != "" {
 
 			if err := r.SetQueryParam("storage_configuration", qStorageConfiguration); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SystemAggregateName != nil {
+
+		// query param system_aggregate.name
+		var qrSystemAggregateName string
+
+		if o.SystemAggregateName != nil {
+			qrSystemAggregateName = *o.SystemAggregateName
+		}
+		qSystemAggregateName := qrSystemAggregateName
+		if qSystemAggregateName != "" {
+
+			if err := r.SetQueryParam("system_aggregate.name", qSystemAggregateName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SystemAggregateUUID != nil {
+
+		// query param system_aggregate.uuid
+		var qrSystemAggregateUUID string
+
+		if o.SystemAggregateUUID != nil {
+			qrSystemAggregateUUID = *o.SystemAggregateUUID
+		}
+		qSystemAggregateUUID := qrSystemAggregateUUID
+		if qSystemAggregateUUID != "" {
+
+			if err := r.SetQueryParam("system_aggregate.uuid", qSystemAggregateUUID); err != nil {
 				return err
 			}
 		}

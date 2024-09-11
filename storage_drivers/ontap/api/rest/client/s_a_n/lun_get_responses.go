@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *LunGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the lun get o k response
+func (o *LunGetOK) Code() int {
+	return 200
+}
+
 func (o *LunGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/luns/{uuid}][%d] lunGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/luns/{uuid}][%d] lunGetOK %s", 200, payload)
 }
 
 func (o *LunGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/luns/{uuid}][%d] lunGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/luns/{uuid}][%d] lunGetOK %s", 200, payload)
 }
 
 func (o *LunGetOK) GetPayload() *models.Lun {
@@ -120,16 +128,12 @@ func NewLunGetDefault(code int) *LunGetDefault {
 | ---------- | ----------- |
 | 5374875 | The specified LUN was not found. |
 | 5374876 | The specified LUN was not found. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type LunGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the lun get default response
-func (o *LunGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this lun get default response has a 2xx status code
@@ -157,12 +161,19 @@ func (o *LunGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the lun get default response
+func (o *LunGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LunGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/luns/{uuid}][%d] lun_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/luns/{uuid}][%d] lun_get default %s", o._statusCode, payload)
 }
 
 func (o *LunGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/luns/{uuid}][%d] lun_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/luns/{uuid}][%d] lun_get default %s", o._statusCode, payload)
 }
 
 func (o *LunGetDefault) GetPayload() *models.ErrorResponse {

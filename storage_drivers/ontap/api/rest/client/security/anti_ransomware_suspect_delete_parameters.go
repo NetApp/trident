@@ -62,6 +62,12 @@ AntiRansomwareSuspectDeleteParams contains all the parameters to send to the API
 */
 type AntiRansomwareSuspectDeleteParams struct {
 
+	/* IsFalsePositive.
+
+	   Specifies whether the suspected ransomware activity is a false positive or not.
+	*/
+	IsFalsePositive *bool
+
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
@@ -100,14 +106,17 @@ func (o *AntiRansomwareSuspectDeleteParams) WithDefaults() *AntiRansomwareSuspec
 // All values with no default are reset to their zero value.
 func (o *AntiRansomwareSuspectDeleteParams) SetDefaults() {
 	var (
+		isFalsePositiveDefault = bool(false)
+
 		returnRecordsDefault = bool(false)
 
 		returnTimeoutDefault = int64(0)
 	)
 
 	val := AntiRansomwareSuspectDeleteParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		IsFalsePositive: &isFalsePositiveDefault,
+		ReturnRecords:   &returnRecordsDefault,
+		ReturnTimeout:   &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -147,6 +156,17 @@ func (o *AntiRansomwareSuspectDeleteParams) WithHTTPClient(client *http.Client) 
 // SetHTTPClient adds the HTTPClient to the anti ransomware suspect delete params
 func (o *AntiRansomwareSuspectDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithIsFalsePositive adds the isFalsePositive to the anti ransomware suspect delete params
+func (o *AntiRansomwareSuspectDeleteParams) WithIsFalsePositive(isFalsePositive *bool) *AntiRansomwareSuspectDeleteParams {
+	o.SetIsFalsePositive(isFalsePositive)
+	return o
+}
+
+// SetIsFalsePositive adds the isFalsePositive to the anti ransomware suspect delete params
+func (o *AntiRansomwareSuspectDeleteParams) SetIsFalsePositive(isFalsePositive *bool) {
+	o.IsFalsePositive = isFalsePositive
 }
 
 // WithReturnRecords adds the returnRecords to the anti ransomware suspect delete params
@@ -189,6 +209,23 @@ func (o *AntiRansomwareSuspectDeleteParams) WriteToRequest(r runtime.ClientReque
 		return err
 	}
 	var res []error
+
+	if o.IsFalsePositive != nil {
+
+		// query param is_false_positive
+		var qrIsFalsePositive bool
+
+		if o.IsFalsePositive != nil {
+			qrIsFalsePositive = *o.IsFalsePositive
+		}
+		qIsFalsePositive := swag.FormatBool(qrIsFalsePositive)
+		if qIsFalsePositive != "" {
+
+			if err := r.SetQueryParam("is_false_positive", qIsFalsePositive); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.ReturnRecords != nil {
 

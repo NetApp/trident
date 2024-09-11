@@ -21,7 +21,7 @@ import (
 type AppNfsAccess struct {
 
 	// The NFS access granted.
-	// Enum: [none ro rw]
+	// Enum: ["none","ro","rw"]
 	Access *string `json:"access,omitempty"`
 
 	// The name of the NFS entity granted access.

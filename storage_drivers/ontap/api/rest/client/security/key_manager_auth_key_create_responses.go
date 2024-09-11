@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *KeyManagerAuthKeyCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the key manager auth key create created response
+func (o *KeyManagerAuthKeyCreateCreated) Code() int {
+	return 201
+}
+
 func (o *KeyManagerAuthKeyCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/key-managers/{security_key_manager.uuid}/auth-keys][%d] keyManagerAuthKeyCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers/{security_key_manager.uuid}/auth-keys][%d] keyManagerAuthKeyCreateCreated %s", 201, payload)
 }
 
 func (o *KeyManagerAuthKeyCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/key-managers/{security_key_manager.uuid}/auth-keys][%d] keyManagerAuthKeyCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers/{security_key_manager.uuid}/auth-keys][%d] keyManagerAuthKeyCreateCreated %s", 201, payload)
 }
 
 func (o *KeyManagerAuthKeyCreateCreated) GetPayload() *models.KeyManagerAuthKeyResponse {
@@ -134,31 +142,26 @@ func NewKeyManagerAuthKeyCreateDefault(code int) *KeyManagerAuthKeyCreateDefault
 | 65536053 | Invalid passphrase length; passphrase must be 20-32 ASCII-range characters. |
 | 65536056 | The key tag value provided contains invalid characters. |
 | 65536056 | The key-tag option cannot contain any spaces, tabs or new lines. |
-| 65536074 | No key servers found. |
 | 65536076 | Failed to push authentication key to any registered key servers. |
 | 65536160 | Unable to determine the current number of configured authentication keys. |
 | 65536264 | Failed to create authentication key. |
 | 65536265 | Failed to create a key-id for the authentication key. |
 | 65536828 | External key management is not enabled for the SVM. |
-| 65536856 | No key servers found. |
+| 65536856 | No key servers found for the SVM. |
 | 65536872 | Error cleaning up key database after key creation error. |
 | 65536896 | External key management is not configured on the partner site. |
+| 65536987 | One or more key servers are unavailable. |
 | 65538800 | External KMIP DKMIP keymanager not configured on administrative Vserver. |
 | 65538801 | Internal error while accessing keymanager database. |
 | 65538802 | The UUID provided is not associated with the administrator SVM key manager. |
 | 66060289 | Failed to store authentication key on key server. |
-| 66060302 | Failed to create authentication key. |
 | 66060304 | Invalid key length. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type KeyManagerAuthKeyCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the key manager auth key create default response
-func (o *KeyManagerAuthKeyCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this key manager auth key create default response has a 2xx status code
@@ -186,12 +189,19 @@ func (o *KeyManagerAuthKeyCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the key manager auth key create default response
+func (o *KeyManagerAuthKeyCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *KeyManagerAuthKeyCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/key-managers/{security_key_manager.uuid}/auth-keys][%d] key_manager_auth_key_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers/{security_key_manager.uuid}/auth-keys][%d] key_manager_auth_key_create default %s", o._statusCode, payload)
 }
 
 func (o *KeyManagerAuthKeyCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/key-managers/{security_key_manager.uuid}/auth-keys][%d] key_manager_auth_key_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers/{security_key_manager.uuid}/auth-keys][%d] key_manager_auth_key_create default %s", o._statusCode, payload)
 }
 
 func (o *KeyManagerAuthKeyCreateDefault) GetPayload() *models.ErrorResponse {

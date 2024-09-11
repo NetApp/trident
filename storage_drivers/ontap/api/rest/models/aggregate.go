@@ -24,8 +24,10 @@ type Aggregate struct {
 	// links
 	Links *AggregateInlineLinks `json:"_links,omitempty"`
 
-	// Information on the aggregate's remaining hot spare disks.
-	AggregateInlineRecommendationSpares []*AggregateSpare `json:"recommendation_spares,omitempty"`
+	// Tags are an optional way to track the uses of a resource. Tag values must be formatted as key:value strings.
+	// Example: ["team:csi","environment:test"]
+	// Max Items: 64
+	AggregateInlineTags []*string `json:"_tags,omitempty"`
 
 	// block storage
 	BlockStorage *AggregateInlineBlockStorage `json:"block_storage,omitempty"`
@@ -34,7 +36,7 @@ type Aggregate struct {
 	CloudStorage *AggregateInlineCloudStorage `json:"cloud_storage,omitempty"`
 
 	// Timestamp of aggregate creation.
-	// Example: 2018-01-01T12:00:00-04:00
+	// Example: 2018-01-01 16:00:00
 	// Read Only: true
 	CreateTime *string `json:"create_time,omitempty"`
 
@@ -74,7 +76,7 @@ type Aggregate struct {
 	SidlEnabled *bool `json:"sidl_enabled,omitempty"`
 
 	// SnapLock type.
-	// Enum: [non_snaplock compliance enterprise]
+	// Enum: ["non_snaplock","compliance","enterprise"]
 	SnaplockType *string `json:"snaplock_type,omitempty"`
 
 	// snapshot
@@ -84,7 +86,7 @@ type Aggregate struct {
 	Space *AggregateInlineSpace `json:"space,omitempty"`
 
 	// Operational state of the aggregate.
-	// Enum: [online onlining offline offlining relocating unmounted restricted inconsistent failed unknown]
+	// Enum: ["online","onlining","offline","offlining","relocating","unmounted","restricted","inconsistent","failed","unknown"]
 	State *string `json:"state,omitempty"`
 
 	// statistics
@@ -107,7 +109,7 @@ func (m *Aggregate) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateAggregateInlineRecommendationSpares(formats); err != nil {
+	if err := m.validateAggregateInlineTags(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -190,25 +192,15 @@ func (m *Aggregate) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Aggregate) validateAggregateInlineRecommendationSpares(formats strfmt.Registry) error {
-	if swag.IsZero(m.AggregateInlineRecommendationSpares) { // not required
+func (m *Aggregate) validateAggregateInlineTags(formats strfmt.Registry) error {
+	if swag.IsZero(m.AggregateInlineTags) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.AggregateInlineRecommendationSpares); i++ {
-		if swag.IsZero(m.AggregateInlineRecommendationSpares[i]) { // not required
-			continue
-		}
+	iAggregateInlineTagsSize := int64(len(m.AggregateInlineTags))
 
-		if m.AggregateInlineRecommendationSpares[i] != nil {
-			if err := m.AggregateInlineRecommendationSpares[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("recommendation_spares" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
+	if err := validate.MaxItems("_tags", "body", iAggregateInlineTagsSize, 64); err != nil {
+		return err
 	}
 
 	return nil
@@ -628,10 +620,6 @@ func (m *Aggregate) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateAggregateInlineRecommendationSpares(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateBlockStorage(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -711,24 +699,6 @@ func (m *Aggregate) contextValidateLinks(ctx context.Context, formats strfmt.Reg
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *Aggregate) contextValidateAggregateInlineRecommendationSpares(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.AggregateInlineRecommendationSpares); i++ {
-
-		if m.AggregateInlineRecommendationSpares[i] != nil {
-			if err := m.AggregateInlineRecommendationSpares[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("recommendation_spares" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -976,7 +946,7 @@ type AggregateInlineBlockStorage struct {
 
 	// Type of aggregate.
 	// Read Only: true
-	// Enum: [hdd hybrid lun ssd vmdisk]
+	// Enum: ["hdd","hybrid","lun","ssd","vmdisk"]
 	StorageType *string `json:"storage_type,omitempty"`
 
 	// If true, aggregate is using shared disks.
@@ -1320,7 +1290,7 @@ type AggregateInlineBlockStorageInlineHybridCache struct {
 
 	// Type of disk being used by the aggregate's cache tier.
 	// Read Only: true
-	// Enum: [fc lun nl_sas nvme_ssd sas sata scsi ssd ssd_cap ssd_zns vm_disk]
+	// Enum: ["fc","lun","nl_sas","nvme_ssd","sas","sata","scsi","ssd","ssd_cap","ssd_zns","vm_disk"]
 	DiskType *string `json:"disk_type,omitempty"`
 
 	// Specifies whether the aggregate uses HDDs with SSDs as a cache.
@@ -1332,7 +1302,7 @@ type AggregateInlineBlockStorageInlineHybridCache struct {
 	RaidSize *int64 `json:"raid_size,omitempty"`
 
 	// RAID type for SSD cache of the aggregate. Only provided when hybrid_cache.enabled is 'true'.
-	// Enum: [raid_dp raid_tec raid4]
+	// Enum: ["raid_dp","raid_tec","raid4"]
 	RaidType *string `json:"raid_type,omitempty"`
 
 	// simulated raid groups
@@ -1917,7 +1887,7 @@ type AggregateInlineBlockStorageInlineMirror struct {
 
 	// state
 	// Read Only: true
-	// Enum: [unmirrored normal degraded resynchronizing failed]
+	// Enum: ["unmirrored","normal","degraded","resynchronizing","failed"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -2068,12 +2038,12 @@ func (m *AggregateInlineBlockStorageInlineMirror) UnmarshalBinary(b []byte) erro
 type AggregateInlineBlockStorageInlinePrimary struct {
 
 	// The checksum style used by the aggregate.
-	// Enum: [block advanced_zoned mixed]
+	// Enum: ["block","advanced_zoned","mixed"]
 	ChecksumStyle *string `json:"checksum_style,omitempty"`
 
 	// The class of disks being used by the aggregate.
 	// Example: performance
-	// Enum: [capacity performance archive solid_state array virtual data_center capacity_flash]
+	// Enum: ["capacity","performance","archive","solid_state","array","virtual","data_center","capacity_flash"]
 	DiskClass *string `json:"disk_class,omitempty"`
 
 	// Number of disks used in the aggregate. This includes parity disks, but excludes disks in the hybrid cache.
@@ -2082,7 +2052,7 @@ type AggregateInlineBlockStorageInlinePrimary struct {
 
 	// The type of disk being used by the aggregate.
 	// Read Only: true
-	// Enum: [fc lun nl_sas nvme_ssd sas sata scsi ssd ssd_cap ssd_zns vm_disk]
+	// Enum: ["fc","lun","nl_sas","nvme_ssd","sas","sata","scsi","ssd","ssd_cap","ssd_zns","vm_disk"]
 	DiskType *string `json:"disk_type,omitempty"`
 
 	// Option to specify the maximum number of disks that can be included in a RAID group.
@@ -2090,7 +2060,7 @@ type AggregateInlineBlockStorageInlinePrimary struct {
 	RaidSize *int64 `json:"raid_size,omitempty"`
 
 	// RAID type of the aggregate.
-	// Enum: [raid_dp raid_tec raid0 raid4 raid_ep mixed_raid_type]
+	// Enum: ["raid_dp","raid_tec","raid0","raid4","mixed_raid_type"]
 	RaidType *string `json:"raid_type,omitempty"`
 
 	// simulated raid groups
@@ -2459,7 +2429,7 @@ var aggregateInlineBlockStorageInlinePrimaryTypeRaidTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["raid_dp","raid_tec","raid0","raid4","raid_ep","mixed_raid_type"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["raid_dp","raid_tec","raid0","raid4","mixed_raid_type"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -2508,16 +2478,6 @@ const (
 	// END DEBUGGING
 	// AggregateInlineBlockStorageInlinePrimaryRaidTypeRaid4 captures enum value "raid4"
 	AggregateInlineBlockStorageInlinePrimaryRaidTypeRaid4 string = "raid4"
-
-	// BEGIN DEBUGGING
-	// aggregate_inline_block_storage_inline_primary
-	// AggregateInlineBlockStorageInlinePrimary
-	// raid_type
-	// RaidType
-	// raid_ep
-	// END DEBUGGING
-	// AggregateInlineBlockStorageInlinePrimaryRaidTypeRaidEp captures enum value "raid_ep"
-	AggregateInlineBlockStorageInlinePrimaryRaidTypeRaidEp string = "raid_ep"
 
 	// BEGIN DEBUGGING
 	// aggregate_inline_block_storage_inline_primary
@@ -2668,7 +2628,7 @@ type AggregateBlockStoragePrimarySimulatedRaidGroupsItems0 struct {
 	ParityDiskCount *int64 `json:"parity_disk_count,omitempty"`
 
 	// RAID type of the aggregate.
-	// Enum: [raid_dp raid_tec raid0 raid4 raid_ep]
+	// Enum: ["raid_dp","raid_tec","raid0","raid4"]
 	RaidType *string `json:"raid_type,omitempty"`
 
 	// Usable size of each disk, in bytes.
@@ -2693,7 +2653,7 @@ var aggregateBlockStoragePrimarySimulatedRaidGroupsItems0TypeRaidTypePropEnum []
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["raid_dp","raid_tec","raid0","raid4","raid_ep"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["raid_dp","raid_tec","raid0","raid4"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -2742,16 +2702,6 @@ const (
 	// END DEBUGGING
 	// AggregateBlockStoragePrimarySimulatedRaidGroupsItems0RaidTypeRaid4 captures enum value "raid4"
 	AggregateBlockStoragePrimarySimulatedRaidGroupsItems0RaidTypeRaid4 string = "raid4"
-
-	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimarySimulatedRaidGroupsItems0
-	// AggregateBlockStoragePrimarySimulatedRaidGroupsItems0
-	// raid_type
-	// RaidType
-	// raid_ep
-	// END DEBUGGING
-	// AggregateBlockStoragePrimarySimulatedRaidGroupsItems0RaidTypeRaidEp captures enum value "raid_ep"
-	AggregateBlockStoragePrimarySimulatedRaidGroupsItems0RaidTypeRaidEp string = "raid_ep"
 )
 
 // prop value enum
@@ -3214,11 +3164,11 @@ func (m *AggregateInlineHomeNodeInlineLinks) UnmarshalBinary(b []byte) error {
 // swagger:model aggregate_inline_inactive_data_reporting
 type AggregateInlineInactiveDataReporting struct {
 
-	// Specifes whether or not inactive data reporting is enabled on the aggregate.
+	// Specifies whether or not inactive data reporting is enabled on the aggregate.
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// Timestamp at which inactive data reporting was enabled on the aggregate.
-	// Example: 2019-12-12T12:00:00-04:00
+	// Example: 2019-12-12 16:00:00
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
@@ -3297,7 +3247,7 @@ func (m *AggregateInlineInactiveDataReporting) UnmarshalBinary(b []byte) error {
 type AggregateInlineInodeAttributes struct {
 
 	// Number of files that can currently be stored on disk for system metadata files. This number will dynamically increase as more system files are created.
-	// This is an advanced property; there is an added computationl cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
+	// This is an advanced property; there is an added computational cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
 	//
 	// Example: 31136
 	FilePrivateCapacity *int64 `json:"file_private_capacity,omitempty"`
@@ -3377,8 +3327,13 @@ func (m *AggregateInlineInodeAttributes) validateUsedPercent(formats strfmt.Regi
 	return nil
 }
 
-// ContextValidate validates this aggregate inline inode attributes based on context it is used
+// ContextValidate validate this aggregate inline inode attributes based on the context it is used
 func (m *AggregateInlineInodeAttributes) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -3498,7 +3453,7 @@ type AggregateInlineMetric struct {
 	//
 	// Example: PT15S
 	// Read Only: true
-	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
+	// Enum: ["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]
 	Duration *string `json:"duration,omitempty"`
 
 	// iops
@@ -3510,14 +3465,14 @@ type AggregateInlineMetric struct {
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	// Enum: ["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *AggregateInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -4038,7 +3993,7 @@ type AggregateInlineMetricInlineIops struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -4092,7 +4047,7 @@ type AggregateInlineMetricInlineLatency struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -4232,7 +4187,7 @@ type AggregateInlineMetricInlineThroughput struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -4455,22 +4410,22 @@ func (m *AggregateInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
 // swagger:model aggregate_inline_snapshot
 type AggregateInlineSnapshot struct {
 
-	// Total files allowed in Snapshot copies
+	// Total files allowed in snapshots
 	// Example: 10
 	// Read Only: true
 	FilesTotal *int64 `json:"files_total,omitempty"`
 
-	// Total files created in Snapshot copies
+	// Total files created in snapshots
 	// Example: 3
 	// Read Only: true
 	FilesUsed *int64 `json:"files_used,omitempty"`
 
-	// Maximum files available for Snapshot copies
+	// Maximum files available for snapshots
 	// Example: 5
 	// Read Only: true
 	MaxFilesAvailable *int64 `json:"max_files_available,omitempty"`
 
-	// Files in use by Snapshot copies
+	// Files in use by snapshots
 	// Example: 50
 	// Read Only: true
 	MaxFilesUsed *int64 `json:"max_files_used,omitempty"`
@@ -4939,7 +4894,7 @@ type AggregateInlineSpaceInlineBlockStorage struct {
 	// Read Only: true
 	PhysicalUsedPercent *int64 `json:"physical_used_percent,omitempty"`
 
-	// Total usable space in bytes, not including WAFL reserve and aggregate Snapshot copy reserve.
+	// Total usable space in bytes, not including WAFL reserve and aggregate snapshot reserve.
 	// Example: 10156769280
 	// Read Only: true
 	Size *int64 `json:"size,omitempty"`
@@ -4949,7 +4904,7 @@ type AggregateInlineSpaceInlineBlockStorage struct {
 	// Read Only: true
 	Used *int64 `json:"used,omitempty"`
 
-	// Total used including the Snapshot copy reserve, in bytes.
+	// Total used including the snapshot reserve, in bytes.
 	// Example: 674685
 	// Read Only: true
 	UsedIncludingSnapshotReserve *int64 `json:"used_including_snapshot_reserve,omitempty"`
@@ -4958,6 +4913,11 @@ type AggregateInlineSpaceInlineBlockStorage struct {
 	// Example: 35
 	// Read Only: true
 	UsedIncludingSnapshotReservePercent *int64 `json:"used_including_snapshot_reserve_percent,omitempty"`
+
+	// Aggregate used percentage.
+	// Example: 50
+	// Read Only: true
+	UsedPercent *int64 `json:"used_percent,omitempty"`
 
 	// Amount of shared bytes counted by storage efficiency.
 	// Example: 1990000
@@ -5046,6 +5006,10 @@ func (m *AggregateInlineSpaceInlineBlockStorage) ContextValidate(ctx context.Con
 	}
 
 	if err := m.contextValidateUsedIncludingSnapshotReservePercent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsedPercent(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -5206,6 +5170,15 @@ func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateUsedIncludingSna
 	return nil
 }
 
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateUsedPercent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"used_percent", "body", m.UsedPercent); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateVolumeDeduplicationSharedCount(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"volume_deduplication_shared_count", "body", m.VolumeDeduplicationSharedCount); err != nil {
@@ -5338,6 +5311,9 @@ type AggregateInlineSpaceInlineEfficiency struct {
 	// Read Only: true
 	CrossVolumeInlineDedupe *bool `json:"cross_volume_inline_dedupe,omitempty"`
 
+	// Indicates whether Workload Informed TSSE is enabled on the system.
+	EnableWorkloadInformedTsse *bool `json:"enable_workload_informed_tsse,omitempty"`
+
 	// Logical used
 	// Read Only: true
 	LogicalUsed *int64 `json:"logical_used,omitempty"`
@@ -5349,6 +5325,9 @@ type AggregateInlineSpaceInlineEfficiency struct {
 	// Space saved by storage efficiencies (logical_used - used)
 	// Read Only: true
 	Savings *int64 `json:"savings,omitempty"`
+
+	// Minimum amount of used data in aggregate required to trigger cold compression on TSSE volumes.
+	WiseTsseMinUsedCapacityPct *int64 `json:"wise_tsse_min_used_capacity_pct,omitempty"`
 }
 
 // Validate validates this aggregate inline space inline efficiency
@@ -5475,7 +5454,7 @@ func (m *AggregateInlineSpaceInlineEfficiency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateInlineSpaceInlineEfficiencyWithoutSnapshots Storage efficiency that does not include the savings provided by Snapshot copies.
+// AggregateInlineSpaceInlineEfficiencyWithoutSnapshots Storage efficiency that does not include the savings provided by snapshots.
 //
 // swagger:model aggregate_inline_space_inline_efficiency_without_snapshots
 type AggregateInlineSpaceInlineEfficiencyWithoutSnapshots struct {
@@ -5565,7 +5544,7 @@ func (m *AggregateInlineSpaceInlineEfficiencyWithoutSnapshots) UnmarshalBinary(b
 	return nil
 }
 
-// AggregateInlineSpaceInlineEfficiencyWithoutSnapshotsFlexclones Storage efficiency that does not include the savings provided by Snapshot copies and Flexclone volumes.
+// AggregateInlineSpaceInlineEfficiencyWithoutSnapshotsFlexclones Storage efficiency that does not include the savings provided by snapshots and Flexclone volumes.
 //
 // swagger:model aggregate_inline_space_inline_efficiency_without_snapshots_flexclones
 type AggregateInlineSpaceInlineEfficiencyWithoutSnapshotsFlexclones struct {
@@ -5660,27 +5639,27 @@ func (m *AggregateInlineSpaceInlineEfficiencyWithoutSnapshotsFlexclones) Unmarsh
 // swagger:model aggregate_inline_space_inline_snapshot
 type AggregateInlineSpaceInlineSnapshot struct {
 
-	// Available space for Snapshot copies in bytes
+	// Available space for snapshots in bytes
 	// Example: 2000
 	// Read Only: true
 	Available *int64 `json:"available,omitempty"`
 
-	// Percentage of space reserved for Snapshot copies
+	// Percentage of space reserved for snapshots
 	// Example: 20
 	// Read Only: true
 	ReservePercent *int64 `json:"reserve_percent,omitempty"`
 
-	// Total space for Snapshot copies in bytes
+	// Total space for snapshots in bytes
 	// Example: 5000
 	// Read Only: true
 	Total *int64 `json:"total,omitempty"`
 
-	// Space used by Snapshot copies in bytes
+	// Space used by snapshots in bytes
 	// Example: 3000
 	// Read Only: true
 	Used *int64 `json:"used,omitempty"`
 
-	// Percentage of disk space used by Snapshot copies
+	// Percentage of disk space used by snapshots
 	// Example: 45
 	// Read Only: true
 	UsedPercent *int64 `json:"used_percent,omitempty"`
@@ -5798,14 +5777,14 @@ type AggregateInlineStatistics struct {
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	// Enum: ["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *AggregateInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -6174,7 +6153,7 @@ type AggregateInlineStatisticsInlineIopsRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -6228,7 +6207,7 @@ type AggregateInlineStatisticsInlineLatencyRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -6282,7 +6261,7 @@ type AggregateInlineStatisticsInlineThroughputRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }

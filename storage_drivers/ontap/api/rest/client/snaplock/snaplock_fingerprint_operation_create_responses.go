@@ -6,6 +6,7 @@ package snaplock
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,8 +24,8 @@ type SnaplockFingerprintOperationCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *SnaplockFingerprintOperationCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-	case 202:
-		result := NewSnaplockFingerprintOperationCreateAccepted()
+	case 201:
+		result := NewSnaplockFingerprintOperationCreateCreated()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -41,76 +42,68 @@ func (o *SnaplockFingerprintOperationCreateReader) ReadResponse(response runtime
 	}
 }
 
-// NewSnaplockFingerprintOperationCreateAccepted creates a SnaplockFingerprintOperationCreateAccepted with default headers values
-func NewSnaplockFingerprintOperationCreateAccepted() *SnaplockFingerprintOperationCreateAccepted {
-	return &SnaplockFingerprintOperationCreateAccepted{}
+// NewSnaplockFingerprintOperationCreateCreated creates a SnaplockFingerprintOperationCreateCreated with default headers values
+func NewSnaplockFingerprintOperationCreateCreated() *SnaplockFingerprintOperationCreateCreated {
+	return &SnaplockFingerprintOperationCreateCreated{}
 }
 
 /*
-SnaplockFingerprintOperationCreateAccepted describes a response with status code 202, with default header values.
+SnaplockFingerprintOperationCreateCreated describes a response with status code 201, with default header values.
 
-Accepted
+Created
 */
-type SnaplockFingerprintOperationCreateAccepted struct {
+type SnaplockFingerprintOperationCreateCreated struct {
 
 	/* Useful for tracking the resource location
 	 */
 	Location string
-
-	Payload *models.JobLinkResponse
 }
 
-// IsSuccess returns true when this snaplock fingerprint operation create accepted response has a 2xx status code
-func (o *SnaplockFingerprintOperationCreateAccepted) IsSuccess() bool {
+// IsSuccess returns true when this snaplock fingerprint operation create created response has a 2xx status code
+func (o *SnaplockFingerprintOperationCreateCreated) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this snaplock fingerprint operation create accepted response has a 3xx status code
-func (o *SnaplockFingerprintOperationCreateAccepted) IsRedirect() bool {
+// IsRedirect returns true when this snaplock fingerprint operation create created response has a 3xx status code
+func (o *SnaplockFingerprintOperationCreateCreated) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this snaplock fingerprint operation create accepted response has a 4xx status code
-func (o *SnaplockFingerprintOperationCreateAccepted) IsClientError() bool {
+// IsClientError returns true when this snaplock fingerprint operation create created response has a 4xx status code
+func (o *SnaplockFingerprintOperationCreateCreated) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this snaplock fingerprint operation create accepted response has a 5xx status code
-func (o *SnaplockFingerprintOperationCreateAccepted) IsServerError() bool {
+// IsServerError returns true when this snaplock fingerprint operation create created response has a 5xx status code
+func (o *SnaplockFingerprintOperationCreateCreated) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this snaplock fingerprint operation create accepted response a status code equal to that given
-func (o *SnaplockFingerprintOperationCreateAccepted) IsCode(code int) bool {
-	return code == 202
+// IsCode returns true when this snaplock fingerprint operation create created response a status code equal to that given
+func (o *SnaplockFingerprintOperationCreateCreated) IsCode(code int) bool {
+	return code == 201
 }
 
-func (o *SnaplockFingerprintOperationCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /storage/snaplock/file-fingerprints][%d] snaplockFingerprintOperationCreateAccepted  %+v", 202, o.Payload)
+// Code gets the status code for the snaplock fingerprint operation create created response
+func (o *SnaplockFingerprintOperationCreateCreated) Code() int {
+	return 201
 }
 
-func (o *SnaplockFingerprintOperationCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /storage/snaplock/file-fingerprints][%d] snaplockFingerprintOperationCreateAccepted  %+v", 202, o.Payload)
+func (o *SnaplockFingerprintOperationCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /storage/snaplock/file-fingerprints][%d] snaplockFingerprintOperationCreateCreated", 201)
 }
 
-func (o *SnaplockFingerprintOperationCreateAccepted) GetPayload() *models.JobLinkResponse {
-	return o.Payload
+func (o *SnaplockFingerprintOperationCreateCreated) String() string {
+	return fmt.Sprintf("[POST /storage/snaplock/file-fingerprints][%d] snaplockFingerprintOperationCreateCreated", 201)
 }
 
-func (o *SnaplockFingerprintOperationCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+func (o *SnaplockFingerprintOperationCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// hydrates response header Location
 	hdrLocation := response.GetHeader("Location")
 
 	if hdrLocation != "" {
 		o.Location = hdrLocation
-	}
-
-	o.Payload = new(models.JobLinkResponse)
-
-	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
-		return err
 	}
 
 	return nil
@@ -130,6 +123,9 @@ func NewSnaplockFingerprintOperationCreateDefault(code int) *SnaplockFingerprint
 
 | Error code  |  Description |
 |-------------|--------------|
+|        2    | An invalid value was entered for one of the fields |
+|  2621519    | Invalid SVM name format |
+| 14090347    | Invalid path format  |
 | 14090443    | Invalid volume name  |
 | 14090444    | Invalid Vserver name |
 | 14090447    | Invalid volume UUID  |
@@ -139,11 +135,6 @@ type SnaplockFingerprintOperationCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snaplock fingerprint operation create default response
-func (o *SnaplockFingerprintOperationCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snaplock fingerprint operation create default response has a 2xx status code
@@ -171,12 +162,19 @@ func (o *SnaplockFingerprintOperationCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snaplock fingerprint operation create default response
+func (o *SnaplockFingerprintOperationCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnaplockFingerprintOperationCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/snaplock/file-fingerprints][%d] snaplock_fingerprint_operation_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/snaplock/file-fingerprints][%d] snaplock_fingerprint_operation_create default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockFingerprintOperationCreateDefault) String() string {
-	return fmt.Sprintf("[POST /storage/snaplock/file-fingerprints][%d] snaplock_fingerprint_operation_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/snaplock/file-fingerprints][%d] snaplock_fingerprint_operation_create default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockFingerprintOperationCreateDefault) GetPayload() *models.ErrorResponse {

@@ -30,7 +30,7 @@ type ActiveDirectoryDiscoveredServerReference struct {
 
 	// The type of the server that was discovered.
 	// Example: kerberos
-	// Enum: [unknown kerberos ms_ldap ms_dc ldap]
+	// Enum: ["unknown","kerberos","ms_ldap","ms_dc","ldap"]
 	Type *string `json:"type,omitempty"`
 }
 

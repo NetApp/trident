@@ -107,22 +107,6 @@ type ConsistencyGroupQosInlinePolicy struct {
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
-	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
-	// Example: 10000
-	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
-
-	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
-	// Example: 500
-	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
-
-	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
-	// Example: 2000
-	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
-
-	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
-	// Example: 500
-	MinThroughputMbps *int64 `json:"min_throughput_mbps,omitempty"`
-
 	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
 	// Example: performance
 	Name *string `json:"name,omitempty"`

@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *LunAttributeGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the lun attribute get o k response
+func (o *LunAttributeGetOK) Code() int {
+	return 200
+}
+
 func (o *LunAttributeGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/luns/{lun.uuid}/attributes/{name}][%d] lunAttributeGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/luns/{lun.uuid}/attributes/{name}][%d] lunAttributeGetOK %s", 200, payload)
 }
 
 func (o *LunAttributeGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/luns/{lun.uuid}/attributes/{name}][%d] lunAttributeGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/luns/{lun.uuid}/attributes/{name}][%d] lunAttributeGetOK %s", 200, payload)
 }
 
 func (o *LunAttributeGetOK) GetPayload() *models.LunAttribute {
@@ -120,16 +128,12 @@ func NewLunAttributeGetDefault(code int) *LunAttributeGetDefault {
 | ---------- | ----------- |
 | 5374875 | The specified LUN was not found. |
 | 5374931 | The specified attribute was not found. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type LunAttributeGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the lun attribute get default response
-func (o *LunAttributeGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this lun attribute get default response has a 2xx status code
@@ -157,12 +161,19 @@ func (o *LunAttributeGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the lun attribute get default response
+func (o *LunAttributeGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LunAttributeGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/luns/{lun.uuid}/attributes/{name}][%d] lun_attribute_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/luns/{lun.uuid}/attributes/{name}][%d] lun_attribute_get default %s", o._statusCode, payload)
 }
 
 func (o *LunAttributeGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/luns/{lun.uuid}/attributes/{name}][%d] lun_attribute_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/luns/{lun.uuid}/attributes/{name}][%d] lun_attribute_get default %s", o._statusCode, payload)
 }
 
 func (o *LunAttributeGetDefault) GetPayload() *models.ErrorResponse {

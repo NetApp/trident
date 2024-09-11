@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *LdapCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the ldap create created response
+func (o *LdapCreateCreated) Code() int {
+	return 201
+}
+
 func (o *LdapCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /name-services/ldap][%d] ldapCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/ldap][%d] ldapCreateCreated %s", 201, payload)
 }
 
 func (o *LdapCreateCreated) String() string {
-	return fmt.Sprintf("[POST /name-services/ldap][%d] ldapCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/ldap][%d] ldapCreateCreated %s", 201, payload)
 }
 
 func (o *LdapCreateCreated) GetPayload() *models.LdapServiceResponse {
@@ -130,11 +138,11 @@ func NewLdapCreateDefault(code int) *LdapCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 262186     | LDAP Servers cannot be used with Active Directory domain and/or preferred Acti Directory servers |
+| 262186     | LDAP Servers cannot be used with Active Directory domain and/or preferred Active Directory servers |
 | 2621488    | Invalid SVM context |
 | 2621706    | The specified SVM UUID is incorrect for the specified SVM name |
 | 4915203    | The specified LDAP schema does not exist |
-| 4915207    | The specified LDAP servers or preferred Active Directory servers contain duplicate server entries |
+| 262222     | The specified LDAP servers or preferred Active Directory servers contain duplicate server entries |
 | 4915229    | DNS resolution failed due to an internal error. Contact technical support if this issue persists |
 | 4915231    | DNS resolution failed for one or more of the specified LDAP servers. Verify that a valid DNS server is configured |
 | 23724132   | DNS resolution failed for all the specified LDAP servers. Verify that a valid DNS server is configured |
@@ -149,16 +157,18 @@ func NewLdapCreateDefault(code int) *LdapCreateDefault {
 | 13434916   | The SVM is in the process of being created. Wait a few minutes, and then try the command again. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
 | 4915252    | LDAP Referral is not supported with STARTTLS, with session security levels sign, seal or with LDAPS. |
+| 4915266    | LDAP site discovery restriction cannot be applied to a mixed version cluster. |
+| 656477     | Need default site to be specified to enable site restriction. |
+| 4915206    | CIFS server is not configured for the vserver. LDAP client configuration requires CIFS server for binding. |
+| 4915261    | Cannot use port "389" when "ldaps_enabled" is "true". |
+| 4915255    | Base DN specified in the LDAP client configuration is not available. |
+| 4915268    | The bind_as_cifs_server field cannot be set to true when the CIFS server is in workgroup mode. |
+| 4915269    | The bind_as_cifs_server field cannot be set to true when the CIFS server is in realm mode. |
 */
 type LdapCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ldap create default response
-func (o *LdapCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ldap create default response has a 2xx status code
@@ -186,12 +196,19 @@ func (o *LdapCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ldap create default response
+func (o *LdapCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LdapCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /name-services/ldap][%d] ldap_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/ldap][%d] ldap_create default %s", o._statusCode, payload)
 }
 
 func (o *LdapCreateDefault) String() string {
-	return fmt.Sprintf("[POST /name-services/ldap][%d] ldap_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/ldap][%d] ldap_create default %s", o._statusCode, payload)
 }
 
 func (o *LdapCreateDefault) GetPayload() *models.ErrorResponse {

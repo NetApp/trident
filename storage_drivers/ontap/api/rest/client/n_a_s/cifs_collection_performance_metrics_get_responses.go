@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CifsCollectionPerformanceMetricsGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs collection performance metrics get o k response
+func (o *CifsCollectionPerformanceMetricsGetOK) Code() int {
+	return 200
+}
+
 func (o *CifsCollectionPerformanceMetricsGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}/metrics][%d] cifsCollectionPerformanceMetricsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}/metrics][%d] cifsCollectionPerformanceMetricsGetOK %s", 200, payload)
 }
 
 func (o *CifsCollectionPerformanceMetricsGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}/metrics][%d] cifsCollectionPerformanceMetricsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}/metrics][%d] cifsCollectionPerformanceMetricsGetOK %s", 200, payload)
 }
 
 func (o *CifsCollectionPerformanceMetricsGetOK) GetPayload() *models.PerformanceCifsMetricResponse {
@@ -122,11 +130,6 @@ type CifsCollectionPerformanceMetricsGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cifs collection performance metrics get default response
-func (o *CifsCollectionPerformanceMetricsGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cifs collection performance metrics get default response has a 2xx status code
 func (o *CifsCollectionPerformanceMetricsGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *CifsCollectionPerformanceMetricsGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs collection performance metrics get default response
+func (o *CifsCollectionPerformanceMetricsGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsCollectionPerformanceMetricsGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}/metrics][%d] cifs_collection_performance_metrics_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}/metrics][%d] cifs_collection_performance_metrics_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsCollectionPerformanceMetricsGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}/metrics][%d] cifs_collection_performance_metrics_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}/metrics][%d] cifs_collection_performance_metrics_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsCollectionPerformanceMetricsGetDefault) GetPayload() *models.ErrorResponse {

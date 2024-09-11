@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *LocalHostCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the local host create created response
+func (o *LocalHostCreateCreated) Code() int {
+	return 201
+}
+
 func (o *LocalHostCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /name-services/local-hosts][%d] localHostCreateCreated ", 201)
+	return fmt.Sprintf("[POST /name-services/local-hosts][%d] localHostCreateCreated", 201)
 }
 
 func (o *LocalHostCreateCreated) String() string {
-	return fmt.Sprintf("[POST /name-services/local-hosts][%d] localHostCreateCreated ", 201)
+	return fmt.Sprintf("[POST /name-services/local-hosts][%d] localHostCreateCreated", 201)
 }
 
 func (o *LocalHostCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -117,19 +123,19 @@ func NewLocalHostCreateDefault(code int) *LocalHostCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 1377682 | IPv6 is not enabled in the cluster. |
 | 1966253 | IPv6 is not enabled in the cluster. Enable IPv6 using command "network options ipv6 modify -enabled true" and try again. |
+| 2621706 | The specified owner UUID is incorrect for the specified owner name. |
 | 8912896 | Only admin or data Vservers allowed. |
 | 23724055 | Internal error. Configuration for Vserver failed. Verify that the cluster is healthy, then try the command again. For further assistance, contact technical support. |
+| 23724155 | The specified IPv4 address is not supported because it is one of the following: multicast, loopback, 0.0.0.0, or broadcast. |
+| 23724156 | The specified IPv6 address is not supported because it is one of the following: ::, link-local, multicast, v4-compatible, v4-mapped, or loopback. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type LocalHostCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the local host create default response
-func (o *LocalHostCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this local host create default response has a 2xx status code
@@ -157,12 +163,19 @@ func (o *LocalHostCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the local host create default response
+func (o *LocalHostCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LocalHostCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /name-services/local-hosts][%d] local_host_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/local-hosts][%d] local_host_create default %s", o._statusCode, payload)
 }
 
 func (o *LocalHostCreateDefault) String() string {
-	return fmt.Sprintf("[POST /name-services/local-hosts][%d] local_host_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /name-services/local-hosts][%d] local_host_create default %s", o._statusCode, payload)
 }
 
 func (o *LocalHostCreateDefault) GetPayload() *models.ErrorResponse {

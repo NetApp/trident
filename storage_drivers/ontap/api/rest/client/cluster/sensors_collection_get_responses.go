@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SensorsCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the sensors collection get o k response
+func (o *SensorsCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *SensorsCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/sensors][%d] sensorsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/sensors][%d] sensorsCollectionGetOK %s", 200, payload)
 }
 
 func (o *SensorsCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/sensors][%d] sensorsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/sensors][%d] sensorsCollectionGetOK %s", 200, payload)
 }
 
 func (o *SensorsCollectionGetOK) GetPayload() *models.SensorsResponse {
@@ -122,11 +130,6 @@ type SensorsCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the sensors collection get default response
-func (o *SensorsCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this sensors collection get default response has a 2xx status code
 func (o *SensorsCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SensorsCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the sensors collection get default response
+func (o *SensorsCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SensorsCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/sensors][%d] sensors_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/sensors][%d] sensors_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SensorsCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/sensors][%d] sensors_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/sensors][%d] sensors_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SensorsCollectionGetDefault) GetPayload() *models.ErrorResponse {

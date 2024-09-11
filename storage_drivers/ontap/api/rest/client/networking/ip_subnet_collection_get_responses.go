@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *IPSubnetCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ip subnet collection get o k response
+func (o *IPSubnetCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *IPSubnetCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/ip/subnets][%d] ipSubnetCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/subnets][%d] ipSubnetCollectionGetOK %s", 200, payload)
 }
 
 func (o *IPSubnetCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /network/ip/subnets][%d] ipSubnetCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/subnets][%d] ipSubnetCollectionGetOK %s", 200, payload)
 }
 
 func (o *IPSubnetCollectionGetOK) GetPayload() *models.IPSubnetResponse {
@@ -122,11 +130,6 @@ type IPSubnetCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the ip subnet collection get default response
-func (o *IPSubnetCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this ip subnet collection get default response has a 2xx status code
 func (o *IPSubnetCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *IPSubnetCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ip subnet collection get default response
+func (o *IPSubnetCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IPSubnetCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/ip/subnets][%d] ip_subnet_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/subnets][%d] ip_subnet_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *IPSubnetCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/ip/subnets][%d] ip_subnet_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ip/subnets][%d] ip_subnet_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *IPSubnetCollectionGetDefault) GetPayload() *models.ErrorResponse {

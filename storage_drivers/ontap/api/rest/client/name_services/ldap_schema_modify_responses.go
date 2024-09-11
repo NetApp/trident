@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *LdapSchemaModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ldap schema modify o k response
+func (o *LdapSchemaModifyOK) Code() int {
+	return 200
+}
+
 func (o *LdapSchemaModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldapSchemaModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldapSchemaModifyOK", 200)
 }
 
 func (o *LdapSchemaModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldapSchemaModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldapSchemaModifyOK", 200)
 }
 
 func (o *LdapSchemaModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -116,11 +122,6 @@ type LdapSchemaModifyDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the ldap schema modify default response
-func (o *LdapSchemaModifyDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this ldap schema modify default response has a 2xx status code
 func (o *LdapSchemaModifyDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -146,12 +147,19 @@ func (o *LdapSchemaModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ldap schema modify default response
+func (o *LdapSchemaModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LdapSchemaModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldap_schema_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldap_schema_modify default %s", o._statusCode, payload)
 }
 
 func (o *LdapSchemaModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldap_schema_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldap_schema_modify default %s", o._statusCode, payload)
 }
 
 func (o *LdapSchemaModifyDefault) GetPayload() *models.ErrorResponse {

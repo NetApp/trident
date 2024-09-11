@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *QosWorkloadGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the qos workload get o k response
+func (o *QosWorkloadGetOK) Code() int {
+	return 200
+}
+
 func (o *QosWorkloadGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/qos/workloads/{uuid}][%d] qosWorkloadGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/qos/workloads/{uuid}][%d] qosWorkloadGetOK %s", 200, payload)
 }
 
 func (o *QosWorkloadGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/qos/workloads/{uuid}][%d] qosWorkloadGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/qos/workloads/{uuid}][%d] qosWorkloadGetOK %s", 200, payload)
 }
 
 func (o *QosWorkloadGetOK) GetPayload() *models.QosWorkload {
@@ -122,11 +130,6 @@ type QosWorkloadGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the qos workload get default response
-func (o *QosWorkloadGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this qos workload get default response has a 2xx status code
 func (o *QosWorkloadGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *QosWorkloadGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the qos workload get default response
+func (o *QosWorkloadGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *QosWorkloadGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/qos/workloads/{uuid}][%d] qos_workload_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/qos/workloads/{uuid}][%d] qos_workload_get default %s", o._statusCode, payload)
 }
 
 func (o *QosWorkloadGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/qos/workloads/{uuid}][%d] qos_workload_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/qos/workloads/{uuid}][%d] qos_workload_get default %s", o._statusCode, payload)
 }
 
 func (o *QosWorkloadGetDefault) GetPayload() *models.ErrorResponse {

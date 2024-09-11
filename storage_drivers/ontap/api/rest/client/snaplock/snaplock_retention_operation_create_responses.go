@@ -6,6 +6,7 @@ package snaplock
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *SnaplockRetentionOperationCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the snaplock retention operation create created response
+func (o *SnaplockRetentionOperationCreateCreated) Code() int {
+	return 201
+}
+
 func (o *SnaplockRetentionOperationCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /storage/snaplock/event-retention/operations][%d] snaplockRetentionOperationCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/snaplock/event-retention/operations][%d] snaplockRetentionOperationCreateCreated %s", 201, payload)
 }
 
 func (o *SnaplockRetentionOperationCreateCreated) String() string {
-	return fmt.Sprintf("[POST /storage/snaplock/event-retention/operations][%d] snaplockRetentionOperationCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/snaplock/event-retention/operations][%d] snaplockRetentionOperationCreateCreated %s", 201, payload)
 }
 
 func (o *SnaplockRetentionOperationCreateCreated) GetPayload() *models.EbrOperation {
@@ -124,19 +132,20 @@ func NewSnaplockRetentionOperationCreateDefault(code int) *SnaplockRetentionOper
 }
 
 /*
-SnaplockRetentionOperationCreateDefault describes a response with status code -1, with default header values.
+	SnaplockRetentionOperationCreateDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response codes
+
+| Error code  |  Description |
+|-------------|--------------|
+| 918236      | The specified volume uuid and volume name refer to different volumes. |
+| 13763372    | Path should be given in the format \"\/\<dir path\>\". |
+| 14090242    | Only a user with the security login role \"vsadmin-snaplock\" is allowed to perform this operation. |
 */
 type SnaplockRetentionOperationCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snaplock retention operation create default response
-func (o *SnaplockRetentionOperationCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snaplock retention operation create default response has a 2xx status code
@@ -164,12 +173,19 @@ func (o *SnaplockRetentionOperationCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snaplock retention operation create default response
+func (o *SnaplockRetentionOperationCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnaplockRetentionOperationCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/snaplock/event-retention/operations][%d] snaplock_retention_operation_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/snaplock/event-retention/operations][%d] snaplock_retention_operation_create default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockRetentionOperationCreateDefault) String() string {
-	return fmt.Sprintf("[POST /storage/snaplock/event-retention/operations][%d] snaplock_retention_operation_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/snaplock/event-retention/operations][%d] snaplock_retention_operation_create default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockRetentionOperationCreateDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package n_v_me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NvmeInterfaceGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nvme interface get o k response
+func (o *NvmeInterfaceGetOK) Code() int {
+	return 200
+}
+
 func (o *NvmeInterfaceGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nvme/interfaces/{uuid}][%d] nvmeInterfaceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/interfaces/{uuid}][%d] nvmeInterfaceGetOK %s", 200, payload)
 }
 
 func (o *NvmeInterfaceGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nvme/interfaces/{uuid}][%d] nvmeInterfaceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/interfaces/{uuid}][%d] nvmeInterfaceGetOK %s", 200, payload)
 }
 
 func (o *NvmeInterfaceGetOK) GetPayload() *models.NvmeInterface {
@@ -119,16 +127,12 @@ func NewNvmeInterfaceGetDefault(code int) *NvmeInterfaceGetDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621462 | The supplied SVM does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NvmeInterfaceGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nvme interface get default response
-func (o *NvmeInterfaceGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nvme interface get default response has a 2xx status code
@@ -156,12 +160,19 @@ func (o *NvmeInterfaceGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nvme interface get default response
+func (o *NvmeInterfaceGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NvmeInterfaceGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nvme/interfaces/{uuid}][%d] nvme_interface_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/interfaces/{uuid}][%d] nvme_interface_get default %s", o._statusCode, payload)
 }
 
 func (o *NvmeInterfaceGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nvme/interfaces/{uuid}][%d] nvme_interface_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/interfaces/{uuid}][%d] nvme_interface_get default %s", o._statusCode, payload)
 }
 
 func (o *NvmeInterfaceGetDefault) GetPayload() *models.ErrorResponse {

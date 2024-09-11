@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *FcPortModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fc port modify o k response
+func (o *FcPortModifyOK) Code() int {
+	return 200
+}
+
 func (o *FcPortModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /network/fc/ports/{uuid}][%d] fcPortModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/fc/ports/{uuid}][%d] fcPortModifyOK", 200)
 }
 
 func (o *FcPortModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /network/fc/ports/{uuid}][%d] fcPortModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/fc/ports/{uuid}][%d] fcPortModifyOK", 200)
 }
 
 func (o *FcPortModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -115,11 +121,6 @@ type FcPortModifyDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the fc port modify default response
-func (o *FcPortModifyDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this fc port modify default response has a 2xx status code
 func (o *FcPortModifyDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -145,12 +146,19 @@ func (o *FcPortModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fc port modify default response
+func (o *FcPortModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FcPortModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /network/fc/ports/{uuid}][%d] fc_port_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/fc/ports/{uuid}][%d] fc_port_modify default %s", o._statusCode, payload)
 }
 
 func (o *FcPortModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /network/fc/ports/{uuid}][%d] fc_port_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/fc/ports/{uuid}][%d] fc_port_modify default %s", o._statusCode, payload)
 }
 
 func (o *FcPortModifyDefault) GetPayload() *models.ErrorResponse {

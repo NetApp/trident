@@ -34,9 +34,13 @@ type ClientService interface {
 
 	ActiveDirectoryDelete(params *ActiveDirectoryDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryDeleteOK, error)
 
+	ActiveDirectoryDeleteCollection(params *ActiveDirectoryDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryDeleteCollectionOK, error)
+
 	ActiveDirectoryGet(params *ActiveDirectoryGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryGetOK, error)
 
 	ActiveDirectoryModify(params *ActiveDirectoryModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryModifyOK, error)
+
+	ActiveDirectoryModifyCollection(params *ActiveDirectoryModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryModifyCollectionOK, error)
 
 	ActiveDirectoryPreferredDcCollectionGet(params *ActiveDirectoryPreferredDcCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryPreferredDcCollectionGetOK, error)
 
@@ -44,17 +48,23 @@ type ClientService interface {
 
 	ActiveDirectoryPreferredDcDelete(params *ActiveDirectoryPreferredDcDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryPreferredDcDeleteOK, error)
 
+	ActiveDirectoryPreferredDcDeleteCollection(params *ActiveDirectoryPreferredDcDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryPreferredDcDeleteCollectionOK, error)
+
 	ActiveDirectoryPreferredDcGet(params *ActiveDirectoryPreferredDcGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryPreferredDcGetOK, error)
 
 	AuditCollectionGet(params *AuditCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditCollectionGetOK, error)
 
-	AuditCreate(params *AuditCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditCreateAccepted, error)
+	AuditCreate(params *AuditCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditCreateCreated, *AuditCreateAccepted, error)
 
-	AuditDelete(params *AuditDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditDeleteAccepted, error)
+	AuditDelete(params *AuditDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditDeleteOK, *AuditDeleteAccepted, error)
+
+	AuditDeleteCollection(params *AuditDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditDeleteCollectionOK, *AuditDeleteCollectionAccepted, error)
 
 	AuditGet(params *AuditGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditGetOK, error)
 
-	AuditModify(params *AuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditModifyAccepted, error)
+	AuditModify(params *AuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditModifyOK, *AuditModifyAccepted, error)
+
+	AuditModifyCollection(params *AuditModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditModifyCollectionOK, *AuditModifyCollectionAccepted, error)
 
 	CifsCollectionPerformanceMetricsGet(params *CifsCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsCollectionPerformanceMetricsGetOK, error)
 
@@ -64,11 +74,17 @@ type ClientService interface {
 
 	CifsDomainGet(params *CifsDomainGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainGetOK, error)
 
+	CifsDomainModify(params *CifsDomainModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainModifyOK, error)
+
+	CifsDomainModifyCollection(params *CifsDomainModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainModifyCollectionOK, error)
+
 	CifsDomainPreferredDcCollectionGet(params *CifsDomainPreferredDcCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcCollectionGetOK, error)
 
 	CifsDomainPreferredDcCreate(params *CifsDomainPreferredDcCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcCreateCreated, error)
 
 	CifsDomainPreferredDcDelete(params *CifsDomainPreferredDcDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcDeleteOK, error)
+
+	CifsDomainPreferredDcDeleteCollection(params *CifsDomainPreferredDcDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcDeleteCollectionOK, error)
 
 	CifsDomainPreferredDcGet(params *CifsDomainPreferredDcGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcGetOK, error)
 
@@ -78,6 +94,8 @@ type ClientService interface {
 
 	CifsOpenFileDelete(params *CifsOpenFileDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsOpenFileDeleteOK, error)
 
+	CifsOpenFileDeleteCollection(params *CifsOpenFileDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsOpenFileDeleteCollectionOK, error)
+
 	CifsOpenFileGet(params *CifsOpenFileGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsOpenFileGetOK, error)
 
 	CifsSearchPathCollectionGet(params *CifsSearchPathCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSearchPathCollectionGetOK, error)
@@ -86,21 +104,31 @@ type ClientService interface {
 
 	CifsSearchPathDelete(params *CifsSearchPathDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSearchPathDeleteOK, error)
 
+	CifsSearchPathDeleteCollection(params *CifsSearchPathDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSearchPathDeleteCollectionOK, error)
+
 	CifsSearchPathModify(params *CifsSearchPathModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSearchPathModifyOK, error)
+
+	CifsSearchPathModifyCollection(params *CifsSearchPathModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSearchPathModifyCollectionOK, error)
 
 	CifsServiceCollectionGet(params *CifsServiceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceCollectionGetOK, error)
 
-	CifsServiceCreate(params *CifsServiceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceCreateAccepted, error)
+	CifsServiceCreate(params *CifsServiceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceCreateCreated, *CifsServiceCreateAccepted, error)
 
-	CifsServiceDelete(params *CifsServiceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceDeleteAccepted, error)
+	CifsServiceDelete(params *CifsServiceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceDeleteOK, *CifsServiceDeleteAccepted, error)
+
+	CifsServiceDeleteCollection(params *CifsServiceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceDeleteCollectionOK, *CifsServiceDeleteCollectionAccepted, error)
 
 	CifsServiceGet(params *CifsServiceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceGetOK, error)
 
-	CifsServiceModify(params *CifsServiceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceModifyAccepted, error)
+	CifsServiceModify(params *CifsServiceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceModifyOK, *CifsServiceModifyAccepted, error)
+
+	CifsServiceModifyCollection(params *CifsServiceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceModifyCollectionOK, *CifsServiceModifyCollectionAccepted, error)
 
 	CifsSessionCollectionGet(params *CifsSessionCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSessionCollectionGetOK, error)
 
 	CifsSessionDelete(params *CifsSessionDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSessionDeleteOK, error)
+
+	CifsSessionDeleteCollection(params *CifsSessionDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSessionDeleteCollectionOK, error)
 
 	CifsSessionGet(params *CifsSessionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSessionGetOK, error)
 
@@ -110,9 +138,13 @@ type ClientService interface {
 
 	CifsShareACLDelete(params *CifsShareACLDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareACLDeleteOK, error)
 
+	CifsShareACLDeleteCollection(params *CifsShareACLDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareACLDeleteCollectionOK, error)
+
 	CifsShareACLGet(params *CifsShareACLGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareACLGetOK, error)
 
 	CifsShareACLModify(params *CifsShareACLModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareACLModifyOK, error)
+
+	CifsShareACLModifyCollection(params *CifsShareACLModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareACLModifyCollectionOK, error)
 
 	CifsShareCollectionGet(params *CifsShareCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareCollectionGetOK, error)
 
@@ -120,9 +152,13 @@ type ClientService interface {
 
 	CifsShareDelete(params *CifsShareDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareDeleteOK, error)
 
+	CifsShareDeleteCollection(params *CifsShareDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareDeleteCollectionOK, error)
+
 	CifsShareGet(params *CifsShareGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareGetOK, error)
 
 	CifsShareModify(params *CifsShareModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareModifyOK, error)
+
+	CifsShareModifyCollection(params *CifsShareModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareModifyCollectionOK, error)
 
 	CifsSymlinkMappingCollectionGet(params *CifsSymlinkMappingCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSymlinkMappingCollectionGetOK, error)
 
@@ -130,13 +166,19 @@ type ClientService interface {
 
 	CifsSymlinkMappingDelete(params *CifsSymlinkMappingDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSymlinkMappingDeleteOK, error)
 
+	CifsSymlinkMappingDeleteCollection(params *CifsSymlinkMappingDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSymlinkMappingDeleteCollectionOK, error)
+
 	CifsSymlinkMappingGet(params *CifsSymlinkMappingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSymlinkMappingGetOK, error)
 
 	CifsSymlinkMappingModify(params *CifsSymlinkMappingModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSymlinkMappingModifyOK, error)
 
+	CifsSymlinkMappingModifyCollection(params *CifsSymlinkMappingModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSymlinkMappingModifyCollectionOK, error)
+
 	ClientLockCollectionGet(params *ClientLockCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClientLockCollectionGetOK, error)
 
 	ClientLockDelete(params *ClientLockDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClientLockDeleteOK, error)
+
+	ClientLockDeleteCollection(params *ClientLockDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClientLockDeleteCollectionOK, error)
 
 	ClientLockGet(params *ClientLockGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClientLockGetOK, error)
 
@@ -148,13 +190,19 @@ type ClientService interface {
 
 	ExportPolicyDelete(params *ExportPolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportPolicyDeleteOK, error)
 
+	ExportPolicyDeleteCollection(params *ExportPolicyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportPolicyDeleteCollectionOK, error)
+
 	ExportPolicyGet(params *ExportPolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportPolicyGetOK, error)
 
 	ExportPolicyModify(params *ExportPolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportPolicyModifyOK, error)
 
+	ExportPolicyModifyCollection(params *ExportPolicyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportPolicyModifyCollectionOK, error)
+
 	ExportRuleClientsCreate(params *ExportRuleClientsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleClientsCreateCreated, error)
 
 	ExportRuleClientsDelete(params *ExportRuleClientsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleClientsDeleteOK, error)
+
+	ExportRuleClientsDeleteCollection(params *ExportRuleClientsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleClientsDeleteCollectionOK, error)
 
 	ExportRuleClientsGet(params *ExportRuleClientsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleClientsGetOK, error)
 
@@ -164,23 +212,27 @@ type ClientService interface {
 
 	ExportRuleDelete(params *ExportRuleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleDeleteOK, error)
 
+	ExportRuleDeleteCollection(params *ExportRuleDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleDeleteCollectionOK, error)
+
 	ExportRuleGet(params *ExportRuleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleGetOK, error)
 
 	ExportRuleModify(params *ExportRuleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleModifyOK, error)
 
-	FileDirectorySecurityACLCreate(params *FileDirectorySecurityACLCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLCreateAccepted, error)
+	ExportRuleModifyCollection(params *ExportRuleModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleModifyCollectionOK, error)
 
-	FileDirectorySecurityACLDelete(params *FileDirectorySecurityACLDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLDeleteAccepted, error)
+	FileDirectorySecurityACLCreate(params *FileDirectorySecurityACLCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLCreateCreated, *FileDirectorySecurityACLCreateAccepted, error)
 
-	FileDirectorySecurityACLModify(params *FileDirectorySecurityACLModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLModifyAccepted, error)
+	FileDirectorySecurityACLDelete(params *FileDirectorySecurityACLDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLDeleteOK, *FileDirectorySecurityACLDeleteAccepted, error)
 
-	FileDirectorySecurityCreate(params *FileDirectorySecurityCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityCreateAccepted, error)
+	FileDirectorySecurityACLModify(params *FileDirectorySecurityACLModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLModifyOK, *FileDirectorySecurityACLModifyAccepted, error)
+
+	FileDirectorySecurityCreate(params *FileDirectorySecurityCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityCreateCreated, *FileDirectorySecurityCreateAccepted, error)
 
 	FileDirectorySecurityDelete(params *FileDirectorySecurityDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityDeleteOK, error)
 
 	FileDirectorySecurityGet(params *FileDirectorySecurityGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityGetOK, error)
 
-	FileDirectorySecurityModify(params *FileDirectorySecurityModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityModifyAccepted, error)
+	FileDirectorySecurityModify(params *FileDirectorySecurityModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityModifyOK, *FileDirectorySecurityModifyAccepted, error)
 
 	FpolicyCollectionGet(params *FpolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyCollectionGetOK, error)
 
@@ -190,9 +242,13 @@ type ClientService interface {
 
 	FpolicyConnectionModify(params *FpolicyConnectionModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyConnectionModifyOK, error)
 
+	FpolicyConnectionModifyCollection(params *FpolicyConnectionModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyConnectionModifyCollectionOK, error)
+
 	FpolicyCreate(params *FpolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyCreateCreated, error)
 
 	FpolicyDelete(params *FpolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyDeleteOK, error)
+
+	FpolicyDeleteCollection(params *FpolicyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyDeleteCollectionOK, error)
 
 	FpolicyEngineCollectionGet(params *FpolicyEngineCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEngineCollectionGetOK, error)
 
@@ -200,9 +256,13 @@ type ClientService interface {
 
 	FpolicyEngineDelete(params *FpolicyEngineDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEngineDeleteOK, error)
 
+	FpolicyEngineDeleteCollection(params *FpolicyEngineDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEngineDeleteCollectionOK, error)
+
 	FpolicyEngineGet(params *FpolicyEngineGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEngineGetOK, error)
 
 	FpolicyEngineModify(params *FpolicyEngineModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEngineModifyOK, error)
+
+	FpolicyEngineModifyCollection(params *FpolicyEngineModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEngineModifyCollectionOK, error)
 
 	FpolicyEventCollectionGet(params *FpolicyEventCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEventCollectionGetOK, error)
 
@@ -210,11 +270,29 @@ type ClientService interface {
 
 	FpolicyEventDelete(params *FpolicyEventDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEventDeleteOK, error)
 
+	FpolicyEventDeleteCollection(params *FpolicyEventDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEventDeleteCollectionOK, error)
+
 	FpolicyEventModify(params *FpolicyEventModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEventModifyOK, error)
+
+	FpolicyEventModifyCollection(params *FpolicyEventModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEventModifyCollectionOK, error)
 
 	FpolicyEventsGet(params *FpolicyEventsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEventsGetOK, error)
 
 	FpolicyGet(params *FpolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyGetOK, error)
+
+	FpolicyPersistentStoreCollectionGet(params *FpolicyPersistentStoreCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPersistentStoreCollectionGetOK, error)
+
+	FpolicyPersistentStoreCreate(params *FpolicyPersistentStoreCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPersistentStoreCreateCreated, error)
+
+	FpolicyPersistentStoreDelete(params *FpolicyPersistentStoreDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPersistentStoreDeleteOK, error)
+
+	FpolicyPersistentStoreDeleteCollection(params *FpolicyPersistentStoreDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPersistentStoreDeleteCollectionOK, error)
+
+	FpolicyPersistentStoreGet(params *FpolicyPersistentStoreGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPersistentStoreGetOK, error)
+
+	FpolicyPersistentStoreModify(params *FpolicyPersistentStoreModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPersistentStoreModifyOK, error)
+
+	FpolicyPersistentStoreModifyCollection(params *FpolicyPersistentStoreModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPersistentStoreModifyCollectionOK, error)
 
 	FpolicyPolicyCollectionGet(params *FpolicyPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPolicyCollectionGetOK, error)
 
@@ -222,11 +300,17 @@ type ClientService interface {
 
 	FpolicyPolicyDelete(params *FpolicyPolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPolicyDeleteOK, error)
 
+	FpolicyPolicyDeleteCollection(params *FpolicyPolicyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPolicyDeleteCollectionOK, error)
+
 	FpolicyPolicyGet(params *FpolicyPolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPolicyGetOK, error)
 
 	FpolicyPolicyModify(params *FpolicyPolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPolicyModifyOK, error)
 
+	FpolicyPolicyModifyCollection(params *FpolicyPolicyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPolicyModifyCollectionOK, error)
+
 	GroupPoliciesToBeAppliedModify(params *GroupPoliciesToBeAppliedModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPoliciesToBeAppliedModifyOK, error)
+
+	GroupPoliciesToBeAppliedModifyCollection(params *GroupPoliciesToBeAppliedModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPoliciesToBeAppliedModifyCollectionOK, error)
 
 	GroupPolicyObjectCentralAccessPolicyCollectionGet(params *GroupPolicyObjectCentralAccessPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPolicyObjectCentralAccessPolicyCollectionGetOK, error)
 
@@ -250,21 +334,29 @@ type ClientService interface {
 
 	KerberosInterfaceModify(params *KerberosInterfaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosInterfaceModifyOK, error)
 
+	KerberosInterfaceModifyCollection(params *KerberosInterfaceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosInterfaceModifyCollectionOK, error)
+
 	KerberosRealmCollectionGet(params *KerberosRealmCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosRealmCollectionGetOK, error)
 
 	KerberosRealmCreate(params *KerberosRealmCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosRealmCreateCreated, error)
 
 	KerberosRealmDelete(params *KerberosRealmDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosRealmDeleteOK, error)
 
+	KerberosRealmDeleteCollection(params *KerberosRealmDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosRealmDeleteCollectionOK, error)
+
 	KerberosRealmGet(params *KerberosRealmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosRealmGetOK, error)
 
 	KerberosRealmModify(params *KerberosRealmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosRealmModifyOK, error)
+
+	KerberosRealmModifyCollection(params *KerberosRealmModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosRealmModifyCollectionOK, error)
 
 	LocalCifsGroupCollectionGet(params *LocalCifsGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupCollectionGetOK, error)
 
 	LocalCifsGroupCreate(params *LocalCifsGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupCreateCreated, error)
 
 	LocalCifsGroupDelete(params *LocalCifsGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupDeleteOK, error)
+
+	LocalCifsGroupDeleteCollection(params *LocalCifsGroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupDeleteCollectionOK, error)
 
 	LocalCifsGroupGet(params *LocalCifsGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupGetOK, error)
 
@@ -280,21 +372,27 @@ type ClientService interface {
 
 	LocalCifsGroupModify(params *LocalCifsGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupModifyOK, error)
 
+	LocalCifsGroupModifyCollection(params *LocalCifsGroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupModifyCollectionOK, error)
+
 	LocalCifsUserCollectionGet(params *LocalCifsUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserCollectionGetOK, error)
 
 	LocalCifsUserCreate(params *LocalCifsUserCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserCreateCreated, error)
 
 	LocalCifsUserDelete(params *LocalCifsUserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserDeleteOK, error)
 
+	LocalCifsUserDeleteCollection(params *LocalCifsUserDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserDeleteCollectionOK, error)
+
 	LocalCifsUserGet(params *LocalCifsUserGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserGetOK, error)
 
 	LocalCifsUserModify(params *LocalCifsUserModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserModifyOK, error)
 
-	LocalCifsUsersAndGroupsImportCreate(params *LocalCifsUsersAndGroupsImportCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportCreateAccepted, error)
+	LocalCifsUserModifyCollection(params *LocalCifsUserModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserModifyCollectionOK, error)
+
+	LocalCifsUsersAndGroupsImportCreate(params *LocalCifsUsersAndGroupsImportCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportCreateCreated, *LocalCifsUsersAndGroupsImportCreateAccepted, error)
 
 	LocalCifsUsersAndGroupsImportGet(params *LocalCifsUsersAndGroupsImportGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportGetOK, error)
 
-	LocalCifsUsersAndGroupsImportModify(params *LocalCifsUsersAndGroupsImportModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportModifyAccepted, error)
+	LocalCifsUsersAndGroupsImportModify(params *LocalCifsUsersAndGroupsImportModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportModifyOK, *LocalCifsUsersAndGroupsImportModifyAccepted, error)
 
 	NetbiosCollectionGet(params *NetbiosCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetbiosCollectionGetOK, error)
 
@@ -314,21 +412,33 @@ type ClientService interface {
 
 	NfsDelete(params *NfsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsDeleteOK, error)
 
+	NfsDeleteCollection(params *NfsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsDeleteCollectionOK, error)
+
 	NfsGet(params *NfsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsGetOK, error)
 
 	NfsModify(params *NfsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsModifyOK, error)
+
+	NfsModifyCollection(params *NfsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsModifyCollectionOK, error)
+
+	NfsTLSInterfaceCollectionGet(params *NfsTLSInterfaceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsTLSInterfaceCollectionGetOK, error)
+
+	NfsTLSInterfaceGet(params *NfsTLSInterfaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsTLSInterfaceGetOK, error)
+
+	NfsTLSInterfaceModify(params *NfsTLSInterfaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsTLSInterfaceModifyOK, error)
+
+	NfsTLSInterfaceModifyCollection(params *NfsTLSInterfaceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsTLSInterfaceModifyCollectionOK, error)
 
 	PoliciesAndRulesToBeAppliedCollectionGet(params *PoliciesAndRulesToBeAppliedCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PoliciesAndRulesToBeAppliedCollectionGetOK, error)
 
 	PoliciesAndRulesToBeAppliedGet(params *PoliciesAndRulesToBeAppliedGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PoliciesAndRulesToBeAppliedGetOK, error)
 
-	S3AuditCreate(params *S3AuditCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditCreateAccepted, error)
+	S3AuditCreate(params *S3AuditCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditCreateCreated, *S3AuditCreateAccepted, error)
 
-	S3AuditDelete(params *S3AuditDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditDeleteAccepted, error)
+	S3AuditDelete(params *S3AuditDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditDeleteOK, *S3AuditDeleteAccepted, error)
 
 	S3AuditGet(params *S3AuditGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditGetOK, error)
 
-	S3AuditModify(params *S3AuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditModifyAccepted, error)
+	S3AuditModify(params *S3AuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditModifyOK, *S3AuditModifyAccepted, error)
 
 	ShadowcopyCollectionGet(params *ShadowcopyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopyCollectionGetOK, error)
 
@@ -336,11 +446,15 @@ type ClientService interface {
 
 	ShadowcopyModify(params *ShadowcopyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopyModifyOK, error)
 
+	ShadowcopyModifyCollection(params *ShadowcopyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopyModifyCollectionOK, error)
+
 	ShadowcopySetCollectionGet(params *ShadowcopySetCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopySetCollectionGetOK, error)
 
 	ShadowcopySetGet(params *ShadowcopySetGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopySetGetOK, error)
 
 	ShadowcopySetModify(params *ShadowcopySetModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopySetModifyOK, error)
+
+	ShadowcopySetModifyCollection(params *ShadowcopySetModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopySetModifyCollectionOK, error)
 
 	UserGroupPrivilegesCollectionGet(params *UserGroupPrivilegesCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UserGroupPrivilegesCollectionGetOK, error)
 
@@ -350,9 +464,13 @@ type ClientService interface {
 
 	UserGroupPrivilegesModify(params *UserGroupPrivilegesModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UserGroupPrivilegesModifyOK, error)
 
+	UserGroupPrivilegesModifyCollection(params *UserGroupPrivilegesModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UserGroupPrivilegesModifyCollectionOK, error)
+
 	VscanCollectionGet(params *VscanCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanCollectionGetOK, error)
 
 	VscanConfigDelete(params *VscanConfigDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanConfigDeleteOK, error)
+
+	VscanConfigDeleteCollection(params *VscanConfigDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanConfigDeleteCollectionOK, error)
 
 	VscanCreate(params *VscanCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanCreateCreated, error)
 
@@ -362,13 +480,19 @@ type ClientService interface {
 
 	VscanModify(params *VscanModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanModifyOK, error)
 
+	VscanModifyCollection(params *VscanModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanModifyCollectionOK, error)
+
 	VscanOnAccessCreate(params *VscanOnAccessCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnAccessCreateCreated, error)
 
 	VscanOnAccessDelete(params *VscanOnAccessDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnAccessDeleteOK, error)
 
+	VscanOnAccessDeleteCollection(params *VscanOnAccessDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnAccessDeleteCollectionOK, error)
+
 	VscanOnAccessGet(params *VscanOnAccessGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnAccessGetOK, error)
 
 	VscanOnAccessModify(params *VscanOnAccessModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnAccessModifyOK, error)
+
+	VscanOnAccessModifyCollection(params *VscanOnAccessModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnAccessModifyCollectionOK, error)
 
 	VscanOnAccessPolicyCollectionGet(params *VscanOnAccessPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnAccessPolicyCollectionGetOK, error)
 
@@ -376,9 +500,13 @@ type ClientService interface {
 
 	VscanOnDemandDelete(params *VscanOnDemandDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnDemandDeleteOK, error)
 
+	VscanOnDemandDeleteCollection(params *VscanOnDemandDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnDemandDeleteCollectionOK, error)
+
 	VscanOnDemandGet(params *VscanOnDemandGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnDemandGetOK, error)
 
 	VscanOnDemandModify(params *VscanOnDemandModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnDemandModifyOK, error)
+
+	VscanOnDemandModifyCollection(params *VscanOnDemandModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnDemandModifyCollectionOK, error)
 
 	VscanOnDemandPolicyCollectionGet(params *VscanOnDemandPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnDemandPolicyCollectionGetOK, error)
 
@@ -388,7 +516,11 @@ type ClientService interface {
 
 	VscanScannerDelete(params *VscanScannerDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanScannerDeleteOK, error)
 
+	VscanScannerDeleteCollection(params *VscanScannerDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanScannerDeleteCollectionOK, error)
+
 	VscanScannerModify(params *VscanScannerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanScannerModifyOK, error)
+
+	VscanScannerModifyCollection(params *VscanScannerModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanScannerModifyCollectionOK, error)
 
 	VscanScannerPoolGet(params *VscanScannerPoolGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanScannerPoolGetOK, error)
 
@@ -414,8 +546,8 @@ func (a *Client) ActiveDirectoryCollectionGet(params *ActiveDirectoryCollectionG
 		ID:                 "active_directory_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/active-directory",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ActiveDirectoryCollectionGetReader{formats: a.formats},
@@ -457,8 +589,8 @@ func (a *Client) ActiveDirectoryCreate(params *ActiveDirectoryCreateParams, auth
 		ID:                 "active_directory_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/active-directory",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ActiveDirectoryCreateReader{formats: a.formats},
@@ -500,8 +632,8 @@ func (a *Client) ActiveDirectoryDelete(params *ActiveDirectoryDeleteParams, auth
 		ID:                 "active_directory_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/active-directory/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ActiveDirectoryDeleteReader{formats: a.formats},
@@ -527,6 +659,44 @@ func (a *Client) ActiveDirectoryDelete(params *ActiveDirectoryDeleteParams, auth
 }
 
 /*
+ActiveDirectoryDeleteCollection active directory delete collection API
+*/
+func (a *Client) ActiveDirectoryDeleteCollection(params *ActiveDirectoryDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewActiveDirectoryDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "active_directory_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/active-directory",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ActiveDirectoryDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ActiveDirectoryDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ActiveDirectoryDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	ActiveDirectoryGet Retrieves the Active Directory account for a given SVM.
 
 ### Related ONTAP commands
@@ -544,8 +714,8 @@ func (a *Client) ActiveDirectoryGet(params *ActiveDirectoryGetParams, authInfo r
 		ID:                 "active_directory_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/active-directory/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ActiveDirectoryGetReader{formats: a.formats},
@@ -587,8 +757,8 @@ func (a *Client) ActiveDirectoryModify(params *ActiveDirectoryModifyParams, auth
 		ID:                 "active_directory_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/active-directory/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ActiveDirectoryModifyReader{formats: a.formats},
@@ -614,6 +784,44 @@ func (a *Client) ActiveDirectoryModify(params *ActiveDirectoryModifyParams, auth
 }
 
 /*
+ActiveDirectoryModifyCollection active directory modify collection API
+*/
+func (a *Client) ActiveDirectoryModifyCollection(params *ActiveDirectoryModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewActiveDirectoryModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "active_directory_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/active-directory",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ActiveDirectoryModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ActiveDirectoryModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ActiveDirectoryModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	ActiveDirectoryPreferredDcCollectionGet Retrieves the Active Directory preferred DC configuration of an SVM.
 
 ### Related ONTAP commands
@@ -628,8 +836,8 @@ func (a *Client) ActiveDirectoryPreferredDcCollectionGet(params *ActiveDirectory
 		ID:                 "active_directory_preferred_dc_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/active-directory/{svm.uuid}/preferred-domain-controllers",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ActiveDirectoryPreferredDcCollectionGetReader{formats: a.formats},
@@ -675,8 +883,8 @@ func (a *Client) ActiveDirectoryPreferredDcCreate(params *ActiveDirectoryPreferr
 		ID:                 "active_directory_preferred_dc_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/active-directory/{svm.uuid}/preferred-domain-controllers",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ActiveDirectoryPreferredDcCreateReader{formats: a.formats},
@@ -716,8 +924,8 @@ func (a *Client) ActiveDirectoryPreferredDcDelete(params *ActiveDirectoryPreferr
 		ID:                 "active_directory_preferred_dc_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/active-directory/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ActiveDirectoryPreferredDcDeleteReader{formats: a.formats},
@@ -743,6 +951,44 @@ func (a *Client) ActiveDirectoryPreferredDcDelete(params *ActiveDirectoryPreferr
 }
 
 /*
+ActiveDirectoryPreferredDcDeleteCollection active directory preferred dc delete collection API
+*/
+func (a *Client) ActiveDirectoryPreferredDcDeleteCollection(params *ActiveDirectoryPreferredDcDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryPreferredDcDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewActiveDirectoryPreferredDcDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "active_directory_preferred_dc_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/active-directory/{svm.uuid}/preferred-domain-controllers",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ActiveDirectoryPreferredDcDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ActiveDirectoryPreferredDcDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ActiveDirectoryPreferredDcDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	ActiveDirectoryPreferredDcGet Retrieves the Active Directory preferred DC configuration of an SVM.
 
 ### Related ONTAP commands
@@ -757,8 +1003,8 @@ func (a *Client) ActiveDirectoryPreferredDcGet(params *ActiveDirectoryPreferredD
 		ID:                 "active_directory_preferred_dc_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/active-directory/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ActiveDirectoryPreferredDcGetReader{formats: a.formats},
@@ -800,8 +1046,8 @@ func (a *Client) AuditCollectionGet(params *AuditCollectionGetParams, authInfo r
 		ID:                 "audit_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/audit",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AuditCollectionGetReader{formats: a.formats},
@@ -841,6 +1087,8 @@ If not specified in POST, the following default property values are assigned:
 * `events.security_group` - _false_
 * `events.user_account` - _false_
 * `events.cifs_logon_logoff` - _true_
+* `events.audit_policy_change` - _true_
+* `events.async_delete` - _false_
 * `events.file_operations` - _true_
 * `log.format` - _evtx_
 * `log.retention.count` - _0_
@@ -848,13 +1096,14 @@ If not specified in POST, the following default property values are assigned:
 * `log.rotation.size` - _100MB_
 * `log.rotation.now` - _false_
 * `guarantee` - _true_
+* `charge_qos` - _false_
 ### Related ONTAP commands
 * `vserver audit create`
 * `vserver audit enable`
 ### Learn more
 * [`DOC /protocols/audit`](#docs-NAS-protocols_audit)
 */
-func (a *Client) AuditCreate(params *AuditCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditCreateAccepted, error) {
+func (a *Client) AuditCreate(params *AuditCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditCreateCreated, *AuditCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAuditCreateParams()
@@ -863,8 +1112,8 @@ func (a *Client) AuditCreate(params *AuditCreateParams, authInfo runtime.ClientA
 		ID:                 "audit_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/audit",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AuditCreateReader{formats: a.formats},
@@ -878,15 +1127,17 @@ func (a *Client) AuditCreate(params *AuditCreateParams, authInfo runtime.ClientA
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*AuditCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *AuditCreateCreated:
+		return value, nil, nil
+	case *AuditCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AuditCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -898,7 +1149,7 @@ func (a *Client) AuditCreate(params *AuditCreateParams, authInfo runtime.ClientA
 ### Learn more
 * [`DOC /protocols/audit`](#docs-NAS-protocols_audit)
 */
-func (a *Client) AuditDelete(params *AuditDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditDeleteAccepted, error) {
+func (a *Client) AuditDelete(params *AuditDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditDeleteOK, *AuditDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAuditDeleteParams()
@@ -907,8 +1158,8 @@ func (a *Client) AuditDelete(params *AuditDeleteParams, authInfo runtime.ClientA
 		ID:                 "audit_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/audit/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AuditDeleteReader{formats: a.formats},
@@ -922,15 +1173,57 @@ func (a *Client) AuditDelete(params *AuditDeleteParams, authInfo runtime.ClientA
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*AuditDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *AuditDeleteOK:
+		return value, nil, nil
+	case *AuditDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AuditDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+AuditDeleteCollection audit delete collection API
+*/
+func (a *Client) AuditDeleteCollection(params *AuditDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditDeleteCollectionOK, *AuditDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAuditDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "audit_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/audit",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AuditDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *AuditDeleteCollectionOK:
+		return value, nil, nil
+	case *AuditDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AuditDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -950,8 +1243,8 @@ func (a *Client) AuditGet(params *AuditGetParams, authInfo runtime.ClientAuthInf
 		ID:                 "audit_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/audit/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AuditGetReader{formats: a.formats},
@@ -984,7 +1277,7 @@ func (a *Client) AuditGet(params *AuditGetParams, authInfo runtime.ClientAuthInf
 ### Learn more
 * [`DOC /protocols/audit`](#docs-NAS-protocols_audit)
 */
-func (a *Client) AuditModify(params *AuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditModifyAccepted, error) {
+func (a *Client) AuditModify(params *AuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditModifyOK, *AuditModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAuditModifyParams()
@@ -993,8 +1286,8 @@ func (a *Client) AuditModify(params *AuditModifyParams, authInfo runtime.ClientA
 		ID:                 "audit_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/audit/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AuditModifyReader{formats: a.formats},
@@ -1008,15 +1301,57 @@ func (a *Client) AuditModify(params *AuditModifyParams, authInfo runtime.ClientA
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*AuditModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *AuditModifyOK:
+		return value, nil, nil
+	case *AuditModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AuditModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+AuditModifyCollection audit modify collection API
+*/
+func (a *Client) AuditModifyCollection(params *AuditModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditModifyCollectionOK, *AuditModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAuditModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "audit_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/audit",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AuditModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *AuditModifyCollectionOK:
+		return value, nil, nil
+	case *AuditModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AuditModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1031,8 +1366,8 @@ func (a *Client) CifsCollectionPerformanceMetricsGet(params *CifsCollectionPerfo
 		ID:                 "cifs_collection_performance_metrics_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/services/{svm.uuid}/metrics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsCollectionPerformanceMetricsGetReader{formats: a.formats},
@@ -1075,8 +1410,8 @@ func (a *Client) CifsConnectionCollectionGet(params *CifsConnectionCollectionGet
 		ID:                 "cifs_connection_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/connections",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsConnectionCollectionGetReader{formats: a.formats},
@@ -1122,8 +1457,8 @@ func (a *Client) CifsDomainCollectionGet(params *CifsDomainCollectionGetParams, 
 		ID:                 "cifs_domain_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/domains",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsDomainCollectionGetReader{formats: a.formats},
@@ -1158,7 +1493,8 @@ GET operation with query parameter `rediscover_trusts` and `reset_discovered_ser
 * `vserver cifs domain trusts show`
 * `vserver cifs domain discovered-servers show`
 * `vserver cifs domain name-mapping-search show`
-* `vserver cifs domain schedule show`
+* `vserver cifs domain password schedule show`
+* `vserver cifs domain discovered-servers discovery-mode show`
 ### Learn more
 * [`DOC /protocols/cifs/domains/{svm.uuid}`](#docs-NAS-protocols_cifs_domains_{svm.uuid})
 */
@@ -1171,8 +1507,8 @@ func (a *Client) CifsDomainGet(params *CifsDomainGetParams, authInfo runtime.Cli
 		ID:                 "cifs_domain_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/domains/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsDomainGetReader{formats: a.formats},
@@ -1198,6 +1534,94 @@ func (a *Client) CifsDomainGet(params *CifsDomainGetParams, authInfo runtime.Cli
 }
 
 /*
+	CifsDomainModify Modifies the CIFS domain-related information of the specified SVM.
+
+### Related ONTAP commands
+* `vserver cifs domain password schedule modify`
+* `vserver cifs domain discovered-servers discovery-mode modify`
+* `vserver cifs domain password reset`
+* `vserver cifs domain password change`
+### Important notes
+* If the query is set to cifs_password_operation=reset and ad_domain_user and ad_domain_password is included in the body,a CIFS password reset is executed.
+* If the query is set to cifs_password_operation=reset and tenant_id, client_id and client_certificate is included in the body,a CIFS password reset is executed in Azure EntraId for hybrid user.
+* If the body is empty when the query is set to cifs_password_operation=reset, a CIFS password change is executed.
+### Learn more
+* [`DOC /protocols/cifs/domains/{svm.uuid}`](#docs-NAS-protocols_cifs_domains_{svm.uuid})
+*/
+func (a *Client) CifsDomainModify(params *CifsDomainModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsDomainModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_domain_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/domains/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsDomainModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsDomainModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsDomainModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+CifsDomainModifyCollection cifs domain modify collection API
+*/
+func (a *Client) CifsDomainModifyCollection(params *CifsDomainModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsDomainModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_domain_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/domains",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsDomainModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsDomainModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsDomainModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	CifsDomainPreferredDcCollectionGet Retrieves the CIFS domain preferred DC configuration of an SVM.
 
 ### Related ONTAP commands
@@ -1215,8 +1639,8 @@ func (a *Client) CifsDomainPreferredDcCollectionGet(params *CifsDomainPreferredD
 		ID:                 "cifs_domain_preferred_dc_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsDomainPreferredDcCollectionGetReader{formats: a.formats},
@@ -1266,8 +1690,8 @@ func (a *Client) CifsDomainPreferredDcCreate(params *CifsDomainPreferredDcCreate
 		ID:                 "cifs_domain_preferred_dc_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsDomainPreferredDcCreateReader{formats: a.formats},
@@ -1309,8 +1733,8 @@ func (a *Client) CifsDomainPreferredDcDelete(params *CifsDomainPreferredDcDelete
 		ID:                 "cifs_domain_preferred_dc_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsDomainPreferredDcDeleteReader{formats: a.formats},
@@ -1336,6 +1760,44 @@ func (a *Client) CifsDomainPreferredDcDelete(params *CifsDomainPreferredDcDelete
 }
 
 /*
+CifsDomainPreferredDcDeleteCollection cifs domain preferred dc delete collection API
+*/
+func (a *Client) CifsDomainPreferredDcDeleteCollection(params *CifsDomainPreferredDcDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsDomainPreferredDcDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_domain_preferred_dc_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsDomainPreferredDcDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsDomainPreferredDcDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsDomainPreferredDcDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	CifsDomainPreferredDcGet Retrieves the CIFS domain preferred DC configuration of an SVM.
 
 ### Related ONTAP commands
@@ -1353,8 +1815,8 @@ func (a *Client) CifsDomainPreferredDcGet(params *CifsDomainPreferredDcGetParams
 		ID:                 "cifs_domain_preferred_dc_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsDomainPreferredDcGetReader{formats: a.formats},
@@ -1396,8 +1858,8 @@ func (a *Client) CifsHomedirSearchPathGet(params *CifsHomedirSearchPathGetParams
 		ID:                 "cifs_homedir_search_path_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsHomedirSearchPathGetReader{formats: a.formats},
@@ -1423,7 +1885,13 @@ func (a *Client) CifsHomedirSearchPathGet(params *CifsHomedirSearchPathGetParams
 }
 
 /*
-CifsOpenFileCollectionGet Retrieves CIFS Open Files
+	CifsOpenFileCollectionGet Retrieves the CIFS sessions Open Files information for all SVMs.
+
+### Related ONTAP commands
+  - `vserver cifs session file show`
+
+### Learn more
+* [`DOC /protocols/cifs/session/files`](#docs-NAS-protocols_cifs_session_files)
 */
 func (a *Client) CifsOpenFileCollectionGet(params *CifsOpenFileCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsOpenFileCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1434,8 +1902,8 @@ func (a *Client) CifsOpenFileCollectionGet(params *CifsOpenFileCollectionGetPara
 		ID:                 "cifs_open_file_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/session/files",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsOpenFileCollectionGetReader{formats: a.formats},
@@ -1463,6 +1931,9 @@ func (a *Client) CifsOpenFileCollectionGet(params *CifsOpenFileCollectionGetPara
 /*
 	CifsOpenFileDelete Closes open files identified by svm.uuid, file.identifier, connection.identifier and session_id.
 
+### Related ONTAP commands
+  - `vserver cifs session file close`
+
 ### Learn more
 * [`DOC /protocols/cifs/session/files`](#docs-NAS-protocols_cifs_session_files)
 */
@@ -1475,8 +1946,8 @@ func (a *Client) CifsOpenFileDelete(params *CifsOpenFileDeleteParams, authInfo r
 		ID:                 "cifs_open_file_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsOpenFileDeleteReader{formats: a.formats},
@@ -1502,7 +1973,48 @@ func (a *Client) CifsOpenFileDelete(params *CifsOpenFileDeleteParams, authInfo r
 }
 
 /*
-CifsOpenFileGet Retrieves specific CIFS Open File
+CifsOpenFileDeleteCollection cifs open file delete collection API
+*/
+func (a *Client) CifsOpenFileDeleteCollection(params *CifsOpenFileDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsOpenFileDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsOpenFileDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_open_file_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/cifs/session/files",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsOpenFileDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsOpenFileDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsOpenFileDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	CifsOpenFileGet Retrieves specific CIFS session Open Files information.
+
+### Learn more
+* [`DOC /protocols/cifs/session/files`](#docs-NAS-protocols_cifs_session_files)
 */
 func (a *Client) CifsOpenFileGet(params *CifsOpenFileGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsOpenFileGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1513,8 +2025,8 @@ func (a *Client) CifsOpenFileGet(params *CifsOpenFileGetParams, authInfo runtime
 		ID:                 "cifs_open_file_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsOpenFileGetReader{formats: a.formats},
@@ -1556,8 +2068,8 @@ func (a *Client) CifsSearchPathCollectionGet(params *CifsSearchPathCollectionGet
 		ID:                 "cifs_search_path_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/home-directory/search-paths",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsSearchPathCollectionGetReader{formats: a.formats},
@@ -1602,8 +2114,8 @@ func (a *Client) CifsSearchPathCreate(params *CifsSearchPathCreateParams, authIn
 		ID:                 "cifs_search_path_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/cifs/home-directory/search-paths",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsSearchPathCreateReader{formats: a.formats},
@@ -1645,8 +2157,8 @@ func (a *Client) CifsSearchPathDelete(params *CifsSearchPathDeleteParams, authIn
 		ID:                 "cifs_search_path_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsSearchPathDeleteReader{formats: a.formats},
@@ -1672,6 +2184,44 @@ func (a *Client) CifsSearchPathDelete(params *CifsSearchPathDeleteParams, authIn
 }
 
 /*
+CifsSearchPathDeleteCollection cifs search path delete collection API
+*/
+func (a *Client) CifsSearchPathDeleteCollection(params *CifsSearchPathDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSearchPathDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsSearchPathDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_search_path_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/cifs/home-directory/search-paths",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsSearchPathDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsSearchPathDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsSearchPathDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	CifsSearchPathModify Reorders a CIFS home directory search path.
 
 ### Related ONTAP commands
@@ -1688,8 +2238,8 @@ func (a *Client) CifsSearchPathModify(params *CifsSearchPathModifyParams, authIn
 		ID:                 "cifs_search_path_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsSearchPathModifyReader{formats: a.formats},
@@ -1711,6 +2261,44 @@ func (a *Client) CifsSearchPathModify(params *CifsSearchPathModifyParams, authIn
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*CifsSearchPathModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+CifsSearchPathModifyCollection cifs search path modify collection API
+*/
+func (a *Client) CifsSearchPathModifyCollection(params *CifsSearchPathModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSearchPathModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsSearchPathModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_search_path_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/home-directory/search-paths",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsSearchPathModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsSearchPathModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsSearchPathModifyCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -1737,8 +2325,8 @@ func (a *Client) CifsServiceCollectionGet(params *CifsServiceCollectionGetParams
 		ID:                 "cifs_service_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/services",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsServiceCollectionGetReader{formats: a.formats},
@@ -1770,30 +2358,45 @@ func (a *Client) CifsServiceCollectionGet(params *CifsServiceCollectionGetParams
 - The CIFS server name might or might not be the same as the SVM name.
 - The CIFS server name can contain up to 15 characters.
 - The CIFS server name does not support the following characters: @ # * ( ) = + [ ] | ; : " , < >  / ?
-### Required properties
+### Required properties when creating CIFS server with Windows Active Directory domain
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the CIFS server.
 * `name` -  Name of the CIFS server.
 * `ad_domain.fqdn` - Fully qualified domain name of the Windows Active Directory to which this CIFS server belongs.
 * `ad_domain.user` - User account with the access to add the CIFS server to the Active Directory.
 * `ad_domain.password` - Account password used to add this CIFS server to the Active Directory.
+### Required properties when creating CIFS server in Workgroup mode
+* `svm.uuid` or `svm.name` - Existing SVM in which to create the CIFS server.
+* `name` -  Name of the CIFS server.
+* `workgroup` - Name of the workgroup to which this CIFS server belongs.
+### Required properties when using AKV for authentication (ANF platform)
+* `svm.uuid` or `svm.name` - Existing SVM in which to create the CIFS server.
+* `name` -  Name of the CIFS server.
+* `ad_domain.user` - User account with the access to add the CIFS server to the Active Directory.
+* `ad_domain.fqdn` - Fully qualified domain name of the Windows Active Directory to which this CIFS server belongs.
+* `client_id` - Application client ID of the deployed Azure application with appropriate access to an AKV or EntraId.
+* `tenant_id` - Directory (tenant) ID of the deployed Azure application with appropriate access to an AKV or EntraId.
+* `key_vault_uri` - URI of the deployed AKV that is used by ONTAP for storing keys.
+* `authentication_method` - Authentication method used by the application to prove its identity to AKV or EntraId. It can be either "client_secret" or "certificate".
+* `auth_user_type` - Type of user who can access the SMB Volume. It can be either "domain_user" or "hybrid_user". The default is domain_user. In the case of a hybrid-user, ONTAP cannot access on-premise ADDS.
+* `client_secret` - Secret used by the application to prove its identity to AKV.
+* `client_certificate` - Base64 encoded PKCS12 certificate used by the application to prove its identity to AKV.
 ### Recommended optional properties
-* `comment` - Add a text comment of up to 48 characters about the CIFS server.
+* `comment` - Add a text comment of up to 256 characters about the CIFS server.
 * `netbios.aliases` - Add a comma-delimited list of one or more NetBIOS aliases for the CIFS server.
 * `netbios.wins_servers` - Add a list of Windows Internet Name Server (WINS) addresses that manage and map the NetBIOS name of the CIFS server to their network IP addresses. The IP addresses must be IPv4 addresses.
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `ad_domain.organizational_unit` - _CN=Computers_
 * `enabled` - _true_
-* `restrict_anonymous` - _no_enumeration_
-* `smb_signing` - _false_
-* `smb_encryption` - _false_
-* `encrypt_dc_connection` - _false_
-* `kdc_encryption` - _false_
+* `security.restrict_anonymous` - _no_enumeration_
+* `security.smb_signing` - _false_
+* `security.smb_encryption` - _false_
+* `security.encrypt_dc_connection` - _false_
 * `default_unix_user` - _pcuser_
-* `netbios_enabled` - _false_ However, if either "netbios.wins-server" or "netbios.aliases" is set during POST and if `netbios_enabled` is not specified then `netbios_enabled` is set to true.
-* `aes_netlogon_enabled` - _false_
-* `try_ldap_channel_binding` - _true_
-* `ldap_referral_enabled` - _false_
+* `netbios.enabled` - _false_ However, if either "netbios.wins-server" or "netbios.aliases" is set during POST and if `netbios.enabled` is not specified then `netbios.enabled` is set to true.
+* `security.aes_netlogon_enabled` - _false_
+* `security.try_ldap_channel_binding` - _true_
+* `security.ldap_referral_enabled` - _false_
 ### Related ONTAP commands
 * `vserver cifs server create`
 * `vserver cifs server options modify`
@@ -1802,7 +2405,7 @@ If not specified in POST, the following default property values are assigned:
 ### Learn more
 * [`DOC /protocols/cifs/services`](#docs-NAS-protocols_cifs_services)
 */
-func (a *Client) CifsServiceCreate(params *CifsServiceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceCreateAccepted, error) {
+func (a *Client) CifsServiceCreate(params *CifsServiceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceCreateCreated, *CifsServiceCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewCifsServiceCreateParams()
@@ -1811,8 +2414,8 @@ func (a *Client) CifsServiceCreate(params *CifsServiceCreateParams, authInfo run
 		ID:                 "cifs_service_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/cifs/services",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsServiceCreateReader{formats: a.formats},
@@ -1826,29 +2429,33 @@ func (a *Client) CifsServiceCreate(params *CifsServiceCreateParams, authInfo run
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*CifsServiceCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *CifsServiceCreateCreated:
+		return value, nil, nil
+	case *CifsServiceCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*CifsServiceCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
 	CifsServiceDelete Deletes a CIFS server and related CIFS configurations.<br/>
 
-If "force" field is set along with user login credentials, the local CIFS configuration will be deleted irrespective of any communication errors. The default value for this field is false.
-If "force" field alone is set without passing the user login credentials, the local CIFS configuration will be deleted by not making any request to Active Directory, but the option will be enable only for the VseverDR enabled SVMs. The default value for this field is false.
+</br>Important notes:
+* The default value for the "force" field is false.
+* If the "force" field is set along with user login credentials, the local CIFS configuration will be deleted irrespective of any communication errors.
+* If the "force" field alone is set without passing the user login credentials, the local CIFS configuration will be deleted by not making any request to Active Directory.
 ### Related ONTAP commands
 * `vserver cifs server delete`
 * `vserver cifs remove-netbios-aliases`
 ### Learn more
 * [`DOC /protocols/cifs/services`](#docs-NAS-protocols_cifs_services)
 */
-func (a *Client) CifsServiceDelete(params *CifsServiceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceDeleteAccepted, error) {
+func (a *Client) CifsServiceDelete(params *CifsServiceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceDeleteOK, *CifsServiceDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewCifsServiceDeleteParams()
@@ -1857,8 +2464,8 @@ func (a *Client) CifsServiceDelete(params *CifsServiceDeleteParams, authInfo run
 		ID:                 "cifs_service_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/cifs/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsServiceDeleteReader{formats: a.formats},
@@ -1872,15 +2479,57 @@ func (a *Client) CifsServiceDelete(params *CifsServiceDeleteParams, authInfo run
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*CifsServiceDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *CifsServiceDeleteOK:
+		return value, nil, nil
+	case *CifsServiceDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*CifsServiceDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+CifsServiceDeleteCollection cifs service delete collection API
+*/
+func (a *Client) CifsServiceDeleteCollection(params *CifsServiceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceDeleteCollectionOK, *CifsServiceDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsServiceDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_service_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/cifs/services",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsServiceDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *CifsServiceDeleteCollectionOK:
+		return value, nil, nil
+	case *CifsServiceDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsServiceDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1902,8 +2551,8 @@ func (a *Client) CifsServiceGet(params *CifsServiceGetParams, authInfo runtime.C
 		ID:                 "cifs_service_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsServiceGetReader{formats: a.formats},
@@ -1940,7 +2589,7 @@ func (a *Client) CifsServiceGet(params *CifsServiceGetParams, authInfo runtime.C
 ### Learn more
 * [`DOC /protocols/cifs/services`](#docs-NAS-protocols_cifs_services)
 */
-func (a *Client) CifsServiceModify(params *CifsServiceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceModifyAccepted, error) {
+func (a *Client) CifsServiceModify(params *CifsServiceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceModifyOK, *CifsServiceModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewCifsServiceModifyParams()
@@ -1949,8 +2598,8 @@ func (a *Client) CifsServiceModify(params *CifsServiceModifyParams, authInfo run
 		ID:                 "cifs_service_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/cifs/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsServiceModifyReader{formats: a.formats},
@@ -1964,15 +2613,57 @@ func (a *Client) CifsServiceModify(params *CifsServiceModifyParams, authInfo run
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*CifsServiceModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *CifsServiceModifyOK:
+		return value, nil, nil
+	case *CifsServiceModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*CifsServiceModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+CifsServiceModifyCollection cifs service modify collection API
+*/
+func (a *Client) CifsServiceModifyCollection(params *CifsServiceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceModifyCollectionOK, *CifsServiceModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsServiceModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_service_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/services",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsServiceModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *CifsServiceModifyCollectionOK:
+		return value, nil, nil
+	case *CifsServiceModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsServiceModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1993,8 +2684,8 @@ func (a *Client) CifsSessionCollectionGet(params *CifsSessionCollectionGetParams
 		ID:                 "cifs_session_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/sessions",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsSessionCollectionGetReader{formats: a.formats},
@@ -2022,10 +2713,13 @@ func (a *Client) CifsSessionCollectionGet(params *CifsSessionCollectionGetParams
 /*
 	CifsSessionDelete Deletes SMB session information on a node for an SVM.
 
-* To delete the specific SMB session information, pass the relavant SMB session's identifier and connection Id.
+* To delete the specific SMB session information, pass the relevant SMB session's identifier and connection Id.
 * To delete all the SMB session information on specific node and SVM, pass the both SMB session's identifier and connection Id as zero(0)
 * To delete all the SMB session information on specific connection, pass the specific SMB session's Identifier value as zero(0).
 * To delete all the SMB session information on specific Identifier alone is not allowed.
+### Related ONTAP commands
+  - `vserver cifs session close`
+
 ### Learn more
 * [`DOC /protocols/cifs/sessions`](#docs-NAS-protocols_cifs_sessions)
 */
@@ -2038,8 +2732,8 @@ func (a *Client) CifsSessionDelete(params *CifsSessionDeleteParams, authInfo run
 		ID:                 "cifs_session_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/cifs/sessions/{node.uuid}/{svm.uuid}/{identifier}/{connection_id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsSessionDeleteReader{formats: a.formats},
@@ -2065,6 +2759,44 @@ func (a *Client) CifsSessionDelete(params *CifsSessionDeleteParams, authInfo run
 }
 
 /*
+CifsSessionDeleteCollection cifs session delete collection API
+*/
+func (a *Client) CifsSessionDeleteCollection(params *CifsSessionDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSessionDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsSessionDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_session_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/cifs/sessions",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsSessionDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsSessionDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsSessionDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	CifsSessionGet Retrieves specific SMB session information for a specific SMB connection in a node on an SVM.
 
 ### Learn more
@@ -2079,8 +2811,8 @@ func (a *Client) CifsSessionGet(params *CifsSessionGetParams, authInfo runtime.C
 		ID:                 "cifs_session_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/sessions/{node.uuid}/{svm.uuid}/{identifier}/{connection_id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsSessionGetReader{formats: a.formats},
@@ -2122,8 +2854,8 @@ func (a *Client) CifsShareACLCollectionGet(params *CifsShareACLCollectionGetPara
 		ID:                 "cifs_share_acl_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/shares/{svm.uuid}/{share}/acls",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsShareACLCollectionGetReader{formats: a.formats},
@@ -2172,8 +2904,8 @@ func (a *Client) CifsShareACLCreate(params *CifsShareACLCreateParams, authInfo r
 		ID:                 "cifs_share_acl_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/cifs/shares/{svm.uuid}/{share}/acls",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsShareACLCreateReader{formats: a.formats},
@@ -2215,8 +2947,8 @@ func (a *Client) CifsShareACLDelete(params *CifsShareACLDeleteParams, authInfo r
 		ID:                 "cifs_share_acl_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsShareACLDeleteReader{formats: a.formats},
@@ -2242,6 +2974,44 @@ func (a *Client) CifsShareACLDelete(params *CifsShareACLDeleteParams, authInfo r
 }
 
 /*
+CifsShareACLDeleteCollection cifs share acl delete collection API
+*/
+func (a *Client) CifsShareACLDeleteCollection(params *CifsShareACLDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareACLDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsShareACLDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_share_acl_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/cifs/shares/{svm.uuid}/{share}/acls",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsShareACLDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsShareACLDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsShareACLDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	CifsShareACLGet Retrieves the share-level ACL on CIFS share for a specified user or group.
 
 ### Related ONTAP commands
@@ -2258,8 +3028,8 @@ func (a *Client) CifsShareACLGet(params *CifsShareACLGetParams, authInfo runtime
 		ID:                 "cifs_share_acl_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsShareACLGetReader{formats: a.formats},
@@ -2301,8 +3071,8 @@ func (a *Client) CifsShareACLModify(params *CifsShareACLModifyParams, authInfo r
 		ID:                 "cifs_share_acl_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsShareACLModifyReader{formats: a.formats},
@@ -2328,6 +3098,44 @@ func (a *Client) CifsShareACLModify(params *CifsShareACLModifyParams, authInfo r
 }
 
 /*
+CifsShareACLModifyCollection cifs share acl modify collection API
+*/
+func (a *Client) CifsShareACLModifyCollection(params *CifsShareACLModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareACLModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsShareACLModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_share_acl_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/shares/{svm.uuid}/{share}/acls",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsShareACLModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsShareACLModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsShareACLModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	CifsShareCollectionGet Retrieves CIFS shares.
 
 ### Related ONTAP commands
@@ -2345,8 +3153,8 @@ func (a *Client) CifsShareCollectionGet(params *CifsShareCollectionGetParams, au
 		ID:                 "cifs_share_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/shares",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsShareCollectionGetReader{formats: a.formats},
@@ -2405,8 +3213,8 @@ func (a *Client) CifsShareCreate(params *CifsShareCreateParams, authInfo runtime
 		ID:                 "cifs_share_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/cifs/shares",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsShareCreateReader{formats: a.formats},
@@ -2448,8 +3256,8 @@ func (a *Client) CifsShareDelete(params *CifsShareDeleteParams, authInfo runtime
 		ID:                 "cifs_share_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/cifs/shares/{svm.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsShareDeleteReader{formats: a.formats},
@@ -2475,6 +3283,44 @@ func (a *Client) CifsShareDelete(params *CifsShareDeleteParams, authInfo runtime
 }
 
 /*
+CifsShareDeleteCollection cifs share delete collection API
+*/
+func (a *Client) CifsShareDeleteCollection(params *CifsShareDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsShareDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_share_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/cifs/shares",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsShareDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsShareDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsShareDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	CifsShareGet Retrieves a CIFS share.
 
 ### Related ONTAP commands
@@ -2492,8 +3338,8 @@ func (a *Client) CifsShareGet(params *CifsShareGetParams, authInfo runtime.Clien
 		ID:                 "cifs_share_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/shares/{svm.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsShareGetReader{formats: a.formats},
@@ -2537,8 +3383,8 @@ func (a *Client) CifsShareModify(params *CifsShareModifyParams, authInfo runtime
 		ID:                 "cifs_share_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/cifs/shares/{svm.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsShareModifyReader{formats: a.formats},
@@ -2564,6 +3410,44 @@ func (a *Client) CifsShareModify(params *CifsShareModifyParams, authInfo runtime
 }
 
 /*
+CifsShareModifyCollection cifs share modify collection API
+*/
+func (a *Client) CifsShareModifyCollection(params *CifsShareModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsShareModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_share_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/shares",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsShareModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsShareModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsShareModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	CifsSymlinkMappingCollectionGet Retrieves UNIX symbolic link mappings for CIFS clients.
 
 ### Related ONTAP commands
@@ -2580,8 +3464,8 @@ func (a *Client) CifsSymlinkMappingCollectionGet(params *CifsSymlinkMappingColle
 		ID:                 "cifs_symlink_mapping_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/unix-symlink-mapping",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsSymlinkMappingCollectionGetReader{formats: a.formats},
@@ -2632,8 +3516,8 @@ func (a *Client) CifsSymlinkMappingCreate(params *CifsSymlinkMappingCreateParams
 		ID:                 "cifs_symlink_mapping_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/cifs/unix-symlink-mapping",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsSymlinkMappingCreateReader{formats: a.formats},
@@ -2675,8 +3559,8 @@ func (a *Client) CifsSymlinkMappingDelete(params *CifsSymlinkMappingDeleteParams
 		ID:                 "cifs_symlink_mapping_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsSymlinkMappingDeleteReader{formats: a.formats},
@@ -2702,6 +3586,44 @@ func (a *Client) CifsSymlinkMappingDelete(params *CifsSymlinkMappingDeleteParams
 }
 
 /*
+CifsSymlinkMappingDeleteCollection cifs symlink mapping delete collection API
+*/
+func (a *Client) CifsSymlinkMappingDeleteCollection(params *CifsSymlinkMappingDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSymlinkMappingDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsSymlinkMappingDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_symlink_mapping_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/cifs/unix-symlink-mapping",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsSymlinkMappingDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsSymlinkMappingDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsSymlinkMappingDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	CifsSymlinkMappingGet Retrieves a UNIX symbolic link mapping for CIFS clients.
 
 ### Related ONTAP commands
@@ -2718,8 +3640,8 @@ func (a *Client) CifsSymlinkMappingGet(params *CifsSymlinkMappingGetParams, auth
 		ID:                 "cifs_symlink_mapping_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsSymlinkMappingGetReader{formats: a.formats},
@@ -2761,8 +3683,8 @@ func (a *Client) CifsSymlinkMappingModify(params *CifsSymlinkMappingModifyParams
 		ID:                 "cifs_symlink_mapping_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CifsSymlinkMappingModifyReader{formats: a.formats},
@@ -2788,6 +3710,44 @@ func (a *Client) CifsSymlinkMappingModify(params *CifsSymlinkMappingModifyParams
 }
 
 /*
+CifsSymlinkMappingModifyCollection cifs symlink mapping modify collection API
+*/
+func (a *Client) CifsSymlinkMappingModifyCollection(params *CifsSymlinkMappingModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSymlinkMappingModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsSymlinkMappingModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_symlink_mapping_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/unix-symlink-mapping",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsSymlinkMappingModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsSymlinkMappingModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsSymlinkMappingModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	ClientLockCollectionGet Retrieves locks details.
 
 ### Related ONTAP commands
@@ -2802,8 +3762,8 @@ func (a *Client) ClientLockCollectionGet(params *ClientLockCollectionGetParams, 
 		ID:                 "client_lock_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/locks",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClientLockCollectionGetReader{formats: a.formats},
@@ -2843,8 +3803,8 @@ func (a *Client) ClientLockDelete(params *ClientLockDeleteParams, authInfo runti
 		ID:                 "client_lock_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/locks/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClientLockDeleteReader{formats: a.formats},
@@ -2870,6 +3830,44 @@ func (a *Client) ClientLockDelete(params *ClientLockDeleteParams, authInfo runti
 }
 
 /*
+ClientLockDeleteCollection client lock delete collection API
+*/
+func (a *Client) ClientLockDeleteCollection(params *ClientLockDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClientLockDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewClientLockDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "client_lock_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/locks",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ClientLockDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ClientLockDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ClientLockDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	ClientLockGet Retrieves the lock for a specific UUID.
 
 ### Related ONTAP commands
@@ -2884,8 +3882,8 @@ func (a *Client) ClientLockGet(params *ClientLockGetParams, authInfo runtime.Cli
 		ID:                 "client_lock_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/locks/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ClientLockGetReader{formats: a.formats},
@@ -2925,8 +3923,8 @@ func (a *Client) EffectivePermissionGet(params *EffectivePermissionGetParams, au
 		ID:                 "effective_permission_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/file-security/effective-permissions/{svm.uuid}/{path}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &EffectivePermissionGetReader{formats: a.formats},
@@ -2969,8 +3967,8 @@ func (a *Client) ExportPolicyCollectionGet(params *ExportPolicyCollectionGetPara
 		ID:                 "export_policy_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nfs/export-policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ExportPolicyCollectionGetReader{formats: a.formats},
@@ -3003,6 +4001,7 @@ func (a *Client) ExportPolicyCollectionGet(params *ExportPolicyCollectionGetPara
 * `name`  - Name of the export policy.
 ### Recommended optional properties
 * `rules`  - Rule(s) of an export policy. Used to create the export rule and populate the export policy with export rules in a single request.
+* `rules[].index` - If you specify an index number that already matches a rule, the index number of the existing rule is incremented, as are the index numbers of all subsequent rules, either to the end of the list or to an open space in the list. If you do not specify an index number, the new rule is placed at the end of the policy's list.
 ### Related ONTAP commands
 * `vserver export-policy create`
 * `vserver export-policy rule create`
@@ -3018,8 +4017,8 @@ func (a *Client) ExportPolicyCreate(params *ExportPolicyCreateParams, authInfo r
 		ID:                 "export_policy_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/nfs/export-policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ExportPolicyCreateReader{formats: a.formats},
@@ -3061,8 +4060,8 @@ func (a *Client) ExportPolicyDelete(params *ExportPolicyDeleteParams, authInfo r
 		ID:                 "export_policy_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/nfs/export-policies/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ExportPolicyDeleteReader{formats: a.formats},
@@ -3088,6 +4087,44 @@ func (a *Client) ExportPolicyDelete(params *ExportPolicyDeleteParams, authInfo r
 }
 
 /*
+ExportPolicyDeleteCollection export policy delete collection API
+*/
+func (a *Client) ExportPolicyDeleteCollection(params *ExportPolicyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportPolicyDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewExportPolicyDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "export_policy_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/nfs/export-policies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ExportPolicyDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ExportPolicyDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ExportPolicyDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	ExportPolicyGet Retrieves an export policy.
 
 ### Related ONTAP commands
@@ -3105,8 +4142,8 @@ func (a *Client) ExportPolicyGet(params *ExportPolicyGetParams, authInfo runtime
 		ID:                 "export_policy_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nfs/export-policies/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ExportPolicyGetReader{formats: a.formats},
@@ -3150,8 +4187,8 @@ func (a *Client) ExportPolicyModify(params *ExportPolicyModifyParams, authInfo r
 		ID:                 "export_policy_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/nfs/export-policies/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ExportPolicyModifyReader{formats: a.formats},
@@ -3177,6 +4214,44 @@ func (a *Client) ExportPolicyModify(params *ExportPolicyModifyParams, authInfo r
 }
 
 /*
+ExportPolicyModifyCollection export policy modify collection API
+*/
+func (a *Client) ExportPolicyModifyCollection(params *ExportPolicyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportPolicyModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewExportPolicyModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "export_policy_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/nfs/export-policies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ExportPolicyModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ExportPolicyModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ExportPolicyModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	ExportRuleClientsCreate Creates an export policy rule client
 
 ### Required properties
@@ -3197,8 +4272,8 @@ func (a *Client) ExportRuleClientsCreate(params *ExportRuleClientsCreateParams, 
 		ID:                 "export_rule_clients_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/nfs/export-policies/{policy.id}/rules/{index}/clients",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ExportRuleClientsCreateReader{formats: a.formats},
@@ -3240,8 +4315,8 @@ func (a *Client) ExportRuleClientsDelete(params *ExportRuleClientsDeleteParams, 
 		ID:                 "export_rule_clients_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/nfs/export-policies/{policy.id}/rules/{index}/clients/{match}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ExportRuleClientsDeleteReader{formats: a.formats},
@@ -3267,6 +4342,44 @@ func (a *Client) ExportRuleClientsDelete(params *ExportRuleClientsDeleteParams, 
 }
 
 /*
+ExportRuleClientsDeleteCollection export rule clients delete collection API
+*/
+func (a *Client) ExportRuleClientsDeleteCollection(params *ExportRuleClientsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleClientsDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewExportRuleClientsDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "export_rule_clients_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/nfs/export-policies/{policy.id}/rules/{index}/clients",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ExportRuleClientsDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ExportRuleClientsDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ExportRuleClientsDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	ExportRuleClientsGet Retrieves export policy rule clients.
 
 ### Learn more
@@ -3281,8 +4394,8 @@ func (a *Client) ExportRuleClientsGet(params *ExportRuleClientsGetParams, authIn
 		ID:                 "export_rule_clients_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nfs/export-policies/{policy.id}/rules/{index}/clients",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ExportRuleClientsGetReader{formats: a.formats},
@@ -3324,8 +4437,8 @@ func (a *Client) ExportRuleCollectionGet(params *ExportRuleCollectionGetParams, 
 		ID:                 "export_rule_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nfs/export-policies/{policy.id}/rules",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ExportRuleCollectionGetReader{formats: a.formats},
@@ -3358,6 +4471,8 @@ func (a *Client) ExportRuleCollectionGet(params *ExportRuleCollectionGetParams, 
 * `clients.match`  - List of clients (hostnames, ipaddresses, netgroups, domains) to which the export rule applies.
 * `ro_rule`  - Used to specify the security type for read-only access to volumes that use the export rule.
 * `rw_rule`  - Used to specify the security type for read-write access to volumes that use the export rule.
+### Optional property
+* `index`    - Used to specify the index number of the export rule that you want to create. If you specify an index number that already matches a rule, the index number of the existing rule is incremented, as are the index numbers of all subsequent rules, either to the end of the list or to an open space in the list. If you do not specify an index number, the new rule is placed at the end of the policy's list.
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `protocols` - _any_
@@ -3381,8 +4496,8 @@ func (a *Client) ExportRuleCreate(params *ExportRuleCreateParams, authInfo runti
 		ID:                 "export_rule_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/nfs/export-policies/{policy.id}/rules",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ExportRuleCreateReader{formats: a.formats},
@@ -3424,8 +4539,8 @@ func (a *Client) ExportRuleDelete(params *ExportRuleDeleteParams, authInfo runti
 		ID:                 "export_rule_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/nfs/export-policies/{policy.id}/rules/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ExportRuleDeleteReader{formats: a.formats},
@@ -3451,6 +4566,44 @@ func (a *Client) ExportRuleDelete(params *ExportRuleDeleteParams, authInfo runti
 }
 
 /*
+ExportRuleDeleteCollection export rule delete collection API
+*/
+func (a *Client) ExportRuleDeleteCollection(params *ExportRuleDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewExportRuleDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "export_rule_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/nfs/export-policies/{policy.id}/rules",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ExportRuleDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ExportRuleDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ExportRuleDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	ExportRuleGet Retrieves an export policy rule
 
 ### Related ONTAP commands
@@ -3467,8 +4620,8 @@ func (a *Client) ExportRuleGet(params *ExportRuleGetParams, authInfo runtime.Cli
 		ID:                 "export_rule_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nfs/export-policies/{policy.id}/rules/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ExportRuleGetReader{formats: a.formats},
@@ -3511,8 +4664,8 @@ func (a *Client) ExportRuleModify(params *ExportRuleModifyParams, authInfo runti
 		ID:                 "export_rule_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/nfs/export-policies/{policy.id}/rules/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ExportRuleModifyReader{formats: a.formats},
@@ -3538,6 +4691,44 @@ func (a *Client) ExportRuleModify(params *ExportRuleModifyParams, authInfo runti
 }
 
 /*
+ExportRuleModifyCollection export rule modify collection API
+*/
+func (a *Client) ExportRuleModifyCollection(params *ExportRuleModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewExportRuleModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "export_rule_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/nfs/export-policies/{policy.id}/rules",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ExportRuleModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ExportRuleModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ExportRuleModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	FileDirectorySecurityACLCreate Adds the new SACL/DACL ACE.
 
 You must keep the following points in mind while using these endpoints:
@@ -3545,11 +4736,14 @@ You must keep the following points in mind while using these endpoints:
 * Set access_control field to slag while adding SLAG ACE.
 * Set access_control field to file_directory while adding file-directory ACE. By Default access_control field is set to file_directory.
 * For SLAG, valid apply_to combinations are "this-folder, sub-folders", "files", "this-folder, sub-folders, files".
+### Required properties
+* `user` - Name of the user to which the ACE applies.
+* `access` - Specifies whether the ACE is for DACL or SACL.
 ### Related ONTAP commands
 * `vserver security file-directory ntfs dacl add`
 * `vserver security file-directory ntfs sacl add`
 */
-func (a *Client) FileDirectorySecurityACLCreate(params *FileDirectorySecurityACLCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLCreateAccepted, error) {
+func (a *Client) FileDirectorySecurityACLCreate(params *FileDirectorySecurityACLCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLCreateCreated, *FileDirectorySecurityACLCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewFileDirectorySecurityACLCreateParams()
@@ -3558,8 +4752,8 @@ func (a *Client) FileDirectorySecurityACLCreate(params *FileDirectorySecurityACL
 		ID:                 "file_directory_security_acl_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/file-security/permissions/{svm.uuid}/{path}/acl",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FileDirectorySecurityACLCreateReader{formats: a.formats},
@@ -3573,15 +4767,17 @@ func (a *Client) FileDirectorySecurityACLCreate(params *FileDirectorySecurityACL
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*FileDirectorySecurityACLCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *FileDirectorySecurityACLCreateCreated:
+		return value, nil, nil
+	case *FileDirectorySecurityACLCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*FileDirectorySecurityACLCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -3592,11 +4788,14 @@ You must keep the following points in mind while using these endpoints:
 * Set access_control field to slag while deleting SLAG ACE.
 * Set access_control field to file_directory while deleting file-directory ACE. By Default access_control field is set to file_directory.
 * For SLAG, valid apply_to combinations are "this-folder, sub-folders", "files", "this-folder, sub-folders, files".
+### Required properties
+* `access` - Specifies whether the ACE is for DACL or SACL.
+* `user` - Name of the user to which the ACE applies.
 ### Related ONTAP commands
 * `vserver security file-directory ntfs dacl remove`
 * `vserver security file-directory ntfs sacl remove`
 */
-func (a *Client) FileDirectorySecurityACLDelete(params *FileDirectorySecurityACLDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLDeleteAccepted, error) {
+func (a *Client) FileDirectorySecurityACLDelete(params *FileDirectorySecurityACLDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLDeleteOK, *FileDirectorySecurityACLDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewFileDirectorySecurityACLDeleteParams()
@@ -3605,8 +4804,8 @@ func (a *Client) FileDirectorySecurityACLDelete(params *FileDirectorySecurityACL
 		ID:                 "file_directory_security_acl_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/file-security/permissions/{svm.uuid}/{path}/acl/{user}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FileDirectorySecurityACLDeleteReader{formats: a.formats},
@@ -3620,15 +4819,17 @@ func (a *Client) FileDirectorySecurityACLDelete(params *FileDirectorySecurityACL
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*FileDirectorySecurityACLDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *FileDirectorySecurityACLDeleteOK:
+		return value, nil, nil
+	case *FileDirectorySecurityACLDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*FileDirectorySecurityACLDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -3639,11 +4840,14 @@ You must keep the following points in mind while using these endpoints:
 * Set access_control field to slag while updating SLAG ACE.
 * Set access_control field to file_directory while updating file-directory ACE. By Default access_control field is set to file_directory.
 * For SLAG, valid apply_to combinations are "this-folder, sub-folders", "files", "this-folder, sub-folders, files".
+### Required properties
+* `access` - Specifies whether the ACE is for DACL or SACL.
+* `user` - Name of the user to which the ACE applies.
 ### Related ONTAP commands
 * `vserver security file-directory ntfs dacl modify`
 * `vserver security file-directory ntfs sacl modify`
 */
-func (a *Client) FileDirectorySecurityACLModify(params *FileDirectorySecurityACLModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLModifyAccepted, error) {
+func (a *Client) FileDirectorySecurityACLModify(params *FileDirectorySecurityACLModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLModifyOK, *FileDirectorySecurityACLModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewFileDirectorySecurityACLModifyParams()
@@ -3652,8 +4856,8 @@ func (a *Client) FileDirectorySecurityACLModify(params *FileDirectorySecurityACL
 		ID:                 "file_directory_security_acl_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/file-security/permissions/{svm.uuid}/{path}/acl/{user}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FileDirectorySecurityACLModifyReader{formats: a.formats},
@@ -3667,15 +4871,17 @@ func (a *Client) FileDirectorySecurityACLModify(params *FileDirectorySecurityACL
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*FileDirectorySecurityACLModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *FileDirectorySecurityACLModifyOK:
+		return value, nil, nil
+	case *FileDirectorySecurityACLModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*FileDirectorySecurityACLModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -3695,7 +4901,7 @@ You must keep the following points in mind while using these endpoints:
 * `vserver security file-directory policy task add`
 * `vserver security file-directory apply`
 */
-func (a *Client) FileDirectorySecurityCreate(params *FileDirectorySecurityCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityCreateAccepted, error) {
+func (a *Client) FileDirectorySecurityCreate(params *FileDirectorySecurityCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityCreateCreated, *FileDirectorySecurityCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewFileDirectorySecurityCreateParams()
@@ -3704,8 +4910,8 @@ func (a *Client) FileDirectorySecurityCreate(params *FileDirectorySecurityCreate
 		ID:                 "file_directory_security_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/file-security/permissions/{svm.uuid}/{path}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FileDirectorySecurityCreateReader{formats: a.formats},
@@ -3719,21 +4925,25 @@ func (a *Client) FileDirectorySecurityCreate(params *FileDirectorySecurityCreate
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*FileDirectorySecurityCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *FileDirectorySecurityCreateCreated:
+		return value, nil, nil
+	case *FileDirectorySecurityCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*FileDirectorySecurityCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
 	FileDirectorySecurityDelete Remove all SLAG ACLs for specified path. Bulk deletion is supported only for SLAG
 
-# Related ONTAP Commands
+You must keep the following points in mind while using these endpoints:
+* Do not pass additional arguments that are not required.
+### Related ONTAP Commands
 * `vserver security file-directory remove-slag`
 */
 func (a *Client) FileDirectorySecurityDelete(params *FileDirectorySecurityDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityDeleteOK, error) {
@@ -3745,8 +4955,8 @@ func (a *Client) FileDirectorySecurityDelete(params *FileDirectorySecurityDelete
 		ID:                 "file_directory_security_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/file-security/permissions/{svm.uuid}/{path}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FileDirectorySecurityDeleteReader{formats: a.formats},
@@ -3786,8 +4996,8 @@ func (a *Client) FileDirectorySecurityGet(params *FileDirectorySecurityGetParams
 		ID:                 "file_directory_security_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/file-security/permissions/{svm.uuid}/{path}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FileDirectorySecurityGetReader{formats: a.formats},
@@ -3818,7 +5028,7 @@ func (a *Client) FileDirectorySecurityGet(params *FileDirectorySecurityGetParams
 ### Related ONTAP commands
 * `vserver security file-directory ntfs modify`
 */
-func (a *Client) FileDirectorySecurityModify(params *FileDirectorySecurityModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityModifyAccepted, error) {
+func (a *Client) FileDirectorySecurityModify(params *FileDirectorySecurityModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityModifyOK, *FileDirectorySecurityModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewFileDirectorySecurityModifyParams()
@@ -3827,8 +5037,8 @@ func (a *Client) FileDirectorySecurityModify(params *FileDirectorySecurityModify
 		ID:                 "file_directory_security_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/file-security/permissions/{svm.uuid}/{path}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FileDirectorySecurityModifyReader{formats: a.formats},
@@ -3842,15 +5052,17 @@ func (a *Client) FileDirectorySecurityModify(params *FileDirectorySecurityModify
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*FileDirectorySecurityModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *FileDirectorySecurityModifyOK:
+		return value, nil, nil
+	case *FileDirectorySecurityModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*FileDirectorySecurityModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -3862,6 +5074,7 @@ func (a *Client) FileDirectorySecurityModify(params *FileDirectorySecurityModify
 * `fpolicy policy scope show`
 * `fpolicy policy event show`
 * `fpolicy policy external-engine show`
+* `fpolicy persistent-store show`
 ### Learn more
 * [`DOC /protocols/fpolicy`](#docs-NAS-protocols_fpolicy)
 */
@@ -3874,8 +5087,8 @@ func (a *Client) FpolicyCollectionGet(params *FpolicyCollectionGetParams, authIn
 		ID:                 "fpolicy_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/fpolicy",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyCollectionGetReader{formats: a.formats},
@@ -3918,8 +5131,8 @@ func (a *Client) FpolicyConnectionCollectionGet(params *FpolicyConnectionCollect
 		ID:                 "fpolicy_connection_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/connections",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyConnectionCollectionGetReader{formats: a.formats},
@@ -3961,8 +5174,8 @@ func (a *Client) FpolicyConnectionGet(params *FpolicyConnectionGetParams, authIn
 		ID:                 "fpolicy_connection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/connections/{node.uuid}/{policy.name}/{server}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyConnectionGetReader{formats: a.formats},
@@ -4005,8 +5218,8 @@ func (a *Client) FpolicyConnectionModify(params *FpolicyConnectionModifyParams, 
 		ID:                 "fpolicy_connection_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/connections/{node.uuid}/{policy.name}/{server}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyConnectionModifyReader{formats: a.formats},
@@ -4032,6 +5245,44 @@ func (a *Client) FpolicyConnectionModify(params *FpolicyConnectionModifyParams, 
 }
 
 /*
+FpolicyConnectionModifyCollection fpolicy connection modify collection API
+*/
+func (a *Client) FpolicyConnectionModifyCollection(params *FpolicyConnectionModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyConnectionModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyConnectionModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_connection_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/fpolicy/{svm.uuid}/connections",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyConnectionModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyConnectionModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyConnectionModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	FpolicyCreate Creates an FPolicy configuration.
 
 ### Required properties
@@ -4049,12 +5300,14 @@ If not specified in POST, the following default property values are assigned:
 * `events.volume_monitoring` - _false_
 * `events.file_operations.*` - _false_
 * `events.filters.*` - _false_
+* `events.monitor_fileop_failure.*` - _false_
 ### Related ONTAP commands
 * `fpolicy policy event create`
 * `fpolicy policy external-engine create`
 * `fpolicy policy create`
 * `fpolicy policy scope create`
 * `fpolicy enable`
+* `fpolicy persistent-store create`
 ### Learn more
 * [`DOC /protocols/fpolicy`](#docs-NAS-protocols_fpolicy)
 */
@@ -4067,8 +5320,8 @@ func (a *Client) FpolicyCreate(params *FpolicyCreateParams, authInfo runtime.Cli
 		ID:                 "fpolicy_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/fpolicy",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyCreateReader{formats: a.formats},
@@ -4096,12 +5349,15 @@ func (a *Client) FpolicyCreate(params *FpolicyCreateParams, authInfo runtime.Cli
 /*
 	FpolicyDelete Deletes the FPolicy configuration for the specified SVM. Before deleting the FPolicy configuration, ensure that all policies belonging to the SVM are disabled.
 
+</br>Important notes:
+The volume associated with the FPolicy Persistent Store is not automatically deleted from the FPolicy general endpoint. The associated volume can be removed manually.
 ### Related ONTAP commands
 * `fpolicy delete`
 * `fpolicy policy scope delete`
 * `fpolicy policy delete`
 * `fpolicy policy event delete`
 * `fpolicy policy external-engine delete`
+* `fpolicy persistent-store delete`
 ### Learn more
 * [`DOC /protocols/fpolicy`](#docs-NAS-protocols_fpolicy)
 */
@@ -4114,8 +5370,8 @@ func (a *Client) FpolicyDelete(params *FpolicyDeleteParams, authInfo runtime.Cli
 		ID:                 "fpolicy_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyDeleteReader{formats: a.formats},
@@ -4141,6 +5397,44 @@ func (a *Client) FpolicyDelete(params *FpolicyDeleteParams, authInfo runtime.Cli
 }
 
 /*
+FpolicyDeleteCollection fpolicy delete collection API
+*/
+func (a *Client) FpolicyDeleteCollection(params *FpolicyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/fpolicy",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	FpolicyEngineCollectionGet Retrieves FPolicy engine configurations of all the engines for a specified SVM. ONTAP allows creation of cluster-level FPolicy engines that act as a template for all the SVMs belonging to the cluster. These cluster-level FPolicy engines are also retrieved for the specified SVM.
 
 ### Related ONTAP commands
@@ -4157,8 +5451,8 @@ func (a *Client) FpolicyEngineCollectionGet(params *FpolicyEngineCollectionGetPa
 		ID:                 "fpolicy_engine_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/engines",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyEngineCollectionGetReader{formats: a.formats},
@@ -4210,8 +5504,8 @@ func (a *Client) FpolicyEngineCreate(params *FpolicyEngineCreateParams, authInfo
 		ID:                 "fpolicy_engine_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/engines",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyEngineCreateReader{formats: a.formats},
@@ -4240,7 +5534,7 @@ func (a *Client) FpolicyEngineCreate(params *FpolicyEngineCreateParams, authInfo
 	FpolicyEngineDelete Deletes the FPolicy external engine configuration. Deletion of an FPolicy engine that is attached to one or more FPolicy policies is not allowed.
 
 ### Related ONTAP commands
-* `fpolicy policy external-engine modify`
+* `fpolicy policy external-engine delete`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/engines`](#docs-NAS-protocols_fpolicy_{svm.uuid}_engines)
 */
@@ -4253,8 +5547,8 @@ func (a *Client) FpolicyEngineDelete(params *FpolicyEngineDeleteParams, authInfo
 		ID:                 "fpolicy_engine_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/engines/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyEngineDeleteReader{formats: a.formats},
@@ -4280,7 +5574,45 @@ func (a *Client) FpolicyEngineDelete(params *FpolicyEngineDeleteParams, authInfo
 }
 
 /*
-	FpolicyEngineGet Retrieves a particular FPolicy engine configuration of a specifed SVM. A cluster-level FPolicy engine configuration cannot be retrieved for a data SVM.
+FpolicyEngineDeleteCollection fpolicy engine delete collection API
+*/
+func (a *Client) FpolicyEngineDeleteCollection(params *FpolicyEngineDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEngineDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyEngineDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_engine_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/fpolicy/{svm.uuid}/engines",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyEngineDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyEngineDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyEngineDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	FpolicyEngineGet Retrieves a particular FPolicy engine configuration of a specified SVM. A cluster-level FPolicy engine configuration cannot be retrieved for a data SVM.
 
 ### Related ONTAP commands
 * `fpolicy policy external-engine show`
@@ -4296,8 +5628,8 @@ func (a *Client) FpolicyEngineGet(params *FpolicyEngineGetParams, authInfo runti
 		ID:                 "fpolicy_engine_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/engines/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyEngineGetReader{formats: a.formats},
@@ -4339,8 +5671,8 @@ func (a *Client) FpolicyEngineModify(params *FpolicyEngineModifyParams, authInfo
 		ID:                 "fpolicy_engine_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/engines/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyEngineModifyReader{formats: a.formats},
@@ -4366,6 +5698,44 @@ func (a *Client) FpolicyEngineModify(params *FpolicyEngineModifyParams, authInfo
 }
 
 /*
+FpolicyEngineModifyCollection fpolicy engine modify collection API
+*/
+func (a *Client) FpolicyEngineModifyCollection(params *FpolicyEngineModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEngineModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyEngineModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_engine_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/fpolicy/{svm.uuid}/engines",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyEngineModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyEngineModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyEngineModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	FpolicyEventCollectionGet Retrieves FPolicy event configurations for all events for a specified SVM. ONTAP allows the creation of cluster-level FPolicy events that act as a template for all the data SVMs belonging to the cluster. These cluster-level FPolicy events are also retrieved for the specified SVM.
 
 ### Related ONTAP commands
@@ -4382,8 +5752,8 @@ func (a *Client) FpolicyEventCollectionGet(params *FpolicyEventCollectionGetPara
 		ID:                 "fpolicy_event_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/events",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyEventCollectionGetReader{formats: a.formats},
@@ -4409,7 +5779,7 @@ func (a *Client) FpolicyEventCollectionGet(params *FpolicyEventCollectionGetPara
 }
 
 /*
-	FpolicyEventCreate Creates an FPolicy event configuration for a specified SVM. FPolicy event creation is allowed only on data SVMs. When a protocol is specified, you must specify a file operation or a file operation and filters.
+	FpolicyEventCreate Creates an FPolicy event configuration for a specified SVM. FPolicy event creation is allowed only on data SVMs. When a protocol is specified, you must specify a file operation or a file operation and filters. When FPolicy event is configured to monitor failed file operations, you must specify protocol and file operations. Filters are not supported when failed file operations are monitored.
 
 ### Required properties
 * `svm.uuid` - Existing SVM in which to create the FPolicy event.
@@ -4418,11 +5788,13 @@ func (a *Client) FpolicyEventCollectionGet(params *FpolicyEventCollectionGetPara
 * `file-operations` - List of file operations to monitor.
 * `protocol` - Protocol for which the file operations should be monitored.
 * `filters` - List of filters for the specified file operations.
+* `monitor-fileop-failure` - Enabled monitoring of failed file operations.
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `file_operations.*` - _false_
 * `filters.*` - _false_
 * `volume-monitoring` - _false_
+* `monitor-fileop-failure` - _false_
 ### Related ONTAP commands
 * `fpolicy policy event create`
 ### Learn more
@@ -4437,8 +5809,8 @@ func (a *Client) FpolicyEventCreate(params *FpolicyEventCreateParams, authInfo r
 		ID:                 "fpolicy_event_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/events",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyEventCreateReader{formats: a.formats},
@@ -4480,8 +5852,8 @@ func (a *Client) FpolicyEventDelete(params *FpolicyEventDeleteParams, authInfo r
 		ID:                 "fpolicy_event_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/events/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyEventDeleteReader{formats: a.formats},
@@ -4507,6 +5879,44 @@ func (a *Client) FpolicyEventDelete(params *FpolicyEventDeleteParams, authInfo r
 }
 
 /*
+FpolicyEventDeleteCollection fpolicy event delete collection API
+*/
+func (a *Client) FpolicyEventDeleteCollection(params *FpolicyEventDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEventDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyEventDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_event_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/fpolicy/{svm.uuid}/events",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyEventDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyEventDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyEventDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	FpolicyEventModify Updates a specific FPolicy event configuration for an SVM. A cluster-level FPolicy event configuration cannot be modified for a data SVM through REST. When the file operations and filters fields are modified, the previous values are retained and new values are added to the list of previous values. To remove a particular file operation or filter, set its value to false in the request.
 
 ### Related ONTAP commands
@@ -4523,8 +5933,8 @@ func (a *Client) FpolicyEventModify(params *FpolicyEventModifyParams, authInfo r
 		ID:                 "fpolicy_event_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/events/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyEventModifyReader{formats: a.formats},
@@ -4550,6 +5960,44 @@ func (a *Client) FpolicyEventModify(params *FpolicyEventModifyParams, authInfo r
 }
 
 /*
+FpolicyEventModifyCollection fpolicy event modify collection API
+*/
+func (a *Client) FpolicyEventModifyCollection(params *FpolicyEventModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEventModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyEventModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_event_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/fpolicy/{svm.uuid}/events",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyEventModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyEventModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyEventModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	FpolicyEventsGet Retrieves a specific FPolicy event configuration for an SVM. A cluster-level FPolicy event configuration cannot be retrieved for a data SVM through a REST API.
 
 ### Related ONTAP commands
@@ -4566,8 +6014,8 @@ func (a *Client) FpolicyEventsGet(params *FpolicyEventsGetParams, authInfo runti
 		ID:                 "fpolicy_events_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/events/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyEventsGetReader{formats: a.formats},
@@ -4601,6 +6049,7 @@ func (a *Client) FpolicyEventsGet(params *FpolicyEventsGetParams, authInfo runti
 * `fpolicy policy scope show`
 * `fpolicy policy event show`
 * `fpolicy policy external-engine show`
+* `fpolicy persistent-store show`
 ### Learn more
 * [`DOC /protocols/fpolicy`](#docs-NAS-protocols_fpolicy)
 */
@@ -4613,8 +6062,8 @@ func (a *Client) FpolicyGet(params *FpolicyGetParams, authInfo runtime.ClientAut
 		ID:                 "fpolicy_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyGetReader{formats: a.formats},
@@ -4640,6 +6089,315 @@ func (a *Client) FpolicyGet(params *FpolicyGetParams, authInfo runtime.ClientAut
 }
 
 /*
+	FpolicyPersistentStoreCollectionGet Retrieves FPolicy Persistent Store configurations for a specified SVM.
+
+### Related ONTAP commands
+* `fpolicy persistent-store show`
+### Learn more
+* [`DOC /protocols/fpolicy/{svm.uuid}/persistent-stores`](#docs-NAS-protocols_fpolicy_{svm.uuid}_persistent-stores)
+*/
+func (a *Client) FpolicyPersistentStoreCollectionGet(params *FpolicyPersistentStoreCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPersistentStoreCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyPersistentStoreCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_persistent_store_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/fpolicy/{svm.uuid}/persistent-stores",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyPersistentStoreCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyPersistentStoreCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyPersistentStoreCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	FpolicyPersistentStoreCreate Creates an FPolicy Persistent Store configuration for a specified SVM.
+
+</br>Important notes:
+* FPolicy Persistent Store creation is allowed only on data SVMs.
+* In persistent mode, when the Persistent Store is full, event notifications are dropped.
+* There is flexibility to provide an existing volume or create a new volume for the persistent storage. The creation of new volume is handled internally.
+* For existing volumes, the snapshot policy is set to 'none' and the size is adjusted to the specified value.
+### Required properties
+* `svm.uuid` - Existing SVM in which to create the FPolicy Persistent Store.
+* `name` - Name of the FPolicy Persistent Store.
+* `volume` - Volume specified for Persistent Store (only FlexVol volumes of type RW are supported).
+### Optional properties
+* `size` - Size of the Persistent Store volume.
+* `autosize-mode` - Autosize mode for the Persistent Store volume.
+### Related ONTAP commands
+* `fpolicy persistent-store create`
+### Learn more
+* [`DOC /protocols/fpolicy/{svm.uuid}/persistent-stores`](#docs-NAS-protocols_fpolicy_{svm.uuid}_persistent-stores)
+*/
+func (a *Client) FpolicyPersistentStoreCreate(params *FpolicyPersistentStoreCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPersistentStoreCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyPersistentStoreCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_persistent_store_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/fpolicy/{svm.uuid}/persistent-stores",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyPersistentStoreCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyPersistentStoreCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyPersistentStoreCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	FpolicyPersistentStoreDelete Deletes a specific FPolicy Persistent Store configuration for an SVM.
+
+</br>Important notes:
+An option has been provided to delete the associated volume.
+### Related ONTAP commands
+* `fpolicy persistent-store delete`
+### Learn more
+* [`DOC /protocols/fpolicy/{svm.uuid}/persistent-stores`](#docs-NAS-protocols_fpolicy_{svm.uuid}_persistent-stores)
+*/
+func (a *Client) FpolicyPersistentStoreDelete(params *FpolicyPersistentStoreDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPersistentStoreDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyPersistentStoreDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_persistent_store_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/fpolicy/{svm.uuid}/persistent-stores/{name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyPersistentStoreDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyPersistentStoreDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyPersistentStoreDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+FpolicyPersistentStoreDeleteCollection fpolicy persistent store delete collection API
+*/
+func (a *Client) FpolicyPersistentStoreDeleteCollection(params *FpolicyPersistentStoreDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPersistentStoreDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyPersistentStoreDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_persistent_store_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/fpolicy/{svm.uuid}/persistent-stores",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyPersistentStoreDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyPersistentStoreDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyPersistentStoreDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	FpolicyPersistentStoreGet Retrieves a specific FPolicy Persistent Store configuration for an SVM.
+
+### Related ONTAP commands
+* `fpolicy persistent-store show`
+### Learn more
+* [`DOC /protocols/fpolicy/{svm.uuid}/persistent-stores`](#docs-NAS-protocols_fpolicy_{svm.uuid}_persistent-stores)
+*/
+func (a *Client) FpolicyPersistentStoreGet(params *FpolicyPersistentStoreGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPersistentStoreGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyPersistentStoreGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_persistent_store_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/fpolicy/{svm.uuid}/persistent-stores/{name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyPersistentStoreGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyPersistentStoreGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyPersistentStoreGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	FpolicyPersistentStoreModify Updates a specific FPolicy Persistent Store configuration for an SVM.
+
+</br>Important notes:
+* If the volume exists, it is set to the size specified and the snapshot policy is set to "none". Otherwise, a new volume is created.
+* The autosize parameter is not available in PATCH operations for this endpoint, use the the "autosize" parameter in PATCH for the "/storage/volumes/{uuid}" endpoint instead.
+* When the Persistent Store is updated with a new volume, the previous volume is not automatically deleted. An option is provided to delete the previous volume.
+### Related ONTAP commands
+* `fpolicy persistent-store modify`
+### Learn more
+* [`DOC /protocols/fpolicy/{svm.uuid}/persistent-stores`](#docs-NAS-protocols_fpolicy_{svm.uuid}_persistent-stores)
+*/
+func (a *Client) FpolicyPersistentStoreModify(params *FpolicyPersistentStoreModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPersistentStoreModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyPersistentStoreModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_persistent_store_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/fpolicy/{svm.uuid}/persistent-stores/{name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyPersistentStoreModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyPersistentStoreModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyPersistentStoreModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+FpolicyPersistentStoreModifyCollection fpolicy persistent store modify collection API
+*/
+func (a *Client) FpolicyPersistentStoreModifyCollection(params *FpolicyPersistentStoreModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPersistentStoreModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyPersistentStoreModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_persistent_store_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/fpolicy/{svm.uuid}/persistent-stores",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyPersistentStoreModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyPersistentStoreModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyPersistentStoreModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	FpolicyPolicyCollectionGet Retrieves the FPolicy policy configuration of an SVM. ONTAP allows the creation of a cluster level FPolicy policy that acts as a template for all the data SVMs belonging to the cluster. This cluster level FPolicy policy is also retrieved for the specified SVM.
 
 ### Related ONTAP commands
@@ -4657,8 +6415,8 @@ func (a *Client) FpolicyPolicyCollectionGet(params *FpolicyPolicyCollectionGetPa
 		ID:                 "fpolicy_policy_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyPolicyCollectionGetReader{formats: a.formats},
@@ -4693,7 +6451,7 @@ func (a *Client) FpolicyPolicyCollectionGet(params *FpolicyPolicyCollectionGetPa
 * The "mandatory" field, if set to true, blocks the file access when the primary or secondary FPolicy servers are down.
 ### Required properties
 * `svm.uuid` - Existing SVM in which to create the FPolicy policy.
-* `events` - Name of the events to monitior.
+* `events` - Name of the events to monitor.
 * `name` - Name of the FPolicy policy.
 * `scope` - Scope of the policy. Can be limited to exports, volumes, shares or file extensions.
 * `priority`- Priority of the policy (ranging from 1 to 10).
@@ -4716,8 +6474,8 @@ func (a *Client) FpolicyPolicyCreate(params *FpolicyPolicyCreateParams, authInfo
 		ID:                 "fpolicy_policy_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyPolicyCreateReader{formats: a.formats},
@@ -4760,8 +6518,8 @@ func (a *Client) FpolicyPolicyDelete(params *FpolicyPolicyDeleteParams, authInfo
 		ID:                 "fpolicy_policy_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/policies/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyPolicyDeleteReader{formats: a.formats},
@@ -4787,6 +6545,44 @@ func (a *Client) FpolicyPolicyDelete(params *FpolicyPolicyDeleteParams, authInfo
 }
 
 /*
+FpolicyPolicyDeleteCollection fpolicy policy delete collection API
+*/
+func (a *Client) FpolicyPolicyDeleteCollection(params *FpolicyPolicyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPolicyDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyPolicyDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_policy_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/fpolicy/{svm.uuid}/policies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyPolicyDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyPolicyDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyPolicyDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	FpolicyPolicyGet Retrieves a particular FPolicy policy configuration for a specified SVM. Cluster-level FPolicy policy configuration details cannot be retrieved for a data SVM.
 
 ### Related ONTAP commands
@@ -4805,8 +6601,8 @@ func (a *Client) FpolicyPolicyGet(params *FpolicyPolicyGetParams, authInfo runti
 		ID:                 "fpolicy_policy_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/policies/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyPolicyGetReader{formats: a.formats},
@@ -4832,7 +6628,7 @@ func (a *Client) FpolicyPolicyGet(params *FpolicyPolicyGetParams, authInfo runti
 }
 
 /*
-	FpolicyPolicyModify Updates a particular FPolicy policy configuration for a specified SVM. PATCH can be used to enable or disable the policy. When enabling a policy, you must specify the policy priority. The policy priority of the policy is not required when disabling the policy. If the policy is enabled, the FPolicy policy engine cannot be modified.
+	FpolicyPolicyModify Updates a particular FPolicy policy configuration for a specified SVM. PATCH can be used to enable or disable the policy. When enabling a policy, you must specify the policy priority. The policy priority of the policy is not required when disabling the policy. If the policy is enabled, the FPolicy policy cannot be modified.
 
 ### Related ONTAP commands
 * `fpolicy policy modify`
@@ -4851,8 +6647,8 @@ func (a *Client) FpolicyPolicyModify(params *FpolicyPolicyModifyParams, authInfo
 		ID:                 "fpolicy_policy_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/fpolicy/{svm.uuid}/policies/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &FpolicyPolicyModifyReader{formats: a.formats},
@@ -4878,6 +6674,44 @@ func (a *Client) FpolicyPolicyModify(params *FpolicyPolicyModifyParams, authInfo
 }
 
 /*
+FpolicyPolicyModifyCollection fpolicy policy modify collection API
+*/
+func (a *Client) FpolicyPolicyModifyCollection(params *FpolicyPolicyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPolicyModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyPolicyModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_policy_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/fpolicy/{svm.uuid}/policies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyPolicyModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyPolicyModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyPolicyModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	GroupPoliciesToBeAppliedModify Will create a background task to update the GPO settings for specified SVM.
 
 ### Related ONTAP commands
@@ -4892,8 +6726,8 @@ func (a *Client) GroupPoliciesToBeAppliedModify(params *GroupPoliciesToBeApplied
 		ID:                 "group_policies_to_be_applied_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GroupPoliciesToBeAppliedModifyReader{formats: a.formats},
@@ -4919,6 +6753,44 @@ func (a *Client) GroupPoliciesToBeAppliedModify(params *GroupPoliciesToBeApplied
 }
 
 /*
+GroupPoliciesToBeAppliedModifyCollection group policies to be applied modify collection API
+*/
+func (a *Client) GroupPoliciesToBeAppliedModifyCollection(params *GroupPoliciesToBeAppliedModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPoliciesToBeAppliedModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupPoliciesToBeAppliedModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_policies_to_be_applied_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/group-policies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupPoliciesToBeAppliedModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupPoliciesToBeAppliedModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupPoliciesToBeAppliedModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	GroupPolicyObjectCentralAccessPolicyCollectionGet Retrieves applied central access policies for specified SVM.
 
 ### Related ONTAP commands
@@ -4933,8 +6805,8 @@ func (a *Client) GroupPolicyObjectCentralAccessPolicyCollectionGet(params *Group
 		ID:                 "group_policy_object_central_access_policy_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}/central-access-policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GroupPolicyObjectCentralAccessPolicyCollectionGetReader{formats: a.formats},
@@ -4974,8 +6846,8 @@ func (a *Client) GroupPolicyObjectCentralAccessPolicyGet(params *GroupPolicyObje
 		ID:                 "group_policy_object_central_access_policy_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}/central-access-policies/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GroupPolicyObjectCentralAccessPolicyGetReader{formats: a.formats},
@@ -5015,8 +6887,8 @@ func (a *Client) GroupPolicyObjectCentralAccessRuleCollectionGet(params *GroupPo
 		ID:                 "group_policy_object_central_access_rule_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}/central-access-rules",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GroupPolicyObjectCentralAccessRuleCollectionGetReader{formats: a.formats},
@@ -5056,8 +6928,8 @@ func (a *Client) GroupPolicyObjectCentralAccessRuleGet(params *GroupPolicyObject
 		ID:                 "group_policy_object_central_access_rule_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}/central-access-rules/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GroupPolicyObjectCentralAccessRuleGetReader{formats: a.formats},
@@ -5097,8 +6969,8 @@ func (a *Client) GroupPolicyObjectCollectionGet(params *GroupPolicyObjectCollect
 		ID:                 "group_policy_object_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}/objects",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GroupPolicyObjectCollectionGetReader{formats: a.formats},
@@ -5138,8 +7010,8 @@ func (a *Client) GroupPolicyObjectGet(params *GroupPolicyObjectGetParams, authIn
 		ID:                 "group_policy_object_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}/objects/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GroupPolicyObjectGetReader{formats: a.formats},
@@ -5179,8 +7051,8 @@ func (a *Client) GroupPolicyObjectRestrictedGroupCollectionGet(params *GroupPoli
 		ID:                 "group_policy_object_restricted_group_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}/restricted-groups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GroupPolicyObjectRestrictedGroupCollectionGetReader{formats: a.formats},
@@ -5220,8 +7092,8 @@ func (a *Client) GroupPolicyObjectRestrictedGroupGet(params *GroupPolicyObjectRe
 		ID:                 "group_policy_object_restricted_group_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}/restricted-groups/{policy_index}/{group_name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GroupPolicyObjectRestrictedGroupGetReader{formats: a.formats},
@@ -5263,8 +7135,8 @@ func (a *Client) KerberosInterfaceCollectionGet(params *KerberosInterfaceCollect
 		ID:                 "kerberos_interface_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nfs/kerberos/interfaces",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &KerberosInterfaceCollectionGetReader{formats: a.formats},
@@ -5306,8 +7178,8 @@ func (a *Client) KerberosInterfaceGet(params *KerberosInterfaceGetParams, authIn
 		ID:                 "kerberos_interface_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nfs/kerberos/interfaces/{interface.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &KerberosInterfaceGetReader{formats: a.formats},
@@ -5335,6 +7207,8 @@ func (a *Client) KerberosInterfaceGet(params *KerberosInterfaceGetParams, authIn
 /*
 	KerberosInterfaceModify Updates the properties of a Kerberos interface.
 
+### Optional property
+* `force` - Specifies whether the server should ignore any error encountered while deleting the corresponding machine account on the KDC and also disables Kerberos on the LIF. This is applicable only when disabling Kerberos.
 ### Related ONTAP commands
 * `vserver nfs kerberos interface modify`
 * `vserver nfs kerberos interface enable`
@@ -5351,8 +7225,8 @@ func (a *Client) KerberosInterfaceModify(params *KerberosInterfaceModifyParams, 
 		ID:                 "kerberos_interface_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/nfs/kerberos/interfaces/{interface.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &KerberosInterfaceModifyReader{formats: a.formats},
@@ -5378,6 +7252,44 @@ func (a *Client) KerberosInterfaceModify(params *KerberosInterfaceModifyParams, 
 }
 
 /*
+KerberosInterfaceModifyCollection kerberos interface modify collection API
+*/
+func (a *Client) KerberosInterfaceModifyCollection(params *KerberosInterfaceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosInterfaceModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewKerberosInterfaceModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "kerberos_interface_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/nfs/kerberos/interfaces",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &KerberosInterfaceModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*KerberosInterfaceModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*KerberosInterfaceModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	KerberosRealmCollectionGet Retrieves Kerberos realms.
 
 ### Related ONTAP commands
@@ -5394,8 +7306,8 @@ func (a *Client) KerberosRealmCollectionGet(params *KerberosRealmCollectionGetPa
 		ID:                 "kerberos_realm_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nfs/kerberos/realms",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &KerberosRealmCollectionGetReader{formats: a.formats},
@@ -5434,6 +7346,9 @@ func (a *Client) KerberosRealmCollectionGet(params *KerberosRealmCollectionGetPa
 ### Default property values
 If not specified in POST, the following default property value is assigned:
 * `kdc.port` - _88_
+* `admin_server.port` - _749_
+* `password_server.port` - _464_
+* `clock_skew` - _5_
 ### Related ONTAP commands
 * `vserver nfs kerberos realm create`
 ### Learn more
@@ -5448,8 +7363,8 @@ func (a *Client) KerberosRealmCreate(params *KerberosRealmCreateParams, authInfo
 		ID:                 "kerberos_realm_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/nfs/kerberos/realms",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &KerberosRealmCreateReader{formats: a.formats},
@@ -5490,8 +7405,8 @@ func (a *Client) KerberosRealmDelete(params *KerberosRealmDeleteParams, authInfo
 		ID:                 "kerberos_realm_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/nfs/kerberos/realms/{svm.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &KerberosRealmDeleteReader{formats: a.formats},
@@ -5517,6 +7432,44 @@ func (a *Client) KerberosRealmDelete(params *KerberosRealmDeleteParams, authInfo
 }
 
 /*
+KerberosRealmDeleteCollection kerberos realm delete collection API
+*/
+func (a *Client) KerberosRealmDeleteCollection(params *KerberosRealmDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosRealmDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewKerberosRealmDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "kerberos_realm_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/nfs/kerberos/realms",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &KerberosRealmDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*KerberosRealmDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*KerberosRealmDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	KerberosRealmGet Retrieves a Kerberos realm.
 
 * `vserver nfs kerberos realm show`
@@ -5532,8 +7485,8 @@ func (a *Client) KerberosRealmGet(params *KerberosRealmGetParams, authInfo runti
 		ID:                 "kerberos_realm_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nfs/kerberos/realms/{svm.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &KerberosRealmGetReader{formats: a.formats},
@@ -5574,8 +7527,8 @@ func (a *Client) KerberosRealmModify(params *KerberosRealmModifyParams, authInfo
 		ID:                 "kerberos_realm_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/nfs/kerberos/realms/{svm.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &KerberosRealmModifyReader{formats: a.formats},
@@ -5601,6 +7554,44 @@ func (a *Client) KerberosRealmModify(params *KerberosRealmModifyParams, authInfo
 }
 
 /*
+KerberosRealmModifyCollection kerberos realm modify collection API
+*/
+func (a *Client) KerberosRealmModifyCollection(params *KerberosRealmModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosRealmModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewKerberosRealmModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "kerberos_realm_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/nfs/kerberos/realms",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &KerberosRealmModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*KerberosRealmModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*KerberosRealmModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	LocalCifsGroupCollectionGet Retrieves the local groups for all of the SVMs.
 
 ### Advanced properties
@@ -5620,8 +7611,8 @@ func (a *Client) LocalCifsGroupCollectionGet(params *LocalCifsGroupCollectionGet
 		ID:                 "local_cifs_group_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/local-groups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsGroupCollectionGetReader{formats: a.formats},
@@ -5670,8 +7661,8 @@ func (a *Client) LocalCifsGroupCreate(params *LocalCifsGroupCreateParams, authIn
 		ID:                 "local_cifs_group_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/cifs/local-groups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsGroupCreateReader{formats: a.formats},
@@ -5713,8 +7704,8 @@ func (a *Client) LocalCifsGroupDelete(params *LocalCifsGroupDeleteParams, authIn
 		ID:                 "local_cifs_group_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/cifs/local-groups/{svm.uuid}/{sid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsGroupDeleteReader{formats: a.formats},
@@ -5740,6 +7731,44 @@ func (a *Client) LocalCifsGroupDelete(params *LocalCifsGroupDeleteParams, authIn
 }
 
 /*
+LocalCifsGroupDeleteCollection local cifs group delete collection API
+*/
+func (a *Client) LocalCifsGroupDeleteCollection(params *LocalCifsGroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsGroupDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_group_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/cifs/local-groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsGroupDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsGroupDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsGroupDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	LocalCifsGroupGet Retrieves local group information for the specified group and SVM.
 
 ### Advanced properties
@@ -5759,8 +7788,8 @@ func (a *Client) LocalCifsGroupGet(params *LocalCifsGroupGetParams, authInfo run
 		ID:                 "local_cifs_group_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/local-groups/{svm.uuid}/{sid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsGroupGetReader{formats: a.formats},
@@ -5802,8 +7831,8 @@ func (a *Client) LocalCifsGroupMembersBulkDelete(params *LocalCifsGroupMembersBu
 		ID:                 "local_cifs_group_members_bulk_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsGroupMembersBulkDeleteReader{formats: a.formats},
@@ -5845,8 +7874,8 @@ func (a *Client) LocalCifsGroupMembersCollectionGet(params *LocalCifsGroupMember
 		ID:                 "local_cifs_group_members_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsGroupMembersCollectionGetReader{formats: a.formats},
@@ -5894,8 +7923,8 @@ func (a *Client) LocalCifsGroupMembersCreate(params *LocalCifsGroupMembersCreate
 		ID:                 "local_cifs_group_members_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsGroupMembersCreateReader{formats: a.formats},
@@ -5937,8 +7966,8 @@ func (a *Client) LocalCifsGroupMembersDelete(params *LocalCifsGroupMembersDelete
 		ID:                 "local_cifs_group_members_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsGroupMembersDeleteReader{formats: a.formats},
@@ -5980,8 +8009,8 @@ func (a *Client) LocalCifsGroupMembersGet(params *LocalCifsGroupMembersGetParams
 		ID:                 "local_cifs_group_members_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsGroupMembersGetReader{formats: a.formats},
@@ -6024,8 +8053,8 @@ func (a *Client) LocalCifsGroupModify(params *LocalCifsGroupModifyParams, authIn
 		ID:                 "local_cifs_group_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/cifs/local-groups/{svm.uuid}/{sid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsGroupModifyReader{formats: a.formats},
@@ -6051,6 +8080,44 @@ func (a *Client) LocalCifsGroupModify(params *LocalCifsGroupModifyParams, authIn
 }
 
 /*
+LocalCifsGroupModifyCollection local cifs group modify collection API
+*/
+func (a *Client) LocalCifsGroupModifyCollection(params *LocalCifsGroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsGroupModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_group_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/local-groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsGroupModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsGroupModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsGroupModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	LocalCifsUserCollectionGet Retrieves local users for all of the SVMs. Local groups to which this user belongs to are also displayed.
 
 ### Advanced properties
@@ -6070,8 +8137,8 @@ func (a *Client) LocalCifsUserCollectionGet(params *LocalCifsUserCollectionGetPa
 		ID:                 "local_cifs_user_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/local-users",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsUserCollectionGetReader{formats: a.formats},
@@ -6131,8 +8198,8 @@ func (a *Client) LocalCifsUserCreate(params *LocalCifsUserCreateParams, authInfo
 		ID:                 "local_cifs_user_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/cifs/local-users",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsUserCreateReader{formats: a.formats},
@@ -6174,8 +8241,8 @@ func (a *Client) LocalCifsUserDelete(params *LocalCifsUserDeleteParams, authInfo
 		ID:                 "local_cifs_user_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/cifs/local-users/{svm.uuid}/{sid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsUserDeleteReader{formats: a.formats},
@@ -6201,6 +8268,44 @@ func (a *Client) LocalCifsUserDelete(params *LocalCifsUserDeleteParams, authInfo
 }
 
 /*
+LocalCifsUserDeleteCollection local cifs user delete collection API
+*/
+func (a *Client) LocalCifsUserDeleteCollection(params *LocalCifsUserDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsUserDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_user_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/cifs/local-users",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsUserDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsUserDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsUserDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	LocalCifsUserGet Retrieves local user information for the specified user and SVM.
 
 ### Advanced properties
@@ -6220,8 +8325,8 @@ func (a *Client) LocalCifsUserGet(params *LocalCifsUserGetParams, authInfo runti
 		ID:                 "local_cifs_user_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/local-users/{svm.uuid}/{sid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsUserGetReader{formats: a.formats},
@@ -6265,8 +8370,8 @@ func (a *Client) LocalCifsUserModify(params *LocalCifsUserModifyParams, authInfo
 		ID:                 "local_cifs_user_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/cifs/local-users/{svm.uuid}/{sid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsUserModifyReader{formats: a.formats},
@@ -6292,6 +8397,44 @@ func (a *Client) LocalCifsUserModify(params *LocalCifsUserModifyParams, authInfo
 }
 
 /*
+LocalCifsUserModifyCollection local cifs user modify collection API
+*/
+func (a *Client) LocalCifsUserModifyCollection(params *LocalCifsUserModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsUserModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_user_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/local-users",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsUserModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsUserModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsUserModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	LocalCifsUsersAndGroupsImportCreate Loads CIFS local users,groups and group memberships file from the specified URL.<br/>
 
 ### Important notes
@@ -6305,7 +8448,7 @@ Existing CIFS local users, groups, and group memberships will be replaced with t
 ### Related ONTAP commands
 * `vserver cifs users-and-groups import load-from-uri`
 */
-func (a *Client) LocalCifsUsersAndGroupsImportCreate(params *LocalCifsUsersAndGroupsImportCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportCreateAccepted, error) {
+func (a *Client) LocalCifsUsersAndGroupsImportCreate(params *LocalCifsUsersAndGroupsImportCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportCreateCreated, *LocalCifsUsersAndGroupsImportCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewLocalCifsUsersAndGroupsImportCreateParams()
@@ -6314,8 +8457,8 @@ func (a *Client) LocalCifsUsersAndGroupsImportCreate(params *LocalCifsUsersAndGr
 		ID:                 "local_cifs_users_and_groups_import_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/cifs/users-and-groups/bulk-import/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsUsersAndGroupsImportCreateReader{formats: a.formats},
@@ -6329,15 +8472,17 @@ func (a *Client) LocalCifsUsersAndGroupsImportCreate(params *LocalCifsUsersAndGr
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*LocalCifsUsersAndGroupsImportCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *LocalCifsUsersAndGroupsImportCreateCreated:
+		return value, nil, nil
+	case *LocalCifsUsersAndGroupsImportCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*LocalCifsUsersAndGroupsImportCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -6356,8 +8501,8 @@ func (a *Client) LocalCifsUsersAndGroupsImportGet(params *LocalCifsUsersAndGroup
 		ID:                 "local_cifs_users_and_groups_import_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/users-and-groups/bulk-import/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsUsersAndGroupsImportGetReader{formats: a.formats},
@@ -6395,7 +8540,7 @@ func (a *Client) LocalCifsUsersAndGroupsImportGet(params *LocalCifsUsersAndGroup
 ### Related ONTAP commands
 * `vserver cifs users-and-groups import get-status`
 */
-func (a *Client) LocalCifsUsersAndGroupsImportModify(params *LocalCifsUsersAndGroupsImportModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportModifyAccepted, error) {
+func (a *Client) LocalCifsUsersAndGroupsImportModify(params *LocalCifsUsersAndGroupsImportModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportModifyOK, *LocalCifsUsersAndGroupsImportModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewLocalCifsUsersAndGroupsImportModifyParams()
@@ -6404,8 +8549,8 @@ func (a *Client) LocalCifsUsersAndGroupsImportModify(params *LocalCifsUsersAndGr
 		ID:                 "local_cifs_users_and_groups_import_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/cifs/users-and-groups/bulk-import/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LocalCifsUsersAndGroupsImportModifyReader{formats: a.formats},
@@ -6419,22 +8564,24 @@ func (a *Client) LocalCifsUsersAndGroupsImportModify(params *LocalCifsUsersAndGr
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*LocalCifsUsersAndGroupsImportModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *LocalCifsUsersAndGroupsImportModifyOK:
+		return value, nil, nil
+	case *LocalCifsUsersAndGroupsImportModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*LocalCifsUsersAndGroupsImportModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
 	NetbiosCollectionGet Retrieves NetBIOS information.
 
 ### Related ONTAP commands
-* ` vserver cifs nbstat`
+* `vserver cifs nbtstat`
 ### Learn more
 * [`DOC /protocols/cifs/netbios`](#docs-NAS-protocols_cifs_netbios)
 */
@@ -6447,8 +8594,8 @@ func (a *Client) NetbiosCollectionGet(params *NetbiosCollectionGetParams, authIn
 		ID:                 "netbios_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/netbios",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NetbiosCollectionGetReader{formats: a.formats},
@@ -6485,8 +8632,8 @@ func (a *Client) NfsClientsCacheGet(params *NfsClientsCacheGetParams, authInfo r
 		ID:                 "nfs_clients_cache_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nfs/connected-client-settings",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NfsClientsCacheGetReader{formats: a.formats},
@@ -6523,8 +8670,8 @@ func (a *Client) NfsClientsCacheModify(params *NfsClientsCacheModifyParams, auth
 		ID:                 "nfs_clients_cache_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/nfs/connected-client-settings",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NfsClientsCacheModifyReader{formats: a.formats},
@@ -6565,8 +8712,8 @@ func (a *Client) NfsClientsGet(params *NfsClientsGetParams, authInfo runtime.Cli
 		ID:                 "nfs_clients_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nfs/connected-clients",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NfsClientsGetReader{formats: a.formats},
@@ -6603,8 +8750,8 @@ func (a *Client) NfsClientsMapGet(params *NfsClientsMapGetParams, authInfo runti
 		ID:                 "nfs_clients_map_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nfs/connected-client-maps",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NfsClientsMapGetReader{formats: a.formats},
@@ -6648,6 +8795,7 @@ There is an added computational cost to retrieving values for these properties. 
 * `protocol.v3_features.network_lock_manager_port`
 * `protocol.v3_features.network_status_monitor_port`
 * `protocol.v3_features.rquota_daemon_port`
+* `protocol.v3_features.hide_snapshot_enabled`
 * `protocol.v41_features.implementation_domain`
 * `protocol.v41_features.implementation_name`
 * `protocol.v40_features.acl_max_aces`
@@ -6660,6 +8808,12 @@ There is an added computational cost to retrieving values for these properties. 
 * `protocol.v42_features.seclabel_enabled`
 * `protocol.v42_features.sparsefile_ops_enabled`
 * `protocol.v42_features.xattrs_enabled`
+* `protocol.v40_features.referrals_enabled`
+* `protocol.v41_features.referrals_enabled`
+* `protocol.v4_lease_seconds`
+* `protocol.v4_session_slots`
+* `protocol.v4_session_slot_reply_cache_size`
+* `protocol.v4_fsid_change`
 ### Diagnostic properties
 * `credential_cache.transient_error_ttl`
 * `access_cache_config.ttl_failure`
@@ -6678,8 +8832,8 @@ func (a *Client) NfsCollectionGet(params *NfsCollectionGetParams, authInfo runti
 		ID:                 "nfs_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nfs/services",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NfsCollectionGetReader{formats: a.formats},
@@ -6716,8 +8870,8 @@ func (a *Client) NfsCollectionPerformanceMetricsGet(params *NfsCollectionPerform
 		ID:                 "nfs_collection_performance_metrics_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nfs/services/{svm.uuid}/metrics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NfsCollectionPerformanceMetricsGetReader{formats: a.formats},
@@ -6808,6 +8962,13 @@ If not specified in POST, the following default property values are assigned:
 * `transport.tcp_max_transfer_size` - _65536_
 * `root.ignore_nt_acl` - _false_
 * `root.skip_write_permission_check` - _false_
+* `protocol.v40_features.referrals_enabled` - _false_
+* `protocol.v41_features.referrals_enabled` - _false_
+* `protocol.v4_fsid_change` - _true_
+* `protocol.v4_lease_seconds` - 30
+* `protocol.v4_grace_seconds` - 45
+* `protocol.v4_session_slots` - 180
+* `protocol.v4_session_slot_reply_cache_size` - 640
 ### Related ONTAP commands
 * `vserver nfs create`
 * `export-policy access-cache config show`
@@ -6823,8 +8984,8 @@ func (a *Client) NfsCreate(params *NfsCreateParams, authInfo runtime.ClientAuthI
 		ID:                 "nfs_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/nfs/services",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NfsCreateReader{formats: a.formats},
@@ -6866,8 +9027,8 @@ func (a *Client) NfsDelete(params *NfsDeleteParams, authInfo runtime.ClientAuthI
 		ID:                 "nfs_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/nfs/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NfsDeleteReader{formats: a.formats},
@@ -6893,6 +9054,44 @@ func (a *Client) NfsDelete(params *NfsDeleteParams, authInfo runtime.ClientAuthI
 }
 
 /*
+NfsDeleteCollection nfs delete collection API
+*/
+func (a *Client) NfsDeleteCollection(params *NfsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNfsDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nfs_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/nfs/services",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NfsDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NfsDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NfsDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NfsGet Retrieves the NFS configuration of an SVM.
 
 ### Related ONTAP commands
@@ -6910,8 +9109,8 @@ func (a *Client) NfsGet(params *NfsGetParams, authInfo runtime.ClientAuthInfoWri
 		ID:                 "nfs_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/nfs/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NfsGetReader{formats: a.formats},
@@ -6957,8 +9156,8 @@ func (a *Client) NfsModify(params *NfsModifyParams, authInfo runtime.ClientAuthI
 		ID:                 "nfs_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/nfs/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &NfsModifyReader{formats: a.formats},
@@ -6984,6 +9183,213 @@ func (a *Client) NfsModify(params *NfsModifyParams, authInfo runtime.ClientAuthI
 }
 
 /*
+NfsModifyCollection nfs modify collection API
+*/
+func (a *Client) NfsModifyCollection(params *NfsModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNfsModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nfs_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/nfs/services",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NfsModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NfsModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NfsModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	NfsTLSInterfaceCollectionGet Retrieves NFS over TLS interfaces.
+
+### Related ONTAP commands
+* `vserver nfs tls interface show`
+### Learn more
+* [`DOC /protocols/nfs/tls/interfaces`](#docs-NAS-protocols_nfs_tls_interfaces)
+*/
+func (a *Client) NfsTLSInterfaceCollectionGet(params *NfsTLSInterfaceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsTLSInterfaceCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNfsTLSInterfaceCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nfs_tls_interface_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/nfs/tls/interfaces",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NfsTLSInterfaceCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NfsTLSInterfaceCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NfsTLSInterfaceCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	NfsTLSInterfaceGet Retrieves an NFS over TLS interface.
+
+### Related ONTAP commands
+* `vserver nfs tls interface show`
+### Learn more
+* [`DOC /protocols/nfs/tls/interfaces`](#docs-NAS-protocols_nfs_tls_interfaces)
+*/
+func (a *Client) NfsTLSInterfaceGet(params *NfsTLSInterfaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsTLSInterfaceGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNfsTLSInterfaceGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nfs_tls_interface_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/nfs/tls/interfaces/{interface.uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NfsTLSInterfaceGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NfsTLSInterfaceGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NfsTLSInterfaceGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	NfsTLSInterfaceModify Updates the properties of an NFS over TLS interface.
+
+### Related ONTAP commands
+* `vserver nfs tls interface modify`
+* `vserver nfs tls interface enable`
+* `vserver nfs tls interface disable`
+### Learn more
+* [`DOC /protocols/nfs/tls/interfaces`](#docs-NAS-protocols_nfs_tls_interfaces)
+*/
+func (a *Client) NfsTLSInterfaceModify(params *NfsTLSInterfaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsTLSInterfaceModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNfsTLSInterfaceModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nfs_tls_interface_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/nfs/tls/interfaces/{interface.uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NfsTLSInterfaceModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NfsTLSInterfaceModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NfsTLSInterfaceModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+NfsTLSInterfaceModifyCollection nfs tls interface modify collection API
+*/
+func (a *Client) NfsTLSInterfaceModifyCollection(params *NfsTLSInterfaceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsTLSInterfaceModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNfsTLSInterfaceModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nfs_tls_interface_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/nfs/tls/interfaces",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NfsTLSInterfaceModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NfsTLSInterfaceModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NfsTLSInterfaceModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	PoliciesAndRulesToBeAppliedCollectionGet Retrieves group policy objects that are yet to be applied for all SVMs.
 
 ### Related ONTAP commands
@@ -6998,8 +9404,8 @@ func (a *Client) PoliciesAndRulesToBeAppliedCollectionGet(params *PoliciesAndRul
 		ID:                 "policies_and_rules_to_be_applied_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/group-policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PoliciesAndRulesToBeAppliedCollectionGetReader{formats: a.formats},
@@ -7039,8 +9445,8 @@ func (a *Client) PoliciesAndRulesToBeAppliedGet(params *PoliciesAndRulesToBeAppl
 		ID:                 "policies_and_rules_to_be_applied_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PoliciesAndRulesToBeAppliedGetReader{formats: a.formats},
@@ -7086,7 +9492,7 @@ If not specified in POST, the following default property values are assigned:
 ### Learn more
 * [`DOC /protocols/audit/{svm.uuid}/object-store`](#docs-NAS-protocols_audit_{svm.uuid}_object-store)
 */
-func (a *Client) S3AuditCreate(params *S3AuditCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditCreateAccepted, error) {
+func (a *Client) S3AuditCreate(params *S3AuditCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditCreateCreated, *S3AuditCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewS3AuditCreateParams()
@@ -7095,8 +9501,8 @@ func (a *Client) S3AuditCreate(params *S3AuditCreateParams, authInfo runtime.Cli
 		ID:                 "s3_audit_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/audit/{svm.uuid}/object-store",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3AuditCreateReader{formats: a.formats},
@@ -7110,15 +9516,17 @@ func (a *Client) S3AuditCreate(params *S3AuditCreateParams, authInfo runtime.Cli
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*S3AuditCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *S3AuditCreateCreated:
+		return value, nil, nil
+	case *S3AuditCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*S3AuditCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -7130,7 +9538,7 @@ func (a *Client) S3AuditCreate(params *S3AuditCreateParams, authInfo runtime.Cli
 ### Learn more
 * [`DOC /protocols/audit/{svm.uuid}/object-store`](#docs-NAS-protocols_audit_{svm.uuid}_object-store)
 */
-func (a *Client) S3AuditDelete(params *S3AuditDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditDeleteAccepted, error) {
+func (a *Client) S3AuditDelete(params *S3AuditDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditDeleteOK, *S3AuditDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewS3AuditDeleteParams()
@@ -7139,8 +9547,8 @@ func (a *Client) S3AuditDelete(params *S3AuditDeleteParams, authInfo runtime.Cli
 		ID:                 "s3_audit_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/audit/{svm.uuid}/object-store",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3AuditDeleteReader{formats: a.formats},
@@ -7154,15 +9562,17 @@ func (a *Client) S3AuditDelete(params *S3AuditDeleteParams, authInfo runtime.Cli
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*S3AuditDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *S3AuditDeleteOK:
+		return value, nil, nil
+	case *S3AuditDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*S3AuditDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -7182,8 +9592,8 @@ func (a *Client) S3AuditGet(params *S3AuditGetParams, authInfo runtime.ClientAut
 		ID:                 "s3_audit_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/audit/{svm.uuid}/object-store",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3AuditGetReader{formats: a.formats},
@@ -7218,7 +9628,7 @@ func (a *Client) S3AuditGet(params *S3AuditGetParams, authInfo runtime.ClientAut
 ### Learn more
 * [`DOC /protocols/audit/{svm.uuid}/object-store`](#docs-NAS-protocols_audit_{svm.uuid}_object-store)
 */
-func (a *Client) S3AuditModify(params *S3AuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditModifyAccepted, error) {
+func (a *Client) S3AuditModify(params *S3AuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditModifyOK, *S3AuditModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewS3AuditModifyParams()
@@ -7227,8 +9637,8 @@ func (a *Client) S3AuditModify(params *S3AuditModifyParams, authInfo runtime.Cli
 		ID:                 "s3_audit_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/audit/{svm.uuid}/object-store",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3AuditModifyReader{formats: a.formats},
@@ -7242,15 +9652,17 @@ func (a *Client) S3AuditModify(params *S3AuditModifyParams, authInfo runtime.Cli
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*S3AuditModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *S3AuditModifyOK:
+		return value, nil, nil
+	case *S3AuditModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*S3AuditModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -7270,8 +9682,8 @@ func (a *Client) ShadowcopyCollectionGet(params *ShadowcopyCollectionGetParams, 
 		ID:                 "shadowcopy_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/shadow-copies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ShadowcopyCollectionGetReader{formats: a.formats},
@@ -7313,8 +9725,8 @@ func (a *Client) ShadowcopyGet(params *ShadowcopyGetParams, authInfo runtime.Cli
 		ID:                 "shadowcopy_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/shadow-copies/{client_uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ShadowcopyGetReader{formats: a.formats},
@@ -7354,8 +9766,8 @@ func (a *Client) ShadowcopyModify(params *ShadowcopyModifyParams, authInfo runti
 		ID:                 "shadowcopy_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/cifs/shadow-copies/{client_uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ShadowcopyModifyReader{formats: a.formats},
@@ -7381,6 +9793,44 @@ func (a *Client) ShadowcopyModify(params *ShadowcopyModifyParams, authInfo runti
 }
 
 /*
+ShadowcopyModifyCollection shadowcopy modify collection API
+*/
+func (a *Client) ShadowcopyModifyCollection(params *ShadowcopyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopyModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewShadowcopyModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "shadowcopy_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/shadow-copies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ShadowcopyModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ShadowcopyModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ShadowcopyModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	ShadowcopySetCollectionGet Retrieves Shadowcopy Sets.
 
 ### Related ONTAP commands
@@ -7397,8 +9847,8 @@ func (a *Client) ShadowcopySetCollectionGet(params *ShadowcopySetCollectionGetPa
 		ID:                 "shadowcopy_set_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/shadowcopy-sets",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ShadowcopySetCollectionGetReader{formats: a.formats},
@@ -7440,8 +9890,8 @@ func (a *Client) ShadowcopySetGet(params *ShadowcopySetGetParams, authInfo runti
 		ID:                 "shadowcopy_set_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/shadowcopy-sets/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ShadowcopySetGetReader{formats: a.formats},
@@ -7481,8 +9931,8 @@ func (a *Client) ShadowcopySetModify(params *ShadowcopySetModifyParams, authInfo
 		ID:                 "shadowcopy_set_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/cifs/shadowcopy-sets/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &ShadowcopySetModifyReader{formats: a.formats},
@@ -7508,6 +9958,44 @@ func (a *Client) ShadowcopySetModify(params *ShadowcopySetModifyParams, authInfo
 }
 
 /*
+ShadowcopySetModifyCollection shadowcopy set modify collection API
+*/
+func (a *Client) ShadowcopySetModifyCollection(params *ShadowcopySetModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopySetModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewShadowcopySetModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "shadowcopy_set_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/shadowcopy-sets",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ShadowcopySetModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ShadowcopySetModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ShadowcopySetModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	UserGroupPrivilegesCollectionGet Retrieves privileges of the specified local or Active Directory user or group and SVM.
 
 ### Related ONTAP commands
@@ -7524,8 +10012,8 @@ func (a *Client) UserGroupPrivilegesCollectionGet(params *UserGroupPrivilegesCol
 		ID:                 "user_group_privileges_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/users-and-groups/privileges",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UserGroupPrivilegesCollectionGetReader{formats: a.formats},
@@ -7557,7 +10045,7 @@ func (a *Client) UserGroupPrivilegesCollectionGet(params *UserGroupPrivilegesCol
 * Specified privileges are appended to the existing list of privileges.
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM for which privileges are added to user or group.
-* `name` - Exising local or Active Directory user or group for which privileges are to be added.
+* `name` - Existing local or Active Directory user or group for which privileges are to be added.
 * `privileges` - List of privileges to be added to a user or group.
 ### Related ONTAP commands
 * `vserver cifs users-and-groups privilege add-privilege`
@@ -7573,8 +10061,8 @@ func (a *Client) UserGroupPrivilegesCreate(params *UserGroupPrivilegesCreatePara
 		ID:                 "user_group_privileges_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/cifs/users-and-groups/privileges",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UserGroupPrivilegesCreateReader{formats: a.formats},
@@ -7616,8 +10104,8 @@ func (a *Client) UserGroupPrivilegesGet(params *UserGroupPrivilegesGetParams, au
 		ID:                 "user_group_privileges_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UserGroupPrivilegesGetReader{formats: a.formats},
@@ -7662,8 +10150,8 @@ func (a *Client) UserGroupPrivilegesModify(params *UserGroupPrivilegesModifyPara
 		ID:                 "user_group_privileges_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &UserGroupPrivilegesModifyReader{formats: a.formats},
@@ -7685,6 +10173,44 @@ func (a *Client) UserGroupPrivilegesModify(params *UserGroupPrivilegesModifyPara
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*UserGroupPrivilegesModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+UserGroupPrivilegesModifyCollection user group privileges modify collection API
+*/
+func (a *Client) UserGroupPrivilegesModifyCollection(params *UserGroupPrivilegesModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UserGroupPrivilegesModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUserGroupPrivilegesModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "user_group_privileges_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/users-and-groups/privileges",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UserGroupPrivilegesModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UserGroupPrivilegesModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UserGroupPrivilegesModifyCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -7718,8 +10244,8 @@ func (a *Client) VscanCollectionGet(params *VscanCollectionGetParams, authInfo r
 		ID:                 "vscan_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/vscan",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanCollectionGetReader{formats: a.formats},
@@ -7767,8 +10293,8 @@ func (a *Client) VscanConfigDelete(params *VscanConfigDeleteParams, authInfo run
 		ID:                 "vscan_config_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/vscan/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanConfigDeleteReader{formats: a.formats},
@@ -7790,6 +10316,44 @@ func (a *Client) VscanConfigDelete(params *VscanConfigDeleteParams, authInfo run
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*VscanConfigDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+VscanConfigDeleteCollection vscan config delete collection API
+*/
+func (a *Client) VscanConfigDeleteCollection(params *VscanConfigDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanConfigDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewVscanConfigDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "vscan_config_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/vscan",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &VscanConfigDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*VscanConfigDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*VscanConfigDeleteCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -7832,8 +10396,8 @@ func (a *Client) VscanCreate(params *VscanCreateParams, authInfo runtime.ClientA
 		ID:                 "vscan_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/vscan",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanCreateReader{formats: a.formats},
@@ -7873,8 +10437,8 @@ func (a *Client) VscanEventCollectionGet(params *VscanEventCollectionGetParams, 
 		ID:                 "vscan_event_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/vscan/{svm.uuid}/events",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanEventCollectionGetReader{formats: a.formats},
@@ -7928,8 +10492,8 @@ func (a *Client) VscanGet(params *VscanGetParams, authInfo runtime.ClientAuthInf
 		ID:                 "vscan_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/vscan/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanGetReader{formats: a.formats},
@@ -7976,8 +10540,8 @@ func (a *Client) VscanModify(params *VscanModifyParams, authInfo runtime.ClientA
 		ID:                 "vscan_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/vscan/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanModifyReader{formats: a.formats},
@@ -8003,7 +10567,45 @@ func (a *Client) VscanModify(params *VscanModifyParams, authInfo runtime.ClientA
 }
 
 /*
-	VscanOnAccessCreate Creates a Vscan On-Access policy. Created only on a data SVM.
+VscanModifyCollection vscan modify collection API
+*/
+func (a *Client) VscanModifyCollection(params *VscanModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewVscanModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "vscan_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/vscan",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &VscanModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*VscanModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*VscanModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	VscanOnAccessCreate Creates a Vscan On-Access policy.
 
 </b>Important notes:
 * You must enable the policy on an SVM before its files can be scanned.
@@ -8039,8 +10641,8 @@ func (a *Client) VscanOnAccessCreate(params *VscanOnAccessCreateParams, authInfo
 		ID:                 "vscan_on_access_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/vscan/{svm.uuid}/on-access-policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanOnAccessCreateReader{formats: a.formats},
@@ -8082,8 +10684,8 @@ func (a *Client) VscanOnAccessDelete(params *VscanOnAccessDeleteParams, authInfo
 		ID:                 "vscan_on_access_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/vscan/{svm.uuid}/on-access-policies/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanOnAccessDeleteReader{formats: a.formats},
@@ -8109,6 +10711,44 @@ func (a *Client) VscanOnAccessDelete(params *VscanOnAccessDeleteParams, authInfo
 }
 
 /*
+VscanOnAccessDeleteCollection vscan on access delete collection API
+*/
+func (a *Client) VscanOnAccessDeleteCollection(params *VscanOnAccessDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnAccessDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewVscanOnAccessDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "vscan_on_access_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/vscan/{svm.uuid}/on-access-policies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &VscanOnAccessDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*VscanOnAccessDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*VscanOnAccessDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	VscanOnAccessGet Retrieves the Vscan On-Access policy configuration of an SVM.
 
 ### Related ONTAP commands
@@ -8128,8 +10768,8 @@ func (a *Client) VscanOnAccessGet(params *VscanOnAccessGetParams, authInfo runti
 		ID:                 "vscan_on_access_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/vscan/{svm.uuid}/on-access-policies/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanOnAccessGetReader{formats: a.formats},
@@ -8155,7 +10795,7 @@ func (a *Client) VscanOnAccessGet(params *VscanOnAccessGetParams, authInfo runti
 }
 
 /*
-	VscanOnAccessModify Updates the Vscan On-Access policy configuration and/or enables/disables the Vscan On-Access policy of an SVM. You cannot modify the configurations for an On-Access policy associated with an administrative SVM, although you can encable and disable the policy associated with an administrative SVM.
+	VscanOnAccessModify Updates the Vscan On-Access policy configuration and/or enables/disables the Vscan On-Access policy of an SVM. You cannot modify the configurations for an On-Access policy associated with a data SVM which was created by SVM owned by the cluster, although you can enable and disable the policy associated with cluster SVM.
 
 ### Related ONTAP commands
 * `vserver vscan on-access-policy modify`
@@ -8179,8 +10819,8 @@ func (a *Client) VscanOnAccessModify(params *VscanOnAccessModifyParams, authInfo
 		ID:                 "vscan_on_access_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/vscan/{svm.uuid}/on-access-policies/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanOnAccessModifyReader{formats: a.formats},
@@ -8206,6 +10846,44 @@ func (a *Client) VscanOnAccessModify(params *VscanOnAccessModifyParams, authInfo
 }
 
 /*
+VscanOnAccessModifyCollection vscan on access modify collection API
+*/
+func (a *Client) VscanOnAccessModifyCollection(params *VscanOnAccessModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnAccessModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewVscanOnAccessModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "vscan_on_access_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/vscan/{svm.uuid}/on-access-policies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &VscanOnAccessModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*VscanOnAccessModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*VscanOnAccessModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	VscanOnAccessPolicyCollectionGet Retrieves the Vscan On-Access policy.
 
 ### Related ONTAP commands
@@ -8225,8 +10903,8 @@ func (a *Client) VscanOnAccessPolicyCollectionGet(params *VscanOnAccessPolicyCol
 		ID:                 "vscan_on_access_policy_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/vscan/{svm.uuid}/on-access-policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanOnAccessPolicyCollectionGetReader{formats: a.formats},
@@ -8286,8 +10964,8 @@ func (a *Client) VscanOnDemandCreate(params *VscanOnDemandCreateParams, authInfo
 		ID:                 "vscan_on_demand_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/vscan/{svm.uuid}/on-demand-policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanOnDemandCreateReader{formats: a.formats},
@@ -8329,8 +11007,8 @@ func (a *Client) VscanOnDemandDelete(params *VscanOnDemandDeleteParams, authInfo
 		ID:                 "vscan_on_demand_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/vscan/{svm.uuid}/on-demand-policies/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanOnDemandDeleteReader{formats: a.formats},
@@ -8356,6 +11034,44 @@ func (a *Client) VscanOnDemandDelete(params *VscanOnDemandDeleteParams, authInfo
 }
 
 /*
+VscanOnDemandDeleteCollection vscan on demand delete collection API
+*/
+func (a *Client) VscanOnDemandDeleteCollection(params *VscanOnDemandDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnDemandDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewVscanOnDemandDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "vscan_on_demand_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/vscan/{svm.uuid}/on-demand-policies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &VscanOnDemandDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*VscanOnDemandDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*VscanOnDemandDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	VscanOnDemandGet Retrieves the Vscan On-Demand configuration of an SVM.
 
 ### Related ONTAP commands
@@ -8372,8 +11088,8 @@ func (a *Client) VscanOnDemandGet(params *VscanOnDemandGetParams, authInfo runti
 		ID:                 "vscan_on_demand_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/vscan/{svm.uuid}/on-demand-policies/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanOnDemandGetReader{formats: a.formats},
@@ -8417,8 +11133,8 @@ func (a *Client) VscanOnDemandModify(params *VscanOnDemandModifyParams, authInfo
 		ID:                 "vscan_on_demand_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/vscan/{svm.uuid}/on-demand-policies/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanOnDemandModifyReader{formats: a.formats},
@@ -8444,6 +11160,44 @@ func (a *Client) VscanOnDemandModify(params *VscanOnDemandModifyParams, authInfo
 }
 
 /*
+VscanOnDemandModifyCollection vscan on demand modify collection API
+*/
+func (a *Client) VscanOnDemandModifyCollection(params *VscanOnDemandModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnDemandModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewVscanOnDemandModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "vscan_on_demand_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/vscan/{svm.uuid}/on-demand-policies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &VscanOnDemandModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*VscanOnDemandModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*VscanOnDemandModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	VscanOnDemandPolicyCollectionGet Retrieves the Vscan On-Demand policy.
 
 ### Related ONTAP commands
@@ -8460,8 +11214,8 @@ func (a *Client) VscanOnDemandPolicyCollectionGet(params *VscanOnDemandPolicyCol
 		ID:                 "vscan_on_demand_policy_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/vscan/{svm.uuid}/on-demand-policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanOnDemandPolicyCollectionGetReader{formats: a.formats},
@@ -8505,8 +11259,8 @@ func (a *Client) VscanScannerCollectionGet(params *VscanScannerCollectionGetPara
 		ID:                 "vscan_scanner_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/vscan/{svm.uuid}/scanner-pools",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanScannerCollectionGetReader{formats: a.formats},
@@ -8568,8 +11322,8 @@ func (a *Client) VscanScannerCreate(params *VscanScannerCreateParams, authInfo r
 		ID:                 "vscan_scanner_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/vscan/{svm.uuid}/scanner-pools",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanScannerCreateReader{formats: a.formats},
@@ -8614,8 +11368,8 @@ func (a *Client) VscanScannerDelete(params *VscanScannerDeleteParams, authInfo r
 		ID:                 "vscan_scanner_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/vscan/{svm.uuid}/scanner-pools/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanScannerDeleteReader{formats: a.formats},
@@ -8637,6 +11391,44 @@ func (a *Client) VscanScannerDelete(params *VscanScannerDeleteParams, authInfo r
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*VscanScannerDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+VscanScannerDeleteCollection vscan scanner delete collection API
+*/
+func (a *Client) VscanScannerDeleteCollection(params *VscanScannerDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanScannerDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewVscanScannerDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "vscan_scanner_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/vscan/{svm.uuid}/scanner-pools",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &VscanScannerDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*VscanScannerDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*VscanScannerDeleteCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -8665,8 +11457,8 @@ func (a *Client) VscanScannerModify(params *VscanScannerModifyParams, authInfo r
 		ID:                 "vscan_scanner_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/vscan/{svm.uuid}/scanner-pools/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanScannerModifyReader{formats: a.formats},
@@ -8692,6 +11484,44 @@ func (a *Client) VscanScannerModify(params *VscanScannerModifyParams, authInfo r
 }
 
 /*
+VscanScannerModifyCollection vscan scanner modify collection API
+*/
+func (a *Client) VscanScannerModifyCollection(params *VscanScannerModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanScannerModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewVscanScannerModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "vscan_scanner_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/vscan/{svm.uuid}/scanner-pools",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &VscanScannerModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*VscanScannerModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*VscanScannerModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	VscanScannerPoolGet Retrieves the configuration of a specified scanner-pool of an SVM.
 
 ### Related ONTAP commands
@@ -8710,8 +11540,8 @@ func (a *Client) VscanScannerPoolGet(params *VscanScannerPoolGetParams, authInfo
 		ID:                 "vscan_scanner_pool_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/vscan/{svm.uuid}/scanner-pools/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanScannerPoolGetReader{formats: a.formats},
@@ -8753,8 +11583,8 @@ func (a *Client) VscanServerStatusGet(params *VscanServerStatusGetParams, authIn
 		ID:                 "vscan_server_status_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/vscan/server-status",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &VscanServerStatusGetReader{formats: a.formats},

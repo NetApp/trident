@@ -11,6 +11,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // SnaplockFileRetention snaplock file retention
@@ -22,12 +23,26 @@ type SnaplockFileRetention struct {
 	Links *SnaplockFileRetentionInlineLinks `json:"_links,omitempty"`
 
 	// Expiry time of the file in date-time format, "infinite", "indefinite", or "unspecified". An "infinite" retention time indicates that the file will be retained forever. An "unspecified" retention time indicates that the file will be retained forever; however, the retention time of the file can be changed to an absolute value. An "indefinite" retention time indicates that the file is under Legal-Hold.
-	// Example: 2058-06-04T19:00:00Z
+	// Example: 2058-06-04 19:00:00
 	ExpiryTime *string `json:"expiry_time,omitempty"`
 
 	// Specifies the volume relative path of the file
 	// Example: /dir1/file
 	FilePath *string `json:"file_path,omitempty"`
+
+	// This indicates if the file is under active retention or if the file is past its expiry time.
+	// Example: true
+	// Read Only: true
+	IsExpired *bool `json:"is_expired,omitempty"`
+
+	// Duration of retention time file to be locked with,  An "infinite" retention period indicates that the file will be retained forever.
+	// Example: P2M
+	RetentionPeriod *string `json:"retention_period,omitempty"`
+
+	// Specifies the number of seconds until the expiration time of the file.
+	// Example: 168
+	// Read Only: true
+	SecondsUntilExpiry *int64 `json:"seconds_until_expiry,omitempty"`
 
 	// svm
 	Svm *SnaplockFileRetentionInlineSvm `json:"svm,omitempty"`
@@ -117,6 +132,14 @@ func (m *SnaplockFileRetention) ContextValidate(ctx context.Context, formats str
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateIsExpired(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSecondsUntilExpiry(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -140,6 +163,24 @@ func (m *SnaplockFileRetention) contextValidateLinks(ctx context.Context, format
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SnaplockFileRetention) contextValidateIsExpired(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "is_expired", "body", m.IsExpired); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SnaplockFileRetention) contextValidateSecondsUntilExpiry(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "seconds_until_expiry", "body", m.SecondsUntilExpiry); err != nil {
+		return err
 	}
 
 	return nil
@@ -277,7 +318,7 @@ func (m *SnaplockFileRetentionInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockFileRetentionInlineSvm snaplock file retention inline svm
+// SnaplockFileRetentionInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model snaplock_file_retention_inline_svm
 type SnaplockFileRetentionInlineSvm struct {
@@ -285,12 +326,12 @@ type SnaplockFileRetentionInlineSvm struct {
 	// links
 	Links *SnaplockFileRetentionInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -467,7 +508,7 @@ type SnaplockFileRetentionInlineVolume struct {
 	// links
 	Links *SnaplockFileRetentionInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

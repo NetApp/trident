@@ -23,7 +23,7 @@ type StorageBridge struct {
 
 	// Chassis throughput status
 	// Example: ok
-	// Enum: [ok warning]
+	// Enum: ["ok","warning"]
 	ChassisThroughputState *string `json:"chassis_throughput_state,omitempty"`
 
 	// dram single bit error count
@@ -41,7 +41,7 @@ type StorageBridge struct {
 	LastReboot *StorageBridgeInlineLastReboot `json:"last_reboot,omitempty"`
 
 	// managed by
-	// Enum: [snmp in_band]
+	// Enum: ["snmp","in_band"]
 	ManagedBy *string `json:"managed_by,omitempty"`
 
 	// Bridge model
@@ -63,7 +63,7 @@ type StorageBridge struct {
 	SerialNumber *string `json:"serial_number,omitempty"`
 
 	// Bridge state
-	// Enum: [unknown ok error]
+	// Enum: ["unknown","ok","error"]
 	State *string `json:"state,omitempty"`
 
 	// storage bridge inline errors
@@ -90,7 +90,7 @@ type StorageBridge struct {
 
 	// Bridge vendor
 	// Example: atto
-	// Enum: [unknown atto]
+	// Enum: ["unknown","atto"]
 	Vendor *string `json:"vendor,omitempty"`
 
 	// Bridge world wide name
@@ -739,11 +739,11 @@ type StorageBridgeInlineErrorsInlineArrayItem struct {
 	Reason *Error `json:"reason,omitempty"`
 
 	// Bridge error severity
-	// Enum: [unknown notice warning error]
+	// Enum: ["unknown","notice","warning","error"]
 	Severity *string `json:"severity,omitempty"`
 
 	// Bridge error type
-	// Enum: [unknown bridge_unreachable temp_above_critical_level temp_below_critical_level temp_sensor_status_critical temp_sensor_status_unavailable invalid_configuration sas_port_offline link_failure sas_port_online power_supply_offline]
+	// Enum: ["unknown","bridge_unreachable","temp_above_critical_level","temp_below_critical_level","temp_sensor_status_critical","temp_sensor_status_unavailable","invalid_configuration","sas_port_offline","link_failure","sas_port_online","power_supply_offline"]
 	Type *string `json:"type,omitempty"`
 }
 
@@ -1142,15 +1142,15 @@ func (m *StorageBridgeInlineErrorsInlineArrayItemInlineComponent) UnmarshalBinar
 type StorageBridgeInlineFcPortsInlineArrayItem struct {
 
 	// Bridge FC port configured data rate, in Gbps
-	// Enum: [0 2 4 8 16 32]
+	// Enum: [0,2,4,8,16,32]
 	ConfiguredDataRate *float64 `json:"configured_data_rate,omitempty"`
 
 	// Bridge FC port configured connection mode
-	// Enum: [loop ptp loop_preferred ptp_preferred]
+	// Enum: ["loop","ptp","loop_preferred","ptp_preferred"]
 	ConnectionMode *string `json:"connection_mode,omitempty"`
 
 	// Bridge FC port data rate capability, in Gbps
-	// Enum: [2 4 8 16 32]
+	// Enum: [2,4,8,16,32]
 	DataRateCapability *float64 `json:"data_rate_capability,omitempty"`
 
 	// Indicates whether the bridge FC port is enabled.
@@ -1160,7 +1160,7 @@ type StorageBridgeInlineFcPortsInlineArrayItem struct {
 	ID *int64 `json:"id,omitempty"`
 
 	// Bridge FC port negotiated data rate, in Gbps
-	// Enum: [0 2 4 8 16 32]
+	// Enum: [0,2,4,8,16,32]
 	NegotiatedDataRate *float64 `json:"negotiated_data_rate,omitempty"`
 
 	// Bridge FC port peer port world wide name
@@ -1171,7 +1171,7 @@ type StorageBridgeInlineFcPortsInlineArrayItem struct {
 	Sfp *StorageBridgeInlineFcPortsInlineArrayItemInlineSfp `json:"sfp,omitempty"`
 
 	// Bridge FC port state
-	// Enum: [error online offline]
+	// Enum: ["error","online","offline"]
 	State *string `json:"state,omitempty"`
 
 	// Bridge FC port world wide name
@@ -1523,7 +1523,7 @@ func (m *StorageBridgeInlineFcPortsInlineArrayItem) UnmarshalBinary(b []byte) er
 type StorageBridgeInlineFcPortsInlineArrayItemInlineSfp struct {
 
 	// Bridge FC port SFP data rate capability, in Gbps
-	// Enum: [2 4 8 16 32]
+	// Enum: [2,4,8,16,32]
 	DataRateCapability *float64 `json:"data_rate_capability,omitempty"`
 
 	// part number
@@ -1615,7 +1615,7 @@ type StorageBridgeInlineLastReboot struct {
 	Reason *Error `json:"reason,omitempty"`
 
 	// time
-	// Example: 2020-12-09T00:47:58-05:00
+	// Example: 2020-12-09 05:47:58
 	// Format: date-time
 	Time *strfmt.DateTime `json:"time,omitempty"`
 }
@@ -2164,7 +2164,7 @@ type StorageBridgeInlinePowerSupplyUnitsInlineArrayItem struct {
 	Name *string `json:"name,omitempty"`
 
 	// Power supply unit state
-	// Enum: [ok error]
+	// Enum: ["ok","error"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -2270,7 +2270,7 @@ type StorageBridgeInlineSasPortsInlineArrayItem struct {
 	Cable *StorageBridgeInlineSasPortsInlineArrayItemInlineCable `json:"cable,omitempty"`
 
 	// Bridge SAS port data rate capability, in Gbps
-	// Enum: [0 1.5 3 6 12]
+	// Enum: [0,1.5,3,6,12]
 	DataRateCapability *float64 `json:"data_rate_capability,omitempty"`
 
 	// Indicates whether a bridge SAS port is enabled.
@@ -2280,7 +2280,7 @@ type StorageBridgeInlineSasPortsInlineArrayItem struct {
 	ID *int64 `json:"id,omitempty"`
 
 	// Bridge SAS port negotiated data rate, in Gbps
-	// Enum: [0 1.5 3 6 12]
+	// Enum: [0,1.5,3,6,12]
 	NegotiatedDataRate *float64 `json:"negotiated_data_rate,omitempty"`
 
 	// phy 1
@@ -2296,7 +2296,7 @@ type StorageBridgeInlineSasPortsInlineArrayItem struct {
 	Phy4 *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy4 `json:"phy_4,omitempty"`
 
 	// Bridge SAS port state
-	// Enum: [error online offline]
+	// Enum: ["error","online","offline"]
 	State *string `json:"state,omitempty"`
 
 	// Bridge SAS port world wide name
@@ -2894,7 +2894,7 @@ type StorageBridgeInlineTemperatureSensor struct {
 	Reading *int64 `json:"reading,omitempty"`
 
 	// state
-	// Enum: [ok warning error]
+	// Enum: ["ok","warning","error"]
 	State *string `json:"state,omitempty"`
 }
 

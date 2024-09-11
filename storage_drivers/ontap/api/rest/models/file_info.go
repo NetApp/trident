@@ -24,7 +24,7 @@ type FileInfo struct {
 	Links *FileInfoInlineLinks `json:"_links,omitempty"`
 
 	// Last access time of the file in date-time format.
-	// Example: 2019-06-12T11:00:16-04:00
+	// Example: 2019-06-12 15:00:16
 	// Read Only: true
 	// Format: date-time
 	AccessedTime *strfmt.DateTime `json:"accessed_time,omitempty"`
@@ -38,7 +38,7 @@ type FileInfo struct {
 	BytesUsed *int64 `json:"bytes_used,omitempty"`
 
 	// Last time data or attributes changed on the file in date-time format.
-	// Example: 2019-06-12T11:00:16-04:00
+	// Example: 2019-06-12 15:00:16
 	// Read Only: true
 	// Format: date-time
 	ChangedTime *strfmt.DateTime `json:"changed_time,omitempty"`
@@ -47,7 +47,7 @@ type FileInfo struct {
 	Constituent *FileInfoInlineConstituent `json:"constituent,omitempty"`
 
 	// Creation time of the file in date-time format.
-	// Example: 2019-06-12T11:00:16-04:00
+	// Example: 2019-06-12 15:00:16
 	// Read Only: true
 	// Format: date-time
 	CreationTime *strfmt.DateTime `json:"creation_time,omitempty"`
@@ -76,7 +76,6 @@ type FileInfo struct {
 	InodeNumber *int64 `json:"inode_number,omitempty"`
 
 	// Specifies whether or not a directory is empty. A directory is considered empty if it only contains entries for "." and "..". This element is present if the file is a directory. In some special error cases, such as when the volume goes offline or when the directory is moved while retrieving this info, this field might not get set.
-	// Example: false
 	IsEmpty *bool `json:"is_empty,omitempty"`
 
 	// Returns "true" if the directory is a junction.
@@ -84,8 +83,9 @@ type FileInfo struct {
 	// Read Only: true
 	IsJunction *bool `json:"is_junction,omitempty"`
 
-	// Returns "true" if the directory is a Snapshot copy.
+	// Returns "true" if the directory is a snapshot.
 	// Example: false
+	// Read Only: true
 	IsSnapshot *bool `json:"is_snapshot,omitempty"`
 
 	// Returns true if the file is vm-aligned. A vm-aligned file is a file that is initially padded with zero-filled data so that its actual data starts at an offset other than zero. The amount by which the start offset is adjusted depends on the vm-align setting of the hosting volume.
@@ -94,13 +94,12 @@ type FileInfo struct {
 	IsVMAligned *bool `json:"is_vm_aligned,omitempty"`
 
 	// Last data modification time of the file in date-time format.
-	// Example: 2019-06-12T11:00:16-04:00
+	// Example: 2019-06-12 15:00:16
 	// Read Only: true
 	// Format: date-time
 	ModifiedTime *strfmt.DateTime `json:"modified_time,omitempty"`
 
 	// Name of the file.
-	// Example: test_file
 	Name *string `json:"name,omitempty"`
 
 	// Returns "true" if the space reservation for overwrites is enabled. The field fill_enabled must also be set to the same value as this field.
@@ -112,23 +111,20 @@ type FileInfo struct {
 	OwnerID *int64 `json:"owner_id,omitempty"`
 
 	// Path of the file.
-	// Example: d1/d2/d3
 	Path *string `json:"path,omitempty"`
 
 	// qos policy
 	QosPolicy *FileInfoInlineQosPolicy `json:"qos_policy,omitempty"`
 
 	// The size of the file, in bytes.
-	// Example: 200
 	Size *int64 `json:"size,omitempty"`
 
 	// The relative or absolute path contained in a symlink, in the form <some>/<path>.
-	// Example: some_directory/some_other_directory/some_file
 	Target *string `json:"target,omitempty"`
 
 	// Type of the file.
 	// Example: file
-	// Enum: [file directory blockdev chardev symlink socket fifo stream lun]
+	// Enum: ["file","directory","blockdev","chardev","symlink","socket","fifo","stream","lun"]
 	Type *string `json:"type,omitempty"`
 
 	// Number of bytes uniquely held by this file. If byte_offset and length parameters are specified, this will return bytes uniquely held by the file within the given range.
@@ -137,7 +133,6 @@ type FileInfo struct {
 	UniqueBytes *int64 `json:"unique_bytes,omitempty"`
 
 	// UNIX permissions to be viewed as an octal number. It consists of 4 digits derived by adding up bits 4 (read), 2 (write), and 1 (execute). The first digit selects the set user ID(4), set group ID (2), and sticky (1) attributes. The second digit selects permissions for the owner of the file; the third selects permissions for other users in the same group; the fourth selects permissions for other users not in the group.
-	// Example: 755
 	UnixPermissions *int64 `json:"unix_permissions,omitempty"`
 
 	// volume
@@ -505,6 +500,10 @@ func (m *FileInfo) ContextValidate(ctx context.Context, formats strfmt.Registry)
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateIsSnapshot(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateIsVMAligned(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -658,6 +657,15 @@ func (m *FileInfo) contextValidateIsJunction(ctx context.Context, formats strfmt
 	return nil
 }
 
+func (m *FileInfo) contextValidateIsSnapshot(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "is_snapshot", "body", m.IsSnapshot); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *FileInfo) contextValidateIsVMAligned(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "is_vm_aligned", "body", m.IsVMAligned); err != nil {
@@ -740,7 +748,7 @@ func (m *FileInfo) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileInfoInlineAnalytics Additional file system analytics information summarizing all descendents of a directory. <br/>
+// FileInfoInlineAnalytics Additional file system analytics information summarizing all descendants of a directory. <br/>
 // This property is only populated if file system analytics is enabled on the containing volume. <br/>
 // In the context of the `records` property of a [`file_info_response`](#model-file_info_response), analytics objects will only include properties that may vary between elements within the collection. For example, the analytics objects will not contain histogram labels, since the same histogram labels are used for all elements within the collection. The invariant information is instead available via the `analytics` property of the [`file_info_response`](#model-file_info_response). This avoids an excessive amount of duplicated information when a [`GET  /storage/volumes/{volume.uuid}/files/{path}`](#/storage/file_collection_get) call returns a large collection.
 //
@@ -1412,10 +1420,12 @@ type FileInfoInlineConstituent struct {
 
 	// FlexGroup volume constituent name.
 	// Example: fg__0001
+	// Read Only: true
 	Name *string `json:"name,omitempty"`
 
 	// FlexGroup volume constituent UUID.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	// Read Only: true
 	UUID *string `json:"uuid,omitempty"`
 }
 
@@ -1424,8 +1434,39 @@ func (m *FileInfoInlineConstituent) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this file info inline constituent based on context it is used
+// ContextValidate validate this file info inline constituent based on the context it is used
 func (m *FileInfoInlineConstituent) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FileInfoInlineConstituent) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "constituent"+"."+"name", "body", m.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *FileInfoInlineConstituent) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "constituent"+"."+"uuid", "body", m.UUID); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -1586,12 +1627,10 @@ type FileInfoInlineQosPolicy struct {
 
 	// The name of the QoS policy. To remove the file from a QoS policy, set this property to an empty string "" or set it to "none" in a PATCH request.
 	//
-	// Example: qos1
 	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the QoS policy. Valid in PATCH.
 	//
-	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	UUID *string `json:"uuid,omitempty"`
 }
 
@@ -1766,7 +1805,7 @@ type FileInfoInlineVolume struct {
 	// links
 	Links *FileInfoInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

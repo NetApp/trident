@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SwitchPortCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the switch port collection get o k response
+func (o *SwitchPortCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *SwitchPortCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/ethernet/switch/ports][%d] switchPortCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/switch/ports][%d] switchPortCollectionGetOK %s", 200, payload)
 }
 
 func (o *SwitchPortCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /network/ethernet/switch/ports][%d] switchPortCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/switch/ports][%d] switchPortCollectionGetOK %s", 200, payload)
 }
 
 func (o *SwitchPortCollectionGetOK) GetPayload() *models.SwitchPortResponse {
@@ -122,11 +130,6 @@ type SwitchPortCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the switch port collection get default response
-func (o *SwitchPortCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this switch port collection get default response has a 2xx status code
 func (o *SwitchPortCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SwitchPortCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the switch port collection get default response
+func (o *SwitchPortCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SwitchPortCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/ethernet/switch/ports][%d] switch_port_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/switch/ports][%d] switch_port_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SwitchPortCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/ethernet/switch/ports][%d] switch_port_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/switch/ports][%d] switch_port_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SwitchPortCollectionGetDefault) GetPayload() *models.ErrorResponse {

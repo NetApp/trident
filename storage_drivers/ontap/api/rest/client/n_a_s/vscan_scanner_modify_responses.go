@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *VscanScannerModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the vscan scanner modify o k response
+func (o *VscanScannerModifyOK) Code() int {
+	return 200
+}
+
 func (o *VscanScannerModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscanScannerModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscanScannerModifyOK", 200)
 }
 
 func (o *VscanScannerModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscanScannerModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscanScannerModifyOK", 200)
 }
 
 func (o *VscanScannerModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -112,17 +118,13 @@ func NewVscanScannerModifyDefault(code int) *VscanScannerModifyDefault {
 | 10027248   | Scanner-pool updated successfully but failed to apply the specified role
 | 10027107   | The list of privileged users or list of servers specified is empty
 | 10027108   | The list of privileged users specified contains an invalid entry
-| 10027063   | Attempting to modify a scanner-pool on an administrative SVM with a data SVM
+| 10027063   | Attempting to modify a scanner-pool on an SVM owned by the cluster with a data SVM
+| 10027119   | The privileged user contains characters that are not allowed
 */
 type VscanScannerModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the vscan scanner modify default response
-func (o *VscanScannerModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this vscan scanner modify default response has a 2xx status code
@@ -150,12 +152,19 @@ func (o *VscanScannerModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the vscan scanner modify default response
+func (o *VscanScannerModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VscanScannerModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscan_scanner_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscan_scanner_modify default %s", o._statusCode, payload)
 }
 
 func (o *VscanScannerModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscan_scanner_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscan_scanner_modify default %s", o._statusCode, payload)
 }
 
 func (o *VscanScannerModifyDefault) GetPayload() *models.ErrorResponse {

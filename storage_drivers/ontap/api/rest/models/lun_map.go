@@ -337,14 +337,19 @@ type LunMapInlineIgroup struct {
 	// The host operating system of the initiator group. All initiators in the group should be hosts of the same operating system.
 	//
 	// Read Only: true
-	// Enum: [aix hpux hyper_v linux netware openvms solaris vmware windows xen]
+	// Enum: ["aix","hpux","hyper_v","linux","netware","openvms","solaris","vmware","windows","xen"]
 	OsType *string `json:"os_type,omitempty"`
 
 	// The protocols supported by the initiator group. This restricts the type of initiators that can be added to the initiator group.
 	//
 	// Read Only: true
-	// Enum: [fcp iscsi mixed]
+	// Enum: ["fcp","iscsi","mixed"]
 	Protocol *string `json:"protocol,omitempty"`
+
+	// This property reports if the initiator group is replicated.
+	//
+	// Read Only: true
+	Replicated *bool `json:"replicated,omitempty"`
 
 	// The unique identifier of the initiator group. Valid in POST.
 	//
@@ -613,6 +618,10 @@ func (m *LunMapInlineIgroup) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateReplicated(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -662,6 +671,15 @@ func (m *LunMapInlineIgroup) contextValidateOsType(ctx context.Context, formats 
 func (m *LunMapInlineIgroup) contextValidateProtocol(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "igroup"+"."+"protocol", "body", m.Protocol); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LunMapInlineIgroup) contextValidateReplicated(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "igroup"+"."+"replicated", "body", m.Replicated); err != nil {
 		return err
 	}
 
@@ -866,13 +884,22 @@ type LunMapInlineLun struct {
 	// links
 	Links *LunMapInlineLunInlineLinks `json:"_links,omitempty"`
 
-	// The fully qualified path name of the LUN composed of a \"/vol\" prefix, the volume name, the (optional) qtree name, and file name of the LUN. Valid in POST.
+	// The name of the LUN. Valid in POST.
+	// ### Platform Specifics
+	// * **Unified ONTAP**:
+	// a LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.
+	// * **ASA r2**:
+	// LUN names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.
 	//
 	// Example: /vol/volume1/qtree1/lun1
 	Name *string `json:"name,omitempty"`
 
 	// node
 	Node *LunMapInlineLunInlineNode `json:"node,omitempty"`
+
+	// smbc
+	Smbc *LunMapInlineLunInlineSmbc `json:"smbc,omitempty"`
 
 	// The unique identifier of the LUN. Valid in POST.
 	//
@@ -889,6 +916,10 @@ func (m *LunMapInlineLun) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSmbc(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -932,6 +963,23 @@ func (m *LunMapInlineLun) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *LunMapInlineLun) validateSmbc(formats strfmt.Registry) error {
+	if swag.IsZero(m.Smbc) { // not required
+		return nil
+	}
+
+	if m.Smbc != nil {
+		if err := m.Smbc.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("lun" + "." + "smbc")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this lun map inline lun based on the context it is used
 func (m *LunMapInlineLun) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -941,6 +989,10 @@ func (m *LunMapInlineLun) ContextValidate(ctx context.Context, formats strfmt.Re
 	}
 
 	if err := m.contextValidateNode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSmbc(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -970,6 +1022,20 @@ func (m *LunMapInlineLun) contextValidateNode(ctx context.Context, formats strfm
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("lun" + "." + "node")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunMapInlineLun) contextValidateSmbc(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Smbc != nil {
+		if err := m.Smbc.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("lun" + "." + "smbc")
 			}
 			return err
 		}
@@ -1090,7 +1156,7 @@ type LunMapInlineLunInlineNode struct {
 	// links
 	Links *LunMapInlineLunInlineNodeInlineLinks `json:"_links,omitempty"`
 
-	// The name the LUN's node.
+	// The name of the LUN's node.
 	//
 	// Example: node1
 	// Read Only: true
@@ -1285,6 +1351,63 @@ func (m *LunMapInlineLunInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *LunMapInlineLunInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
 	var res LunMapInlineLunInlineNodeInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunMapInlineLunInlineSmbc "Properties related to SM-BC replication."
+//
+// swagger:model lun_map_inline_lun_inline_smbc
+type LunMapInlineLunInlineSmbc struct {
+
+	// This property reports if the LUN is replicated via SM-BC.
+	//
+	// Read Only: true
+	Replicated *bool `json:"replicated,omitempty"`
+}
+
+// Validate validates this lun map inline lun inline smbc
+func (m *LunMapInlineLunInlineSmbc) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this lun map inline lun inline smbc based on the context it is used
+func (m *LunMapInlineLunInlineSmbc) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateReplicated(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunMapInlineLunInlineSmbc) contextValidateReplicated(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lun"+"."+"smbc"+"."+"replicated", "body", m.Replicated); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunMapInlineLunInlineSmbc) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunMapInlineLunInlineSmbc) UnmarshalBinary(b []byte) error {
+	var res LunMapInlineLunInlineSmbc
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1518,7 +1641,7 @@ func (m *LunMapInlineReportingNodesInlineArrayItemInlineLinks) UnmarshalBinary(b
 	return nil
 }
 
-// LunMapInlineSvm lun map inline svm
+// LunMapInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model lun_map_inline_svm
 type LunMapInlineSvm struct {
@@ -1526,12 +1649,12 @@ type LunMapInlineSvm struct {
 	// links
 	Links *LunMapInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

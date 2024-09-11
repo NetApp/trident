@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type ApplicationSnapshotCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *ApplicationSnapshotCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewApplicationSnapshotCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewApplicationSnapshotCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *ApplicationSnapshotCreateReader) ReadResponse(response runtime.ClientRe
 	}
 }
 
+// NewApplicationSnapshotCreateCreated creates a ApplicationSnapshotCreateCreated with default headers values
+func NewApplicationSnapshotCreateCreated() *ApplicationSnapshotCreateCreated {
+	return &ApplicationSnapshotCreateCreated{}
+}
+
+/*
+ApplicationSnapshotCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type ApplicationSnapshotCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.ApplicationSnapshotJobLinkResponse
+}
+
+// IsSuccess returns true when this application snapshot create created response has a 2xx status code
+func (o *ApplicationSnapshotCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this application snapshot create created response has a 3xx status code
+func (o *ApplicationSnapshotCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this application snapshot create created response has a 4xx status code
+func (o *ApplicationSnapshotCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this application snapshot create created response has a 5xx status code
+func (o *ApplicationSnapshotCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this application snapshot create created response a status code equal to that given
+func (o *ApplicationSnapshotCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the application snapshot create created response
+func (o *ApplicationSnapshotCreateCreated) Code() int {
+	return 201
+}
+
+func (o *ApplicationSnapshotCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots][%d] applicationSnapshotCreateCreated %s", 201, payload)
+}
+
+func (o *ApplicationSnapshotCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots][%d] applicationSnapshotCreateCreated %s", 201, payload)
+}
+
+func (o *ApplicationSnapshotCreateCreated) GetPayload() *models.ApplicationSnapshotJobLinkResponse {
+	return o.Payload
+}
+
+func (o *ApplicationSnapshotCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.ApplicationSnapshotJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewApplicationSnapshotCreateAccepted creates a ApplicationSnapshotCreateAccepted with default headers values
 func NewApplicationSnapshotCreateAccepted() *ApplicationSnapshotCreateAccepted {
 	return &ApplicationSnapshotCreateAccepted{}
@@ -57,7 +146,7 @@ type ApplicationSnapshotCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.ApplicationSnapshotJobLinkResponse
 }
 
 // IsSuccess returns true when this application snapshot create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *ApplicationSnapshotCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the application snapshot create accepted response
+func (o *ApplicationSnapshotCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *ApplicationSnapshotCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots][%d] applicationSnapshotCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots][%d] applicationSnapshotCreateAccepted %s", 202, payload)
 }
 
 func (o *ApplicationSnapshotCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots][%d] applicationSnapshotCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots][%d] applicationSnapshotCreateAccepted %s", 202, payload)
 }
 
-func (o *ApplicationSnapshotCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *ApplicationSnapshotCreateAccepted) GetPayload() *models.ApplicationSnapshotJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *ApplicationSnapshotCreateAccepted) readResponse(response runtime.Client
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.ApplicationSnapshotJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -134,11 +230,6 @@ type ApplicationSnapshotCreateDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the application snapshot create default response
-func (o *ApplicationSnapshotCreateDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this application snapshot create default response has a 2xx status code
 func (o *ApplicationSnapshotCreateDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -164,12 +255,19 @@ func (o *ApplicationSnapshotCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the application snapshot create default response
+func (o *ApplicationSnapshotCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ApplicationSnapshotCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots][%d] application_snapshot_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots][%d] application_snapshot_create default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationSnapshotCreateDefault) String() string {
-	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots][%d] application_snapshot_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots][%d] application_snapshot_create default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationSnapshotCreateDefault) GetPayload() *models.ErrorResponse {

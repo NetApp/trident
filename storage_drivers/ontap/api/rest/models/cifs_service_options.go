@@ -31,12 +31,27 @@ type CifsServiceOptions struct {
 	//
 	AdvancedSparseFile *bool `json:"advanced_sparse_file,omitempty"`
 
+	// Specifies whether or not to preserve UNIX symlinks during backup through SMB.
+	BackupSymlinkEnabled *bool `json:"backup_symlink_enabled,omitempty"`
+
+	// Specifies whether or not client duplicate session detection is enabled for CIFS.
+	ClientDupDetectionEnabled *bool `json:"client_dup_detection_enabled,omitempty"`
+
+	// Specifies whether or not client version reporting is enabled for CIFS.
+	ClientVersionReportingEnabled *bool `json:"client_version_reporting_enabled,omitempty"`
+
 	// Specifies whether or not to enable the Copy Offload feature. This feature enables direct
 	// data transfers within or between compatible storage devices without transferring the data
 	// through the host computer.<br/>
 	// Note that this will also enable/disable the direct copy feature accordingly.
 	//
 	CopyOffload *bool `json:"copy_offload,omitempty"`
+
+	// Specifies whether or not the Dynamic Access Control (DAC) feature is enabled for the CIFS server.
+	DacEnabled *bool `json:"dac_enabled,omitempty"`
+
+	// Specifies whether or not export policies are enabled for CIFS.
+	ExportPolicyEnabled *bool `json:"export_policy_enabled,omitempty"`
 
 	// Specifies whether or not fake open support is enabled. This parameter allows you to optimize the
 	// open and close requests coming from SMB 2 clients.
@@ -56,6 +71,34 @@ type CifsServiceOptions struct {
 
 	// Specifies whether or not SMB clients can send reads up to 1 MB in size.
 	LargeMtu *bool `json:"large_mtu,omitempty"`
+
+	// Specifies the maximum number of connections allowed per multichannel session.
+	// Example: 32
+	// Maximum: 1024
+	// Minimum: 2
+	MaxConnectionsPerSession *int64 `json:"max_connections_per_session,omitempty"`
+
+	// Specifies the maximum number of LIFs advertised per multichannel session.
+	// Example: 256
+	// Maximum: 256
+	// Minimum: 1
+	MaxLifsPerSession *int64 `json:"max_lifs_per_session,omitempty"`
+
+	// Specifies the maximum number of opens on the same file per tree.
+	// Example: 1000
+	MaxOpensSameFilePerTree *int64 `json:"max_opens_same_file_per_tree,omitempty"`
+
+	// Specifies the maximum number of same tree connections per session.
+	// Example: 5000
+	MaxSameTreeConnectPerSession *int64 `json:"max_same_tree_connect_per_session,omitempty"`
+
+	// Specifies the maximum number of same user sessions per connection.
+	// Example: 2500
+	MaxSameUserSessionsPerConnection *int64 `json:"max_same_user_sessions_per_connection,omitempty"`
+
+	// Specifies the maximum number of watches set per tree.
+	// Example: 500
+	MaxWatchesSetPerTree *int64 `json:"max_watches_set_per_tree,omitempty"`
 
 	// Specifies whether or not the CIFS server supports Multichannel.
 	Multichannel *bool `json:"multichannel,omitempty"`
@@ -88,6 +131,16 @@ type CifsServiceOptions struct {
 	// Minimum: 2
 	SmbCredits *int64 `json:"smb_credits,omitempty"`
 
+	// Specifies whether or not to enable trusted domain search.
+	// - If this parameter is set to true, it displays CIFS options only for CIFS servers
+	//   that support enumeration of bidirectional trusted domains and that support searching in
+	//   all bidirectional trusted domains when performing Windows user lookups for UNIX user to
+	//   Windows user name mapping.
+	// - If set to false, it displays CIFS options for CIFS servers that do not support enumeration
+	//   of bidirectional trusted domains.
+	//
+	TrustedDomainEnumSearchEnabled *bool `json:"trusted_domain_enum_search_enabled,omitempty"`
+
 	// Specifies the CIFS protocol versions for which the widelink is reported as reparse point.
 	//
 	// Example: ["smb1"]
@@ -97,6 +150,14 @@ type CifsServiceOptions struct {
 // Validate validates this cifs service options
 func (m *CifsServiceOptions) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateMaxConnectionsPerSession(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMaxLifsPerSession(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateSmbCredits(formats); err != nil {
 		res = append(res, err)
@@ -109,6 +170,38 @@ func (m *CifsServiceOptions) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *CifsServiceOptions) validateMaxConnectionsPerSession(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxConnectionsPerSession) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("max_connections_per_session", "body", *m.MaxConnectionsPerSession, 2, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("max_connections_per_session", "body", *m.MaxConnectionsPerSession, 1024, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CifsServiceOptions) validateMaxLifsPerSession(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxLifsPerSession) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("max_lifs_per_session", "body", *m.MaxLifsPerSession, 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("max_lifs_per_session", "body", *m.MaxLifsPerSession, 256, false); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -104,6 +104,12 @@ type FpolicyEngineCollectionGetParams struct {
 	*/
 	Format *string
 
+	/* KeepAliveInterval.
+
+	   Filter by keep_alive_interval
+	*/
+	KeepAliveInterval *string
+
 	/* MaxRecords.
 
 	   Limit the number of records returned.
@@ -364,6 +370,17 @@ func (o *FpolicyEngineCollectionGetParams) WithFormat(format *string) *FpolicyEn
 // SetFormat adds the format to the fpolicy engine collection get params
 func (o *FpolicyEngineCollectionGetParams) SetFormat(format *string) {
 	o.Format = format
+}
+
+// WithKeepAliveInterval adds the keepAliveInterval to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithKeepAliveInterval(keepAliveInterval *string) *FpolicyEngineCollectionGetParams {
+	o.SetKeepAliveInterval(keepAliveInterval)
+	return o
+}
+
+// SetKeepAliveInterval adds the keepAliveInterval to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetKeepAliveInterval(keepAliveInterval *string) {
+	o.KeepAliveInterval = keepAliveInterval
 }
 
 // WithMaxRecords adds the maxRecords to the fpolicy engine collection get params
@@ -691,6 +708,23 @@ func (o *FpolicyEngineCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qFormat != "" {
 
 			if err := r.SetQueryParam("format", qFormat); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.KeepAliveInterval != nil {
+
+		// query param keep_alive_interval
+		var qrKeepAliveInterval string
+
+		if o.KeepAliveInterval != nil {
+			qrKeepAliveInterval = *o.KeepAliveInterval
+		}
+		qKeepAliveInterval := qrKeepAliveInterval
+		if qKeepAliveInterval != "" {
+
+			if err := r.SetQueryParam("keep_alive_interval", qKeepAliveInterval); err != nil {
 				return err
 			}
 		}

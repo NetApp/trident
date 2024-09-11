@@ -37,7 +37,7 @@ type MetroclusterInterconnect struct {
 
 	// Displays the NVRAM mirror multipath policy for the nodes configured in a MetroCluster.
 	// Read Only: true
-	// Enum: [no_mp static_map dynamic_map round_robin]
+	// Enum: ["no_mp","static_map","dynamic_map","round_robin"]
 	MultipathPolicy *string `json:"multipath_policy,omitempty"`
 
 	// node
@@ -46,23 +46,23 @@ type MetroclusterInterconnect struct {
 	// Partner type
 	// Required: true
 	// Read Only: true
-	// Enum: [aux dr ha]
+	// Enum: ["aux","dr","ha"]
 	PartnerType *string `json:"partner_type"`
 
 	// Adapter status
 	// Read Only: true
-	// Enum: [down up]
+	// Enum: ["down","up"]
 	State *string `json:"state,omitempty"`
 
 	// Adapter type
 	// Read Only: true
-	// Enum: [roce iwarp unknown]
+	// Enum: ["roce","iwarp","unknown"]
 	Type *string `json:"type,omitempty"`
 
 	// VLAN ID
 	// Read Only: true
 	// Maximum: 4095
-	// Minimum: 10
+	// Minimum: 1
 	VlanID *int64 `json:"vlan_id,omitempty"`
 }
 
@@ -470,7 +470,7 @@ func (m *MetroclusterInterconnect) validateVlanID(formats strfmt.Registry) error
 		return nil
 	}
 
-	if err := validate.MinimumInt("vlan_id", "body", *m.VlanID, 10, false); err != nil {
+	if err := validate.MinimumInt("vlan_id", "body", *m.VlanID, 1, false); err != nil {
 		return err
 	}
 
@@ -767,7 +767,7 @@ type MetroclusterInterconnectInlineMirror struct {
 
 	// Specifies the operational state of the NVRAM mirror between partner nodes.
 	// Read Only: true
-	// Enum: [online offline unknown]
+	// Enum: ["online","offline","unknown"]
 	State *string `json:"state,omitempty"`
 }
 

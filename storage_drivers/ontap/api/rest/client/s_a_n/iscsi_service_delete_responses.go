@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *IscsiServiceDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the iscsi service delete o k response
+func (o *IscsiServiceDeleteOK) Code() int {
+	return 200
+}
+
 func (o *IscsiServiceDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/iscsi/services/{svm.uuid}][%d] iscsiServiceDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/iscsi/services/{svm.uuid}][%d] iscsiServiceDeleteOK", 200)
 }
 
 func (o *IscsiServiceDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/iscsi/services/{svm.uuid}][%d] iscsiServiceDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/iscsi/services/{svm.uuid}][%d] iscsiServiceDeleteOK", 200)
 }
 
 func (o *IscsiServiceDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,16 +115,13 @@ func NewIscsiServiceDeleteDefault(code int) *IscsiServiceDeleteDefault {
 | 2621462 | An SVM with the specified UUID does not exist. |
 | 5373960 | The iSCSI service is enabled. The iSCSI service must be disabled before it can be deleted. |
 | 5374078 | The SVM does not have an iSCSI service. |
+| 5376452 | Service POST and DELETE are not supported on ASA r2. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IscsiServiceDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the iscsi service delete default response
-func (o *IscsiServiceDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this iscsi service delete default response has a 2xx status code
@@ -146,12 +149,19 @@ func (o *IscsiServiceDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the iscsi service delete default response
+func (o *IscsiServiceDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IscsiServiceDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/iscsi/services/{svm.uuid}][%d] iscsi_service_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/iscsi/services/{svm.uuid}][%d] iscsi_service_delete default %s", o._statusCode, payload)
 }
 
 func (o *IscsiServiceDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/iscsi/services/{svm.uuid}][%d] iscsi_service_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/iscsi/services/{svm.uuid}][%d] iscsi_service_delete default %s", o._statusCode, payload)
 }
 
 func (o *IscsiServiceDeleteDefault) GetPayload() *models.ErrorResponse {

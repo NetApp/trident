@@ -6,6 +6,7 @@ package n_v_me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NvmeSubsystemMapDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nvme subsystem map delete o k response
+func (o *NvmeSubsystemMapDeleteOK) Code() int {
+	return 200
+}
+
 func (o *NvmeSubsystemMapDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/nvme/subsystem-maps/{subsystem.uuid}/{namespace.uuid}][%d] nvmeSubsystemMapDeleteOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/nvme/subsystem-maps/{subsystem.uuid}/{namespace.uuid}][%d] nvmeSubsystemMapDeleteOK %s", 200, payload)
 }
 
 func (o *NvmeSubsystemMapDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/nvme/subsystem-maps/{subsystem.uuid}/{namespace.uuid}][%d] nvmeSubsystemMapDeleteOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/nvme/subsystem-maps/{subsystem.uuid}/{namespace.uuid}][%d] nvmeSubsystemMapDeleteOK %s", 200, payload)
 }
 
 func (o *NvmeSubsystemMapDeleteOK) GetPayload() *models.NvmeSubsystemMapResponse {
@@ -119,16 +127,12 @@ func NewNvmeSubsystemMapDeleteDefault(code int) *NvmeSubsystemMapDeleteDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 72090019 | The specified NVMe namespace is not mapped to the specified NVMe subsystem. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NvmeSubsystemMapDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nvme subsystem map delete default response
-func (o *NvmeSubsystemMapDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nvme subsystem map delete default response has a 2xx status code
@@ -156,12 +160,19 @@ func (o *NvmeSubsystemMapDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nvme subsystem map delete default response
+func (o *NvmeSubsystemMapDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NvmeSubsystemMapDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/nvme/subsystem-maps/{subsystem.uuid}/{namespace.uuid}][%d] nvme_subsystem_map_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/nvme/subsystem-maps/{subsystem.uuid}/{namespace.uuid}][%d] nvme_subsystem_map_delete default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemMapDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/nvme/subsystem-maps/{subsystem.uuid}/{namespace.uuid}][%d] nvme_subsystem_map_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/nvme/subsystem-maps/{subsystem.uuid}/{namespace.uuid}][%d] nvme_subsystem_map_delete default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemMapDeleteDefault) GetPayload() *models.ErrorResponse {

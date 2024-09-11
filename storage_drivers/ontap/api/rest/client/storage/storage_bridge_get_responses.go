@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *StorageBridgeGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the storage bridge get o k response
+func (o *StorageBridgeGetOK) Code() int {
+	return 200
+}
+
 func (o *StorageBridgeGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/bridges/{wwn}][%d] storageBridgeGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/bridges/{wwn}][%d] storageBridgeGetOK %s", 200, payload)
 }
 
 func (o *StorageBridgeGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/bridges/{wwn}][%d] storageBridgeGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/bridges/{wwn}][%d] storageBridgeGetOK %s", 200, payload)
 }
 
 func (o *StorageBridgeGetOK) GetPayload() *models.StorageBridge {
@@ -122,11 +130,6 @@ type StorageBridgeGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the storage bridge get default response
-func (o *StorageBridgeGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this storage bridge get default response has a 2xx status code
 func (o *StorageBridgeGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *StorageBridgeGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the storage bridge get default response
+func (o *StorageBridgeGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *StorageBridgeGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/bridges/{wwn}][%d] storage_bridge_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/bridges/{wwn}][%d] storage_bridge_get default %s", o._statusCode, payload)
 }
 
 func (o *StorageBridgeGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/bridges/{wwn}][%d] storage_bridge_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/bridges/{wwn}][%d] storage_bridge_get default %s", o._statusCode, payload)
 }
 
 func (o *StorageBridgeGetDefault) GetPayload() *models.ErrorResponse {

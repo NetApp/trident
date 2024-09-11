@@ -23,6 +23,17 @@ type KeyServer struct {
 	// links
 	Links *KeyServerInlineLinks `json:"_links,omitempty"`
 
+	// connectivity
+	Connectivity *KeyServerInlineConnectivity `json:"connectivity,omitempty"`
+
+	// The key server timeout for create and remove operations.
+	// -1 indicates that the server will wait indefinitely for the event to occur. 0 indicates that the server will not wait and will immediately timeout if it does not receive a response.
+	//
+	// Example: 60
+	// Maximum: 60
+	// Minimum: -1
+	CreateRemoveTimeout *int64 `json:"create_remove_timeout,omitempty"`
+
 	// An array of key servers specified to add multiple key servers to a key manager in a single API call. Valid in POST only and not valid if `server` is provided.
 	//
 	// Max Items: 4
@@ -42,9 +53,11 @@ type KeyServer struct {
 	Server *string `json:"server,omitempty"`
 
 	// I/O timeout in seconds for communicating with the key server.
+	// -1 indicates that the server will wait indefinitely for the event to occur. 0 indicates that the server will not wait and will immediately timeout if it does not receive a response.
+	//
 	// Example: 60
 	// Maximum: 60
-	// Minimum: 1
+	// Minimum: -1
 	Timeout *int64 `json:"timeout,omitempty"`
 
 	// KMIP username credentials for connecting with the key server.
@@ -57,6 +70,14 @@ func (m *KeyServer) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateConnectivity(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCreateRemoveTimeout(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -90,6 +111,39 @@ func (m *KeyServer) validateLinks(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *KeyServer) validateConnectivity(formats strfmt.Registry) error {
+	if swag.IsZero(m.Connectivity) { // not required
+		return nil
+	}
+
+	if m.Connectivity != nil {
+		if err := m.Connectivity.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("connectivity")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyServer) validateCreateRemoveTimeout(formats strfmt.Registry) error {
+	if swag.IsZero(m.CreateRemoveTimeout) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("create_remove_timeout", "body", *m.CreateRemoveTimeout, -1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("create_remove_timeout", "body", *m.CreateRemoveTimeout, 60, false); err != nil {
+		return err
 	}
 
 	return nil
@@ -142,7 +196,7 @@ func (m *KeyServer) validateTimeout(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("timeout", "body", *m.Timeout, 1, false); err != nil {
+	if err := validate.MinimumInt("timeout", "body", *m.Timeout, -1, false); err != nil {
 		return err
 	}
 
@@ -158,6 +212,10 @@ func (m *KeyServer) ContextValidate(ctx context.Context, formats strfmt.Registry
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateConnectivity(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -177,6 +235,20 @@ func (m *KeyServer) contextValidateLinks(ctx context.Context, formats strfmt.Reg
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyServer) contextValidateConnectivity(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Connectivity != nil {
+		if err := m.Connectivity.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("connectivity")
 			}
 			return err
 		}
@@ -214,6 +286,127 @@ func (m *KeyServer) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *KeyServer) UnmarshalBinary(b []byte) error {
 	var res KeyServer
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// KeyServerInlineConnectivity This property contains the key server connectivity state of all nodes in the cluster.
+// This is an advanced property; there is an added computational cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
+//
+// swagger:model key_server_inline_connectivity
+type KeyServerInlineConnectivity struct {
+
+	// Set to true when key server connectivity state is available on all nodes of the cluster.
+	// Read Only: true
+	ClusterAvailability *bool `json:"cluster_availability,omitempty"`
+
+	// An array of key server connectivity states for each node.
+	//
+	// Read Only: true
+	NodeStates []*KeyServerState `json:"node_states,omitempty"`
+}
+
+// Validate validates this key server inline connectivity
+func (m *KeyServerInlineConnectivity) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateNodeStates(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *KeyServerInlineConnectivity) validateNodeStates(formats strfmt.Registry) error {
+	if swag.IsZero(m.NodeStates) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.NodeStates); i++ {
+		if swag.IsZero(m.NodeStates[i]) { // not required
+			continue
+		}
+
+		if m.NodeStates[i] != nil {
+			if err := m.NodeStates[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("connectivity" + "." + "node_states" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this key server inline connectivity based on the context it is used
+func (m *KeyServerInlineConnectivity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateClusterAvailability(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNodeStates(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *KeyServerInlineConnectivity) contextValidateClusterAvailability(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "connectivity"+"."+"cluster_availability", "body", m.ClusterAvailability); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *KeyServerInlineConnectivity) contextValidateNodeStates(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "connectivity"+"."+"node_states", "body", []*KeyServerState(m.NodeStates)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.NodeStates); i++ {
+
+		if m.NodeStates[i] != nil {
+			if err := m.NodeStates[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("connectivity" + "." + "node_states" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *KeyServerInlineConnectivity) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *KeyServerInlineConnectivity) UnmarshalBinary(b []byte) error {
+	var res KeyServerInlineConnectivity
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -315,6 +508,9 @@ type KeyServerInlineRecordsInlineArrayItem struct {
 	// links
 	Links *KeyServerInlineRecordsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
+	// connectivity
+	Connectivity *KeyServerInlineRecordsInlineArrayItemInlineConnectivity `json:"connectivity,omitempty"`
+
 	// Password credentials for connecting with the key server. This is not audited.
 	// Example: password
 	// Format: password
@@ -343,6 +539,10 @@ func (m *KeyServerInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry
 		res = append(res, err)
 	}
 
+	if err := m.validateConnectivity(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validatePassword(formats); err != nil {
 		res = append(res, err)
 	}
@@ -366,6 +566,23 @@ func (m *KeyServerInlineRecordsInlineArrayItem) validateLinks(formats strfmt.Reg
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyServerInlineRecordsInlineArrayItem) validateConnectivity(formats strfmt.Registry) error {
+	if swag.IsZero(m.Connectivity) { // not required
+		return nil
+	}
+
+	if m.Connectivity != nil {
+		if err := m.Connectivity.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("connectivity")
 			}
 			return err
 		}
@@ -410,6 +627,10 @@ func (m *KeyServerInlineRecordsInlineArrayItem) ContextValidate(ctx context.Cont
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateConnectivity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -430,6 +651,20 @@ func (m *KeyServerInlineRecordsInlineArrayItem) contextValidateLinks(ctx context
 	return nil
 }
 
+func (m *KeyServerInlineRecordsInlineArrayItem) contextValidateConnectivity(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Connectivity != nil {
+		if err := m.Connectivity.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("connectivity")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *KeyServerInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -441,6 +676,127 @@ func (m *KeyServerInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) 
 // UnmarshalBinary interface implementation
 func (m *KeyServerInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
 	var res KeyServerInlineRecordsInlineArrayItem
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// KeyServerInlineRecordsInlineArrayItemInlineConnectivity This property contains the key server connectivity state of all nodes in the cluster.
+// This is an advanced property; there is an added computational cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
+//
+// swagger:model key_server_inline_records_inline_array_item_inline_connectivity
+type KeyServerInlineRecordsInlineArrayItemInlineConnectivity struct {
+
+	// Set to true when key server connectivity state is available on all nodes of the cluster.
+	// Read Only: true
+	ClusterAvailability *bool `json:"cluster_availability,omitempty"`
+
+	// An array of key server connectivity states for each node.
+	//
+	// Read Only: true
+	NodeStates []*KeyServerState `json:"node_states"`
+}
+
+// Validate validates this key server inline records inline array item inline connectivity
+func (m *KeyServerInlineRecordsInlineArrayItemInlineConnectivity) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateNodeStates(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *KeyServerInlineRecordsInlineArrayItemInlineConnectivity) validateNodeStates(formats strfmt.Registry) error {
+	if swag.IsZero(m.NodeStates) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.NodeStates); i++ {
+		if swag.IsZero(m.NodeStates[i]) { // not required
+			continue
+		}
+
+		if m.NodeStates[i] != nil {
+			if err := m.NodeStates[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("connectivity" + "." + "node_states" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this key server inline records inline array item inline connectivity based on the context it is used
+func (m *KeyServerInlineRecordsInlineArrayItemInlineConnectivity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateClusterAvailability(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNodeStates(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *KeyServerInlineRecordsInlineArrayItemInlineConnectivity) contextValidateClusterAvailability(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "connectivity"+"."+"cluster_availability", "body", m.ClusterAvailability); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *KeyServerInlineRecordsInlineArrayItemInlineConnectivity) contextValidateNodeStates(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "connectivity"+"."+"node_states", "body", []*KeyServerState(m.NodeStates)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.NodeStates); i++ {
+
+		if m.NodeStates[i] != nil {
+			if err := m.NodeStates[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("connectivity" + "." + "node_states" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *KeyServerInlineRecordsInlineArrayItemInlineConnectivity) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *KeyServerInlineRecordsInlineArrayItemInlineConnectivity) UnmarshalBinary(b []byte) error {
+	var res KeyServerInlineRecordsInlineArrayItemInlineConnectivity
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

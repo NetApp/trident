@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *IgroupNestedCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the igroup nested create created response
+func (o *IgroupNestedCreateCreated) Code() int {
+	return 201
+}
+
 func (o *IgroupNestedCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroupNestedCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroupNestedCreateCreated %s", 201, payload)
 }
 
 func (o *IgroupNestedCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroupNestedCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroupNestedCreateCreated %s", 201, payload)
 }
 
 func (o *IgroupNestedCreateCreated) GetPayload() *models.IgroupNestedResponse {
@@ -137,17 +145,15 @@ func NewIgroupNestedCreateDefault(code int) *IgroupNestedCreateDefault {
 | 5374740 | A supplied child initiator group has an protocol that differs from the parent initiator group. |
 | 5374741 | A supplied child initiator group is already owned by a different child in the initiator group's hierarchy. |
 | 5374742 | A supplied child initiator group contains an initiator that is already owned by another initiator group in the hierarchy. |
+| 5374764 | An unreplicated initiator group cannot be added as a child of a replicated initiator group. |
 | 5374852 | The initiator group specified in the URI does not exist. |
+| 5374878 | The supplied child initiator group does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IgroupNestedCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the igroup nested create default response
-func (o *IgroupNestedCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this igroup nested create default response has a 2xx status code
@@ -175,12 +181,19 @@ func (o *IgroupNestedCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the igroup nested create default response
+func (o *IgroupNestedCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IgroupNestedCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroup_nested_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroup_nested_create default %s", o._statusCode, payload)
 }
 
 func (o *IgroupNestedCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroup_nested_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroup_nested_create default %s", o._statusCode, payload)
 }
 
 func (o *IgroupNestedCreateDefault) GetPayload() *models.ErrorResponse {

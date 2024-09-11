@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *MultiAdminVerifyApprovalGroupCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the multi admin verify approval group create created response
+func (o *MultiAdminVerifyApprovalGroupCreateCreated) Code() int {
+	return 201
+}
+
 func (o *MultiAdminVerifyApprovalGroupCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/multi-admin-verify/approval-groups][%d] multiAdminVerifyApprovalGroupCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/multi-admin-verify/approval-groups][%d] multiAdminVerifyApprovalGroupCreateCreated %s", 201, payload)
 }
 
 func (o *MultiAdminVerifyApprovalGroupCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/multi-admin-verify/approval-groups][%d] multiAdminVerifyApprovalGroupCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/multi-admin-verify/approval-groups][%d] multiAdminVerifyApprovalGroupCreateCreated %s", 201, payload)
 }
 
 func (o *MultiAdminVerifyApprovalGroupCreateCreated) GetPayload() *models.MultiAdminVerifyApprovalGroupResponse {
@@ -131,16 +139,13 @@ func NewMultiAdminVerifyApprovalGroupCreateDefault(code int) *MultiAdminVerifyAp
 | Error Code | Description |
 | ---------- | ----------- |
 | 262309 | The feature must be enabled first. |
+| 262333 | Invalid user in approval group. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type MultiAdminVerifyApprovalGroupCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the multi admin verify approval group create default response
-func (o *MultiAdminVerifyApprovalGroupCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this multi admin verify approval group create default response has a 2xx status code
@@ -168,12 +173,19 @@ func (o *MultiAdminVerifyApprovalGroupCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the multi admin verify approval group create default response
+func (o *MultiAdminVerifyApprovalGroupCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MultiAdminVerifyApprovalGroupCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/multi-admin-verify/approval-groups][%d] multi_admin_verify_approval_group_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/multi-admin-verify/approval-groups][%d] multi_admin_verify_approval_group_create default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyApprovalGroupCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/multi-admin-verify/approval-groups][%d] multi_admin_verify_approval_group_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/multi-admin-verify/approval-groups][%d] multi_admin_verify_approval_group_create default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyApprovalGroupCreateDefault) GetPayload() *models.ErrorResponse {

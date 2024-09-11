@@ -6,6 +6,7 @@ package n_v_me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *NvmeSubsystemDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nvme subsystem delete o k response
+func (o *NvmeSubsystemDeleteOK) Code() int {
+	return 200
+}
+
 func (o *NvmeSubsystemDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/nvme/subsystems/{uuid}][%d] nvmeSubsystemDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/nvme/subsystems/{uuid}][%d] nvmeSubsystemDeleteOK", 200)
 }
 
 func (o *NvmeSubsystemDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/nvme/subsystems/{uuid}][%d] nvmeSubsystemDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/nvme/subsystems/{uuid}][%d] nvmeSubsystemDeleteOK", 200)
 }
 
 func (o *NvmeSubsystemDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,16 +115,12 @@ func NewNvmeSubsystemDeleteDefault(code int) *NvmeSubsystemDeleteDefault {
 | 72090001 | The NVMe subsystem does not exist. |
 | 72090023 | The NVMe subsystem contains one or more mapped namespaces. Use the `allow_delete_while_mapped` query parameter to delete an NVMe subsystem with mapped NVMe namespaces. |
 | 72090024 | The NVMe subsystem contains one or more NVMe hosts. Use the `allow_delete_with_hosts` query parameter to delete an NVMe subsystem with NVMe hosts. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NvmeSubsystemDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nvme subsystem delete default response
-func (o *NvmeSubsystemDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nvme subsystem delete default response has a 2xx status code
@@ -146,12 +148,19 @@ func (o *NvmeSubsystemDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nvme subsystem delete default response
+func (o *NvmeSubsystemDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NvmeSubsystemDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/nvme/subsystems/{uuid}][%d] nvme_subsystem_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/nvme/subsystems/{uuid}][%d] nvme_subsystem_delete default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/nvme/subsystems/{uuid}][%d] nvme_subsystem_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/nvme/subsystems/{uuid}][%d] nvme_subsystem_delete default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemDeleteDefault) GetPayload() *models.ErrorResponse {

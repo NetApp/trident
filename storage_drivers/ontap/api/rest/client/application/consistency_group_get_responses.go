@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ConsistencyGroupGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the consistency group get o k response
+func (o *ConsistencyGroupGetOK) Code() int {
+	return 200
+}
+
 func (o *ConsistencyGroupGetOK) Error() string {
-	return fmt.Sprintf("[GET /application/consistency-groups/{uuid}][%d] consistencyGroupGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/consistency-groups/{uuid}][%d] consistencyGroupGetOK %s", 200, payload)
 }
 
 func (o *ConsistencyGroupGetOK) String() string {
-	return fmt.Sprintf("[GET /application/consistency-groups/{uuid}][%d] consistencyGroupGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/consistency-groups/{uuid}][%d] consistencyGroupGetOK %s", 200, payload)
 }
 
 func (o *ConsistencyGroupGetOK) GetPayload() *models.ConsistencyGroup {
@@ -123,16 +131,12 @@ func NewConsistencyGroupGetDefault(code int) *ConsistencyGroupGetDefault {
 | 53411844 | Specified consistency group was not found in the specified SVM. |
 | 53411845 | The specified UUID and name refer to different consistency groups. |
 | 53411846 | Either name or UUID must be provided. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ConsistencyGroupGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the consistency group get default response
-func (o *ConsistencyGroupGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this consistency group get default response has a 2xx status code
@@ -160,12 +164,19 @@ func (o *ConsistencyGroupGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the consistency group get default response
+func (o *ConsistencyGroupGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ConsistencyGroupGetDefault) Error() string {
-	return fmt.Sprintf("[GET /application/consistency-groups/{uuid}][%d] consistency_group_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/consistency-groups/{uuid}][%d] consistency_group_get default %s", o._statusCode, payload)
 }
 
 func (o *ConsistencyGroupGetDefault) String() string {
-	return fmt.Sprintf("[GET /application/consistency-groups/{uuid}][%d] consistency_group_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/consistency-groups/{uuid}][%d] consistency_group_get default %s", o._statusCode, payload)
 }
 
 func (o *ConsistencyGroupGetDefault) GetPayload() *models.ErrorResponse {

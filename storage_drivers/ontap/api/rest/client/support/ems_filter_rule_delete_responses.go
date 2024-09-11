@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *EmsFilterRuleDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ems filter rule delete o k response
+func (o *EmsFilterRuleDeleteOK) Code() int {
+	return 200
+}
+
 func (o *EmsFilterRuleDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /support/ems/filters/{name}/rules/{index}][%d] emsFilterRuleDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /support/ems/filters/{name}/rules/{index}][%d] emsFilterRuleDeleteOK", 200)
 }
 
 func (o *EmsFilterRuleDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /support/ems/filters/{name}/rules/{index}][%d] emsFilterRuleDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /support/ems/filters/{name}/rules/{index}][%d] emsFilterRuleDeleteOK", 200)
 }
 
 func (o *EmsFilterRuleDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,21 +112,17 @@ func NewEmsFilterRuleDeleteDefault(code int) *EmsFilterRuleDeleteDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 983091     | A default rule cannot be removed |
-| 983092     | The index of the rule provided is outside the allowed range for the filter provided |
-| 983095     | The rule index provided is invalid for the filter provided |
-| 983110     | There are no user defined rules in the filter provided |
-| 983113     | Default filters cannot be modified or removed |
+| 983091 | A default rule cannot be removed |
+| 983092 | The index of the rule provided is outside the allowed range for the filter provided |
+| 983095 | The rule index provided is invalid for the filter provided |
+| 983110 | There are no user defined rules in the filter provided |
+| 983113 | Default filters cannot be modified or removed |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type EmsFilterRuleDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ems filter rule delete default response
-func (o *EmsFilterRuleDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ems filter rule delete default response has a 2xx status code
@@ -148,12 +150,19 @@ func (o *EmsFilterRuleDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ems filter rule delete default response
+func (o *EmsFilterRuleDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *EmsFilterRuleDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /support/ems/filters/{name}/rules/{index}][%d] ems_filter_rule_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /support/ems/filters/{name}/rules/{index}][%d] ems_filter_rule_delete default %s", o._statusCode, payload)
 }
 
 func (o *EmsFilterRuleDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /support/ems/filters/{name}/rules/{index}][%d] ems_filter_rule_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /support/ems/filters/{name}/rules/{index}][%d] ems_filter_rule_delete default %s", o._statusCode, payload)
 }
 
 func (o *EmsFilterRuleDeleteDefault) GetPayload() *models.ErrorResponse {

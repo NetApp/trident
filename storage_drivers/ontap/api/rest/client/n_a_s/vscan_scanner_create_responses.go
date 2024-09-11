@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *VscanScannerCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the vscan scanner create created response
+func (o *VscanScannerCreateCreated) Code() int {
+	return 201
+}
+
 func (o *VscanScannerCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/scanner-pools][%d] vscanScannerCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/scanner-pools][%d] vscanScannerCreateCreated %s", 201, payload)
 }
 
 func (o *VscanScannerCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/scanner-pools][%d] vscanScannerCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/scanner-pools][%d] vscanScannerCreateCreated %s", 201, payload)
 }
 
 func (o *VscanScannerCreateCreated) GetPayload() *models.VscanScannerPoolResponse {
@@ -130,24 +138,21 @@ func NewVscanScannerCreateDefault(code int) *VscanScannerCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 10027086   | The specified list of servers contain one or more entries that cannot be resolved
+| 10027086   | The specified list of servers contains one or more entries that cannot be resolved
 | 10027258   | The specified cluster_name does not exist
 | 10027256   | The specified cluster_uuid does not exist
 | 10027257   | The specified cluster_name and cluster_uuid are valid but belong to different clusters
 | 10027248   | Scanner-pool created successfully but failed to activate
 | 10027107   | The list of privileged users or list of servers specified is empty
 | 10027108   | The list of privileged users specified contains an invalid entry
-| 10027063   | Attempting to modify a scanner-pool on an administrative SVM with a data SVM
+| 10027063   | Attempting to modify a scanner-pool on an SVM owned by the cluster with a data SVM
+| 10027086   | DNS resolution failed for one or more hostnames
+| 10027119   | The privileged user contains characters that are not allowed
 */
 type VscanScannerCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the vscan scanner create default response
-func (o *VscanScannerCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this vscan scanner create default response has a 2xx status code
@@ -175,12 +180,19 @@ func (o *VscanScannerCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the vscan scanner create default response
+func (o *VscanScannerCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VscanScannerCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/scanner-pools][%d] vscan_scanner_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/scanner-pools][%d] vscan_scanner_create default %s", o._statusCode, payload)
 }
 
 func (o *VscanScannerCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/scanner-pools][%d] vscan_scanner_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/scanner-pools][%d] vscan_scanner_create default %s", o._statusCode, payload)
 }
 
 func (o *VscanScannerCreateDefault) GetPayload() *models.ErrorResponse {

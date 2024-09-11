@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *NetworkEthernetBroadcastDomainsCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the network ethernet broadcast domains create created response
+func (o *NetworkEthernetBroadcastDomainsCreateCreated) Code() int {
+	return 201
+}
+
 func (o *NetworkEthernetBroadcastDomainsCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /network/ethernet/broadcast-domains][%d] networkEthernetBroadcastDomainsCreateCreated ", 201)
+	return fmt.Sprintf("[POST /network/ethernet/broadcast-domains][%d] networkEthernetBroadcastDomainsCreateCreated", 201)
 }
 
 func (o *NetworkEthernetBroadcastDomainsCreateCreated) String() string {
-	return fmt.Sprintf("[POST /network/ethernet/broadcast-domains][%d] networkEthernetBroadcastDomainsCreateCreated ", 201)
+	return fmt.Sprintf("[POST /network/ethernet/broadcast-domains][%d] networkEthernetBroadcastDomainsCreateCreated", 201)
 }
 
 func (o *NetworkEthernetBroadcastDomainsCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -118,19 +124,18 @@ func NewNetworkEthernetBroadcastDomainsCreateDefault(code int) *NetworkEthernetB
 | Error Code | Description |
 | ---------- | ----------- |
 | 1377267 | The specified IPspace does not exist. |
+| 1377596 | The Cluster IPspace cannot contain more than one broadcast domain. Modifying the system IPspace Cluster is not supported. |
+| 1966460 | The provided MTU was either too large or too small. |
 | 1967082 | The specified ipspace.name does not match the IPspace name of ipspace.uuid. |
 | 1967102 | A POST operation might have left the configuration in an inconsistent state. Check the configuration. |
+| 1967104 | Invalid IPspace UUID. |
 | 53281982 | The specified broadcast domain name is reserved by the system. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NetworkEthernetBroadcastDomainsCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the network ethernet broadcast domains create default response
-func (o *NetworkEthernetBroadcastDomainsCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this network ethernet broadcast domains create default response has a 2xx status code
@@ -158,12 +163,19 @@ func (o *NetworkEthernetBroadcastDomainsCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the network ethernet broadcast domains create default response
+func (o *NetworkEthernetBroadcastDomainsCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetworkEthernetBroadcastDomainsCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /network/ethernet/broadcast-domains][%d] network_ethernet_broadcast_domains_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ethernet/broadcast-domains][%d] network_ethernet_broadcast_domains_create default %s", o._statusCode, payload)
 }
 
 func (o *NetworkEthernetBroadcastDomainsCreateDefault) String() string {
-	return fmt.Sprintf("[POST /network/ethernet/broadcast-domains][%d] network_ethernet_broadcast_domains_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ethernet/broadcast-domains][%d] network_ethernet_broadcast_domains_create default %s", o._statusCode, payload)
 }
 
 func (o *NetworkEthernetBroadcastDomainsCreateDefault) GetPayload() *models.ErrorResponse {

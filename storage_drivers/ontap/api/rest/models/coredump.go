@@ -45,7 +45,7 @@ type Coredump struct {
 	Node *CoredumpInlineNode `json:"node,omitempty"`
 
 	// Time of panic that generated the core.
-	// Example: 2021-03-01T18:09:11-04:00
+	// Example: 2021-03-01 22:09:11
 	// Read Only: true
 	// Format: date-time
 	PanicTime *strfmt.DateTime `json:"panic_time,omitempty"`
@@ -58,7 +58,7 @@ type Coredump struct {
 	// Core type, kernel or application
 	// Example: kernel
 	// Read Only: true
-	// Enum: [kernel application]
+	// Enum: ["kernel","application"]
 	Type *string `json:"type,omitempty"`
 }
 

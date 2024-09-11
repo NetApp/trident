@@ -7,10 +7,12 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // AutosupportIssues autosupport issues
@@ -18,8 +20,19 @@ import (
 // swagger:model autosupport_issues
 type AutosupportIssues struct {
 
+	// The name of the component where the issue occurred.
+	//
+	// Example: mail_server
+	// Enum: ["https_put_destination","https_post_destination","mail_server","ondemand_server"]
+	Component *string `json:"component,omitempty"`
+
 	// corrective action
 	CorrectiveAction *AutosupportConnectivityCorrectiveAction `json:"corrective_action,omitempty"`
+
+	// The HTTPS/SMTP/AOD AutoSupport Destination.
+	// Example: mailhost1.example.com
+	// Read Only: true
+	Destination *string `json:"destination,omitempty"`
 
 	// issue
 	Issue *AutosupportConnectivityIssue `json:"issue,omitempty"`
@@ -31,6 +44,10 @@ type AutosupportIssues struct {
 // Validate validates this autosupport issues
 func (m *AutosupportIssues) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateComponent(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateCorrectiveAction(formats); err != nil {
 		res = append(res, err)
@@ -47,6 +64,82 @@ func (m *AutosupportIssues) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+var autosupportIssuesTypeComponentPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["https_put_destination","https_post_destination","mail_server","ondemand_server"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		autosupportIssuesTypeComponentPropEnum = append(autosupportIssuesTypeComponentPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// autosupport_issues
+	// AutosupportIssues
+	// component
+	// Component
+	// https_put_destination
+	// END DEBUGGING
+	// AutosupportIssuesComponentHTTPSPutDestination captures enum value "https_put_destination"
+	AutosupportIssuesComponentHTTPSPutDestination string = "https_put_destination"
+
+	// BEGIN DEBUGGING
+	// autosupport_issues
+	// AutosupportIssues
+	// component
+	// Component
+	// https_post_destination
+	// END DEBUGGING
+	// AutosupportIssuesComponentHTTPSPostDestination captures enum value "https_post_destination"
+	AutosupportIssuesComponentHTTPSPostDestination string = "https_post_destination"
+
+	// BEGIN DEBUGGING
+	// autosupport_issues
+	// AutosupportIssues
+	// component
+	// Component
+	// mail_server
+	// END DEBUGGING
+	// AutosupportIssuesComponentMailServer captures enum value "mail_server"
+	AutosupportIssuesComponentMailServer string = "mail_server"
+
+	// BEGIN DEBUGGING
+	// autosupport_issues
+	// AutosupportIssues
+	// component
+	// Component
+	// ondemand_server
+	// END DEBUGGING
+	// AutosupportIssuesComponentOndemandServer captures enum value "ondemand_server"
+	AutosupportIssuesComponentOndemandServer string = "ondemand_server"
+)
+
+// prop value enum
+func (m *AutosupportIssues) validateComponentEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, autosupportIssuesTypeComponentPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *AutosupportIssues) validateComponent(formats strfmt.Registry) error {
+	if swag.IsZero(m.Component) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateComponentEnum("component", "body", *m.Component); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -109,6 +202,10 @@ func (m *AutosupportIssues) ContextValidate(ctx context.Context, formats strfmt.
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateDestination(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateIssue(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -132,6 +229,15 @@ func (m *AutosupportIssues) contextValidateCorrectiveAction(ctx context.Context,
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *AutosupportIssues) contextValidateDestination(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "destination", "body", m.Destination); err != nil {
+		return err
 	}
 
 	return nil

@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *LoginMessagesCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the login messages collection get o k response
+func (o *LoginMessagesCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *LoginMessagesCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/login/messages][%d] loginMessagesCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/login/messages][%d] loginMessagesCollectionGetOK %s", 200, payload)
 }
 
 func (o *LoginMessagesCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /security/login/messages][%d] loginMessagesCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/login/messages][%d] loginMessagesCollectionGetOK %s", 200, payload)
 }
 
 func (o *LoginMessagesCollectionGetOK) GetPayload() *models.LoginMessagesResponse {
@@ -122,11 +130,6 @@ type LoginMessagesCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the login messages collection get default response
-func (o *LoginMessagesCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this login messages collection get default response has a 2xx status code
 func (o *LoginMessagesCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *LoginMessagesCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the login messages collection get default response
+func (o *LoginMessagesCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LoginMessagesCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/login/messages][%d] login_messages_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/login/messages][%d] login_messages_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *LoginMessagesCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/login/messages][%d] login_messages_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/login/messages][%d] login_messages_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *LoginMessagesCollectionGetDefault) GetPayload() *models.ErrorResponse {

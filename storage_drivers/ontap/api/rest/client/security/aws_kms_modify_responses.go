@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -25,6 +26,12 @@ func (o *AwsKmsModifyReader) ReadResponse(response runtime.ClientResponse, consu
 	switch response.Code() {
 	case 200:
 		result := NewAwsKmsModifyOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
+	case 202:
+		result := NewAwsKmsModifyAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -79,15 +86,90 @@ func (o *AwsKmsModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the aws kms modify o k response
+func (o *AwsKmsModifyOK) Code() int {
+	return 200
+}
+
 func (o *AwsKmsModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/aws-kms/{uuid}][%d] awsKmsModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/aws-kms/{uuid}][%d] awsKmsModifyOK", 200)
 }
 
 func (o *AwsKmsModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/aws-kms/{uuid}][%d] awsKmsModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/aws-kms/{uuid}][%d] awsKmsModifyOK", 200)
 }
 
 func (o *AwsKmsModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	return nil
+}
+
+// NewAwsKmsModifyAccepted creates a AwsKmsModifyAccepted with default headers values
+func NewAwsKmsModifyAccepted() *AwsKmsModifyAccepted {
+	return &AwsKmsModifyAccepted{}
+}
+
+/*
+AwsKmsModifyAccepted describes a response with status code 202, with default header values.
+
+Accepted
+*/
+type AwsKmsModifyAccepted struct {
+	Payload *models.AwsKmsJobLinkResponse
+}
+
+// IsSuccess returns true when this aws kms modify accepted response has a 2xx status code
+func (o *AwsKmsModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this aws kms modify accepted response has a 3xx status code
+func (o *AwsKmsModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this aws kms modify accepted response has a 4xx status code
+func (o *AwsKmsModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this aws kms modify accepted response has a 5xx status code
+func (o *AwsKmsModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this aws kms modify accepted response a status code equal to that given
+func (o *AwsKmsModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
+// Code gets the status code for the aws kms modify accepted response
+func (o *AwsKmsModifyAccepted) Code() int {
+	return 202
+}
+
+func (o *AwsKmsModifyAccepted) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/aws-kms/{uuid}][%d] awsKmsModifyAccepted %s", 202, payload)
+}
+
+func (o *AwsKmsModifyAccepted) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/aws-kms/{uuid}][%d] awsKmsModifyAccepted %s", 202, payload)
+}
+
+func (o *AwsKmsModifyAccepted) GetPayload() *models.AwsKmsJobLinkResponse {
+	return o.Payload
+}
+
+func (o *AwsKmsModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.AwsKmsJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }
@@ -112,16 +194,12 @@ func NewAwsKmsModifyDefault(code int) *AwsKmsModifyDefault {
 | 65537921 | Unable to connect to the Amazon Web Service Key Management Service (AWSKMS) using these credentials. |
 | 65537924 | Access key ID cannot be empty. |
 | 65537926 | Amazon Web Service Key Management Service is not configured for SVM. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AwsKmsModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the aws kms modify default response
-func (o *AwsKmsModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this aws kms modify default response has a 2xx status code
@@ -149,12 +227,19 @@ func (o *AwsKmsModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the aws kms modify default response
+func (o *AwsKmsModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AwsKmsModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/aws-kms/{uuid}][%d] aws_kms_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/aws-kms/{uuid}][%d] aws_kms_modify default %s", o._statusCode, payload)
 }
 
 func (o *AwsKmsModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/aws-kms/{uuid}][%d] aws_kms_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/aws-kms/{uuid}][%d] aws_kms_modify default %s", o._statusCode, payload)
 }
 
 func (o *AwsKmsModifyDefault) GetPayload() *models.ErrorResponse {

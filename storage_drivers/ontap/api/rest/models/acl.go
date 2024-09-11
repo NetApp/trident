@@ -39,18 +39,19 @@ type ACL struct {
 	// * audit_success_and_failure        - SACL for both success and failure access
 	//
 	// Example: access_allow
-	// Enum: [access_allow access_deny access_allowed_callback access_denied_callback access_allowed_callback_object access_denied_callback_object system_audit_callback system_audit_callback_object system_resource_attribute system_scoped_policy_id audit_failure audit_success audit_success_and_failure]
+	// Enum: ["access_allow","access_deny","access_allowed_callback","access_denied_callback","access_allowed_callback_object","access_denied_callback_object","system_audit_callback","system_audit_callback_object","system_resource_attribute","system_scoped_policy_id","audit_failure","audit_success","audit_success_and_failure"]
 	Access *string `json:"access,omitempty"`
 
 	// An Access Control Level specifies the access control of the task to be applied. Valid values
 	// are "file-directory" or "Storage-Level Access Guard (SLAG)". SLAG is used to apply the
 	// specified security descriptors with the task for the volume or qtree. Otherwise, the security
-	// descriptors are applied on files and directories at the specified path. The value slag is not
-	// supported on FlexGroups volumes. The default value is "file-directory".
+	// descriptors are applied on files and directories at the specified path. The value SLAG is not
+	// supported on FlexGroups volumes. The default value is "file-directory"
+	// ('-' and '_' are interchangeable).
 	//
 	// Example: file_directory
 	// Read Only: true
-	// Enum: [file_directory slag]
+	// Enum: ["file_directory","slag"]
 	AccessControl *string `json:"access_control,omitempty"`
 
 	// advanced rights
@@ -65,14 +66,8 @@ type ACL struct {
 	// Read Only: true
 	Inherited *bool `json:"inherited,omitempty"`
 
-	// Specifies the access right controlled by the ACE for the account specified.
-	// The "rights" parameter is mutually exclusive with the "advanced_rights"
-	// parameter. If you specify the "rights" parameter, you can specify one
-	// of the following "rights" values:
-	//
-	// Example: full_control
-	// Enum: [no_access full_control modify read_and_execute read write]
-	Rights *string `json:"rights,omitempty"`
+	// rights
+	Rights *Rights `json:"rights,omitempty"`
 
 	// Specifies the account to which the ACE applies.
 	// You can specify either name or SID.
@@ -367,97 +362,18 @@ func (m *ACL) validateApplyTo(formats strfmt.Registry) error {
 	return nil
 }
 
-var aclTypeRightsPropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["no_access","full_control","modify","read_and_execute","read","write"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		aclTypeRightsPropEnum = append(aclTypeRightsPropEnum, v)
-	}
-}
-
-const (
-
-	// BEGIN DEBUGGING
-	// acl
-	// ACL
-	// rights
-	// Rights
-	// no_access
-	// END DEBUGGING
-	// ACLRightsNoAccess captures enum value "no_access"
-	ACLRightsNoAccess string = "no_access"
-
-	// BEGIN DEBUGGING
-	// acl
-	// ACL
-	// rights
-	// Rights
-	// full_control
-	// END DEBUGGING
-	// ACLRightsFullControl captures enum value "full_control"
-	ACLRightsFullControl string = "full_control"
-
-	// BEGIN DEBUGGING
-	// acl
-	// ACL
-	// rights
-	// Rights
-	// modify
-	// END DEBUGGING
-	// ACLRightsModify captures enum value "modify"
-	ACLRightsModify string = "modify"
-
-	// BEGIN DEBUGGING
-	// acl
-	// ACL
-	// rights
-	// Rights
-	// read_and_execute
-	// END DEBUGGING
-	// ACLRightsReadAndExecute captures enum value "read_and_execute"
-	ACLRightsReadAndExecute string = "read_and_execute"
-
-	// BEGIN DEBUGGING
-	// acl
-	// ACL
-	// rights
-	// Rights
-	// read
-	// END DEBUGGING
-	// ACLRightsRead captures enum value "read"
-	ACLRightsRead string = "read"
-
-	// BEGIN DEBUGGING
-	// acl
-	// ACL
-	// rights
-	// Rights
-	// write
-	// END DEBUGGING
-	// ACLRightsWrite captures enum value "write"
-	ACLRightsWrite string = "write"
-)
-
-// prop value enum
-func (m *ACL) validateRightsEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, aclTypeRightsPropEnum, true); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (m *ACL) validateRights(formats strfmt.Registry) error {
 	if swag.IsZero(m.Rights) { // not required
 		return nil
 	}
 
-	// value enum
-	if err := m.validateRightsEnum("rights", "body", *m.Rights); err != nil {
-		return err
+	if m.Rights != nil {
+		if err := m.Rights.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("rights")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -480,6 +396,10 @@ func (m *ACL) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 	}
 
 	if err := m.contextValidateInherited(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRights(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -530,6 +450,20 @@ func (m *ACL) contextValidateInherited(ctx context.Context, formats strfmt.Regis
 
 	if err := validate.ReadOnly(ctx, "inherited", "body", m.Inherited); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *ACL) contextValidateRights(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Rights != nil {
+		if err := m.Rights.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("rights")
+			}
+			return err
+		}
 	}
 
 	return nil

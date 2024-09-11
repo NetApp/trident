@@ -26,12 +26,12 @@ type SwitchPort struct {
 
 	// Administrative Status.
 	// Read Only: true
-	// Enum: [down testing up]
+	// Enum: ["down","testing","up"]
 	Configured *string `json:"configured,omitempty"`
 
 	// Duplex Settings.
 	// Read Only: true
-	// Enum: [full_duplex half_duplex unknown]
+	// Enum: ["full_duplex","half_duplex","unknown"]
 	DuplexType *string `json:"duplex_type,omitempty"`
 
 	// identity
@@ -58,7 +58,7 @@ type SwitchPort struct {
 
 	// Operational Status.
 	// Read Only: true
-	// Enum: [dormant down lower_layer_down not_present testing unknown up]
+	// Enum: ["dormant","down","lower_layer_down","not_present","testing","unknown","up"]
 	State *string `json:"state,omitempty"`
 
 	// statistics
@@ -72,8 +72,12 @@ type SwitchPort struct {
 
 	// Interface Type.
 	// Read Only: true
-	// Enum: [ethernetcsmacd fastetherfx fibrechannel gigabitethernet ieee8023adlag other propvirtual softwareloopback tunnel]
+	// Enum: ["ethernetcsmacd","fastetherfx","fibrechannel","gigabitethernet","ieee8023adlag","other","propvirtual","softwareloopback","tunnel"]
 	Type *string `json:"type,omitempty"`
+
+	// Is configured as a Virtual Port Channel (vPC) peer-link.
+	// Read Only: true
+	VpcPeerLink *bool `json:"vpc_peer_link,omitempty"`
 }
 
 // Validate validates this switch port
@@ -631,6 +635,10 @@ func (m *SwitchPort) ContextValidate(ctx context.Context, formats strfmt.Registr
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateVpcPeerLink(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -786,6 +794,15 @@ func (m *SwitchPort) contextValidateSwitchPortInlineVlanID(ctx context.Context, 
 func (m *SwitchPort) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SwitchPort) contextValidateVpcPeerLink(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "vpc_peer_link", "body", m.VpcPeerLink); err != nil {
 		return err
 	}
 
@@ -1337,7 +1354,7 @@ type SwitchPortInlineRemotePortInlineDeviceInlineShelf struct {
 	Links *SwitchPortInlineRemotePortInlineDeviceInlineShelfInlineLinks `json:"_links,omitempty"`
 
 	// Shelf module connected to this port.
-	// Enum: [A B]
+	// Enum: ["A","B"]
 	Module *string `json:"module,omitempty"`
 
 	// name

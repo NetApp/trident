@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *HTTPProxyDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the http proxy delete o k response
+func (o *HTTPProxyDeleteOK) Code() int {
+	return 200
+}
+
 func (o *HTTPProxyDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /network/http-proxy/{uuid}][%d] httpProxyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /network/http-proxy/{uuid}][%d] httpProxyDeleteOK", 200)
 }
 
 func (o *HTTPProxyDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /network/http-proxy/{uuid}][%d] httpProxyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /network/http-proxy/{uuid}][%d] httpProxyDeleteOK", 200)
 }
 
 func (o *HTTPProxyDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,17 +112,13 @@ func NewHTTPProxyDeleteDefault(code int) *HTTPProxyDeleteDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 138281013 | The HTTP proxy cannot be deleted while in use by a cloud agent connection. |
+| 138281013  | The HTTP Proxy cannot be deleted while in use by a cloud agent connection. |
+| 2621574    | This operation is not permitted on a SVM that is configured as the destination of a Metrocluster SVM relationship. |
 */
 type HTTPProxyDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the http proxy delete default response
-func (o *HTTPProxyDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this http proxy delete default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *HTTPProxyDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the http proxy delete default response
+func (o *HTTPProxyDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *HTTPProxyDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /network/http-proxy/{uuid}][%d] http_proxy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/http-proxy/{uuid}][%d] http_proxy_delete default %s", o._statusCode, payload)
 }
 
 func (o *HTTPProxyDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /network/http-proxy/{uuid}][%d] http_proxy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/http-proxy/{uuid}][%d] http_proxy_delete default %s", o._statusCode, payload)
 }
 
 func (o *HTTPProxyDeleteDefault) GetPayload() *models.ErrorResponse {

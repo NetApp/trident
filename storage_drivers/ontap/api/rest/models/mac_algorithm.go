@@ -15,7 +15,7 @@ import (
 )
 
 // MacAlgorithm MAC Algorithm.
-// Example: hmac_sha1
+// Example: hmac_sha2_256
 //
 // swagger:model mac_algorithm
 type MacAlgorithm string
@@ -31,23 +31,11 @@ func (m MacAlgorithm) Pointer() *MacAlgorithm {
 
 const (
 
-	// MacAlgorithmHmacSha1 captures enum value "hmac_sha1"
-	MacAlgorithmHmacSha1 MacAlgorithm = "hmac_sha1"
-
-	// MacAlgorithmHmacSha196 captures enum value "hmac_sha1_96"
-	MacAlgorithmHmacSha196 MacAlgorithm = "hmac_sha1_96"
-
 	// MacAlgorithmHmacSha2256 captures enum value "hmac_sha2_256"
 	MacAlgorithmHmacSha2256 MacAlgorithm = "hmac_sha2_256"
 
 	// MacAlgorithmHmacSha2512 captures enum value "hmac_sha2_512"
 	MacAlgorithmHmacSha2512 MacAlgorithm = "hmac_sha2_512"
-
-	// MacAlgorithmHmacSha1Etm captures enum value "hmac_sha1_etm"
-	MacAlgorithmHmacSha1Etm MacAlgorithm = "hmac_sha1_etm"
-
-	// MacAlgorithmHmacSha196Etm captures enum value "hmac_sha1_96_etm"
-	MacAlgorithmHmacSha196Etm MacAlgorithm = "hmac_sha1_96_etm"
 
 	// MacAlgorithmHmacSha2256Etm captures enum value "hmac_sha2_256_etm"
 	MacAlgorithmHmacSha2256Etm MacAlgorithm = "hmac_sha2_256_etm"
@@ -55,23 +43,11 @@ const (
 	// MacAlgorithmHmacSha2512Etm captures enum value "hmac_sha2_512_etm"
 	MacAlgorithmHmacSha2512Etm MacAlgorithm = "hmac_sha2_512_etm"
 
-	// MacAlgorithmHmacMd5 captures enum value "hmac_md5"
-	MacAlgorithmHmacMd5 MacAlgorithm = "hmac_md5"
-
-	// MacAlgorithmHmacMd596 captures enum value "hmac_md5_96"
-	MacAlgorithmHmacMd596 MacAlgorithm = "hmac_md5_96"
-
 	// MacAlgorithmUmac64 captures enum value "umac_64"
 	MacAlgorithmUmac64 MacAlgorithm = "umac_64"
 
 	// MacAlgorithmUmac128 captures enum value "umac_128"
 	MacAlgorithmUmac128 MacAlgorithm = "umac_128"
-
-	// MacAlgorithmHmacMd5Etm captures enum value "hmac_md5_etm"
-	MacAlgorithmHmacMd5Etm MacAlgorithm = "hmac_md5_etm"
-
-	// MacAlgorithmHmacMd596Etm captures enum value "hmac_md5_96_etm"
-	MacAlgorithmHmacMd596Etm MacAlgorithm = "hmac_md5_96_etm"
 
 	// MacAlgorithmUmac64Etm captures enum value "umac_64_etm"
 	MacAlgorithmUmac64Etm MacAlgorithm = "umac_64_etm"
@@ -85,7 +61,7 @@ var macAlgorithmEnum []interface{}
 
 func init() {
 	var res []MacAlgorithm
-	if err := json.Unmarshal([]byte(`["hmac_sha1","hmac_sha1_96","hmac_sha2_256","hmac_sha2_512","hmac_sha1_etm","hmac_sha1_96_etm","hmac_sha2_256_etm","hmac_sha2_512_etm","hmac_md5","hmac_md5_96","umac_64","umac_128","hmac_md5_etm","hmac_md5_96_etm","umac_64_etm","umac_128_etm"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["hmac_sha2_256","hmac_sha2_512","hmac_sha2_256_etm","hmac_sha2_512_etm","umac_64","umac_128","umac_64_etm","umac_128_etm"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

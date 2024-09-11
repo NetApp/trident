@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *NetgroupFileDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the netgroup file delete o k response
+func (o *NetgroupFileDeleteOK) Code() int {
+	return 200
+}
+
 func (o *NetgroupFileDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/netgroup-files/{svm.uuid}][%d] netgroupFileDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/netgroup-files/{svm.uuid}][%d] netgroupFileDeleteOK", 200)
 }
 
 func (o *NetgroupFileDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /name-services/netgroup-files/{svm.uuid}][%d] netgroupFileDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/netgroup-files/{svm.uuid}][%d] netgroupFileDeleteOK", 200)
 }
 
 func (o *NetgroupFileDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type NetgroupFileDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the netgroup file delete default response
-func (o *NetgroupFileDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this netgroup file delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *NetgroupFileDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the netgroup file delete default response
+func (o *NetgroupFileDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetgroupFileDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/netgroup-files/{svm.uuid}][%d] netgroup_file_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/netgroup-files/{svm.uuid}][%d] netgroup_file_delete default %s", o._statusCode, payload)
 }
 
 func (o *NetgroupFileDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /name-services/netgroup-files/{svm.uuid}][%d] netgroup_file_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/netgroup-files/{svm.uuid}][%d] netgroup_file_delete default %s", o._statusCode, payload)
 }
 
 func (o *NetgroupFileDeleteDefault) GetPayload() *models.ErrorResponse {

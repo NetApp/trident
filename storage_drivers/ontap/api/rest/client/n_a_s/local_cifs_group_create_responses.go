@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *LocalCifsGroupCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the local cifs group create created response
+func (o *LocalCifsGroupCreateCreated) Code() int {
+	return 201
+}
+
 func (o *LocalCifsGroupCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/local-groups][%d] localCifsGroupCreateCreated ", 201)
+	return fmt.Sprintf("[POST /protocols/cifs/local-groups][%d] localCifsGroupCreateCreated", 201)
 }
 
 func (o *LocalCifsGroupCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/local-groups][%d] localCifsGroupCreateCreated ", 201)
+	return fmt.Sprintf("[POST /protocols/cifs/local-groups][%d] localCifsGroupCreateCreated", 201)
 }
 
 func (o *LocalCifsGroupCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -134,11 +140,6 @@ type LocalCifsGroupCreateDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the local cifs group create default response
-func (o *LocalCifsGroupCreateDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this local cifs group create default response has a 2xx status code
 func (o *LocalCifsGroupCreateDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -164,12 +165,19 @@ func (o *LocalCifsGroupCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the local cifs group create default response
+func (o *LocalCifsGroupCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LocalCifsGroupCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/local-groups][%d] local_cifs_group_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/local-groups][%d] local_cifs_group_create default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsGroupCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/local-groups][%d] local_cifs_group_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/local-groups][%d] local_cifs_group_create default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsGroupCreateDefault) GetPayload() *models.ErrorResponse {

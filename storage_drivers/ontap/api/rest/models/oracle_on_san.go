@@ -44,7 +44,7 @@ type OracleOnSan struct {
 
 	// The name of the host OS running the application.
 	// Required: true
-	// Enum: [aix hpux hyper_v linux solaris solaris_efi vmware windows windows_2008 windows_gpt xen]
+	// Enum: ["aix","hpux","hyper_v","linux","solaris","solaris_efi","vmware","windows","windows_2008","windows_gpt","xen"]
 	OsType *string `json:"os_type"`
 
 	// protection type
@@ -617,7 +617,7 @@ func (m *OracleOnSanInlineArchiveLog) UnmarshalBinary(b []byte) error {
 type OracleOnSanInlineArchiveLogInlineStorageService struct {
 
 	// The storage service of the archive log.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -833,7 +833,7 @@ func (m *OracleOnSanInlineDb) UnmarshalBinary(b []byte) error {
 type OracleOnSanInlineDbInlineStorageService struct {
 
 	// The storage service of the database.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -1035,7 +1035,7 @@ func (m *OracleOnSanInlineOraHome) UnmarshalBinary(b []byte) error {
 type OracleOnSanInlineOraHomeInlineStorageService struct {
 
 	// The storage service of the ORACLE_HOME storage volume.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -1148,11 +1148,11 @@ func (m *OracleOnSanInlineOraHomeInlineStorageService) UnmarshalBinary(b []byte)
 type OracleOnSanInlineProtectionType struct {
 
 	// The local RPO of the application.
-	// Enum: [hourly none]
+	// Enum: ["hourly","none"]
 	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
-	// Enum: [none zero]
+	// Enum: ["none","zero"]
 	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 
@@ -1315,7 +1315,7 @@ func (m *OracleOnSanInlineProtectionType) UnmarshalBinary(b []byte) error {
 type OracleOnSanInlineRedoLog struct {
 
 	// Specifies whether the redo log group should be mirrored.
-	// Enum: [false true]
+	// Enum: [false,true]
 	Mirrored *bool `json:"mirrored,omitempty"`
 
 	// The size of the redo log group. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
@@ -1459,7 +1459,7 @@ func (m *OracleOnSanInlineRedoLog) UnmarshalBinary(b []byte) error {
 type OracleOnSanInlineRedoLogInlineStorageService struct {
 
 	// The storage service of the redo log group.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 

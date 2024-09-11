@@ -26,7 +26,7 @@ type SecurityAuditLog struct {
 	// This identifies the "application" by which the request was processed.
 	//
 	// Read Only: true
-	// Enum: [internal console rsh telnet ssh ontapi http system]
+	// Enum: ["internal","console","rsh","telnet","ssh","ontapi","http","system"]
 	Application *string `json:"application,omitempty"`
 
 	// This is the command ID for this request.
@@ -55,7 +55,7 @@ type SecurityAuditLog struct {
 	Node *SecurityAuditLogInlineNode `json:"node,omitempty"`
 
 	// Set to "svm" when the request is on a data SVM; otherwise set to "cluster".
-	// Enum: [svm cluster]
+	// Enum: ["svm","cluster"]
 	Scope *string `json:"scope,omitempty"`
 
 	// This is the session ID on which the request is received. Each SSH session is assigned a session ID.
@@ -66,7 +66,7 @@ type SecurityAuditLog struct {
 
 	// State of of this request.
 	// Read Only: true
-	// Enum: [pending success error]
+	// Enum: ["pending","success","error"]
 	State *string `json:"state,omitempty"`
 
 	// svm

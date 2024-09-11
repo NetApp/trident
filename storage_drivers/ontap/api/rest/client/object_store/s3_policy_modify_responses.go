@@ -6,6 +6,7 @@ package object_store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *S3PolicyModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the s3 policy modify o k response
+func (o *S3PolicyModifyOK) Code() int {
+	return 200
+}
+
 func (o *S3PolicyModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyModifyOK", 200)
 }
 
 func (o *S3PolicyModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyModifyOK", 200)
 }
 
 func (o *S3PolicyModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,18 +113,14 @@ func NewS3PolicyModifyDefault(code int) *S3PolicyModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 92405906   | The specified action name is invalid.
-| 92405963   | Failed to create policy statements for policy. Reason: "{reason of failure}". Resolve all issues and retry the operation.
-| 92405954   | Object store server read-only policies do not support create, modify, delete, add-statement, delete-statement and modify-statement operations.
+| 92405963   | Failed to create s3 policy statements \\\"{policy name}\\\". Reason: "{reason of failure}". Resolve all issues and retry the operation.
+| 92405953   | Object store server read-only policies do not support create, modify, delete, add-statement, delete-statement and modify-statement operations.
+| 92406075   | Failed to modify policy statement for policy \\\"{policy name}\\\". Reason: "{reason of failure}". Valid ways to specify a resource are \"*\", \"<bucket-name>\", \"<bucket-name>/.../...\".\".
 */
 type S3PolicyModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the s3 policy modify default response
-func (o *S3PolicyModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this s3 policy modify default response has a 2xx status code
@@ -146,12 +148,19 @@ func (o *S3PolicyModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the s3 policy modify default response
+func (o *S3PolicyModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *S3PolicyModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_modify default %s", o._statusCode, payload)
 }
 
 func (o *S3PolicyModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_modify default %s", o._statusCode, payload)
 }
 
 func (o *S3PolicyModifyDefault) GetPayload() *models.ErrorResponse {

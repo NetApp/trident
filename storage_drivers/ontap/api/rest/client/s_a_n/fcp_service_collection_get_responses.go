@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *FcpServiceCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fcp service collection get o k response
+func (o *FcpServiceCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *FcpServiceCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/fcp/services][%d] fcpServiceCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/fcp/services][%d] fcpServiceCollectionGetOK %s", 200, payload)
 }
 
 func (o *FcpServiceCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/san/fcp/services][%d] fcpServiceCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/fcp/services][%d] fcpServiceCollectionGetOK %s", 200, payload)
 }
 
 func (o *FcpServiceCollectionGetOK) GetPayload() *models.FcpServiceResponse {
@@ -122,11 +130,6 @@ type FcpServiceCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the fcp service collection get default response
-func (o *FcpServiceCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this fcp service collection get default response has a 2xx status code
 func (o *FcpServiceCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *FcpServiceCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fcp service collection get default response
+func (o *FcpServiceCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FcpServiceCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/fcp/services][%d] fcp_service_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/fcp/services][%d] fcp_service_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *FcpServiceCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/san/fcp/services][%d] fcp_service_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/fcp/services][%d] fcp_service_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *FcpServiceCollectionGetDefault) GetPayload() *models.ErrorResponse {

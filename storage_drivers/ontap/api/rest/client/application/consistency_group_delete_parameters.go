@@ -62,13 +62,6 @@ ConsistencyGroupDeleteParams contains all the parameters to send to the API endp
 */
 type ConsistencyGroupDeleteParams struct {
 
-	/* DeleteData.
-
-	     Delete the underlying storage as well as the consistency group association.
-	**This parameter should be used with caution.**
-	*/
-	DeleteData *bool
-
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
@@ -100,13 +93,10 @@ func (o *ConsistencyGroupDeleteParams) WithDefaults() *ConsistencyGroupDeletePar
 // All values with no default are reset to their zero value.
 func (o *ConsistencyGroupDeleteParams) SetDefaults() {
 	var (
-		deleteDataDefault = bool(false)
-
 		returnTimeoutDefault = int64(0)
 	)
 
 	val := ConsistencyGroupDeleteParams{
-		DeleteData:    &deleteDataDefault,
 		ReturnTimeout: &returnTimeoutDefault,
 	}
 
@@ -149,17 +139,6 @@ func (o *ConsistencyGroupDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDeleteData adds the deleteData to the consistency group delete params
-func (o *ConsistencyGroupDeleteParams) WithDeleteData(deleteData *bool) *ConsistencyGroupDeleteParams {
-	o.SetDeleteData(deleteData)
-	return o
-}
-
-// SetDeleteData adds the deleteData to the consistency group delete params
-func (o *ConsistencyGroupDeleteParams) SetDeleteData(deleteData *bool) {
-	o.DeleteData = deleteData
-}
-
 // WithReturnTimeout adds the returnTimeout to the consistency group delete params
 func (o *ConsistencyGroupDeleteParams) WithReturnTimeout(returnTimeout *int64) *ConsistencyGroupDeleteParams {
 	o.SetReturnTimeout(returnTimeout)
@@ -189,23 +168,6 @@ func (o *ConsistencyGroupDeleteParams) WriteToRequest(r runtime.ClientRequest, r
 		return err
 	}
 	var res []error
-
-	if o.DeleteData != nil {
-
-		// query param delete_data
-		var qrDeleteData bool
-
-		if o.DeleteData != nil {
-			qrDeleteData = *o.DeleteData
-		}
-		qDeleteData := swag.FormatBool(qrDeleteData)
-		if qDeleteData != "" {
-
-			if err := r.SetQueryParam("delete_data", qDeleteData); err != nil {
-				return err
-			}
-		}
-	}
 
 	if o.ReturnTimeout != nil {
 

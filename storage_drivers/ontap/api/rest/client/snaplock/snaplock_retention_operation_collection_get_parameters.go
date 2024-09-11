@@ -100,7 +100,7 @@ type SnaplockRetentionOperationCollectionGetParams struct {
 
 	   Volume UUID
 	*/
-	VolumeUUID string
+	VolumeUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -225,13 +225,13 @@ func (o *SnaplockRetentionOperationCollectionGetParams) SetReturnTimeout(returnT
 }
 
 // WithVolumeUUID adds the volumeUUID to the snaplock retention operation collection get params
-func (o *SnaplockRetentionOperationCollectionGetParams) WithVolumeUUID(volumeUUID string) *SnaplockRetentionOperationCollectionGetParams {
+func (o *SnaplockRetentionOperationCollectionGetParams) WithVolumeUUID(volumeUUID *string) *SnaplockRetentionOperationCollectionGetParams {
 	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
 // SetVolumeUUID adds the volumeUuid to the snaplock retention operation collection get params
-func (o *SnaplockRetentionOperationCollectionGetParams) SetVolumeUUID(volumeUUID string) {
+func (o *SnaplockRetentionOperationCollectionGetParams) SetVolumeUUID(volumeUUID *string) {
 	o.VolumeUUID = volumeUUID
 }
 
@@ -316,13 +316,20 @@ func (o *SnaplockRetentionOperationCollectionGetParams) WriteToRequest(r runtime
 		}
 	}
 
-	// query param volume.uuid
-	qrVolumeUUID := o.VolumeUUID
-	qVolumeUUID := qrVolumeUUID
-	if qVolumeUUID != "" {
+	if o.VolumeUUID != nil {
 
-		if err := r.SetQueryParam("volume.uuid", qVolumeUUID); err != nil {
-			return err
+		// query param volume.uuid
+		var qrVolumeUUID string
+
+		if o.VolumeUUID != nil {
+			qrVolumeUUID = *o.VolumeUUID
+		}
+		qVolumeUUID := qrVolumeUUID
+		if qVolumeUUID != "" {
+
+			if err := r.SetQueryParam("volume.uuid", qVolumeUUID); err != nil {
+				return err
+			}
 		}
 	}
 

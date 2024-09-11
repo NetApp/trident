@@ -20,7 +20,7 @@ import (
 // swagger:model acl_delete
 type ACLDelete struct {
 
-	// Specifies whether the ACL is for DACL or SACL.
+	// Specifies whether the ACL is for DACL or SACL. It is a required field.
 	// The available values are:
 	// * access_allow                     - DACL for allow access
 	// * access_deny                      - DACL for deny access
@@ -28,17 +28,18 @@ type ACLDelete struct {
 	// * audit_failure                    - SACL for failure access
 	//
 	// Example: access_allow
-	// Enum: [access_allow access_deny audit_failure audit_success]
+	// Enum: ["access_allow","access_deny","audit_failure","audit_success"]
 	Access *string `json:"access,omitempty"`
 
 	// An Access Control Level specifies the access control of the task to be applied. Valid values
 	// are "file-directory" or "Storage-Level Access Guard (SLAG)". SLAG is used to apply the
 	// specified security descriptors with the task for the volume or qtree. Otherwise, the
 	// security descriptors are applied on files and directories at the specified path.
-	// The value slag is not supported on FlexGroups volumes. The default value is "file-directory".
+	// The value SLAG is not supported on FlexGroups volumes. The default value is "file-directory"
+	// ('-' and '_' are interchangeable).
 	//
 	// Example: file_directory
-	// Enum: [file_directory slag]
+	// Enum: ["file_directory","slag"]
 	AccessControl *string `json:"access_control,omitempty"`
 
 	// Specifies that permissions on this file or directory cannot be replaced.
@@ -53,10 +54,10 @@ type ACLDelete struct {
 	// This setting determines how child files/folders contained within a parent
 	// folder inherit access control and audit information from the parent folder.
 	// The available values are:
-	// * propogate    - propagate inheritable permissions to all subfolders and files
+	// * propagate    - propagate inheritable permissions to all subfolders and files
 	// * replace      - replace existing permissions on all subfolders and files with inheritable permissions
 	//
-	// Enum: [propagate replace]
+	// Enum: ["propagate","replace"]
 	PropagationMode *string `json:"propagation_mode,omitempty"`
 }
 

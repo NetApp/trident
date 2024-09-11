@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SecurityCertificateCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the security certificate collection get o k response
+func (o *SecurityCertificateCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *SecurityCertificateCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/certificates][%d] securityCertificateCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/certificates][%d] securityCertificateCollectionGetOK %s", 200, payload)
 }
 
 func (o *SecurityCertificateCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /security/certificates][%d] securityCertificateCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/certificates][%d] securityCertificateCollectionGetOK %s", 200, payload)
 }
 
 func (o *SecurityCertificateCollectionGetOK) GetPayload() *models.SecurityCertificateResponse {
@@ -122,11 +130,6 @@ type SecurityCertificateCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the security certificate collection get default response
-func (o *SecurityCertificateCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this security certificate collection get default response has a 2xx status code
 func (o *SecurityCertificateCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SecurityCertificateCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security certificate collection get default response
+func (o *SecurityCertificateCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityCertificateCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/certificates][%d] security_certificate_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/certificates][%d] security_certificate_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SecurityCertificateCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/certificates][%d] security_certificate_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/certificates][%d] security_certificate_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SecurityCertificateCollectionGetDefault) GetPayload() *models.ErrorResponse {

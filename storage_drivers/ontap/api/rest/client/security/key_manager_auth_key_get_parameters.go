@@ -70,7 +70,7 @@ type KeyManagerAuthKeyGetParams struct {
 
 	/* KeyID.
 
-	   Key ID of the authentication key to be deleted.
+	   Key ID of the authentication key to be retrieved.
 	*/
 	KeyID string
 

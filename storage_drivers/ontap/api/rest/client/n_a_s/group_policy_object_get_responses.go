@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *GroupPolicyObjectGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the group policy object get o k response
+func (o *GroupPolicyObjectGetOK) Code() int {
+	return 200
+}
+
 func (o *GroupPolicyObjectGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/objects/{index}][%d] groupPolicyObjectGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/objects/{index}][%d] groupPolicyObjectGetOK %s", 200, payload)
 }
 
 func (o *GroupPolicyObjectGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/objects/{index}][%d] groupPolicyObjectGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/objects/{index}][%d] groupPolicyObjectGetOK %s", 200, payload)
 }
 
 func (o *GroupPolicyObjectGetOK) GetPayload() *models.GroupPolicyObject {
@@ -122,11 +130,6 @@ type GroupPolicyObjectGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the group policy object get default response
-func (o *GroupPolicyObjectGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this group policy object get default response has a 2xx status code
 func (o *GroupPolicyObjectGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *GroupPolicyObjectGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the group policy object get default response
+func (o *GroupPolicyObjectGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *GroupPolicyObjectGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/objects/{index}][%d] group_policy_object_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/objects/{index}][%d] group_policy_object_get default %s", o._statusCode, payload)
 }
 
 func (o *GroupPolicyObjectGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/objects/{index}][%d] group_policy_object_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/group-policies/{svm.uuid}/objects/{index}][%d] group_policy_object_get default %s", o._statusCode, payload)
 }
 
 func (o *GroupPolicyObjectGetDefault) GetPayload() *models.ErrorResponse {

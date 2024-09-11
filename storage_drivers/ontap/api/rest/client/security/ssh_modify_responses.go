@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SSHModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ssh modify o k response
+func (o *SSHModifyOK) Code() int {
+	return 200
+}
+
 func (o *SSHModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/ssh][%d] sshModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/ssh][%d] sshModifyOK", 200)
 }
 
 func (o *SSHModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/ssh][%d] sshModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/ssh][%d] sshModifyOK", 200)
 }
 
 func (o *SSHModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -117,16 +123,18 @@ func NewSSHModifyDefault(code int) *SSHModifyDefault {
 | 10682413 | Failed to modify maximum authentication retry attempts. |
 | 10682413 | Failed to modify maximum authentication retry attempts. |
 | 10682418 | Cipher not supported in FIPS enabled mode. |
+| 10682423 | There must be at least one host key algorithm associated with the SSH configuration. |
+| 10682424 | Host key algorithm not supported in FIPS enabled mode. |
+| 10682425 | Failed to modify Host key algorithms. |
+| 10682426 | Failed to modify _ssh-rsa_ enabled status for publickey algorithms configuration. |
+| 10682428 | Cipher not supported in FIPS enabled mode. |
+| 10682429 | Adding 'diffie_hellman_group16_sha512' or 'diffie_hellman_group18_sha512' to the SSH key exchange algorithms list requires an effective cluster version of ONTAP 9.16.1 or later. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SSHModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ssh modify default response
-func (o *SSHModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ssh modify default response has a 2xx status code
@@ -154,12 +162,19 @@ func (o *SSHModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ssh modify default response
+func (o *SSHModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SSHModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/ssh][%d] ssh_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/ssh][%d] ssh_modify default %s", o._statusCode, payload)
 }
 
 func (o *SSHModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/ssh][%d] ssh_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/ssh][%d] ssh_modify default %s", o._statusCode, payload)
 }
 
 func (o *SSHModifyDefault) GetPayload() *models.ErrorResponse {

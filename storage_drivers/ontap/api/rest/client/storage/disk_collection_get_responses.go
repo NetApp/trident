@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *DiskCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the disk collection get o k response
+func (o *DiskCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *DiskCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/disks][%d] diskCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/disks][%d] diskCollectionGetOK %s", 200, payload)
 }
 
 func (o *DiskCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/disks][%d] diskCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/disks][%d] diskCollectionGetOK %s", 200, payload)
 }
 
 func (o *DiskCollectionGetOK) GetPayload() *models.DiskResponse {
@@ -122,11 +130,6 @@ type DiskCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the disk collection get default response
-func (o *DiskCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this disk collection get default response has a 2xx status code
 func (o *DiskCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *DiskCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the disk collection get default response
+func (o *DiskCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *DiskCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/disks][%d] disk_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/disks][%d] disk_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *DiskCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/disks][%d] disk_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/disks][%d] disk_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *DiskCollectionGetDefault) GetPayload() *models.ErrorResponse {

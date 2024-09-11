@@ -27,9 +27,11 @@ type LdapService struct {
 	// used to discover LDAP servers for use by this client.
 	// This is mutually exclusive with `servers` during POST and PATCH.
 	//
+	// Example: example.com
 	AdDomain *string `json:"ad_domain,omitempty"`
 
 	// Specifies the default base DN for all searches.
+	// Example: dc=domainB,dc=example,dc=com
 	BaseDn *string `json:"base_dn,omitempty"`
 
 	// Specifies the default search scope for LDAP queries:
@@ -37,7 +39,7 @@ type LdapService struct {
 	// * onelevel - search all entries immediately below the DN
 	// * subtree - search the named DN entry and the entire subtree below the DN
 	//
-	// Enum: [base onelevel subtree]
+	// Enum: ["base","onelevel","subtree"]
 	BaseScope *string `json:"base_scope,omitempty"`
 
 	// Specifies whether or not CIFS server's credentials are used to bind to the LDAP server.
@@ -45,12 +47,15 @@ type LdapService struct {
 	BindAsCifsServer *bool `json:"bind_as_cifs_server,omitempty"`
 
 	// Specifies the user that binds to the LDAP servers.
+	// Example: cn=Administrators,cn=users,dc=domainB,dc=example,dc=com
 	BindDn *string `json:"bind_dn,omitempty"`
 
 	// Specifies the bind password for the LDAP servers.
+	// Example: abc
 	BindPassword *string `json:"bind_password,omitempty"`
 
 	// Specifies the group Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for group lookups.
+	// Example: cn=abc,users,dc=com
 	GroupDn *string `json:"group_dn,omitempty"`
 
 	// Specifies the custom filter used for group membership lookups from an LDAP server.
@@ -62,7 +67,7 @@ type LdapService struct {
 	// * onelevel - search all entries immediately below the DN
 	// * subtree - search the named DN entry and the entire subtree below the DN
 	//
-	// Enum: [base onelevel subtree]
+	// Enum: ["base","onelevel","subtree"]
 	GroupScope *string `json:"group_scope,omitempty"`
 
 	// Specifies whether or not netgroup by host querying is enabled.
@@ -89,10 +94,11 @@ type LdapService struct {
 	// * simple - simple bind
 	// * sasl - Simple Authentication and Security Layer (SASL) bind
 	//
-	// Enum: [anonymous simple sasl]
+	// Enum: ["anonymous","simple","sasl"]
 	MinBindLevel *string `json:"min_bind_level,omitempty"`
 
 	// Specifies the netgroup Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for netgroup by host lookups.
+	// Example: cn=abc,users,dc=com
 	NetgroupByhostDn *string `json:"netgroup_byhost_dn,omitempty"`
 
 	// Specifies the default search scope for LDAP for netgroup by host lookups:
@@ -100,10 +106,11 @@ type LdapService struct {
 	// * onelevel - search all entries immediately below the DN
 	// * subtree - search the named DN entry and the entire subtree below the DN
 	//
-	// Enum: [base onelevel subtree]
+	// Enum: ["base","onelevel","subtree"]
 	NetgroupByhostScope *string `json:"netgroup_byhost_scope,omitempty"`
 
 	// Specifies the netgroup Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for netgroup lookups.
+	// Example: cn=abc,users,dc=com
 	NetgroupDn *string `json:"netgroup_dn,omitempty"`
 
 	// Specifies the default search scope for LDAP for netgroup lookups:
@@ -111,7 +118,7 @@ type LdapService struct {
 	// * onelevel - search all entries immediately below the DN
 	// * subtree - search the named DN entry and the entire subtree below the DN
 	//
-	// Enum: [base onelevel subtree]
+	// Enum: ["base","onelevel","subtree"]
 	NetgroupScope *string `json:"netgroup_scope,omitempty"`
 
 	// The port used to connect to the LDAP Servers.
@@ -128,6 +135,10 @@ type LdapService struct {
 	//
 	ReferralEnabled *bool `json:"referral_enabled,omitempty"`
 
+	// Specifies whether or not LDAP server discovery is restricted to site-scope.
+	//
+	RestrictDiscoveryToSite *bool `json:"restrict_discovery_to_site,omitempty"`
+
 	// The name of the schema template used by the SVM.
 	// * AD-IDMU - Active Directory Identity Management for UNIX
 	// * AD-SFU - Active Directory Services for UNIX
@@ -135,6 +146,7 @@ type LdapService struct {
 	// * RFC-2307 - Schema based on RFC 2307
 	// * Custom schema
 	//
+	// Example: ad_idmu
 	Schema *string `json:"schema,omitempty"`
 
 	// Specifies the level of security to be used for LDAP communications:
@@ -142,7 +154,7 @@ type LdapService struct {
 	// * sign - sign LDAP traffic
 	// * seal - seal and sign LDAP traffic
 	//
-	// Enum: [none sign seal]
+	// Enum: ["none","sign","seal"]
 	SessionSecurity *string `json:"session_security,omitempty"`
 
 	// Indicates whether or not the validation for the specified LDAP configuration is disabled.
@@ -164,6 +176,7 @@ type LdapService struct {
 	UseStartTLS *bool `json:"use_start_tls,omitempty"`
 
 	// Specifies the user Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for user lookups.
+	// Example: cn=abc,users,dc=com
 	UserDn *string `json:"user_dn,omitempty"`
 
 	// Specifies the default search scope for LDAP for user lookups:
@@ -171,7 +184,7 @@ type LdapService struct {
 	// * onelevel - search all entries immediately below the DN
 	// * subtree - search the named DN entry and the entire subtree below the DN
 	//
-	// Enum: [base onelevel subtree]
+	// Enum: ["base","onelevel","subtree"]
 	UserScope *string `json:"user_scope,omitempty"`
 }
 
@@ -944,7 +957,7 @@ func (m *LdapServiceInlineLinks) UnmarshalBinary(b []byte) error {
 // swagger:model ldap_service_inline_status
 type LdapServiceInlineStatus struct {
 
-	// Code corresponding to the status message.
+	// This field is no longer supported. Use ipv4.code or ipv6.code instead.
 	//
 	// Example: 65537300
 	Code *int64 `json:"code,omitempty"`
@@ -952,19 +965,52 @@ type LdapServiceInlineStatus struct {
 	// dn message
 	DnMessage []*string `json:"dn_message,omitempty"`
 
-	// Provides additional details on the status of the LDAP service.
+	// ipv4
+	IPV4 *LdapServiceInlineStatusInlineIPV4 `json:"ipv4,omitempty"`
+
+	// This field is no longer supported. Use ipv4.state instead.
+	//
+	// Enum: ["up","down"]
+	IPV4State *string `json:"ipv4_state,omitempty"`
+
+	// ipv6
+	IPV6 *LdapServiceInlineStatusInlineIPV6 `json:"ipv6,omitempty"`
+
+	// This field is no longer supported. Use ipv6.state instead.
+	//
+	// Enum: ["up","down"]
+	IPV6State *string `json:"ipv6_state,omitempty"`
+
+	// This field is no longer supported. Use ipv4.message or ipv6.message instead.
 	//
 	Message *string `json:"message,omitempty"`
 
-	// Specifies the status of the LDAP service.
+	// The status of the LDAP service for the SVM. The LDAP service is up if either `ipv4_state` or `ipv6_state` is up.
+	// The LDAP service is down if both `ipv4_state` and `ipv6_state` are down.
 	//
-	// Enum: [up down]
+	// Enum: ["up","down"]
 	State *string `json:"state,omitempty"`
 }
 
 // Validate validates this ldap service inline status
 func (m *LdapServiceInlineStatus) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateIPV4(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIPV4State(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIPV6(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIPV6State(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateState(formats); err != nil {
 		res = append(res, err)
@@ -973,6 +1019,152 @@ func (m *LdapServiceInlineStatus) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *LdapServiceInlineStatus) validateIPV4(formats strfmt.Registry) error {
+	if swag.IsZero(m.IPV4) { // not required
+		return nil
+	}
+
+	if m.IPV4 != nil {
+		if err := m.IPV4.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status" + "." + "ipv4")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var ldapServiceInlineStatusTypeIPV4StatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["up","down"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		ldapServiceInlineStatusTypeIPV4StatePropEnum = append(ldapServiceInlineStatusTypeIPV4StatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ldap_service_inline_status
+	// LdapServiceInlineStatus
+	// ipv4_state
+	// IPV4State
+	// up
+	// END DEBUGGING
+	// LdapServiceInlineStatusIPV4StateUp captures enum value "up"
+	LdapServiceInlineStatusIPV4StateUp string = "up"
+
+	// BEGIN DEBUGGING
+	// ldap_service_inline_status
+	// LdapServiceInlineStatus
+	// ipv4_state
+	// IPV4State
+	// down
+	// END DEBUGGING
+	// LdapServiceInlineStatusIPV4StateDown captures enum value "down"
+	LdapServiceInlineStatusIPV4StateDown string = "down"
+)
+
+// prop value enum
+func (m *LdapServiceInlineStatus) validateIPV4StateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ldapServiceInlineStatusTypeIPV4StatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LdapServiceInlineStatus) validateIPV4State(formats strfmt.Registry) error {
+	if swag.IsZero(m.IPV4State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateIPV4StateEnum("status"+"."+"ipv4_state", "body", *m.IPV4State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LdapServiceInlineStatus) validateIPV6(formats strfmt.Registry) error {
+	if swag.IsZero(m.IPV6) { // not required
+		return nil
+	}
+
+	if m.IPV6 != nil {
+		if err := m.IPV6.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status" + "." + "ipv6")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var ldapServiceInlineStatusTypeIPV6StatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["up","down"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		ldapServiceInlineStatusTypeIPV6StatePropEnum = append(ldapServiceInlineStatusTypeIPV6StatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ldap_service_inline_status
+	// LdapServiceInlineStatus
+	// ipv6_state
+	// IPV6State
+	// up
+	// END DEBUGGING
+	// LdapServiceInlineStatusIPV6StateUp captures enum value "up"
+	LdapServiceInlineStatusIPV6StateUp string = "up"
+
+	// BEGIN DEBUGGING
+	// ldap_service_inline_status
+	// LdapServiceInlineStatus
+	// ipv6_state
+	// IPV6State
+	// down
+	// END DEBUGGING
+	// LdapServiceInlineStatusIPV6StateDown captures enum value "down"
+	LdapServiceInlineStatusIPV6StateDown string = "down"
+)
+
+// prop value enum
+func (m *LdapServiceInlineStatus) validateIPV6StateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ldapServiceInlineStatusTypeIPV6StatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LdapServiceInlineStatus) validateIPV6State(formats strfmt.Registry) error {
+	if swag.IsZero(m.IPV6State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateIPV6StateEnum("status"+"."+"ipv6_state", "body", *m.IPV6State); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -1036,9 +1228,45 @@ func (m *LdapServiceInlineStatus) validateState(formats strfmt.Registry) error {
 func (m *LdapServiceInlineStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateIPV4(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIPV6(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *LdapServiceInlineStatus) contextValidateIPV4(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.IPV4 != nil {
+		if err := m.IPV4.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status" + "." + "ipv4")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LdapServiceInlineStatus) contextValidateIPV6(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.IPV6 != nil {
+		if err := m.IPV6.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status" + "." + "ipv6")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -1060,7 +1288,239 @@ func (m *LdapServiceInlineStatus) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LdapServiceInlineSvm ldap service inline svm
+// LdapServiceInlineStatusInlineIPV4 ldap service inline status inline ipv4
+//
+// swagger:model ldap_service_inline_status_inline_ipv4
+type LdapServiceInlineStatusInlineIPV4 struct {
+
+	// Code corresponding to the error message. If there is no error, it is 0 to indicate success.
+	//
+	// Example: 65537300
+	Code *int64 `json:"code,omitempty"`
+
+	// dn messages
+	DnMessages []*string `json:"dn_messages,omitempty"`
+
+	// Provides additional details on the error.
+	//
+	Message *string `json:"message,omitempty"`
+
+	// Status of the LDAP service.
+	//
+	// Enum: ["up","down"]
+	State *string `json:"state,omitempty"`
+}
+
+// Validate validates this ldap service inline status inline ipv4
+func (m *LdapServiceInlineStatusInlineIPV4) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var ldapServiceInlineStatusInlineIpv4TypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["up","down"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		ldapServiceInlineStatusInlineIpv4TypeStatePropEnum = append(ldapServiceInlineStatusInlineIpv4TypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ldap_service_inline_status_inline_ipv4
+	// LdapServiceInlineStatusInlineIPV4
+	// state
+	// State
+	// up
+	// END DEBUGGING
+	// LdapServiceInlineStatusInlineIPV4StateUp captures enum value "up"
+	LdapServiceInlineStatusInlineIPV4StateUp string = "up"
+
+	// BEGIN DEBUGGING
+	// ldap_service_inline_status_inline_ipv4
+	// LdapServiceInlineStatusInlineIPV4
+	// state
+	// State
+	// down
+	// END DEBUGGING
+	// LdapServiceInlineStatusInlineIPV4StateDown captures enum value "down"
+	LdapServiceInlineStatusInlineIPV4StateDown string = "down"
+)
+
+// prop value enum
+func (m *LdapServiceInlineStatusInlineIPV4) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ldapServiceInlineStatusInlineIpv4TypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LdapServiceInlineStatusInlineIPV4) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("status"+"."+"ipv4"+"."+"state", "body", *m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this ldap service inline status inline ipv4 based on context it is used
+func (m *LdapServiceInlineStatusInlineIPV4) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LdapServiceInlineStatusInlineIPV4) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LdapServiceInlineStatusInlineIPV4) UnmarshalBinary(b []byte) error {
+	var res LdapServiceInlineStatusInlineIPV4
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LdapServiceInlineStatusInlineIPV6 ldap service inline status inline ipv6
+//
+// swagger:model ldap_service_inline_status_inline_ipv6
+type LdapServiceInlineStatusInlineIPV6 struct {
+
+	// Code corresponding to the error message. If there is no error, it is 0 to indicate success.
+	//
+	// Example: 65537300
+	Code *int64 `json:"code,omitempty"`
+
+	// dn messages
+	DnMessages []*string `json:"dn_messages,omitempty"`
+
+	// Provides additional details on the error.
+	//
+	Message *string `json:"message,omitempty"`
+
+	// Status of the LDAP service.
+	//
+	// Enum: ["up","down"]
+	State *string `json:"state,omitempty"`
+}
+
+// Validate validates this ldap service inline status inline ipv6
+func (m *LdapServiceInlineStatusInlineIPV6) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var ldapServiceInlineStatusInlineIpv6TypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["up","down"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		ldapServiceInlineStatusInlineIpv6TypeStatePropEnum = append(ldapServiceInlineStatusInlineIpv6TypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ldap_service_inline_status_inline_ipv6
+	// LdapServiceInlineStatusInlineIPV6
+	// state
+	// State
+	// up
+	// END DEBUGGING
+	// LdapServiceInlineStatusInlineIPV6StateUp captures enum value "up"
+	LdapServiceInlineStatusInlineIPV6StateUp string = "up"
+
+	// BEGIN DEBUGGING
+	// ldap_service_inline_status_inline_ipv6
+	// LdapServiceInlineStatusInlineIPV6
+	// state
+	// State
+	// down
+	// END DEBUGGING
+	// LdapServiceInlineStatusInlineIPV6StateDown captures enum value "down"
+	LdapServiceInlineStatusInlineIPV6StateDown string = "down"
+)
+
+// prop value enum
+func (m *LdapServiceInlineStatusInlineIPV6) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ldapServiceInlineStatusInlineIpv6TypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LdapServiceInlineStatusInlineIPV6) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("status"+"."+"ipv6"+"."+"state", "body", *m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this ldap service inline status inline ipv6 based on context it is used
+func (m *LdapServiceInlineStatusInlineIPV6) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LdapServiceInlineStatusInlineIPV6) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LdapServiceInlineStatusInlineIPV6) UnmarshalBinary(b []byte) error {
+	var res LdapServiceInlineStatusInlineIPV6
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LdapServiceInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model ldap_service_inline_svm
 type LdapServiceInlineSvm struct {
@@ -1068,12 +1528,12 @@ type LdapServiceInlineSvm struct {
 	// links
 	Links *LdapServiceInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

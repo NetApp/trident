@@ -47,7 +47,7 @@ type ApplicationComponent struct {
 
 	// Defines the type of file system that will be installed on this application component.
 	// Read Only: true
-	// Enum: [m1fs xfs generic]
+	// Enum: ["m1fs","xfs","generic"]
 	FileSystem *string `json:"file_system,omitempty"`
 
 	// Host management URL

@@ -35,7 +35,7 @@ type FirmwareUpdateProgressState struct {
 
 	// status
 	// Read Only: true
-	// Enum: [idle working complete failed waiting_to_retry]
+	// Enum: ["idle","working","complete","failed","waiting_to_retry"]
 	Status *string `json:"status,omitempty"`
 
 	// worker node

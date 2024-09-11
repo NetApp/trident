@@ -33,7 +33,7 @@ type ChassisNode struct {
 
 	// The position of the node in the chassis, when viewed from the rear of the system.
 	// Example: top
-	// Enum: [top bottom left right unknown]
+	// Enum: ["top","bottom","left","right","centre","unknown"]
 	Position *string `json:"position,omitempty"`
 
 	// usbs
@@ -108,7 +108,7 @@ var chassisNodeTypePositionPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["top","bottom","left","right","unknown"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["top","bottom","left","right","centre","unknown"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -157,6 +157,16 @@ const (
 	// END DEBUGGING
 	// ChassisNodePositionRight captures enum value "right"
 	ChassisNodePositionRight string = "right"
+
+	// BEGIN DEBUGGING
+	// chassis_node
+	// ChassisNode
+	// position
+	// Position
+	// centre
+	// END DEBUGGING
+	// ChassisNodePositionCentre captures enum value "centre"
+	ChassisNodePositionCentre string = "centre"
 
 	// BEGIN DEBUGGING
 	// chassis_node

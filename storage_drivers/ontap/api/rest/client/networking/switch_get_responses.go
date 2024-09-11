@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SwitchGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the switch get o k response
+func (o *SwitchGetOK) Code() int {
+	return 200
+}
+
 func (o *SwitchGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/ethernet/switches/{name}][%d] switchGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/switches/{name}][%d] switchGetOK %s", 200, payload)
 }
 
 func (o *SwitchGetOK) String() string {
-	return fmt.Sprintf("[GET /network/ethernet/switches/{name}][%d] switchGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/switches/{name}][%d] switchGetOK %s", 200, payload)
 }
 
 func (o *SwitchGetOK) GetPayload() *models.Switch {
@@ -122,11 +130,6 @@ type SwitchGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the switch get default response
-func (o *SwitchGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this switch get default response has a 2xx status code
 func (o *SwitchGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SwitchGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the switch get default response
+func (o *SwitchGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SwitchGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/ethernet/switches/{name}][%d] switch_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/switches/{name}][%d] switch_get default %s", o._statusCode, payload)
 }
 
 func (o *SwitchGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/ethernet/switches/{name}][%d] switch_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/switches/{name}][%d] switch_get default %s", o._statusCode, payload)
 }
 
 func (o *SwitchGetDefault) GetPayload() *models.ErrorResponse {

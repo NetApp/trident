@@ -33,7 +33,7 @@ type SoftwareErrorsReference struct {
 	// Severity of error
 	// Example: warning
 	// Read Only: true
-	// Enum: [informational warning error]
+	// Enum: ["informational","warning","error"]
 	Severity *string `json:"severity,omitempty"`
 }
 

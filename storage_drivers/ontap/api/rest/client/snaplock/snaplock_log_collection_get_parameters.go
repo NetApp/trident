@@ -68,30 +68,6 @@ type SnaplockLogCollectionGetParams struct {
 	*/
 	Fields []string
 
-	/* LogArchiveBaseName.
-
-	   Filter by log_archive.base_name
-	*/
-	LogArchiveBaseName *string
-
-	/* LogArchiveExpiryTime.
-
-	   Filter by log_archive.expiry_time
-	*/
-	LogArchiveExpiryTime *string
-
-	/* LogArchivePath.
-
-	   Filter by log_archive.path
-	*/
-	LogArchivePath *string
-
-	/* LogArchiveSize.
-
-	   Filter by log_archive.size
-	*/
-	LogArchiveSize *int64
-
 	/* LogFilesBaseName.
 
 	   Filter by log_files.base_name
@@ -256,50 +232,6 @@ func (o *SnaplockLogCollectionGetParams) WithFields(fields []string) *SnaplockLo
 // SetFields adds the fields to the snaplock log collection get params
 func (o *SnaplockLogCollectionGetParams) SetFields(fields []string) {
 	o.Fields = fields
-}
-
-// WithLogArchiveBaseName adds the logArchiveBaseName to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithLogArchiveBaseName(logArchiveBaseName *string) *SnaplockLogCollectionGetParams {
-	o.SetLogArchiveBaseName(logArchiveBaseName)
-	return o
-}
-
-// SetLogArchiveBaseName adds the logArchiveBaseName to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetLogArchiveBaseName(logArchiveBaseName *string) {
-	o.LogArchiveBaseName = logArchiveBaseName
-}
-
-// WithLogArchiveExpiryTime adds the logArchiveExpiryTime to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithLogArchiveExpiryTime(logArchiveExpiryTime *string) *SnaplockLogCollectionGetParams {
-	o.SetLogArchiveExpiryTime(logArchiveExpiryTime)
-	return o
-}
-
-// SetLogArchiveExpiryTime adds the logArchiveExpiryTime to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetLogArchiveExpiryTime(logArchiveExpiryTime *string) {
-	o.LogArchiveExpiryTime = logArchiveExpiryTime
-}
-
-// WithLogArchivePath adds the logArchivePath to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithLogArchivePath(logArchivePath *string) *SnaplockLogCollectionGetParams {
-	o.SetLogArchivePath(logArchivePath)
-	return o
-}
-
-// SetLogArchivePath adds the logArchivePath to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetLogArchivePath(logArchivePath *string) {
-	o.LogArchivePath = logArchivePath
-}
-
-// WithLogArchiveSize adds the logArchiveSize to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithLogArchiveSize(logArchiveSize *int64) *SnaplockLogCollectionGetParams {
-	o.SetLogArchiveSize(logArchiveSize)
-	return o
-}
-
-// SetLogArchiveSize adds the logArchiveSize to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetLogArchiveSize(logArchiveSize *int64) {
-	o.LogArchiveSize = logArchiveSize
 }
 
 // WithLogFilesBaseName adds the logFilesBaseName to the snaplock log collection get params
@@ -472,74 +404,6 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
-		}
-	}
-
-	if o.LogArchiveBaseName != nil {
-
-		// query param log_archive.base_name
-		var qrLogArchiveBaseName string
-
-		if o.LogArchiveBaseName != nil {
-			qrLogArchiveBaseName = *o.LogArchiveBaseName
-		}
-		qLogArchiveBaseName := qrLogArchiveBaseName
-		if qLogArchiveBaseName != "" {
-
-			if err := r.SetQueryParam("log_archive.base_name", qLogArchiveBaseName); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.LogArchiveExpiryTime != nil {
-
-		// query param log_archive.expiry_time
-		var qrLogArchiveExpiryTime string
-
-		if o.LogArchiveExpiryTime != nil {
-			qrLogArchiveExpiryTime = *o.LogArchiveExpiryTime
-		}
-		qLogArchiveExpiryTime := qrLogArchiveExpiryTime
-		if qLogArchiveExpiryTime != "" {
-
-			if err := r.SetQueryParam("log_archive.expiry_time", qLogArchiveExpiryTime); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.LogArchivePath != nil {
-
-		// query param log_archive.path
-		var qrLogArchivePath string
-
-		if o.LogArchivePath != nil {
-			qrLogArchivePath = *o.LogArchivePath
-		}
-		qLogArchivePath := qrLogArchivePath
-		if qLogArchivePath != "" {
-
-			if err := r.SetQueryParam("log_archive.path", qLogArchivePath); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.LogArchiveSize != nil {
-
-		// query param log_archive.size
-		var qrLogArchiveSize int64
-
-		if o.LogArchiveSize != nil {
-			qrLogArchiveSize = *o.LogArchiveSize
-		}
-		qLogArchiveSize := swag.FormatInt64(qrLogArchiveSize)
-		if qLogArchiveSize != "" {
-
-			if err := r.SetQueryParam("log_archive.size", qLogArchiveSize); err != nil {
-				return err
-			}
 		}
 	}
 

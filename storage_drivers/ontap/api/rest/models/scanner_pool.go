@@ -34,7 +34,7 @@ type ScannerPool struct {
 	//   * secondary - Active only when none of the primary external virus-scanning servers are connected.
 	//   * idle      - Always inactive.
 	//
-	// Enum: [primary secondary idle]
+	// Enum: ["primary","secondary","idle"]
 	Role *string `json:"role,omitempty"`
 
 	// Specifies a list of privileged users. A valid form of privileged user-name is "domain-name\user-name". Privileged user-names are stored and treated as case-insensitive strings. Virus scanners must use one of the registered privileged users for connecting to clustered Data ONTAP for exchanging virus-scanning protocol messages and to access file for scanning, remedying and quarantining operations.

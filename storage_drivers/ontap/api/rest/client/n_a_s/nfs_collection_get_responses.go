@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NfsCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nfs collection get o k response
+func (o *NfsCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *NfsCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/services][%d] nfsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/services][%d] nfsCollectionGetOK %s", 200, payload)
 }
 
 func (o *NfsCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/services][%d] nfsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/services][%d] nfsCollectionGetOK %s", 200, payload)
 }
 
 func (o *NfsCollectionGetOK) GetPayload() *models.NfsServiceResponse {
@@ -122,11 +130,6 @@ type NfsCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the nfs collection get default response
-func (o *NfsCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this nfs collection get default response has a 2xx status code
 func (o *NfsCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NfsCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nfs collection get default response
+func (o *NfsCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NfsCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/services][%d] nfs_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/services][%d] nfs_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *NfsCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/services][%d] nfs_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/services][%d] nfs_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *NfsCollectionGetDefault) GetPayload() *models.ErrorResponse {

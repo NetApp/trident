@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ClusterPeerCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cluster peer collection get o k response
+func (o *ClusterPeerCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *ClusterPeerCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/peers][%d] clusterPeerCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/peers][%d] clusterPeerCollectionGetOK %s", 200, payload)
 }
 
 func (o *ClusterPeerCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/peers][%d] clusterPeerCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/peers][%d] clusterPeerCollectionGetOK %s", 200, payload)
 }
 
 func (o *ClusterPeerCollectionGetOK) GetPayload() *models.ClusterPeerResponse {
@@ -122,11 +130,6 @@ type ClusterPeerCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cluster peer collection get default response
-func (o *ClusterPeerCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cluster peer collection get default response has a 2xx status code
 func (o *ClusterPeerCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *ClusterPeerCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster peer collection get default response
+func (o *ClusterPeerCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterPeerCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/peers][%d] cluster_peer_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/peers][%d] cluster_peer_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ClusterPeerCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/peers][%d] cluster_peer_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/peers][%d] cluster_peer_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ClusterPeerCollectionGetDefault) GetPayload() *models.ErrorResponse {

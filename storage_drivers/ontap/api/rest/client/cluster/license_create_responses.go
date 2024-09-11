@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *LicenseCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the license create created response
+func (o *LicenseCreateCreated) Code() int {
+	return 201
+}
+
 func (o *LicenseCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /cluster/licensing/licenses][%d] licenseCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/licensing/licenses][%d] licenseCreateCreated %s", 201, payload)
 }
 
 func (o *LicenseCreateCreated) String() string {
-	return fmt.Sprintf("[POST /cluster/licensing/licenses][%d] licenseCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/licensing/licenses][%d] licenseCreateCreated %s", 201, payload)
 }
 
 func (o *LicenseCreateCreated) GetPayload() *models.LicensePackageResponse {
@@ -171,16 +179,12 @@ func NewLicenseCreateDefault(code int) *LicenseCreateDefault {
 | 655294468 | Expired license |
 | 655294469 | License does not apply to the platform |
 | 655294470 | License does not apply to the product |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type LicenseCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponses
-}
-
-// Code gets the status code for the license create default response
-func (o *LicenseCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this license create default response has a 2xx status code
@@ -208,12 +212,19 @@ func (o *LicenseCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the license create default response
+func (o *LicenseCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LicenseCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /cluster/licensing/licenses][%d] license_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/licensing/licenses][%d] license_create default %s", o._statusCode, payload)
 }
 
 func (o *LicenseCreateDefault) String() string {
-	return fmt.Sprintf("[POST /cluster/licensing/licenses][%d] license_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/licensing/licenses][%d] license_create default %s", o._statusCode, payload)
 }
 
 func (o *LicenseCreateDefault) GetPayload() *models.ErrorResponses {

@@ -18,6 +18,10 @@ import (
 // swagger:model audit
 type Audit struct {
 
+	// Indicates if audit logs generation should incur an extra charge.
+	// Example: false
+	ChargeQos *bool `json:"charge_qos,omitempty"`
+
 	// Specifies whether or not auditing is enabled on the SVM.
 	Enabled *bool `json:"enabled,omitempty"`
 
@@ -198,6 +202,12 @@ func (m *Audit) UnmarshalBinary(b []byte) error {
 // swagger:model audit_inline_events
 type AuditInlineEvents struct {
 
+	// Volume file async delete events
+	AsyncDelete *bool `json:"async_delete,omitempty"`
+
+	// Audit policy change events
+	AuditPolicyChange *bool `json:"audit_policy_change,omitempty"`
+
 	// Authorization policy change events
 	AuthorizationPolicy *bool `json:"authorization_policy,omitempty"`
 
@@ -248,7 +258,7 @@ func (m *AuditInlineEvents) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AuditInlineSvm audit inline svm
+// AuditInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model audit_inline_svm
 type AuditInlineSvm struct {
@@ -256,12 +266,12 @@ type AuditInlineSvm struct {
 	// links
 	Links *AuditInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

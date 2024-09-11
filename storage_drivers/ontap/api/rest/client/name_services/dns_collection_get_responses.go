@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *DNSCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the dns collection get o k response
+func (o *DNSCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *DNSCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/dns][%d] dnsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/dns][%d] dnsCollectionGetOK %s", 200, payload)
 }
 
 func (o *DNSCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/dns][%d] dnsCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/dns][%d] dnsCollectionGetOK %s", 200, payload)
 }
 
 func (o *DNSCollectionGetOK) GetPayload() *models.DNSResponse {
@@ -122,11 +130,6 @@ type DNSCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the dns collection get default response
-func (o *DNSCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this dns collection get default response has a 2xx status code
 func (o *DNSCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *DNSCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the dns collection get default response
+func (o *DNSCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *DNSCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/dns][%d] dns_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/dns][%d] dns_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *DNSCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/dns][%d] dns_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/dns][%d] dns_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *DNSCollectionGetDefault) GetPayload() *models.ErrorResponse {

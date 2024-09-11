@@ -22,21 +22,22 @@ type FileClone struct {
 	Autodelete *bool `json:"autodelete,omitempty"`
 
 	// Relative path of the clone/destination file in the volume.
-	// Example: dest_file1, dir1/dest_file2
+	// Example: dest_file1 or dir1/dest_file2
 	DestinationPath *string `json:"destination_path,omitempty"`
 
 	// List of block ranges for sub-file cloning in the format "source-file-block-number:destination-file-block-number:block-count"
-	// Example: ["10:10:5","20:20:10"]
+	// Example: ["0:0:2"]
 	FileCloneInlineRange []*string `json:"range,omitempty"`
 
 	// Mark clone file for backup.
+	// Example: false
 	IsBackup *bool `json:"is_backup,omitempty"`
 
 	// Destination file gets overwritten.
 	OverwriteDestination *bool `json:"overwrite_destination,omitempty"`
 
 	// Relative path of the source file in the volume.
-	// Example: src_file1, dir1/src_file2, ./.snapshot/snap1/src_file3
+	// Example: src_file1 or dir1/src_file2 or ./.snapshot/snap1/src_file3
 	SourcePath *string `json:"source_path,omitempty"`
 
 	// UUID of existing clone token with reserved split load.
@@ -131,7 +132,7 @@ type FileCloneInlineVolume struct {
 	// links
 	Links *FileCloneInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

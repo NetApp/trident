@@ -44,13 +44,13 @@ type EmsMessage struct {
 	// Severity
 	// Example: error
 	// Read Only: true
-	// Enum: [emergency alert error notice informational debug]
+	// Enum: ["emergency","alert","error","notice","informational","debug"]
 	Severity *string `json:"severity,omitempty"`
 
 	// SNMP trap type
 	// Example: standard
 	// Read Only: true
-	// Enum: [standard built_in severity_based]
+	// Enum: ["standard","built_in","severity_based"]
 	SnmpTrapType *string `json:"snmp_trap_type,omitempty"`
 }
 

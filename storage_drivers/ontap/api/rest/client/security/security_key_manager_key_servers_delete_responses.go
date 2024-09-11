@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SecurityKeyManagerKeyServersDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the security key manager key servers delete o k response
+func (o *SecurityKeyManagerKeyServersDeleteOK) Code() int {
+	return 200
+}
+
 func (o *SecurityKeyManagerKeyServersDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}/key-servers/{server}][%d] securityKeyManagerKeyServersDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}/key-servers/{server}][%d] securityKeyManagerKeyServersDeleteOK", 200)
 }
 
 func (o *SecurityKeyManagerKeyServersDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}/key-servers/{server}][%d] securityKeyManagerKeyServersDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}/key-servers/{server}][%d] securityKeyManagerKeyServersDeleteOK", 200)
 }
 
 func (o *SecurityKeyManagerKeyServersDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,22 +112,15 @@ func NewSecurityKeyManagerKeyServersDeleteDefault(code int) *SecurityKeyManagerK
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 65536600 | Cannot remove a key server while a node is out quorum. |
+| 65536600 | Cannot remove a key server while a node is out of quorum. |
 | 65536700 | The key server contains keys that are currently in use and not available from any other configured key server in the SVM. |
-| 65536822 | Multitenant key management is not supported in the current cluster version. |
-| 65536824 | Multitenant key management is not supported in MetroCluster configurations. |
-| 65536828 | External key management is not enabled for the SVM. |
 | 65536843 | The key management server is not configured for the SVM. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SecurityKeyManagerKeyServersDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security key manager key servers delete default response
-func (o *SecurityKeyManagerKeyServersDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security key manager key servers delete default response has a 2xx status code
@@ -149,12 +148,19 @@ func (o *SecurityKeyManagerKeyServersDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security key manager key servers delete default response
+func (o *SecurityKeyManagerKeyServersDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityKeyManagerKeyServersDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}/key-servers/{server}][%d] security_key_manager_key_servers_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}/key-servers/{server}][%d] security_key_manager_key_servers_delete default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeyManagerKeyServersDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}/key-servers/{server}][%d] security_key_manager_key_servers_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}/key-servers/{server}][%d] security_key_manager_key_servers_delete default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeyManagerKeyServersDeleteDefault) GetPayload() *models.ErrorResponse {

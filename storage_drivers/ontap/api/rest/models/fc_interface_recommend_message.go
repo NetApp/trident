@@ -40,6 +40,7 @@ type FcInterfaceRecommendMessage struct {
 	//   | 5375971 | The limit for the number of NVMe network interfaces on a cluster node has been exceeded. |
 	//   | 5375972 | The limit for the number of cluster nodes containing NVMe network interfaces for the SVM has been exceeded. |
 	//   | 5375973 | The SVM can be reached from a number of FC fabrics other than what is preferred. |
+	//   Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 	//
 	// Example: 5375959
 	// Read Only: true
@@ -61,7 +62,7 @@ type FcInterfaceRecommendMessage struct {
 	//
 	// Example: informational
 	// Read Only: true
-	// Enum: [error warning informational]
+	// Enum: ["error","warning","informational"]
 	Severity *string `json:"severity,omitempty"`
 }
 

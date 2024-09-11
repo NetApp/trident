@@ -212,12 +212,6 @@ type StoragePoolCollectionGetParams struct {
 	*/
 	HealthUnhealthyReasonMessage *string
 
-	/* HealthUnhealthyReasonTarget.
-
-	   Filter by health.unhealthy_reason.target
-	*/
-	HealthUnhealthyReasonTarget *string
-
 	/* MaxRecords.
 
 	   Limit the number of records returned.
@@ -616,17 +610,6 @@ func (o *StoragePoolCollectionGetParams) WithHealthUnhealthyReasonMessage(health
 // SetHealthUnhealthyReasonMessage adds the healthUnhealthyReasonMessage to the storage pool collection get params
 func (o *StoragePoolCollectionGetParams) SetHealthUnhealthyReasonMessage(healthUnhealthyReasonMessage *string) {
 	o.HealthUnhealthyReasonMessage = healthUnhealthyReasonMessage
-}
-
-// WithHealthUnhealthyReasonTarget adds the healthUnhealthyReasonTarget to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithHealthUnhealthyReasonTarget(healthUnhealthyReasonTarget *string) *StoragePoolCollectionGetParams {
-	o.SetHealthUnhealthyReasonTarget(healthUnhealthyReasonTarget)
-	return o
-}
-
-// SetHealthUnhealthyReasonTarget adds the healthUnhealthyReasonTarget to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetHealthUnhealthyReasonTarget(healthUnhealthyReasonTarget *string) {
-	o.HealthUnhealthyReasonTarget = healthUnhealthyReasonTarget
 }
 
 // WithMaxRecords adds the maxRecords to the storage pool collection get params
@@ -1150,23 +1133,6 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qHealthUnhealthyReasonMessage != "" {
 
 			if err := r.SetQueryParam("health.unhealthy_reason.message", qHealthUnhealthyReasonMessage); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.HealthUnhealthyReasonTarget != nil {
-
-		// query param health.unhealthy_reason.target
-		var qrHealthUnhealthyReasonTarget string
-
-		if o.HealthUnhealthyReasonTarget != nil {
-			qrHealthUnhealthyReasonTarget = *o.HealthUnhealthyReasonTarget
-		}
-		qHealthUnhealthyReasonTarget := qrHealthUnhealthyReasonTarget
-		if qHealthUnhealthyReasonTarget != "" {
-
-			if err := r.SetQueryParam("health.unhealthy_reason.target", qHealthUnhealthyReasonTarget); err != nil {
 				return err
 			}
 		}

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *FpolicyPolicyModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fpolicy policy modify o k response
+func (o *FpolicyPolicyModifyOK) Code() int {
+	return 200
+}
+
 func (o *FpolicyPolicyModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicyPolicyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicyPolicyModifyOK", 200)
 }
 
 func (o *FpolicyPolicyModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicyPolicyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicyPolicyModifyOK", 200)
 }
 
 func (o *FpolicyPolicyModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,27 +112,27 @@ func NewFpolicyPolicyModifyDefault(code int) *FpolicyPolicyModifyDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 9764875    | An FPolicy event does not exist |
+| 9764888    | An FPolicy engine does not exist |
 | 9765026    | The priority must be specified when enabling the FPolicy policy |
 | 9765025    | Cannot disable an FPolicy policy when the priority is specified |
-| 9764899    | Cannot modify an FPolicy engine when the policy is enabled |
+| 9764899    | Cannot modify an enabled FPolicy policy |
 | 9764899    | Deletion of a cluster policy is not supported |
-| 9764908    | An FPolicy policy is already enabled |
-| 9764907    | An FPolicy policy is already disabled |
+| 9764907    | An FPolicy policy is already enabled |
+| 9764908    | An FPolicy policy is already disabled |
 | 9765029    | An FPolicy was modified but disable/enable failed as the policy is already disabled/enabled |
 | 9765036    | Cannot modify an FPolicy policy as passthrough-read policies are not supported without privileged user |
 | 9765038    | Passthrough-read policies are not supported with an external engine of type "asynchronous" |
 | 9765039    | Passthrough-read policies are not supported with native engine |
-| 9765040    | Cannot modify an FPolicy policy as passthrough-read could not be enabled/disabled when the policy is enabled |
+| 9765056    | The specified Persistent Store does not exist |
+| 9765062    | Policy with Persistent Store does not support mandatory screening |
+| 9765065    | A valid privileged user name must be in the form "domain-name\\user-name" |
+| 9765066    | The privileged user contains characters that are not allowed |
 */
 type FpolicyPolicyModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the fpolicy policy modify default response
-func (o *FpolicyPolicyModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this fpolicy policy modify default response has a 2xx status code
@@ -154,12 +160,19 @@ func (o *FpolicyPolicyModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fpolicy policy modify default response
+func (o *FpolicyPolicyModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FpolicyPolicyModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicy_policy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicy_policy_modify default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyPolicyModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicy_policy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicy_policy_modify default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyPolicyModifyDefault) GetPayload() *models.ErrorResponse {

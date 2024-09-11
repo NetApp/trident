@@ -34,7 +34,7 @@ type VscanScannerPool struct {
 	//   * secondary - Active only when none of the primary external virus-scanning servers are connected.
 	//   * idle      - Always inactive.
 	//
-	// Enum: [primary secondary idle]
+	// Enum: ["primary","secondary","idle"]
 	Role *string `json:"role,omitempty"`
 
 	// svm
@@ -255,7 +255,7 @@ func (m *VscanScannerPool) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanScannerPoolInlineSvm vscan scanner pool inline svm
+// VscanScannerPoolInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model vscan_scanner_pool_inline_svm
 type VscanScannerPoolInlineSvm struct {
@@ -263,12 +263,12 @@ type VscanScannerPoolInlineSvm struct {
 	// links
 	Links *VscanScannerPoolInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

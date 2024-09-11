@@ -80,7 +80,7 @@ type IgroupInitiatorDeleteParams struct {
 
 	/* Name.
 
-	   The name of the initiator to delete.
+	   The initiator name.
 
 	*/
 	Name string

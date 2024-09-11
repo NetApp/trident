@@ -6,6 +6,7 @@ package svm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type SvmCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *SvmCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewSvmCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewSvmCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *SvmCreateReader) ReadResponse(response runtime.ClientResponse, consumer
 	}
 }
 
+// NewSvmCreateCreated creates a SvmCreateCreated with default headers values
+func NewSvmCreateCreated() *SvmCreateCreated {
+	return &SvmCreateCreated{}
+}
+
+/*
+SvmCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type SvmCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.SvmJobLinkResponse
+}
+
+// IsSuccess returns true when this svm create created response has a 2xx status code
+func (o *SvmCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm create created response has a 3xx status code
+func (o *SvmCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm create created response has a 4xx status code
+func (o *SvmCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm create created response has a 5xx status code
+func (o *SvmCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm create created response a status code equal to that given
+func (o *SvmCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the svm create created response
+func (o *SvmCreateCreated) Code() int {
+	return 201
+}
+
+func (o *SvmCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /svm/svms][%d] svmCreateCreated %s", 201, payload)
+}
+
+func (o *SvmCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /svm/svms][%d] svmCreateCreated %s", 201, payload)
+}
+
+func (o *SvmCreateCreated) GetPayload() *models.SvmJobLinkResponse {
+	return o.Payload
+}
+
+func (o *SvmCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.SvmJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewSvmCreateAccepted creates a SvmCreateAccepted with default headers values
 func NewSvmCreateAccepted() *SvmCreateAccepted {
 	return &SvmCreateAccepted{}
@@ -57,7 +146,7 @@ type SvmCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.SvmJobLinkResponse
 }
 
 // IsSuccess returns true when this svm create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *SvmCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the svm create accepted response
+func (o *SvmCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *SvmCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /svm/svms][%d] svmCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /svm/svms][%d] svmCreateAccepted %s", 202, payload)
 }
 
 func (o *SvmCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /svm/svms][%d] svmCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /svm/svms][%d] svmCreateAccepted %s", 202, payload)
 }
 
-func (o *SvmCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *SvmCreateAccepted) GetPayload() *models.SvmJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *SvmCreateAccepted) readResponse(response runtime.ClientResponse, consum
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.SvmJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -151,6 +247,9 @@ func NewSvmCreateDefault(code int) *SvmCreateDefault {
 | 13434916    | SVM is in the process of being created. Wait a few minutes, and then try the command again. |
 | 13434917    | SVM creation successful. |
 | 13434918    | IPspace name not provided for creating an SVM. |
+| 458753      | Destination and gateway must belong to the same address family. |
+| 13434935    | FCP, iSCSI and NVMe cannot be disabled or disallowed on this platform. |
+| 23724038    | Invalid source for the provided ns-switch database. |
 ```
 <br/>
 */
@@ -158,11 +257,6 @@ type SvmCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the svm create default response
-func (o *SvmCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this svm create default response has a 2xx status code
@@ -190,12 +284,19 @@ func (o *SvmCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the svm create default response
+func (o *SvmCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SvmCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /svm/svms][%d] svm_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /svm/svms][%d] svm_create default %s", o._statusCode, payload)
 }
 
 func (o *SvmCreateDefault) String() string {
-	return fmt.Sprintf("[POST /svm/svms][%d] svm_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /svm/svms][%d] svm_create default %s", o._statusCode, payload)
 }
 
 func (o *SvmCreateDefault) GetPayload() *models.ErrorResponse {

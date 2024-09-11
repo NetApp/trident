@@ -22,14 +22,14 @@ import (
 type NasApplicationComponentsTiering struct {
 
 	// Storage tiering placement rules for the container(s)
-	// Enum: [required best_effort disallowed]
+	// Enum: ["required","best_effort","disallowed"]
 	Control *string `json:"control,omitempty"`
 
 	// nas application components tiering inline object stores
 	NasApplicationComponentsTieringInlineObjectStores []*NasApplicationComponentsTieringInlineObjectStoresInlineArrayItem `json:"object_stores,omitempty"`
 
 	// The storage tiering type of the application component.
-	// Enum: [all auto none snapshot_only]
+	// Enum: ["all","auto","none","snapshot_only"]
 	Policy *string `json:"policy,omitempty"`
 }
 

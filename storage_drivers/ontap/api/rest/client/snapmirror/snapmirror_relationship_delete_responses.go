@@ -6,6 +6,7 @@ package snapmirror
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type SnapmirrorRelationshipDeleteReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *SnapmirrorRelationshipDeleteReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewSnapmirrorRelationshipDeleteOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewSnapmirrorRelationshipDeleteAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *SnapmirrorRelationshipDeleteReader) ReadResponse(response runtime.Clien
 	}
 }
 
+// NewSnapmirrorRelationshipDeleteOK creates a SnapmirrorRelationshipDeleteOK with default headers values
+func NewSnapmirrorRelationshipDeleteOK() *SnapmirrorRelationshipDeleteOK {
+	return &SnapmirrorRelationshipDeleteOK{}
+}
+
+/*
+SnapmirrorRelationshipDeleteOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type SnapmirrorRelationshipDeleteOK struct {
+	Payload *models.SnapmirrorRelationshipJobLinkResponse
+}
+
+// IsSuccess returns true when this snapmirror relationship delete o k response has a 2xx status code
+func (o *SnapmirrorRelationshipDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapmirror relationship delete o k response has a 3xx status code
+func (o *SnapmirrorRelationshipDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapmirror relationship delete o k response has a 4xx status code
+func (o *SnapmirrorRelationshipDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapmirror relationship delete o k response has a 5xx status code
+func (o *SnapmirrorRelationshipDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapmirror relationship delete o k response a status code equal to that given
+func (o *SnapmirrorRelationshipDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the snapmirror relationship delete o k response
+func (o *SnapmirrorRelationshipDeleteOK) Code() int {
+	return 200
+}
+
+func (o *SnapmirrorRelationshipDeleteOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipDeleteOK %s", 200, payload)
+}
+
+func (o *SnapmirrorRelationshipDeleteOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipDeleteOK %s", 200, payload)
+}
+
+func (o *SnapmirrorRelationshipDeleteOK) GetPayload() *models.SnapmirrorRelationshipJobLinkResponse {
+	return o.Payload
+}
+
+func (o *SnapmirrorRelationshipDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.SnapmirrorRelationshipJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewSnapmirrorRelationshipDeleteAccepted creates a SnapmirrorRelationshipDeleteAccepted with default headers values
 func NewSnapmirrorRelationshipDeleteAccepted() *SnapmirrorRelationshipDeleteAccepted {
 	return &SnapmirrorRelationshipDeleteAccepted{}
@@ -52,7 +129,7 @@ SnapmirrorRelationshipDeleteAccepted describes a response with status code 202, 
 Accepted
 */
 type SnapmirrorRelationshipDeleteAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.SnapmirrorRelationshipJobLinkResponse
 }
 
 // IsSuccess returns true when this snapmirror relationship delete accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *SnapmirrorRelationshipDeleteAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the snapmirror relationship delete accepted response
+func (o *SnapmirrorRelationshipDeleteAccepted) Code() int {
+	return 202
+}
+
 func (o *SnapmirrorRelationshipDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipDeleteAccepted %s", 202, payload)
 }
 
 func (o *SnapmirrorRelationshipDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipDeleteAccepted %s", 202, payload)
 }
 
-func (o *SnapmirrorRelationshipDeleteAccepted) GetPayload() *models.JobLinkResponse {
+func (o *SnapmirrorRelationshipDeleteAccepted) GetPayload() *models.SnapmirrorRelationshipJobLinkResponse {
 	return o.Payload
 }
 
 func (o *SnapmirrorRelationshipDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.SnapmirrorRelationshipJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -134,11 +218,6 @@ type SnapmirrorRelationshipDeleteDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the snapmirror relationship delete default response
-func (o *SnapmirrorRelationshipDeleteDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this snapmirror relationship delete default response has a 2xx status code
 func (o *SnapmirrorRelationshipDeleteDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -164,12 +243,19 @@ func (o *SnapmirrorRelationshipDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snapmirror relationship delete default response
+func (o *SnapmirrorRelationshipDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnapmirrorRelationshipDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /snapmirror/relationships/{uuid}][%d] snapmirror_relationship_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /snapmirror/relationships/{uuid}][%d] snapmirror_relationship_delete default %s", o._statusCode, payload)
 }
 
 func (o *SnapmirrorRelationshipDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /snapmirror/relationships/{uuid}][%d] snapmirror_relationship_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /snapmirror/relationships/{uuid}][%d] snapmirror_relationship_delete default %s", o._statusCode, payload)
 }
 
 func (o *SnapmirrorRelationshipDeleteDefault) GetPayload() *models.ErrorResponse {

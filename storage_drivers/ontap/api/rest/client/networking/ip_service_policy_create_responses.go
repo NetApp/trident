@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -25,6 +26,12 @@ func (o *IPServicePolicyCreateReader) ReadResponse(response runtime.ClientRespon
 	switch response.Code() {
 	case 200:
 		result := NewIPServicePolicyCreateOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
+	case 201:
+		result := NewIPServicePolicyCreateCreated()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -79,15 +86,87 @@ func (o *IPServicePolicyCreateOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ip service policy create o k response
+func (o *IPServicePolicyCreateOK) Code() int {
+	return 200
+}
+
 func (o *IPServicePolicyCreateOK) Error() string {
-	return fmt.Sprintf("[POST /network/ip/service-policies][%d] ipServicePolicyCreateOK ", 200)
+	return fmt.Sprintf("[POST /network/ip/service-policies][%d] ipServicePolicyCreateOK", 200)
 }
 
 func (o *IPServicePolicyCreateOK) String() string {
-	return fmt.Sprintf("[POST /network/ip/service-policies][%d] ipServicePolicyCreateOK ", 200)
+	return fmt.Sprintf("[POST /network/ip/service-policies][%d] ipServicePolicyCreateOK", 200)
 }
 
 func (o *IPServicePolicyCreateOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	return nil
+}
+
+// NewIPServicePolicyCreateCreated creates a IPServicePolicyCreateCreated with default headers values
+func NewIPServicePolicyCreateCreated() *IPServicePolicyCreateCreated {
+	return &IPServicePolicyCreateCreated{}
+}
+
+/*
+IPServicePolicyCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type IPServicePolicyCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+}
+
+// IsSuccess returns true when this ip service policy create created response has a 2xx status code
+func (o *IPServicePolicyCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ip service policy create created response has a 3xx status code
+func (o *IPServicePolicyCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ip service policy create created response has a 4xx status code
+func (o *IPServicePolicyCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ip service policy create created response has a 5xx status code
+func (o *IPServicePolicyCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ip service policy create created response a status code equal to that given
+func (o *IPServicePolicyCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the ip service policy create created response
+func (o *IPServicePolicyCreateCreated) Code() int {
+	return 201
+}
+
+func (o *IPServicePolicyCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /network/ip/service-policies][%d] ipServicePolicyCreateCreated", 201)
+}
+
+func (o *IPServicePolicyCreateCreated) String() string {
+	return fmt.Sprintf("[POST /network/ip/service-policies][%d] ipServicePolicyCreateCreated", 201)
+}
+
+func (o *IPServicePolicyCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	return nil
 }
@@ -109,6 +188,8 @@ func NewIPServicePolicyCreateDefault(code int) *IPServicePolicyCreateDefault {
 | 1966373 | Port must reside in the same IPspace as the interface's SVM. |
 | 1967146 | Svm.name does not exist. |
 | 1967147 | Svm.uuid does not exist. |
+| 2621740 | An unexpected error when trying to determine whether the target Vserver was locked or not on this cluster. |
+| 53281895 | Custom service policies cannot be created on the specified svm |
 | 53281929 | Service policies cannot combine block and file services. |
 | 53281931 | Service policy names cannot start with "default-". |
 | 53281932 | Service cannot be added because the service does not exist for the specified SVM or IPspace. |
@@ -121,20 +202,17 @@ func NewIPServicePolicyCreateDefault(code int) *IPServicePolicyCreateDefault {
 | 53281939 | One or more of the svm.uuid, svm.name, ipspace.uuid, and ipspace.name have invalid values. |
 | 53281940 | SVM or IPspace has not been specified. |
 | 53281941 | SVM does not exist. |
+| 53281942 | Service policy cannot be created because the specified SVM does not exist. |
 | 53281944 | Ipspace.name does not exist. |
 | 53281945 | Ipspace.uuid is not an IPspace. |
 | 53281946 | Service policy already exists. |
 | 53281958 | Service policies cannot contain multiple block-oriented services. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IPServicePolicyCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ip service policy create default response
-func (o *IPServicePolicyCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ip service policy create default response has a 2xx status code
@@ -162,12 +240,19 @@ func (o *IPServicePolicyCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ip service policy create default response
+func (o *IPServicePolicyCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IPServicePolicyCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /network/ip/service-policies][%d] ip_service_policy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ip/service-policies][%d] ip_service_policy_create default %s", o._statusCode, payload)
 }
 
 func (o *IPServicePolicyCreateDefault) String() string {
-	return fmt.Sprintf("[POST /network/ip/service-policies][%d] ip_service_policy_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/ip/service-policies][%d] ip_service_policy_create default %s", o._statusCode, payload)
 }
 
 func (o *IPServicePolicyCreateDefault) GetPayload() *models.ErrorResponse {

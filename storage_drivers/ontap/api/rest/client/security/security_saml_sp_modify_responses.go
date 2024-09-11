@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SecuritySamlSpModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the security saml sp modify o k response
+func (o *SecuritySamlSpModifyOK) Code() int {
+	return 200
+}
+
 func (o *SecuritySamlSpModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/authentication/cluster/saml-sp][%d] securitySamlSpModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/saml-sp][%d] securitySamlSpModifyOK", 200)
 }
 
 func (o *SecuritySamlSpModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/authentication/cluster/saml-sp][%d] securitySamlSpModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/saml-sp][%d] securitySamlSpModifyOK", 200)
 }
 
 func (o *SecuritySamlSpModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,16 +113,12 @@ func NewSecuritySamlSpModifyDefault(code int) *SecuritySamlSpModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 12320791 | SAML can only be disabled using the console or a SAML-authenticated application. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SecuritySamlSpModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security saml sp modify default response
-func (o *SecuritySamlSpModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security saml sp modify default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *SecuritySamlSpModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security saml sp modify default response
+func (o *SecuritySamlSpModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecuritySamlSpModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/authentication/cluster/saml-sp][%d] security_saml_sp_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/saml-sp][%d] security_saml_sp_modify default %s", o._statusCode, payload)
 }
 
 func (o *SecuritySamlSpModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/authentication/cluster/saml-sp][%d] security_saml_sp_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/saml-sp][%d] security_saml_sp_modify default %s", o._statusCode, payload)
 }
 
 func (o *SecuritySamlSpModifyDefault) GetPayload() *models.ErrorResponse {

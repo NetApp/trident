@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *WwpnAliasCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the wwpn alias collection get o k response
+func (o *WwpnAliasCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *WwpnAliasCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/fc/wwpn-aliases][%d] wwpnAliasCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/wwpn-aliases][%d] wwpnAliasCollectionGetOK %s", 200, payload)
 }
 
 func (o *WwpnAliasCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /network/fc/wwpn-aliases][%d] wwpnAliasCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/wwpn-aliases][%d] wwpnAliasCollectionGetOK %s", 200, payload)
 }
 
 func (o *WwpnAliasCollectionGetOK) GetPayload() *models.WwpnAliasResponse {
@@ -122,11 +130,6 @@ type WwpnAliasCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the wwpn alias collection get default response
-func (o *WwpnAliasCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this wwpn alias collection get default response has a 2xx status code
 func (o *WwpnAliasCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *WwpnAliasCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the wwpn alias collection get default response
+func (o *WwpnAliasCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *WwpnAliasCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/fc/wwpn-aliases][%d] wwpn_alias_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/wwpn-aliases][%d] wwpn_alias_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *WwpnAliasCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/fc/wwpn-aliases][%d] wwpn_alias_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/wwpn-aliases][%d] wwpn_alias_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *WwpnAliasCollectionGetDefault) GetPayload() *models.ErrorResponse {

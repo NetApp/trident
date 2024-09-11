@@ -82,6 +82,12 @@ type LunModifyParams struct {
 	*/
 	Info *models.Lun
 
+	/* ReturnTimeout.
+
+	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
+	*/
+	ReturnTimeout *int64
+
 	/* UUID.
 
 	   The unique identifier of the LUN to retrieve.
@@ -106,7 +112,18 @@ func (o *LunModifyParams) WithDefaults() *LunModifyParams {
 //
 // All values with no default are reset to their zero value.
 func (o *LunModifyParams) SetDefaults() {
-	// no default values defined for this parameter
+	var (
+		returnTimeoutDefault = int64(0)
+	)
+
+	val := LunModifyParams{
+		ReturnTimeout: &returnTimeoutDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the lun modify params
@@ -164,6 +181,17 @@ func (o *LunModifyParams) SetInfo(info *models.Lun) {
 	o.Info = info
 }
 
+// WithReturnTimeout adds the returnTimeout to the lun modify params
+func (o *LunModifyParams) WithReturnTimeout(returnTimeout *int64) *LunModifyParams {
+	o.SetReturnTimeout(returnTimeout)
+	return o
+}
+
+// SetReturnTimeout adds the returnTimeout to the lun modify params
+func (o *LunModifyParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
+}
+
 // WithUUID adds the uuid to the lun modify params
 func (o *LunModifyParams) WithUUID(uuid string) *LunModifyParams {
 	o.SetUUID(uuid)
@@ -202,6 +230,23 @@ func (o *LunModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err
+		}
+	}
+
+	if o.ReturnTimeout != nil {
+
+		// query param return_timeout
+		var qrReturnTimeout int64
+
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
+		}
+		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
+		if qReturnTimeout != "" {
+
+			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
 		}
 	}
 

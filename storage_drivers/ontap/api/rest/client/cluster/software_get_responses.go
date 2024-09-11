@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SoftwareGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the software get o k response
+func (o *SoftwareGetOK) Code() int {
+	return 200
+}
+
 func (o *SoftwareGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/software][%d] softwareGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/software][%d] softwareGetOK %s", 200, payload)
 }
 
 func (o *SoftwareGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/software][%d] softwareGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/software][%d] softwareGetOK %s", 200, payload)
 }
 
 func (o *SoftwareGetOK) GetPayload() *models.SoftwareReference {
@@ -112,19 +120,20 @@ func NewSoftwareGetDefault(code int) *SoftwareGetDefault {
 }
 
 /*
-SoftwareGetDefault describes a response with status code -1, with default header values.
+	SoftwareGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 1048576 | Error initializing software image information. |
+| 1048577 | Software image information not initialized. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SoftwareGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the software get default response
-func (o *SoftwareGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this software get default response has a 2xx status code
@@ -152,12 +161,19 @@ func (o *SoftwareGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the software get default response
+func (o *SoftwareGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SoftwareGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/software][%d] software_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/software][%d] software_get default %s", o._statusCode, payload)
 }
 
 func (o *SoftwareGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/software][%d] software_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/software][%d] software_get default %s", o._statusCode, payload)
 }
 
 func (o *SoftwareGetDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ApplicationComponentGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the application component get o k response
+func (o *ApplicationComponentGetOK) Code() int {
+	return 200
+}
+
 func (o *ApplicationComponentGetOK) Error() string {
-	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{uuid}][%d] applicationComponentGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{uuid}][%d] applicationComponentGetOK %s", 200, payload)
 }
 
 func (o *ApplicationComponentGetOK) String() string {
-	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{uuid}][%d] applicationComponentGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{uuid}][%d] applicationComponentGetOK %s", 200, payload)
 }
 
 func (o *ApplicationComponentGetOK) GetPayload() *models.ApplicationComponent {
@@ -122,11 +130,6 @@ type ApplicationComponentGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the application component get default response
-func (o *ApplicationComponentGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this application component get default response has a 2xx status code
 func (o *ApplicationComponentGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *ApplicationComponentGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the application component get default response
+func (o *ApplicationComponentGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ApplicationComponentGetDefault) Error() string {
-	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{uuid}][%d] application_component_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{uuid}][%d] application_component_get default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationComponentGetDefault) String() string {
-	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{uuid}][%d] application_component_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{uuid}][%d] application_component_get default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationComponentGetDefault) GetPayload() *models.ErrorResponse {

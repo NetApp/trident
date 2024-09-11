@@ -26,10 +26,12 @@ type AzureKeyVault struct {
 
 	// Authentication method for the AKV instance.
 	// Example: client_secret
-	// Enum: [client_secret certificate]
+	// Read Only: true
+	// Enum: ["client_secret","certificate"]
 	AuthenticationMethod *string `json:"authentication_method,omitempty"`
 
 	// azure key vault inline ekmip reachability
+	// Read Only: true
 	AzureKeyVaultInlineEkmipReachability []*AzureKeyVaultInlineEkmipReachabilityInlineArrayItem `json:"ekmip_reachability,omitempty"`
 
 	// azure reachability
@@ -49,8 +51,15 @@ type AzureKeyVault struct {
 	// Format: password
 	ClientSecret *strfmt.Password `json:"client_secret,omitempty"`
 
+	// configuration
+	Configuration *AzureKeyVaultInlineConfiguration `json:"configuration,omitempty"`
+
+	// Indicates whether the configuration is enabled.
+	// Read Only: true
+	Enabled *bool `json:"enabled,omitempty"`
+
 	// Key Identifier of AKV key encryption key.
-	// Example: https://keyvault1.vault.azure.net/keys/key1
+	// Example: https://keyvault1.vault.azure.net/keys/key1/12345678901234567890123456789012
 	// Format: uri
 	KeyID *strfmt.URI `json:"key_id,omitempty"`
 
@@ -58,6 +67,14 @@ type AzureKeyVault struct {
 	// Example: https://kmip-akv-keyvault.vault.azure.net/
 	// Format: uri
 	Name *strfmt.URI `json:"name,omitempty"`
+
+	// Open authorization server host name.
+	// Example: login.microsoftonline.com
+	OauthHost *string `json:"oauth_host,omitempty"`
+
+	// Authorization server and vault port number.
+	// Example: 443
+	Port *int64 `json:"port,omitempty"`
 
 	// Proxy host.
 	// Example: proxy.eng.com
@@ -73,7 +90,7 @@ type AzureKeyVault struct {
 
 	// Type of proxy.
 	// Example: http
-	// Enum: [http https]
+	// Enum: ["http","https"]
 	ProxyType *string `json:"proxy_type,omitempty"`
 
 	// Proxy username.
@@ -82,8 +99,12 @@ type AzureKeyVault struct {
 
 	// Set to "svm" for interfaces owned by an SVM. Otherwise, set to "cluster".
 	// Read Only: true
-	// Enum: [svm cluster]
+	// Enum: ["svm","cluster"]
 	Scope *string `json:"scope,omitempty"`
+
+	// Set to true to skip the verification of the updated user credentials when updating credentials. The default value is false.
+	// Example: false
+	SkipVerification *bool `json:"skip_verification,omitempty"`
 
 	// state
 	State *AzureKeyVaultInlineState `json:"state,omitempty"`
@@ -99,6 +120,18 @@ type AzureKeyVault struct {
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
 	UUID *string `json:"uuid,omitempty"`
+
+	// AKV host subdomain.
+	// Example: vault.azure.net
+	VaultHost *string `json:"vault_host,omitempty"`
+
+	// Verify the identity of the AKV host name.
+	// Example: false
+	VerifyHost *bool `json:"verify_host,omitempty"`
+
+	// Verify the identity of the AKV IP address.
+	// Example: false
+	VerifyIP *bool `json:"verify_ip,omitempty"`
 }
 
 // Validate validates this azure key vault
@@ -126,6 +159,10 @@ func (m *AzureKeyVault) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateClientSecret(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateConfiguration(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -292,6 +329,23 @@ func (m *AzureKeyVault) validateClientSecret(formats strfmt.Registry) error {
 
 	if err := validate.FormatOf("client_secret", "body", "password", m.ClientSecret.String(), formats); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *AzureKeyVault) validateConfiguration(formats strfmt.Registry) error {
+	if swag.IsZero(m.Configuration) { // not required
+		return nil
+	}
+
+	if m.Configuration != nil {
+		if err := m.Configuration.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -475,11 +529,23 @@ func (m *AzureKeyVault) ContextValidate(ctx context.Context, formats strfmt.Regi
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAuthenticationMethod(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateAzureKeyVaultInlineEkmipReachability(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateAzureReachability(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateConfiguration(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEnabled(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -519,7 +585,20 @@ func (m *AzureKeyVault) contextValidateLinks(ctx context.Context, formats strfmt
 	return nil
 }
 
+func (m *AzureKeyVault) contextValidateAuthenticationMethod(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "authentication_method", "body", m.AuthenticationMethod); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *AzureKeyVault) contextValidateAzureKeyVaultInlineEkmipReachability(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ekmip_reachability", "body", []*AzureKeyVaultInlineEkmipReachabilityInlineArrayItem(m.AzureKeyVaultInlineEkmipReachability)); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(m.AzureKeyVaultInlineEkmipReachability); i++ {
 
@@ -546,6 +625,29 @@ func (m *AzureKeyVault) contextValidateAzureReachability(ctx context.Context, fo
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *AzureKeyVault) contextValidateConfiguration(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Configuration != nil {
+		if err := m.Configuration.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *AzureKeyVault) contextValidateEnabled(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "enabled", "body", m.Enabled); err != nil {
+		return err
 	}
 
 	return nil
@@ -638,8 +740,13 @@ func (m *AzureKeyVaultInlineAzureReachability) Validate(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validates this azure key vault inline azure reachability based on context it is used
+// ContextValidate validate this azure key vault inline azure reachability based on the context it is used
 func (m *AzureKeyVaultInlineAzureReachability) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -654,6 +761,186 @@ func (m *AzureKeyVaultInlineAzureReachability) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *AzureKeyVaultInlineAzureReachability) UnmarshalBinary(b []byte) error {
 	var res AzureKeyVaultInlineAzureReachability
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// AzureKeyVaultInlineConfiguration Security keystore object reference.
+//
+// swagger:model azure_key_vault_inline_configuration
+type AzureKeyVaultInlineConfiguration struct {
+
+	// links
+	Links *AzureKeyVaultInlineConfigurationInlineLinks `json:"_links,omitempty"`
+
+	// Name of the configuration.
+	// Example: default
+	Name *string `json:"name,omitempty"`
+
+	// Keystore UUID.
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563434
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this azure key vault inline configuration
+func (m *AzureKeyVaultInlineConfiguration) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AzureKeyVaultInlineConfiguration) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this azure key vault inline configuration based on the context it is used
+func (m *AzureKeyVaultInlineConfiguration) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AzureKeyVaultInlineConfiguration) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *AzureKeyVaultInlineConfiguration) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *AzureKeyVaultInlineConfiguration) UnmarshalBinary(b []byte) error {
+	var res AzureKeyVaultInlineConfiguration
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// AzureKeyVaultInlineConfigurationInlineLinks azure key vault inline configuration inline links
+//
+// swagger:model azure_key_vault_inline_configuration_inline__links
+type AzureKeyVaultInlineConfigurationInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this azure key vault inline configuration inline links
+func (m *AzureKeyVaultInlineConfigurationInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AzureKeyVaultInlineConfigurationInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this azure key vault inline configuration inline links based on the context it is used
+func (m *AzureKeyVaultInlineConfigurationInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AzureKeyVaultInlineConfigurationInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *AzureKeyVaultInlineConfigurationInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *AzureKeyVaultInlineConfigurationInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AzureKeyVaultInlineConfigurationInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1026,7 +1313,7 @@ func (m *AzureKeyVaultInlineLinks) UnmarshalBinary(b []byte) error {
 }
 
 // AzureKeyVaultInlineState Indicates whether or not the AKV wrapped internal key is available cluster wide.
-// This is an advanced property; there is an added computationl cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
+// This is an advanced property; there is an added computational cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
 //
 // swagger:model azure_key_vault_inline_state
 type AzureKeyVaultInlineState struct {
@@ -1048,8 +1335,13 @@ func (m *AzureKeyVaultInlineState) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this azure key vault inline state based on context it is used
+// ContextValidate validate this azure key vault inline state based on the context it is used
 func (m *AzureKeyVaultInlineState) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -1071,7 +1363,7 @@ func (m *AzureKeyVaultInlineState) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AzureKeyVaultInlineSvm azure key vault inline svm
+// AzureKeyVaultInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model azure_key_vault_inline_svm
 type AzureKeyVaultInlineSvm struct {
@@ -1079,12 +1371,12 @@ type AzureKeyVaultInlineSvm struct {
 	// links
 	Links *AzureKeyVaultInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

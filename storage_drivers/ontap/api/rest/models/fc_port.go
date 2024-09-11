@@ -57,7 +57,7 @@ type FcPort struct {
 	// The physical network protocol of the FC port.
 	//
 	// Read Only: true
-	// Enum: [fibre_channel ethernet]
+	// Enum: ["fibre_channel","ethernet"]
 	PhysicalProtocol *string `json:"physical_protocol,omitempty"`
 
 	// speed
@@ -74,7 +74,7 @@ type FcPort struct {
 	//
 	// Example: online
 	// Read Only: true
-	// Enum: [startup link_not_connected online link_disconnected offlined_by_user offlined_by_system node_offline unknown]
+	// Enum: ["startup","link_not_connected","online","link_disconnected","offlined_by_user","offlined_by_system","node_offline","unknown"]
 	State *string `json:"state,omitempty"`
 
 	// statistics
@@ -1000,7 +1000,7 @@ type FcPortInlineMetric struct {
 	//
 	// Example: PT15S
 	// Read Only: true
-	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
+	// Enum: ["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]
 	Duration *string `json:"duration,omitempty"`
 
 	// iops
@@ -1012,14 +1012,14 @@ type FcPortInlineMetric struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	// Enum: ["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *FcPortInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1540,7 +1540,7 @@ type FcPortInlineMetricInlineIops struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -1594,7 +1594,7 @@ type FcPortInlineMetricInlineLatency struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -1731,7 +1731,7 @@ type FcPortInlineMetricInlineThroughput struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -1958,14 +1958,14 @@ type FcPortInlineSpeed struct {
 	//
 	// Example: auto
 	// Read Only: true
-	// Enum: [1 2 4 8 10 16 32 auto]
+	// Enum: ["1","2","4","8","10","16","32","64","auto"]
 	Configured *string `json:"configured,omitempty"`
 
 	// The maximum speed supported by the FC port in gigabits per second.
 	//
 	// Example: 32
 	// Read Only: true
-	// Enum: [1 2 4 8 10 16 32 auto]
+	// Enum: ["1","2","4","8","10","16","32","64","auto"]
 	Maximum *string `json:"maximum,omitempty"`
 }
 
@@ -1991,7 +1991,7 @@ var fcPortInlineSpeedTypeConfiguredPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["1","2","4","8","10","16","32","auto"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["1","2","4","8","10","16","32","64","auto"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -2076,6 +2076,16 @@ const (
 	// FcPortInlineSpeed
 	// configured
 	// Configured
+	// 64
+	// END DEBUGGING
+	// FcPortInlineSpeedConfiguredNr64 captures enum value "64"
+	FcPortInlineSpeedConfiguredNr64 string = "64"
+
+	// BEGIN DEBUGGING
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
+	// configured
+	// Configured
 	// auto
 	// END DEBUGGING
 	// FcPortInlineSpeedConfiguredAuto captures enum value "auto"
@@ -2107,7 +2117,7 @@ var fcPortInlineSpeedTypeMaximumPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["1","2","4","8","10","16","32","auto"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["1","2","4","8","10","16","32","64","auto"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -2186,6 +2196,16 @@ const (
 	// END DEBUGGING
 	// FcPortInlineSpeedMaximumNr32 captures enum value "32"
 	FcPortInlineSpeedMaximumNr32 string = "32"
+
+	// BEGIN DEBUGGING
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
+	// maximum
+	// Maximum
+	// 64
+	// END DEBUGGING
+	// FcPortInlineSpeedMaximumNr64 captures enum value "64"
+	FcPortInlineSpeedMaximumNr64 string = "64"
 
 	// BEGIN DEBUGGING
 	// fc_port_inline_speed
@@ -2287,14 +2307,14 @@ type FcPortInlineStatistics struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	// Enum: ["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *FcPortInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -2663,7 +2683,7 @@ type FcPortInlineStatisticsInlineIopsRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -2717,7 +2737,7 @@ type FcPortInlineStatisticsInlineLatencyRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -2768,7 +2788,7 @@ type FcPortInlineStatisticsInlineThroughputRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -2822,7 +2842,7 @@ type FcPortInlineTransceiver struct {
 	// - _unknown_ - Unknown
 	//
 	// Read Only: true
-	// Enum: [sfp sff unknown]
+	// Enum: ["sfp","sff","unknown"]
 	FormFactor *string `json:"form_factor,omitempty"`
 
 	// The manufacturer of the transceiver.
@@ -2858,7 +2878,7 @@ var fcPortInlineTransceiverCapabilitiesItemsEnum []interface{}
 
 func init() {
 	var res []int64
-	if err := json.Unmarshal([]byte(`[1,2,4,8,10,16,32]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`[1,2,4,8,10,16,32,64]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

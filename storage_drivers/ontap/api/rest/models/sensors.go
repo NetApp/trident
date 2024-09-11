@@ -34,7 +34,7 @@ type Sensors struct {
 	// Used to determine whether the sensor is in a normal state or any other failed state based on the value of "discrete_value" field. This field is only applicable for discrete sensors.
 	// Example: normal
 	// Read Only: true
-	// Enum: [bad crit_high crit_low disabled failed fault ignored init_failed invalid normal not_available not_present retry uninitialized unknown warn_high warn_low]
+	// Enum: ["bad","crit_high","crit_low","disabled","failed","fault","ignored","init_failed","invalid","normal","not_available","not_present","retry","uninitialized","unknown","warn_high","warn_low"]
 	DiscreteState *string `json:"discrete_state,omitempty"`
 
 	// Applies to discrete sensors which do not have an integer value. It can have values like on, off, good, bad, ok.
@@ -57,12 +57,12 @@ type Sensors struct {
 	// Used to determine whether the sensor is in a normal state or any other failed state.
 	// Example: normal
 	// Read Only: true
-	// Enum: [bad crit_high crit_low disabled failed fault ignored init_failed invalid normal not_available not_present retry uninitialized unknown warn_high warn_low]
+	// Enum: ["bad","crit_high","crit_low","disabled","failed","fault","ignored","init_failed","invalid","normal","not_available","not_present","retry","uninitialized","unknown","warn_high","warn_low"]
 	ThresholdState *string `json:"threshold_state,omitempty"`
 
-	// Used to detrmine the type of the sensor.
+	// Used to determine the type of the sensor.
 	// Read Only: true
-	// Enum: [agent battery_life counter current discrete fan fru minutes nvmem percent thermal unknown voltage]
+	// Enum: ["agent","battery_life","counter","current","discrete","fan","fru","minutes","nvmem","percent","thermal","unknown","voltage"]
 	Type *string `json:"type,omitempty"`
 
 	// Provides the sensor reading.

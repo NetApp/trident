@@ -17,9 +17,17 @@ import (
 )
 
 // Lun A LUN is the logical representation of storage in a storage area network (SAN).<br/>
-// In ONTAP, a LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
-// A LUN can be created to a specified size using thin or thick provisioning. A LUN can then be renamed, resized, cloned, and moved to a different volume. LUNs support the assignment of a quality of service (QoS) policy for performance management or a QoS policy can be assigned to the volume containing the LUN. See the LUN object model to learn more about each of the properties supported by the LUN REST API.<br/>
-// A LUN must be mapped to an initiator group to grant access to the initiator group's initiators (client hosts). Initiators can then access the LUN and perform I/O over a Fibre Channel (FC) fabric using the Fibre Channel Protocol or a TCP/IP network using iSCSI.
+// A LUN must be mapped to an initiator group to grant access to the initiator group's initiators (client hosts). Initiators can then access the LUN and perform I/O over a Fibre Channel (FC) fabric using the FC Protocol or a TCP/IP network using iSCSI.<br/>
+// See the LUN object model to learn more about each of the properties supported by the LUN REST API.
+// ## Platform Specifics
+// ### Unified ONTAP
+// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<lun>" where the qtree name is optional.<br/>
+// A LUN can be created to a specified size using thin or thick provisioning. A LUN can then be renamed, resized, cloned, moved to a different volume and copied. LUNs support the assignment of a QoS policy for performance management or a QoS policy can be assigned to a volume containing one or more LUNs.
+// ### ASA r2
+// LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+// A LUN can be created to a specified size. A LUN can then be renamed, resized, or cloned. LUNs support the assignment of a QoS policy for performance management.<br/>
+// **Note**: LUN related REST API examples use the Unified ONTAP form for LUN names. On ASA r2, the ASA r2 format must be used.
 //
 // swagger:model lun
 type Lun struct {
@@ -27,17 +35,35 @@ type Lun struct {
 	// links
 	Links *LunInlineLinks `json:"_links,omitempty"`
 
+	// * **Unified ONTAP**:
 	// This property marks the LUN for auto deletion when the volume containing the LUN runs out of space. This is most commonly set on LUN clones.<br/>
 	// When set to _true_, the LUN becomes eligible for automatic deletion when the volume runs out of space. Auto deletion only occurs when the volume containing the LUN is also configured for auto deletion and free space in the volume decreases below a particular threshold.<br/>
 	// This property is optional in POST and PATCH. The default value for a new LUN is _false_.<br/>
 	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// * **ASA r2**:
+	// This property is not supported. It cannot be set in POST or PATCH and will not be returned by GET.
 	//
 	AutoDelete *bool `json:"auto_delete,omitempty"`
 
 	// The class of LUN.<br/>
 	// Optional in POST.
+	// ### Platform Specifics
+	// * **ASA r2**: When set to _protocol_endpoint_, most other properties are not supported in POST, and the operation can be asynchronous. The LUN is provisioned with a generated name. Protocol endpoints are provisioned in a round robin pattern across all nodes in the cluster.<br/>
+	// The following properties are supported in POST:<br/>
+	// * `class`
+	// * `svm`
+	// * `provisioning_options.count`
+	// * `lun_maps`
+	// * `comment`
+	// POST is asynchronous in these cases:<br/>
+	// * There are nodes in the cluster not already hosting a protocol endpoint.
+	// * The request includes either the `lun_maps` or `provisioning_options.count` properties.
+	// * The `records` array is used for bulk provisioning.
+	// <br/>DELETE is asynchronous when calling DELETE on the last protocol endpoint on a node.
+	// <br/>Calling implementations should not attempt to track these conditions. Instead, check the HTTP status code. A 200 or 201 status code indicates the operation is already complete. A 202 status code indicates there is an asynchronous job that can be tracked. If asynchronous requests are always preferred, wrap individual POST and DELETE requests in a `records` array to force the operation to be asynchronous.
+	// <br/>For more details, see [`Asynchronous operations`](#Synchronous_and_asynchronous_operations)
 	//
-	// Enum: [regular protocol_endpoint vvol]
+	// Enum: ["regular","protocol_endpoint","vvol"]
 	Class *string `json:"class,omitempty"`
 
 	// clone
@@ -59,14 +85,17 @@ type Lun struct {
 	Copy *LunInlineCopy `json:"copy,omitempty"`
 
 	// The time the LUN was created.
-	// Example: 2018-06-04T19:00:00Z
+	// Example: 2018-06-04 19:00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
 
-	// The enabled state of the LUN. LUNs can be disabled to prevent access to the LUN. Certain error conditions also cause the LUN to become disabled. If the LUN is disabled, you can consult the `state` property to determine if the LUN is administratively disabled (_offline_) or has become disabled as a result of an error. A LUN in an error condition can be brought online by setting the `enabled` property to _true_ or brought administratively offline by setting the `enabled` property to _false_. Upon creation, a LUN is enabled by default. Valid in PATCH.
+	// The enabled state of the LUN. LUNs can be disabled to prevent access to the LUN. Certain error conditions also cause the LUN to become disabled. If the LUN is disabled, check the `status.state` property to determine if the LUN is administratively disabled (_offline_) or has become disabled as a result of an error. A LUN in an error condition can be brought online by setting the `enabled` property to _true_ or brought administratively offline by setting the `enabled` property to _false_. Upon creation, a LUN is enabled by default. Valid in PATCH.
 	//
 	Enabled *bool `json:"enabled,omitempty"`
+
+	// encryption
+	Encryption *StorageUnitEncryption `json:"encryption,omitempty"`
 
 	// location
 	Location *LunInlineLocation `json:"location,omitempty"`
@@ -74,15 +103,17 @@ type Lun struct {
 	// An array of name/value pairs optionally stored with the LUN. Attributes are available to callers to persist small amounts of application-specific metadata. They are in no way interpreted by ONTAP.<br/>
 	// Attribute names and values must be at least one byte and no more than 4091 bytes in length. The sum of the name and value lengths must be no more than 4092 bytes.<br/>
 	// Valid in POST except when creating a LUN clone. A cloned can already have attributes from its source. You can add, modify, and delete the attributes of a LUN clone in separate requests after creation of the LUN.<br/>
-	// Attributes may be added/modified/removed for an existing LUN using the /api/storage/luns/{lun.uuid}/attributes endpoint. For further information, see [`DOC /storage/luns/{lun.uuid}/attributes`](#docs-SAN-storage_luns_{lun.uuid}_attributes).<br/>
+	// Attributes can be added/modified/removed for an existing LUN using the /api/storage/luns/{lun.uuid}/attributes endpoint. For further information, see [`DOC /storage/luns/{lun.uuid}/attributes`](#docs-SAN-storage_luns_{lun.uuid}_attributes).<br/>
 	// There is an added computational cost to retrieving property values for `attributes`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	LunInlineAttributes []*LunInlineAttributesInlineArrayItem `json:"attributes,omitempty"`
 
 	// The LUN maps with which the LUN is associated.<br/>
 	// There is an added computational cost to retrieving property values for `lun_maps`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// ### Platform Specifics
+	// * **Unified ONTAP**: These properties are supported for GET only.
+	// * **ASA r2**: These properties are supported for GET and POST. During POST, a new or existing initiator group can be referenced. When referencing an existing initiator group, only the `name` and `uuid` properties are supported.
 	//
-	// Read Only: true
 	LunInlineLunMaps []*LunInlineLunMapsInlineArrayItem `json:"lun_maps,omitempty"`
 
 	// metric
@@ -91,9 +122,15 @@ type Lun struct {
 	// movement
 	Movement *LunInlineMovement `json:"movement,omitempty"`
 
-	// The fully qualified path name of the LUN composed of a "/vol" prefix, the volume name, the (optional) qtree name, and base name of the LUN. Valid in POST and PATCH.<br/>
+	// The name of the LUN. Valid in POST and PATCH.
+	// * **Unified ONTAP**:
+	// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<lun>" where the qtree name is optional.<br/>
 	// A PATCH that modifies the qtree and/or base name portion of the LUN path is considered a rename operation.<br/>
 	// A PATCH that modifies the volume portion of the LUN path begins an asynchronous LUN movement operation.
+	// * **ASA r2**:
+	// LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+	// A PATCH that modifies the name of the LUN is considered a rename operation.
 	//
 	// Example: /vol/volume1/qtree1/lun1
 	Name *string `json:"name,omitempty"`
@@ -101,8 +138,11 @@ type Lun struct {
 	// The operating system type of the LUN.<br/>
 	// Required in POST when creating a LUN that is not a clone of another. Disallowed in POST when creating a LUN clone.
 	//
-	// Enum: [aix hpux hyper_v linux netware openvms solaris solaris_efi vmware windows windows_2008 windows_gpt xen]
+	// Enum: ["aix","hpux","hyper_v","linux","netware","openvms","solaris","solaris_efi","vmware","windows","windows_2008","windows_gpt","xen"]
 	OsType *string `json:"os_type,omitempty"`
+
+	// provisioning options
+	ProvisioningOptions *LunInlineProvisioningOptions `json:"provisioning_options,omitempty"`
 
 	// qos policy
 	QosPolicy *LunInlineQosPolicy `json:"qos_policy,omitempty"`
@@ -126,7 +166,7 @@ type Lun struct {
 	// svm
 	Svm *LunInlineSvm `json:"svm,omitempty"`
 
-	// The unique identifier of the LUN.  The UUID is generated by ONTAP when the LUN is created.
+	// The unique identifier of the LUN. The UUID is generated by ONTAP when the LUN is created.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
@@ -172,6 +212,10 @@ func (m *Lun) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateEncryption(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateLocation(formats); err != nil {
 		res = append(res, err)
 	}
@@ -193,6 +237,10 @@ func (m *Lun) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateOsType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProvisioningOptions(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -404,6 +452,23 @@ func (m *Lun) validateCreateTime(formats strfmt.Registry) error {
 
 	if err := validate.FormatOf("create_time", "body", "date-time", m.CreateTime.String(), formats); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Lun) validateEncryption(formats strfmt.Registry) error {
+	if swag.IsZero(m.Encryption) { // not required
+		return nil
+	}
+
+	if m.Encryption != nil {
+		if err := m.Encryption.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("encryption")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -674,6 +739,23 @@ func (m *Lun) validateOsType(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Lun) validateProvisioningOptions(formats strfmt.Registry) error {
+	if swag.IsZero(m.ProvisioningOptions) { // not required
+		return nil
+	}
+
+	if m.ProvisioningOptions != nil {
+		if err := m.ProvisioningOptions.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("provisioning_options")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Lun) validateQosPolicy(formats strfmt.Registry) error {
 	if swag.IsZero(m.QosPolicy) { // not required
 		return nil
@@ -820,6 +902,10 @@ func (m *Lun) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateEncryption(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateLocation(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -837,6 +923,10 @@ func (m *Lun) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 	}
 
 	if err := m.contextValidateMovement(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProvisioningOptions(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -957,6 +1047,20 @@ func (m *Lun) contextValidateCreateTime(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
+func (m *Lun) contextValidateEncryption(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Encryption != nil {
+		if err := m.Encryption.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("encryption")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Lun) contextValidateLocation(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Location != nil {
@@ -990,10 +1094,6 @@ func (m *Lun) contextValidateLunInlineAttributes(ctx context.Context, formats st
 }
 
 func (m *Lun) contextValidateLunInlineLunMaps(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "lun_maps", "body", []*LunInlineLunMapsInlineArrayItem(m.LunInlineLunMaps)); err != nil {
-		return err
-	}
 
 	for i := 0; i < len(m.LunInlineLunMaps); i++ {
 
@@ -1031,6 +1131,20 @@ func (m *Lun) contextValidateMovement(ctx context.Context, formats strfmt.Regist
 		if err := m.Movement.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("movement")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Lun) contextValidateProvisioningOptions(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ProvisioningOptions != nil {
+		if err := m.ProvisioningOptions.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("provisioning_options")
 			}
 			return err
 		}
@@ -1387,9 +1501,13 @@ func (m *LunInlineAttributesInlineArrayItemInlineLinks) UnmarshalBinary(b []byte
 	return nil
 }
 
-// LunInlineClone This sub-object is used in POST to create a new LUN as a clone of an existing LUN, or PATCH to overwrite an existing LUN as a clone of another. Setting a property in this sub-object indicates that a LUN clone is desired. Consider the following other properties when cloning a LUN: `auto_delete`, `qos_policy`, `space.guarantee.requested` and `space.scsi_thin_provisioning_support_enabled`.<br/>
+// LunInlineClone * **Unified ONTAP**:
+// This sub-object is used in POST to create a new LUN as a clone of an existing LUN, or PATCH to overwrite an existing LUN as a clone of another. Setting a property in this sub-object indicates that a LUN clone is desired. Consider the following other properties when cloning a LUN: `auto_delete`, `qos_policy`, `space.guarantee.requested` and `space.scsi_thin_provisioning_support_enabled`.<br/>
 // When used in a PATCH, the patched LUN's data is over-written as a clone of the source and the following properties are preserved from the patched LUN unless otherwise specified as part of the PATCH: `class`, `auto_delete`, `lun_maps`, `serial_number`, `status.state`, and `uuid`.<br/>
 // Persistent reservations for the patched LUN are also preserved.
+// * **ASA r2**:
+// This endpoint does not support clones. No properties in this sub-object can be set for POST or PATCH and none will be returned by GET.<br/>
+// Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
 //
 // swagger:model lun_inline_clone
 type LunInlineClone struct {
@@ -1482,12 +1600,24 @@ func (m *LunInlineClone) UnmarshalBinary(b []byte) error {
 // swagger:model lun_inline_clone_inline_source
 type LunInlineCloneInlineSource struct {
 
-	// The fully qualified path name of the clone source LUN composed of a "/vol" prefix, the volume name, the (optional) qtree name, and base name of the LUN. Valid in POST and PATCH.
+	// The name of the clone source LUN.
+	// ### Platform Specifics
+	// * **Unified ONTAP**:
+	// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
+	// Valid in POST and PATCH.
+	// * **ASA r2**:
+	// This property is not supported. Cloning is supported through the /ap/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
 	//
 	// Example: /vol/volume1/lun1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the clone source LUN. Valid in POST and PATCH.
+	// The unique identifier of the clone source LUN.
+	// ### Platform Specifics
+	// * **Unified ONTAP**:
+	// Valid in POST and PATCH.
+	// * **ASA r2**:
+	// This property is not supported. Cloning is supported through the /ap/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	UUID *string `json:"uuid,omitempty"`
@@ -1521,7 +1651,10 @@ func (m *LunInlineCloneInlineSource) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunInlineConsistencyGroup The LUN's consistency group. This property is populated for LUNs whose volume is a member of a consistency group. If the volume is a member of a child consistency group, the parent consistency group is reported.
+// LunInlineConsistencyGroup The LUN's consistency group. This property is populated for LUNs that are members of a consistency group. If the LUN is a member of a child consistency group, the parent consistency group is reported.
+// ### Platform Specifics
+// * **Unified ONTAP**: A LUN's consistency group is the consistency group of its containing volume.
+// * **ASA r2**: A LUN is optionally associated directly with a consistency group.
 //
 // swagger:model lun_inline_consistency_group
 type LunInlineConsistencyGroup struct {
@@ -1818,12 +1951,18 @@ func (m *LunInlineConvert) UnmarshalBinary(b []byte) error {
 }
 
 // LunInlineConvertInlineNamespace The source namespace for convert operation. This can be specified using property `convert.namespace.uuid` or `convert.namespace.name`. If both properties are supplied, they must refer to the same NVMe namespace.<br/>
-// Valid in POST. A convert request from NVMe namespace to LUN cannot be combined with setting any other LUN properties. All other properties of the converted LUN comes from the source NVMe namespace.<br/>
+// Valid in POST. A convert request from NVMe namespace to LUN cannot be combined with setting any other LUN properties. All other properties of the converted LUN come from the source NVMe namespace.<br/>
 //
 // swagger:model lun_inline_convert_inline_namespace
 type LunInlineConvertInlineNamespace struct {
 
-	// The fully qualified path name of the source NVMe namespace composed of a "/vol" prefix, the volume name, the (optional) qtree name and base name of the NVMe namespace. Valid in POST.
+	// The name of the source NVMe namespace. Valid in POST.
+	// ### Platform Specifics
+	// * **Unified ONTAP**:
+	// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<NVMe namespace>" where the qtree name is optional.
+	// * **ASA r2**:
+	// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.
 	//
 	// Example: /vol/volume1/namespace1
 	Name *string `json:"name,omitempty"`
@@ -1862,10 +2001,13 @@ func (m *LunInlineConvertInlineNamespace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunInlineCopy This sub-object applies to LUN copy operations. A LUN can be copied with a POST request that supplies `copy.source` properties.<br/>
+// LunInlineCopy * **Unified ONTAP**:
+// This sub-object applies to LUN copy operations. A LUN can be copied with a POST request that supplies `copy.source` properties.<br/>
 // Copying a LUN is an asynchronous activity begun by a POST request that specifies the source of the copy in the `copy.source` properties. The data for the LUN is then asynchronously copied from the source to the destination. The time required to complete the copy depends on the size of the LUN and the load on the cluster. The `copy` sub-object is populated while a LUN copy is in progress and for two (2) minutes following completion of a copy.<br/>
 // While LUNs are being copied, the status of the LUN copy operations can be obtained using a GET of the source or destination LUN that requests the `copy` properties. If the LUN is the source LUN for one or more copy operations, the `copy.destinations` array is populated in GET. If the containing LUN is the destination LUN for a copy operation, the `copy.source` sub-object is populated in GET. The LUN copy operation can be further modified using a PATCH on the properties on the `copy.source` sub-object of the copy destination LUN.<br/>
 // There is an added computational cost to retrieving property values for `copy`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+// * **ASA r2**:
+// LUN copies are not supported. No properties in this sub-object can be set in POST or PATCH and none will be returned by GET.
 //
 // swagger:model lun_inline_copy
 type LunInlineCopy struct {
@@ -2023,11 +2165,14 @@ type LunCopyDestinationsItems0 struct {
 	// Read Only: true
 	MaxThroughput *int64 `json:"max_throughput,omitempty"`
 
-	// The fully qualified path of the LUN copy destination composed of a "/vol" prefix, the volume name, the (optional) qtree name, and base name of the LUN.
+	// The fully qualified path of the LUN copy destination composed of a "/vol" prefix, the volume name, the optional qtree name, and base name of the LUN.
 	//
 	// Example: /vol/vol1/lun1
 	// Read Only: true
 	Name *string `json:"name,omitempty"`
+
+	// peer
+	Peer *LunCopyDestinationsItems0Peer `json:"peer,omitempty"`
 
 	// progress
 	Progress *LunCopyDestinationsItems0Progress `json:"progress,omitempty"`
@@ -2044,6 +2189,10 @@ func (m *LunCopyDestinationsItems0) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePeer(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2066,6 +2215,23 @@ func (m *LunCopyDestinationsItems0) validateLinks(formats strfmt.Registry) error
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0) validatePeer(formats strfmt.Registry) error {
+	if swag.IsZero(m.Peer) { // not required
+		return nil
+	}
+
+	if m.Peer != nil {
+		if err := m.Peer.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("peer")
 			}
 			return err
 		}
@@ -2104,6 +2270,10 @@ func (m *LunCopyDestinationsItems0) ContextValidate(ctx context.Context, formats
 	}
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePeer(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2148,6 +2318,20 @@ func (m *LunCopyDestinationsItems0) contextValidateName(ctx context.Context, for
 
 	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0) contextValidatePeer(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Peer != nil {
+		if err := m.Peer.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("peer")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -2280,6 +2464,189 @@ func (m *LunCopyDestinationsItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// LunCopyDestinationsItems0Peer The SVM peer relationship object for an inter-SVM LUN copy operation. The peer SVM in the relationship is the source SVM and the local SVM is the destination SVM.<br/>
+// This is only populated by GET when the LUN copy is inter-SVM.
+//
+// swagger:model LunCopyDestinationsItems0Peer
+type LunCopyDestinationsItems0Peer struct {
+
+	// links
+	Links *LunCopyDestinationsItems0PeerLinks `json:"_links,omitempty"`
+
+	// The local name of the peer SVM. This name is unique among all local and peer SVMs.
+	//
+	// Example: peer1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM peer relationship. This is the UUID of the relationship, not the UUID of the peer SVM itself.
+	//
+	// Example: 4204cf77-4c82-9bdb-5644-b5a841c097a9
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this lun copy destinations items0 peer
+func (m *LunCopyDestinationsItems0Peer) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0Peer) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("peer" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun copy destinations items0 peer based on the context it is used
+func (m *LunCopyDestinationsItems0Peer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0Peer) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("peer" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunCopyDestinationsItems0Peer) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunCopyDestinationsItems0Peer) UnmarshalBinary(b []byte) error {
+	var res LunCopyDestinationsItems0Peer
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunCopyDestinationsItems0PeerLinks lun copy destinations items0 peer links
+//
+// swagger:model LunCopyDestinationsItems0PeerLinks
+type LunCopyDestinationsItems0PeerLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this lun copy destinations items0 peer links
+func (m *LunCopyDestinationsItems0PeerLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0PeerLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("peer" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun copy destinations items0 peer links based on the context it is used
+func (m *LunCopyDestinationsItems0PeerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0PeerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("peer" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunCopyDestinationsItems0PeerLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunCopyDestinationsItems0PeerLinks) UnmarshalBinary(b []byte) error {
+	var res LunCopyDestinationsItems0PeerLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // LunCopyDestinationsItems0Progress Properties related to the progress of an active or recently completed LUN copy.
 //
 // swagger:model LunCopyDestinationsItems0Progress
@@ -2305,10 +2672,10 @@ type LunCopyDestinationsItems0Progress struct {
 	// The state of the LUN copy.
 	//
 	// Read Only: true
-	// Enum: [preparing replicating paused paused_error complete reverting failed]
+	// Enum: ["preparing","replicating","paused","paused_error","complete","reverting","failed"]
 	State *string `json:"state,omitempty"`
 
-	// This property reports if volume Snapshot copies are blocked by the LUN copy. This property can be polled to identify when volume Snapshot copies can be resumed after beginning a LUN copy.
+	// This property reports if volume snapshots are blocked by the LUN copy. This property can be polled to identify when volume snapshots can be resumed after beginning a LUN copy.
 	//
 	// Read Only: true
 	VolumeSnapshotBlocked *bool `json:"volume_snapshot_blocked,omitempty"`
@@ -2589,11 +2956,14 @@ type LunInlineCopyInlineSource struct {
 	//
 	MaxThroughput *int64 `json:"max_throughput,omitempty"`
 
-	// The fully qualified path of the LUN copy source composed of a "/vol" prefix, the volume name, the (optional) qtree name, and base name of the LUN.<br/>
+	// The fully qualified path of the LUN copy source composed of a "/vol" prefix, the volume name, the optional qtree name, and base name of the LUN.<br/>
 	// Set this property in POST to specify the source for a LUN copy operation.
 	//
 	// Example: /vol/vol2/lun1
 	Name *string `json:"name,omitempty"`
+
+	// peer
+	Peer *LunInlineCopyInlineSourceInlinePeer `json:"peer,omitempty"`
 
 	// progress
 	Progress *LunInlineCopyInlineSourceInlineProgress `json:"progress,omitempty"`
@@ -2610,6 +2980,10 @@ func (m *LunInlineCopyInlineSource) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePeer(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2632,6 +3006,23 @@ func (m *LunInlineCopyInlineSource) validateLinks(formats strfmt.Registry) error
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("copy" + "." + "source" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunInlineCopyInlineSource) validatePeer(formats strfmt.Registry) error {
+	if swag.IsZero(m.Peer) { // not required
+		return nil
+	}
+
+	if m.Peer != nil {
+		if err := m.Peer.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy" + "." + "source" + "." + "peer")
 			}
 			return err
 		}
@@ -2665,6 +3056,10 @@ func (m *LunInlineCopyInlineSource) ContextValidate(ctx context.Context, formats
 		res = append(res, err)
 	}
 
+	if err := m.contextValidatePeer(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateProgress(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -2681,6 +3076,20 @@ func (m *LunInlineCopyInlineSource) contextValidateLinks(ctx context.Context, fo
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("copy" + "." + "source" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunInlineCopyInlineSource) contextValidatePeer(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Peer != nil {
+		if err := m.Peer.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy" + "." + "source" + "." + "peer")
 			}
 			return err
 		}
@@ -2807,6 +3216,189 @@ func (m *LunInlineCopyInlineSourceInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// LunInlineCopyInlineSourceInlinePeer The SVM peer relationship object for an inter-SVM LUN copy operation. The peer SVM in the relationship is the source SVM and the local SVM is the destination SVM.<br/>
+// Set this in POST to specify the source SVM for an inter-SVM LUN copy. Only populated by GET when the LUN copy is inter-SVM.
+//
+// swagger:model lun_inline_copy_inline_source_inline_peer
+type LunInlineCopyInlineSourceInlinePeer struct {
+
+	// links
+	Links *LunInlineCopyInlineSourceInlinePeerInlineLinks `json:"_links,omitempty"`
+
+	// The local name of the peer SVM. This name is unique among all local and peer SVMs.
+	//
+	// Example: peer1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM peer relationship. This is the UUID of the relationship, not the UUID of the peer SVM itself.
+	//
+	// Example: 4204cf77-4c82-9bdb-5644-b5a841c097a9
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this lun inline copy inline source inline peer
+func (m *LunInlineCopyInlineSourceInlinePeer) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunInlineCopyInlineSourceInlinePeer) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy" + "." + "source" + "." + "peer" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun inline copy inline source inline peer based on the context it is used
+func (m *LunInlineCopyInlineSourceInlinePeer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunInlineCopyInlineSourceInlinePeer) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy" + "." + "source" + "." + "peer" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunInlineCopyInlineSourceInlinePeer) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunInlineCopyInlineSourceInlinePeer) UnmarshalBinary(b []byte) error {
+	var res LunInlineCopyInlineSourceInlinePeer
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunInlineCopyInlineSourceInlinePeerInlineLinks lun inline copy inline source inline peer inline links
+//
+// swagger:model lun_inline_copy_inline_source_inline_peer_inline__links
+type LunInlineCopyInlineSourceInlinePeerInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this lun inline copy inline source inline peer inline links
+func (m *LunInlineCopyInlineSourceInlinePeerInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunInlineCopyInlineSourceInlinePeerInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy" + "." + "source" + "." + "peer" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun inline copy inline source inline peer inline links based on the context it is used
+func (m *LunInlineCopyInlineSourceInlinePeerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunInlineCopyInlineSourceInlinePeerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy" + "." + "source" + "." + "peer" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunInlineCopyInlineSourceInlinePeerInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunInlineCopyInlineSourceInlinePeerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LunInlineCopyInlineSourceInlinePeerInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // LunInlineCopyInlineSourceInlineProgress Properties related to the progress of an active or recently completed LUN copy.
 //
 // swagger:model lun_inline_copy_inline_source_inline_progress
@@ -2832,10 +3424,10 @@ type LunInlineCopyInlineSourceInlineProgress struct {
 	// The state of the LUN copy.<br/>
 	// Valid in PATCH when an LUN copy is active. Set to _paused_ to pause a LUN copy. Set to _replicating_ to resume a paused LUN copy.
 	//
-	// Enum: [preparing replicating paused paused_error complete reverting failed]
+	// Enum: ["preparing","replicating","paused","paused_error","complete","reverting","failed"]
 	State *string `json:"state,omitempty"`
 
-	// This property reports if volume Snapshot copies are blocked by the LUN copy. This property can be polled to identify when volume Snapshot copies can be resumed after beginning a LUN copy.
+	// This property reports if volume snapshots are blocked by the LUN copy. This property can be polled to identify when volume snapshots can be resumed after beginning a LUN copy.
 	//
 	// Read Only: true
 	VolumeSnapshotBlocked *bool `json:"volume_snapshot_blocked,omitempty"`
@@ -3173,14 +3765,22 @@ func (m *LunInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunInlineLocation The location of the LUN within the ONTAP cluster. Valid in POST and PATCH.
+// LunInlineLocation The location of the LUN within the ONTAP cluster.
+// ### Platform Specifics
+// * **Unified ONTAP**:
+// LUNs support rename and move between volumes. Valid in POST and PATCH.
+// * **ASA r2**:
+// The LUN name can be changed by PATCHing the `name` property. The `location` properties are read-only.
 //
 // swagger:model lun_inline_location
 type LunInlineLocation struct {
 
+	// * **Unified ONTAP**:
 	// The base name component of the LUN. Valid in POST and PATCH.<br/>
 	// If properties `name` and `location.logical_unit` are specified in the same request, they must refer to the base name.<br/>
 	// A PATCH that modifies the base name of the LUN is considered a rename operation.
+	// * **ASA r2**:
+	// The volume logical unit property is read-only and cannot be set in POST or PATCH. Use the `name` property for POST.
 	//
 	// Example: lun1
 	LogicalUnit *string `json:"logical_unit,omitempty"`
@@ -3530,9 +4130,12 @@ func (m *LunInlineLocationInlineNodeInlineLinks) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// LunInlineLocationInlineQtree The qtree in which the LUN is optionally located. Valid in POST and PATCH.<br/>
-// If properties `name` and `location.qtree.name` and/or `location.qtree.uuid` are specified in the same request, they must refer to the same qtree.<br/>
+// LunInlineLocationInlineQtree * **Unified ONTAP**:
+// The qtree in which the LUN is optionally located. Valid in POST and PATCH.<br/>
+// If properties `name` and `location.qtree.name` and/or `location.qtree.id` are specified in the same request, they must refer to the same qtree.<br/>
 // A PATCH that modifies the qtree of the LUN is considered a rename operation.
+// * **ASA r2**:
+// The qtrees are not supported. The properties of the qtree sub-object cannot be set in POST or PATCH.
 //
 // swagger:model lun_inline_location_inline_qtree
 type LunInlineLocationInlineQtree struct {
@@ -3735,9 +4338,12 @@ func (m *LunInlineLocationInlineQtreeInlineLinks) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// LunInlineLocationInlineVolume The volume in which the LUN is located. Valid in POST and PATCH.<br/>
+// LunInlineLocationInlineVolume * **Unified ONTAP**:
+// The volume in which the LUN is located. Valid in POST and PATCH.<br/>
 // If properties `name` and `location.volume.name` and/or `location.volume.uuid` are specified in the same request, they must refer to the same volume.<br/>
 // A PATCH that modifies the volume of the LUN begins an asynchronous LUN movement operation.
+// * **ASA r2**:
+// The volume sub-object is read-only and its properties cannot be set in POST or PATCH. Use the `name` property for POST.
 //
 // swagger:model lun_inline_location_inline_volume
 type LunInlineLocationInlineVolume struct {
@@ -3745,7 +4351,7 @@ type LunInlineLocationInlineVolume struct {
 	// links
 	Links *LunInlineLocationInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 
@@ -3917,7 +4523,8 @@ func (m *LunInlineLocationInlineVolumeInlineLinks) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// LunInlineLunMapsInlineArrayItem A LUN map with which the LUN is associated.
+// LunInlineLunMapsInlineArrayItem A LUN map is an association between a LUN and an initiator group.<br/>
+// When a LUN is mapped to an initiator group, the initiator group's initiators are granted access to the LUN. The relationship between a LUN and an initiator group is many LUNs to many initiator groups.
 //
 // swagger:model lun_inline_lun_maps_inline_array_item
 type LunInlineLunMapsInlineArrayItem struct {
@@ -3928,9 +4535,8 @@ type LunInlineLunMapsInlineArrayItem struct {
 	// igroup
 	Igroup *LunInlineLunMapsInlineArrayItemInlineIgroup `json:"igroup,omitempty"`
 
-	// The logical unit number assigned to the LUN for initiators in the initiator group.
+	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value.
 	//
-	// Read Only: true
 	LogicalUnitNumber *int64 `json:"logical_unit_number,omitempty"`
 }
 
@@ -3998,10 +4604,6 @@ func (m *LunInlineLunMapsInlineArrayItem) ContextValidate(ctx context.Context, f
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateLogicalUnitNumber(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -4036,15 +4638,6 @@ func (m *LunInlineLunMapsInlineArrayItem) contextValidateIgroup(ctx context.Cont
 	return nil
 }
 
-func (m *LunInlineLunMapsInlineArrayItem) contextValidateLogicalUnitNumber(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "logical_unit_number", "body", m.LogicalUnitNumber); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // MarshalBinary interface implementation
 func (m *LunInlineLunMapsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -4071,16 +4664,43 @@ type LunInlineLunMapsInlineArrayItemInlineIgroup struct {
 	// links
 	Links *LunInlineLunMapsInlineArrayItemInlineIgroupInlineLinks `json:"_links,omitempty"`
 
+	// A comment available for use by the administrator. Valid in POST and PATCH.
+	//
+	// Max Length: 254
+	// Min Length: 0
+	Comment *string `json:"comment,omitempty"`
+
+	// The existing initiator groups that are members of the group. Optional in POST.<br/>
+	// This property is mutually exclusive with the _initiators_ property during POST.<br/>
+	// This array contains only the direct children of the initiator group. If the member initiator groups have further nested initiator groups, those are reported in the `igroups` property of the child initiator group.<br/>
+	// Zero or more nested initiator groups can be supplied when the initiator group is created. The initiator group will act as if it contains the aggregation of all initiators in any nested initiator groups.<br/>
+	// After creation, nested initiator groups can be added or removed from the initiator group using the `/protocols/san/igroups/{igroup.uuid}/igroups` endpoint. See [`POST /protocols/san/igroups/{igroup.uuid}/igroups`](#/SAN/igroup_nested_create) and [`DELETE /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}`](#/SAN/igroup_nested_delete) for more details.
+	//
+	Igroups []*LunLunMapsItems0IgroupIgroupsItems0 `json:"igroups"`
+
+	// The initiators that are members of the group.
+	//
+	Initiators []*LunLunMapsItems0IgroupInitiatorsItems0 `json:"initiators"`
+
 	// The name of the initiator group.
 	//
 	// Example: igroup1
-	// Read Only: true
 	Name *string `json:"name,omitempty"`
+
+	// The host operating system of the initiator group. All initiators in the group should be hosts of the same operating system.
+	//
+	// Enum: ["aix","hpux","hyper_v","linux","netware","openvms","solaris","vmware","windows","xen"]
+	OsType *string `json:"os_type,omitempty"`
+
+	// The protocols supported by the initiator group. This restricts the type of initiators that can be added to the initiator group. Optional in POST; if not supplied, this defaults to _mixed_.<br/>
+	// The protocol of an initiator group cannot be changed after creation of the group.
+	//
+	// Enum: ["fcp","iscsi","mixed"]
+	Protocol *string `json:"protocol,omitempty"`
 
 	// The unique identifier of the initiator group.
 	//
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
-	// Read Only: true
 	UUID *string `json:"uuid,omitempty"`
 }
 
@@ -4089,6 +4709,26 @@ func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) Validate(formats strfmt.Re
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateComment(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIgroups(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateInitiators(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOsType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProtocol(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -4115,6 +4755,272 @@ func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) validateLinks(formats strf
 	return nil
 }
 
+func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) validateComment(formats strfmt.Registry) error {
+	if swag.IsZero(m.Comment) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("igroup"+"."+"comment", "body", *m.Comment, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("igroup"+"."+"comment", "body", *m.Comment, 254); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) validateIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.Igroups) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Igroups); i++ {
+		if swag.IsZero(m.Igroups[i]) { // not required
+			continue
+		}
+
+		if m.Igroups[i] != nil {
+			if err := m.Igroups[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("igroup" + "." + "igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) validateInitiators(formats strfmt.Registry) error {
+	if swag.IsZero(m.Initiators) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Initiators); i++ {
+		if swag.IsZero(m.Initiators[i]) { // not required
+			continue
+		}
+
+		if m.Initiators[i] != nil {
+			if err := m.Initiators[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("igroup" + "." + "initiators" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+var lunInlineLunMapsInlineArrayItemInlineIgroupTypeOsTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["aix","hpux","hyper_v","linux","netware","openvms","solaris","vmware","windows","xen"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		lunInlineLunMapsInlineArrayItemInlineIgroupTypeOsTypePropEnum = append(lunInlineLunMapsInlineArrayItemInlineIgroupTypeOsTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// lun_inline_lun_maps_inline_array_item_inline_igroup
+	// LunInlineLunMapsInlineArrayItemInlineIgroup
+	// os_type
+	// OsType
+	// aix
+	// END DEBUGGING
+	// LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeAix captures enum value "aix"
+	LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeAix string = "aix"
+
+	// BEGIN DEBUGGING
+	// lun_inline_lun_maps_inline_array_item_inline_igroup
+	// LunInlineLunMapsInlineArrayItemInlineIgroup
+	// os_type
+	// OsType
+	// hpux
+	// END DEBUGGING
+	// LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeHpux captures enum value "hpux"
+	LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeHpux string = "hpux"
+
+	// BEGIN DEBUGGING
+	// lun_inline_lun_maps_inline_array_item_inline_igroup
+	// LunInlineLunMapsInlineArrayItemInlineIgroup
+	// os_type
+	// OsType
+	// hyper_v
+	// END DEBUGGING
+	// LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeHyperv captures enum value "hyper_v"
+	LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeHyperv string = "hyper_v"
+
+	// BEGIN DEBUGGING
+	// lun_inline_lun_maps_inline_array_item_inline_igroup
+	// LunInlineLunMapsInlineArrayItemInlineIgroup
+	// os_type
+	// OsType
+	// linux
+	// END DEBUGGING
+	// LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeLinux captures enum value "linux"
+	LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeLinux string = "linux"
+
+	// BEGIN DEBUGGING
+	// lun_inline_lun_maps_inline_array_item_inline_igroup
+	// LunInlineLunMapsInlineArrayItemInlineIgroup
+	// os_type
+	// OsType
+	// netware
+	// END DEBUGGING
+	// LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeNetware captures enum value "netware"
+	LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeNetware string = "netware"
+
+	// BEGIN DEBUGGING
+	// lun_inline_lun_maps_inline_array_item_inline_igroup
+	// LunInlineLunMapsInlineArrayItemInlineIgroup
+	// os_type
+	// OsType
+	// openvms
+	// END DEBUGGING
+	// LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeOpenvms captures enum value "openvms"
+	LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeOpenvms string = "openvms"
+
+	// BEGIN DEBUGGING
+	// lun_inline_lun_maps_inline_array_item_inline_igroup
+	// LunInlineLunMapsInlineArrayItemInlineIgroup
+	// os_type
+	// OsType
+	// solaris
+	// END DEBUGGING
+	// LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeSolaris captures enum value "solaris"
+	LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeSolaris string = "solaris"
+
+	// BEGIN DEBUGGING
+	// lun_inline_lun_maps_inline_array_item_inline_igroup
+	// LunInlineLunMapsInlineArrayItemInlineIgroup
+	// os_type
+	// OsType
+	// vmware
+	// END DEBUGGING
+	// LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeVmware captures enum value "vmware"
+	LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeVmware string = "vmware"
+
+	// BEGIN DEBUGGING
+	// lun_inline_lun_maps_inline_array_item_inline_igroup
+	// LunInlineLunMapsInlineArrayItemInlineIgroup
+	// os_type
+	// OsType
+	// windows
+	// END DEBUGGING
+	// LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeWindows captures enum value "windows"
+	LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeWindows string = "windows"
+
+	// BEGIN DEBUGGING
+	// lun_inline_lun_maps_inline_array_item_inline_igroup
+	// LunInlineLunMapsInlineArrayItemInlineIgroup
+	// os_type
+	// OsType
+	// xen
+	// END DEBUGGING
+	// LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeXen captures enum value "xen"
+	LunInlineLunMapsInlineArrayItemInlineIgroupOsTypeXen string = "xen"
+)
+
+// prop value enum
+func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) validateOsTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, lunInlineLunMapsInlineArrayItemInlineIgroupTypeOsTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) validateOsType(formats strfmt.Registry) error {
+	if swag.IsZero(m.OsType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateOsTypeEnum("igroup"+"."+"os_type", "body", *m.OsType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var lunInlineLunMapsInlineArrayItemInlineIgroupTypeProtocolPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["fcp","iscsi","mixed"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		lunInlineLunMapsInlineArrayItemInlineIgroupTypeProtocolPropEnum = append(lunInlineLunMapsInlineArrayItemInlineIgroupTypeProtocolPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// lun_inline_lun_maps_inline_array_item_inline_igroup
+	// LunInlineLunMapsInlineArrayItemInlineIgroup
+	// protocol
+	// Protocol
+	// fcp
+	// END DEBUGGING
+	// LunInlineLunMapsInlineArrayItemInlineIgroupProtocolFcp captures enum value "fcp"
+	LunInlineLunMapsInlineArrayItemInlineIgroupProtocolFcp string = "fcp"
+
+	// BEGIN DEBUGGING
+	// lun_inline_lun_maps_inline_array_item_inline_igroup
+	// LunInlineLunMapsInlineArrayItemInlineIgroup
+	// protocol
+	// Protocol
+	// iscsi
+	// END DEBUGGING
+	// LunInlineLunMapsInlineArrayItemInlineIgroupProtocolIscsi captures enum value "iscsi"
+	LunInlineLunMapsInlineArrayItemInlineIgroupProtocolIscsi string = "iscsi"
+
+	// BEGIN DEBUGGING
+	// lun_inline_lun_maps_inline_array_item_inline_igroup
+	// LunInlineLunMapsInlineArrayItemInlineIgroup
+	// protocol
+	// Protocol
+	// mixed
+	// END DEBUGGING
+	// LunInlineLunMapsInlineArrayItemInlineIgroupProtocolMixed captures enum value "mixed"
+	LunInlineLunMapsInlineArrayItemInlineIgroupProtocolMixed string = "mixed"
+)
+
+// prop value enum
+func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) validateProtocolEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, lunInlineLunMapsInlineArrayItemInlineIgroupTypeProtocolPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) validateProtocol(formats strfmt.Registry) error {
+	if swag.IsZero(m.Protocol) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateProtocolEnum("igroup"+"."+"protocol", "body", *m.Protocol); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this lun inline lun maps inline array item inline igroup based on the context it is used
 func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -4123,11 +5029,11 @@ func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) ContextValidate(ctx contex
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateName(ctx, formats); err != nil {
+	if err := m.contextValidateIgroups(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateUUID(ctx, formats); err != nil {
+	if err := m.contextValidateInitiators(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -4151,19 +5057,37 @@ func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) contextValidateLinks(ctx c
 	return nil
 }
 
-func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) contextValidateIgroups(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "igroup"+"."+"name", "body", m.Name); err != nil {
-		return err
+	for i := 0; i < len(m.Igroups); i++ {
+
+		if m.Igroups[i] != nil {
+			if err := m.Igroups[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("igroup" + "." + "igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
 }
 
-func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) contextValidateInitiators(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "igroup"+"."+"uuid", "body", m.UUID); err != nil {
-		return err
+	for i := 0; i < len(m.Initiators); i++ {
+
+		if m.Initiators[i] != nil {
+			if err := m.Initiators[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("igroup" + "." + "initiators" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -4180,6 +5104,195 @@ func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) MarshalBinary() ([]byte, e
 // UnmarshalBinary interface implementation
 func (m *LunInlineLunMapsInlineArrayItemInlineIgroup) UnmarshalBinary(b []byte) error {
 	var res LunInlineLunMapsInlineArrayItemInlineIgroup
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunLunMapsItems0IgroupIgroupsItems0 lun lun maps items0 igroup igroups items0
+//
+// swagger:model LunLunMapsItems0IgroupIgroupsItems0
+type LunLunMapsItems0IgroupIgroupsItems0 struct {
+
+	// links
+	Links *SelfLink `json:"_links,omitempty"`
+
+	// The name of the initiator group.
+	//
+	// Example: igroup1
+	// Max Length: 96
+	// Min Length: 1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the initiator group.
+	//
+	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this lun lun maps items0 igroup igroups items0
+func (m *LunLunMapsItems0IgroupIgroupsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunLunMapsItems0IgroupIgroupsItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunLunMapsItems0IgroupIgroupsItems0) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun lun maps items0 igroup igroups items0 based on the context it is used
+func (m *LunLunMapsItems0IgroupIgroupsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunLunMapsItems0IgroupIgroupsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunLunMapsItems0IgroupIgroupsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunLunMapsItems0IgroupIgroupsItems0) UnmarshalBinary(b []byte) error {
+	var res LunLunMapsItems0IgroupIgroupsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunLunMapsItems0IgroupInitiatorsItems0 The initiators that are members of the initiator group.
+//
+// swagger:model LunLunMapsItems0IgroupInitiatorsItems0
+type LunLunMapsItems0IgroupInitiatorsItems0 struct {
+
+	// A comment available for use by the administrator.
+	//
+	// Example: my comment
+	// Max Length: 254
+	// Min Length: 0
+	Comment *string `json:"comment,omitempty"`
+
+	// Name of initiator that is a member of the initiator group.
+	//
+	// Example: iqn.1998-01.com.corp.iscsi:name1
+	Name *string `json:"name,omitempty"`
+}
+
+// Validate validates this lun lun maps items0 igroup initiators items0
+func (m *LunLunMapsItems0IgroupInitiatorsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateComment(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunLunMapsItems0IgroupInitiatorsItems0) validateComment(formats strfmt.Registry) error {
+	if swag.IsZero(m.Comment) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("comment", "body", *m.Comment, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("comment", "body", *m.Comment, 254); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this lun lun maps items0 igroup initiators items0 based on context it is used
+func (m *LunLunMapsItems0IgroupInitiatorsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunLunMapsItems0IgroupInitiatorsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunLunMapsItems0IgroupInitiatorsItems0) UnmarshalBinary(b []byte) error {
+	var res LunLunMapsItems0IgroupInitiatorsItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4359,7 +5472,7 @@ func (m *LunInlineLunMapsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// LunInlineMetric lun inline metric
+// LunInlineMetric Performance numbers, such as IOPS latency and throughput.
 //
 // swagger:model lun_inline_metric
 type LunInlineMetric struct {
@@ -4371,7 +5484,7 @@ type LunInlineMetric struct {
 	//
 	// Example: PT15S
 	// Read Only: true
-	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
+	// Enum: ["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]
 	Duration *string `json:"duration,omitempty"`
 
 	// iops
@@ -4383,14 +5496,14 @@ type LunInlineMetric struct {
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	// Enum: ["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *LunInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -4911,7 +6024,7 @@ type LunInlineMetricInlineIops struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -4965,7 +6078,7 @@ type LunInlineMetricInlineLatency struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -5105,7 +6218,7 @@ type LunInlineMetricInlineThroughput struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -5143,10 +6256,13 @@ func (m *LunInlineMetricInlineThroughput) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunInlineMovement This sub-object applies to LUN movement between volumes. A LUN can be moved to a new volume with a PATCH request that changes either the volume portion of property `name`, `location.volume.uuid`, or `location.volume.name`. If the volume is changed using more than one of these properties, the supplied properties used must refer to the same volume.<br/>
+// LunInlineMovement * **Unified ONTAP**:
+// This sub-object applies to LUN movement between volumes. A LUN can be moved to a new volume with a PATCH request that changes either the volume portion of property `name`, `location.volume.uuid`, or `location.volume.name`. If the volume is changed using more than one of these properties, the supplied properties used must refer to the same volume.<br/>
 // Moving a LUN between volumes is an asynchronous activity begun by a PATCH request. The data for the LUN is then asynchronously copied from the source volume to the destination volume. The time required to complete the move depends on the size of the LUN and the load on the cluster. The `movement` sub-object is populated while a LUN movement is in progress and for two (2) minutes following completion of a movement.<br/>
 // While the LUN is being moved, the status of the LUN movement operation can be obtained using a GET for the LUN that requests the `movement` properties. The LUN movement operation can be further modified using a PATCH on the properties on the `movement` sub-object.<br/>
 // There is an added computational cost to retrieving property values for `movement`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+// * **ASA r2**:
+// LUN movement is not supported. No properties in this sub-object can be set in POST or PATCH and none will be returned by GET.
 //
 // swagger:model lun_inline_movement
 type LunInlineMovement struct {
@@ -5286,13 +6402,13 @@ func (m *LunInlineMovement) UnmarshalBinary(b []byte) error {
 // swagger:model lun_inline_movement_inline_paths
 type LunInlineMovementInlinePaths struct {
 
-	// The fully qualified path of the LUN movement destination composed of a "/vol" prefix, the volume name, the (optional) qtree name, and base name of the LUN.
+	// The fully qualified path of the LUN movement destination composed of a "/vol" prefix, the volume name, the optional qtree name, and base name of the LUN.
 	//
 	// Example: /vol/vol1/lun1
 	// Read Only: true
 	Destination *string `json:"destination,omitempty"`
 
-	// The fully qualified path of the LUN movement source composed of a "/vol" prefix, the volume name, the (optional) qtree name, and base name of the LUN.
+	// The fully qualified path of the LUN movement source composed of a "/vol" prefix, the volume name, the optional qtree name, and base name of the LUN.
 	//
 	// Example: /vol/vol2/lun2
 	// Read Only: true
@@ -5383,10 +6499,10 @@ type LunInlineMovementInlineProgress struct {
 	// The state of the LUN movement.<br/>
 	// Valid in PATCH when an LUN movement is active. Set to _paused_ to pause a LUN movement. Set to _replicating_ to resume a paused LUN movement.
 	//
-	// Enum: [preparing replicating paused paused_error complete reverting failed]
+	// Enum: ["preparing","replicating","paused","paused_error","complete","reverting","failed"]
 	State *string `json:"state,omitempty"`
 
-	// This property reports if volume Snapshot copies are blocked by the LUN movement. This property can be polled to identify when volume Snapshot copies can be resumed after beginning a LUN movement.
+	// This property reports if volume snapshots are blocked by the LUN movement. This property can be polled to identify when volume snapshots can be resumed after beginning a LUN movement.
 	//
 	// Read Only: true
 	VolumeSnapshotBlocked *bool `json:"volume_snapshot_blocked,omitempty"`
@@ -5638,8 +6754,46 @@ func (m *LunInlineMovementInlineProgress) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunInlineQosPolicy The QoS policy for the LUN. Both traditional and adaptive QoS policies are supported. If both property `qos_policy.uuid` and `qos_policy.name` are specified in the same request, they must refer to the same QoS policy. To remove the QoS policy from a LUN, leaving it with no QoS policy, set property `qos_policy.name` to an empty string ("") in a PATCH request. Valid in POST and PATCH.<br/>
-// Note that a QoS policy can be set on a LUN, or a LUN's volume, but not both.
+// LunInlineProvisioningOptions Options that are applied to the operation.
+//
+// swagger:model lun_inline_provisioning_options
+type LunInlineProvisioningOptions struct {
+
+	// The number of LUNs to provision with these properties. Only POST based on `space.size` is supported. When provided, the name is considered a prefix, and a suffix of the form __&lt;N&gt;_ will be generated where N is the next available numeric index, starting with 1.
+	Count *int64 `json:"count,omitempty"`
+}
+
+// Validate validates this lun inline provisioning options
+func (m *LunInlineProvisioningOptions) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this lun inline provisioning options based on context it is used
+func (m *LunInlineProvisioningOptions) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunInlineProvisioningOptions) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunInlineProvisioningOptions) UnmarshalBinary(b []byte) error {
+	var res LunInlineProvisioningOptions
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunInlineQosPolicy The QoS policy for the LUN. Both traditional and adaptive QoS policies are supported. If both property `qos_policy.uuid` and `qos_policy.name` are specified in the same request, they must refer to the same QoS policy. To remove the QoS policy from a LUN, leaving it with no QoS policy, set the property `qos_policy.name` to an empty string ("") in a PATCH request. Valid in POST and PATCH.
+// ### Platform Specifics
+// * **ASA r2**: To remove the QoS policy, set it to `null` in a PATCH request.
 //
 // swagger:model lun_inline_qos_policy
 type LunInlineQosPolicy struct {
@@ -5826,21 +6980,52 @@ func (m *LunInlineQosPolicyInlineLinks) UnmarshalBinary(b []byte) error {
 // swagger:model lun_inline_space
 type LunInlineSpace struct {
 
+	// The storage efficiency ratio of the LUN without snapshots. (Logical Used / Used)
+	// ### Platform Specifics
+	// * **Unified ONTAP**: This property is not available on the LUN object in the REST API and is not reported for GET requests. See the containing volume object for this information.
+	// * **ASA r2**: Available for GET.
+	//
+	// Example: 2.5
+	// Read Only: true
+	EfficiencyRatio *float64 `json:"efficiency_ratio,omitempty"`
+
 	// guarantee
 	Guarantee *LunInlineSpaceInlineGuarantee `json:"guarantee,omitempty"`
 
+	// The number of bytes consumed on the disk by the LUN, excluding snapshots.
+	// ### Platform Specifics
+	// * **Unified ONTAP**: This property is not available on the LUN object in the REST API and is not reported for GET requests. See the containing volume object for this information.
+	// * **ASA r2**: Available for GET.
+	//
+	// Example: 1073741824
+	// Read Only: true
+	PhysicalUsed *int64 `json:"physical_used,omitempty"`
+
+	// The number of bytes consumed on the disk by the LUN's snapshots.
+	// ### Platform Specifics
+	// * **Unified ONTAP**: This property is not available on the LUN object in the REST API and is not reported for GET requests. See the containing volume object for this information.
+	// * **ASA r2**: Available for GET.
+	//
+	// Example: 1073741824
+	// Read Only: true
+	PhysicalUsedBySnapshots *int64 `json:"physical_used_by_snapshots,omitempty"`
+
 	// To leverage the benefits of SCSI thin provisioning, it must be supported by your host. SCSI thin provisioning uses the Logical Block Provisioning feature as defined in the SCSI SBC-3 standard. Only hosts that support this standard can use SCSI thin provisioning in ONTAP.<br/>
-	// When you enable SCSI thin provisioning support in ONTAP, you turn on the following SCSI thin provisioning features:
+	// When you disable SCSI thin provisioning support in ONTAP, you turn off the following SCSI thin provisioning features:
 	// - Unmapping and reporting space usage for space reclamation
 	// - Reporting resource exhaustion errors
 	// <p/>
 	// The value of this property is not propagated to the destination when a LUN is cloned as a new LUN or copied; it is reset to false. The value of this property is maintained from the destination LUN when a LUN is overwritten as a clone.<br/>
-	// Valid in POST and PATCH.
+	// <h3>Platform Specifics</h3>
+	// <ul>
+	//   <li>Unified ONTAP: Valid in POST and PATCH.</li>
+	//   <li>ASA r2: This property cannot be set. All LUNs are provisioned with SCSI thin provisioning enabled.</li>
+	// </ul>
 	//
 	ScsiThinProvisioningSupportEnabled *bool `json:"scsi_thin_provisioning_support_enabled,omitempty"`
 
-	// The total provisioned size of the LUN. The LUN size can be increased but not be made smaller using the REST interface.<br/>
-	// The maximum and minimum sizes listed here are the absolute maximum and absolute minimum sizes in bytes. The actual minimum and maxiumum sizes vary depending on the ONTAP version, ONTAP platform and the available space in the containing volume and aggregate.<br/>
+	// The total provisioned size of the LUN. The LUN size can be increased but not decreased using the REST interface.<br/>
+	// The maximum and minimum sizes listed here are the absolute maximum and absolute minimum sizes, in bytes. The actual minimum and maximum sizes vary depending on the ONTAP version, ONTAP platform and the available space in the containing volume and aggregate.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
 	//
 	// Example: 1073741824
@@ -5911,7 +7096,19 @@ func (m *LunInlineSpace) validateSize(formats strfmt.Registry) error {
 func (m *LunInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateEfficiencyRatio(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateGuarantee(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePhysicalUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePhysicalUsedBySnapshots(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -5925,6 +7122,15 @@ func (m *LunInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
+func (m *LunInlineSpace) contextValidateEfficiencyRatio(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency_ratio", "body", m.EfficiencyRatio); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *LunInlineSpace) contextValidateGuarantee(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Guarantee != nil {
@@ -5934,6 +7140,24 @@ func (m *LunInlineSpace) contextValidateGuarantee(ctx context.Context, formats s
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *LunInlineSpace) contextValidatePhysicalUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"physical_used", "body", m.PhysicalUsed); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LunInlineSpace) contextValidatePhysicalUsedBySnapshots(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"physical_used_by_snapshots", "body", m.PhysicalUsedBySnapshots); err != nil {
+		return err
 	}
 
 	return nil
@@ -5972,6 +7196,9 @@ func (m *LunInlineSpace) UnmarshalBinary(b []byte) error {
 type LunInlineSpaceInlineGuarantee struct {
 
 	// The requested space reservation policy for the LUN. If _true_, a space reservation is requested for the LUN; if _false_, the LUN is thin provisioned. Guaranteeing a space reservation request for a LUN requires that the volume in which the LUN resides is also space reserved and that the fractional reserve for the volume is 100%. Valid in POST and PATCH.
+	// ### Platform Specifics
+	// * **Unified ONTAP**: This property is caller settable as described above.
+	// * **ASA r2**: This property cannot be set. All LUNs are provisioned without a space reservation.
 	//
 	Requested *bool `json:"requested,omitempty"`
 
@@ -6028,7 +7255,7 @@ func (m *LunInlineSpaceInlineGuarantee) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunInlineStatistics lun inline statistics
+// LunInlineStatistics These are raw performance numbers, such as IOPS latency and throughput. These numbers are aggregated across all nodes in the cluster and increase with the uptime of the cluster.
 //
 // swagger:model lun_inline_statistics
 type LunInlineStatistics struct {
@@ -6042,14 +7269,14 @@ type LunInlineStatistics struct {
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	// Enum: ["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *LunInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -6418,7 +7645,7 @@ type LunInlineStatisticsInlineIopsRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -6472,7 +7699,7 @@ type LunInlineStatisticsInlineLatencyRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -6526,7 +7753,7 @@ type LunInlineStatisticsInlineThroughputRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -6572,7 +7799,7 @@ type LunInlineStatus struct {
 	// The state of the volume and aggregate that contain the LUN. LUNs are only available when their containers are available.
 	//
 	// Read Only: true
-	// Enum: [online aggregate_offline volume_offline]
+	// Enum: ["online","aggregate_offline","volume_offline"]
 	ContainerState *string `json:"container_state,omitempty"`
 
 	// Reports if the LUN is mapped to one or more initiator groups.<br/>
@@ -6590,7 +7817,7 @@ type LunInlineStatus struct {
 	//
 	// Example: online
 	// Read Only: true
-	// Enum: [foreign_lun_error nvfail offline online space_error]
+	// Enum: ["foreign_lun_error","nvfail","offline","online","space_error"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -6852,12 +8079,12 @@ type LunInlineSvm struct {
 	// links
 	Links *LunInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -7026,8 +8253,8 @@ func (m *LunInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunInlineVvol A VMware virtual volume (vVol) binding is an association between a LUN of class `protocol_endpoint` and a LUN of class `vvol`. Class `protocol_endpoint` LUNs are mapped to igroups and granted access using the same configuration as class `regular` LUNs. When a class `vvol` LUN is bound to a mapped class `protocol_endpoint` LUN, VMware can access the class `vvol` LUN through the class `protocol_endpoint` LUN mapping.</br>
-// See [`POST /protocols/san/vvol-bindings`](#/SAN/vvol_binding_create) to learn more about creating vVol bindings and [`DELETE /protocols/san/vvol-bindings`](#/SAN/vvol_binding_delete) to learn more about deleting vVol bindings.</br>
+// LunInlineVvol A VMware virtual volume (vVol) binding is an association between a LUN of class `protocol_endpoint` and a LUN of class `vvol`. Class `protocol_endpoint` LUNs are mapped to igroups and granted access using the same configuration as class `regular` LUNs. When a class `vvol` LUN is bound to a mapped class `protocol_endpoint` LUN, VMware can access the class `vvol` LUN through the class `protocol_endpoint` LUN mapping.<br/>
+// See [`POST /protocols/san/vvol-bindings`](#/SAN/vvol_binding_create) to learn more about creating vVol bindings and [`DELETE /protocols/san/vvol-bindings`](#/SAN/vvol_binding_delete) to learn more about deleting vVol bindings.<br/>
 // There is an added computational cost to retrieving property values for `vvol`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 //
 // swagger:model lun_inline_vvol
@@ -7160,7 +8387,8 @@ type LunVvolBindingsItems0 struct {
 	// links
 	Links *LunVvolBindingsItems0Links `json:"_links,omitempty"`
 
-	// The identifier assigned to the binding. The bind identifier is unique amongst all class `vvol` LUNs bound to the same class `protocol_endpoint` LUN.
+	// The ONTAP internal identifier assigned to the vVol binding. The bind identifier is unique amongst all class `vvol` LUNs bound to the same class `protocol_endpoint` LUN.<br/>
+	// This property was included in early releases of the REST API for vVols and is maintained for backward compatibility. See the `secondary_id` property, which replaces `id`.
 	//
 	// Example: 1
 	// Read Only: true
@@ -7168,6 +8396,13 @@ type LunVvolBindingsItems0 struct {
 
 	// partner
 	Partner *LunVvolBindingsItems0Partner `json:"partner,omitempty"`
+
+	// The identifier assigned to the vVol binding, known as the secondary LUN ID. The identifier is unique amongst all class `vvol` LUNs bound to the same class `protocol_endpoint` LUN.<br/>
+	// The format for a secondary LUN ID is 16 hexadecimal digits (zero-filled) followed by a lower case "h".
+	//
+	// Example: 0000D20000010000h
+	// Read Only: true
+	SecondaryID *string `json:"secondary_id,omitempty"`
 }
 
 // Validate validates this lun vvol bindings items0
@@ -7238,6 +8473,10 @@ func (m *LunVvolBindingsItems0) ContextValidate(ctx context.Context, formats str
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSecondaryID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -7276,6 +8515,15 @@ func (m *LunVvolBindingsItems0) contextValidatePartner(ctx context.Context, form
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *LunVvolBindingsItems0) contextValidateSecondaryID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "secondary_id", "body", m.SecondaryID); err != nil {
+		return err
 	}
 
 	return nil

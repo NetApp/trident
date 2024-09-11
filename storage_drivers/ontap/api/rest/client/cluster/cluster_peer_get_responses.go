@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ClusterPeerGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cluster peer get o k response
+func (o *ClusterPeerGetOK) Code() int {
+	return 200
+}
+
 func (o *ClusterPeerGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/peers/{uuid}][%d] clusterPeerGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/peers/{uuid}][%d] clusterPeerGetOK %s", 200, payload)
 }
 
 func (o *ClusterPeerGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/peers/{uuid}][%d] clusterPeerGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/peers/{uuid}][%d] clusterPeerGetOK %s", 200, payload)
 }
 
 func (o *ClusterPeerGetOK) GetPayload() *models.ClusterPeer {
@@ -122,11 +130,6 @@ type ClusterPeerGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cluster peer get default response
-func (o *ClusterPeerGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cluster peer get default response has a 2xx status code
 func (o *ClusterPeerGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *ClusterPeerGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster peer get default response
+func (o *ClusterPeerGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterPeerGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/peers/{uuid}][%d] cluster_peer_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/peers/{uuid}][%d] cluster_peer_get default %s", o._statusCode, payload)
 }
 
 func (o *ClusterPeerGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/peers/{uuid}][%d] cluster_peer_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/peers/{uuid}][%d] cluster_peer_get default %s", o._statusCode, payload)
 }
 
 func (o *ClusterPeerGetDefault) GetPayload() *models.ErrorResponse {

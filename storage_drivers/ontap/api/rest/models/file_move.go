@@ -55,7 +55,7 @@ type FileMove struct {
 	// Read Only: true
 	IsFlexgroup *bool `json:"is_flexgroup,omitempty"`
 
-	// Indicates whether Snapshot copies are fenced.
+	// Indicates whether snapshots are fenced.
 	// Read Only: true
 	IsSnapshotFenced *bool `json:"is_snapshot_fenced,omitempty"`
 
@@ -704,7 +704,7 @@ func (m *FileMoveInlineDestination) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveInlineDestinationInlineSvm file move inline destination inline svm
+// FileMoveInlineDestinationInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model file_move_inline_destination_inline_svm
 type FileMoveInlineDestinationInlineSvm struct {
@@ -712,12 +712,12 @@ type FileMoveInlineDestinationInlineSvm struct {
 	// links
 	Links *FileMoveInlineDestinationInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -894,7 +894,7 @@ type FileMoveInlineDestinationInlineVolume struct {
 	// links
 	Links *FileMoveInlineDestinationInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 
@@ -1216,7 +1216,7 @@ func (m *FileMoveInlineFilesToMove) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveFilesToMoveDestinationsItems0 file move files to move destinations items0
+// FileMoveFilesToMoveDestinationsItems0 Path for file move operation.
 //
 // swagger:model FileMoveFilesToMoveDestinationsItems0
 type FileMoveFilesToMoveDestinationsItems0 struct {
@@ -1348,7 +1348,7 @@ func (m *FileMoveFilesToMoveDestinationsItems0) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// FileMoveFilesToMoveDestinationsItems0Svm file move files to move destinations items0 svm
+// FileMoveFilesToMoveDestinationsItems0Svm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model FileMoveFilesToMoveDestinationsItems0Svm
 type FileMoveFilesToMoveDestinationsItems0Svm struct {
@@ -1356,12 +1356,12 @@ type FileMoveFilesToMoveDestinationsItems0Svm struct {
 	// links
 	Links *FileMoveFilesToMoveDestinationsItems0SvmLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -1538,7 +1538,7 @@ type FileMoveFilesToMoveDestinationsItems0Volume struct {
 	// links
 	Links *FileMoveFilesToMoveDestinationsItems0VolumeLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 
@@ -1710,7 +1710,7 @@ func (m *FileMoveFilesToMoveDestinationsItems0VolumeLinks) UnmarshalBinary(b []b
 	return nil
 }
 
-// FileMoveFilesToMoveSourcesItems0 file move files to move sources items0
+// FileMoveFilesToMoveSourcesItems0 Path for file move operation.
 //
 // swagger:model FileMoveFilesToMoveSourcesItems0
 type FileMoveFilesToMoveSourcesItems0 struct {
@@ -1842,7 +1842,7 @@ func (m *FileMoveFilesToMoveSourcesItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveFilesToMoveSourcesItems0Svm file move files to move sources items0 svm
+// FileMoveFilesToMoveSourcesItems0Svm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model FileMoveFilesToMoveSourcesItems0Svm
 type FileMoveFilesToMoveSourcesItems0Svm struct {
@@ -1850,12 +1850,12 @@ type FileMoveFilesToMoveSourcesItems0Svm struct {
 	// links
 	Links *FileMoveFilesToMoveSourcesItems0SvmLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -2032,7 +2032,7 @@ type FileMoveFilesToMoveSourcesItems0Volume struct {
 	// links
 	Links *FileMoveFilesToMoveSourcesItems0VolumeLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 
@@ -2529,12 +2529,12 @@ type FileMoveInlineReferenceInlineSvm struct {
 	// links
 	Links *FileMoveInlineReferenceInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -2711,7 +2711,7 @@ type FileMoveInlineReferenceInlineVolume struct {
 	// links
 	Links *FileMoveInlineReferenceInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 
@@ -2900,7 +2900,7 @@ type FileMoveInlineScanner struct {
 
 	// Status of the file move scanner.
 	// Read Only: true
-	// Enum: [allocation_map complete data destroyed destroying paused_admin paused_error preparing]
+	// Enum: ["allocation_map","complete","data","destroyed","destroying","paused_admin","paused_error","preparing"]
 	State *string `json:"state,omitempty"`
 
 	// Total bytes to be scanned.
@@ -3251,7 +3251,7 @@ func (m *FileMoveInlineSource) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveInlineSourceInlineSvm file move inline source inline svm
+// FileMoveInlineSourceInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model file_move_inline_source_inline_svm
 type FileMoveInlineSourceInlineSvm struct {
@@ -3259,12 +3259,12 @@ type FileMoveInlineSourceInlineSvm struct {
 	// links
 	Links *FileMoveInlineSourceInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -3441,7 +3441,7 @@ type FileMoveInlineSourceInlineVolume struct {
 	// links
 	Links *FileMoveInlineSourceInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 
@@ -3621,12 +3621,12 @@ type FileMoveInlineSvm struct {
 	// links
 	Links *FileMoveInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -3803,7 +3803,7 @@ type FileMoveInlineVolume struct {
 	// links
 	Links *FileMoveInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

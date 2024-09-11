@@ -22,17 +22,17 @@ type EmsSyslogFormat struct {
 
 	// Syslog Hostname Format Override. The supported hostname formats are no_override (hostname format based on the syslog.format.message property i.e. fqdn if syslog.format.message is rfc_5424, hostname_only if syslog.format.message is legacy_netapp), fqdn (Fully Qualified Domain Name) and hostname_only.
 	//
-	// Enum: [no_override fqdn hostname_only]
+	// Enum: ["no_override","fqdn","hostname_only"]
 	HostnameOverride *string `json:"hostname_override,omitempty"`
 
 	// Syslog Message Format. The supported message formats are legacy_netapp (format: &lt;PRIVAL&gt;TIMESTAMP [HOSTNAME:Event-name:Event-severity]: MSG) and rfc_5424 (format: &lt;PRIVAL&gt;VERSION TIMESTAMP HOSTNAME Event-source - Event-name - MSG).
 	//
-	// Enum: [legacy_netapp rfc_5424]
+	// Enum: ["legacy_netapp","rfc_5424"]
 	Message *string `json:"message,omitempty"`
 
 	// Syslog Timestamp Format Override. The supported timestamp formats are no_override (timestamp format based on the syslog.format.message property i.e. rfc_3164 if syslog.format.message is legacy_netapp, iso_8601_local_time if syslog.format.message is rfc_5424), rfc_3164 (format: Mmm dd hh:mm:ss), iso_8601_local_time (format: YYYY-MM-DDThh:mm:ss+/-hh:mm) and iso_8601_utc (format: YYYY-MM-DDThh:mm:ssZ).
 	//
-	// Enum: [no_override rfc_3164 iso_8601_local_time iso_8601_utc]
+	// Enum: ["no_override","rfc_3164","iso_8601_local_time","iso_8601_utc"]
 	TimestampOverride *string `json:"timestamp_override,omitempty"`
 }
 

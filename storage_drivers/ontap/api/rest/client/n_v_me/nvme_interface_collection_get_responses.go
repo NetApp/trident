@@ -6,6 +6,7 @@ package n_v_me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NvmeInterfaceCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nvme interface collection get o k response
+func (o *NvmeInterfaceCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *NvmeInterfaceCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nvme/interfaces][%d] nvmeInterfaceCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/interfaces][%d] nvmeInterfaceCollectionGetOK %s", 200, payload)
 }
 
 func (o *NvmeInterfaceCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nvme/interfaces][%d] nvmeInterfaceCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/interfaces][%d] nvmeInterfaceCollectionGetOK %s", 200, payload)
 }
 
 func (o *NvmeInterfaceCollectionGetOK) GetPayload() *models.NvmeInterfaceResponse {
@@ -122,11 +130,6 @@ type NvmeInterfaceCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the nvme interface collection get default response
-func (o *NvmeInterfaceCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this nvme interface collection get default response has a 2xx status code
 func (o *NvmeInterfaceCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NvmeInterfaceCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nvme interface collection get default response
+func (o *NvmeInterfaceCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NvmeInterfaceCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nvme/interfaces][%d] nvme_interface_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/interfaces][%d] nvme_interface_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *NvmeInterfaceCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nvme/interfaces][%d] nvme_interface_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nvme/interfaces][%d] nvme_interface_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *NvmeInterfaceCollectionGetDefault) GetPayload() *models.ErrorResponse {

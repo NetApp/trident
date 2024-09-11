@@ -29,7 +29,7 @@ type NdmpData struct {
 
 	// Indicates the NDMP data server operation.
 	// Example: backup
-	// Enum: [backup restore none]
+	// Enum: ["backup","restore","none"]
 	Operation *string `json:"operation,omitempty"`
 
 	// Indicates the reason for the NDMP data server halt.

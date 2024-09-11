@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type ApplicationModifyReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *ApplicationModifyReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewApplicationModifyOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewApplicationModifyAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *ApplicationModifyReader) ReadResponse(response runtime.ClientResponse, 
 	}
 }
 
+// NewApplicationModifyOK creates a ApplicationModifyOK with default headers values
+func NewApplicationModifyOK() *ApplicationModifyOK {
+	return &ApplicationModifyOK{}
+}
+
+/*
+ApplicationModifyOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type ApplicationModifyOK struct {
+	Payload *models.ApplicationJobLinkResponse
+}
+
+// IsSuccess returns true when this application modify o k response has a 2xx status code
+func (o *ApplicationModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this application modify o k response has a 3xx status code
+func (o *ApplicationModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this application modify o k response has a 4xx status code
+func (o *ApplicationModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this application modify o k response has a 5xx status code
+func (o *ApplicationModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this application modify o k response a status code equal to that given
+func (o *ApplicationModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the application modify o k response
+func (o *ApplicationModifyOK) Code() int {
+	return 200
+}
+
+func (o *ApplicationModifyOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /application/applications/{uuid}][%d] applicationModifyOK %s", 200, payload)
+}
+
+func (o *ApplicationModifyOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /application/applications/{uuid}][%d] applicationModifyOK %s", 200, payload)
+}
+
+func (o *ApplicationModifyOK) GetPayload() *models.ApplicationJobLinkResponse {
+	return o.Payload
+}
+
+func (o *ApplicationModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ApplicationJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewApplicationModifyAccepted creates a ApplicationModifyAccepted with default headers values
 func NewApplicationModifyAccepted() *ApplicationModifyAccepted {
 	return &ApplicationModifyAccepted{}
@@ -52,7 +129,7 @@ ApplicationModifyAccepted describes a response with status code 202, with defaul
 Accepted
 */
 type ApplicationModifyAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.ApplicationJobLinkResponse
 }
 
 // IsSuccess returns true when this application modify accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *ApplicationModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the application modify accepted response
+func (o *ApplicationModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *ApplicationModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /application/applications/{uuid}][%d] applicationModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /application/applications/{uuid}][%d] applicationModifyAccepted %s", 202, payload)
 }
 
 func (o *ApplicationModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /application/applications/{uuid}][%d] applicationModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /application/applications/{uuid}][%d] applicationModifyAccepted %s", 202, payload)
 }
 
-func (o *ApplicationModifyAccepted) GetPayload() *models.JobLinkResponse {
+func (o *ApplicationModifyAccepted) GetPayload() *models.ApplicationJobLinkResponse {
 	return o.Payload
 }
 
 func (o *ApplicationModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.ApplicationJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -122,11 +206,6 @@ type ApplicationModifyDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the application modify default response
-func (o *ApplicationModifyDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this application modify default response has a 2xx status code
 func (o *ApplicationModifyDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +231,19 @@ func (o *ApplicationModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the application modify default response
+func (o *ApplicationModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ApplicationModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /application/applications/{uuid}][%d] application_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /application/applications/{uuid}][%d] application_modify default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /application/applications/{uuid}][%d] application_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /application/applications/{uuid}][%d] application_modify default %s", o._statusCode, payload)
 }
 
 func (o *ApplicationModifyDefault) GetPayload() *models.ErrorResponse {

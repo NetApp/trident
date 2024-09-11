@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type ConfigurationBackupFileCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *ConfigurationBackupFileCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewConfigurationBackupFileCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewConfigurationBackupFileCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *ConfigurationBackupFileCreateReader) ReadResponse(response runtime.Clie
 	}
 }
 
+// NewConfigurationBackupFileCreateCreated creates a ConfigurationBackupFileCreateCreated with default headers values
+func NewConfigurationBackupFileCreateCreated() *ConfigurationBackupFileCreateCreated {
+	return &ConfigurationBackupFileCreateCreated{}
+}
+
+/*
+ConfigurationBackupFileCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type ConfigurationBackupFileCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.ConfigurationBackupFileJobLinkResponse
+}
+
+// IsSuccess returns true when this configuration backup file create created response has a 2xx status code
+func (o *ConfigurationBackupFileCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this configuration backup file create created response has a 3xx status code
+func (o *ConfigurationBackupFileCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this configuration backup file create created response has a 4xx status code
+func (o *ConfigurationBackupFileCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this configuration backup file create created response has a 5xx status code
+func (o *ConfigurationBackupFileCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this configuration backup file create created response a status code equal to that given
+func (o *ConfigurationBackupFileCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the configuration backup file create created response
+func (o *ConfigurationBackupFileCreateCreated) Code() int {
+	return 201
+}
+
+func (o *ConfigurationBackupFileCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/configuration-backup/backups][%d] configurationBackupFileCreateCreated %s", 201, payload)
+}
+
+func (o *ConfigurationBackupFileCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/configuration-backup/backups][%d] configurationBackupFileCreateCreated %s", 201, payload)
+}
+
+func (o *ConfigurationBackupFileCreateCreated) GetPayload() *models.ConfigurationBackupFileJobLinkResponse {
+	return o.Payload
+}
+
+func (o *ConfigurationBackupFileCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.ConfigurationBackupFileJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewConfigurationBackupFileCreateAccepted creates a ConfigurationBackupFileCreateAccepted with default headers values
 func NewConfigurationBackupFileCreateAccepted() *ConfigurationBackupFileCreateAccepted {
 	return &ConfigurationBackupFileCreateAccepted{}
@@ -57,7 +146,7 @@ type ConfigurationBackupFileCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.ConfigurationBackupFileJobLinkResponse
 }
 
 // IsSuccess returns true when this configuration backup file create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *ConfigurationBackupFileCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the configuration backup file create accepted response
+func (o *ConfigurationBackupFileCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *ConfigurationBackupFileCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /support/configuration-backup/backups][%d] configurationBackupFileCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/configuration-backup/backups][%d] configurationBackupFileCreateAccepted %s", 202, payload)
 }
 
 func (o *ConfigurationBackupFileCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /support/configuration-backup/backups][%d] configurationBackupFileCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/configuration-backup/backups][%d] configurationBackupFileCreateAccepted %s", 202, payload)
 }
 
-func (o *ConfigurationBackupFileCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *ConfigurationBackupFileCreateAccepted) GetPayload() *models.ConfigurationBackupFileJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *ConfigurationBackupFileCreateAccepted) readResponse(response runtime.Cl
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.ConfigurationBackupFileJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -133,16 +229,12 @@ func NewConfigurationBackupFileCreateDefault(code int) *ConfigurationBackupFileC
 | 5963818 | Failed to queue private job. |
 | 5963819 | Failed to queue cluster job. |
 | 5963871 | Requested backup name is missing .7z suffix. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ConfigurationBackupFileCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the configuration backup file create default response
-func (o *ConfigurationBackupFileCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this configuration backup file create default response has a 2xx status code
@@ -170,12 +262,19 @@ func (o *ConfigurationBackupFileCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the configuration backup file create default response
+func (o *ConfigurationBackupFileCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ConfigurationBackupFileCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /support/configuration-backup/backups][%d] configuration_backup_file_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/configuration-backup/backups][%d] configuration_backup_file_create default %s", o._statusCode, payload)
 }
 
 func (o *ConfigurationBackupFileCreateDefault) String() string {
-	return fmt.Sprintf("[POST /support/configuration-backup/backups][%d] configuration_backup_file_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/configuration-backup/backups][%d] configuration_backup_file_create default %s", o._statusCode, payload)
 }
 
 func (o *ConfigurationBackupFileCreateDefault) GetPayload() *models.ErrorResponse {

@@ -22,7 +22,7 @@ import (
 type San struct {
 
 	// The name of the host OS running the application.
-	// Enum: [aix hpux hyper_v linux netware openvms solaris solaris_efi vmware windows windows_2008 windows_gpt xen]
+	// Enum: ["aix","hpux","hyper_v","linux","netware","openvms","solaris","solaris_efi","vmware","windows","windows_2008","windows_gpt","xen"]
 	OsType *string `json:"os_type,omitempty"`
 
 	// protection type
@@ -478,12 +478,12 @@ type SanInlineApplicationComponentsInlineArrayItem struct {
 
 	// The name of the application component.
 	// Required: true
-	// Max Length: 512
+	// Max Length: 203
 	// Min Length: 1
 	Name *string `json:"name"`
 
 	// The name of the host OS running the application.
-	// Enum: [aix hpux hyper_v linux netware openvms solaris solaris_efi vmware windows windows_2008 windows_gpt xen]
+	// Enum: ["aix","hpux","hyper_v","linux","netware","openvms","solaris","solaris_efi","vmware","windows","windows_2008","windows_gpt","xen"]
 	OsType *string `json:"os_type,omitempty"`
 
 	// qos
@@ -579,7 +579,7 @@ func (m *SanInlineApplicationComponentsInlineArrayItem) validateName(formats str
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", *m.Name, 512); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 203); err != nil {
 		return err
 	}
 
@@ -1017,7 +1017,7 @@ func (m *SanInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy) Unm
 type SanInlineApplicationComponentsInlineArrayItemInlineStorageService struct {
 
 	// The storage service of the application component.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -1173,11 +1173,11 @@ type SanInlineProtectionType struct {
 	LocalPolicy *string `json:"local_policy,omitempty"`
 
 	// The local RPO of the application.
-	// Enum: [hourly none]
+	// Enum: ["hourly","none"]
 	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
-	// Enum: [none zero]
+	// Enum: ["none","zero"]
 	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 

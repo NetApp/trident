@@ -74,6 +74,18 @@ type NvmeNamespaceCollectionGetParams struct {
 	*/
 	Comment *string
 
+	/* ConsistencyGroupName.
+
+	   Filter by consistency_group.name
+	*/
+	ConsistencyGroupName *string
+
+	/* ConsistencyGroupUUID.
+
+	   Filter by consistency_group.uuid
+	*/
+	ConsistencyGroupUUID *string
+
 	/* CreateTime.
 
 	   Filter by create_time
@@ -85,6 +97,12 @@ type NvmeNamespaceCollectionGetParams struct {
 	   Filter by enabled
 	*/
 	Enabled *bool
+
+	/* EncryptionState.
+
+	   Filter by encryption.state
+	*/
+	EncryptionState *string
 
 	/* Fields.
 
@@ -242,6 +260,18 @@ type NvmeNamespaceCollectionGetParams struct {
 	*/
 	OsType *string
 
+	/* QosPolicyName.
+
+	   Filter by qos_policy.name
+	*/
+	QosPolicyName *string
+
+	/* QosPolicyUUID.
+
+	   Filter by qos_policy.uuid
+	*/
+	QosPolicyUUID *string
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -264,6 +294,12 @@ type NvmeNamespaceCollectionGetParams struct {
 	*/
 	SpaceBlockSize *int64
 
+	/* SpaceEfficiencyRatio.
+
+	   Filter by space.efficiency_ratio
+	*/
+	SpaceEfficiencyRatio *float64
+
 	/* SpaceGuaranteeRequested.
 
 	   Filter by space.guarantee.requested
@@ -275,6 +311,18 @@ type NvmeNamespaceCollectionGetParams struct {
 	   Filter by space.guarantee.reserved
 	*/
 	SpaceGuaranteeReserved *bool
+
+	/* SpacePhysicalUsed.
+
+	   Filter by space.physical_used
+	*/
+	SpacePhysicalUsed *int64
+
+	/* SpacePhysicalUsedBySnapshots.
+
+	   Filter by space.physical_used_by_snapshots
+	*/
+	SpacePhysicalUsedBySnapshots *int64
 
 	/* SpaceSize.
 
@@ -402,11 +450,59 @@ type NvmeNamespaceCollectionGetParams struct {
 	*/
 	SubsystemMapNsid *string
 
+	/* SubsystemMapSubsystemComment.
+
+	   Filter by subsystem_map.subsystem.comment
+	*/
+	SubsystemMapSubsystemComment *string
+
+	/* SubsystemMapSubsystemHostsDhHmacChapGroupSize.
+
+	   Filter by subsystem_map.subsystem.hosts.dh_hmac_chap.group_size
+	*/
+	SubsystemMapSubsystemHostsDhHmacChapGroupSize *string
+
+	/* SubsystemMapSubsystemHostsDhHmacChapHashFunction.
+
+	   Filter by subsystem_map.subsystem.hosts.dh_hmac_chap.hash_function
+	*/
+	SubsystemMapSubsystemHostsDhHmacChapHashFunction *string
+
+	/* SubsystemMapSubsystemHostsDhHmacChapMode.
+
+	   Filter by subsystem_map.subsystem.hosts.dh_hmac_chap.mode
+	*/
+	SubsystemMapSubsystemHostsDhHmacChapMode *string
+
+	/* SubsystemMapSubsystemHostsNqn.
+
+	   Filter by subsystem_map.subsystem.hosts.nqn
+	*/
+	SubsystemMapSubsystemHostsNqn *string
+
+	/* SubsystemMapSubsystemHostsPriority.
+
+	   Filter by subsystem_map.subsystem.hosts.priority
+	*/
+	SubsystemMapSubsystemHostsPriority *string
+
+	/* SubsystemMapSubsystemHostsTLSKeyType.
+
+	   Filter by subsystem_map.subsystem.hosts.tls.key_type
+	*/
+	SubsystemMapSubsystemHostsTLSKeyType *string
+
 	/* SubsystemMapSubsystemName.
 
 	   Filter by subsystem_map.subsystem.name
 	*/
 	SubsystemMapSubsystemName *string
+
+	/* SubsystemMapSubsystemOsType.
+
+	   Filter by subsystem_map.subsystem.os_type
+	*/
+	SubsystemMapSubsystemOsType *string
 
 	/* SubsystemMapSubsystemUUID.
 
@@ -521,6 +617,28 @@ func (o *NvmeNamespaceCollectionGetParams) SetComment(comment *string) {
 	o.Comment = comment
 }
 
+// WithConsistencyGroupName adds the consistencyGroupName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithConsistencyGroupName(consistencyGroupName *string) *NvmeNamespaceCollectionGetParams {
+	o.SetConsistencyGroupName(consistencyGroupName)
+	return o
+}
+
+// SetConsistencyGroupName adds the consistencyGroupName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetConsistencyGroupName(consistencyGroupName *string) {
+	o.ConsistencyGroupName = consistencyGroupName
+}
+
+// WithConsistencyGroupUUID adds the consistencyGroupUUID to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithConsistencyGroupUUID(consistencyGroupUUID *string) *NvmeNamespaceCollectionGetParams {
+	o.SetConsistencyGroupUUID(consistencyGroupUUID)
+	return o
+}
+
+// SetConsistencyGroupUUID adds the consistencyGroupUuid to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetConsistencyGroupUUID(consistencyGroupUUID *string) {
+	o.ConsistencyGroupUUID = consistencyGroupUUID
+}
+
 // WithCreateTime adds the createTime to the nvme namespace collection get params
 func (o *NvmeNamespaceCollectionGetParams) WithCreateTime(createTime *string) *NvmeNamespaceCollectionGetParams {
 	o.SetCreateTime(createTime)
@@ -541,6 +659,17 @@ func (o *NvmeNamespaceCollectionGetParams) WithEnabled(enabled *bool) *NvmeNames
 // SetEnabled adds the enabled to the nvme namespace collection get params
 func (o *NvmeNamespaceCollectionGetParams) SetEnabled(enabled *bool) {
 	o.Enabled = enabled
+}
+
+// WithEncryptionState adds the encryptionState to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithEncryptionState(encryptionState *string) *NvmeNamespaceCollectionGetParams {
+	o.SetEncryptionState(encryptionState)
+	return o
+}
+
+// SetEncryptionState adds the encryptionState to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetEncryptionState(encryptionState *string) {
+	o.EncryptionState = encryptionState
 }
 
 // WithFields adds the fields to the nvme namespace collection get params
@@ -829,6 +958,28 @@ func (o *NvmeNamespaceCollectionGetParams) SetOsType(osType *string) {
 	o.OsType = osType
 }
 
+// WithQosPolicyName adds the qosPolicyName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithQosPolicyName(qosPolicyName *string) *NvmeNamespaceCollectionGetParams {
+	o.SetQosPolicyName(qosPolicyName)
+	return o
+}
+
+// SetQosPolicyName adds the qosPolicyName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetQosPolicyName(qosPolicyName *string) {
+	o.QosPolicyName = qosPolicyName
+}
+
+// WithQosPolicyUUID adds the qosPolicyUUID to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithQosPolicyUUID(qosPolicyUUID *string) *NvmeNamespaceCollectionGetParams {
+	o.SetQosPolicyUUID(qosPolicyUUID)
+	return o
+}
+
+// SetQosPolicyUUID adds the qosPolicyUuid to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetQosPolicyUUID(qosPolicyUUID *string) {
+	o.QosPolicyUUID = qosPolicyUUID
+}
+
 // WithReturnRecords adds the returnRecords to the nvme namespace collection get params
 func (o *NvmeNamespaceCollectionGetParams) WithReturnRecords(returnRecords *bool) *NvmeNamespaceCollectionGetParams {
 	o.SetReturnRecords(returnRecords)
@@ -862,6 +1013,17 @@ func (o *NvmeNamespaceCollectionGetParams) SetSpaceBlockSize(spaceBlockSize *int
 	o.SpaceBlockSize = spaceBlockSize
 }
 
+// WithSpaceEfficiencyRatio adds the spaceEfficiencyRatio to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSpaceEfficiencyRatio(spaceEfficiencyRatio *float64) *NvmeNamespaceCollectionGetParams {
+	o.SetSpaceEfficiencyRatio(spaceEfficiencyRatio)
+	return o
+}
+
+// SetSpaceEfficiencyRatio adds the spaceEfficiencyRatio to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSpaceEfficiencyRatio(spaceEfficiencyRatio *float64) {
+	o.SpaceEfficiencyRatio = spaceEfficiencyRatio
+}
+
 // WithSpaceGuaranteeRequested adds the spaceGuaranteeRequested to the nvme namespace collection get params
 func (o *NvmeNamespaceCollectionGetParams) WithSpaceGuaranteeRequested(spaceGuaranteeRequested *bool) *NvmeNamespaceCollectionGetParams {
 	o.SetSpaceGuaranteeRequested(spaceGuaranteeRequested)
@@ -882,6 +1044,28 @@ func (o *NvmeNamespaceCollectionGetParams) WithSpaceGuaranteeReserved(spaceGuara
 // SetSpaceGuaranteeReserved adds the spaceGuaranteeReserved to the nvme namespace collection get params
 func (o *NvmeNamespaceCollectionGetParams) SetSpaceGuaranteeReserved(spaceGuaranteeReserved *bool) {
 	o.SpaceGuaranteeReserved = spaceGuaranteeReserved
+}
+
+// WithSpacePhysicalUsed adds the spacePhysicalUsed to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSpacePhysicalUsed(spacePhysicalUsed *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetSpacePhysicalUsed(spacePhysicalUsed)
+	return o
+}
+
+// SetSpacePhysicalUsed adds the spacePhysicalUsed to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSpacePhysicalUsed(spacePhysicalUsed *int64) {
+	o.SpacePhysicalUsed = spacePhysicalUsed
+}
+
+// WithSpacePhysicalUsedBySnapshots adds the spacePhysicalUsedBySnapshots to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSpacePhysicalUsedBySnapshots(spacePhysicalUsedBySnapshots *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetSpacePhysicalUsedBySnapshots(spacePhysicalUsedBySnapshots)
+	return o
+}
+
+// SetSpacePhysicalUsedBySnapshots adds the spacePhysicalUsedBySnapshots to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSpacePhysicalUsedBySnapshots(spacePhysicalUsedBySnapshots *int64) {
+	o.SpacePhysicalUsedBySnapshots = spacePhysicalUsedBySnapshots
 }
 
 // WithSpaceSize adds the spaceSize to the nvme namespace collection get params
@@ -1115,6 +1299,83 @@ func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapNsid(subsystemMapNsid 
 	o.SubsystemMapNsid = subsystemMapNsid
 }
 
+// WithSubsystemMapSubsystemComment adds the subsystemMapSubsystemComment to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemComment(subsystemMapSubsystemComment *string) *NvmeNamespaceCollectionGetParams {
+	o.SetSubsystemMapSubsystemComment(subsystemMapSubsystemComment)
+	return o
+}
+
+// SetSubsystemMapSubsystemComment adds the subsystemMapSubsystemComment to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapSubsystemComment(subsystemMapSubsystemComment *string) {
+	o.SubsystemMapSubsystemComment = subsystemMapSubsystemComment
+}
+
+// WithSubsystemMapSubsystemHostsDhHmacChapGroupSize adds the subsystemMapSubsystemHostsDhHmacChapGroupSize to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemHostsDhHmacChapGroupSize(subsystemMapSubsystemHostsDhHmacChapGroupSize *string) *NvmeNamespaceCollectionGetParams {
+	o.SetSubsystemMapSubsystemHostsDhHmacChapGroupSize(subsystemMapSubsystemHostsDhHmacChapGroupSize)
+	return o
+}
+
+// SetSubsystemMapSubsystemHostsDhHmacChapGroupSize adds the subsystemMapSubsystemHostsDhHmacChapGroupSize to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapSubsystemHostsDhHmacChapGroupSize(subsystemMapSubsystemHostsDhHmacChapGroupSize *string) {
+	o.SubsystemMapSubsystemHostsDhHmacChapGroupSize = subsystemMapSubsystemHostsDhHmacChapGroupSize
+}
+
+// WithSubsystemMapSubsystemHostsDhHmacChapHashFunction adds the subsystemMapSubsystemHostsDhHmacChapHashFunction to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemHostsDhHmacChapHashFunction(subsystemMapSubsystemHostsDhHmacChapHashFunction *string) *NvmeNamespaceCollectionGetParams {
+	o.SetSubsystemMapSubsystemHostsDhHmacChapHashFunction(subsystemMapSubsystemHostsDhHmacChapHashFunction)
+	return o
+}
+
+// SetSubsystemMapSubsystemHostsDhHmacChapHashFunction adds the subsystemMapSubsystemHostsDhHmacChapHashFunction to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapSubsystemHostsDhHmacChapHashFunction(subsystemMapSubsystemHostsDhHmacChapHashFunction *string) {
+	o.SubsystemMapSubsystemHostsDhHmacChapHashFunction = subsystemMapSubsystemHostsDhHmacChapHashFunction
+}
+
+// WithSubsystemMapSubsystemHostsDhHmacChapMode adds the subsystemMapSubsystemHostsDhHmacChapMode to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemHostsDhHmacChapMode(subsystemMapSubsystemHostsDhHmacChapMode *string) *NvmeNamespaceCollectionGetParams {
+	o.SetSubsystemMapSubsystemHostsDhHmacChapMode(subsystemMapSubsystemHostsDhHmacChapMode)
+	return o
+}
+
+// SetSubsystemMapSubsystemHostsDhHmacChapMode adds the subsystemMapSubsystemHostsDhHmacChapMode to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapSubsystemHostsDhHmacChapMode(subsystemMapSubsystemHostsDhHmacChapMode *string) {
+	o.SubsystemMapSubsystemHostsDhHmacChapMode = subsystemMapSubsystemHostsDhHmacChapMode
+}
+
+// WithSubsystemMapSubsystemHostsNqn adds the subsystemMapSubsystemHostsNqn to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemHostsNqn(subsystemMapSubsystemHostsNqn *string) *NvmeNamespaceCollectionGetParams {
+	o.SetSubsystemMapSubsystemHostsNqn(subsystemMapSubsystemHostsNqn)
+	return o
+}
+
+// SetSubsystemMapSubsystemHostsNqn adds the subsystemMapSubsystemHostsNqn to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapSubsystemHostsNqn(subsystemMapSubsystemHostsNqn *string) {
+	o.SubsystemMapSubsystemHostsNqn = subsystemMapSubsystemHostsNqn
+}
+
+// WithSubsystemMapSubsystemHostsPriority adds the subsystemMapSubsystemHostsPriority to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemHostsPriority(subsystemMapSubsystemHostsPriority *string) *NvmeNamespaceCollectionGetParams {
+	o.SetSubsystemMapSubsystemHostsPriority(subsystemMapSubsystemHostsPriority)
+	return o
+}
+
+// SetSubsystemMapSubsystemHostsPriority adds the subsystemMapSubsystemHostsPriority to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapSubsystemHostsPriority(subsystemMapSubsystemHostsPriority *string) {
+	o.SubsystemMapSubsystemHostsPriority = subsystemMapSubsystemHostsPriority
+}
+
+// WithSubsystemMapSubsystemHostsTLSKeyType adds the subsystemMapSubsystemHostsTLSKeyType to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemHostsTLSKeyType(subsystemMapSubsystemHostsTLSKeyType *string) *NvmeNamespaceCollectionGetParams {
+	o.SetSubsystemMapSubsystemHostsTLSKeyType(subsystemMapSubsystemHostsTLSKeyType)
+	return o
+}
+
+// SetSubsystemMapSubsystemHostsTLSKeyType adds the subsystemMapSubsystemHostsTlsKeyType to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapSubsystemHostsTLSKeyType(subsystemMapSubsystemHostsTLSKeyType *string) {
+	o.SubsystemMapSubsystemHostsTLSKeyType = subsystemMapSubsystemHostsTLSKeyType
+}
+
 // WithSubsystemMapSubsystemName adds the subsystemMapSubsystemName to the nvme namespace collection get params
 func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemName(subsystemMapSubsystemName *string) *NvmeNamespaceCollectionGetParams {
 	o.SetSubsystemMapSubsystemName(subsystemMapSubsystemName)
@@ -1124,6 +1385,17 @@ func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemName(subsyst
 // SetSubsystemMapSubsystemName adds the subsystemMapSubsystemName to the nvme namespace collection get params
 func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapSubsystemName(subsystemMapSubsystemName *string) {
 	o.SubsystemMapSubsystemName = subsystemMapSubsystemName
+}
+
+// WithSubsystemMapSubsystemOsType adds the subsystemMapSubsystemOsType to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemOsType(subsystemMapSubsystemOsType *string) *NvmeNamespaceCollectionGetParams {
+	o.SetSubsystemMapSubsystemOsType(subsystemMapSubsystemOsType)
+	return o
+}
+
+// SetSubsystemMapSubsystemOsType adds the subsystemMapSubsystemOsType to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapSubsystemOsType(subsystemMapSubsystemOsType *string) {
+	o.SubsystemMapSubsystemOsType = subsystemMapSubsystemOsType
 }
 
 // WithSubsystemMapSubsystemUUID adds the subsystemMapSubsystemUUID to the nvme namespace collection get params
@@ -1212,6 +1484,40 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.ConsistencyGroupName != nil {
+
+		// query param consistency_group.name
+		var qrConsistencyGroupName string
+
+		if o.ConsistencyGroupName != nil {
+			qrConsistencyGroupName = *o.ConsistencyGroupName
+		}
+		qConsistencyGroupName := qrConsistencyGroupName
+		if qConsistencyGroupName != "" {
+
+			if err := r.SetQueryParam("consistency_group.name", qConsistencyGroupName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupUUID != nil {
+
+		// query param consistency_group.uuid
+		var qrConsistencyGroupUUID string
+
+		if o.ConsistencyGroupUUID != nil {
+			qrConsistencyGroupUUID = *o.ConsistencyGroupUUID
+		}
+		qConsistencyGroupUUID := qrConsistencyGroupUUID
+		if qConsistencyGroupUUID != "" {
+
+			if err := r.SetQueryParam("consistency_group.uuid", qConsistencyGroupUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CreateTime != nil {
 
 		// query param create_time
@@ -1241,6 +1547,23 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qEnabled != "" {
 
 			if err := r.SetQueryParam("enabled", qEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EncryptionState != nil {
+
+		// query param encryption.state
+		var qrEncryptionState string
+
+		if o.EncryptionState != nil {
+			qrEncryptionState = *o.EncryptionState
+		}
+		qEncryptionState := qrEncryptionState
+		if qEncryptionState != "" {
+
+			if err := r.SetQueryParam("encryption.state", qEncryptionState); err != nil {
 				return err
 			}
 		}
@@ -1676,6 +1999,40 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.QosPolicyName != nil {
+
+		// query param qos_policy.name
+		var qrQosPolicyName string
+
+		if o.QosPolicyName != nil {
+			qrQosPolicyName = *o.QosPolicyName
+		}
+		qQosPolicyName := qrQosPolicyName
+		if qQosPolicyName != "" {
+
+			if err := r.SetQueryParam("qos_policy.name", qQosPolicyName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyUUID != nil {
+
+		// query param qos_policy.uuid
+		var qrQosPolicyUUID string
+
+		if o.QosPolicyUUID != nil {
+			qrQosPolicyUUID = *o.QosPolicyUUID
+		}
+		qQosPolicyUUID := qrQosPolicyUUID
+		if qQosPolicyUUID != "" {
+
+			if err := r.SetQueryParam("qos_policy.uuid", qQosPolicyUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ReturnRecords != nil {
 
 		// query param return_records
@@ -1727,6 +2084,23 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.SpaceEfficiencyRatio != nil {
+
+		// query param space.efficiency_ratio
+		var qrSpaceEfficiencyRatio float64
+
+		if o.SpaceEfficiencyRatio != nil {
+			qrSpaceEfficiencyRatio = *o.SpaceEfficiencyRatio
+		}
+		qSpaceEfficiencyRatio := swag.FormatFloat64(qrSpaceEfficiencyRatio)
+		if qSpaceEfficiencyRatio != "" {
+
+			if err := r.SetQueryParam("space.efficiency_ratio", qSpaceEfficiencyRatio); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SpaceGuaranteeRequested != nil {
 
 		// query param space.guarantee.requested
@@ -1756,6 +2130,40 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qSpaceGuaranteeReserved != "" {
 
 			if err := r.SetQueryParam("space.guarantee.reserved", qSpaceGuaranteeReserved); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpacePhysicalUsed != nil {
+
+		// query param space.physical_used
+		var qrSpacePhysicalUsed int64
+
+		if o.SpacePhysicalUsed != nil {
+			qrSpacePhysicalUsed = *o.SpacePhysicalUsed
+		}
+		qSpacePhysicalUsed := swag.FormatInt64(qrSpacePhysicalUsed)
+		if qSpacePhysicalUsed != "" {
+
+			if err := r.SetQueryParam("space.physical_used", qSpacePhysicalUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpacePhysicalUsedBySnapshots != nil {
+
+		// query param space.physical_used_by_snapshots
+		var qrSpacePhysicalUsedBySnapshots int64
+
+		if o.SpacePhysicalUsedBySnapshots != nil {
+			qrSpacePhysicalUsedBySnapshots = *o.SpacePhysicalUsedBySnapshots
+		}
+		qSpacePhysicalUsedBySnapshots := swag.FormatInt64(qrSpacePhysicalUsedBySnapshots)
+		if qSpacePhysicalUsedBySnapshots != "" {
+
+			if err := r.SetQueryParam("space.physical_used_by_snapshots", qSpacePhysicalUsedBySnapshots); err != nil {
 				return err
 			}
 		}
@@ -2118,6 +2526,125 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.SubsystemMapSubsystemComment != nil {
+
+		// query param subsystem_map.subsystem.comment
+		var qrSubsystemMapSubsystemComment string
+
+		if o.SubsystemMapSubsystemComment != nil {
+			qrSubsystemMapSubsystemComment = *o.SubsystemMapSubsystemComment
+		}
+		qSubsystemMapSubsystemComment := qrSubsystemMapSubsystemComment
+		if qSubsystemMapSubsystemComment != "" {
+
+			if err := r.SetQueryParam("subsystem_map.subsystem.comment", qSubsystemMapSubsystemComment); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubsystemMapSubsystemHostsDhHmacChapGroupSize != nil {
+
+		// query param subsystem_map.subsystem.hosts.dh_hmac_chap.group_size
+		var qrSubsystemMapSubsystemHostsDhHmacChapGroupSize string
+
+		if o.SubsystemMapSubsystemHostsDhHmacChapGroupSize != nil {
+			qrSubsystemMapSubsystemHostsDhHmacChapGroupSize = *o.SubsystemMapSubsystemHostsDhHmacChapGroupSize
+		}
+		qSubsystemMapSubsystemHostsDhHmacChapGroupSize := qrSubsystemMapSubsystemHostsDhHmacChapGroupSize
+		if qSubsystemMapSubsystemHostsDhHmacChapGroupSize != "" {
+
+			if err := r.SetQueryParam("subsystem_map.subsystem.hosts.dh_hmac_chap.group_size", qSubsystemMapSubsystemHostsDhHmacChapGroupSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubsystemMapSubsystemHostsDhHmacChapHashFunction != nil {
+
+		// query param subsystem_map.subsystem.hosts.dh_hmac_chap.hash_function
+		var qrSubsystemMapSubsystemHostsDhHmacChapHashFunction string
+
+		if o.SubsystemMapSubsystemHostsDhHmacChapHashFunction != nil {
+			qrSubsystemMapSubsystemHostsDhHmacChapHashFunction = *o.SubsystemMapSubsystemHostsDhHmacChapHashFunction
+		}
+		qSubsystemMapSubsystemHostsDhHmacChapHashFunction := qrSubsystemMapSubsystemHostsDhHmacChapHashFunction
+		if qSubsystemMapSubsystemHostsDhHmacChapHashFunction != "" {
+
+			if err := r.SetQueryParam("subsystem_map.subsystem.hosts.dh_hmac_chap.hash_function", qSubsystemMapSubsystemHostsDhHmacChapHashFunction); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubsystemMapSubsystemHostsDhHmacChapMode != nil {
+
+		// query param subsystem_map.subsystem.hosts.dh_hmac_chap.mode
+		var qrSubsystemMapSubsystemHostsDhHmacChapMode string
+
+		if o.SubsystemMapSubsystemHostsDhHmacChapMode != nil {
+			qrSubsystemMapSubsystemHostsDhHmacChapMode = *o.SubsystemMapSubsystemHostsDhHmacChapMode
+		}
+		qSubsystemMapSubsystemHostsDhHmacChapMode := qrSubsystemMapSubsystemHostsDhHmacChapMode
+		if qSubsystemMapSubsystemHostsDhHmacChapMode != "" {
+
+			if err := r.SetQueryParam("subsystem_map.subsystem.hosts.dh_hmac_chap.mode", qSubsystemMapSubsystemHostsDhHmacChapMode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubsystemMapSubsystemHostsNqn != nil {
+
+		// query param subsystem_map.subsystem.hosts.nqn
+		var qrSubsystemMapSubsystemHostsNqn string
+
+		if o.SubsystemMapSubsystemHostsNqn != nil {
+			qrSubsystemMapSubsystemHostsNqn = *o.SubsystemMapSubsystemHostsNqn
+		}
+		qSubsystemMapSubsystemHostsNqn := qrSubsystemMapSubsystemHostsNqn
+		if qSubsystemMapSubsystemHostsNqn != "" {
+
+			if err := r.SetQueryParam("subsystem_map.subsystem.hosts.nqn", qSubsystemMapSubsystemHostsNqn); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubsystemMapSubsystemHostsPriority != nil {
+
+		// query param subsystem_map.subsystem.hosts.priority
+		var qrSubsystemMapSubsystemHostsPriority string
+
+		if o.SubsystemMapSubsystemHostsPriority != nil {
+			qrSubsystemMapSubsystemHostsPriority = *o.SubsystemMapSubsystemHostsPriority
+		}
+		qSubsystemMapSubsystemHostsPriority := qrSubsystemMapSubsystemHostsPriority
+		if qSubsystemMapSubsystemHostsPriority != "" {
+
+			if err := r.SetQueryParam("subsystem_map.subsystem.hosts.priority", qSubsystemMapSubsystemHostsPriority); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubsystemMapSubsystemHostsTLSKeyType != nil {
+
+		// query param subsystem_map.subsystem.hosts.tls.key_type
+		var qrSubsystemMapSubsystemHostsTLSKeyType string
+
+		if o.SubsystemMapSubsystemHostsTLSKeyType != nil {
+			qrSubsystemMapSubsystemHostsTLSKeyType = *o.SubsystemMapSubsystemHostsTLSKeyType
+		}
+		qSubsystemMapSubsystemHostsTLSKeyType := qrSubsystemMapSubsystemHostsTLSKeyType
+		if qSubsystemMapSubsystemHostsTLSKeyType != "" {
+
+			if err := r.SetQueryParam("subsystem_map.subsystem.hosts.tls.key_type", qSubsystemMapSubsystemHostsTLSKeyType); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SubsystemMapSubsystemName != nil {
 
 		// query param subsystem_map.subsystem.name
@@ -2130,6 +2657,23 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qSubsystemMapSubsystemName != "" {
 
 			if err := r.SetQueryParam("subsystem_map.subsystem.name", qSubsystemMapSubsystemName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubsystemMapSubsystemOsType != nil {
+
+		// query param subsystem_map.subsystem.os_type
+		var qrSubsystemMapSubsystemOsType string
+
+		if o.SubsystemMapSubsystemOsType != nil {
+			qrSubsystemMapSubsystemOsType = *o.SubsystemMapSubsystemOsType
+		}
+		qSubsystemMapSubsystemOsType := qrSubsystemMapSubsystemOsType
+		if qSubsystemMapSubsystemOsType != "" {
+
+			if err := r.SetQueryParam("subsystem_map.subsystem.os_type", qSubsystemMapSubsystemOsType); err != nil {
 				return err
 			}
 		}

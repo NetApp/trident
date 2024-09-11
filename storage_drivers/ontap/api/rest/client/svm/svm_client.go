@@ -30,37 +30,49 @@ type ClientOption func(*runtime.ClientOperation)
 type ClientService interface {
 	SvmCollectionGet(params *SvmCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmCollectionGetOK, error)
 
-	SvmCreate(params *SvmCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmCreateAccepted, error)
+	SvmCreate(params *SvmCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmCreateCreated, *SvmCreateAccepted, error)
 
-	SvmDelete(params *SvmDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmDeleteAccepted, error)
+	SvmDelete(params *SvmDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmDeleteOK, *SvmDeleteAccepted, error)
+
+	SvmDeleteCollection(params *SvmDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmDeleteCollectionOK, *SvmDeleteCollectionAccepted, error)
 
 	SvmGet(params *SvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmGetOK, error)
 
 	SvmMigrationCollectionGet(params *SvmMigrationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationCollectionGetOK, error)
 
-	SvmMigrationCreate(params *SvmMigrationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationCreateAccepted, error)
+	SvmMigrationCreate(params *SvmMigrationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationCreateCreated, *SvmMigrationCreateAccepted, error)
 
-	SvmMigrationDelete(params *SvmMigrationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationDeleteAccepted, error)
+	SvmMigrationDelete(params *SvmMigrationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationDeleteOK, *SvmMigrationDeleteAccepted, error)
+
+	SvmMigrationDeleteCollection(params *SvmMigrationDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationDeleteCollectionOK, *SvmMigrationDeleteCollectionAccepted, error)
 
 	SvmMigrationGet(params *SvmMigrationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationGetOK, error)
 
-	SvmMigrationModify(params *SvmMigrationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationModifyAccepted, error)
+	SvmMigrationModify(params *SvmMigrationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationModifyOK, *SvmMigrationModifyAccepted, error)
+
+	SvmMigrationModifyCollection(params *SvmMigrationModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationModifyCollectionOK, *SvmMigrationModifyCollectionAccepted, error)
 
 	SvmMigrationVolumeCollectionGet(params *SvmMigrationVolumeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationVolumeCollectionGetOK, error)
 
 	SvmMigrationVolumeGet(params *SvmMigrationVolumeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationVolumeGetOK, error)
 
-	SvmModify(params *SvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmModifyAccepted, error)
+	SvmModify(params *SvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmModifyOK, *SvmModifyAccepted, error)
+
+	SvmModifyCollection(params *SvmModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmModifyCollectionOK, *SvmModifyCollectionAccepted, error)
 
 	SvmPeerCollectionGet(params *SvmPeerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerCollectionGetOK, error)
 
-	SvmPeerCreate(params *SvmPeerCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerCreateAccepted, error)
+	SvmPeerCreate(params *SvmPeerCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerCreateCreated, *SvmPeerCreateAccepted, error)
 
-	SvmPeerDelete(params *SvmPeerDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerDeleteAccepted, error)
+	SvmPeerDelete(params *SvmPeerDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerDeleteOK, *SvmPeerDeleteAccepted, error)
+
+	SvmPeerDeleteCollection(params *SvmPeerDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerDeleteCollectionOK, *SvmPeerDeleteCollectionAccepted, error)
 
 	SvmPeerInstanceGet(params *SvmPeerInstanceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerInstanceGetOK, error)
 
-	SvmPeerModify(params *SvmPeerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerModifyAccepted, error)
+	SvmPeerModify(params *SvmPeerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerModifyOK, *SvmPeerModifyAccepted, error)
+
+	SvmPeerModifyCollection(params *SvmPeerModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerModifyCollectionOK, *SvmPeerModifyCollectionAccepted, error)
 
 	SvmPeerPermissionCollectionGet(params *SvmPeerPermissionCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerPermissionCollectionGetOK, error)
 
@@ -68,9 +80,13 @@ type ClientService interface {
 
 	SvmPeerPermissionDelete(params *SvmPeerPermissionDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerPermissionDeleteOK, error)
 
+	SvmPeerPermissionDeleteCollection(params *SvmPeerPermissionDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerPermissionDeleteCollectionOK, error)
+
 	SvmPeerPermissionInstanceGet(params *SvmPeerPermissionInstanceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerPermissionInstanceGetOK, error)
 
 	SvmPeerPermissionModify(params *SvmPeerPermissionModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerPermissionModifyOK, error)
+
+	SvmPeerPermissionModifyCollection(params *SvmPeerPermissionModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerPermissionModifyCollectionOK, error)
 
 	TopMetricsSvmClientCollectionGet(params *TopMetricsSvmClientCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsSvmClientCollectionGetOK, error)
 
@@ -163,8 +179,8 @@ func (a *Client) SvmCollectionGet(params *SvmCollectionGetParams, authInfo runti
 		ID:                 "svm_collection_get",
 		Method:             "GET",
 		PathPattern:        "/svm/svms",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmCollectionGetReader{formats: a.formats},
@@ -205,6 +221,8 @@ func (a *Client) SvmCollectionGet(params *SvmCollectionGetParams, authInfo runti
 * `ip_interfaces.ip.address` - IP address
 * `ip_interfaces.ip.netmask` - Netmask length or IP address
 * `ip_interfaces.location.broadcast_domain.uuid` or `ip_interfaces.location.broadcast_domain.name` - Broadcast domain name or UUID belonging to the same IPspace of the SVM.
+* `ip_interfaces.location.home_port.name` - Home port name
+* `ip_interfaces.location.home_port.uuid` - Home port uuid
 * `subnet.uuid` or `subnet.name` - Either name or UUID of the subnet to create.
 * `routes` - If provided, the following field is required:
   - `routes.gateway` - Gateway IP address
@@ -236,8 +254,10 @@ func (a *Client) SvmCollectionGet(params *SvmCollectionGetParams, authInfo runti
 * `s3` - If provided, the following field should also be specified:
   - `s3.name` - Name of the S3 server. If `s3.name' is not specified while `s3.enabled` is set to 'true', the S3 server will be created with the default name '<svm.name>_S3Server'.
 
-* `auto_enable_analytics` - Auto-enable file system analytics on new volumes created in the SVM
-* `auto_enable_activity_tracking` - Auto-enable volume activity-tracking on new volumes created in the SVM
+* `auto_enable_analytics` - Auto-enable file system analytics on new volumes created in the SVM.
+* `auto_enable_activity_tracking` - Auto-enable volume activity-tracking on new volumes created in the SVM.
+* `storage.limit` - Maximum storage permitted on a single SVM.
+* `storage.limit_threshold_alert` - At what percentage of storage capacity, alert message needs to be sent.
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `language` - _C.UTF-8_
@@ -245,6 +265,7 @@ If not specified in POST, the following default property values are assigned:
 * `snapshot_policy.name` - _Default_
 * `subtype` - _Default_ ( _sync-source_ if MetroCluster configuration )
 * `anti_ransomware_default_volume_state` - _disabled_
+* `qos_adaptive_policy_group_template` - _extreme_ ( if running ONTAP X and neither qos_policy_group_template nor qos_adaptive_policy_group_template are provided)
 ### Related ONTAP commands
 * `vserver create`
 * `vserver add-aggregates`
@@ -359,11 +380,47 @@ If not specified in POST, the following default property values are assigned:
     POST "/api/svm/svms" '{"name":"testVs", "auto_enable_activity_tracking":true}}'
     ```
     <br/>
+ 17. Creates an SVM and specifies whether file system analytics is enabled on all newly created volumes in the SVM.
+    <br/>
+    ```
+    POST "/api/svm/svms" '{"name":"testVs", "auto_enable_analytics":true}}'
+    ```
+    <br/>
+ 18. Creates an SVM and specifies the maximum storage limit for a single SVM.
+    <br/>
+    ```
+    POST "/api/svm/svms" '{"name":"testVs", "storage": {"limit":"4GB"}}'
+    ```
+    <br/>
+ 19. Creates an SVM and specifies at what percentage of storage capacity an alert message is sent. Default value is 90.
+    <br/>
+    ```
+    POST "/api/svm/svms" '{"name":"testVs", "storage": {"limit":"20GB", "limit_threshold_alert":"95"}}'
+    ```
+    <br/>
+ 20. Creates an SVM and specifies the QoS policy group template to be assigned to the SVM.
+    <br/>
+    ```
+    POST "/api/svm/svms" '{"name":"testVs", "qos_policy_group_template":{"name":"performance-fixed"}}'
+    ```
+    <br/>
+ 21. Creates an SVM and specifies the QoS adaptive policy group template to be assigned to the SVM.
+    <br/>
+    ```
+    POST "/api/svm/svms" '{"name":"testVs", "qos_adaptive_policy_group_template":{"name":"performance"}}'
+    ```
+    <br/>
+ 22. On ASA r2 platforms, _fcp_, _iscsi_, and _nvme_ services are enabled and allowed by default, and are not necessary in the POST request.
+    <br/>
+    ```
+    POST "/api/svm/svms" '{"name":"testVs"}'
+    ```
+    <br/>
 
 ### Learn more
 * [`DOC /svm/svms`](#docs-svm-svm_svms)
 */
-func (a *Client) SvmCreate(params *SvmCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmCreateAccepted, error) {
+func (a *Client) SvmCreate(params *SvmCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmCreateCreated, *SvmCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSvmCreateParams()
@@ -372,8 +429,8 @@ func (a *Client) SvmCreate(params *SvmCreateParams, authInfo runtime.ClientAuthI
 		ID:                 "svm_create",
 		Method:             "POST",
 		PathPattern:        "/svm/svms",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmCreateReader{formats: a.formats},
@@ -387,15 +444,17 @@ func (a *Client) SvmCreate(params *SvmCreateParams, authInfo runtime.ClientAuthI
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SvmCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SvmCreateCreated:
+		return value, nil, nil
+	case *SvmCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SvmCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -417,7 +476,7 @@ Deleting an individual SVM in the cluster.
 ### Learn more
 * [`DOC /svm/svms`](#docs-svm-svm_svms)
 */
-func (a *Client) SvmDelete(params *SvmDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmDeleteAccepted, error) {
+func (a *Client) SvmDelete(params *SvmDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmDeleteOK, *SvmDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSvmDeleteParams()
@@ -426,8 +485,8 @@ func (a *Client) SvmDelete(params *SvmDeleteParams, authInfo runtime.ClientAuthI
 		ID:                 "svm_delete",
 		Method:             "DELETE",
 		PathPattern:        "/svm/svms/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmDeleteReader{formats: a.formats},
@@ -441,15 +500,57 @@ func (a *Client) SvmDelete(params *SvmDeleteParams, authInfo runtime.ClientAuthI
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SvmDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SvmDeleteOK:
+		return value, nil, nil
+	case *SvmDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SvmDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SvmDeleteCollection svm delete collection API
+*/
+func (a *Client) SvmDeleteCollection(params *SvmDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmDeleteCollectionOK, *SvmDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/svm/svms",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SvmDeleteCollectionOK:
+		return value, nil, nil
+	case *SvmDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -479,8 +580,8 @@ func (a *Client) SvmGet(params *SvmGetParams, authInfo runtime.ClientAuthInfoWri
 		ID:                 "svm_get",
 		Method:             "GET",
 		PathPattern:        "/svm/svms/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmGetReader{formats: a.formats},
@@ -520,8 +621,8 @@ func (a *Client) SvmMigrationCollectionGet(params *SvmMigrationCollectionGetPara
 		ID:                 "svm_migration_collection_get",
 		Method:             "GET",
 		PathPattern:        "/svm/migrations",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmMigrationCollectionGetReader{formats: a.formats},
@@ -559,13 +660,13 @@ Optionally, you can specify the aggregate list for creating the volumes, and IPs
 * `destination.volume_placement.volume_aggregate_pairs` - List of volume aggregate pairs indicating where the migrating volumes should go on the destination.
 * `ip_interface_placement` -  List of source SVM's IP interface and port pairs on the destination for migrating the SVM's IP interfaces.
 * `auto_cutover` - Option to specify whether to perform cutover automatically. Default is true.
-* `auto_source_cleanup` - Option to specify whether to perform souce cleanup automatically. Default is true.
+* `auto_source_cleanup` - Option to specify whether to perform source cleanup automatically. Default is true.
 * `check_only` - Option to perform all the prechecks for migrate without actually starting the migrate. Default is false.
 * `throttle` - Option to specify a throttle value in KB/s. Defaults to unlimited.
 ### Related ONTAP commands
 * `vserver migrate start`
 */
-func (a *Client) SvmMigrationCreate(params *SvmMigrationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationCreateAccepted, error) {
+func (a *Client) SvmMigrationCreate(params *SvmMigrationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationCreateCreated, *SvmMigrationCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSvmMigrationCreateParams()
@@ -574,8 +675,8 @@ func (a *Client) SvmMigrationCreate(params *SvmMigrationCreateParams, authInfo r
 		ID:                 "svm_migration_create",
 		Method:             "POST",
 		PathPattern:        "/svm/migrations",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmMigrationCreateReader{formats: a.formats},
@@ -589,15 +690,17 @@ func (a *Client) SvmMigrationCreate(params *SvmMigrationCreateParams, authInfo r
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SvmMigrationCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SvmMigrationCreateCreated:
+		return value, nil, nil
+	case *SvmMigrationCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SvmMigrationCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -606,7 +709,7 @@ func (a *Client) SvmMigrationCreate(params *SvmMigrationCreateParams, authInfo r
 ### Related ONTAP commands
 * `vserver migrate abort`
 */
-func (a *Client) SvmMigrationDelete(params *SvmMigrationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationDeleteAccepted, error) {
+func (a *Client) SvmMigrationDelete(params *SvmMigrationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationDeleteOK, *SvmMigrationDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSvmMigrationDeleteParams()
@@ -615,8 +718,8 @@ func (a *Client) SvmMigrationDelete(params *SvmMigrationDeleteParams, authInfo r
 		ID:                 "svm_migration_delete",
 		Method:             "DELETE",
 		PathPattern:        "/svm/migrations/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmMigrationDeleteReader{formats: a.formats},
@@ -630,15 +733,57 @@ func (a *Client) SvmMigrationDelete(params *SvmMigrationDeleteParams, authInfo r
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SvmMigrationDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SvmMigrationDeleteOK:
+		return value, nil, nil
+	case *SvmMigrationDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SvmMigrationDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SvmMigrationDeleteCollection svm migration delete collection API
+*/
+func (a *Client) SvmMigrationDeleteCollection(params *SvmMigrationDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationDeleteCollectionOK, *SvmMigrationDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmMigrationDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_migration_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/svm/migrations",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmMigrationDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SvmMigrationDeleteCollectionOK:
+		return value, nil, nil
+	case *SvmMigrationDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmMigrationDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -647,6 +792,7 @@ func (a *Client) SvmMigrationDelete(params *SvmMigrationDeleteParams, authInfo r
 ### Important notes
 * The "migrations" object includes a large set of fields and can be expensive to retrieve.
 * REST APIs only expose a data SVM as an SVM.
+* There are subsystem specific errors that can be returned from this endpoint. If a subsystem specific error is returned and this is the first migrate operation attempt, it is embedded in one of the following errors. If a subsystem specific error is returned and this is not the first migrate operation attempt, the subsystem specific error is returned directly.
 ### Example
 
 	Retrieving an individual SVM migration status.
@@ -665,8 +811,8 @@ func (a *Client) SvmMigrationGet(params *SvmMigrationGetParams, authInfo runtime
 		ID:                 "svm_migration_get",
 		Method:             "GET",
 		PathPattern:        "/svm/migrations/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmMigrationGetReader{formats: a.formats},
@@ -700,7 +846,7 @@ func (a *Client) SvmMigrationGet(params *SvmMigrationGetParams, authInfo runtime
 * `vserver migrate cutover`
 * `vserver migrate source-cleanup`
 */
-func (a *Client) SvmMigrationModify(params *SvmMigrationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationModifyAccepted, error) {
+func (a *Client) SvmMigrationModify(params *SvmMigrationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationModifyOK, *SvmMigrationModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSvmMigrationModifyParams()
@@ -709,8 +855,8 @@ func (a *Client) SvmMigrationModify(params *SvmMigrationModifyParams, authInfo r
 		ID:                 "svm_migration_modify",
 		Method:             "PATCH",
 		PathPattern:        "/svm/migrations/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmMigrationModifyReader{formats: a.formats},
@@ -724,15 +870,57 @@ func (a *Client) SvmMigrationModify(params *SvmMigrationModifyParams, authInfo r
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SvmMigrationModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SvmMigrationModifyOK:
+		return value, nil, nil
+	case *SvmMigrationModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SvmMigrationModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SvmMigrationModifyCollection svm migration modify collection API
+*/
+func (a *Client) SvmMigrationModifyCollection(params *SvmMigrationModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationModifyCollectionOK, *SvmMigrationModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmMigrationModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_migration_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/svm/migrations",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmMigrationModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SvmMigrationModifyCollectionOK:
+		return value, nil, nil
+	case *SvmMigrationModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmMigrationModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -750,8 +938,8 @@ func (a *Client) SvmMigrationVolumeCollectionGet(params *SvmMigrationVolumeColle
 		ID:                 "svm_migration_volume_collection_get",
 		Method:             "GET",
 		PathPattern:        "/svm/migrations/{svm_migration.uuid}/volumes",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmMigrationVolumeCollectionGetReader{formats: a.formats},
@@ -791,8 +979,8 @@ func (a *Client) SvmMigrationVolumeGet(params *SvmMigrationVolumeGetParams, auth
 		ID:                 "svm_migration_volume_get",
 		Method:             "GET",
 		PathPattern:        "/svm/migrations/{svm_migration.uuid}/volumes/{volume.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmMigrationVolumeGetReader{formats: a.formats},
@@ -856,10 +1044,10 @@ func (a *Client) SvmMigrationVolumeGet(params *SvmMigrationVolumeGetParams, auth
  5. Updates the aggregates for an individual SVM
     <br/>
     ```
-    PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"aggregates":{"name":["aggr1","aggr2","aggr3"]}}'
+    PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"aggregates":["{"name":aggr1"},{"name":"aggr2"},{"name":"aggr3"}]}'
     ```
     <br/>
- 6. Updates the Snapshot copy policy for an individual SVM
+ 6. Updates the snapshot policy for an individual SVM
     <br/>
     ```
     PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"snapshot_policy":{"name":"custom1"}}'
@@ -901,11 +1089,35 @@ func (a *Client) SvmMigrationVolumeGet(params *SvmMigrationVolumeGetParams, auth
     PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"auto_enable_activity_tracking":"true"}'
     ```
     <br/>
+ 13. Updates the QoS adaptive policy group template for the SVM.
+    <br/>
+    ```
+    PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"qos_adaptive_policy_group_template":{"name":"aqpolicy1"}}'
+    ```
+    <br/>
+ 14. Updates the maximum storage permitted on a single SVM.
+    <br/>
+    ```
+    PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"storage":{"limit":"40GB"}}'
+    ```
+    <br/>
+ 15. Updates the percentage of storage capacity at which an alert message is sent.
+    <br/>
+    ```
+    PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"storage":{"limit":"400MB", "limit_threshold_alert":"98"}}'
+    ```
+    <br/>
+ 16. Updates the QoS policy group template for the SVM.
+    <br/>
+    ```
+    PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"qos_policy_group_template":{"name":"policy1"}}'
+    ```
+    <br/>
 
 ### Learn more
 * [`DOC /svm/svms`](#docs-svm-svm_svms)
 */
-func (a *Client) SvmModify(params *SvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmModifyAccepted, error) {
+func (a *Client) SvmModify(params *SvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmModifyOK, *SvmModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSvmModifyParams()
@@ -914,8 +1126,8 @@ func (a *Client) SvmModify(params *SvmModifyParams, authInfo runtime.ClientAuthI
 		ID:                 "svm_modify",
 		Method:             "PATCH",
 		PathPattern:        "/svm/svms/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmModifyReader{formats: a.formats},
@@ -929,15 +1141,57 @@ func (a *Client) SvmModify(params *SvmModifyParams, authInfo runtime.ClientAuthI
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SvmModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SvmModifyOK:
+		return value, nil, nil
+	case *SvmModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SvmModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SvmModifyCollection svm modify collection API
+*/
+func (a *Client) SvmModifyCollection(params *SvmModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmModifyCollectionOK, *SvmModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/svm/svms",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SvmModifyCollectionOK:
+		return value, nil, nil
+	case *SvmModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -972,8 +1226,8 @@ func (a *Client) SvmPeerCollectionGet(params *SvmPeerCollectionGetParams, authIn
 		ID:                 "svm_peer_collection_get",
 		Method:             "GET",
 		PathPattern:        "/svm/peers",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmPeerCollectionGetReader{formats: a.formats},
@@ -1022,7 +1276,7 @@ POST "/api/svm/peers" '{"svm":{"name":"vs1"}, "peer.cluster.name":"cluster2", "p
 ### Learn more
 * [`DOC /svm/peers`](#docs-svm-svm_peers)
 */
-func (a *Client) SvmPeerCreate(params *SvmPeerCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerCreateAccepted, error) {
+func (a *Client) SvmPeerCreate(params *SvmPeerCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerCreateCreated, *SvmPeerCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSvmPeerCreateParams()
@@ -1031,8 +1285,8 @@ func (a *Client) SvmPeerCreate(params *SvmPeerCreateParams, authInfo runtime.Cli
 		ID:                 "svm_peer_create",
 		Method:             "POST",
 		PathPattern:        "/svm/peers",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmPeerCreateReader{formats: a.formats},
@@ -1046,15 +1300,17 @@ func (a *Client) SvmPeerCreate(params *SvmPeerCreateParams, authInfo runtime.Cli
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SvmPeerCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SvmPeerCreateCreated:
+		return value, nil, nil
+	case *SvmPeerCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SvmPeerCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1079,7 +1335,7 @@ func (a *Client) SvmPeerCreate(params *SvmPeerCreateParams, authInfo runtime.Cli
 ### Learn more
 * [`DOC /svm/peers`](#docs-svm-svm_peers)
 */
-func (a *Client) SvmPeerDelete(params *SvmPeerDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerDeleteAccepted, error) {
+func (a *Client) SvmPeerDelete(params *SvmPeerDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerDeleteOK, *SvmPeerDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSvmPeerDeleteParams()
@@ -1088,8 +1344,8 @@ func (a *Client) SvmPeerDelete(params *SvmPeerDeleteParams, authInfo runtime.Cli
 		ID:                 "svm_peer_delete",
 		Method:             "DELETE",
 		PathPattern:        "/svm/peers/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmPeerDeleteReader{formats: a.formats},
@@ -1103,15 +1359,57 @@ func (a *Client) SvmPeerDelete(params *SvmPeerDeleteParams, authInfo runtime.Cli
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SvmPeerDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SvmPeerDeleteOK:
+		return value, nil, nil
+	case *SvmPeerDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SvmPeerDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SvmPeerDeleteCollection svm peer delete collection API
+*/
+func (a *Client) SvmPeerDeleteCollection(params *SvmPeerDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerDeleteCollectionOK, *SvmPeerDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmPeerDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_peer_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/svm/peers",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmPeerDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SvmPeerDeleteCollectionOK:
+		return value, nil, nil
+	case *SvmPeerDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmPeerDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1138,8 +1436,8 @@ func (a *Client) SvmPeerInstanceGet(params *SvmPeerInstanceGetParams, authInfo r
 		ID:                 "svm_peer_instance_get",
 		Method:             "GET",
 		PathPattern:        "/svm/peers/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmPeerInstanceGetReader{formats: a.formats},
@@ -1194,7 +1492,7 @@ The following examples show how to update an SVM peer relationship. The input pa
 ### Learn more
 * [`DOC /svm/peers`](#docs-svm-svm_peers)
 */
-func (a *Client) SvmPeerModify(params *SvmPeerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerModifyAccepted, error) {
+func (a *Client) SvmPeerModify(params *SvmPeerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerModifyOK, *SvmPeerModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSvmPeerModifyParams()
@@ -1203,8 +1501,8 @@ func (a *Client) SvmPeerModify(params *SvmPeerModifyParams, authInfo runtime.Cli
 		ID:                 "svm_peer_modify",
 		Method:             "PATCH",
 		PathPattern:        "/svm/peers/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmPeerModifyReader{formats: a.formats},
@@ -1218,15 +1516,57 @@ func (a *Client) SvmPeerModify(params *SvmPeerModifyParams, authInfo runtime.Cli
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*SvmPeerModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *SvmPeerModifyOK:
+		return value, nil, nil
+	case *SvmPeerModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SvmPeerModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SvmPeerModifyCollection svm peer modify collection API
+*/
+func (a *Client) SvmPeerModifyCollection(params *SvmPeerModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerModifyCollectionOK, *SvmPeerModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmPeerModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_peer_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/svm/peers",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmPeerModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SvmPeerModifyCollectionOK:
+		return value, nil, nil
+	case *SvmPeerModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmPeerModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1262,8 +1602,8 @@ func (a *Client) SvmPeerPermissionCollectionGet(params *SvmPeerPermissionCollect
 		ID:                 "svm_peer_permission_collection_get",
 		Method:             "GET",
 		PathPattern:        "/svm/peer-permissions",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmPeerPermissionCollectionGetReader{formats: a.formats},
@@ -1331,8 +1671,8 @@ func (a *Client) SvmPeerPermissionCreate(params *SvmPeerPermissionCreateParams, 
 		ID:                 "svm_peer_permission_create",
 		Method:             "POST",
 		PathPattern:        "/svm/peer-permissions",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmPeerPermissionCreateReader{formats: a.formats},
@@ -1361,7 +1701,7 @@ func (a *Client) SvmPeerPermissionCreate(params *SvmPeerPermissionCreateParams, 
 	SvmPeerPermissionDelete Deletes the SVM peer permissions.
 
 ### Related ONTAP commands
-* `verver peer permission delete`
+* `vserver peer permission delete`
 ### Example
 Deletes an SVM peer permission.
 <br/>
@@ -1381,8 +1721,8 @@ func (a *Client) SvmPeerPermissionDelete(params *SvmPeerPermissionDeleteParams, 
 		ID:                 "svm_peer_permission_delete",
 		Method:             "DELETE",
 		PathPattern:        "/svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmPeerPermissionDeleteReader{formats: a.formats},
@@ -1404,6 +1744,44 @@ func (a *Client) SvmPeerPermissionDelete(params *SvmPeerPermissionDeleteParams, 
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SvmPeerPermissionDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SvmPeerPermissionDeleteCollection svm peer permission delete collection API
+*/
+func (a *Client) SvmPeerPermissionDeleteCollection(params *SvmPeerPermissionDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerPermissionDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmPeerPermissionDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_peer_permission_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/svm/peer-permissions",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmPeerPermissionDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SvmPeerPermissionDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmPeerPermissionDeleteCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -1431,8 +1809,8 @@ func (a *Client) SvmPeerPermissionInstanceGet(params *SvmPeerPermissionInstanceG
 		ID:                 "svm_peer_permission_instance_get",
 		Method:             "GET",
 		PathPattern:        "/svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmPeerPermissionInstanceGetReader{formats: a.formats},
@@ -1481,8 +1859,8 @@ func (a *Client) SvmPeerPermissionModify(params *SvmPeerPermissionModifyParams, 
 		ID:                 "svm_peer_permission_modify",
 		Method:             "PATCH",
 		PathPattern:        "/svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SvmPeerPermissionModifyReader{formats: a.formats},
@@ -1508,7 +1886,45 @@ func (a *Client) SvmPeerPermissionModify(params *SvmPeerPermissionModifyParams, 
 }
 
 /*
-TopMetricsSvmClientCollectionGet Retrieves a list of clients with the most IO activity.
+SvmPeerPermissionModifyCollection svm peer permission modify collection API
+*/
+func (a *Client) SvmPeerPermissionModifyCollection(params *SvmPeerPermissionModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerPermissionModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmPeerPermissionModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_peer_permission_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/svm/peer-permissions",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmPeerPermissionModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SvmPeerPermissionModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmPeerPermissionModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+TopMetricsSvmClientCollectionGet Retrieves a list of clients with the most I/O activity.
 */
 func (a *Client) TopMetricsSvmClientCollectionGet(params *TopMetricsSvmClientCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsSvmClientCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1519,8 +1935,8 @@ func (a *Client) TopMetricsSvmClientCollectionGet(params *TopMetricsSvmClientCol
 		ID:                 "top_metrics_svm_client_collection_get",
 		Method:             "GET",
 		PathPattern:        "/svm/svms/{svm.uuid}/top-metrics/clients",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &TopMetricsSvmClientCollectionGetReader{formats: a.formats},
@@ -1546,7 +1962,7 @@ func (a *Client) TopMetricsSvmClientCollectionGet(params *TopMetricsSvmClientCol
 }
 
 /*
-TopMetricsSvmDirectoryCollectionGet Retrieves a list of directories with the most IO activity.
+TopMetricsSvmDirectoryCollectionGet Retrieves a list of directories with the most I/O activity.
 */
 func (a *Client) TopMetricsSvmDirectoryCollectionGet(params *TopMetricsSvmDirectoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsSvmDirectoryCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1557,8 +1973,8 @@ func (a *Client) TopMetricsSvmDirectoryCollectionGet(params *TopMetricsSvmDirect
 		ID:                 "top_metrics_svm_directory_collection_get",
 		Method:             "GET",
 		PathPattern:        "/svm/svms/{svm.uuid}/top-metrics/directories",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &TopMetricsSvmDirectoryCollectionGetReader{formats: a.formats},
@@ -1584,7 +2000,7 @@ func (a *Client) TopMetricsSvmDirectoryCollectionGet(params *TopMetricsSvmDirect
 }
 
 /*
-TopMetricsSvmFileCollectionGet Retrieves a list of files with the most IO activity.
+TopMetricsSvmFileCollectionGet Retrieves a list of files with the most I/O activity.
 */
 func (a *Client) TopMetricsSvmFileCollectionGet(params *TopMetricsSvmFileCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsSvmFileCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1595,8 +2011,8 @@ func (a *Client) TopMetricsSvmFileCollectionGet(params *TopMetricsSvmFileCollect
 		ID:                 "top_metrics_svm_file_collection_get",
 		Method:             "GET",
 		PathPattern:        "/svm/svms/{svm.uuid}/top-metrics/files",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &TopMetricsSvmFileCollectionGetReader{formats: a.formats},
@@ -1622,7 +2038,7 @@ func (a *Client) TopMetricsSvmFileCollectionGet(params *TopMetricsSvmFileCollect
 }
 
 /*
-TopMetricsSvmUserCollectionGet Retrieves a list of users with the most IO activity.
+TopMetricsSvmUserCollectionGet Retrieves a list of users with the most I/O activity.
 */
 func (a *Client) TopMetricsSvmUserCollectionGet(params *TopMetricsSvmUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsSvmUserCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1633,8 +2049,8 @@ func (a *Client) TopMetricsSvmUserCollectionGet(params *TopMetricsSvmUserCollect
 		ID:                 "top_metrics_svm_user_collection_get",
 		Method:             "GET",
 		PathPattern:        "/svm/svms/{svm.uuid}/top-metrics/users",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &TopMetricsSvmUserCollectionGetReader{formats: a.formats},
@@ -1671,8 +2087,8 @@ func (a *Client) WebSvmGet(params *WebSvmGetParams, authInfo runtime.ClientAuthI
 		ID:                 "web_svm_get",
 		Method:             "GET",
 		PathPattern:        "/svm/svms/{svm.uuid}/web",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &WebSvmGetReader{formats: a.formats},
@@ -1709,8 +2125,8 @@ func (a *Client) WebSvmModify(params *WebSvmModifyParams, authInfo runtime.Clien
 		ID:                 "web_svm_modify",
 		Method:             "PATCH",
 		PathPattern:        "/svm/svms/{svm.uuid}/web",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &WebSvmModifyReader{formats: a.formats},

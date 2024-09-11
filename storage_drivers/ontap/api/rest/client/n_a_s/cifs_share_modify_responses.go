@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *CifsShareModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs share modify o k response
+func (o *CifsShareModifyOK) Code() int {
+	return 200
+}
+
 func (o *CifsShareModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifsShareModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifsShareModifyOK", 200)
 }
 
 func (o *CifsShareModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifsShareModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifsShareModifyOK", 200)
 }
 
 func (o *CifsShareModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -114,18 +120,15 @@ func NewCifsShareModifyDefault(code int) *CifsShareModifyDefault {
 | 656422     | Failed to modify the home directory share because the directory shares must specify a path relative to one or more home directory search paths |
 | 656423     | Failed to modify CIFS share. The Shares must define an absolute share path |
 | 656425     | Failed to modify the CIFS share because the path for an administrative share cannot be modified |
+| 656486     | Failed to modify CIFS share because the share cannot be made continuously available for FlexCache volumes. |
 | 655395     | Failed to modify the CIFS share because share cannot be made continuously available unless running SMB3 or later. |
 | 4849678    | Failed to modify the CIFS share because the specified UNIX group does not exist |
+| 655622     | Invalid value for parameter {max-connections-per-share}. Maximum connections on CIFS share {name} must be between 1 to 4294967295.|
 */
 type CifsShareModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cifs share modify default response
-func (o *CifsShareModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cifs share modify default response has a 2xx status code
@@ -153,12 +156,19 @@ func (o *CifsShareModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs share modify default response
+func (o *CifsShareModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsShareModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifs_share_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifs_share_modify default %s", o._statusCode, payload)
 }
 
 func (o *CifsShareModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifs_share_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifs_share_modify default %s", o._statusCode, payload)
 }
 
 func (o *CifsShareModifyDefault) GetPayload() *models.ErrorResponse {

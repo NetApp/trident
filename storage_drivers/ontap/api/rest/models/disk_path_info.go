@@ -20,6 +20,10 @@ import (
 // swagger:model disk_path_info
 type DiskPathInfo struct {
 
+	// Path-based disk name.
+	// Example: vsim4:3a.10
+	DiskPathName *string `json:"disk_path_name,omitempty"`
+
 	// Initiator port.
 	// Example: 3a
 	Initiator *string `json:"initiator,omitempty"`
@@ -38,7 +42,7 @@ type DiskPathInfo struct {
 
 	// Disk port type.
 	// Example: sas
-	// Enum: [sas fc nvme]
+	// Enum: ["sas","fc","nvme"]
 	PortType *string `json:"port_type,omitempty"`
 
 	// Virtual disk hypervisor file name.

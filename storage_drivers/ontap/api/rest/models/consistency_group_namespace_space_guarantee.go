@@ -8,8 +8,10 @@ package models
 import (
 	"context"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // ConsistencyGroupNamespaceSpaceGuarantee Properties that request and report the space guarantee for the NVMe namespace.
@@ -25,6 +27,7 @@ type ConsistencyGroupNamespaceSpaceGuarantee struct {
 	// Reports if the NVMe namespace is space guaranteed.<br/>
 	// This property is _true_ if a space guarantee is requested and the containing volume and aggregate support the request. This property is _false_ if a space guarantee is not requested or if a space guarantee is requested and either the containing volume and aggregate do not support the request.
 	//
+	// Read Only: true
 	Reserved *bool `json:"reserved,omitempty"`
 }
 
@@ -33,8 +36,26 @@ func (m *ConsistencyGroupNamespaceSpaceGuarantee) Validate(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validates this consistency group namespace space guarantee based on context it is used
+// ContextValidate validate this consistency group namespace space guarantee based on the context it is used
 func (m *ConsistencyGroupNamespaceSpaceGuarantee) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateReserved(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupNamespaceSpaceGuarantee) contextValidateReserved(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "reserved", "body", m.Reserved); err != nil {
+		return err
+	}
+
 	return nil
 }
 

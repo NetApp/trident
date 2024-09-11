@@ -46,7 +46,7 @@ type SvmMigration struct {
 
 	// last operation
 	// Read Only: true
-	// Enum: [none start resume pause cleanup cutover]
+	// Enum: ["none","start","resume","pause","cleanup","cutover"]
 	LastOperation *string `json:"last_operation,omitempty"`
 
 	// Indicates if the migration has progressed beyond the point of no return. When true, the migration cannot be aborted or paused. When false, the migration can be paused or aborted.
@@ -69,7 +69,7 @@ type SvmMigration struct {
 	SvmMigrationInlineMessages []*SvmMigrationInlineMessagesInlineArrayItem `json:"messages,omitempty"`
 
 	// Optional property to specify a throttle value in KB/s for each individual volume transfer. Defaults to 0 if not set, which is interpreted as unlimited. The minimum throttle value is 4 KB/s, so if you specify a throttle value between 1 and 4, it will be treated as if you specified 4.
-	Throttle *int64 `json:"throttle"`
+	Throttle *int64 `json:"throttle,omitempty"`
 
 	// time metrics
 	TimeMetrics *SvmMigrationInlineTimeMetrics `json:"time_metrics,omitempty"`
@@ -751,7 +751,7 @@ type SvmMigrationInlineDestinationInlineIpspace struct {
 	Links *SvmMigrationInlineDestinationInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
-	// Example: exchange
+	// Example: Default
 	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
@@ -922,7 +922,7 @@ func (m *SvmMigrationInlineDestinationInlineIpspaceInlineLinks) UnmarshalBinary(
 	return nil
 }
 
-// SvmMigrationInlineDestinationInlineVolumePlacement Optional property to specify the source volume placement in the destination. It is input only and won't be returned by a subsequent GET.
+// SvmMigrationInlineDestinationInlineVolumePlacement Optional property to specify the source volume placement in the destination. It is input only and won't be returned by a subsequent GET. Volume placement is ignored if the migration resumes from the cleanup_failed state.
 //
 // swagger:model svm_migration_inline_destination_inline_volume_placement
 type SvmMigrationInlineDestinationInlineVolumePlacement struct {
@@ -1072,7 +1072,7 @@ func (m *SvmMigrationInlineDestinationInlineVolumePlacement) UnmarshalBinary(b [
 	return nil
 }
 
-// SvmMigrationDestinationVolumePlacementAggregatesItems0 svm migration destination volume placement aggregates items0
+// SvmMigrationDestinationVolumePlacementAggregatesItems0 Aggregate
 //
 // swagger:model SvmMigrationDestinationVolumePlacementAggregatesItems0
 type SvmMigrationDestinationVolumePlacementAggregatesItems0 struct {
@@ -1568,7 +1568,7 @@ type SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Volume stru
 	// links
 	Links *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0VolumeLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 
@@ -2146,12 +2146,12 @@ type SvmMigrationInlineSourceInlineSvm struct {
 	// links
 	Links *SvmMigrationInlineSourceInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -2326,43 +2326,43 @@ func (m *SvmMigrationInlineSourceInlineSvmInlineLinks) UnmarshalBinary(b []byte)
 type SvmMigrationInlineTimeMetrics struct {
 
 	// Cutover end time
-	// Example: 2020-12-02T19:30:19-08:00
+	// Example: 2020-12-03 03:30:19
 	// Read Only: true
 	// Format: date-time
 	CutoverCompleteTime *strfmt.DateTime `json:"cutover_complete_time,omitempty"`
 
 	// Cutover start time
-	// Example: 2020-12-02T18:20:19-08:00
+	// Example: 2020-12-03 02:20:19
 	// Read Only: true
 	// Format: date-time
 	CutoverStartTime *strfmt.DateTime `json:"cutover_start_time,omitempty"`
 
 	// Cutover trigger time
-	// Example: 2020-12-02T19:15:19-08:00
+	// Example: 2020-12-03 03:15:19
 	// Read Only: true
 	// Format: date-time
 	CutoverTriggerTime *strfmt.DateTime `json:"cutover_trigger_time,omitempty"`
 
 	// Migration end time
-	// Example: 2020-12-02T19:36:19-08:00
+	// Example: 2020-12-03 03:36:19
 	// Read Only: true
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
 
 	// Last migration pause time
-	// Example: 2020-12-02T18:50:19-08:00
+	// Example: 2020-12-03 02:50:19
 	// Read Only: true
 	// Format: date-time
 	LastPauseTime *strfmt.DateTime `json:"last_pause_time,omitempty"`
 
 	// Last migration resume time
-	// Example: 2020-12-02T18:54:19-08:00
+	// Example: 2020-12-03 02:54:19
 	// Read Only: true
 	// Format: date-time
 	LastResumeTime *strfmt.DateTime `json:"last_resume_time,omitempty"`
 
 	// Migration start time
-	// Example: 2020-12-02T18:36:19-08:00
+	// Example: 2020-12-03 02:36:19
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`

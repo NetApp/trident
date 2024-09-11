@@ -6,7 +6,7 @@ rm -rf ./client
 # if you need to recreate the swagger_full_converted.yaml from the swagger_full.yaml, uncomment this
 # ./preprocess.py
 
-swagger generate client -f swagger_full_converted.yaml \
-   -C ./templates/default-client.yml \
-   --template-dir=./templates --allow-template-override  2>&1 | tee regen.log
-
+swagger generate client -f ./rest/swagger_full_converted.yaml \
+   --target rest \
+   -C ./rest/templates/default-client.yml \
+   --template-dir=./rest/templates --allow-template-override  2>&1 | tee regen.log

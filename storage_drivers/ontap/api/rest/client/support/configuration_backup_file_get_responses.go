@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ConfigurationBackupFileGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the configuration backup file get o k response
+func (o *ConfigurationBackupFileGetOK) Code() int {
+	return 200
+}
+
 func (o *ConfigurationBackupFileGetOK) Error() string {
-	return fmt.Sprintf("[GET /support/configuration-backup/backups/{node.uuid}/{name}][%d] configurationBackupFileGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/configuration-backup/backups/{node.uuid}/{name}][%d] configurationBackupFileGetOK %s", 200, payload)
 }
 
 func (o *ConfigurationBackupFileGetOK) String() string {
-	return fmt.Sprintf("[GET /support/configuration-backup/backups/{node.uuid}/{name}][%d] configurationBackupFileGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/configuration-backup/backups/{node.uuid}/{name}][%d] configurationBackupFileGetOK %s", 200, payload)
 }
 
 func (o *ConfigurationBackupFileGetOK) GetPayload() *models.ConfigurationBackupFile {
@@ -119,16 +127,12 @@ func NewConfigurationBackupFileGetDefault(code int) *ConfigurationBackupFileGetD
 | Error Code | Description |
 | ---------- | ----------- |
 | 5963777 | Configuration backup file does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ConfigurationBackupFileGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the configuration backup file get default response
-func (o *ConfigurationBackupFileGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this configuration backup file get default response has a 2xx status code
@@ -156,12 +160,19 @@ func (o *ConfigurationBackupFileGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the configuration backup file get default response
+func (o *ConfigurationBackupFileGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ConfigurationBackupFileGetDefault) Error() string {
-	return fmt.Sprintf("[GET /support/configuration-backup/backups/{node.uuid}/{name}][%d] configuration_backup_file_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/configuration-backup/backups/{node.uuid}/{name}][%d] configuration_backup_file_get default %s", o._statusCode, payload)
 }
 
 func (o *ConfigurationBackupFileGetDefault) String() string {
-	return fmt.Sprintf("[GET /support/configuration-backup/backups/{node.uuid}/{name}][%d] configuration_backup_file_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/configuration-backup/backups/{node.uuid}/{name}][%d] configuration_backup_file_get default %s", o._statusCode, payload)
 }
 
 func (o *ConfigurationBackupFileGetDefault) GetPayload() *models.ErrorResponse {

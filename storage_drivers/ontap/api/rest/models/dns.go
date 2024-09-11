@@ -26,12 +26,20 @@ type DNS struct {
 
 	// Number of attempts allowed when querying the DNS name servers.
 	//
+	// Example: 1
 	// Maximum: 4
 	// Minimum: 1
 	Attempts *int64 `json:"attempts,omitempty"`
 
+	// List of IP addresses for a DNS service. Addresses can be IPv4, IPv6 or both.
+	//
+	// Example: ["10.224.65.20","2001:db08:a0b:12f0::1"]
+	// Read Only: true
+	DNSInlineServiceIps []*string `json:"service_ips,omitempty"`
+
 	// Status of all the DNS name servers configured for the specified SVM.
 	//
+	// Read Only: true
 	DNSInlineStatus []*Status `json:"status,omitempty"`
 
 	// domains
@@ -46,7 +54,7 @@ type DNS struct {
 
 	// Set to "svm" for DNS owned by an SVM, otherwise set to "cluster".
 	//
-	// Enum: [svm cluster]
+	// Enum: ["svm","cluster"]
 	Scope *string `json:"scope,omitempty"`
 
 	// servers
@@ -65,6 +73,7 @@ type DNS struct {
 
 	// Timeout values for queries to the name servers, in seconds.
 	//
+	// Example: 2
 	// Maximum: 5
 	// Minimum: 1
 	Timeout *int64 `json:"timeout,omitempty"`
@@ -72,6 +81,11 @@ type DNS struct {
 	// Enable or disable top-level domain (TLD) queries.
 	//
 	TldQueryEnabled *bool `json:"tld_query_enabled,omitempty"`
+
+	// UUID of the DNS object.
+	//
+	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this dns
@@ -321,6 +335,10 @@ func (m *DNS) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateDNSInlineServiceIps(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateDNSInlineStatus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -361,7 +379,20 @@ func (m *DNS) contextValidateLinks(ctx context.Context, formats strfmt.Registry)
 	return nil
 }
 
+func (m *DNS) contextValidateDNSInlineServiceIps(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_ips", "body", []*string(m.DNSInlineServiceIps)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *DNS) contextValidateDNSInlineStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "status", "body", []*Status(m.DNSInlineStatus)); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(m.DNSInlineStatus); i++ {
 
@@ -592,7 +623,7 @@ func (m *DNSInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DNSInlineSvm dns inline svm
+// DNSInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model dns_inline_svm
 type DNSInlineSvm struct {
@@ -600,12 +631,12 @@ type DNSInlineSvm struct {
 	// links
 	Links *DNSInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

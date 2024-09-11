@@ -15,7 +15,7 @@ import (
 )
 
 // TopMetricsFile Information about a file's IO activity.
-// Example: {"_links":{"metadata":{"href":"/api/storage/volumes/02178914-5f67-11eb-b987-005056ac5da5/files/dir_1%2ffile_1?return_metadata=true"}},"iops":{"error":{"lower_bound":"2","upper_bound":"8"},"read":"2","write":"7"},"path":"/dir_1/file_1","svm":{"name":"vserver_1","uuid":"42ee3002-67dd-11ea-8508-005056a7b8ac"},"throughput":{"error":{"lower_bound":"24","upper_bound":"25"},"read":"24","write":"11"},"volume":{"name":"vol_6","uuid":"c05eb66a-685f-11ea-8508-005056a7b8ac"}}
+// Example: {"_links":{"metadata":{"href":"/api/storage/volumes/02178914-5f67-11eb-b987-005056ac5da5/files/dir_1%2ffile_1?return_metadata=true"}},"iops":{"error":{"lower_bound":2,"upper_bound":8},"read":2,"write":7},"path":"/dir_1/file_1","svm":{"name":"vserver_1","uuid":"42ee3002-67dd-11ea-8508-005056a7b8ac"},"throughput":{"error":{"lower_bound":24,"upper_bound":25},"read":24,"write":11},"volume":{"name":"vol_6","uuid":"c05eb66a-685f-11ea-8508-005056a7b8ac"}}
 //
 // swagger:model top_metrics_file
 type TopMetricsFile struct {
@@ -537,7 +537,7 @@ func (m *TopMetricsFileInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsFileInlineSvm top metrics file inline svm
+// TopMetricsFileInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model top_metrics_file_inline_svm
 type TopMetricsFileInlineSvm struct {
@@ -545,12 +545,12 @@ type TopMetricsFileInlineSvm struct {
 	// links
 	Links *TopMetricsFileInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -849,7 +849,7 @@ type TopMetricsFileInlineVolume struct {
 	// links
 	Links *TopMetricsFileInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

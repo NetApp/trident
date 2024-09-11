@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *MetroclusterInterconnectGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the metrocluster interconnect get o k response
+func (o *MetroclusterInterconnectGetOK) Code() int {
+	return 200
+}
+
 func (o *MetroclusterInterconnectGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metroclusterInterconnectGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metroclusterInterconnectGetOK %s", 200, payload)
 }
 
 func (o *MetroclusterInterconnectGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metroclusterInterconnectGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metroclusterInterconnectGetOK %s", 200, payload)
 }
 
 func (o *MetroclusterInterconnectGetOK) GetPayload() *models.MetroclusterInterconnect {
@@ -120,16 +128,12 @@ func NewMetroclusterInterconnectGetDefault(code int) *MetroclusterInterconnectGe
 | ---------- | ----------- |
 | 2425734 | An internal error occurred. Wait a few minutes, and try the operation again. For further assistance, contact technical support. |
 | 2427132 | MetroCluster is not configured on this cluster. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type MetroclusterInterconnectGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the metrocluster interconnect get default response
-func (o *MetroclusterInterconnectGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this metrocluster interconnect get default response has a 2xx status code
@@ -157,12 +161,19 @@ func (o *MetroclusterInterconnectGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the metrocluster interconnect get default response
+func (o *MetroclusterInterconnectGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MetroclusterInterconnectGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metrocluster_interconnect_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metrocluster_interconnect_get default %s", o._statusCode, payload)
 }
 
 func (o *MetroclusterInterconnectGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metrocluster_interconnect_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metrocluster_interconnect_get default %s", o._statusCode, payload)
 }
 
 func (o *MetroclusterInterconnectGetDefault) GetPayload() *models.ErrorResponse {

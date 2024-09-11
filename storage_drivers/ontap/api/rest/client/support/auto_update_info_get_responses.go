@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *AutoUpdateInfoGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the auto update info get o k response
+func (o *AutoUpdateInfoGetOK) Code() int {
+	return 200
+}
+
 func (o *AutoUpdateInfoGetOK) Error() string {
-	return fmt.Sprintf("[GET /support/auto-update][%d] autoUpdateInfoGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/auto-update][%d] autoUpdateInfoGetOK %s", 200, payload)
 }
 
 func (o *AutoUpdateInfoGetOK) String() string {
-	return fmt.Sprintf("[GET /support/auto-update][%d] autoUpdateInfoGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/auto-update][%d] autoUpdateInfoGetOK %s", 200, payload)
 }
 
 func (o *AutoUpdateInfoGetOK) GetPayload() *models.AutoUpdateInfo {
@@ -122,11 +130,6 @@ type AutoUpdateInfoGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the auto update info get default response
-func (o *AutoUpdateInfoGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this auto update info get default response has a 2xx status code
 func (o *AutoUpdateInfoGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *AutoUpdateInfoGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the auto update info get default response
+func (o *AutoUpdateInfoGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AutoUpdateInfoGetDefault) Error() string {
-	return fmt.Sprintf("[GET /support/auto-update][%d] auto_update_info_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/auto-update][%d] auto_update_info_get default %s", o._statusCode, payload)
 }
 
 func (o *AutoUpdateInfoGetDefault) String() string {
-	return fmt.Sprintf("[GET /support/auto-update][%d] auto_update_info_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/auto-update][%d] auto_update_info_get default %s", o._statusCode, payload)
 }
 
 func (o *AutoUpdateInfoGetDefault) GetPayload() *models.ErrorResponse {

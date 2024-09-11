@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *LocalCifsUserDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the local cifs user delete o k response
+func (o *LocalCifsUserDeleteOK) Code() int {
+	return 200
+}
+
 func (o *LocalCifsUserDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] localCifsUserDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] localCifsUserDeleteOK", 200)
 }
 
 func (o *LocalCifsUserDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] localCifsUserDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] localCifsUserDeleteOK", 200)
 }
 
 func (o *LocalCifsUserDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -114,11 +120,6 @@ type LocalCifsUserDeleteDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the local cifs user delete default response
-func (o *LocalCifsUserDeleteDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this local cifs user delete default response has a 2xx status code
 func (o *LocalCifsUserDeleteDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -144,12 +145,19 @@ func (o *LocalCifsUserDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the local cifs user delete default response
+func (o *LocalCifsUserDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LocalCifsUserDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] local_cifs_user_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] local_cifs_user_delete default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsUserDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] local_cifs_user_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] local_cifs_user_delete default %s", o._statusCode, payload)
 }
 
 func (o *LocalCifsUserDeleteDefault) GetPayload() *models.ErrorResponse {

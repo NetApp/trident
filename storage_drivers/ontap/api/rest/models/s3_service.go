@@ -48,25 +48,46 @@ type S3Service struct {
 	// Specifies whether HTTPS is enabled on the S3 server being created or modified. By default, HTTPS is enabled on the S3 server.
 	IsHTTPSEnabled *bool `json:"is_https_enabled,omitempty"`
 
+	// Indicates the maximum time period that an S3 user can specify for the 'key_time_to_live' property.
+	// * Valid format is: 'PnDTnHnMnS|PnW'. For example, P2DT6H3M10S specifies a time period of 2 days, 6 hours, 3 minutes, and 10 seconds.
+	// * If no value is specified for this property or the value specified is '0' seconds, then a user can specify any valid value.
+	//
+	// Example: PT6H3M
+	MaxKeyTimeToLive *string `json:"max_key_time_to_live,omitempty"`
+
+	// Specifies the maximum value that can be set as the retention period for an object in a bucket with locking enabled. The value for this property can be in years or days, not both. The value represents a duration and must be specified in the ISO-8601 duration format.  A period specified for years and days is represented in the ISO-8601 format as "P<num>Y" and "P<num>D" respectively, for example "P10Y" represents a duration of 10 years.
+	// Example: P10Y
+	MaxLockRetentionPeriod *string `json:"max_lock_retention_period,omitempty"`
+
 	// metric
 	Metric *S3ServiceInlineMetric `json:"metric,omitempty"`
 
-	// Specifies the name of the S3 server. A server name can contain 1 to 253 characters using only the following combination of characters':' 0-9, A-Z, a-z, ".", and "-".
+	// Specifies the minimum value that can be set as the retention period for an object in a bucket with locking enabled. The value for this property can be in years or days, not both. The value represents a duration and must be specified in the ISO-8601 duration format.  A period specified for years and days is represented in the ISO-8601 format as "P<num>Y" and "P<num>D" respectively, for example "P10Y" represents a duration of 10 years.
+	// Example: P10Y
+	MinLockRetentionPeriod *string `json:"min_lock_retention_period,omitempty"`
+
+	// Specifies the name of the S3 server. A server name can contain 3 to 253 characters using only the following combination of characters':' 0-9, A-Z, a-z, ".", and "-".
 	// Example: Server-1
 	// Max Length: 253
-	// Min Length: 1
+	// Min Length: 3
 	Name *string `json:"name,omitempty"`
 
-	// Specifies the HTTP listener port for the S3 server. By default, HTTP is enabled on port 80.
+	// Specifies the HTTP listener port for the S3 server. By default, HTTP is enabled on port 80. Valid values range from 1 to 65535.
+	// Example: 80
+	// Maximum: 65535
+	// Minimum: 1
 	Port *int64 `json:"port,omitempty"`
 
-	// s3 service inline buckets
+	// This field cannot be specified in a PATCH method.
 	S3ServiceInlineBuckets []*S3Bucket `json:"buckets,omitempty"`
 
-	// s3 service inline users
+	// This field cannot be specified in a PATCH method.
 	S3ServiceInlineUsers []*S3User `json:"users,omitempty"`
 
-	// Specifies the HTTPS listener port for the S3 server. By default, HTTPS is enabled on port 443.
+	// Specifies the HTTPS listener port for the S3 server. By default, HTTPS is enabled on port 443. Valid values range from 1 to 65535.
+	// Example: 443
+	// Maximum: 65535
+	// Minimum: 1
 	SecurePort *int64 `json:"secure_port,omitempty"`
 
 	// statistics
@@ -100,11 +121,19 @@ func (m *S3Service) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validatePort(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateS3ServiceInlineBuckets(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateS3ServiceInlineUsers(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSecurePort(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -194,11 +223,27 @@ func (m *S3Service) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 3); err != nil {
 		return err
 	}
 
 	if err := validate.MaxLength("name", "body", *m.Name, 253); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *S3Service) validatePort(formats strfmt.Registry) error {
+	if swag.IsZero(m.Port) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("port", "body", *m.Port, 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("port", "body", *m.Port, 65535, false); err != nil {
 		return err
 	}
 
@@ -248,6 +293,22 @@ func (m *S3Service) validateS3ServiceInlineUsers(formats strfmt.Registry) error 
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *S3Service) validateSecurePort(formats strfmt.Registry) error {
+	if swag.IsZero(m.SecurePort) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("secure_port", "body", *m.SecurePort, 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("secure_port", "body", *m.SecurePort, 65535, false); err != nil {
+		return err
 	}
 
 	return nil
@@ -458,7 +519,6 @@ type S3ServiceInlineCertificate struct {
 	Links *S3ServiceInlineCertificateInlineLinks `json:"_links,omitempty"`
 
 	// Certificate name
-	// Example: cert1
 	Name *string `json:"name,omitempty"`
 
 	// Certificate UUID
@@ -641,7 +701,7 @@ type S3ServiceInlineMetric struct {
 	//
 	// Example: PT15S
 	// Read Only: true
-	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
+	// Enum: ["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]
 	Duration *string `json:"duration,omitempty"`
 
 	// iops
@@ -653,14 +713,14 @@ type S3ServiceInlineMetric struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	// Enum: ["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *S3ServiceInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1181,7 +1241,7 @@ type S3ServiceInlineMetricInlineIops struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -1235,7 +1295,7 @@ type S3ServiceInlineMetricInlineLatency struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -1372,7 +1432,7 @@ type S3ServiceInlineMetricInlineThroughput struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -1424,14 +1484,14 @@ type S3ServiceInlineStatistics struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	// Enum: ["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *S3ServiceInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1800,7 +1860,7 @@ type S3ServiceInlineStatisticsInlineIopsRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -1854,7 +1914,7 @@ type S3ServiceInlineStatisticsInlineLatencyRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -1905,7 +1965,7 @@ type S3ServiceInlineStatisticsInlineThroughputRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -1943,7 +2003,7 @@ func (m *S3ServiceInlineStatisticsInlineThroughputRaw) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// S3ServiceInlineSvm s3 service inline svm
+// S3ServiceInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model s3_service_inline_svm
 type S3ServiceInlineSvm struct {
@@ -1951,12 +2011,12 @@ type S3ServiceInlineSvm struct {
 	// links
 	Links *S3ServiceInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

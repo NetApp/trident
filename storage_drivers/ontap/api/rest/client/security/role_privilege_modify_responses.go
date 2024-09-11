@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *RolePrivilegeModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the role privilege modify o k response
+func (o *RolePrivilegeModifyOK) Code() int {
+	return 200
+}
+
 func (o *RolePrivilegeModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] rolePrivilegeModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] rolePrivilegeModifyOK", 200)
 }
 
 func (o *RolePrivilegeModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] rolePrivilegeModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] rolePrivilegeModifyOK", 200)
 }
 
 func (o *RolePrivilegeModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -100,19 +106,21 @@ func NewRolePrivilegeModifyDefault(code int) *RolePrivilegeModifyDefault {
 }
 
 /*
-RolePrivilegeModifyDefault describes a response with status code -1, with default header values.
+	RolePrivilegeModifyDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 5636168 | This role is mapped to a rest-role and cannot be modified directly. Modifications must be done with rest-role. |
+| 5636192 | The query parameter cannot be specified for the privileges tuple with API endpoint entries. |
+| 5636200 | The specified value of the access parameter is invalid, if a command or command directory is specified in the path parameter. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type RolePrivilegeModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the role privilege modify default response
-func (o *RolePrivilegeModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this role privilege modify default response has a 2xx status code
@@ -140,12 +148,19 @@ func (o *RolePrivilegeModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the role privilege modify default response
+func (o *RolePrivilegeModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *RolePrivilegeModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] role_privilege_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] role_privilege_modify default %s", o._statusCode, payload)
 }
 
 func (o *RolePrivilegeModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] role_privilege_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] role_privilege_modify default %s", o._statusCode, payload)
 }
 
 func (o *RolePrivilegeModifyDefault) GetPayload() *models.ErrorResponse {

@@ -22,9 +22,11 @@ import (
 type ActiveDirectory struct {
 
 	// Specifies the discovered servers records.
+	// Read Only: true
 	ActiveDirectoryInlineDiscoveredServers []*ActiveDirectoryInlineDiscoveredServersInlineArrayItem `json:"discovered_servers,omitempty"`
 
 	// Specifies the preferred domain controller (DC) records.
+	// Read Only: true
 	ActiveDirectoryInlinePreferredDcs []*ActiveDirectoryInlinePreferredDcsInlineArrayItem `json:"preferred_dcs,omitempty"`
 
 	// If set to true and a machine account exists with the same name as specified in "name" in Active Directory, it will be overwritten and reused.
@@ -234,6 +236,10 @@ func (m *ActiveDirectory) ContextValidate(ctx context.Context, formats strfmt.Re
 
 func (m *ActiveDirectory) contextValidateActiveDirectoryInlineDiscoveredServers(ctx context.Context, formats strfmt.Registry) error {
 
+	if err := validate.ReadOnly(ctx, "discovered_servers", "body", []*ActiveDirectoryInlineDiscoveredServersInlineArrayItem(m.ActiveDirectoryInlineDiscoveredServers)); err != nil {
+		return err
+	}
+
 	for i := 0; i < len(m.ActiveDirectoryInlineDiscoveredServers); i++ {
 
 		if m.ActiveDirectoryInlineDiscoveredServers[i] != nil {
@@ -251,6 +257,10 @@ func (m *ActiveDirectory) contextValidateActiveDirectoryInlineDiscoveredServers(
 }
 
 func (m *ActiveDirectory) contextValidateActiveDirectoryInlinePreferredDcs(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "preferred_dcs", "body", []*ActiveDirectoryInlinePreferredDcsInlineArrayItem(m.ActiveDirectoryInlinePreferredDcs)); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(m.ActiveDirectoryInlinePreferredDcs); i++ {
 
@@ -314,7 +324,7 @@ type ActiveDirectoryInlineDiscoveredServersInlineArrayItem struct {
 
 	// The preference level of the server that was discovered.
 	// Example: preferred
-	// Enum: [unknown preferred favored adequate]
+	// Enum: ["unknown","preferred","favored","adequate"]
 	Preference *string `json:"preference,omitempty"`
 
 	// server
@@ -322,7 +332,7 @@ type ActiveDirectoryInlineDiscoveredServersInlineArrayItem struct {
 
 	// The status of the connection to the server that was discovered.
 	// Example: ok
-	// Enum: [ok unavailable slow expired undetermined unreachable]
+	// Enum: ["ok","unavailable","slow","expired","undetermined","unreachable"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -866,7 +876,7 @@ func (m *ActiveDirectoryInlinePreferredDcsInlineArrayItem) UnmarshalBinary(b []b
 	return nil
 }
 
-// ActiveDirectoryInlineSvm active directory inline svm
+// ActiveDirectoryInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model active_directory_inline_svm
 type ActiveDirectoryInlineSvm struct {
@@ -874,12 +884,12 @@ type ActiveDirectoryInlineSvm struct {
 	// links
 	Links *ActiveDirectoryInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

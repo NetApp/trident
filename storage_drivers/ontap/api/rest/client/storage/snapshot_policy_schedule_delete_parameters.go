@@ -63,13 +63,13 @@ type SnapshotPolicyScheduleDeleteParams struct {
 
 	/* ScheduleUUID.
 
-	   Snapshot copy policy schedule UUID
+	   Snapshot policy schedule UUID
 	*/
 	ScheduleUUID string
 
 	/* SnapshotPolicyUUID.
 
-	   Snapshot copy policy UUID
+	   Snapshot policy UUID
 	*/
 	SnapshotPolicyUUID string
 

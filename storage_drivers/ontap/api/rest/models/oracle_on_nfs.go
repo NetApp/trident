@@ -422,7 +422,7 @@ func (m *OracleOnNfsInlineArchiveLog) UnmarshalBinary(b []byte) error {
 type OracleOnNfsInlineArchiveLogInlineStorageService struct {
 
 	// The storage service of the archive log.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -638,7 +638,7 @@ func (m *OracleOnNfsInlineDb) UnmarshalBinary(b []byte) error {
 type OracleOnNfsInlineDbInlineStorageService struct {
 
 	// The storage service of the database.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -840,7 +840,7 @@ func (m *OracleOnNfsInlineOraHome) UnmarshalBinary(b []byte) error {
 type OracleOnNfsInlineOraHomeInlineStorageService struct {
 
 	// The storage service of the ORACLE_HOME storage volume.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -953,11 +953,11 @@ func (m *OracleOnNfsInlineOraHomeInlineStorageService) UnmarshalBinary(b []byte)
 type OracleOnNfsInlineProtectionType struct {
 
 	// The local RPO of the application.
-	// Enum: [hourly none]
+	// Enum: ["hourly","none"]
 	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
-	// Enum: [none zero]
+	// Enum: ["none","zero"]
 	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 
@@ -1120,7 +1120,7 @@ func (m *OracleOnNfsInlineProtectionType) UnmarshalBinary(b []byte) error {
 type OracleOnNfsInlineRedoLog struct {
 
 	// Specifies whether the redo log group should be mirrored.
-	// Enum: [false true]
+	// Enum: [false,true]
 	Mirrored *bool `json:"mirrored,omitempty"`
 
 	// The size of the redo log group. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
@@ -1264,7 +1264,7 @@ func (m *OracleOnNfsInlineRedoLog) UnmarshalBinary(b []byte) error {
 type OracleOnNfsInlineRedoLogInlineStorageService struct {
 
 	// The storage service of the redo log group.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 

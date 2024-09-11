@@ -6,6 +6,7 @@ package svm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type SvmPeerCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *SvmPeerCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewSvmPeerCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewSvmPeerCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -39,6 +46,88 @@ func (o *SvmPeerCreateReader) ReadResponse(response runtime.ClientResponse, cons
 		}
 		return nil, result
 	}
+}
+
+// NewSvmPeerCreateCreated creates a SvmPeerCreateCreated with default headers values
+func NewSvmPeerCreateCreated() *SvmPeerCreateCreated {
+	return &SvmPeerCreateCreated{}
+}
+
+/*
+SvmPeerCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type SvmPeerCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.SvmPeer
+}
+
+// IsSuccess returns true when this svm peer create created response has a 2xx status code
+func (o *SvmPeerCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm peer create created response has a 3xx status code
+func (o *SvmPeerCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm peer create created response has a 4xx status code
+func (o *SvmPeerCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm peer create created response has a 5xx status code
+func (o *SvmPeerCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm peer create created response a status code equal to that given
+func (o *SvmPeerCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the svm peer create created response
+func (o *SvmPeerCreateCreated) Code() int {
+	return 201
+}
+
+func (o *SvmPeerCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /svm/peers][%d] svmPeerCreateCreated %s", 201, payload)
+}
+
+func (o *SvmPeerCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /svm/peers][%d] svmPeerCreateCreated %s", 201, payload)
+}
+
+func (o *SvmPeerCreateCreated) GetPayload() *models.SvmPeer {
+	return o.Payload
+}
+
+func (o *SvmPeerCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.SvmPeer)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
 }
 
 // NewSvmPeerCreateAccepted creates a SvmPeerCreateAccepted with default headers values
@@ -85,12 +174,19 @@ func (o *SvmPeerCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the svm peer create accepted response
+func (o *SvmPeerCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *SvmPeerCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /svm/peers][%d] svmPeerCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /svm/peers][%d] svmPeerCreateAccepted %s", 202, payload)
 }
 
 func (o *SvmPeerCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /svm/peers][%d] svmPeerCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /svm/peers][%d] svmPeerCreateAccepted %s", 202, payload)
 }
 
 func (o *SvmPeerCreateAccepted) GetPayload() *models.SvmPeer {
@@ -136,6 +232,10 @@ func NewSvmPeerCreateDefault(code int) *SvmPeerCreateDefault {
 | 26345575    | The specified peer cluster name and peer cluster UUID do not match. |
 | 26345579    | The specified field is invalid. |
 | 26345580    | SVM name or SVM UUID must be provided. |
+| 9896086     | Peer SVM name conflicts with one of the following: a peer SVM in an existing SVM peer relationship, a local SVM, or an IPSpace. Use the \"name\" property to uniquely specify the peer SVM alias name. |
+| 9895996     | Cannot specify lun-copy as an inter-cluster application. |
+| 9896093     | The flexcache application is not supported on this platform. |
+| 9896095     | SVM name is in use by a peer Vserver in a Vserver peer relationship. |
 ```
 <br/>
 */
@@ -143,11 +243,6 @@ type SvmPeerCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the svm peer create default response
-func (o *SvmPeerCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this svm peer create default response has a 2xx status code
@@ -175,12 +270,19 @@ func (o *SvmPeerCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the svm peer create default response
+func (o *SvmPeerCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SvmPeerCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /svm/peers][%d] svm_peer_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /svm/peers][%d] svm_peer_create default %s", o._statusCode, payload)
 }
 
 func (o *SvmPeerCreateDefault) String() string {
-	return fmt.Sprintf("[POST /svm/peers][%d] svm_peer_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /svm/peers][%d] svm_peer_create default %s", o._statusCode, payload)
 }
 
 func (o *SvmPeerCreateDefault) GetPayload() *models.ErrorResponse {

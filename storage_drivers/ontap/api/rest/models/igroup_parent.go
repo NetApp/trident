@@ -30,7 +30,7 @@ type IgroupParent struct {
 	// Min Length: 0
 	Comment *string `json:"comment,omitempty"`
 
-	// The initiator groups that contain this initiator group as as member.
+	// The initiator groups that contain this initiator group as a member.
 	//
 	// Read Only: true
 	IgroupParentInlineParentIgroups []*IgroupParent `json:"parent_igroups,omitempty"`

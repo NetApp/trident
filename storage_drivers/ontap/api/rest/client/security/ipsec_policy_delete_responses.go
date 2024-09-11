@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *IpsecPolicyDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ipsec policy delete o k response
+func (o *IpsecPolicyDeleteOK) Code() int {
+	return 200
+}
+
 func (o *IpsecPolicyDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /security/ipsec/policies/{uuid}][%d] ipsecPolicyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/ipsec/policies/{uuid}][%d] ipsecPolicyDeleteOK", 200)
 }
 
 func (o *IpsecPolicyDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /security/ipsec/policies/{uuid}][%d] ipsecPolicyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/ipsec/policies/{uuid}][%d] ipsecPolicyDeleteOK", 200)
 }
 
 func (o *IpsecPolicyDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,17 +113,12 @@ func NewIpsecPolicyDeleteDefault(code int) *IpsecPolicyDeleteDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 66257096 | Internal error. Failed to purge connections associated with the IPsec policy. |
-| 66257116 | IPsec policy with the specified UUID was not found. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IpsecPolicyDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ipsec policy delete default response
-func (o *IpsecPolicyDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ipsec policy delete default response has a 2xx status code
@@ -145,12 +146,19 @@ func (o *IpsecPolicyDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ipsec policy delete default response
+func (o *IpsecPolicyDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IpsecPolicyDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /security/ipsec/policies/{uuid}][%d] ipsec_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/ipsec/policies/{uuid}][%d] ipsec_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *IpsecPolicyDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /security/ipsec/policies/{uuid}][%d] ipsec_policy_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/ipsec/policies/{uuid}][%d] ipsec_policy_delete default %s", o._statusCode, payload)
 }
 
 func (o *IpsecPolicyDeleteDefault) GetPayload() *models.ErrorResponse {

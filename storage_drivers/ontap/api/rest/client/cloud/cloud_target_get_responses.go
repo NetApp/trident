@@ -6,6 +6,7 @@ package cloud
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CloudTargetGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cloud target get o k response
+func (o *CloudTargetGetOK) Code() int {
+	return 200
+}
+
 func (o *CloudTargetGetOK) Error() string {
-	return fmt.Sprintf("[GET /cloud/targets/{uuid}][%d] cloudTargetGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cloud/targets/{uuid}][%d] cloudTargetGetOK %s", 200, payload)
 }
 
 func (o *CloudTargetGetOK) String() string {
-	return fmt.Sprintf("[GET /cloud/targets/{uuid}][%d] cloudTargetGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cloud/targets/{uuid}][%d] cloudTargetGetOK %s", 200, payload)
 }
 
 func (o *CloudTargetGetOK) GetPayload() *models.CloudTarget {
@@ -122,11 +130,6 @@ type CloudTargetGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cloud target get default response
-func (o *CloudTargetGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cloud target get default response has a 2xx status code
 func (o *CloudTargetGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *CloudTargetGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cloud target get default response
+func (o *CloudTargetGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CloudTargetGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cloud/targets/{uuid}][%d] cloud_target_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cloud/targets/{uuid}][%d] cloud_target_get default %s", o._statusCode, payload)
 }
 
 func (o *CloudTargetGetDefault) String() string {
-	return fmt.Sprintf("[GET /cloud/targets/{uuid}][%d] cloud_target_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cloud/targets/{uuid}][%d] cloud_target_get default %s", o._statusCode, payload)
 }
 
 func (o *CloudTargetGetDefault) GetPayload() *models.ErrorResponse {

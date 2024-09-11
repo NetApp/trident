@@ -361,7 +361,13 @@ type NvmeSubsystemMapInlineNamespace struct {
 	// links
 	Links *NvmeSubsystemMapInlineNamespaceInlineLinks `json:"_links,omitempty"`
 
-	// The fully qualified path name of the NVMe namespace composed from the volume name, qtree name, and file name of the NVMe namespace. Valid in POST.
+	// The name of the NVMe namespace. Valid in POST.
+	// ### Platform Specifics
+	// * **Unified ONTAP**:
+	// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.
+	// * **ASA r2**:
+	// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.
 	//
 	// Example: /vol/vol1/namespace1
 	Name *string `json:"name,omitempty"`
@@ -767,7 +773,7 @@ type NvmeSubsystemMapInlineSubsystem struct {
 	// The name of the NVMe subsystem.
 	//
 	// Example: subsystem1
-	// Max Length: 96
+	// Max Length: 64
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
 
@@ -821,7 +827,7 @@ func (m *NvmeSubsystemMapInlineSubsystem) validateName(formats strfmt.Registry) 
 		return err
 	}
 
-	if err := validate.MaxLength("subsystem"+"."+"name", "body", *m.Name, 96); err != nil {
+	if err := validate.MaxLength("subsystem"+"."+"name", "body", *m.Name, 64); err != nil {
 		return err
 	}
 
@@ -960,7 +966,7 @@ func (m *NvmeSubsystemMapInlineSubsystemInlineLinks) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// NvmeSubsystemMapInlineSvm nvme subsystem map inline svm
+// NvmeSubsystemMapInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model nvme_subsystem_map_inline_svm
 type NvmeSubsystemMapInlineSvm struct {
@@ -968,12 +974,12 @@ type NvmeSubsystemMapInlineSvm struct {
 	// links
 	Links *NvmeSubsystemMapInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

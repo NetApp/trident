@@ -607,7 +607,7 @@ type IPSubnetInlineIpspace struct {
 	Links *IPSubnetInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
-	// Example: exchange
+	// Example: Default
 	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID

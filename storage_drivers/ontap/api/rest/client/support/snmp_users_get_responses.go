@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SnmpUsersGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snmp users get o k response
+func (o *SnmpUsersGetOK) Code() int {
+	return 200
+}
+
 func (o *SnmpUsersGetOK) Error() string {
-	return fmt.Sprintf("[GET /support/snmp/users/{engine_id}/{name}][%d] snmpUsersGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/snmp/users/{engine_id}/{name}][%d] snmpUsersGetOK %s", 200, payload)
 }
 
 func (o *SnmpUsersGetOK) String() string {
-	return fmt.Sprintf("[GET /support/snmp/users/{engine_id}/{name}][%d] snmpUsersGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/snmp/users/{engine_id}/{name}][%d] snmpUsersGetOK %s", 200, payload)
 }
 
 func (o *SnmpUsersGetOK) GetPayload() *models.SnmpUser {
@@ -122,11 +130,6 @@ type SnmpUsersGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the snmp users get default response
-func (o *SnmpUsersGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this snmp users get default response has a 2xx status code
 func (o *SnmpUsersGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SnmpUsersGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snmp users get default response
+func (o *SnmpUsersGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnmpUsersGetDefault) Error() string {
-	return fmt.Sprintf("[GET /support/snmp/users/{engine_id}/{name}][%d] snmp_users_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/snmp/users/{engine_id}/{name}][%d] snmp_users_get default %s", o._statusCode, payload)
 }
 
 func (o *SnmpUsersGetDefault) String() string {
-	return fmt.Sprintf("[GET /support/snmp/users/{engine_id}/{name}][%d] snmp_users_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/snmp/users/{engine_id}/{name}][%d] snmp_users_get default %s", o._statusCode, payload)
 }
 
 func (o *SnmpUsersGetDefault) GetPayload() *models.ErrorResponse {

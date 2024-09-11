@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *LicenseGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the license get o k response
+func (o *LicenseGetOK) Code() int {
+	return 200
+}
+
 func (o *LicenseGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/licensing/licenses/{name}][%d] licenseGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/licensing/licenses/{name}][%d] licenseGetOK %s", 200, payload)
 }
 
 func (o *LicenseGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/licensing/licenses/{name}][%d] licenseGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/licensing/licenses/{name}][%d] licenseGetOK %s", 200, payload)
 }
 
 func (o *LicenseGetOK) GetPayload() *models.LicensePackage {
@@ -122,11 +130,6 @@ type LicenseGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the license get default response
-func (o *LicenseGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this license get default response has a 2xx status code
 func (o *LicenseGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *LicenseGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the license get default response
+func (o *LicenseGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LicenseGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/licensing/licenses/{name}][%d] license_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/licensing/licenses/{name}][%d] license_get default %s", o._statusCode, payload)
 }
 
 func (o *LicenseGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/licensing/licenses/{name}][%d] license_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/licensing/licenses/{name}][%d] license_get default %s", o._statusCode, payload)
 }
 
 func (o *LicenseGetDefault) GetPayload() *models.ErrorResponse {

@@ -24,7 +24,7 @@ type Shelf struct {
 	// connection type
 	// Example: sas
 	// Read Only: true
-	// Enum: [unknown fc sas nvme]
+	// Enum: ["unknown","fc","sas","nvme"]
 	ConnectionType *string `json:"connection_type,omitempty"`
 
 	// disk count
@@ -47,7 +47,7 @@ type Shelf struct {
 
 	// location led
 	// Example: off
-	// Enum: [off on unsupported]
+	// Enum: ["off","on","unsupported"]
 	LocationLed *string `json:"location_led,omitempty"`
 
 	// manufacturer
@@ -61,7 +61,7 @@ type Shelf struct {
 	// module type
 	// Example: iom6
 	// Read Only: true
-	// Enum: [unknown iom6 iom6e iom12 iom12b iom12e iom12f iom12g nsm100 nsm8e psm3e]
+	// Enum: ["unknown","iom6","iom6e","iom12","iom12b","iom12c","iom12e","iom12f","iom12g","nsm100","nsm8e","nsm16e","psm3e","nsm100b"]
 	ModuleType *string `json:"module_type,omitempty"`
 
 	// name
@@ -75,42 +75,50 @@ type Shelf struct {
 	SerialNumber *string `json:"serial_number,omitempty"`
 
 	// Alternate Control Paths to ACP processors/functions in shelf modules and expanders
+	// Read Only: true
 	ShelfInlineAcps []*ShelfInlineAcpsInlineArrayItem `json:"acps,omitempty"`
 
 	// shelf inline bays
 	ShelfInlineBays []*ShelfInlineBaysInlineArrayItem `json:"bays,omitempty"`
 
 	// shelf inline current sensors
+	// Read Only: true
 	ShelfInlineCurrentSensors []*ShelfInlineCurrentSensorsInlineArrayItem `json:"current_sensors,omitempty"`
 
 	// shelf inline drawers
+	// Read Only: true
 	ShelfInlineDrawers []*ShelfInlineDrawersInlineArrayItem `json:"drawers,omitempty"`
 
 	// shelf inline errors
 	ShelfInlineErrors []*ShelfInlineErrorsInlineArrayItem `json:"errors,omitempty"`
 
 	// shelf inline fans
+	// Read Only: true
 	ShelfInlineFans []*ShelfInlineFansInlineArrayItem `json:"fans,omitempty"`
 
 	// shelf inline frus
+	// Read Only: true
 	ShelfInlineFrus []*ShelfInlineFrusInlineArrayItem `json:"frus,omitempty"`
 
 	// shelf inline paths
+	// Read Only: true
 	ShelfInlinePaths []*ShelfInlinePathsInlineArrayItem `json:"paths,omitempty"`
 
 	// shelf inline ports
 	ShelfInlinePorts []*ShelfInlinePortsInlineArrayItem `json:"ports,omitempty"`
 
 	// shelf inline temperature sensors
+	// Read Only: true
 	ShelfInlineTemperatureSensors []*ShelfInlineTemperatureSensorsInlineArrayItem `json:"temperature_sensors,omitempty"`
 
 	// shelf inline voltage sensors
+	// Read Only: true
 	ShelfInlineVoltageSensors []*ShelfInlineVoltageSensorsInlineArrayItem `json:"voltage_sensors,omitempty"`
 
 	// state
 	// Example: ok
 	// Read Only: true
-	// Enum: [unknown ok error]
+	// Enum: ["unknown","ok","error"]
 	State *string `json:"state,omitempty"`
 
 	// uid
@@ -363,7 +371,7 @@ var shelfTypeModuleTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["unknown","iom6","iom6e","iom12","iom12b","iom12e","iom12f","iom12g","nsm100","nsm8e","psm3e"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["unknown","iom6","iom6e","iom12","iom12b","iom12c","iom12e","iom12f","iom12g","nsm100","nsm8e","nsm16e","psm3e","nsm100b"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -428,6 +436,16 @@ const (
 	// Shelf
 	// module_type
 	// ModuleType
+	// iom12c
+	// END DEBUGGING
+	// ShelfModuleTypeIom12c captures enum value "iom12c"
+	ShelfModuleTypeIom12c string = "iom12c"
+
+	// BEGIN DEBUGGING
+	// shelf
+	// Shelf
+	// module_type
+	// ModuleType
 	// iom12e
 	// END DEBUGGING
 	// ShelfModuleTypeIom12e captures enum value "iom12e"
@@ -478,10 +496,30 @@ const (
 	// Shelf
 	// module_type
 	// ModuleType
+	// nsm16e
+	// END DEBUGGING
+	// ShelfModuleTypeNsm16e captures enum value "nsm16e"
+	ShelfModuleTypeNsm16e string = "nsm16e"
+
+	// BEGIN DEBUGGING
+	// shelf
+	// Shelf
+	// module_type
+	// ModuleType
 	// psm3e
 	// END DEBUGGING
 	// ShelfModuleTypePsm3e captures enum value "psm3e"
 	ShelfModuleTypePsm3e string = "psm3e"
+
+	// BEGIN DEBUGGING
+	// shelf
+	// Shelf
+	// module_type
+	// ModuleType
+	// nsm100b
+	// END DEBUGGING
+	// ShelfModuleTypeNsm100b captures enum value "nsm100b"
+	ShelfModuleTypeNsm100b string = "nsm100b"
 )
 
 // prop value enum
@@ -1055,6 +1093,10 @@ func (m *Shelf) contextValidateSerialNumber(ctx context.Context, formats strfmt.
 
 func (m *Shelf) contextValidateShelfInlineAcps(ctx context.Context, formats strfmt.Registry) error {
 
+	if err := validate.ReadOnly(ctx, "acps", "body", []*ShelfInlineAcpsInlineArrayItem(m.ShelfInlineAcps)); err != nil {
+		return err
+	}
+
 	for i := 0; i < len(m.ShelfInlineAcps); i++ {
 
 		if m.ShelfInlineAcps[i] != nil {
@@ -1091,6 +1133,10 @@ func (m *Shelf) contextValidateShelfInlineBays(ctx context.Context, formats strf
 
 func (m *Shelf) contextValidateShelfInlineCurrentSensors(ctx context.Context, formats strfmt.Registry) error {
 
+	if err := validate.ReadOnly(ctx, "current_sensors", "body", []*ShelfInlineCurrentSensorsInlineArrayItem(m.ShelfInlineCurrentSensors)); err != nil {
+		return err
+	}
+
 	for i := 0; i < len(m.ShelfInlineCurrentSensors); i++ {
 
 		if m.ShelfInlineCurrentSensors[i] != nil {
@@ -1108,6 +1154,10 @@ func (m *Shelf) contextValidateShelfInlineCurrentSensors(ctx context.Context, fo
 }
 
 func (m *Shelf) contextValidateShelfInlineDrawers(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "drawers", "body", []*ShelfInlineDrawersInlineArrayItem(m.ShelfInlineDrawers)); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(m.ShelfInlineDrawers); i++ {
 
@@ -1145,6 +1195,10 @@ func (m *Shelf) contextValidateShelfInlineErrors(ctx context.Context, formats st
 
 func (m *Shelf) contextValidateShelfInlineFans(ctx context.Context, formats strfmt.Registry) error {
 
+	if err := validate.ReadOnly(ctx, "fans", "body", []*ShelfInlineFansInlineArrayItem(m.ShelfInlineFans)); err != nil {
+		return err
+	}
+
 	for i := 0; i < len(m.ShelfInlineFans); i++ {
 
 		if m.ShelfInlineFans[i] != nil {
@@ -1163,6 +1217,10 @@ func (m *Shelf) contextValidateShelfInlineFans(ctx context.Context, formats strf
 
 func (m *Shelf) contextValidateShelfInlineFrus(ctx context.Context, formats strfmt.Registry) error {
 
+	if err := validate.ReadOnly(ctx, "frus", "body", []*ShelfInlineFrusInlineArrayItem(m.ShelfInlineFrus)); err != nil {
+		return err
+	}
+
 	for i := 0; i < len(m.ShelfInlineFrus); i++ {
 
 		if m.ShelfInlineFrus[i] != nil {
@@ -1180,6 +1238,10 @@ func (m *Shelf) contextValidateShelfInlineFrus(ctx context.Context, formats strf
 }
 
 func (m *Shelf) contextValidateShelfInlinePaths(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "paths", "body", []*ShelfInlinePathsInlineArrayItem(m.ShelfInlinePaths)); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(m.ShelfInlinePaths); i++ {
 
@@ -1217,6 +1279,10 @@ func (m *Shelf) contextValidateShelfInlinePorts(ctx context.Context, formats str
 
 func (m *Shelf) contextValidateShelfInlineTemperatureSensors(ctx context.Context, formats strfmt.Registry) error {
 
+	if err := validate.ReadOnly(ctx, "temperature_sensors", "body", []*ShelfInlineTemperatureSensorsInlineArrayItem(m.ShelfInlineTemperatureSensors)); err != nil {
+		return err
+	}
+
 	for i := 0; i < len(m.ShelfInlineTemperatureSensors); i++ {
 
 		if m.ShelfInlineTemperatureSensors[i] != nil {
@@ -1234,6 +1300,10 @@ func (m *Shelf) contextValidateShelfInlineTemperatureSensors(ctx context.Context
 }
 
 func (m *Shelf) contextValidateShelfInlineVoltageSensors(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "voltage_sensors", "body", []*ShelfInlineVoltageSensorsInlineArrayItem(m.ShelfInlineVoltageSensors)); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(m.ShelfInlineVoltageSensors); i++ {
 
@@ -1312,12 +1382,12 @@ type ShelfInlineAcpsInlineArrayItem struct {
 
 	// channel
 	// Example: out_of_band
-	// Enum: [unknown out_of_band in_band]
+	// Enum: ["unknown","out_of_band","in_band"]
 	Channel *string `json:"channel,omitempty"`
 
 	// connection state
 	// Example: full_connectivity
-	// Enum: [no_connectivity partial_connectivity full_connectivity additional_connectivity unknown_connectivity not_available active disabled]
+	// Enum: ["no_connectivity","partial_connectivity","full_connectivity","additional_connectivity","unknown_connectivity","not_available","active","disabled"]
 	ConnectionState *string `json:"connection_state,omitempty"`
 
 	// enabled
@@ -1657,11 +1727,11 @@ type ShelfInlineAcpsInlineArrayItemInlineError struct {
 	Reason *Error `json:"reason,omitempty"`
 
 	// severity
-	// Enum: [unknown notice warning error critical]
+	// Enum: ["unknown","notice","warning","error","critical"]
 	Severity *string `json:"severity,omitempty"`
 
 	// type
-	// Enum: [not_applicable connection_issue connection_activity module_error shelf_error]
+	// Enum: ["not_applicable","connection_issue","connection_activity","module_error","shelf_error"]
 	Type *string `json:"type,omitempty"`
 }
 
@@ -2119,12 +2189,12 @@ type ShelfInlineBaysInlineArrayItem struct {
 
 	// state
 	// Example: ok
-	// Enum: [unknown ok error]
+	// Enum: ["unknown","ok","error"]
 	State *string `json:"state,omitempty"`
 
 	// type
 	// Example: single_disk
-	// Enum: [unknown single_disk multi_lun]
+	// Enum: ["unknown","single_disk","multi_lun"]
 	Type *string `json:"type,omitempty"`
 }
 
@@ -2400,13 +2470,17 @@ type ShelfInlineCurrentSensorsInlineArrayItem struct {
 	// Example: 1
 	ID *int64 `json:"id,omitempty"`
 
+	// installed
+	// Example: true
+	Installed *bool `json:"installed,omitempty"`
+
 	// location
 	// Example: rear of the shelf on the lower left power supply
 	Location *string `json:"location,omitempty"`
 
 	// state
 	// Example: ok
-	// Enum: [ok error]
+	// Enum: ["ok","error"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -2531,7 +2605,7 @@ type ShelfInlineDrawersInlineArrayItem struct {
 
 	// state
 	// Example: ok
-	// Enum: [ok error]
+	// Enum: ["ok","error"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -2723,6 +2797,10 @@ type ShelfInlineFansInlineArrayItem struct {
 	// Example: 1
 	ID *int64 `json:"id,omitempty"`
 
+	// installed
+	// Example: true
+	Installed *bool `json:"installed,omitempty"`
+
 	// location
 	// Example: rear of the shelf on the lower left power supply
 	Location *string `json:"location,omitempty"`
@@ -2733,7 +2811,7 @@ type ShelfInlineFansInlineArrayItem struct {
 
 	// state
 	// Example: ok
-	// Enum: [ok error]
+	// Enum: ["ok","error"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -2859,12 +2937,12 @@ type ShelfInlineFrusInlineArrayItem struct {
 
 	// state
 	// Example: error
-	// Enum: [ok error]
+	// Enum: ["ok","error"]
 	State *string `json:"state,omitempty"`
 
 	// type
 	// Example: module
-	// Enum: [module psu]
+	// Enum: ["module","psu"]
 	Type *string `json:"type,omitempty"`
 }
 
@@ -3130,8 +3208,13 @@ func (m *ShelfInlineManufacturer) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this shelf inline manufacturer based on context it is used
+// ContextValidate validate this shelf inline manufacturer based on the context it is used
 func (m *ShelfInlineManufacturer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -3561,7 +3644,7 @@ type ShelfInlinePortsInlineArrayItem struct {
 
 	// designator
 	// Example: square
-	// Enum: [circle square 1 2 3 4]
+	// Enum: ["circle","square","1","2","3","4"]
 	Designator *string `json:"designator,omitempty"`
 
 	// id
@@ -3576,7 +3659,7 @@ type ShelfInlinePortsInlineArrayItem struct {
 
 	// module id
 	// Example: a
-	// Enum: [a b]
+	// Enum: ["a","b"]
 	ModuleID *string `json:"module_id,omitempty"`
 
 	// remote
@@ -3584,7 +3667,7 @@ type ShelfInlinePortsInlineArrayItem struct {
 
 	// state
 	// Example: connected
-	// Enum: [connected disconnected error]
+	// Enum: ["connected","disconnected","error"]
 	State *string `json:"state,omitempty"`
 
 	// wwn
@@ -4055,13 +4138,17 @@ type ShelfInlineTemperatureSensorsInlineArrayItem struct {
 	// Example: 1
 	ID *int64 `json:"id,omitempty"`
 
+	// installed
+	// Example: true
+	Installed *bool `json:"installed,omitempty"`
+
 	// location
 	// Example: temp sensor on midplane left
 	Location *string `json:"location,omitempty"`
 
 	// state
 	// Example: ok
-	// Enum: [ok error]
+	// Enum: ["ok","error"]
 	State *string `json:"state,omitempty"`
 
 	// Temperature, in degrees Celsius
@@ -4452,8 +4539,13 @@ func (m *ShelfInlineVendor) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this shelf inline vendor based on context it is used
+// ContextValidate validate this shelf inline vendor based on the context it is used
 func (m *ShelfInlineVendor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -4484,13 +4576,17 @@ type ShelfInlineVoltageSensorsInlineArrayItem struct {
 	// Example: 1
 	ID *int64 `json:"id,omitempty"`
 
+	// installed
+	// Example: true
+	Installed *bool `json:"installed,omitempty"`
+
 	// location
 	// Example: rear of the shelf on the lower left power supply
 	Location *string `json:"location,omitempty"`
 
 	// state
 	// Example: ok
-	// Enum: [ok error]
+	// Enum: ["ok","error"]
 	State *string `json:"state,omitempty"`
 
 	// Voltage, in volts

@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *UnixUserCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the unix user collection get o k response
+func (o *UnixUserCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *UnixUserCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/unix-users][%d] unixUserCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/unix-users][%d] unixUserCollectionGetOK %s", 200, payload)
 }
 
 func (o *UnixUserCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/unix-users][%d] unixUserCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/unix-users][%d] unixUserCollectionGetOK %s", 200, payload)
 }
 
 func (o *UnixUserCollectionGetOK) GetPayload() *models.UnixUserResponse {
@@ -122,11 +130,6 @@ type UnixUserCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the unix user collection get default response
-func (o *UnixUserCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this unix user collection get default response has a 2xx status code
 func (o *UnixUserCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *UnixUserCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the unix user collection get default response
+func (o *UnixUserCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *UnixUserCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/unix-users][%d] unix_user_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/unix-users][%d] unix_user_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *UnixUserCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/unix-users][%d] unix_user_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/unix-users][%d] unix_user_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *UnixUserCollectionGetDefault) GetPayload() *models.ErrorResponse {

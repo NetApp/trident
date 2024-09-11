@@ -30,7 +30,7 @@ type ShareACL struct {
 	// * change       - User has change access
 	// * full_control - User has full_control access
 	//
-	// Enum: [no_access read change full_control]
+	// Enum: ["no_access","read","change","full_control"]
 	Permission *string `json:"permission,omitempty"`
 
 	// Specifies the type of the user or group to add to the access control
@@ -39,12 +39,15 @@ type ShareACL struct {
 	// * unix_user  - UNIX user
 	// * unix_group - UNIX group
 	//
-	// Enum: [windows unix_user unix_group]
+	// Enum: ["windows","unix_user","unix_group"]
 	Type *string `json:"type,omitempty"`
 
 	// Specifies the user or group name to add to the access control list of a CIFS share.
 	// Example: ENGDOMAIN\\ad_user
 	UserOrGroup *string `json:"user_or_group,omitempty"`
+
+	// Windows SID/UNIX ID depending on access-control type.
+	WinSidUnixID *string `json:"win_sid_unix_id,omitempty"`
 }
 
 // Validate validates this share acl

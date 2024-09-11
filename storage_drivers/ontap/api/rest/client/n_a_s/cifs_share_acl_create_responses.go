@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *CifsShareACLCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the cifs share Acl create created response
+func (o *CifsShareACLCreateCreated) Code() int {
+	return 201
+}
+
 func (o *CifsShareACLCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/shares/{svm.uuid}/{share}/acls][%d] cifsShareAclCreateCreated ", 201)
+	return fmt.Sprintf("[POST /protocols/cifs/shares/{svm.uuid}/{share}/acls][%d] cifsShareAclCreateCreated", 201)
 }
 
 func (o *CifsShareACLCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/shares/{svm.uuid}/{share}/acls][%d] cifsShareAclCreateCreated ", 201)
+	return fmt.Sprintf("[POST /protocols/cifs/shares/{svm.uuid}/{share}/acls][%d] cifsShareAclCreateCreated", 201)
 }
 
 func (o *CifsShareACLCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -117,19 +123,13 @@ func NewCifsShareACLCreateDefault(code int) *CifsShareACLCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 655470     | Failed to create share ACL because the share does not exist |
-| 655446     | Failed to create share ACL because the specified Windows user/group does not exist|
-| 4849678    | Failed to create share ACL because the specified UNIX user/group does not exist|
+| 655446     | Failed to resolve the security identifier (SID) for the account named {user_or_group}. Reason: {Reason}. |
+| 4849678    | Failed to resolve {user_or_group} name to a UNIX ID. Reason: {Reason}. |
 */
 type CifsShareACLCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cifs share acl create default response
-func (o *CifsShareACLCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cifs share acl create default response has a 2xx status code
@@ -157,12 +157,19 @@ func (o *CifsShareACLCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs share acl create default response
+func (o *CifsShareACLCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsShareACLCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/cifs/shares/{svm.uuid}/{share}/acls][%d] cifs_share_acl_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/shares/{svm.uuid}/{share}/acls][%d] cifs_share_acl_create default %s", o._statusCode, payload)
 }
 
 func (o *CifsShareACLCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/cifs/shares/{svm.uuid}/{share}/acls][%d] cifs_share_acl_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/cifs/shares/{svm.uuid}/{share}/acls][%d] cifs_share_acl_create default %s", o._statusCode, payload)
 }
 
 func (o *CifsShareACLCreateDefault) GetPayload() *models.ErrorResponse {

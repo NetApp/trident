@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NfsClientsGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nfs clients get o k response
+func (o *NfsClientsGetOK) Code() int {
+	return 200
+}
+
 func (o *NfsClientsGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/connected-clients][%d] nfsClientsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/connected-clients][%d] nfsClientsGetOK %s", 200, payload)
 }
 
 func (o *NfsClientsGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/connected-clients][%d] nfsClientsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/connected-clients][%d] nfsClientsGetOK %s", 200, payload)
 }
 
 func (o *NfsClientsGetOK) GetPayload() *models.NfsClientsResponse {
@@ -112,19 +120,19 @@ func NewNfsClientsGetDefault(code int) *NfsClientsGetDefault {
 }
 
 /*
-NfsClientsGetDefault describes a response with status code -1, with default header values.
+	NfsClientsGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 917887     | The first character of the volume name must be a letter or underscore.|
+| 917888     | Invalid character in volume name. It can have '_' and alphanumeric characters.|
 */
 type NfsClientsGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nfs clients get default response
-func (o *NfsClientsGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nfs clients get default response has a 2xx status code
@@ -152,12 +160,19 @@ func (o *NfsClientsGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nfs clients get default response
+func (o *NfsClientsGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NfsClientsGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/connected-clients][%d] nfs_clients_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/connected-clients][%d] nfs_clients_get default %s", o._statusCode, payload)
 }
 
 func (o *NfsClientsGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/connected-clients][%d] nfs_clients_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/connected-clients][%d] nfs_clients_get default %s", o._statusCode, payload)
 }
 
 func (o *NfsClientsGetDefault) GetPayload() *models.ErrorResponse {

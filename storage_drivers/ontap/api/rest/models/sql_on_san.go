@@ -36,7 +36,7 @@ type SQLOnSan struct {
 	Log *SQLOnSanInlineLog `json:"log"`
 
 	// The name of the host OS running the application.
-	// Enum: [windows windows_2008 windows_gpt]
+	// Enum: ["windows","windows_2008","windows_gpt"]
 	OsType *string `json:"os_type,omitempty"`
 
 	// protection type
@@ -510,7 +510,7 @@ func (m *SQLOnSanInlineDb) UnmarshalBinary(b []byte) error {
 type SQLOnSanInlineDbInlineStorageService struct {
 
 	// The storage service of the DB.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -726,7 +726,7 @@ func (m *SQLOnSanInlineLog) UnmarshalBinary(b []byte) error {
 type SQLOnSanInlineLogInlineStorageService struct {
 
 	// The storage service of the log DB.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -839,11 +839,11 @@ func (m *SQLOnSanInlineLogInlineStorageService) UnmarshalBinary(b []byte) error 
 type SQLOnSanInlineProtectionType struct {
 
 	// The local RPO of the application.
-	// Enum: [hourly none]
+	// Enum: ["hourly","none"]
 	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
-	// Enum: [none zero]
+	// Enum: ["none","zero"]
 	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 
@@ -1095,7 +1095,7 @@ func (m *SQLOnSanInlineTempDb) UnmarshalBinary(b []byte) error {
 type SQLOnSanInlineTempDbInlineStorageService struct {
 
 	// The storage service of the temp DB.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 

@@ -24,6 +24,7 @@ type ClusterNisService struct {
 	Links *ClusterNisServiceInlineLinks `json:"_links,omitempty"`
 
 	// An array of objects where each object represents the NIS server and it's status for a given NIS domain. It is an advanced field.
+	// Read Only: true
 	ClusterNisServiceInlineBindingDetails []*ClusterNisServiceInlineBindingDetailsInlineArrayItem `json:"binding_details,omitempty"`
 
 	// cluster nis service inline bound servers
@@ -219,6 +220,10 @@ func (m *ClusterNisService) contextValidateLinks(ctx context.Context, formats st
 }
 
 func (m *ClusterNisService) contextValidateClusterNisServiceInlineBindingDetails(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "binding_details", "body", []*ClusterNisServiceInlineBindingDetailsInlineArrayItem(m.ClusterNisServiceInlineBindingDetails)); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(m.ClusterNisServiceInlineBindingDetails); i++ {
 

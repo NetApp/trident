@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *EffectivePermissionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the effective permission get o k response
+func (o *EffectivePermissionGetOK) Code() int {
+	return 200
+}
+
 func (o *EffectivePermissionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/file-security/effective-permissions/{svm.uuid}/{path}][%d] effectivePermissionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/file-security/effective-permissions/{svm.uuid}/{path}][%d] effectivePermissionGetOK %s", 200, payload)
 }
 
 func (o *EffectivePermissionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/file-security/effective-permissions/{svm.uuid}/{path}][%d] effectivePermissionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/file-security/effective-permissions/{svm.uuid}/{path}][%d] effectivePermissionGetOK %s", 200, payload)
 }
 
 func (o *EffectivePermissionGetOK) GetPayload() *models.EffectivePermission {
@@ -114,17 +122,12 @@ func NewEffectivePermissionGetDefault(code int) *EffectivePermissionGetDefault {
 /*
 EffectivePermissionGetDefault describes a response with status code -1, with default header values.
 
-ONTAP Error Response Codes | Error Code | Description | | ---------- | ----------- | | 655865     | The specified path cannot be used, if the file does not exist.|
+ONTAP Error Response Codes | Error Code | Description | | ---------- | ----------- | | 262278     | User is a required field | | 655865     | The specified path cannot be used if the file does not exist | | 655470     | The specified share does not exist |
 */
 type EffectivePermissionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the effective permission get default response
-func (o *EffectivePermissionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this effective permission get default response has a 2xx status code
@@ -152,12 +155,19 @@ func (o *EffectivePermissionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the effective permission get default response
+func (o *EffectivePermissionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *EffectivePermissionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/file-security/effective-permissions/{svm.uuid}/{path}][%d] effective_permission_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/file-security/effective-permissions/{svm.uuid}/{path}][%d] effective_permission_get default %s", o._statusCode, payload)
 }
 
 func (o *EffectivePermissionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/file-security/effective-permissions/{svm.uuid}/{path}][%d] effective_permission_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/file-security/effective-permissions/{svm.uuid}/{path}][%d] effective_permission_get default %s", o._statusCode, payload)
 }
 
 func (o *EffectivePermissionGetDefault) GetPayload() *models.ErrorResponse {

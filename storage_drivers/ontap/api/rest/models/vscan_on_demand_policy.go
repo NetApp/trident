@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -363,15 +364,19 @@ type VscanOnDemandPolicyInlineScope struct {
 
 	// List of file extensions for which scanning is not performed.
 	// Example: ["mp3","mp4"]
+	// Max Items: 300
+	// Min Items: 1
 	ExcludeExtensions []*string `json:"exclude_extensions,omitempty"`
 
 	// List of file paths for which scanning must not be performed.
 	// Example: ["/vol1/cold-files/","/vol1/cifs/names"]
+	// Max Items: 100
+	// Min Items: 1
 	ExcludePaths []*string `json:"exclude_paths,omitempty"`
 
 	// List of file extensions to be scanned.
 	// Example: ["vmdk","mp*"]
-	// Max Items: 16
+	// Max Items: 300
 	// Min Items: 1
 	IncludeExtensions []*string `json:"include_extensions,omitempty"`
 
@@ -389,6 +394,14 @@ type VscanOnDemandPolicyInlineScope struct {
 func (m *VscanOnDemandPolicyInlineScope) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateExcludeExtensions(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateExcludePaths(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateIncludeExtensions(formats); err != nil {
 		res = append(res, err)
 	}
@@ -403,6 +416,57 @@ func (m *VscanOnDemandPolicyInlineScope) Validate(formats strfmt.Registry) error
 	return nil
 }
 
+func (m *VscanOnDemandPolicyInlineScope) validateExcludeExtensions(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExcludeExtensions) { // not required
+		return nil
+	}
+
+	iExcludeExtensionsSize := int64(len(m.ExcludeExtensions))
+
+	if err := validate.MinItems("scope"+"."+"exclude_extensions", "body", iExcludeExtensionsSize, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("scope"+"."+"exclude_extensions", "body", iExcludeExtensionsSize, 300); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VscanOnDemandPolicyInlineScope) validateExcludePaths(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExcludePaths) { // not required
+		return nil
+	}
+
+	iExcludePathsSize := int64(len(m.ExcludePaths))
+
+	if err := validate.MinItems("scope"+"."+"exclude_paths", "body", iExcludePathsSize, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("scope"+"."+"exclude_paths", "body", iExcludePathsSize, 100); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ExcludePaths); i++ {
+		if swag.IsZero(m.ExcludePaths[i]) { // not required
+			continue
+		}
+
+		if err := validate.MinLength("scope"+"."+"exclude_paths"+"."+strconv.Itoa(i), "body", *m.ExcludePaths[i], 1); err != nil {
+			return err
+		}
+
+		if err := validate.MaxLength("scope"+"."+"exclude_paths"+"."+strconv.Itoa(i), "body", *m.ExcludePaths[i], 255); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
 func (m *VscanOnDemandPolicyInlineScope) validateIncludeExtensions(formats strfmt.Registry) error {
 	if swag.IsZero(m.IncludeExtensions) { // not required
 		return nil
@@ -414,7 +478,7 @@ func (m *VscanOnDemandPolicyInlineScope) validateIncludeExtensions(formats strfm
 		return err
 	}
 
-	if err := validate.MaxItems("scope"+"."+"include_extensions", "body", iIncludeExtensionsSize, 16); err != nil {
+	if err := validate.MaxItems("scope"+"."+"include_extensions", "body", iIncludeExtensionsSize, 300); err != nil {
 		return err
 	}
 

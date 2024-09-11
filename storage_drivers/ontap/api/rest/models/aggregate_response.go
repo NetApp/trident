@@ -22,6 +22,9 @@ type AggregateResponse struct {
 	// links
 	Links *AggregateResponseInlineLinks `json:"_links,omitempty"`
 
+	// Information on the aggregate's remaining hot spare disks.
+	AggregateResponseInlineRecommendationSpares []*AggregateSpare `json:"recommendation_spares,omitempty"`
+
 	// aggregate response inline records
 	AggregateResponseInlineRecords []*Aggregate `json:"records,omitempty"`
 
@@ -44,6 +47,10 @@ func (m *AggregateResponse) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAggregateResponseInlineRecommendationSpares(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -81,6 +88,30 @@ func (m *AggregateResponse) validateLinks(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *AggregateResponse) validateAggregateResponseInlineRecommendationSpares(formats strfmt.Registry) error {
+	if swag.IsZero(m.AggregateResponseInlineRecommendationSpares) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.AggregateResponseInlineRecommendationSpares); i++ {
+		if swag.IsZero(m.AggregateResponseInlineRecommendationSpares[i]) { // not required
+			continue
+		}
+
+		if m.AggregateResponseInlineRecommendationSpares[i] != nil {
+			if err := m.AggregateResponseInlineRecommendationSpares[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("recommendation_spares" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -183,6 +214,10 @@ func (m *AggregateResponse) ContextValidate(ctx context.Context, formats strfmt.
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAggregateResponseInlineRecommendationSpares(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateAggregateResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -214,6 +249,24 @@ func (m *AggregateResponse) contextValidateLinks(ctx context.Context, formats st
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *AggregateResponse) contextValidateAggregateResponseInlineRecommendationSpares(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.AggregateResponseInlineRecommendationSpares); i++ {
+
+		if m.AggregateResponseInlineRecommendationSpares[i] != nil {
+			if err := m.AggregateResponseInlineRecommendationSpares[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("recommendation_spares" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil

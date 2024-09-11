@@ -29,7 +29,7 @@ type ActiveDirectoryDiscoveredServer struct {
 
 	// The preference level of the server that was discovered.
 	// Example: preferred
-	// Enum: [unknown preferred favored adequate]
+	// Enum: ["unknown","preferred","favored","adequate"]
 	Preference *string `json:"preference,omitempty"`
 
 	// server
@@ -37,7 +37,7 @@ type ActiveDirectoryDiscoveredServer struct {
 
 	// The status of the connection to the server that was discovered.
 	// Example: ok
-	// Enum: [ok unavailable slow expired undetermined unreachable]
+	// Enum: ["ok","unavailable","slow","expired","undetermined","unreachable"]
 	State *string `json:"state,omitempty"`
 }
 

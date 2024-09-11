@@ -146,7 +146,7 @@ func TestExtractErrorResponse(t *testing.T) {
 	// pass a LunModifyDefault instance, with a populated error response
 	lunModifyDefaultResponse = s_a_n.LunModifyDefault{
 		Payload: &models.ErrorResponse{
-			Error: &models.Error{
+			Error: &models.ReturnedError{
 				Code:    utils.Ptr("42"),
 				Message: utils.Ptr("error 42"),
 			},
@@ -2112,9 +2112,9 @@ func mockIsVserverInSVMDR(w http.ResponseWriter, r *http.Request) {
 						Name: utils.Ptr("svm0"),
 					},
 				},
-				Source: &models.SnapmirrorEndpoint{
+				Source: &models.SnapmirrorSourceEndpoint{
 					Path: utils.Ptr("svm1:"),
-					Svm: &models.SnapmirrorEndpointInlineSvm{
+					Svm: &models.SnapmirrorSourceEndpointInlineSvm{
 						Name: utils.Ptr("svm1"),
 					},
 				},
@@ -2122,11 +2122,11 @@ func mockIsVserverInSVMDR(w http.ResponseWriter, r *http.Request) {
 			},
 			{
 				Source: &models.
-					SnapmirrorEndpoint{Svm: &models.SnapmirrorEndpointInlineSvm{}},
+					SnapmirrorSourceEndpoint{Svm: &models.SnapmirrorSourceEndpointInlineSvm{}},
 			},
 			{
 				Source: &models.
-					SnapmirrorEndpoint{Path: utils.Ptr("svm0:")},
+					SnapmirrorSourceEndpoint{Path: utils.Ptr("svm0:")},
 			},
 			{},
 		},
@@ -6871,9 +6871,9 @@ func mockSnapMirrorRelationshipResponse(w http.ResponseWriter, r *http.Request) 
 						Name: utils.Ptr("svm0"),
 					},
 				},
-				Source: &models.SnapmirrorEndpoint{
+				Source: &models.SnapmirrorSourceEndpoint{
 					Path: utils.Ptr("svm1:vol1"),
-					Svm: &models.SnapmirrorEndpointInlineSvm{
+					Svm: &models.SnapmirrorSourceEndpointInlineSvm{
 						Name: utils.Ptr("svm0"),
 					},
 				},
@@ -6882,11 +6882,11 @@ func mockSnapMirrorRelationshipResponse(w http.ResponseWriter, r *http.Request) 
 			{},
 			{
 				Destination: &models.SnapmirrorEndpoint{},
-				Source:      &models.SnapmirrorEndpoint{},
+				Source:      &models.SnapmirrorSourceEndpoint{},
 			},
 			{
 				Destination: &models.SnapmirrorEndpoint{Path: utils.Ptr("svm0")},
-				Source:      &models.SnapmirrorEndpoint{Path: utils.Ptr("svm1:vol1")},
+				Source:      &models.SnapmirrorSourceEndpoint{Path: utils.Ptr("svm1:vol1")},
 			},
 		},
 	}
@@ -6929,9 +6929,9 @@ func mockSnapMirrorRelationshipResponseFailure(w http.ResponseWriter, r *http.Re
 						Name: utils.Ptr("svm0"),
 					},
 				},
-				Source: &models.SnapmirrorEndpoint{
+				Source: &models.SnapmirrorSourceEndpoint{
 					Path: utils.Ptr("svm1:vol1"),
-					Svm: &models.SnapmirrorEndpointInlineSvm{
+					Svm: &models.SnapmirrorSourceEndpointInlineSvm{
 						Name: utils.Ptr("svm0"),
 					},
 				},
@@ -6940,11 +6940,11 @@ func mockSnapMirrorRelationshipResponseFailure(w http.ResponseWriter, r *http.Re
 			{},
 			{
 				Destination: &models.SnapmirrorEndpoint{},
-				Source:      &models.SnapmirrorEndpoint{},
+				Source:      &models.SnapmirrorSourceEndpoint{},
 			},
 			{
 				Destination: &models.SnapmirrorEndpoint{Path: utils.Ptr("svm0")},
-				Source:      &models.SnapmirrorEndpoint{Path: utils.Ptr("svm1:vol1")},
+				Source:      &models.SnapmirrorSourceEndpoint{Path: utils.Ptr("svm1:vol1")},
 			},
 		},
 	}
@@ -6983,11 +6983,11 @@ func mockSnapMirrorRelationshipResponseEmptyValue(w http.ResponseWriter, r *http
 			{},
 			{
 				Destination: &models.SnapmirrorEndpoint{},
-				Source:      &models.SnapmirrorEndpoint{},
+				Source:      &models.SnapmirrorSourceEndpoint{},
 			},
 			{
 				Destination: &models.SnapmirrorEndpoint{Path: utils.Ptr("svm0")},
-				Source:      &models.SnapmirrorEndpoint{Path: utils.Ptr("svm1")},
+				Source:      &models.SnapmirrorSourceEndpoint{Path: utils.Ptr("svm1")},
 			},
 		},
 	}
@@ -7005,9 +7005,9 @@ func mockSnapMirrorRelationshipResponseUUIDNil(w http.ResponseWriter, r *http.Re
 						Name: utils.Ptr("svm0"),
 					},
 				},
-				Source: &models.SnapmirrorEndpoint{
+				Source: &models.SnapmirrorSourceEndpoint{
 					Path: utils.Ptr("svm1:vol1"),
-					Svm: &models.SnapmirrorEndpointInlineSvm{
+					Svm: &models.SnapmirrorSourceEndpointInlineSvm{
 						Name: utils.Ptr("svm0"),
 					},
 				},
@@ -7029,9 +7029,9 @@ func mockSnapMirrorRelationshipResponseSync(w http.ResponseWriter, r *http.Reque
 						Name: utils.Ptr("svm0"),
 					},
 				},
-				Source: &models.SnapmirrorEndpoint{
+				Source: &models.SnapmirrorSourceEndpoint{
 					Path: utils.Ptr("svm1:vol1"),
-					Svm: &models.SnapmirrorEndpointInlineSvm{
+					Svm: &models.SnapmirrorSourceEndpointInlineSvm{
 						Name: utils.Ptr("svm0"),
 					},
 				},

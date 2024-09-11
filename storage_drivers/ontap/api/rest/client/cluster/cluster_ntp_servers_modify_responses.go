@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type ClusterNtpServersModifyReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *ClusterNtpServersModifyReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewClusterNtpServersModifyOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewClusterNtpServersModifyAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *ClusterNtpServersModifyReader) ReadResponse(response runtime.ClientResp
 	}
 }
 
+// NewClusterNtpServersModifyOK creates a ClusterNtpServersModifyOK with default headers values
+func NewClusterNtpServersModifyOK() *ClusterNtpServersModifyOK {
+	return &ClusterNtpServersModifyOK{}
+}
+
+/*
+ClusterNtpServersModifyOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type ClusterNtpServersModifyOK struct {
+	Payload *models.NtpServerJobLinkResponse
+}
+
+// IsSuccess returns true when this cluster ntp servers modify o k response has a 2xx status code
+func (o *ClusterNtpServersModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster ntp servers modify o k response has a 3xx status code
+func (o *ClusterNtpServersModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster ntp servers modify o k response has a 4xx status code
+func (o *ClusterNtpServersModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster ntp servers modify o k response has a 5xx status code
+func (o *ClusterNtpServersModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster ntp servers modify o k response a status code equal to that given
+func (o *ClusterNtpServersModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the cluster ntp servers modify o k response
+func (o *ClusterNtpServersModifyOK) Code() int {
+	return 200
+}
+
+func (o *ClusterNtpServersModifyOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/ntp/servers/{server}][%d] clusterNtpServersModifyOK %s", 200, payload)
+}
+
+func (o *ClusterNtpServersModifyOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/ntp/servers/{server}][%d] clusterNtpServersModifyOK %s", 200, payload)
+}
+
+func (o *ClusterNtpServersModifyOK) GetPayload() *models.NtpServerJobLinkResponse {
+	return o.Payload
+}
+
+func (o *ClusterNtpServersModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.NtpServerJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewClusterNtpServersModifyAccepted creates a ClusterNtpServersModifyAccepted with default headers values
 func NewClusterNtpServersModifyAccepted() *ClusterNtpServersModifyAccepted {
 	return &ClusterNtpServersModifyAccepted{}
@@ -52,7 +129,7 @@ ClusterNtpServersModifyAccepted describes a response with status code 202, with 
 Accepted
 */
 type ClusterNtpServersModifyAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.NtpServerJobLinkResponse
 }
 
 // IsSuccess returns true when this cluster ntp servers modify accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *ClusterNtpServersModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the cluster ntp servers modify accepted response
+func (o *ClusterNtpServersModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *ClusterNtpServersModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /cluster/ntp/servers/{server}][%d] clusterNtpServersModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/ntp/servers/{server}][%d] clusterNtpServersModifyAccepted %s", 202, payload)
 }
 
 func (o *ClusterNtpServersModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /cluster/ntp/servers/{server}][%d] clusterNtpServersModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/ntp/servers/{server}][%d] clusterNtpServersModifyAccepted %s", 202, payload)
 }
 
-func (o *ClusterNtpServersModifyAccepted) GetPayload() *models.JobLinkResponse {
+func (o *ClusterNtpServersModifyAccepted) GetPayload() *models.NtpServerJobLinkResponse {
 	return o.Payload
 }
 
 func (o *ClusterNtpServersModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.NtpServerJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -133,16 +217,12 @@ func NewClusterNtpServersModifyDefault(code int) *ClusterNtpServersModifyDefault
 | 2097188 | An invalid key identifier was provided. Identifiers must be in the range from 1 to 65535. |
 | 2097193 | An unknown key was provided. |
 | 2097194 | The field \"authentication_enabled\" cannot be false when the field NTP key is given. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ClusterNtpServersModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cluster ntp servers modify default response
-func (o *ClusterNtpServersModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cluster ntp servers modify default response has a 2xx status code
@@ -170,12 +250,19 @@ func (o *ClusterNtpServersModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster ntp servers modify default response
+func (o *ClusterNtpServersModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterNtpServersModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /cluster/ntp/servers/{server}][%d] cluster_ntp_servers_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/ntp/servers/{server}][%d] cluster_ntp_servers_modify default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNtpServersModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /cluster/ntp/servers/{server}][%d] cluster_ntp_servers_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/ntp/servers/{server}][%d] cluster_ntp_servers_modify default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNtpServersModifyDefault) GetPayload() *models.ErrorResponse {

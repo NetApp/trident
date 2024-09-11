@@ -359,7 +359,7 @@ func (m *IpsecCaCertificateInlineCertificateInlineLinks) UnmarshalBinary(b []byt
 	return nil
 }
 
-// IpsecCaCertificateInlineSvm ipsec ca certificate inline svm
+// IpsecCaCertificateInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model ipsec_ca_certificate_inline_svm
 type IpsecCaCertificateInlineSvm struct {
@@ -367,12 +367,12 @@ type IpsecCaCertificateInlineSvm struct {
 	// links
 	Links *IpsecCaCertificateInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

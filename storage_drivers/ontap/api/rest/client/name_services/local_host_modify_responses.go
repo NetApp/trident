@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *LocalHostModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the local host modify o k response
+func (o *LocalHostModifyOK) Code() int {
+	return 200
+}
+
 func (o *LocalHostModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /name-services/local-hosts/{owner.uuid}/{address}][%d] localHostModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /name-services/local-hosts/{owner.uuid}/{address}][%d] localHostModifyOK", 200)
 }
 
 func (o *LocalHostModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /name-services/local-hosts/{owner.uuid}/{address}][%d] localHostModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /name-services/local-hosts/{owner.uuid}/{address}][%d] localHostModifyOK", 200)
 }
 
 func (o *LocalHostModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,16 +113,12 @@ func NewLocalHostModifyDefault(code int) *LocalHostModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 23724055 | Internal error. Configuration for Vserver failed. Verify that the cluster is healthy, then try the command again. For further assistance, contact technical support. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type LocalHostModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the local host modify default response
-func (o *LocalHostModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this local host modify default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *LocalHostModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the local host modify default response
+func (o *LocalHostModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LocalHostModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /name-services/local-hosts/{owner.uuid}/{address}][%d] local_host_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /name-services/local-hosts/{owner.uuid}/{address}][%d] local_host_modify default %s", o._statusCode, payload)
 }
 
 func (o *LocalHostModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /name-services/local-hosts/{owner.uuid}/{address}][%d] local_host_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /name-services/local-hosts/{owner.uuid}/{address}][%d] local_host_modify default %s", o._statusCode, payload)
 }
 
 func (o *LocalHostModifyDefault) GetPayload() *models.ErrorResponse {

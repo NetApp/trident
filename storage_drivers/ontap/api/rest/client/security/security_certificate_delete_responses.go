@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SecurityCertificateDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the security certificate delete o k response
+func (o *SecurityCertificateDeleteOK) Code() int {
+	return 200
+}
+
 func (o *SecurityCertificateDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /security/certificates/{uuid}][%d] securityCertificateDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/certificates/{uuid}][%d] securityCertificateDeleteOK", 200)
 }
 
 func (o *SecurityCertificateDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /security/certificates/{uuid}][%d] securityCertificateDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/certificates/{uuid}][%d] securityCertificateDeleteOK", 200)
 }
 
 func (o *SecurityCertificateDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -113,16 +119,13 @@ func NewSecurityCertificateDeleteDefault(code int) *SecurityCertificateDeleteDef
 | 3735589    | Cannot delete certificate. |
 | 3735590    | Cannot delete certificate. Failed to remove SSL configuration for the certificate. |
 | 3735683    | Cannot remove this certificate while external key manager is configured. |
+| 3735681    | Cannot delete preinstalled `server-ca` certificates. Use the CLI to complete the operation. |
+| 52560272   | The certificate could not be removed due to being in use by one or more subsystems. |
 */
 type SecurityCertificateDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security certificate delete default response
-func (o *SecurityCertificateDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security certificate delete default response has a 2xx status code
@@ -150,12 +153,19 @@ func (o *SecurityCertificateDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security certificate delete default response
+func (o *SecurityCertificateDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityCertificateDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /security/certificates/{uuid}][%d] security_certificate_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/certificates/{uuid}][%d] security_certificate_delete default %s", o._statusCode, payload)
 }
 
 func (o *SecurityCertificateDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /security/certificates/{uuid}][%d] security_certificate_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/certificates/{uuid}][%d] security_certificate_delete default %s", o._statusCode, payload)
 }
 
 func (o *SecurityCertificateDeleteDefault) GetPayload() *models.ErrorResponse {

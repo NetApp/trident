@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CloudStoreGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cloud store get o k response
+func (o *CloudStoreGetOK) Code() int {
+	return 200
+}
+
 func (o *CloudStoreGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloudStoreGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloudStoreGetOK %s", 200, payload)
 }
 
 func (o *CloudStoreGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloudStoreGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloudStoreGetOK %s", 200, payload)
 }
 
 func (o *CloudStoreGetOK) GetPayload() *models.CloudStore {
@@ -122,11 +130,6 @@ type CloudStoreGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cloud store get default response
-func (o *CloudStoreGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cloud store get default response has a 2xx status code
 func (o *CloudStoreGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *CloudStoreGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cloud store get default response
+func (o *CloudStoreGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CloudStoreGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloud_store_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloud_store_get default %s", o._statusCode, payload)
 }
 
 func (o *CloudStoreGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloud_store_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloud_store_get default %s", o._statusCode, payload)
 }
 
 func (o *CloudStoreGetDefault) GetPayload() *models.ErrorResponse {

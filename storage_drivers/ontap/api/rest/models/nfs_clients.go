@@ -51,7 +51,7 @@ type NfsClients struct {
 	//
 	// Example: nfs3
 	// Read Only: true
-	// Enum: [nfs nfs3 nfs4 nfs4.1 nfs4.2]
+	// Enum: ["nfs","nfs3","nfs4","nfs4.1","nfs4.2"]
 	Protocol *string `json:"protocol,omitempty"`
 
 	// A counter that tracks requests that are sent to the volume with slow-path to remote node.
@@ -855,7 +855,7 @@ func (m *NfsClientsInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NfsClientsInlineSvm nfs clients inline svm
+// NfsClientsInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model nfs_clients_inline_svm
 type NfsClientsInlineSvm struct {
@@ -863,12 +863,12 @@ type NfsClientsInlineSvm struct {
 	// links
 	Links *NfsClientsInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -1045,7 +1045,7 @@ type NfsClientsInlineVolume struct {
 	// links
 	Links *NfsClientsInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

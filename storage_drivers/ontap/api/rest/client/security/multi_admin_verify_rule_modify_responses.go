@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *MultiAdminVerifyRuleModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the multi admin verify rule modify o k response
+func (o *MultiAdminVerifyRuleModifyOK) Code() int {
+	return 200
+}
+
 func (o *MultiAdminVerifyRuleModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multiAdminVerifyRuleModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multiAdminVerifyRuleModifyOK", 200)
 }
 
 func (o *MultiAdminVerifyRuleModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multiAdminVerifyRuleModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multiAdminVerifyRuleModifyOK", 200)
 }
 
 func (o *MultiAdminVerifyRuleModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -111,16 +117,12 @@ func NewMultiAdminVerifyRuleModifyDefault(code int) *MultiAdminVerifyRuleModifyD
 | 262312 | Number of required approvers must be less than the total number of unique approvers in the approval-groups. |
 | 262313 | Number of unique approvers in the approval-groups must be greater than the number of required approvers. |
 | 262316 | Value must be in the range one second to two weeks. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type MultiAdminVerifyRuleModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the multi admin verify rule modify default response
-func (o *MultiAdminVerifyRuleModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this multi admin verify rule modify default response has a 2xx status code
@@ -148,12 +150,19 @@ func (o *MultiAdminVerifyRuleModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the multi admin verify rule modify default response
+func (o *MultiAdminVerifyRuleModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MultiAdminVerifyRuleModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multi_admin_verify_rule_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multi_admin_verify_rule_modify default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyRuleModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multi_admin_verify_rule_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multi_admin_verify_rule_modify default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyRuleModifyDefault) GetPayload() *models.ErrorResponse {

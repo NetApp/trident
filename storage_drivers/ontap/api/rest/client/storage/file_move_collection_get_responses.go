@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *FileMoveCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the file move collection get o k response
+func (o *FileMoveCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *FileMoveCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/file/moves][%d] fileMoveCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/file/moves][%d] fileMoveCollectionGetOK %s", 200, payload)
 }
 
 func (o *FileMoveCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/file/moves][%d] fileMoveCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/file/moves][%d] fileMoveCollectionGetOK %s", 200, payload)
 }
 
 func (o *FileMoveCollectionGetOK) GetPayload() *models.FileMoveResponse {
@@ -122,11 +130,6 @@ type FileMoveCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the file move collection get default response
-func (o *FileMoveCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this file move collection get default response has a 2xx status code
 func (o *FileMoveCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *FileMoveCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the file move collection get default response
+func (o *FileMoveCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FileMoveCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/file/moves][%d] file_move_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/file/moves][%d] file_move_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *FileMoveCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/file/moves][%d] file_move_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/file/moves][%d] file_move_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *FileMoveCollectionGetDefault) GetPayload() *models.ErrorResponse {

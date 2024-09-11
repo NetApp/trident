@@ -26,7 +26,7 @@ type S3Group struct {
 	// Min Length: 0
 	Comment *string `json:"comment,omitempty"`
 
-	// Specifies a unique group ID used to identify a particular group. This parameter should not be specified in the POST method. A group ID is automatically generated and it is retrieved using the GET method. Group id is SVM scoped.
+	// Specifies a unique Group ID used to identify a particular group. This parameter should not be specified in the POST or PATCH method. A Group ID is automatically generated and it is retrieved using the GET method. Group ID is SVM-scoped.
 	// Example: 5
 	// Read Only: true
 	ID *int64 `json:"id,omitempty"`
@@ -485,7 +485,7 @@ func (m *S3GroupInlinePoliciesInlineArrayItemInlineLinks) UnmarshalBinary(b []by
 	return nil
 }
 
-// S3GroupInlineSvm s3 group inline svm
+// S3GroupInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model s3_group_inline_svm
 type S3GroupInlineSvm struct {
@@ -493,12 +493,12 @@ type S3GroupInlineSvm struct {
 	// links
 	Links *S3GroupInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

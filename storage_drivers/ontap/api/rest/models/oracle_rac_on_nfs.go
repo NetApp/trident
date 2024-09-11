@@ -506,7 +506,7 @@ func (m *OracleRacOnNfsInlineArchiveLog) UnmarshalBinary(b []byte) error {
 type OracleRacOnNfsInlineArchiveLogInlineStorageService struct {
 
 	// The storage service of the archive log.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -722,7 +722,7 @@ func (m *OracleRacOnNfsInlineDb) UnmarshalBinary(b []byte) error {
 type OracleRacOnNfsInlineDbInlineStorageService struct {
 
 	// The storage service of the database.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -924,7 +924,7 @@ func (m *OracleRacOnNfsInlineGridBinary) UnmarshalBinary(b []byte) error {
 type OracleRacOnNfsInlineGridBinaryInlineStorageService struct {
 
 	// The storage service of the Oracle grid binary storage volume.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -1126,7 +1126,7 @@ func (m *OracleRacOnNfsInlineOraHome) UnmarshalBinary(b []byte) error {
 type OracleRacOnNfsInlineOraHomeInlineStorageService struct {
 
 	// The storage service of the ORACLE_HOME storage volume.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -1353,7 +1353,7 @@ func (m *OracleRacOnNfsInlineOracleCrs) UnmarshalBinary(b []byte) error {
 type OracleRacOnNfsInlineOracleCrsInlineStorageService struct {
 
 	// The storage service of the Oracle CRS volume.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -1466,11 +1466,11 @@ func (m *OracleRacOnNfsInlineOracleCrsInlineStorageService) UnmarshalBinary(b []
 type OracleRacOnNfsInlineProtectionType struct {
 
 	// The local RPO of the application.
-	// Enum: [hourly none]
+	// Enum: ["hourly","none"]
 	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
-	// Enum: [none zero]
+	// Enum: ["none","zero"]
 	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 
@@ -1633,7 +1633,7 @@ func (m *OracleRacOnNfsInlineProtectionType) UnmarshalBinary(b []byte) error {
 type OracleRacOnNfsInlineRedoLog struct {
 
 	// Specifies whether the redo log group should be mirrored.
-	// Enum: [false true]
+	// Enum: [false,true]
 	Mirrored *bool `json:"mirrored,omitempty"`
 
 	// The size of the redo log group. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
@@ -1777,7 +1777,7 @@ func (m *OracleRacOnNfsInlineRedoLog) UnmarshalBinary(b []byte) error {
 type OracleRacOnNfsInlineRedoLogInlineStorageService struct {
 
 	// The storage service of the redo log group.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 

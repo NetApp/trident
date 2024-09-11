@@ -68,11 +68,11 @@ type DNSGetParams struct {
 	*/
 	Fields []string
 
-	/* SvmUUID.
+	/* UUID.
 
-	   UUID of the SVM to which this object belongs.
+	   UUID of the DNS object.
 	*/
-	SvmUUID string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -138,15 +138,15 @@ func (o *DNSGetParams) SetFields(fields []string) {
 	o.Fields = fields
 }
 
-// WithSvmUUID adds the svmUUID to the dns get params
-func (o *DNSGetParams) WithSvmUUID(svmUUID string) *DNSGetParams {
-	o.SetSvmUUID(svmUUID)
+// WithUUID adds the uuid to the dns get params
+func (o *DNSGetParams) WithUUID(uuid string) *DNSGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the dns get params
-func (o *DNSGetParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetUUID adds the uuid to the dns get params
+func (o *DNSGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -168,8 +168,8 @@ func (o *DNSGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 		}
 	}
 
-	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	// path param uuid
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

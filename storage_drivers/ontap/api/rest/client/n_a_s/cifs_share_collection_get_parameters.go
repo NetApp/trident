@@ -86,11 +86,29 @@ type CifsShareCollectionGetParams struct {
 	*/
 	AclsUserOrGroup *string
 
+	/* AclsWinSidUnixID.
+
+	   Filter by acls.win_sid_unix_id
+	*/
+	AclsWinSidUnixID *string
+
 	/* AllowUnencryptedAccess.
 
 	   Filter by allow_unencrypted_access
 	*/
 	AllowUnencryptedAccess *bool
+
+	/* AttributeCache.
+
+	   Filter by attribute_cache
+	*/
+	AttributeCache *bool
+
+	/* Browsable.
+
+	   Filter by browsable
+	*/
+	Browsable *bool
 
 	/* ChangeNotify.
 
@@ -114,7 +132,7 @@ type CifsShareCollectionGetParams struct {
 
 	   Filter by dir_umask
 	*/
-	DirUmask *int64
+	DirUmask *string
 
 	/* Encryption.
 
@@ -132,7 +150,7 @@ type CifsShareCollectionGetParams struct {
 
 	   Filter by file_umask
 	*/
-	FileUmask *int64
+	FileUmask *string
 
 	/* ForceGroupForCreate.
 
@@ -145,6 +163,12 @@ type CifsShareCollectionGetParams struct {
 	   Filter by home_directory
 	*/
 	HomeDirectory *bool
+
+	/* MaxConnectionsPerShare.
+
+	   Filter by max_connections_per_share
+	*/
+	MaxConnectionsPerShare *int64
 
 	/* MaxRecords.
 
@@ -209,6 +233,12 @@ type CifsShareCollectionGetParams struct {
 	   Default: 15
 	*/
 	ReturnTimeout *int64
+
+	/* ShowPreviousVersions.
+
+	   Filter by show_previous_versions
+	*/
+	ShowPreviousVersions *bool
 
 	/* ShowSnapshot.
 
@@ -363,6 +393,17 @@ func (o *CifsShareCollectionGetParams) SetAclsUserOrGroup(aclsUserOrGroup *strin
 	o.AclsUserOrGroup = aclsUserOrGroup
 }
 
+// WithAclsWinSidUnixID adds the aclsWinSidUnixID to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) WithAclsWinSidUnixID(aclsWinSidUnixID *string) *CifsShareCollectionGetParams {
+	o.SetAclsWinSidUnixID(aclsWinSidUnixID)
+	return o
+}
+
+// SetAclsWinSidUnixID adds the aclsWinSidUnixId to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) SetAclsWinSidUnixID(aclsWinSidUnixID *string) {
+	o.AclsWinSidUnixID = aclsWinSidUnixID
+}
+
 // WithAllowUnencryptedAccess adds the allowUnencryptedAccess to the cifs share collection get params
 func (o *CifsShareCollectionGetParams) WithAllowUnencryptedAccess(allowUnencryptedAccess *bool) *CifsShareCollectionGetParams {
 	o.SetAllowUnencryptedAccess(allowUnencryptedAccess)
@@ -372,6 +413,28 @@ func (o *CifsShareCollectionGetParams) WithAllowUnencryptedAccess(allowUnencrypt
 // SetAllowUnencryptedAccess adds the allowUnencryptedAccess to the cifs share collection get params
 func (o *CifsShareCollectionGetParams) SetAllowUnencryptedAccess(allowUnencryptedAccess *bool) {
 	o.AllowUnencryptedAccess = allowUnencryptedAccess
+}
+
+// WithAttributeCache adds the attributeCache to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) WithAttributeCache(attributeCache *bool) *CifsShareCollectionGetParams {
+	o.SetAttributeCache(attributeCache)
+	return o
+}
+
+// SetAttributeCache adds the attributeCache to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) SetAttributeCache(attributeCache *bool) {
+	o.AttributeCache = attributeCache
+}
+
+// WithBrowsable adds the browsable to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) WithBrowsable(browsable *bool) *CifsShareCollectionGetParams {
+	o.SetBrowsable(browsable)
+	return o
+}
+
+// SetBrowsable adds the browsable to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) SetBrowsable(browsable *bool) {
+	o.Browsable = browsable
 }
 
 // WithChangeNotify adds the changeNotify to the cifs share collection get params
@@ -408,13 +471,13 @@ func (o *CifsShareCollectionGetParams) SetContinuouslyAvailable(continuouslyAvai
 }
 
 // WithDirUmask adds the dirUmask to the cifs share collection get params
-func (o *CifsShareCollectionGetParams) WithDirUmask(dirUmask *int64) *CifsShareCollectionGetParams {
+func (o *CifsShareCollectionGetParams) WithDirUmask(dirUmask *string) *CifsShareCollectionGetParams {
 	o.SetDirUmask(dirUmask)
 	return o
 }
 
 // SetDirUmask adds the dirUmask to the cifs share collection get params
-func (o *CifsShareCollectionGetParams) SetDirUmask(dirUmask *int64) {
+func (o *CifsShareCollectionGetParams) SetDirUmask(dirUmask *string) {
 	o.DirUmask = dirUmask
 }
 
@@ -441,13 +504,13 @@ func (o *CifsShareCollectionGetParams) SetFields(fields []string) {
 }
 
 // WithFileUmask adds the fileUmask to the cifs share collection get params
-func (o *CifsShareCollectionGetParams) WithFileUmask(fileUmask *int64) *CifsShareCollectionGetParams {
+func (o *CifsShareCollectionGetParams) WithFileUmask(fileUmask *string) *CifsShareCollectionGetParams {
 	o.SetFileUmask(fileUmask)
 	return o
 }
 
 // SetFileUmask adds the fileUmask to the cifs share collection get params
-func (o *CifsShareCollectionGetParams) SetFileUmask(fileUmask *int64) {
+func (o *CifsShareCollectionGetParams) SetFileUmask(fileUmask *string) {
 	o.FileUmask = fileUmask
 }
 
@@ -471,6 +534,17 @@ func (o *CifsShareCollectionGetParams) WithHomeDirectory(homeDirectory *bool) *C
 // SetHomeDirectory adds the homeDirectory to the cifs share collection get params
 func (o *CifsShareCollectionGetParams) SetHomeDirectory(homeDirectory *bool) {
 	o.HomeDirectory = homeDirectory
+}
+
+// WithMaxConnectionsPerShare adds the maxConnectionsPerShare to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) WithMaxConnectionsPerShare(maxConnectionsPerShare *int64) *CifsShareCollectionGetParams {
+	o.SetMaxConnectionsPerShare(maxConnectionsPerShare)
+	return o
+}
+
+// SetMaxConnectionsPerShare adds the maxConnectionsPerShare to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) SetMaxConnectionsPerShare(maxConnectionsPerShare *int64) {
+	o.MaxConnectionsPerShare = maxConnectionsPerShare
 }
 
 // WithMaxRecords adds the maxRecords to the cifs share collection get params
@@ -581,6 +655,17 @@ func (o *CifsShareCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *
 // SetReturnTimeout adds the returnTimeout to the cifs share collection get params
 func (o *CifsShareCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
 	o.ReturnTimeout = returnTimeout
+}
+
+// WithShowPreviousVersions adds the showPreviousVersions to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) WithShowPreviousVersions(showPreviousVersions *bool) *CifsShareCollectionGetParams {
+	o.SetShowPreviousVersions(showPreviousVersions)
+	return o
+}
+
+// SetShowPreviousVersions adds the showPreviousVersions to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) SetShowPreviousVersions(showPreviousVersions *bool) {
+	o.ShowPreviousVersions = showPreviousVersions
 }
 
 // WithShowSnapshot adds the showSnapshot to the cifs share collection get params
@@ -736,6 +821,23 @@ func (o *CifsShareCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.AclsWinSidUnixID != nil {
+
+		// query param acls.win_sid_unix_id
+		var qrAclsWinSidUnixID string
+
+		if o.AclsWinSidUnixID != nil {
+			qrAclsWinSidUnixID = *o.AclsWinSidUnixID
+		}
+		qAclsWinSidUnixID := qrAclsWinSidUnixID
+		if qAclsWinSidUnixID != "" {
+
+			if err := r.SetQueryParam("acls.win_sid_unix_id", qAclsWinSidUnixID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.AllowUnencryptedAccess != nil {
 
 		// query param allow_unencrypted_access
@@ -748,6 +850,40 @@ func (o *CifsShareCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qAllowUnencryptedAccess != "" {
 
 			if err := r.SetQueryParam("allow_unencrypted_access", qAllowUnencryptedAccess); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AttributeCache != nil {
+
+		// query param attribute_cache
+		var qrAttributeCache bool
+
+		if o.AttributeCache != nil {
+			qrAttributeCache = *o.AttributeCache
+		}
+		qAttributeCache := swag.FormatBool(qrAttributeCache)
+		if qAttributeCache != "" {
+
+			if err := r.SetQueryParam("attribute_cache", qAttributeCache); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Browsable != nil {
+
+		// query param browsable
+		var qrBrowsable bool
+
+		if o.Browsable != nil {
+			qrBrowsable = *o.Browsable
+		}
+		qBrowsable := swag.FormatBool(qrBrowsable)
+		if qBrowsable != "" {
+
+			if err := r.SetQueryParam("browsable", qBrowsable); err != nil {
 				return err
 			}
 		}
@@ -807,12 +943,12 @@ func (o *CifsShareCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	if o.DirUmask != nil {
 
 		// query param dir_umask
-		var qrDirUmask int64
+		var qrDirUmask string
 
 		if o.DirUmask != nil {
 			qrDirUmask = *o.DirUmask
 		}
-		qDirUmask := swag.FormatInt64(qrDirUmask)
+		qDirUmask := qrDirUmask
 		if qDirUmask != "" {
 
 			if err := r.SetQueryParam("dir_umask", qDirUmask); err != nil {
@@ -852,12 +988,12 @@ func (o *CifsShareCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	if o.FileUmask != nil {
 
 		// query param file_umask
-		var qrFileUmask int64
+		var qrFileUmask string
 
 		if o.FileUmask != nil {
 			qrFileUmask = *o.FileUmask
 		}
-		qFileUmask := swag.FormatInt64(qrFileUmask)
+		qFileUmask := qrFileUmask
 		if qFileUmask != "" {
 
 			if err := r.SetQueryParam("file_umask", qFileUmask); err != nil {
@@ -895,6 +1031,23 @@ func (o *CifsShareCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qHomeDirectory != "" {
 
 			if err := r.SetQueryParam("home_directory", qHomeDirectory); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxConnectionsPerShare != nil {
+
+		// query param max_connections_per_share
+		var qrMaxConnectionsPerShare int64
+
+		if o.MaxConnectionsPerShare != nil {
+			qrMaxConnectionsPerShare = *o.MaxConnectionsPerShare
+		}
+		qMaxConnectionsPerShare := swag.FormatInt64(qrMaxConnectionsPerShare)
+		if qMaxConnectionsPerShare != "" {
+
+			if err := r.SetQueryParam("max_connections_per_share", qMaxConnectionsPerShare); err != nil {
 				return err
 			}
 		}
@@ -1059,6 +1212,23 @@ func (o *CifsShareCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ShowPreviousVersions != nil {
+
+		// query param show_previous_versions
+		var qrShowPreviousVersions bool
+
+		if o.ShowPreviousVersions != nil {
+			qrShowPreviousVersions = *o.ShowPreviousVersions
+		}
+		qShowPreviousVersions := swag.FormatBool(qrShowPreviousVersions)
+		if qShowPreviousVersions != "" {
+
+			if err := r.SetQueryParam("show_previous_versions", qShowPreviousVersions); err != nil {
 				return err
 			}
 		}

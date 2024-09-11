@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ClusterAccountAdProxyModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cluster account ad proxy modify o k response
+func (o *ClusterAccountAdProxyModifyOK) Code() int {
+	return 200
+}
+
 func (o *ClusterAccountAdProxyModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyModifyOK", 200)
 }
 
 func (o *ClusterAccountAdProxyModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyModifyOK", 200)
 }
 
 func (o *ClusterAccountAdProxyModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -100,19 +106,20 @@ func NewClusterAccountAdProxyModifyDefault(code int) *ClusterAccountAdProxyModif
 }
 
 /*
-ClusterAccountAdProxyModifyDefault describes a response with status code -1, with default header values.
+	ClusterAccountAdProxyModifyDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 2621516 | This operation is only supported on a data SVM. |
+| 2621706 | The specified `svm.uuid` and `svm.name` refer to different SVMs. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ClusterAccountAdProxyModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cluster account ad proxy modify default response
-func (o *ClusterAccountAdProxyModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cluster account ad proxy modify default response has a 2xx status code
@@ -140,12 +147,19 @@ func (o *ClusterAccountAdProxyModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster account ad proxy modify default response
+func (o *ClusterAccountAdProxyModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterAccountAdProxyModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_modify default %s", o._statusCode, payload)
 }
 
 func (o *ClusterAccountAdProxyModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_modify default %s", o._statusCode, payload)
 }
 
 func (o *ClusterAccountAdProxyModifyDefault) GetPayload() *models.ErrorResponse {

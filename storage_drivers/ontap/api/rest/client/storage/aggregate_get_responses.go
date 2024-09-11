@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *AggregateGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the aggregate get o k response
+func (o *AggregateGetOK) Code() int {
+	return 200
+}
+
 func (o *AggregateGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/aggregates/{uuid}][%d] aggregateGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates/{uuid}][%d] aggregateGetOK %s", 200, payload)
 }
 
 func (o *AggregateGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/aggregates/{uuid}][%d] aggregateGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates/{uuid}][%d] aggregateGetOK %s", 200, payload)
 }
 
 func (o *AggregateGetOK) GetPayload() *models.Aggregate {
@@ -122,7 +130,7 @@ func NewAggregateGetDefault(code int) *AggregateGetDefault {
 | 7209049 | Cannot perform the operation because the aggregate is currently expanding. |
 | 8586225 | Unexpected error encountered when retrieving metrics and statistics for this aggregate. |
 | 19726382 | Another provisioning operation is in progress on this cluster. Wait a few minutes, and try the operation again. |
-| 19726390 | Unable to provide a recommmendation to expand the aggregate. |
+| 19726390 | Unable to provide a recommendation to expand the aggregate. |
 | 19726391 | Too many unassigned disks visible to the node that owns this aggregate. |
 | 19726392 | Layout of this aggregate is not a supported configuration. |
 | 19726393 | Failed to expand the aggregate. Aggregate expansion is not supported on this system. |
@@ -132,16 +140,13 @@ func NewAggregateGetDefault(code int) *AggregateGetDefault {
 | 19726397 | Aggregates must contain disks with identical disk-types and disk-sizes. |
 | 19726402 | Internal error. Unable to determine the MetroCluster configuration state. |
 | 19726538 | Cannot perform the operation because the aggregate is not in a healthy state. |
+| 19726541 | Cannot perform the operation because the specified aggregate is a root aggregate. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AggregateGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the aggregate get default response
-func (o *AggregateGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this aggregate get default response has a 2xx status code
@@ -169,12 +174,19 @@ func (o *AggregateGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the aggregate get default response
+func (o *AggregateGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AggregateGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/aggregates/{uuid}][%d] aggregate_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates/{uuid}][%d] aggregate_get default %s", o._statusCode, payload)
 }
 
 func (o *AggregateGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/aggregates/{uuid}][%d] aggregate_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/aggregates/{uuid}][%d] aggregate_get default %s", o._statusCode, payload)
 }
 
 func (o *AggregateGetDefault) GetPayload() *models.ErrorResponse {

@@ -62,6 +62,12 @@ ConsistencyGroupCollectionGetParams contains all the parameters to send to the A
 */
 type ConsistencyGroupCollectionGetParams struct {
 
+	/* Tags.
+
+	   Filter by _tags
+	*/
+	Tags *string
+
 	/* ApplicationComponentType.
 
 	   Filter by application.component_type
@@ -79,6 +85,12 @@ type ConsistencyGroupCollectionGetParams struct {
 	   Filter by clone.guarantee.type
 	*/
 	CloneGuaranteeType *string
+
+	/* CloneIsFlexclone.
+
+	   Filter by clone.is_flexclone
+	*/
+	CloneIsFlexclone *bool
 
 	/* CloneParentConsistencyGroupName.
 
@@ -98,11 +110,35 @@ type ConsistencyGroupCollectionGetParams struct {
 	*/
 	CloneParentSnapshotName *string
 
+	/* CloneParentSnapshotUUID.
+
+	   Filter by clone.parent_snapshot.uuid
+	*/
+	CloneParentSnapshotUUID *string
+
+	/* CloneSnaplockType.
+
+	   Filter by clone.snaplock_type
+	*/
+	CloneSnaplockType *string
+
 	/* CloneSplitInitiated.
 
 	   Filter by clone.split_initiated
 	*/
 	CloneSplitInitiated *bool
+
+	/* CloneStorageUnitPrefix.
+
+	   Filter by clone.storage_unit.prefix
+	*/
+	CloneStorageUnitPrefix *string
+
+	/* CloneStorageUnitSuffix.
+
+	   Filter by clone.storage_unit.suffix
+	*/
+	CloneStorageUnitSuffix *string
 
 	/* CloneVolumePrefix.
 
@@ -115,6 +151,12 @@ type ConsistencyGroupCollectionGetParams struct {
 	   Filter by clone.volume.suffix
 	*/
 	CloneVolumeSuffix *string
+
+	/* ConsistencyGroupsTags.
+
+	   Filter by consistency_groups._tags
+	*/
+	ConsistencyGroupsTags *string
 
 	/* ConsistencyGroupsApplicationComponentType.
 
@@ -404,11 +446,41 @@ type ConsistencyGroupCollectionGetParams struct {
 	*/
 	ConsistencyGroupsNamespacesSubsystemMapSubsystemComment *string
 
+	/* ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize.
+
+	   Filter by consistency_groups.namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.group_size
+	*/
+	ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize *string
+
+	/* ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction.
+
+	   Filter by consistency_groups.namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.hash_function
+	*/
+	ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction *string
+
+	/* ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode.
+
+	   Filter by consistency_groups.namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.mode
+	*/
+	ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode *string
+
 	/* ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn.
 
 	   Filter by consistency_groups.namespaces.subsystem_map.subsystem.hosts.nqn
 	*/
 	ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn *string
+
+	/* ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority.
+
+	   Filter by consistency_groups.namespaces.subsystem_map.subsystem.hosts.priority
+	*/
+	ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority *string
+
+	/* ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType.
+
+	   Filter by consistency_groups.namespaces.subsystem_map.subsystem.hosts.tls.key_type
+	*/
+	ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType *string
 
 	/* ConsistencyGroupsNamespacesSubsystemMapSubsystemName.
 
@@ -445,30 +517,6 @@ type ConsistencyGroupCollectionGetParams struct {
 	   Filter by consistency_groups.parent_consistency_group.uuid
 	*/
 	ConsistencyGroupsParentConsistencyGroupUUID *string
-
-	/* ConsistencyGroupsQosPolicyMaxThroughputIops.
-
-	   Filter by consistency_groups.qos.policy.max_throughput_iops
-	*/
-	ConsistencyGroupsQosPolicyMaxThroughputIops *int64
-
-	/* ConsistencyGroupsQosPolicyMaxThroughputMbps.
-
-	   Filter by consistency_groups.qos.policy.max_throughput_mbps
-	*/
-	ConsistencyGroupsQosPolicyMaxThroughputMbps *int64
-
-	/* ConsistencyGroupsQosPolicyMinThroughputIops.
-
-	   Filter by consistency_groups.qos.policy.min_throughput_iops
-	*/
-	ConsistencyGroupsQosPolicyMinThroughputIops *int64
-
-	/* ConsistencyGroupsQosPolicyMinThroughputMbps.
-
-	   Filter by consistency_groups.qos.policy.min_throughput_mbps
-	*/
-	ConsistencyGroupsQosPolicyMinThroughputMbps *int64
 
 	/* ConsistencyGroupsQosPolicyName.
 
@@ -542,12 +590,6 @@ type ConsistencyGroupCollectionGetParams struct {
 	*/
 	ConsistencyGroupsVolumesComment *string
 
-	/* ConsistencyGroupsVolumesLanguage.
-
-	   Filter by consistency_groups.volumes.language
-	*/
-	ConsistencyGroupsVolumesLanguage *string
-
 	/* ConsistencyGroupsVolumesName.
 
 	   Filter by consistency_groups.volumes.name
@@ -577,6 +619,12 @@ type ConsistencyGroupCollectionGetParams struct {
 	   Filter by consistency_groups.volumes.nas.cifs.shares.acls.user_or_group
 	*/
 	ConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup *string
+
+	/* ConsistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.acls.win_sid_unix_id
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID *string
 
 	/* ConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess.
 
@@ -674,6 +722,12 @@ type ConsistencyGroupCollectionGetParams struct {
 	*/
 	ConsistencyGroupsVolumesNasCifsSharesVscanProfile *string
 
+	/* ConsistencyGroupsVolumesNasExportPolicyID.
+
+	   Filter by consistency_groups.volumes.nas.export_policy.id
+	*/
+	ConsistencyGroupsVolumesNasExportPolicyID *int64
+
 	/* ConsistencyGroupsVolumesNasExportPolicyName.
 
 	   Filter by consistency_groups.volumes.nas.export_policy.name
@@ -746,12 +800,6 @@ type ConsistencyGroupCollectionGetParams struct {
 	*/
 	ConsistencyGroupsVolumesNasExportPolicyRulesSuperuser *string
 
-	/* ConsistencyGroupsVolumesNasExportPolicyUUID.
-
-	   Filter by consistency_groups.volumes.nas.export_policy.uuid
-	*/
-	ConsistencyGroupsVolumesNasExportPolicyUUID *string
-
 	/* ConsistencyGroupsVolumesNasGid.
 
 	   Filter by consistency_groups.volumes.nas.gid
@@ -793,30 +841,6 @@ type ConsistencyGroupCollectionGetParams struct {
 	   Filter by consistency_groups.volumes.nas.unix_permissions
 	*/
 	ConsistencyGroupsVolumesNasUnixPermissions *int64
-
-	/* ConsistencyGroupsVolumesQosPolicyMaxThroughputIops.
-
-	   Filter by consistency_groups.volumes.qos.policy.max_throughput_iops
-	*/
-	ConsistencyGroupsVolumesQosPolicyMaxThroughputIops *int64
-
-	/* ConsistencyGroupsVolumesQosPolicyMaxThroughputMbps.
-
-	   Filter by consistency_groups.volumes.qos.policy.max_throughput_mbps
-	*/
-	ConsistencyGroupsVolumesQosPolicyMaxThroughputMbps *int64
-
-	/* ConsistencyGroupsVolumesQosPolicyMinThroughputIops.
-
-	   Filter by consistency_groups.volumes.qos.policy.min_throughput_iops
-	*/
-	ConsistencyGroupsVolumesQosPolicyMinThroughputIops *int64
-
-	/* ConsistencyGroupsVolumesQosPolicyMinThroughputMbps.
-
-	   Filter by consistency_groups.volumes.qos.policy.min_throughput_mbps
-	*/
-	ConsistencyGroupsVolumesQosPolicyMinThroughputMbps *int64
 
 	/* ConsistencyGroupsVolumesQosPolicyName.
 
@@ -1046,6 +1070,114 @@ type ConsistencyGroupCollectionGetParams struct {
 	*/
 	MaxRecords *int64
 
+	/* MetricAvailableSpace.
+
+	   Filter by metric.available_space
+	*/
+	MetricAvailableSpace *int64
+
+	/* MetricDuration.
+
+	   Filter by metric.duration
+	*/
+	MetricDuration *string
+
+	/* MetricIopsOther.
+
+	   Filter by metric.iops.other
+	*/
+	MetricIopsOther *int64
+
+	/* MetricIopsRead.
+
+	   Filter by metric.iops.read
+	*/
+	MetricIopsRead *int64
+
+	/* MetricIopsTotal.
+
+	   Filter by metric.iops.total
+	*/
+	MetricIopsTotal *int64
+
+	/* MetricIopsWrite.
+
+	   Filter by metric.iops.write
+	*/
+	MetricIopsWrite *int64
+
+	/* MetricLatencyOther.
+
+	   Filter by metric.latency.other
+	*/
+	MetricLatencyOther *int64
+
+	/* MetricLatencyRead.
+
+	   Filter by metric.latency.read
+	*/
+	MetricLatencyRead *int64
+
+	/* MetricLatencyTotal.
+
+	   Filter by metric.latency.total
+	*/
+	MetricLatencyTotal *int64
+
+	/* MetricLatencyWrite.
+
+	   Filter by metric.latency.write
+	*/
+	MetricLatencyWrite *int64
+
+	/* MetricSize.
+
+	   Filter by metric.size
+	*/
+	MetricSize *int64
+
+	/* MetricStatus.
+
+	   Filter by metric.status
+	*/
+	MetricStatus *string
+
+	/* MetricThroughputOther.
+
+	   Filter by metric.throughput.other
+	*/
+	MetricThroughputOther *int64
+
+	/* MetricThroughputRead.
+
+	   Filter by metric.throughput.read
+	*/
+	MetricThroughputRead *int64
+
+	/* MetricThroughputTotal.
+
+	   Filter by metric.throughput.total
+	*/
+	MetricThroughputTotal *int64
+
+	/* MetricThroughputWrite.
+
+	   Filter by metric.throughput.write
+	*/
+	MetricThroughputWrite *int64
+
+	/* MetricTimestamp.
+
+	   Filter by metric.timestamp
+	*/
+	MetricTimestamp *string
+
+	/* MetricUsedSpace.
+
+	   Filter by metric.used_space
+	*/
+	MetricUsedSpace *int64
+
 	/* Name.
 
 	   Filter by name
@@ -1160,11 +1292,41 @@ type ConsistencyGroupCollectionGetParams struct {
 	*/
 	NamespacesSubsystemMapSubsystemComment *string
 
+	/* NamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize.
+
+	   Filter by namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.group_size
+	*/
+	NamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize *string
+
+	/* NamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction.
+
+	   Filter by namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.hash_function
+	*/
+	NamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction *string
+
+	/* NamespacesSubsystemMapSubsystemHostsDhHmacChapMode.
+
+	   Filter by namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.mode
+	*/
+	NamespacesSubsystemMapSubsystemHostsDhHmacChapMode *string
+
 	/* NamespacesSubsystemMapSubsystemHostsNqn.
 
 	   Filter by namespaces.subsystem_map.subsystem.hosts.nqn
 	*/
 	NamespacesSubsystemMapSubsystemHostsNqn *string
+
+	/* NamespacesSubsystemMapSubsystemHostsPriority.
+
+	   Filter by namespaces.subsystem_map.subsystem.hosts.priority
+	*/
+	NamespacesSubsystemMapSubsystemHostsPriority *string
+
+	/* NamespacesSubsystemMapSubsystemHostsTLSKeyType.
+
+	   Filter by namespaces.subsystem_map.subsystem.hosts.tls.key_type
+	*/
+	NamespacesSubsystemMapSubsystemHostsTLSKeyType *string
 
 	/* NamespacesSubsystemMapSubsystemName.
 
@@ -1208,30 +1370,6 @@ type ConsistencyGroupCollectionGetParams struct {
 	*/
 	ParentConsistencyGroupUUID *string
 
-	/* QosPolicyMaxThroughputIops.
-
-	   Filter by qos.policy.max_throughput_iops
-	*/
-	QosPolicyMaxThroughputIops *int64
-
-	/* QosPolicyMaxThroughputMbps.
-
-	   Filter by qos.policy.max_throughput_mbps
-	*/
-	QosPolicyMaxThroughputMbps *int64
-
-	/* QosPolicyMinThroughputIops.
-
-	   Filter by qos.policy.min_throughput_iops
-	*/
-	QosPolicyMinThroughputIops *int64
-
-	/* QosPolicyMinThroughputMbps.
-
-	   Filter by qos.policy.min_throughput_mbps
-	*/
-	QosPolicyMinThroughputMbps *int64
-
 	/* QosPolicyName.
 
 	   Filter by qos.policy.name
@@ -1249,6 +1387,24 @@ type ConsistencyGroupCollectionGetParams struct {
 	   Filter by replicated
 	*/
 	Replicated *bool
+
+	/* ReplicationRelationshipsIsProtectedBySvmDr.
+
+	   Filter by replication_relationships.is_protected_by_svm_dr
+	*/
+	ReplicationRelationshipsIsProtectedBySvmDr *bool
+
+	/* ReplicationRelationshipsIsSource.
+
+	   Filter by replication_relationships.is_source
+	*/
+	ReplicationRelationshipsIsSource *bool
+
+	/* ReplicationRelationshipsUUID.
+
+	   Filter by replication_relationships.uuid
+	*/
+	ReplicationRelationshipsUUID *string
 
 	/* ReplicationSource.
 
@@ -1271,6 +1427,42 @@ type ConsistencyGroupCollectionGetParams struct {
 	   Default: 15
 	*/
 	ReturnTimeout *int64
+
+	/* SnaplockComplianceClockTime.
+
+	   Filter by snaplock.compliance_clock_time
+	*/
+	SnaplockComplianceClockTime *string
+
+	/* SnaplockExpiryTime.
+
+	   Filter by snaplock.expiry_time
+	*/
+	SnaplockExpiryTime *string
+
+	/* SnaplockRetentionDefault.
+
+	   Filter by snaplock.retention.default
+	*/
+	SnaplockRetentionDefault *string
+
+	/* SnaplockRetentionMaximum.
+
+	   Filter by snaplock.retention.maximum
+	*/
+	SnaplockRetentionMaximum *string
+
+	/* SnaplockRetentionMinimum.
+
+	   Filter by snaplock.retention.minimum
+	*/
+	SnaplockRetentionMinimum *string
+
+	/* SnaplockType.
+
+	   Filter by snaplock.type
+	*/
+	SnaplockType *string
 
 	/* SnapshotPolicyName.
 
@@ -1302,6 +1494,108 @@ type ConsistencyGroupCollectionGetParams struct {
 	*/
 	SpaceUsed *int64
 
+	/* StatisticsAvailableSpace.
+
+	   Filter by statistics.available_space
+	*/
+	StatisticsAvailableSpace *int64
+
+	/* StatisticsIopsRawOther.
+
+	   Filter by statistics.iops_raw.other
+	*/
+	StatisticsIopsRawOther *int64
+
+	/* StatisticsIopsRawRead.
+
+	   Filter by statistics.iops_raw.read
+	*/
+	StatisticsIopsRawRead *int64
+
+	/* StatisticsIopsRawTotal.
+
+	   Filter by statistics.iops_raw.total
+	*/
+	StatisticsIopsRawTotal *int64
+
+	/* StatisticsIopsRawWrite.
+
+	   Filter by statistics.iops_raw.write
+	*/
+	StatisticsIopsRawWrite *int64
+
+	/* StatisticsLatencyRawOther.
+
+	   Filter by statistics.latency_raw.other
+	*/
+	StatisticsLatencyRawOther *int64
+
+	/* StatisticsLatencyRawRead.
+
+	   Filter by statistics.latency_raw.read
+	*/
+	StatisticsLatencyRawRead *int64
+
+	/* StatisticsLatencyRawTotal.
+
+	   Filter by statistics.latency_raw.total
+	*/
+	StatisticsLatencyRawTotal *int64
+
+	/* StatisticsLatencyRawWrite.
+
+	   Filter by statistics.latency_raw.write
+	*/
+	StatisticsLatencyRawWrite *int64
+
+	/* StatisticsSize.
+
+	   Filter by statistics.size
+	*/
+	StatisticsSize *int64
+
+	/* StatisticsStatus.
+
+	   Filter by statistics.status
+	*/
+	StatisticsStatus *string
+
+	/* StatisticsThroughputRawOther.
+
+	   Filter by statistics.throughput_raw.other
+	*/
+	StatisticsThroughputRawOther *int64
+
+	/* StatisticsThroughputRawRead.
+
+	   Filter by statistics.throughput_raw.read
+	*/
+	StatisticsThroughputRawRead *int64
+
+	/* StatisticsThroughputRawTotal.
+
+	   Filter by statistics.throughput_raw.total
+	*/
+	StatisticsThroughputRawTotal *int64
+
+	/* StatisticsThroughputRawWrite.
+
+	   Filter by statistics.throughput_raw.write
+	*/
+	StatisticsThroughputRawWrite *int64
+
+	/* StatisticsTimestamp.
+
+	   Filter by statistics.timestamp
+	*/
+	StatisticsTimestamp *string
+
+	/* StatisticsUsedSpace.
+
+	   Filter by statistics.used_space
+	*/
+	StatisticsUsedSpace *int64
+
 	/* SvmName.
 
 	   Filter by svm.name
@@ -1326,17 +1620,17 @@ type ConsistencyGroupCollectionGetParams struct {
 	*/
 	UUID *string
 
+	/* VdiskType.
+
+	   Filter by vdisk_type
+	*/
+	VdiskType *string
+
 	/* VolumesComment.
 
 	   Filter by volumes.comment
 	*/
 	VolumesComment *string
-
-	/* VolumesLanguage.
-
-	   Filter by volumes.language
-	*/
-	VolumesLanguage *string
 
 	/* VolumesName.
 
@@ -1367,6 +1661,12 @@ type ConsistencyGroupCollectionGetParams struct {
 	   Filter by volumes.nas.cifs.shares.acls.user_or_group
 	*/
 	VolumesNasCifsSharesAclsUserOrGroup *string
+
+	/* VolumesNasCifsSharesAclsWinSidUnixID.
+
+	   Filter by volumes.nas.cifs.shares.acls.win_sid_unix_id
+	*/
+	VolumesNasCifsSharesAclsWinSidUnixID *string
 
 	/* VolumesNasCifsSharesAllowUnencryptedAccess.
 
@@ -1464,6 +1764,12 @@ type ConsistencyGroupCollectionGetParams struct {
 	*/
 	VolumesNasCifsSharesVscanProfile *string
 
+	/* VolumesNasExportPolicyID.
+
+	   Filter by volumes.nas.export_policy.id
+	*/
+	VolumesNasExportPolicyID *int64
+
 	/* VolumesNasExportPolicyName.
 
 	   Filter by volumes.nas.export_policy.name
@@ -1536,12 +1842,6 @@ type ConsistencyGroupCollectionGetParams struct {
 	*/
 	VolumesNasExportPolicyRulesSuperuser *string
 
-	/* VolumesNasExportPolicyUUID.
-
-	   Filter by volumes.nas.export_policy.uuid
-	*/
-	VolumesNasExportPolicyUUID *string
-
 	/* VolumesNasGid.
 
 	   Filter by volumes.nas.gid
@@ -1583,30 +1883,6 @@ type ConsistencyGroupCollectionGetParams struct {
 	   Filter by volumes.nas.unix_permissions
 	*/
 	VolumesNasUnixPermissions *int64
-
-	/* VolumesQosPolicyMaxThroughputIops.
-
-	   Filter by volumes.qos.policy.max_throughput_iops
-	*/
-	VolumesQosPolicyMaxThroughputIops *int64
-
-	/* VolumesQosPolicyMaxThroughputMbps.
-
-	   Filter by volumes.qos.policy.max_throughput_mbps
-	*/
-	VolumesQosPolicyMaxThroughputMbps *int64
-
-	/* VolumesQosPolicyMinThroughputIops.
-
-	   Filter by volumes.qos.policy.min_throughput_iops
-	*/
-	VolumesQosPolicyMinThroughputIops *int64
-
-	/* VolumesQosPolicyMinThroughputMbps.
-
-	   Filter by volumes.qos.policy.min_throughput_mbps
-	*/
-	VolumesQosPolicyMinThroughputMbps *int64
 
 	/* VolumesQosPolicyName.
 
@@ -1729,6 +2005,17 @@ func (o *ConsistencyGroupCollectionGetParams) SetHTTPClient(client *http.Client)
 	o.HTTPClient = client
 }
 
+// WithTags adds the tags to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithTags(tags *string) *ConsistencyGroupCollectionGetParams {
+	o.SetTags(tags)
+	return o
+}
+
+// SetTags adds the tags to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetTags(tags *string) {
+	o.Tags = tags
+}
+
 // WithApplicationComponentType adds the applicationComponentType to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) WithApplicationComponentType(applicationComponentType *string) *ConsistencyGroupCollectionGetParams {
 	o.SetApplicationComponentType(applicationComponentType)
@@ -1760,6 +2047,17 @@ func (o *ConsistencyGroupCollectionGetParams) WithCloneGuaranteeType(cloneGuaran
 // SetCloneGuaranteeType adds the cloneGuaranteeType to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) SetCloneGuaranteeType(cloneGuaranteeType *string) {
 	o.CloneGuaranteeType = cloneGuaranteeType
+}
+
+// WithCloneIsFlexclone adds the cloneIsFlexclone to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithCloneIsFlexclone(cloneIsFlexclone *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetCloneIsFlexclone(cloneIsFlexclone)
+	return o
+}
+
+// SetCloneIsFlexclone adds the cloneIsFlexclone to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetCloneIsFlexclone(cloneIsFlexclone *bool) {
+	o.CloneIsFlexclone = cloneIsFlexclone
 }
 
 // WithCloneParentConsistencyGroupName adds the cloneParentConsistencyGroupName to the consistency group collection get params
@@ -1795,6 +2093,28 @@ func (o *ConsistencyGroupCollectionGetParams) SetCloneParentSnapshotName(clonePa
 	o.CloneParentSnapshotName = cloneParentSnapshotName
 }
 
+// WithCloneParentSnapshotUUID adds the cloneParentSnapshotUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithCloneParentSnapshotUUID(cloneParentSnapshotUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetCloneParentSnapshotUUID(cloneParentSnapshotUUID)
+	return o
+}
+
+// SetCloneParentSnapshotUUID adds the cloneParentSnapshotUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetCloneParentSnapshotUUID(cloneParentSnapshotUUID *string) {
+	o.CloneParentSnapshotUUID = cloneParentSnapshotUUID
+}
+
+// WithCloneSnaplockType adds the cloneSnaplockType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithCloneSnaplockType(cloneSnaplockType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetCloneSnaplockType(cloneSnaplockType)
+	return o
+}
+
+// SetCloneSnaplockType adds the cloneSnaplockType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetCloneSnaplockType(cloneSnaplockType *string) {
+	o.CloneSnaplockType = cloneSnaplockType
+}
+
 // WithCloneSplitInitiated adds the cloneSplitInitiated to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) WithCloneSplitInitiated(cloneSplitInitiated *bool) *ConsistencyGroupCollectionGetParams {
 	o.SetCloneSplitInitiated(cloneSplitInitiated)
@@ -1804,6 +2124,28 @@ func (o *ConsistencyGroupCollectionGetParams) WithCloneSplitInitiated(cloneSplit
 // SetCloneSplitInitiated adds the cloneSplitInitiated to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) SetCloneSplitInitiated(cloneSplitInitiated *bool) {
 	o.CloneSplitInitiated = cloneSplitInitiated
+}
+
+// WithCloneStorageUnitPrefix adds the cloneStorageUnitPrefix to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithCloneStorageUnitPrefix(cloneStorageUnitPrefix *string) *ConsistencyGroupCollectionGetParams {
+	o.SetCloneStorageUnitPrefix(cloneStorageUnitPrefix)
+	return o
+}
+
+// SetCloneStorageUnitPrefix adds the cloneStorageUnitPrefix to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetCloneStorageUnitPrefix(cloneStorageUnitPrefix *string) {
+	o.CloneStorageUnitPrefix = cloneStorageUnitPrefix
+}
+
+// WithCloneStorageUnitSuffix adds the cloneStorageUnitSuffix to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithCloneStorageUnitSuffix(cloneStorageUnitSuffix *string) *ConsistencyGroupCollectionGetParams {
+	o.SetCloneStorageUnitSuffix(cloneStorageUnitSuffix)
+	return o
+}
+
+// SetCloneStorageUnitSuffix adds the cloneStorageUnitSuffix to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetCloneStorageUnitSuffix(cloneStorageUnitSuffix *string) {
+	o.CloneStorageUnitSuffix = cloneStorageUnitSuffix
 }
 
 // WithCloneVolumePrefix adds the cloneVolumePrefix to the consistency group collection get params
@@ -1826,6 +2168,17 @@ func (o *ConsistencyGroupCollectionGetParams) WithCloneVolumeSuffix(cloneVolumeS
 // SetCloneVolumeSuffix adds the cloneVolumeSuffix to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) SetCloneVolumeSuffix(cloneVolumeSuffix *string) {
 	o.CloneVolumeSuffix = cloneVolumeSuffix
+}
+
+// WithConsistencyGroupsTags adds the consistencyGroupsTags to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsTags(consistencyGroupsTags *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsTags(consistencyGroupsTags)
+	return o
+}
+
+// SetConsistencyGroupsTags adds the consistencyGroupsTags to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsTags(consistencyGroupsTags *string) {
+	o.ConsistencyGroupsTags = consistencyGroupsTags
 }
 
 // WithConsistencyGroupsApplicationComponentType adds the consistencyGroupsApplicationComponentType to the consistency group collection get params
@@ -2356,6 +2709,39 @@ func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSubs
 	o.ConsistencyGroupsNamespacesSubsystemMapSubsystemComment = consistencyGroupsNamespacesSubsystemMapSubsystemComment
 }
 
+// WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize(consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize(consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize)
+	return o
+}
+
+// SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize(consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize *string) {
+	o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize = consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize
+}
+
+// WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction(consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction(consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction)
+	return o
+}
+
+// SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction(consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction *string) {
+	o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction = consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction
+}
+
+// WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode(consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode(consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode)
+	return o
+}
+
+// SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode(consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode *string) {
+	o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode = consistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode
+}
+
 // WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn(consistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn *string) *ConsistencyGroupCollectionGetParams {
 	o.SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn(consistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn)
@@ -2365,6 +2751,28 @@ func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSub
 // SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn(consistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn *string) {
 	o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn = consistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn
+}
+
+// WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority(consistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority(consistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority)
+	return o
+}
+
+// SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority(consistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority *string) {
+	o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority = consistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority
+}
+
+// WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType(consistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType(consistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType)
+	return o
+}
+
+// SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsTlsKeyType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType(consistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType *string) {
+	o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType = consistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType
 }
 
 // WithConsistencyGroupsNamespacesSubsystemMapSubsystemName adds the consistencyGroupsNamespacesSubsystemMapSubsystemName to the consistency group collection get params
@@ -2431,50 +2839,6 @@ func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsParentConsist
 // SetConsistencyGroupsParentConsistencyGroupUUID adds the consistencyGroupsParentConsistencyGroupUuid to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsParentConsistencyGroupUUID(consistencyGroupsParentConsistencyGroupUUID *string) {
 	o.ConsistencyGroupsParentConsistencyGroupUUID = consistencyGroupsParentConsistencyGroupUUID
-}
-
-// WithConsistencyGroupsQosPolicyMaxThroughputIops adds the consistencyGroupsQosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsQosPolicyMaxThroughputIops(consistencyGroupsQosPolicyMaxThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsQosPolicyMaxThroughputIops(consistencyGroupsQosPolicyMaxThroughputIops)
-	return o
-}
-
-// SetConsistencyGroupsQosPolicyMaxThroughputIops adds the consistencyGroupsQosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsQosPolicyMaxThroughputIops(consistencyGroupsQosPolicyMaxThroughputIops *int64) {
-	o.ConsistencyGroupsQosPolicyMaxThroughputIops = consistencyGroupsQosPolicyMaxThroughputIops
-}
-
-// WithConsistencyGroupsQosPolicyMaxThroughputMbps adds the consistencyGroupsQosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsQosPolicyMaxThroughputMbps(consistencyGroupsQosPolicyMaxThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsQosPolicyMaxThroughputMbps(consistencyGroupsQosPolicyMaxThroughputMbps)
-	return o
-}
-
-// SetConsistencyGroupsQosPolicyMaxThroughputMbps adds the consistencyGroupsQosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsQosPolicyMaxThroughputMbps(consistencyGroupsQosPolicyMaxThroughputMbps *int64) {
-	o.ConsistencyGroupsQosPolicyMaxThroughputMbps = consistencyGroupsQosPolicyMaxThroughputMbps
-}
-
-// WithConsistencyGroupsQosPolicyMinThroughputIops adds the consistencyGroupsQosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsQosPolicyMinThroughputIops(consistencyGroupsQosPolicyMinThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsQosPolicyMinThroughputIops(consistencyGroupsQosPolicyMinThroughputIops)
-	return o
-}
-
-// SetConsistencyGroupsQosPolicyMinThroughputIops adds the consistencyGroupsQosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsQosPolicyMinThroughputIops(consistencyGroupsQosPolicyMinThroughputIops *int64) {
-	o.ConsistencyGroupsQosPolicyMinThroughputIops = consistencyGroupsQosPolicyMinThroughputIops
-}
-
-// WithConsistencyGroupsQosPolicyMinThroughputMbps adds the consistencyGroupsQosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsQosPolicyMinThroughputMbps(consistencyGroupsQosPolicyMinThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsQosPolicyMinThroughputMbps(consistencyGroupsQosPolicyMinThroughputMbps)
-	return o
-}
-
-// SetConsistencyGroupsQosPolicyMinThroughputMbps adds the consistencyGroupsQosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsQosPolicyMinThroughputMbps(consistencyGroupsQosPolicyMinThroughputMbps *int64) {
-	o.ConsistencyGroupsQosPolicyMinThroughputMbps = consistencyGroupsQosPolicyMinThroughputMbps
 }
 
 // WithConsistencyGroupsQosPolicyName adds the consistencyGroupsQosPolicyName to the consistency group collection get params
@@ -2609,17 +2973,6 @@ func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesComment
 	o.ConsistencyGroupsVolumesComment = consistencyGroupsVolumesComment
 }
 
-// WithConsistencyGroupsVolumesLanguage adds the consistencyGroupsVolumesLanguage to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesLanguage(consistencyGroupsVolumesLanguage *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesLanguage(consistencyGroupsVolumesLanguage)
-	return o
-}
-
-// SetConsistencyGroupsVolumesLanguage adds the consistencyGroupsVolumesLanguage to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesLanguage(consistencyGroupsVolumesLanguage *string) {
-	o.ConsistencyGroupsVolumesLanguage = consistencyGroupsVolumesLanguage
-}
-
 // WithConsistencyGroupsVolumesName adds the consistencyGroupsVolumesName to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesName(consistencyGroupsVolumesName *string) *ConsistencyGroupCollectionGetParams {
 	o.SetConsistencyGroupsVolumesName(consistencyGroupsVolumesName)
@@ -2673,6 +3026,17 @@ func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCif
 // SetConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup adds the consistencyGroupsVolumesNasCifsSharesAclsUserOrGroup to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup(consistencyGroupsVolumesNasCifsSharesAclsUserOrGroup *string) {
 	o.ConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup = consistencyGroupsVolumesNasCifsSharesAclsUserOrGroup
+}
+
+// WithConsistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID adds the consistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID(consistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID(consistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID)
+	return o
+}
+
+// SetConsistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID adds the consistencyGroupsVolumesNasCifsSharesAclsWinSidUnixId to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID(consistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID *string) {
+	o.ConsistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID = consistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID
 }
 
 // WithConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess adds the consistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess to the consistency group collection get params
@@ -2851,6 +3215,17 @@ func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifs
 	o.ConsistencyGroupsVolumesNasCifsSharesVscanProfile = consistencyGroupsVolumesNasCifsSharesVscanProfile
 }
 
+// WithConsistencyGroupsVolumesNasExportPolicyID adds the consistencyGroupsVolumesNasExportPolicyID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasExportPolicyID(consistencyGroupsVolumesNasExportPolicyID *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasExportPolicyID(consistencyGroupsVolumesNasExportPolicyID)
+	return o
+}
+
+// SetConsistencyGroupsVolumesNasExportPolicyID adds the consistencyGroupsVolumesNasExportPolicyId to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasExportPolicyID(consistencyGroupsVolumesNasExportPolicyID *int64) {
+	o.ConsistencyGroupsVolumesNasExportPolicyID = consistencyGroupsVolumesNasExportPolicyID
+}
+
 // WithConsistencyGroupsVolumesNasExportPolicyName adds the consistencyGroupsVolumesNasExportPolicyName to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasExportPolicyName(consistencyGroupsVolumesNasExportPolicyName *string) *ConsistencyGroupCollectionGetParams {
 	o.SetConsistencyGroupsVolumesNasExportPolicyName(consistencyGroupsVolumesNasExportPolicyName)
@@ -2983,17 +3358,6 @@ func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasExpo
 	o.ConsistencyGroupsVolumesNasExportPolicyRulesSuperuser = consistencyGroupsVolumesNasExportPolicyRulesSuperuser
 }
 
-// WithConsistencyGroupsVolumesNasExportPolicyUUID adds the consistencyGroupsVolumesNasExportPolicyUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasExportPolicyUUID(consistencyGroupsVolumesNasExportPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesNasExportPolicyUUID(consistencyGroupsVolumesNasExportPolicyUUID)
-	return o
-}
-
-// SetConsistencyGroupsVolumesNasExportPolicyUUID adds the consistencyGroupsVolumesNasExportPolicyUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasExportPolicyUUID(consistencyGroupsVolumesNasExportPolicyUUID *string) {
-	o.ConsistencyGroupsVolumesNasExportPolicyUUID = consistencyGroupsVolumesNasExportPolicyUUID
-}
-
 // WithConsistencyGroupsVolumesNasGid adds the consistencyGroupsVolumesNasGid to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasGid(consistencyGroupsVolumesNasGid *int64) *ConsistencyGroupCollectionGetParams {
 	o.SetConsistencyGroupsVolumesNasGid(consistencyGroupsVolumesNasGid)
@@ -3069,50 +3433,6 @@ func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasUni
 // SetConsistencyGroupsVolumesNasUnixPermissions adds the consistencyGroupsVolumesNasUnixPermissions to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasUnixPermissions(consistencyGroupsVolumesNasUnixPermissions *int64) {
 	o.ConsistencyGroupsVolumesNasUnixPermissions = consistencyGroupsVolumesNasUnixPermissions
-}
-
-// WithConsistencyGroupsVolumesQosPolicyMaxThroughputIops adds the consistencyGroupsVolumesQosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesQosPolicyMaxThroughputIops(consistencyGroupsVolumesQosPolicyMaxThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesQosPolicyMaxThroughputIops(consistencyGroupsVolumesQosPolicyMaxThroughputIops)
-	return o
-}
-
-// SetConsistencyGroupsVolumesQosPolicyMaxThroughputIops adds the consistencyGroupsVolumesQosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesQosPolicyMaxThroughputIops(consistencyGroupsVolumesQosPolicyMaxThroughputIops *int64) {
-	o.ConsistencyGroupsVolumesQosPolicyMaxThroughputIops = consistencyGroupsVolumesQosPolicyMaxThroughputIops
-}
-
-// WithConsistencyGroupsVolumesQosPolicyMaxThroughputMbps adds the consistencyGroupsVolumesQosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesQosPolicyMaxThroughputMbps(consistencyGroupsVolumesQosPolicyMaxThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesQosPolicyMaxThroughputMbps(consistencyGroupsVolumesQosPolicyMaxThroughputMbps)
-	return o
-}
-
-// SetConsistencyGroupsVolumesQosPolicyMaxThroughputMbps adds the consistencyGroupsVolumesQosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesQosPolicyMaxThroughputMbps(consistencyGroupsVolumesQosPolicyMaxThroughputMbps *int64) {
-	o.ConsistencyGroupsVolumesQosPolicyMaxThroughputMbps = consistencyGroupsVolumesQosPolicyMaxThroughputMbps
-}
-
-// WithConsistencyGroupsVolumesQosPolicyMinThroughputIops adds the consistencyGroupsVolumesQosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesQosPolicyMinThroughputIops(consistencyGroupsVolumesQosPolicyMinThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesQosPolicyMinThroughputIops(consistencyGroupsVolumesQosPolicyMinThroughputIops)
-	return o
-}
-
-// SetConsistencyGroupsVolumesQosPolicyMinThroughputIops adds the consistencyGroupsVolumesQosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesQosPolicyMinThroughputIops(consistencyGroupsVolumesQosPolicyMinThroughputIops *int64) {
-	o.ConsistencyGroupsVolumesQosPolicyMinThroughputIops = consistencyGroupsVolumesQosPolicyMinThroughputIops
-}
-
-// WithConsistencyGroupsVolumesQosPolicyMinThroughputMbps adds the consistencyGroupsVolumesQosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesQosPolicyMinThroughputMbps(consistencyGroupsVolumesQosPolicyMinThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesQosPolicyMinThroughputMbps(consistencyGroupsVolumesQosPolicyMinThroughputMbps)
-	return o
-}
-
-// SetConsistencyGroupsVolumesQosPolicyMinThroughputMbps adds the consistencyGroupsVolumesQosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesQosPolicyMinThroughputMbps(consistencyGroupsVolumesQosPolicyMinThroughputMbps *int64) {
-	o.ConsistencyGroupsVolumesQosPolicyMinThroughputMbps = consistencyGroupsVolumesQosPolicyMinThroughputMbps
 }
 
 // WithConsistencyGroupsVolumesQosPolicyName adds the consistencyGroupsVolumesQosPolicyName to the consistency group collection get params
@@ -3533,6 +3853,204 @@ func (o *ConsistencyGroupCollectionGetParams) SetMaxRecords(maxRecords *int64) {
 	o.MaxRecords = maxRecords
 }
 
+// WithMetricAvailableSpace adds the metricAvailableSpace to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricAvailableSpace(metricAvailableSpace *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricAvailableSpace(metricAvailableSpace)
+	return o
+}
+
+// SetMetricAvailableSpace adds the metricAvailableSpace to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricAvailableSpace(metricAvailableSpace *int64) {
+	o.MetricAvailableSpace = metricAvailableSpace
+}
+
+// WithMetricDuration adds the metricDuration to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricDuration(metricDuration *string) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricDuration(metricDuration)
+	return o
+}
+
+// SetMetricDuration adds the metricDuration to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricDuration(metricDuration *string) {
+	o.MetricDuration = metricDuration
+}
+
+// WithMetricIopsOther adds the metricIopsOther to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricIopsOther(metricIopsOther *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricIopsOther(metricIopsOther)
+	return o
+}
+
+// SetMetricIopsOther adds the metricIopsOther to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricIopsOther(metricIopsOther *int64) {
+	o.MetricIopsOther = metricIopsOther
+}
+
+// WithMetricIopsRead adds the metricIopsRead to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricIopsRead(metricIopsRead *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricIopsRead(metricIopsRead)
+	return o
+}
+
+// SetMetricIopsRead adds the metricIopsRead to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricIopsRead(metricIopsRead *int64) {
+	o.MetricIopsRead = metricIopsRead
+}
+
+// WithMetricIopsTotal adds the metricIopsTotal to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricIopsTotal(metricIopsTotal *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricIopsTotal(metricIopsTotal)
+	return o
+}
+
+// SetMetricIopsTotal adds the metricIopsTotal to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricIopsTotal(metricIopsTotal *int64) {
+	o.MetricIopsTotal = metricIopsTotal
+}
+
+// WithMetricIopsWrite adds the metricIopsWrite to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricIopsWrite(metricIopsWrite *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricIopsWrite(metricIopsWrite)
+	return o
+}
+
+// SetMetricIopsWrite adds the metricIopsWrite to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricIopsWrite(metricIopsWrite *int64) {
+	o.MetricIopsWrite = metricIopsWrite
+}
+
+// WithMetricLatencyOther adds the metricLatencyOther to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricLatencyOther(metricLatencyOther *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricLatencyOther(metricLatencyOther)
+	return o
+}
+
+// SetMetricLatencyOther adds the metricLatencyOther to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricLatencyOther(metricLatencyOther *int64) {
+	o.MetricLatencyOther = metricLatencyOther
+}
+
+// WithMetricLatencyRead adds the metricLatencyRead to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricLatencyRead(metricLatencyRead *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricLatencyRead(metricLatencyRead)
+	return o
+}
+
+// SetMetricLatencyRead adds the metricLatencyRead to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricLatencyRead(metricLatencyRead *int64) {
+	o.MetricLatencyRead = metricLatencyRead
+}
+
+// WithMetricLatencyTotal adds the metricLatencyTotal to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricLatencyTotal(metricLatencyTotal *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricLatencyTotal(metricLatencyTotal)
+	return o
+}
+
+// SetMetricLatencyTotal adds the metricLatencyTotal to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricLatencyTotal(metricLatencyTotal *int64) {
+	o.MetricLatencyTotal = metricLatencyTotal
+}
+
+// WithMetricLatencyWrite adds the metricLatencyWrite to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricLatencyWrite(metricLatencyWrite *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricLatencyWrite(metricLatencyWrite)
+	return o
+}
+
+// SetMetricLatencyWrite adds the metricLatencyWrite to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricLatencyWrite(metricLatencyWrite *int64) {
+	o.MetricLatencyWrite = metricLatencyWrite
+}
+
+// WithMetricSize adds the metricSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricSize(metricSize *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricSize(metricSize)
+	return o
+}
+
+// SetMetricSize adds the metricSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricSize(metricSize *int64) {
+	o.MetricSize = metricSize
+}
+
+// WithMetricStatus adds the metricStatus to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricStatus(metricStatus *string) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricStatus(metricStatus)
+	return o
+}
+
+// SetMetricStatus adds the metricStatus to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricStatus(metricStatus *string) {
+	o.MetricStatus = metricStatus
+}
+
+// WithMetricThroughputOther adds the metricThroughputOther to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricThroughputOther(metricThroughputOther *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricThroughputOther(metricThroughputOther)
+	return o
+}
+
+// SetMetricThroughputOther adds the metricThroughputOther to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricThroughputOther(metricThroughputOther *int64) {
+	o.MetricThroughputOther = metricThroughputOther
+}
+
+// WithMetricThroughputRead adds the metricThroughputRead to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricThroughputRead(metricThroughputRead *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricThroughputRead(metricThroughputRead)
+	return o
+}
+
+// SetMetricThroughputRead adds the metricThroughputRead to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricThroughputRead(metricThroughputRead *int64) {
+	o.MetricThroughputRead = metricThroughputRead
+}
+
+// WithMetricThroughputTotal adds the metricThroughputTotal to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricThroughputTotal(metricThroughputTotal *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricThroughputTotal(metricThroughputTotal)
+	return o
+}
+
+// SetMetricThroughputTotal adds the metricThroughputTotal to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricThroughputTotal(metricThroughputTotal *int64) {
+	o.MetricThroughputTotal = metricThroughputTotal
+}
+
+// WithMetricThroughputWrite adds the metricThroughputWrite to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricThroughputWrite(metricThroughputWrite *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricThroughputWrite(metricThroughputWrite)
+	return o
+}
+
+// SetMetricThroughputWrite adds the metricThroughputWrite to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricThroughputWrite(metricThroughputWrite *int64) {
+	o.MetricThroughputWrite = metricThroughputWrite
+}
+
+// WithMetricTimestamp adds the metricTimestamp to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricTimestamp(metricTimestamp *string) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricTimestamp(metricTimestamp)
+	return o
+}
+
+// SetMetricTimestamp adds the metricTimestamp to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricTimestamp(metricTimestamp *string) {
+	o.MetricTimestamp = metricTimestamp
+}
+
+// WithMetricUsedSpace adds the metricUsedSpace to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMetricUsedSpace(metricUsedSpace *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetMetricUsedSpace(metricUsedSpace)
+	return o
+}
+
+// SetMetricUsedSpace adds the metricUsedSpace to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMetricUsedSpace(metricUsedSpace *int64) {
+	o.MetricUsedSpace = metricUsedSpace
+}
+
 // WithName adds the name to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) WithName(name *string) *ConsistencyGroupCollectionGetParams {
 	o.SetName(name)
@@ -3742,6 +4260,39 @@ func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSubsystemMapSubsystem
 	o.NamespacesSubsystemMapSubsystemComment = namespacesSubsystemMapSubsystemComment
 }
 
+// WithNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize adds the namespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize(namespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize(namespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize)
+	return o
+}
+
+// SetNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize adds the namespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize(namespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize *string) {
+	o.NamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize = namespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize
+}
+
+// WithNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction adds the namespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction(namespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction(namespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction)
+	return o
+}
+
+// SetNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction adds the namespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction(namespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction *string) {
+	o.NamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction = namespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction
+}
+
+// WithNamespacesSubsystemMapSubsystemHostsDhHmacChapMode adds the namespacesSubsystemMapSubsystemHostsDhHmacChapMode to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSubsystemMapSubsystemHostsDhHmacChapMode(namespacesSubsystemMapSubsystemHostsDhHmacChapMode *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesSubsystemMapSubsystemHostsDhHmacChapMode(namespacesSubsystemMapSubsystemHostsDhHmacChapMode)
+	return o
+}
+
+// SetNamespacesSubsystemMapSubsystemHostsDhHmacChapMode adds the namespacesSubsystemMapSubsystemHostsDhHmacChapMode to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSubsystemMapSubsystemHostsDhHmacChapMode(namespacesSubsystemMapSubsystemHostsDhHmacChapMode *string) {
+	o.NamespacesSubsystemMapSubsystemHostsDhHmacChapMode = namespacesSubsystemMapSubsystemHostsDhHmacChapMode
+}
+
 // WithNamespacesSubsystemMapSubsystemHostsNqn adds the namespacesSubsystemMapSubsystemHostsNqn to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSubsystemMapSubsystemHostsNqn(namespacesSubsystemMapSubsystemHostsNqn *string) *ConsistencyGroupCollectionGetParams {
 	o.SetNamespacesSubsystemMapSubsystemHostsNqn(namespacesSubsystemMapSubsystemHostsNqn)
@@ -3751,6 +4302,28 @@ func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSubsystemMapSubsyste
 // SetNamespacesSubsystemMapSubsystemHostsNqn adds the namespacesSubsystemMapSubsystemHostsNqn to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSubsystemMapSubsystemHostsNqn(namespacesSubsystemMapSubsystemHostsNqn *string) {
 	o.NamespacesSubsystemMapSubsystemHostsNqn = namespacesSubsystemMapSubsystemHostsNqn
+}
+
+// WithNamespacesSubsystemMapSubsystemHostsPriority adds the namespacesSubsystemMapSubsystemHostsPriority to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSubsystemMapSubsystemHostsPriority(namespacesSubsystemMapSubsystemHostsPriority *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesSubsystemMapSubsystemHostsPriority(namespacesSubsystemMapSubsystemHostsPriority)
+	return o
+}
+
+// SetNamespacesSubsystemMapSubsystemHostsPriority adds the namespacesSubsystemMapSubsystemHostsPriority to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSubsystemMapSubsystemHostsPriority(namespacesSubsystemMapSubsystemHostsPriority *string) {
+	o.NamespacesSubsystemMapSubsystemHostsPriority = namespacesSubsystemMapSubsystemHostsPriority
+}
+
+// WithNamespacesSubsystemMapSubsystemHostsTLSKeyType adds the namespacesSubsystemMapSubsystemHostsTLSKeyType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSubsystemMapSubsystemHostsTLSKeyType(namespacesSubsystemMapSubsystemHostsTLSKeyType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesSubsystemMapSubsystemHostsTLSKeyType(namespacesSubsystemMapSubsystemHostsTLSKeyType)
+	return o
+}
+
+// SetNamespacesSubsystemMapSubsystemHostsTLSKeyType adds the namespacesSubsystemMapSubsystemHostsTlsKeyType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSubsystemMapSubsystemHostsTLSKeyType(namespacesSubsystemMapSubsystemHostsTLSKeyType *string) {
+	o.NamespacesSubsystemMapSubsystemHostsTLSKeyType = namespacesSubsystemMapSubsystemHostsTLSKeyType
 }
 
 // WithNamespacesSubsystemMapSubsystemName adds the namespacesSubsystemMapSubsystemName to the consistency group collection get params
@@ -3830,50 +4403,6 @@ func (o *ConsistencyGroupCollectionGetParams) SetParentConsistencyGroupUUID(pare
 	o.ParentConsistencyGroupUUID = parentConsistencyGroupUUID
 }
 
-// WithQosPolicyMaxThroughputIops adds the qosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops)
-	return o
-}
-
-// SetQosPolicyMaxThroughputIops adds the qosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops *int64) {
-	o.QosPolicyMaxThroughputIops = qosPolicyMaxThroughputIops
-}
-
-// WithQosPolicyMaxThroughputMbps adds the qosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithQosPolicyMaxThroughputMbps(qosPolicyMaxThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetQosPolicyMaxThroughputMbps(qosPolicyMaxThroughputMbps)
-	return o
-}
-
-// SetQosPolicyMaxThroughputMbps adds the qosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetQosPolicyMaxThroughputMbps(qosPolicyMaxThroughputMbps *int64) {
-	o.QosPolicyMaxThroughputMbps = qosPolicyMaxThroughputMbps
-}
-
-// WithQosPolicyMinThroughputIops adds the qosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithQosPolicyMinThroughputIops(qosPolicyMinThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetQosPolicyMinThroughputIops(qosPolicyMinThroughputIops)
-	return o
-}
-
-// SetQosPolicyMinThroughputIops adds the qosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetQosPolicyMinThroughputIops(qosPolicyMinThroughputIops *int64) {
-	o.QosPolicyMinThroughputIops = qosPolicyMinThroughputIops
-}
-
-// WithQosPolicyMinThroughputMbps adds the qosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithQosPolicyMinThroughputMbps(qosPolicyMinThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetQosPolicyMinThroughputMbps(qosPolicyMinThroughputMbps)
-	return o
-}
-
-// SetQosPolicyMinThroughputMbps adds the qosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetQosPolicyMinThroughputMbps(qosPolicyMinThroughputMbps *int64) {
-	o.QosPolicyMinThroughputMbps = qosPolicyMinThroughputMbps
-}
-
 // WithQosPolicyName adds the qosPolicyName to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) WithQosPolicyName(qosPolicyName *string) *ConsistencyGroupCollectionGetParams {
 	o.SetQosPolicyName(qosPolicyName)
@@ -3907,6 +4436,39 @@ func (o *ConsistencyGroupCollectionGetParams) SetReplicated(replicated *bool) {
 	o.Replicated = replicated
 }
 
+// WithReplicationRelationshipsIsProtectedBySvmDr adds the replicationRelationshipsIsProtectedBySvmDr to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithReplicationRelationshipsIsProtectedBySvmDr(replicationRelationshipsIsProtectedBySvmDr *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetReplicationRelationshipsIsProtectedBySvmDr(replicationRelationshipsIsProtectedBySvmDr)
+	return o
+}
+
+// SetReplicationRelationshipsIsProtectedBySvmDr adds the replicationRelationshipsIsProtectedBySvmDr to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetReplicationRelationshipsIsProtectedBySvmDr(replicationRelationshipsIsProtectedBySvmDr *bool) {
+	o.ReplicationRelationshipsIsProtectedBySvmDr = replicationRelationshipsIsProtectedBySvmDr
+}
+
+// WithReplicationRelationshipsIsSource adds the replicationRelationshipsIsSource to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithReplicationRelationshipsIsSource(replicationRelationshipsIsSource *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetReplicationRelationshipsIsSource(replicationRelationshipsIsSource)
+	return o
+}
+
+// SetReplicationRelationshipsIsSource adds the replicationRelationshipsIsSource to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetReplicationRelationshipsIsSource(replicationRelationshipsIsSource *bool) {
+	o.ReplicationRelationshipsIsSource = replicationRelationshipsIsSource
+}
+
+// WithReplicationRelationshipsUUID adds the replicationRelationshipsUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithReplicationRelationshipsUUID(replicationRelationshipsUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetReplicationRelationshipsUUID(replicationRelationshipsUUID)
+	return o
+}
+
+// SetReplicationRelationshipsUUID adds the replicationRelationshipsUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetReplicationRelationshipsUUID(replicationRelationshipsUUID *string) {
+	o.ReplicationRelationshipsUUID = replicationRelationshipsUUID
+}
+
 // WithReplicationSource adds the replicationSource to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) WithReplicationSource(replicationSource *bool) *ConsistencyGroupCollectionGetParams {
 	o.SetReplicationSource(replicationSource)
@@ -3938,6 +4500,72 @@ func (o *ConsistencyGroupCollectionGetParams) WithReturnTimeout(returnTimeout *i
 // SetReturnTimeout adds the returnTimeout to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
 	o.ReturnTimeout = returnTimeout
+}
+
+// WithSnaplockComplianceClockTime adds the snaplockComplianceClockTime to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithSnaplockComplianceClockTime(snaplockComplianceClockTime *string) *ConsistencyGroupCollectionGetParams {
+	o.SetSnaplockComplianceClockTime(snaplockComplianceClockTime)
+	return o
+}
+
+// SetSnaplockComplianceClockTime adds the snaplockComplianceClockTime to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetSnaplockComplianceClockTime(snaplockComplianceClockTime *string) {
+	o.SnaplockComplianceClockTime = snaplockComplianceClockTime
+}
+
+// WithSnaplockExpiryTime adds the snaplockExpiryTime to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithSnaplockExpiryTime(snaplockExpiryTime *string) *ConsistencyGroupCollectionGetParams {
+	o.SetSnaplockExpiryTime(snaplockExpiryTime)
+	return o
+}
+
+// SetSnaplockExpiryTime adds the snaplockExpiryTime to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetSnaplockExpiryTime(snaplockExpiryTime *string) {
+	o.SnaplockExpiryTime = snaplockExpiryTime
+}
+
+// WithSnaplockRetentionDefault adds the snaplockRetentionDefault to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithSnaplockRetentionDefault(snaplockRetentionDefault *string) *ConsistencyGroupCollectionGetParams {
+	o.SetSnaplockRetentionDefault(snaplockRetentionDefault)
+	return o
+}
+
+// SetSnaplockRetentionDefault adds the snaplockRetentionDefault to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetSnaplockRetentionDefault(snaplockRetentionDefault *string) {
+	o.SnaplockRetentionDefault = snaplockRetentionDefault
+}
+
+// WithSnaplockRetentionMaximum adds the snaplockRetentionMaximum to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithSnaplockRetentionMaximum(snaplockRetentionMaximum *string) *ConsistencyGroupCollectionGetParams {
+	o.SetSnaplockRetentionMaximum(snaplockRetentionMaximum)
+	return o
+}
+
+// SetSnaplockRetentionMaximum adds the snaplockRetentionMaximum to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetSnaplockRetentionMaximum(snaplockRetentionMaximum *string) {
+	o.SnaplockRetentionMaximum = snaplockRetentionMaximum
+}
+
+// WithSnaplockRetentionMinimum adds the snaplockRetentionMinimum to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithSnaplockRetentionMinimum(snaplockRetentionMinimum *string) *ConsistencyGroupCollectionGetParams {
+	o.SetSnaplockRetentionMinimum(snaplockRetentionMinimum)
+	return o
+}
+
+// SetSnaplockRetentionMinimum adds the snaplockRetentionMinimum to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetSnaplockRetentionMinimum(snaplockRetentionMinimum *string) {
+	o.SnaplockRetentionMinimum = snaplockRetentionMinimum
+}
+
+// WithSnaplockType adds the snaplockType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithSnaplockType(snaplockType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetSnaplockType(snaplockType)
+	return o
+}
+
+// SetSnaplockType adds the snaplockType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetSnaplockType(snaplockType *string) {
+	o.SnaplockType = snaplockType
 }
 
 // WithSnapshotPolicyName adds the snapshotPolicyName to the consistency group collection get params
@@ -3995,6 +4623,193 @@ func (o *ConsistencyGroupCollectionGetParams) SetSpaceUsed(spaceUsed *int64) {
 	o.SpaceUsed = spaceUsed
 }
 
+// WithStatisticsAvailableSpace adds the statisticsAvailableSpace to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithStatisticsAvailableSpace(statisticsAvailableSpace *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetStatisticsAvailableSpace(statisticsAvailableSpace)
+	return o
+}
+
+// SetStatisticsAvailableSpace adds the statisticsAvailableSpace to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetStatisticsAvailableSpace(statisticsAvailableSpace *int64) {
+	o.StatisticsAvailableSpace = statisticsAvailableSpace
+}
+
+// WithStatisticsIopsRawOther adds the statisticsIopsRawOther to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithStatisticsIopsRawOther(statisticsIopsRawOther *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetStatisticsIopsRawOther(statisticsIopsRawOther)
+	return o
+}
+
+// SetStatisticsIopsRawOther adds the statisticsIopsRawOther to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetStatisticsIopsRawOther(statisticsIopsRawOther *int64) {
+	o.StatisticsIopsRawOther = statisticsIopsRawOther
+}
+
+// WithStatisticsIopsRawRead adds the statisticsIopsRawRead to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithStatisticsIopsRawRead(statisticsIopsRawRead *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetStatisticsIopsRawRead(statisticsIopsRawRead)
+	return o
+}
+
+// SetStatisticsIopsRawRead adds the statisticsIopsRawRead to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetStatisticsIopsRawRead(statisticsIopsRawRead *int64) {
+	o.StatisticsIopsRawRead = statisticsIopsRawRead
+}
+
+// WithStatisticsIopsRawTotal adds the statisticsIopsRawTotal to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithStatisticsIopsRawTotal(statisticsIopsRawTotal *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetStatisticsIopsRawTotal(statisticsIopsRawTotal)
+	return o
+}
+
+// SetStatisticsIopsRawTotal adds the statisticsIopsRawTotal to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetStatisticsIopsRawTotal(statisticsIopsRawTotal *int64) {
+	o.StatisticsIopsRawTotal = statisticsIopsRawTotal
+}
+
+// WithStatisticsIopsRawWrite adds the statisticsIopsRawWrite to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithStatisticsIopsRawWrite(statisticsIopsRawWrite *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetStatisticsIopsRawWrite(statisticsIopsRawWrite)
+	return o
+}
+
+// SetStatisticsIopsRawWrite adds the statisticsIopsRawWrite to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetStatisticsIopsRawWrite(statisticsIopsRawWrite *int64) {
+	o.StatisticsIopsRawWrite = statisticsIopsRawWrite
+}
+
+// WithStatisticsLatencyRawOther adds the statisticsLatencyRawOther to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithStatisticsLatencyRawOther(statisticsLatencyRawOther *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetStatisticsLatencyRawOther(statisticsLatencyRawOther)
+	return o
+}
+
+// SetStatisticsLatencyRawOther adds the statisticsLatencyRawOther to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetStatisticsLatencyRawOther(statisticsLatencyRawOther *int64) {
+	o.StatisticsLatencyRawOther = statisticsLatencyRawOther
+}
+
+// WithStatisticsLatencyRawRead adds the statisticsLatencyRawRead to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithStatisticsLatencyRawRead(statisticsLatencyRawRead *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetStatisticsLatencyRawRead(statisticsLatencyRawRead)
+	return o
+}
+
+// SetStatisticsLatencyRawRead adds the statisticsLatencyRawRead to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetStatisticsLatencyRawRead(statisticsLatencyRawRead *int64) {
+	o.StatisticsLatencyRawRead = statisticsLatencyRawRead
+}
+
+// WithStatisticsLatencyRawTotal adds the statisticsLatencyRawTotal to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithStatisticsLatencyRawTotal(statisticsLatencyRawTotal *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetStatisticsLatencyRawTotal(statisticsLatencyRawTotal)
+	return o
+}
+
+// SetStatisticsLatencyRawTotal adds the statisticsLatencyRawTotal to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetStatisticsLatencyRawTotal(statisticsLatencyRawTotal *int64) {
+	o.StatisticsLatencyRawTotal = statisticsLatencyRawTotal
+}
+
+// WithStatisticsLatencyRawWrite adds the statisticsLatencyRawWrite to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithStatisticsLatencyRawWrite(statisticsLatencyRawWrite *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetStatisticsLatencyRawWrite(statisticsLatencyRawWrite)
+	return o
+}
+
+// SetStatisticsLatencyRawWrite adds the statisticsLatencyRawWrite to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetStatisticsLatencyRawWrite(statisticsLatencyRawWrite *int64) {
+	o.StatisticsLatencyRawWrite = statisticsLatencyRawWrite
+}
+
+// WithStatisticsSize adds the statisticsSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithStatisticsSize(statisticsSize *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetStatisticsSize(statisticsSize)
+	return o
+}
+
+// SetStatisticsSize adds the statisticsSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetStatisticsSize(statisticsSize *int64) {
+	o.StatisticsSize = statisticsSize
+}
+
+// WithStatisticsStatus adds the statisticsStatus to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithStatisticsStatus(statisticsStatus *string) *ConsistencyGroupCollectionGetParams {
+	o.SetStatisticsStatus(statisticsStatus)
+	return o
+}
+
+// SetStatisticsStatus adds the statisticsStatus to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetStatisticsStatus(statisticsStatus *string) {
+	o.StatisticsStatus = statisticsStatus
+}
+
+// WithStatisticsThroughputRawOther adds the statisticsThroughputRawOther to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithStatisticsThroughputRawOther(statisticsThroughputRawOther *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetStatisticsThroughputRawOther(statisticsThroughputRawOther)
+	return o
+}
+
+// SetStatisticsThroughputRawOther adds the statisticsThroughputRawOther to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetStatisticsThroughputRawOther(statisticsThroughputRawOther *int64) {
+	o.StatisticsThroughputRawOther = statisticsThroughputRawOther
+}
+
+// WithStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetStatisticsThroughputRawRead(statisticsThroughputRawRead)
+	return o
+}
+
+// SetStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) {
+	o.StatisticsThroughputRawRead = statisticsThroughputRawRead
+}
+
+// WithStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal)
+	return o
+}
+
+// SetStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) {
+	o.StatisticsThroughputRawTotal = statisticsThroughputRawTotal
+}
+
+// WithStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite)
+	return o
+}
+
+// SetStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) {
+	o.StatisticsThroughputRawWrite = statisticsThroughputRawWrite
+}
+
+// WithStatisticsTimestamp adds the statisticsTimestamp to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithStatisticsTimestamp(statisticsTimestamp *string) *ConsistencyGroupCollectionGetParams {
+	o.SetStatisticsTimestamp(statisticsTimestamp)
+	return o
+}
+
+// SetStatisticsTimestamp adds the statisticsTimestamp to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetStatisticsTimestamp(statisticsTimestamp *string) {
+	o.StatisticsTimestamp = statisticsTimestamp
+}
+
+// WithStatisticsUsedSpace adds the statisticsUsedSpace to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithStatisticsUsedSpace(statisticsUsedSpace *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetStatisticsUsedSpace(statisticsUsedSpace)
+	return o
+}
+
+// SetStatisticsUsedSpace adds the statisticsUsedSpace to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetStatisticsUsedSpace(statisticsUsedSpace *int64) {
+	o.StatisticsUsedSpace = statisticsUsedSpace
+}
+
 // WithSvmName adds the svmName to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) WithSvmName(svmName *string) *ConsistencyGroupCollectionGetParams {
 	o.SetSvmName(svmName)
@@ -4039,6 +4854,17 @@ func (o *ConsistencyGroupCollectionGetParams) SetUUID(uuid *string) {
 	o.UUID = uuid
 }
 
+// WithVdiskType adds the vdiskType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVdiskType(vdiskType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVdiskType(vdiskType)
+	return o
+}
+
+// SetVdiskType adds the vdiskType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVdiskType(vdiskType *string) {
+	o.VdiskType = vdiskType
+}
+
 // WithVolumesComment adds the volumesComment to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) WithVolumesComment(volumesComment *string) *ConsistencyGroupCollectionGetParams {
 	o.SetVolumesComment(volumesComment)
@@ -4048,17 +4874,6 @@ func (o *ConsistencyGroupCollectionGetParams) WithVolumesComment(volumesComment 
 // SetVolumesComment adds the volumesComment to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) SetVolumesComment(volumesComment *string) {
 	o.VolumesComment = volumesComment
-}
-
-// WithVolumesLanguage adds the volumesLanguage to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesLanguage(volumesLanguage *string) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesLanguage(volumesLanguage)
-	return o
-}
-
-// SetVolumesLanguage adds the volumesLanguage to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesLanguage(volumesLanguage *string) {
-	o.VolumesLanguage = volumesLanguage
 }
 
 // WithVolumesName adds the volumesName to the consistency group collection get params
@@ -4114,6 +4929,17 @@ func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesAclsUserOr
 // SetVolumesNasCifsSharesAclsUserOrGroup adds the volumesNasCifsSharesAclsUserOrGroup to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesAclsUserOrGroup(volumesNasCifsSharesAclsUserOrGroup *string) {
 	o.VolumesNasCifsSharesAclsUserOrGroup = volumesNasCifsSharesAclsUserOrGroup
+}
+
+// WithVolumesNasCifsSharesAclsWinSidUnixID adds the volumesNasCifsSharesAclsWinSidUnixID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesAclsWinSidUnixID(volumesNasCifsSharesAclsWinSidUnixID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesAclsWinSidUnixID(volumesNasCifsSharesAclsWinSidUnixID)
+	return o
+}
+
+// SetVolumesNasCifsSharesAclsWinSidUnixID adds the volumesNasCifsSharesAclsWinSidUnixId to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesAclsWinSidUnixID(volumesNasCifsSharesAclsWinSidUnixID *string) {
+	o.VolumesNasCifsSharesAclsWinSidUnixID = volumesNasCifsSharesAclsWinSidUnixID
 }
 
 // WithVolumesNasCifsSharesAllowUnencryptedAccess adds the volumesNasCifsSharesAllowUnencryptedAccess to the consistency group collection get params
@@ -4292,6 +5118,17 @@ func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesVscanProfil
 	o.VolumesNasCifsSharesVscanProfile = volumesNasCifsSharesVscanProfile
 }
 
+// WithVolumesNasExportPolicyID adds the volumesNasExportPolicyID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasExportPolicyID(volumesNasExportPolicyID *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasExportPolicyID(volumesNasExportPolicyID)
+	return o
+}
+
+// SetVolumesNasExportPolicyID adds the volumesNasExportPolicyId to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasExportPolicyID(volumesNasExportPolicyID *int64) {
+	o.VolumesNasExportPolicyID = volumesNasExportPolicyID
+}
+
 // WithVolumesNasExportPolicyName adds the volumesNasExportPolicyName to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasExportPolicyName(volumesNasExportPolicyName *string) *ConsistencyGroupCollectionGetParams {
 	o.SetVolumesNasExportPolicyName(volumesNasExportPolicyName)
@@ -4424,17 +5261,6 @@ func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasExportPolicyRulesSupe
 	o.VolumesNasExportPolicyRulesSuperuser = volumesNasExportPolicyRulesSuperuser
 }
 
-// WithVolumesNasExportPolicyUUID adds the volumesNasExportPolicyUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasExportPolicyUUID(volumesNasExportPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesNasExportPolicyUUID(volumesNasExportPolicyUUID)
-	return o
-}
-
-// SetVolumesNasExportPolicyUUID adds the volumesNasExportPolicyUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasExportPolicyUUID(volumesNasExportPolicyUUID *string) {
-	o.VolumesNasExportPolicyUUID = volumesNasExportPolicyUUID
-}
-
 // WithVolumesNasGid adds the volumesNasGid to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasGid(volumesNasGid *int64) *ConsistencyGroupCollectionGetParams {
 	o.SetVolumesNasGid(volumesNasGid)
@@ -4510,50 +5336,6 @@ func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasUnixPermissions(volu
 // SetVolumesNasUnixPermissions adds the volumesNasUnixPermissions to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasUnixPermissions(volumesNasUnixPermissions *int64) {
 	o.VolumesNasUnixPermissions = volumesNasUnixPermissions
-}
-
-// WithVolumesQosPolicyMaxThroughputIops adds the volumesQosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesQosPolicyMaxThroughputIops(volumesQosPolicyMaxThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesQosPolicyMaxThroughputIops(volumesQosPolicyMaxThroughputIops)
-	return o
-}
-
-// SetVolumesQosPolicyMaxThroughputIops adds the volumesQosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesQosPolicyMaxThroughputIops(volumesQosPolicyMaxThroughputIops *int64) {
-	o.VolumesQosPolicyMaxThroughputIops = volumesQosPolicyMaxThroughputIops
-}
-
-// WithVolumesQosPolicyMaxThroughputMbps adds the volumesQosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesQosPolicyMaxThroughputMbps(volumesQosPolicyMaxThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesQosPolicyMaxThroughputMbps(volumesQosPolicyMaxThroughputMbps)
-	return o
-}
-
-// SetVolumesQosPolicyMaxThroughputMbps adds the volumesQosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesQosPolicyMaxThroughputMbps(volumesQosPolicyMaxThroughputMbps *int64) {
-	o.VolumesQosPolicyMaxThroughputMbps = volumesQosPolicyMaxThroughputMbps
-}
-
-// WithVolumesQosPolicyMinThroughputIops adds the volumesQosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesQosPolicyMinThroughputIops(volumesQosPolicyMinThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesQosPolicyMinThroughputIops(volumesQosPolicyMinThroughputIops)
-	return o
-}
-
-// SetVolumesQosPolicyMinThroughputIops adds the volumesQosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesQosPolicyMinThroughputIops(volumesQosPolicyMinThroughputIops *int64) {
-	o.VolumesQosPolicyMinThroughputIops = volumesQosPolicyMinThroughputIops
-}
-
-// WithVolumesQosPolicyMinThroughputMbps adds the volumesQosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesQosPolicyMinThroughputMbps(volumesQosPolicyMinThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesQosPolicyMinThroughputMbps(volumesQosPolicyMinThroughputMbps)
-	return o
-}
-
-// SetVolumesQosPolicyMinThroughputMbps adds the volumesQosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesQosPolicyMinThroughputMbps(volumesQosPolicyMinThroughputMbps *int64) {
-	o.VolumesQosPolicyMinThroughputMbps = volumesQosPolicyMinThroughputMbps
 }
 
 // WithVolumesQosPolicyName adds the volumesQosPolicyName to the consistency group collection get params
@@ -4663,6 +5445,23 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 	}
 	var res []error
 
+	if o.Tags != nil {
+
+		// query param _tags
+		var qrTags string
+
+		if o.Tags != nil {
+			qrTags = *o.Tags
+		}
+		qTags := qrTags
+		if qTags != "" {
+
+			if err := r.SetQueryParam("_tags", qTags); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ApplicationComponentType != nil {
 
 		// query param application.component_type
@@ -4709,6 +5508,23 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qCloneGuaranteeType != "" {
 
 			if err := r.SetQueryParam("clone.guarantee.type", qCloneGuaranteeType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneIsFlexclone != nil {
+
+		// query param clone.is_flexclone
+		var qrCloneIsFlexclone bool
+
+		if o.CloneIsFlexclone != nil {
+			qrCloneIsFlexclone = *o.CloneIsFlexclone
+		}
+		qCloneIsFlexclone := swag.FormatBool(qrCloneIsFlexclone)
+		if qCloneIsFlexclone != "" {
+
+			if err := r.SetQueryParam("clone.is_flexclone", qCloneIsFlexclone); err != nil {
 				return err
 			}
 		}
@@ -4765,6 +5581,40 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
+	if o.CloneParentSnapshotUUID != nil {
+
+		// query param clone.parent_snapshot.uuid
+		var qrCloneParentSnapshotUUID string
+
+		if o.CloneParentSnapshotUUID != nil {
+			qrCloneParentSnapshotUUID = *o.CloneParentSnapshotUUID
+		}
+		qCloneParentSnapshotUUID := qrCloneParentSnapshotUUID
+		if qCloneParentSnapshotUUID != "" {
+
+			if err := r.SetQueryParam("clone.parent_snapshot.uuid", qCloneParentSnapshotUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneSnaplockType != nil {
+
+		// query param clone.snaplock_type
+		var qrCloneSnaplockType string
+
+		if o.CloneSnaplockType != nil {
+			qrCloneSnaplockType = *o.CloneSnaplockType
+		}
+		qCloneSnaplockType := qrCloneSnaplockType
+		if qCloneSnaplockType != "" {
+
+			if err := r.SetQueryParam("clone.snaplock_type", qCloneSnaplockType); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CloneSplitInitiated != nil {
 
 		// query param clone.split_initiated
@@ -4777,6 +5627,40 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qCloneSplitInitiated != "" {
 
 			if err := r.SetQueryParam("clone.split_initiated", qCloneSplitInitiated); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneStorageUnitPrefix != nil {
+
+		// query param clone.storage_unit.prefix
+		var qrCloneStorageUnitPrefix string
+
+		if o.CloneStorageUnitPrefix != nil {
+			qrCloneStorageUnitPrefix = *o.CloneStorageUnitPrefix
+		}
+		qCloneStorageUnitPrefix := qrCloneStorageUnitPrefix
+		if qCloneStorageUnitPrefix != "" {
+
+			if err := r.SetQueryParam("clone.storage_unit.prefix", qCloneStorageUnitPrefix); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneStorageUnitSuffix != nil {
+
+		// query param clone.storage_unit.suffix
+		var qrCloneStorageUnitSuffix string
+
+		if o.CloneStorageUnitSuffix != nil {
+			qrCloneStorageUnitSuffix = *o.CloneStorageUnitSuffix
+		}
+		qCloneStorageUnitSuffix := qrCloneStorageUnitSuffix
+		if qCloneStorageUnitSuffix != "" {
+
+			if err := r.SetQueryParam("clone.storage_unit.suffix", qCloneStorageUnitSuffix); err != nil {
 				return err
 			}
 		}
@@ -4811,6 +5695,23 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qCloneVolumeSuffix != "" {
 
 			if err := r.SetQueryParam("clone.volume.suffix", qCloneVolumeSuffix); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsTags != nil {
+
+		// query param consistency_groups._tags
+		var qrConsistencyGroupsTags string
+
+		if o.ConsistencyGroupsTags != nil {
+			qrConsistencyGroupsTags = *o.ConsistencyGroupsTags
+		}
+		qConsistencyGroupsTags := qrConsistencyGroupsTags
+		if qConsistencyGroupsTags != "" {
+
+			if err := r.SetQueryParam("consistency_groups._tags", qConsistencyGroupsTags); err != nil {
 				return err
 			}
 		}
@@ -5632,6 +6533,57 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
+	if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize != nil {
+
+		// query param consistency_groups.namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.group_size
+		var qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize string
+
+		if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize != nil {
+			qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize = *o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize
+		}
+		qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize := qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize
+		if qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.group_size", qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction != nil {
+
+		// query param consistency_groups.namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.hash_function
+		var qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction string
+
+		if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction != nil {
+			qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction = *o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction
+		}
+		qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction := qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction
+		if qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.hash_function", qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode != nil {
+
+		// query param consistency_groups.namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.mode
+		var qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode string
+
+		if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode != nil {
+			qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode = *o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode
+		}
+		qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode := qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode
+		if qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.mode", qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsDhHmacChapMode); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn != nil {
 
 		// query param consistency_groups.namespaces.subsystem_map.subsystem.hosts.nqn
@@ -5644,6 +6596,40 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn != "" {
 
 			if err := r.SetQueryParam("consistency_groups.namespaces.subsystem_map.subsystem.hosts.nqn", qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority != nil {
+
+		// query param consistency_groups.namespaces.subsystem_map.subsystem.hosts.priority
+		var qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority string
+
+		if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority != nil {
+			qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority = *o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority
+		}
+		qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority := qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority
+		if qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.subsystem_map.subsystem.hosts.priority", qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType != nil {
+
+		// query param consistency_groups.namespaces.subsystem_map.subsystem.hosts.tls.key_type
+		var qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType string
+
+		if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType != nil {
+			qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType = *o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType
+		}
+		qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType := qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType
+		if qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.subsystem_map.subsystem.hosts.tls.key_type", qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType); err != nil {
 				return err
 			}
 		}
@@ -5746,74 +6732,6 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qConsistencyGroupsParentConsistencyGroupUUID != "" {
 
 			if err := r.SetQueryParam("consistency_groups.parent_consistency_group.uuid", qConsistencyGroupsParentConsistencyGroupUUID); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ConsistencyGroupsQosPolicyMaxThroughputIops != nil {
-
-		// query param consistency_groups.qos.policy.max_throughput_iops
-		var qrConsistencyGroupsQosPolicyMaxThroughputIops int64
-
-		if o.ConsistencyGroupsQosPolicyMaxThroughputIops != nil {
-			qrConsistencyGroupsQosPolicyMaxThroughputIops = *o.ConsistencyGroupsQosPolicyMaxThroughputIops
-		}
-		qConsistencyGroupsQosPolicyMaxThroughputIops := swag.FormatInt64(qrConsistencyGroupsQosPolicyMaxThroughputIops)
-		if qConsistencyGroupsQosPolicyMaxThroughputIops != "" {
-
-			if err := r.SetQueryParam("consistency_groups.qos.policy.max_throughput_iops", qConsistencyGroupsQosPolicyMaxThroughputIops); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ConsistencyGroupsQosPolicyMaxThroughputMbps != nil {
-
-		// query param consistency_groups.qos.policy.max_throughput_mbps
-		var qrConsistencyGroupsQosPolicyMaxThroughputMbps int64
-
-		if o.ConsistencyGroupsQosPolicyMaxThroughputMbps != nil {
-			qrConsistencyGroupsQosPolicyMaxThroughputMbps = *o.ConsistencyGroupsQosPolicyMaxThroughputMbps
-		}
-		qConsistencyGroupsQosPolicyMaxThroughputMbps := swag.FormatInt64(qrConsistencyGroupsQosPolicyMaxThroughputMbps)
-		if qConsistencyGroupsQosPolicyMaxThroughputMbps != "" {
-
-			if err := r.SetQueryParam("consistency_groups.qos.policy.max_throughput_mbps", qConsistencyGroupsQosPolicyMaxThroughputMbps); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ConsistencyGroupsQosPolicyMinThroughputIops != nil {
-
-		// query param consistency_groups.qos.policy.min_throughput_iops
-		var qrConsistencyGroupsQosPolicyMinThroughputIops int64
-
-		if o.ConsistencyGroupsQosPolicyMinThroughputIops != nil {
-			qrConsistencyGroupsQosPolicyMinThroughputIops = *o.ConsistencyGroupsQosPolicyMinThroughputIops
-		}
-		qConsistencyGroupsQosPolicyMinThroughputIops := swag.FormatInt64(qrConsistencyGroupsQosPolicyMinThroughputIops)
-		if qConsistencyGroupsQosPolicyMinThroughputIops != "" {
-
-			if err := r.SetQueryParam("consistency_groups.qos.policy.min_throughput_iops", qConsistencyGroupsQosPolicyMinThroughputIops); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ConsistencyGroupsQosPolicyMinThroughputMbps != nil {
-
-		// query param consistency_groups.qos.policy.min_throughput_mbps
-		var qrConsistencyGroupsQosPolicyMinThroughputMbps int64
-
-		if o.ConsistencyGroupsQosPolicyMinThroughputMbps != nil {
-			qrConsistencyGroupsQosPolicyMinThroughputMbps = *o.ConsistencyGroupsQosPolicyMinThroughputMbps
-		}
-		qConsistencyGroupsQosPolicyMinThroughputMbps := swag.FormatInt64(qrConsistencyGroupsQosPolicyMinThroughputMbps)
-		if qConsistencyGroupsQosPolicyMinThroughputMbps != "" {
-
-			if err := r.SetQueryParam("consistency_groups.qos.policy.min_throughput_mbps", qConsistencyGroupsQosPolicyMinThroughputMbps); err != nil {
 				return err
 			}
 		}
@@ -6023,23 +6941,6 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesLanguage != nil {
-
-		// query param consistency_groups.volumes.language
-		var qrConsistencyGroupsVolumesLanguage string
-
-		if o.ConsistencyGroupsVolumesLanguage != nil {
-			qrConsistencyGroupsVolumesLanguage = *o.ConsistencyGroupsVolumesLanguage
-		}
-		qConsistencyGroupsVolumesLanguage := qrConsistencyGroupsVolumesLanguage
-		if qConsistencyGroupsVolumesLanguage != "" {
-
-			if err := r.SetQueryParam("consistency_groups.volumes.language", qConsistencyGroupsVolumesLanguage); err != nil {
-				return err
-			}
-		}
-	}
-
 	if o.ConsistencyGroupsVolumesName != nil {
 
 		// query param consistency_groups.volumes.name
@@ -6120,6 +7021,23 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup != "" {
 
 			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.acls.user_or_group", qConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.acls.win_sid_unix_id
+		var qrConsistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID string
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID = *o.ConsistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID
+		}
+		qConsistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID := qrConsistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID
+		if qConsistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.acls.win_sid_unix_id", qConsistencyGroupsVolumesNasCifsSharesAclsWinSidUnixID); err != nil {
 				return err
 			}
 		}
@@ -6397,6 +7315,23 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
+	if o.ConsistencyGroupsVolumesNasExportPolicyID != nil {
+
+		// query param consistency_groups.volumes.nas.export_policy.id
+		var qrConsistencyGroupsVolumesNasExportPolicyID int64
+
+		if o.ConsistencyGroupsVolumesNasExportPolicyID != nil {
+			qrConsistencyGroupsVolumesNasExportPolicyID = *o.ConsistencyGroupsVolumesNasExportPolicyID
+		}
+		qConsistencyGroupsVolumesNasExportPolicyID := swag.FormatInt64(qrConsistencyGroupsVolumesNasExportPolicyID)
+		if qConsistencyGroupsVolumesNasExportPolicyID != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.export_policy.id", qConsistencyGroupsVolumesNasExportPolicyID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ConsistencyGroupsVolumesNasExportPolicyName != nil {
 
 		// query param consistency_groups.volumes.nas.export_policy.name
@@ -6601,23 +7536,6 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesNasExportPolicyUUID != nil {
-
-		// query param consistency_groups.volumes.nas.export_policy.uuid
-		var qrConsistencyGroupsVolumesNasExportPolicyUUID string
-
-		if o.ConsistencyGroupsVolumesNasExportPolicyUUID != nil {
-			qrConsistencyGroupsVolumesNasExportPolicyUUID = *o.ConsistencyGroupsVolumesNasExportPolicyUUID
-		}
-		qConsistencyGroupsVolumesNasExportPolicyUUID := qrConsistencyGroupsVolumesNasExportPolicyUUID
-		if qConsistencyGroupsVolumesNasExportPolicyUUID != "" {
-
-			if err := r.SetQueryParam("consistency_groups.volumes.nas.export_policy.uuid", qConsistencyGroupsVolumesNasExportPolicyUUID); err != nil {
-				return err
-			}
-		}
-	}
-
 	if o.ConsistencyGroupsVolumesNasGid != nil {
 
 		// query param consistency_groups.volumes.nas.gid
@@ -6732,74 +7650,6 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qConsistencyGroupsVolumesNasUnixPermissions != "" {
 
 			if err := r.SetQueryParam("consistency_groups.volumes.nas.unix_permissions", qConsistencyGroupsVolumesNasUnixPermissions); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ConsistencyGroupsVolumesQosPolicyMaxThroughputIops != nil {
-
-		// query param consistency_groups.volumes.qos.policy.max_throughput_iops
-		var qrConsistencyGroupsVolumesQosPolicyMaxThroughputIops int64
-
-		if o.ConsistencyGroupsVolumesQosPolicyMaxThroughputIops != nil {
-			qrConsistencyGroupsVolumesQosPolicyMaxThroughputIops = *o.ConsistencyGroupsVolumesQosPolicyMaxThroughputIops
-		}
-		qConsistencyGroupsVolumesQosPolicyMaxThroughputIops := swag.FormatInt64(qrConsistencyGroupsVolumesQosPolicyMaxThroughputIops)
-		if qConsistencyGroupsVolumesQosPolicyMaxThroughputIops != "" {
-
-			if err := r.SetQueryParam("consistency_groups.volumes.qos.policy.max_throughput_iops", qConsistencyGroupsVolumesQosPolicyMaxThroughputIops); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ConsistencyGroupsVolumesQosPolicyMaxThroughputMbps != nil {
-
-		// query param consistency_groups.volumes.qos.policy.max_throughput_mbps
-		var qrConsistencyGroupsVolumesQosPolicyMaxThroughputMbps int64
-
-		if o.ConsistencyGroupsVolumesQosPolicyMaxThroughputMbps != nil {
-			qrConsistencyGroupsVolumesQosPolicyMaxThroughputMbps = *o.ConsistencyGroupsVolumesQosPolicyMaxThroughputMbps
-		}
-		qConsistencyGroupsVolumesQosPolicyMaxThroughputMbps := swag.FormatInt64(qrConsistencyGroupsVolumesQosPolicyMaxThroughputMbps)
-		if qConsistencyGroupsVolumesQosPolicyMaxThroughputMbps != "" {
-
-			if err := r.SetQueryParam("consistency_groups.volumes.qos.policy.max_throughput_mbps", qConsistencyGroupsVolumesQosPolicyMaxThroughputMbps); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ConsistencyGroupsVolumesQosPolicyMinThroughputIops != nil {
-
-		// query param consistency_groups.volumes.qos.policy.min_throughput_iops
-		var qrConsistencyGroupsVolumesQosPolicyMinThroughputIops int64
-
-		if o.ConsistencyGroupsVolumesQosPolicyMinThroughputIops != nil {
-			qrConsistencyGroupsVolumesQosPolicyMinThroughputIops = *o.ConsistencyGroupsVolumesQosPolicyMinThroughputIops
-		}
-		qConsistencyGroupsVolumesQosPolicyMinThroughputIops := swag.FormatInt64(qrConsistencyGroupsVolumesQosPolicyMinThroughputIops)
-		if qConsistencyGroupsVolumesQosPolicyMinThroughputIops != "" {
-
-			if err := r.SetQueryParam("consistency_groups.volumes.qos.policy.min_throughput_iops", qConsistencyGroupsVolumesQosPolicyMinThroughputIops); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ConsistencyGroupsVolumesQosPolicyMinThroughputMbps != nil {
-
-		// query param consistency_groups.volumes.qos.policy.min_throughput_mbps
-		var qrConsistencyGroupsVolumesQosPolicyMinThroughputMbps int64
-
-		if o.ConsistencyGroupsVolumesQosPolicyMinThroughputMbps != nil {
-			qrConsistencyGroupsVolumesQosPolicyMinThroughputMbps = *o.ConsistencyGroupsVolumesQosPolicyMinThroughputMbps
-		}
-		qConsistencyGroupsVolumesQosPolicyMinThroughputMbps := swag.FormatInt64(qrConsistencyGroupsVolumesQosPolicyMinThroughputMbps)
-		if qConsistencyGroupsVolumesQosPolicyMinThroughputMbps != "" {
-
-			if err := r.SetQueryParam("consistency_groups.volumes.qos.policy.min_throughput_mbps", qConsistencyGroupsVolumesQosPolicyMinThroughputMbps); err != nil {
 				return err
 			}
 		}
@@ -7445,6 +8295,312 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
+	if o.MetricAvailableSpace != nil {
+
+		// query param metric.available_space
+		var qrMetricAvailableSpace int64
+
+		if o.MetricAvailableSpace != nil {
+			qrMetricAvailableSpace = *o.MetricAvailableSpace
+		}
+		qMetricAvailableSpace := swag.FormatInt64(qrMetricAvailableSpace)
+		if qMetricAvailableSpace != "" {
+
+			if err := r.SetQueryParam("metric.available_space", qMetricAvailableSpace); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricDuration != nil {
+
+		// query param metric.duration
+		var qrMetricDuration string
+
+		if o.MetricDuration != nil {
+			qrMetricDuration = *o.MetricDuration
+		}
+		qMetricDuration := qrMetricDuration
+		if qMetricDuration != "" {
+
+			if err := r.SetQueryParam("metric.duration", qMetricDuration); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsOther != nil {
+
+		// query param metric.iops.other
+		var qrMetricIopsOther int64
+
+		if o.MetricIopsOther != nil {
+			qrMetricIopsOther = *o.MetricIopsOther
+		}
+		qMetricIopsOther := swag.FormatInt64(qrMetricIopsOther)
+		if qMetricIopsOther != "" {
+
+			if err := r.SetQueryParam("metric.iops.other", qMetricIopsOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsRead != nil {
+
+		// query param metric.iops.read
+		var qrMetricIopsRead int64
+
+		if o.MetricIopsRead != nil {
+			qrMetricIopsRead = *o.MetricIopsRead
+		}
+		qMetricIopsRead := swag.FormatInt64(qrMetricIopsRead)
+		if qMetricIopsRead != "" {
+
+			if err := r.SetQueryParam("metric.iops.read", qMetricIopsRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsTotal != nil {
+
+		// query param metric.iops.total
+		var qrMetricIopsTotal int64
+
+		if o.MetricIopsTotal != nil {
+			qrMetricIopsTotal = *o.MetricIopsTotal
+		}
+		qMetricIopsTotal := swag.FormatInt64(qrMetricIopsTotal)
+		if qMetricIopsTotal != "" {
+
+			if err := r.SetQueryParam("metric.iops.total", qMetricIopsTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsWrite != nil {
+
+		// query param metric.iops.write
+		var qrMetricIopsWrite int64
+
+		if o.MetricIopsWrite != nil {
+			qrMetricIopsWrite = *o.MetricIopsWrite
+		}
+		qMetricIopsWrite := swag.FormatInt64(qrMetricIopsWrite)
+		if qMetricIopsWrite != "" {
+
+			if err := r.SetQueryParam("metric.iops.write", qMetricIopsWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyOther != nil {
+
+		// query param metric.latency.other
+		var qrMetricLatencyOther int64
+
+		if o.MetricLatencyOther != nil {
+			qrMetricLatencyOther = *o.MetricLatencyOther
+		}
+		qMetricLatencyOther := swag.FormatInt64(qrMetricLatencyOther)
+		if qMetricLatencyOther != "" {
+
+			if err := r.SetQueryParam("metric.latency.other", qMetricLatencyOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyRead != nil {
+
+		// query param metric.latency.read
+		var qrMetricLatencyRead int64
+
+		if o.MetricLatencyRead != nil {
+			qrMetricLatencyRead = *o.MetricLatencyRead
+		}
+		qMetricLatencyRead := swag.FormatInt64(qrMetricLatencyRead)
+		if qMetricLatencyRead != "" {
+
+			if err := r.SetQueryParam("metric.latency.read", qMetricLatencyRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyTotal != nil {
+
+		// query param metric.latency.total
+		var qrMetricLatencyTotal int64
+
+		if o.MetricLatencyTotal != nil {
+			qrMetricLatencyTotal = *o.MetricLatencyTotal
+		}
+		qMetricLatencyTotal := swag.FormatInt64(qrMetricLatencyTotal)
+		if qMetricLatencyTotal != "" {
+
+			if err := r.SetQueryParam("metric.latency.total", qMetricLatencyTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyWrite != nil {
+
+		// query param metric.latency.write
+		var qrMetricLatencyWrite int64
+
+		if o.MetricLatencyWrite != nil {
+			qrMetricLatencyWrite = *o.MetricLatencyWrite
+		}
+		qMetricLatencyWrite := swag.FormatInt64(qrMetricLatencyWrite)
+		if qMetricLatencyWrite != "" {
+
+			if err := r.SetQueryParam("metric.latency.write", qMetricLatencyWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricSize != nil {
+
+		// query param metric.size
+		var qrMetricSize int64
+
+		if o.MetricSize != nil {
+			qrMetricSize = *o.MetricSize
+		}
+		qMetricSize := swag.FormatInt64(qrMetricSize)
+		if qMetricSize != "" {
+
+			if err := r.SetQueryParam("metric.size", qMetricSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricStatus != nil {
+
+		// query param metric.status
+		var qrMetricStatus string
+
+		if o.MetricStatus != nil {
+			qrMetricStatus = *o.MetricStatus
+		}
+		qMetricStatus := qrMetricStatus
+		if qMetricStatus != "" {
+
+			if err := r.SetQueryParam("metric.status", qMetricStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputOther != nil {
+
+		// query param metric.throughput.other
+		var qrMetricThroughputOther int64
+
+		if o.MetricThroughputOther != nil {
+			qrMetricThroughputOther = *o.MetricThroughputOther
+		}
+		qMetricThroughputOther := swag.FormatInt64(qrMetricThroughputOther)
+		if qMetricThroughputOther != "" {
+
+			if err := r.SetQueryParam("metric.throughput.other", qMetricThroughputOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputRead != nil {
+
+		// query param metric.throughput.read
+		var qrMetricThroughputRead int64
+
+		if o.MetricThroughputRead != nil {
+			qrMetricThroughputRead = *o.MetricThroughputRead
+		}
+		qMetricThroughputRead := swag.FormatInt64(qrMetricThroughputRead)
+		if qMetricThroughputRead != "" {
+
+			if err := r.SetQueryParam("metric.throughput.read", qMetricThroughputRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputTotal != nil {
+
+		// query param metric.throughput.total
+		var qrMetricThroughputTotal int64
+
+		if o.MetricThroughputTotal != nil {
+			qrMetricThroughputTotal = *o.MetricThroughputTotal
+		}
+		qMetricThroughputTotal := swag.FormatInt64(qrMetricThroughputTotal)
+		if qMetricThroughputTotal != "" {
+
+			if err := r.SetQueryParam("metric.throughput.total", qMetricThroughputTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputWrite != nil {
+
+		// query param metric.throughput.write
+		var qrMetricThroughputWrite int64
+
+		if o.MetricThroughputWrite != nil {
+			qrMetricThroughputWrite = *o.MetricThroughputWrite
+		}
+		qMetricThroughputWrite := swag.FormatInt64(qrMetricThroughputWrite)
+		if qMetricThroughputWrite != "" {
+
+			if err := r.SetQueryParam("metric.throughput.write", qMetricThroughputWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricTimestamp != nil {
+
+		// query param metric.timestamp
+		var qrMetricTimestamp string
+
+		if o.MetricTimestamp != nil {
+			qrMetricTimestamp = *o.MetricTimestamp
+		}
+		qMetricTimestamp := qrMetricTimestamp
+		if qMetricTimestamp != "" {
+
+			if err := r.SetQueryParam("metric.timestamp", qMetricTimestamp); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricUsedSpace != nil {
+
+		// query param metric.used_space
+		var qrMetricUsedSpace int64
+
+		if o.MetricUsedSpace != nil {
+			qrMetricUsedSpace = *o.MetricUsedSpace
+		}
+		qMetricUsedSpace := swag.FormatInt64(qrMetricUsedSpace)
+		if qMetricUsedSpace != "" {
+
+			if err := r.SetQueryParam("metric.used_space", qMetricUsedSpace); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.Name != nil {
 
 		// query param name
@@ -7768,6 +8924,57 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
+	if o.NamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize != nil {
+
+		// query param namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.group_size
+		var qrNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize string
+
+		if o.NamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize != nil {
+			qrNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize = *o.NamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize
+		}
+		qNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize := qrNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize
+		if qNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize != "" {
+
+			if err := r.SetQueryParam("namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.group_size", qNamespacesSubsystemMapSubsystemHostsDhHmacChapGroupSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction != nil {
+
+		// query param namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.hash_function
+		var qrNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction string
+
+		if o.NamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction != nil {
+			qrNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction = *o.NamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction
+		}
+		qNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction := qrNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction
+		if qNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction != "" {
+
+			if err := r.SetQueryParam("namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.hash_function", qNamespacesSubsystemMapSubsystemHostsDhHmacChapHashFunction); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSubsystemMapSubsystemHostsDhHmacChapMode != nil {
+
+		// query param namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.mode
+		var qrNamespacesSubsystemMapSubsystemHostsDhHmacChapMode string
+
+		if o.NamespacesSubsystemMapSubsystemHostsDhHmacChapMode != nil {
+			qrNamespacesSubsystemMapSubsystemHostsDhHmacChapMode = *o.NamespacesSubsystemMapSubsystemHostsDhHmacChapMode
+		}
+		qNamespacesSubsystemMapSubsystemHostsDhHmacChapMode := qrNamespacesSubsystemMapSubsystemHostsDhHmacChapMode
+		if qNamespacesSubsystemMapSubsystemHostsDhHmacChapMode != "" {
+
+			if err := r.SetQueryParam("namespaces.subsystem_map.subsystem.hosts.dh_hmac_chap.mode", qNamespacesSubsystemMapSubsystemHostsDhHmacChapMode); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.NamespacesSubsystemMapSubsystemHostsNqn != nil {
 
 		// query param namespaces.subsystem_map.subsystem.hosts.nqn
@@ -7780,6 +8987,40 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qNamespacesSubsystemMapSubsystemHostsNqn != "" {
 
 			if err := r.SetQueryParam("namespaces.subsystem_map.subsystem.hosts.nqn", qNamespacesSubsystemMapSubsystemHostsNqn); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSubsystemMapSubsystemHostsPriority != nil {
+
+		// query param namespaces.subsystem_map.subsystem.hosts.priority
+		var qrNamespacesSubsystemMapSubsystemHostsPriority string
+
+		if o.NamespacesSubsystemMapSubsystemHostsPriority != nil {
+			qrNamespacesSubsystemMapSubsystemHostsPriority = *o.NamespacesSubsystemMapSubsystemHostsPriority
+		}
+		qNamespacesSubsystemMapSubsystemHostsPriority := qrNamespacesSubsystemMapSubsystemHostsPriority
+		if qNamespacesSubsystemMapSubsystemHostsPriority != "" {
+
+			if err := r.SetQueryParam("namespaces.subsystem_map.subsystem.hosts.priority", qNamespacesSubsystemMapSubsystemHostsPriority); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSubsystemMapSubsystemHostsTLSKeyType != nil {
+
+		// query param namespaces.subsystem_map.subsystem.hosts.tls.key_type
+		var qrNamespacesSubsystemMapSubsystemHostsTLSKeyType string
+
+		if o.NamespacesSubsystemMapSubsystemHostsTLSKeyType != nil {
+			qrNamespacesSubsystemMapSubsystemHostsTLSKeyType = *o.NamespacesSubsystemMapSubsystemHostsTLSKeyType
+		}
+		qNamespacesSubsystemMapSubsystemHostsTLSKeyType := qrNamespacesSubsystemMapSubsystemHostsTLSKeyType
+		if qNamespacesSubsystemMapSubsystemHostsTLSKeyType != "" {
+
+			if err := r.SetQueryParam("namespaces.subsystem_map.subsystem.hosts.tls.key_type", qNamespacesSubsystemMapSubsystemHostsTLSKeyType); err != nil {
 				return err
 			}
 		}
@@ -7898,74 +9139,6 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.QosPolicyMaxThroughputIops != nil {
-
-		// query param qos.policy.max_throughput_iops
-		var qrQosPolicyMaxThroughputIops int64
-
-		if o.QosPolicyMaxThroughputIops != nil {
-			qrQosPolicyMaxThroughputIops = *o.QosPolicyMaxThroughputIops
-		}
-		qQosPolicyMaxThroughputIops := swag.FormatInt64(qrQosPolicyMaxThroughputIops)
-		if qQosPolicyMaxThroughputIops != "" {
-
-			if err := r.SetQueryParam("qos.policy.max_throughput_iops", qQosPolicyMaxThroughputIops); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.QosPolicyMaxThroughputMbps != nil {
-
-		// query param qos.policy.max_throughput_mbps
-		var qrQosPolicyMaxThroughputMbps int64
-
-		if o.QosPolicyMaxThroughputMbps != nil {
-			qrQosPolicyMaxThroughputMbps = *o.QosPolicyMaxThroughputMbps
-		}
-		qQosPolicyMaxThroughputMbps := swag.FormatInt64(qrQosPolicyMaxThroughputMbps)
-		if qQosPolicyMaxThroughputMbps != "" {
-
-			if err := r.SetQueryParam("qos.policy.max_throughput_mbps", qQosPolicyMaxThroughputMbps); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.QosPolicyMinThroughputIops != nil {
-
-		// query param qos.policy.min_throughput_iops
-		var qrQosPolicyMinThroughputIops int64
-
-		if o.QosPolicyMinThroughputIops != nil {
-			qrQosPolicyMinThroughputIops = *o.QosPolicyMinThroughputIops
-		}
-		qQosPolicyMinThroughputIops := swag.FormatInt64(qrQosPolicyMinThroughputIops)
-		if qQosPolicyMinThroughputIops != "" {
-
-			if err := r.SetQueryParam("qos.policy.min_throughput_iops", qQosPolicyMinThroughputIops); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.QosPolicyMinThroughputMbps != nil {
-
-		// query param qos.policy.min_throughput_mbps
-		var qrQosPolicyMinThroughputMbps int64
-
-		if o.QosPolicyMinThroughputMbps != nil {
-			qrQosPolicyMinThroughputMbps = *o.QosPolicyMinThroughputMbps
-		}
-		qQosPolicyMinThroughputMbps := swag.FormatInt64(qrQosPolicyMinThroughputMbps)
-		if qQosPolicyMinThroughputMbps != "" {
-
-			if err := r.SetQueryParam("qos.policy.min_throughput_mbps", qQosPolicyMinThroughputMbps); err != nil {
-				return err
-			}
-		}
-	}
-
 	if o.QosPolicyName != nil {
 
 		// query param qos.policy.name
@@ -8017,6 +9190,57 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
+	if o.ReplicationRelationshipsIsProtectedBySvmDr != nil {
+
+		// query param replication_relationships.is_protected_by_svm_dr
+		var qrReplicationRelationshipsIsProtectedBySvmDr bool
+
+		if o.ReplicationRelationshipsIsProtectedBySvmDr != nil {
+			qrReplicationRelationshipsIsProtectedBySvmDr = *o.ReplicationRelationshipsIsProtectedBySvmDr
+		}
+		qReplicationRelationshipsIsProtectedBySvmDr := swag.FormatBool(qrReplicationRelationshipsIsProtectedBySvmDr)
+		if qReplicationRelationshipsIsProtectedBySvmDr != "" {
+
+			if err := r.SetQueryParam("replication_relationships.is_protected_by_svm_dr", qReplicationRelationshipsIsProtectedBySvmDr); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationRelationshipsIsSource != nil {
+
+		// query param replication_relationships.is_source
+		var qrReplicationRelationshipsIsSource bool
+
+		if o.ReplicationRelationshipsIsSource != nil {
+			qrReplicationRelationshipsIsSource = *o.ReplicationRelationshipsIsSource
+		}
+		qReplicationRelationshipsIsSource := swag.FormatBool(qrReplicationRelationshipsIsSource)
+		if qReplicationRelationshipsIsSource != "" {
+
+			if err := r.SetQueryParam("replication_relationships.is_source", qReplicationRelationshipsIsSource); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationRelationshipsUUID != nil {
+
+		// query param replication_relationships.uuid
+		var qrReplicationRelationshipsUUID string
+
+		if o.ReplicationRelationshipsUUID != nil {
+			qrReplicationRelationshipsUUID = *o.ReplicationRelationshipsUUID
+		}
+		qReplicationRelationshipsUUID := qrReplicationRelationshipsUUID
+		if qReplicationRelationshipsUUID != "" {
+
+			if err := r.SetQueryParam("replication_relationships.uuid", qReplicationRelationshipsUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ReplicationSource != nil {
 
 		// query param replication_source
@@ -8063,6 +9287,108 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnaplockComplianceClockTime != nil {
+
+		// query param snaplock.compliance_clock_time
+		var qrSnaplockComplianceClockTime string
+
+		if o.SnaplockComplianceClockTime != nil {
+			qrSnaplockComplianceClockTime = *o.SnaplockComplianceClockTime
+		}
+		qSnaplockComplianceClockTime := qrSnaplockComplianceClockTime
+		if qSnaplockComplianceClockTime != "" {
+
+			if err := r.SetQueryParam("snaplock.compliance_clock_time", qSnaplockComplianceClockTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnaplockExpiryTime != nil {
+
+		// query param snaplock.expiry_time
+		var qrSnaplockExpiryTime string
+
+		if o.SnaplockExpiryTime != nil {
+			qrSnaplockExpiryTime = *o.SnaplockExpiryTime
+		}
+		qSnaplockExpiryTime := qrSnaplockExpiryTime
+		if qSnaplockExpiryTime != "" {
+
+			if err := r.SetQueryParam("snaplock.expiry_time", qSnaplockExpiryTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnaplockRetentionDefault != nil {
+
+		// query param snaplock.retention.default
+		var qrSnaplockRetentionDefault string
+
+		if o.SnaplockRetentionDefault != nil {
+			qrSnaplockRetentionDefault = *o.SnaplockRetentionDefault
+		}
+		qSnaplockRetentionDefault := qrSnaplockRetentionDefault
+		if qSnaplockRetentionDefault != "" {
+
+			if err := r.SetQueryParam("snaplock.retention.default", qSnaplockRetentionDefault); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnaplockRetentionMaximum != nil {
+
+		// query param snaplock.retention.maximum
+		var qrSnaplockRetentionMaximum string
+
+		if o.SnaplockRetentionMaximum != nil {
+			qrSnaplockRetentionMaximum = *o.SnaplockRetentionMaximum
+		}
+		qSnaplockRetentionMaximum := qrSnaplockRetentionMaximum
+		if qSnaplockRetentionMaximum != "" {
+
+			if err := r.SetQueryParam("snaplock.retention.maximum", qSnaplockRetentionMaximum); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnaplockRetentionMinimum != nil {
+
+		// query param snaplock.retention.minimum
+		var qrSnaplockRetentionMinimum string
+
+		if o.SnaplockRetentionMinimum != nil {
+			qrSnaplockRetentionMinimum = *o.SnaplockRetentionMinimum
+		}
+		qSnaplockRetentionMinimum := qrSnaplockRetentionMinimum
+		if qSnaplockRetentionMinimum != "" {
+
+			if err := r.SetQueryParam("snaplock.retention.minimum", qSnaplockRetentionMinimum); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnaplockType != nil {
+
+		// query param snaplock.type
+		var qrSnaplockType string
+
+		if o.SnaplockType != nil {
+			qrSnaplockType = *o.SnaplockType
+		}
+		qSnaplockType := qrSnaplockType
+		if qSnaplockType != "" {
+
+			if err := r.SetQueryParam("snaplock.type", qSnaplockType); err != nil {
 				return err
 			}
 		}
@@ -8153,6 +9479,295 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
+	if o.StatisticsAvailableSpace != nil {
+
+		// query param statistics.available_space
+		var qrStatisticsAvailableSpace int64
+
+		if o.StatisticsAvailableSpace != nil {
+			qrStatisticsAvailableSpace = *o.StatisticsAvailableSpace
+		}
+		qStatisticsAvailableSpace := swag.FormatInt64(qrStatisticsAvailableSpace)
+		if qStatisticsAvailableSpace != "" {
+
+			if err := r.SetQueryParam("statistics.available_space", qStatisticsAvailableSpace); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawOther != nil {
+
+		// query param statistics.iops_raw.other
+		var qrStatisticsIopsRawOther int64
+
+		if o.StatisticsIopsRawOther != nil {
+			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOther
+		}
+		qStatisticsIopsRawOther := swag.FormatInt64(qrStatisticsIopsRawOther)
+		if qStatisticsIopsRawOther != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.other", qStatisticsIopsRawOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawRead != nil {
+
+		// query param statistics.iops_raw.read
+		var qrStatisticsIopsRawRead int64
+
+		if o.StatisticsIopsRawRead != nil {
+			qrStatisticsIopsRawRead = *o.StatisticsIopsRawRead
+		}
+		qStatisticsIopsRawRead := swag.FormatInt64(qrStatisticsIopsRawRead)
+		if qStatisticsIopsRawRead != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.read", qStatisticsIopsRawRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawTotal != nil {
+
+		// query param statistics.iops_raw.total
+		var qrStatisticsIopsRawTotal int64
+
+		if o.StatisticsIopsRawTotal != nil {
+			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotal
+		}
+		qStatisticsIopsRawTotal := swag.FormatInt64(qrStatisticsIopsRawTotal)
+		if qStatisticsIopsRawTotal != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.total", qStatisticsIopsRawTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawWrite != nil {
+
+		// query param statistics.iops_raw.write
+		var qrStatisticsIopsRawWrite int64
+
+		if o.StatisticsIopsRawWrite != nil {
+			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWrite
+		}
+		qStatisticsIopsRawWrite := swag.FormatInt64(qrStatisticsIopsRawWrite)
+		if qStatisticsIopsRawWrite != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.write", qStatisticsIopsRawWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawOther != nil {
+
+		// query param statistics.latency_raw.other
+		var qrStatisticsLatencyRawOther int64
+
+		if o.StatisticsLatencyRawOther != nil {
+			qrStatisticsLatencyRawOther = *o.StatisticsLatencyRawOther
+		}
+		qStatisticsLatencyRawOther := swag.FormatInt64(qrStatisticsLatencyRawOther)
+		if qStatisticsLatencyRawOther != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.other", qStatisticsLatencyRawOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawRead != nil {
+
+		// query param statistics.latency_raw.read
+		var qrStatisticsLatencyRawRead int64
+
+		if o.StatisticsLatencyRawRead != nil {
+			qrStatisticsLatencyRawRead = *o.StatisticsLatencyRawRead
+		}
+		qStatisticsLatencyRawRead := swag.FormatInt64(qrStatisticsLatencyRawRead)
+		if qStatisticsLatencyRawRead != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.read", qStatisticsLatencyRawRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawTotal != nil {
+
+		// query param statistics.latency_raw.total
+		var qrStatisticsLatencyRawTotal int64
+
+		if o.StatisticsLatencyRawTotal != nil {
+			qrStatisticsLatencyRawTotal = *o.StatisticsLatencyRawTotal
+		}
+		qStatisticsLatencyRawTotal := swag.FormatInt64(qrStatisticsLatencyRawTotal)
+		if qStatisticsLatencyRawTotal != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.total", qStatisticsLatencyRawTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawWrite != nil {
+
+		// query param statistics.latency_raw.write
+		var qrStatisticsLatencyRawWrite int64
+
+		if o.StatisticsLatencyRawWrite != nil {
+			qrStatisticsLatencyRawWrite = *o.StatisticsLatencyRawWrite
+		}
+		qStatisticsLatencyRawWrite := swag.FormatInt64(qrStatisticsLatencyRawWrite)
+		if qStatisticsLatencyRawWrite != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.write", qStatisticsLatencyRawWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsSize != nil {
+
+		// query param statistics.size
+		var qrStatisticsSize int64
+
+		if o.StatisticsSize != nil {
+			qrStatisticsSize = *o.StatisticsSize
+		}
+		qStatisticsSize := swag.FormatInt64(qrStatisticsSize)
+		if qStatisticsSize != "" {
+
+			if err := r.SetQueryParam("statistics.size", qStatisticsSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsStatus != nil {
+
+		// query param statistics.status
+		var qrStatisticsStatus string
+
+		if o.StatisticsStatus != nil {
+			qrStatisticsStatus = *o.StatisticsStatus
+		}
+		qStatisticsStatus := qrStatisticsStatus
+		if qStatisticsStatus != "" {
+
+			if err := r.SetQueryParam("statistics.status", qStatisticsStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawOther != nil {
+
+		// query param statistics.throughput_raw.other
+		var qrStatisticsThroughputRawOther int64
+
+		if o.StatisticsThroughputRawOther != nil {
+			qrStatisticsThroughputRawOther = *o.StatisticsThroughputRawOther
+		}
+		qStatisticsThroughputRawOther := swag.FormatInt64(qrStatisticsThroughputRawOther)
+		if qStatisticsThroughputRawOther != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.other", qStatisticsThroughputRawOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawRead != nil {
+
+		// query param statistics.throughput_raw.read
+		var qrStatisticsThroughputRawRead int64
+
+		if o.StatisticsThroughputRawRead != nil {
+			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawRead
+		}
+		qStatisticsThroughputRawRead := swag.FormatInt64(qrStatisticsThroughputRawRead)
+		if qStatisticsThroughputRawRead != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.read", qStatisticsThroughputRawRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawTotal != nil {
+
+		// query param statistics.throughput_raw.total
+		var qrStatisticsThroughputRawTotal int64
+
+		if o.StatisticsThroughputRawTotal != nil {
+			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotal
+		}
+		qStatisticsThroughputRawTotal := swag.FormatInt64(qrStatisticsThroughputRawTotal)
+		if qStatisticsThroughputRawTotal != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.total", qStatisticsThroughputRawTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawWrite != nil {
+
+		// query param statistics.throughput_raw.write
+		var qrStatisticsThroughputRawWrite int64
+
+		if o.StatisticsThroughputRawWrite != nil {
+			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWrite
+		}
+		qStatisticsThroughputRawWrite := swag.FormatInt64(qrStatisticsThroughputRawWrite)
+		if qStatisticsThroughputRawWrite != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.write", qStatisticsThroughputRawWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsTimestamp != nil {
+
+		// query param statistics.timestamp
+		var qrStatisticsTimestamp string
+
+		if o.StatisticsTimestamp != nil {
+			qrStatisticsTimestamp = *o.StatisticsTimestamp
+		}
+		qStatisticsTimestamp := qrStatisticsTimestamp
+		if qStatisticsTimestamp != "" {
+
+			if err := r.SetQueryParam("statistics.timestamp", qStatisticsTimestamp); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsUsedSpace != nil {
+
+		// query param statistics.used_space
+		var qrStatisticsUsedSpace int64
+
+		if o.StatisticsUsedSpace != nil {
+			qrStatisticsUsedSpace = *o.StatisticsUsedSpace
+		}
+		qStatisticsUsedSpace := swag.FormatInt64(qrStatisticsUsedSpace)
+		if qStatisticsUsedSpace != "" {
+
+			if err := r.SetQueryParam("statistics.used_space", qStatisticsUsedSpace); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SvmName != nil {
 
 		// query param svm.name
@@ -8221,6 +9836,23 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
+	if o.VdiskType != nil {
+
+		// query param vdisk_type
+		var qrVdiskType string
+
+		if o.VdiskType != nil {
+			qrVdiskType = *o.VdiskType
+		}
+		qVdiskType := qrVdiskType
+		if qVdiskType != "" {
+
+			if err := r.SetQueryParam("vdisk_type", qVdiskType); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.VolumesComment != nil {
 
 		// query param volumes.comment
@@ -8233,23 +9865,6 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qVolumesComment != "" {
 
 			if err := r.SetQueryParam("volumes.comment", qVolumesComment); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.VolumesLanguage != nil {
-
-		// query param volumes.language
-		var qrVolumesLanguage string
-
-		if o.VolumesLanguage != nil {
-			qrVolumesLanguage = *o.VolumesLanguage
-		}
-		qVolumesLanguage := qrVolumesLanguage
-		if qVolumesLanguage != "" {
-
-			if err := r.SetQueryParam("volumes.language", qVolumesLanguage); err != nil {
 				return err
 			}
 		}
@@ -8335,6 +9950,23 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qVolumesNasCifsSharesAclsUserOrGroup != "" {
 
 			if err := r.SetQueryParam("volumes.nas.cifs.shares.acls.user_or_group", qVolumesNasCifsSharesAclsUserOrGroup); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesAclsWinSidUnixID != nil {
+
+		// query param volumes.nas.cifs.shares.acls.win_sid_unix_id
+		var qrVolumesNasCifsSharesAclsWinSidUnixID string
+
+		if o.VolumesNasCifsSharesAclsWinSidUnixID != nil {
+			qrVolumesNasCifsSharesAclsWinSidUnixID = *o.VolumesNasCifsSharesAclsWinSidUnixID
+		}
+		qVolumesNasCifsSharesAclsWinSidUnixID := qrVolumesNasCifsSharesAclsWinSidUnixID
+		if qVolumesNasCifsSharesAclsWinSidUnixID != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.acls.win_sid_unix_id", qVolumesNasCifsSharesAclsWinSidUnixID); err != nil {
 				return err
 			}
 		}
@@ -8612,6 +10244,23 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
+	if o.VolumesNasExportPolicyID != nil {
+
+		// query param volumes.nas.export_policy.id
+		var qrVolumesNasExportPolicyID int64
+
+		if o.VolumesNasExportPolicyID != nil {
+			qrVolumesNasExportPolicyID = *o.VolumesNasExportPolicyID
+		}
+		qVolumesNasExportPolicyID := swag.FormatInt64(qrVolumesNasExportPolicyID)
+		if qVolumesNasExportPolicyID != "" {
+
+			if err := r.SetQueryParam("volumes.nas.export_policy.id", qVolumesNasExportPolicyID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.VolumesNasExportPolicyName != nil {
 
 		// query param volumes.nas.export_policy.name
@@ -8816,23 +10465,6 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VolumesNasExportPolicyUUID != nil {
-
-		// query param volumes.nas.export_policy.uuid
-		var qrVolumesNasExportPolicyUUID string
-
-		if o.VolumesNasExportPolicyUUID != nil {
-			qrVolumesNasExportPolicyUUID = *o.VolumesNasExportPolicyUUID
-		}
-		qVolumesNasExportPolicyUUID := qrVolumesNasExportPolicyUUID
-		if qVolumesNasExportPolicyUUID != "" {
-
-			if err := r.SetQueryParam("volumes.nas.export_policy.uuid", qVolumesNasExportPolicyUUID); err != nil {
-				return err
-			}
-		}
-	}
-
 	if o.VolumesNasGid != nil {
 
 		// query param volumes.nas.gid
@@ -8947,74 +10579,6 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qVolumesNasUnixPermissions != "" {
 
 			if err := r.SetQueryParam("volumes.nas.unix_permissions", qVolumesNasUnixPermissions); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.VolumesQosPolicyMaxThroughputIops != nil {
-
-		// query param volumes.qos.policy.max_throughput_iops
-		var qrVolumesQosPolicyMaxThroughputIops int64
-
-		if o.VolumesQosPolicyMaxThroughputIops != nil {
-			qrVolumesQosPolicyMaxThroughputIops = *o.VolumesQosPolicyMaxThroughputIops
-		}
-		qVolumesQosPolicyMaxThroughputIops := swag.FormatInt64(qrVolumesQosPolicyMaxThroughputIops)
-		if qVolumesQosPolicyMaxThroughputIops != "" {
-
-			if err := r.SetQueryParam("volumes.qos.policy.max_throughput_iops", qVolumesQosPolicyMaxThroughputIops); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.VolumesQosPolicyMaxThroughputMbps != nil {
-
-		// query param volumes.qos.policy.max_throughput_mbps
-		var qrVolumesQosPolicyMaxThroughputMbps int64
-
-		if o.VolumesQosPolicyMaxThroughputMbps != nil {
-			qrVolumesQosPolicyMaxThroughputMbps = *o.VolumesQosPolicyMaxThroughputMbps
-		}
-		qVolumesQosPolicyMaxThroughputMbps := swag.FormatInt64(qrVolumesQosPolicyMaxThroughputMbps)
-		if qVolumesQosPolicyMaxThroughputMbps != "" {
-
-			if err := r.SetQueryParam("volumes.qos.policy.max_throughput_mbps", qVolumesQosPolicyMaxThroughputMbps); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.VolumesQosPolicyMinThroughputIops != nil {
-
-		// query param volumes.qos.policy.min_throughput_iops
-		var qrVolumesQosPolicyMinThroughputIops int64
-
-		if o.VolumesQosPolicyMinThroughputIops != nil {
-			qrVolumesQosPolicyMinThroughputIops = *o.VolumesQosPolicyMinThroughputIops
-		}
-		qVolumesQosPolicyMinThroughputIops := swag.FormatInt64(qrVolumesQosPolicyMinThroughputIops)
-		if qVolumesQosPolicyMinThroughputIops != "" {
-
-			if err := r.SetQueryParam("volumes.qos.policy.min_throughput_iops", qVolumesQosPolicyMinThroughputIops); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.VolumesQosPolicyMinThroughputMbps != nil {
-
-		// query param volumes.qos.policy.min_throughput_mbps
-		var qrVolumesQosPolicyMinThroughputMbps int64
-
-		if o.VolumesQosPolicyMinThroughputMbps != nil {
-			qrVolumesQosPolicyMinThroughputMbps = *o.VolumesQosPolicyMinThroughputMbps
-		}
-		qVolumesQosPolicyMinThroughputMbps := swag.FormatInt64(qrVolumesQosPolicyMinThroughputMbps)
-		if qVolumesQosPolicyMinThroughputMbps != "" {
-
-			if err := r.SetQueryParam("volumes.qos.policy.min_throughput_mbps", qVolumesQosPolicyMinThroughputMbps); err != nil {
 				return err
 			}
 		}

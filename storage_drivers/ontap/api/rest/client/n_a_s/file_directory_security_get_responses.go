@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *FileDirectorySecurityGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the file directory security get o k response
+func (o *FileDirectorySecurityGetOK) Code() int {
+	return 200
+}
+
 func (o *FileDirectorySecurityGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityGetOK %s", 200, payload)
 }
 
 func (o *FileDirectorySecurityGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityGetOK %s", 200, payload)
 }
 
 func (o *FileDirectorySecurityGetOK) GetPayload() *models.FileDirectorySecurity {
@@ -112,19 +120,21 @@ func NewFileDirectorySecurityGetDefault(code int) *FileDirectorySecurityGetDefau
 }
 
 /*
-FileDirectorySecurityGetDefault describes a response with status code -1, with default header values.
+	FileDirectorySecurityGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 655865     | The specified file or directory does not exist.|
+| 1260882    | Specified SVM not found.|
+| 6691623    | User is not authorized.|
+| 4849676    | The specified Windows user or group does not exist.|
 */
 type FileDirectorySecurityGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the file directory security get default response
-func (o *FileDirectorySecurityGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this file directory security get default response has a 2xx status code
@@ -152,12 +162,19 @@ func (o *FileDirectorySecurityGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the file directory security get default response
+func (o *FileDirectorySecurityGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FileDirectorySecurityGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_get default %s", o._statusCode, payload)
 }
 
 func (o *FileDirectorySecurityGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_get default %s", o._statusCode, payload)
 }
 
 func (o *FileDirectorySecurityGetDefault) GetPayload() *models.ErrorResponse {

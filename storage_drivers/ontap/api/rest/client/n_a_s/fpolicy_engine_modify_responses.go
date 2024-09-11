@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *FpolicyEngineModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fpolicy engine modify o k response
+func (o *FpolicyEngineModifyOK) Code() int {
+	return 200
+}
+
 func (o *FpolicyEngineModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/engines/{name}][%d] fpolicyEngineModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/engines/{name}][%d] fpolicyEngineModifyOK", 200)
 }
 
 func (o *FpolicyEngineModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/engines/{name}][%d] fpolicyEngineModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/engines/{name}][%d] fpolicyEngineModifyOK", 200)
 }
 
 func (o *FpolicyEngineModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,18 +115,16 @@ func NewFpolicyEngineModifyDefault(code int) *FpolicyEngineModifyDefault {
 | 9764922    | The primary and secondary server has a redundant IP address |
 | 9764942    | At least one FPolicy policy is using the FPolicy engine |
 | 9764886    | FPolicy engine is a cluster-level FPolicy engine |
+| 9765011    | The resiliency feature is not supported with mandatory screening |
+| 9765012    | The specified resiliency directory path does not exist|
 | 9765042    | The specified send buffer size exceeds the maximum limit |
 | 9765043    | The specified receive buffer size exceeds the maximum limit |
+| 9765063    | Policy with Persistent Store feature does not support a "synchronous" |
 */
 type FpolicyEngineModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the fpolicy engine modify default response
-func (o *FpolicyEngineModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this fpolicy engine modify default response has a 2xx status code
@@ -148,12 +152,19 @@ func (o *FpolicyEngineModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fpolicy engine modify default response
+func (o *FpolicyEngineModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FpolicyEngineModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/engines/{name}][%d] fpolicy_engine_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/engines/{name}][%d] fpolicy_engine_modify default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyEngineModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/engines/{name}][%d] fpolicy_engine_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/engines/{name}][%d] fpolicy_engine_modify default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyEngineModifyDefault) GetPayload() *models.ErrorResponse {

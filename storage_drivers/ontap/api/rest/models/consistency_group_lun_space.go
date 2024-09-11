@@ -23,7 +23,7 @@ type ConsistencyGroupLunSpace struct {
 	Guarantee *ConsistencyGroupLunSpaceInlineGuarantee `json:"guarantee,omitempty"`
 
 	// The total provisioned size of the LUN. The LUN size can be increased but not reduced using the REST interface.
-	// The maximum and minimum sizes listed here are the absolute maximum and absolute minimum sizes, in bytes. The actual minimum and maxiumum sizes vary depending on the ONTAP version, ONTAP platform, and the available space in the containing volume and aggregate.
+	// The maximum and minimum sizes listed here are the absolute maximum and absolute minimum sizes, in bytes. The actual minimum and maximum sizes vary depending on the ONTAP version, ONTAP platform, and the available space in the containing volume and aggregate.
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
 	//
 	// Example: 1073741824
@@ -35,6 +35,7 @@ type ConsistencyGroupLunSpace struct {
 	// This value is the total space consumed in the volume by the LUN, including filesystem overhead, but excluding prefix and suffix streams. Due to internal filesystem overhead and the many ways SAN filesystems and applications utilize blocks within a LUN, this value does not necessarily reflect actual consumption/availability from the perspective of the filesystem or application. Without specific knowledge of how the LUN blocks are utilized outside of ONTAP, this property should not be used as an indicator for an out-of-space condition.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
 	//
+	// Read Only: true
 	Used *int64 `json:"used,omitempty"`
 }
 
@@ -97,6 +98,10 @@ func (m *ConsistencyGroupLunSpace) ContextValidate(ctx context.Context, formats 
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -112,6 +117,15 @@ func (m *ConsistencyGroupLunSpace) contextValidateGuarantee(ctx context.Context,
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupLunSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "used", "body", m.Used); err != nil {
+		return err
 	}
 
 	return nil
@@ -142,11 +156,13 @@ type ConsistencyGroupLunSpaceInlineGuarantee struct {
 
 	// The requested space reservation policy for the LUN. If _true_, a space reservation is requested for the LUN; if _false_, the LUN is thin provisioned. Guaranteeing a space reservation request for a LUN requires that the volume in which the LUN resides is also space reserved and that the fractional reserve for the volume is 100%. Valid in POST and PATCH.
 	//
+	//
 	Requested *bool `json:"requested,omitempty"`
 
 	// Reports if the LUN is space guaranteed.<br/>
 	// If _true_, a space guarantee is requested and the containing volume and aggregate support the request. If _false_, a space guarantee is not requested or a space guarantee is requested and either the containing volume or aggregate do not support the request.
 	//
+	// Read Only: true
 	Reserved *bool `json:"reserved,omitempty"`
 }
 
@@ -155,8 +171,26 @@ func (m *ConsistencyGroupLunSpaceInlineGuarantee) Validate(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validates this consistency group lun space inline guarantee based on context it is used
+// ContextValidate validate this consistency group lun space inline guarantee based on the context it is used
 func (m *ConsistencyGroupLunSpaceInlineGuarantee) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateReserved(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupLunSpaceInlineGuarantee) contextValidateReserved(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "guarantee"+"."+"reserved", "body", m.Reserved); err != nil {
+		return err
+	}
+
 	return nil
 }
 

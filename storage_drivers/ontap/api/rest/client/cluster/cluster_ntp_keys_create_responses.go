@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -83,12 +84,17 @@ func (o *ClusterNtpKeysCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the cluster ntp keys create created response
+func (o *ClusterNtpKeysCreateCreated) Code() int {
+	return 201
+}
+
 func (o *ClusterNtpKeysCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /cluster/ntp/keys][%d] clusterNtpKeysCreateCreated ", 201)
+	return fmt.Sprintf("[POST /cluster/ntp/keys][%d] clusterNtpKeysCreateCreated", 201)
 }
 
 func (o *ClusterNtpKeysCreateCreated) String() string {
-	return fmt.Sprintf("[POST /cluster/ntp/keys][%d] clusterNtpKeysCreateCreated ", 201)
+	return fmt.Sprintf("[POST /cluster/ntp/keys][%d] clusterNtpKeysCreateCreated", 201)
 }
 
 func (o *ClusterNtpKeysCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -119,16 +125,12 @@ func NewClusterNtpKeysCreateDefault(code int) *ClusterNtpKeysCreateDefault {
 | ---------- | ----------- |
 | 2097187 | Invalid value for an NTP symmetric authentication key. A SHA1 key must be exactly 40 hexadecimal digits. |
 | 2097189 | Too many NTP keys have been configured. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ClusterNtpKeysCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cluster ntp keys create default response
-func (o *ClusterNtpKeysCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cluster ntp keys create default response has a 2xx status code
@@ -156,12 +158,19 @@ func (o *ClusterNtpKeysCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster ntp keys create default response
+func (o *ClusterNtpKeysCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterNtpKeysCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /cluster/ntp/keys][%d] cluster_ntp_keys_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/ntp/keys][%d] cluster_ntp_keys_create default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNtpKeysCreateDefault) String() string {
-	return fmt.Sprintf("[POST /cluster/ntp/keys][%d] cluster_ntp_keys_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/ntp/keys][%d] cluster_ntp_keys_create default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNtpKeysCreateDefault) GetPayload() *models.ErrorResponse {

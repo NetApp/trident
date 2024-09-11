@@ -6,6 +6,7 @@ package svm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type SvmModifyReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *SvmModifyReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewSvmModifyOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewSvmModifyAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *SvmModifyReader) ReadResponse(response runtime.ClientResponse, consumer
 	}
 }
 
+// NewSvmModifyOK creates a SvmModifyOK with default headers values
+func NewSvmModifyOK() *SvmModifyOK {
+	return &SvmModifyOK{}
+}
+
+/*
+SvmModifyOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type SvmModifyOK struct {
+	Payload *models.SvmJobLinkResponse
+}
+
+// IsSuccess returns true when this svm modify o k response has a 2xx status code
+func (o *SvmModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm modify o k response has a 3xx status code
+func (o *SvmModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm modify o k response has a 4xx status code
+func (o *SvmModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm modify o k response has a 5xx status code
+func (o *SvmModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm modify o k response a status code equal to that given
+func (o *SvmModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the svm modify o k response
+func (o *SvmModifyOK) Code() int {
+	return 200
+}
+
+func (o *SvmModifyOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/svms/{uuid}][%d] svmModifyOK %s", 200, payload)
+}
+
+func (o *SvmModifyOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/svms/{uuid}][%d] svmModifyOK %s", 200, payload)
+}
+
+func (o *SvmModifyOK) GetPayload() *models.SvmJobLinkResponse {
+	return o.Payload
+}
+
+func (o *SvmModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.SvmJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewSvmModifyAccepted creates a SvmModifyAccepted with default headers values
 func NewSvmModifyAccepted() *SvmModifyAccepted {
 	return &SvmModifyAccepted{}
@@ -52,7 +129,7 @@ SvmModifyAccepted describes a response with status code 202, with default header
 Accepted
 */
 type SvmModifyAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.SvmJobLinkResponse
 }
 
 // IsSuccess returns true when this svm modify accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *SvmModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the svm modify accepted response
+func (o *SvmModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *SvmModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /svm/svms/{uuid}][%d] svmModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/svms/{uuid}][%d] svmModifyAccepted %s", 202, payload)
 }
 
 func (o *SvmModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /svm/svms/{uuid}][%d] svmModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/svms/{uuid}][%d] svmModifyAccepted %s", 202, payload)
 }
 
-func (o *SvmModifyAccepted) GetPayload() *models.JobLinkResponse {
+func (o *SvmModifyAccepted) GetPayload() *models.SvmJobLinkResponse {
 	return o.Payload
 }
 
 func (o *SvmModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.SvmJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -124,7 +208,7 @@ func NewSvmModifyDefault(code int) *SvmModifyDefault {
 | 13434881    | Failed to rename SVM. |
 | 13434883    | SVM parameters except name modified successfully. |
 | 13434885    | Non-UTF8 language(s) not supported. |
-| 13434886    | Invalid Snapshot copy policy. |
+| 13434886    | Invalid snapshot policy. |
 | 13434902    | Modification of NSSwitch parameters failed for the SVM. |
 | 13434906    | Operation not supported for an SVM of type sync-destination. |
 | 12451843    | Certificate does not exist. |
@@ -132,6 +216,9 @@ func NewSvmModifyDefault(code int) *SvmModifyDefault {
 | 13434916    | SVM is in the process of being created. Wait a few minutes, and then try the command again. |
 | 13434915    | Failed to unlock the SVM because SVM create or delete job is in progress. Wait a few minutes, and then try the command again. |
 | 13434911    | Invalid SVM name. Maximum supported length is 41 if SVM is of type \\\"sync-source\\\", otherwise 47. |
+| 262179      | Unexpected argument \"storage_limit\". |
+| 13434935    | FCP, iSCSI and NVMe cannot be disabled or disallowed on this platform. |
+| 23724038    | Invalid source for the provided ns-switch database. |
 ```
 <br/>
 */
@@ -139,11 +226,6 @@ type SvmModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the svm modify default response
-func (o *SvmModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this svm modify default response has a 2xx status code
@@ -171,12 +253,19 @@ func (o *SvmModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the svm modify default response
+func (o *SvmModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SvmModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /svm/svms/{uuid}][%d] svm_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/svms/{uuid}][%d] svm_modify default %s", o._statusCode, payload)
 }
 
 func (o *SvmModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /svm/svms/{uuid}][%d] svm_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/svms/{uuid}][%d] svm_modify default %s", o._statusCode, payload)
 }
 
 func (o *SvmModifyDefault) GetPayload() *models.ErrorResponse {

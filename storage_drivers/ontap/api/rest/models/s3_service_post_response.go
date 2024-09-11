@@ -128,6 +128,9 @@ type S3ServicePostResponseInlineRecordsInlineArrayItem struct {
 
 	// users
 	Users []*S3ServiceUserPostResponse `json:"users"`
+
+	// warning
+	Warning *S3ServicePostResponseInlineRecordsInlineArrayItemInlineWarning `json:"warning,omitempty"`
 }
 
 // Validate validates this s3 service post response inline records inline array item
@@ -143,6 +146,10 @@ func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) Validate(formats str
 	}
 
 	if err := m.validateUsers(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateWarning(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -210,6 +217,23 @@ func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) validateUsers(format
 	return nil
 }
 
+func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) validateWarning(formats strfmt.Registry) error {
+	if swag.IsZero(m.Warning) { // not required
+		return nil
+	}
+
+	if m.Warning != nil {
+		if err := m.Warning.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("warning")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this s3 service post response inline records inline array item based on the context it is used
 func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -223,6 +247,10 @@ func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) ContextValidate(ctx 
 	}
 
 	if err := m.contextValidateUsers(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWarning(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -278,6 +306,20 @@ func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) contextValidateUsers
 	return nil
 }
 
+func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) contextValidateWarning(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Warning != nil {
+		if err := m.Warning.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("warning")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -289,6 +331,46 @@ func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]b
 // UnmarshalBinary interface implementation
 func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
 	var res S3ServicePostResponseInlineRecordsInlineArrayItem
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3ServicePostResponseInlineRecordsInlineArrayItemInlineWarning Specifies a warning message sent from the S3 server during a POST or PATCH operation.
+//
+// swagger:model s3_service_post_response_inline_records_inline_array_item_inline_warning
+type S3ServicePostResponseInlineRecordsInlineArrayItemInlineWarning struct {
+
+	// Warning code of the warning encountered.
+	Code *int64 `json:"code,omitempty"`
+
+	// Details of the warning sent from the S3 server.
+	Message *string `json:"message,omitempty"`
+}
+
+// Validate validates this s3 service post response inline records inline array item inline warning
+func (m *S3ServicePostResponseInlineRecordsInlineArrayItemInlineWarning) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this s3 service post response inline records inline array item inline warning based on context it is used
+func (m *S3ServicePostResponseInlineRecordsInlineArrayItemInlineWarning) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3ServicePostResponseInlineRecordsInlineArrayItemInlineWarning) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3ServicePostResponseInlineRecordsInlineArrayItemInlineWarning) UnmarshalBinary(b []byte) error {
+	var res S3ServicePostResponseInlineRecordsInlineArrayItemInlineWarning
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

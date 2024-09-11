@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *NisDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nis delete o k response
+func (o *NisDeleteOK) Code() int {
+	return 200
+}
+
 func (o *NisDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/nis/{svm.uuid}][%d] nisDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/nis/{svm.uuid}][%d] nisDeleteOK", 200)
 }
 
 func (o *NisDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /name-services/nis/{svm.uuid}][%d] nisDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/nis/{svm.uuid}][%d] nisDeleteOK", 200)
 }
 
 func (o *NisDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type NisDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nis delete default response
-func (o *NisDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nis delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *NisDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nis delete default response
+func (o *NisDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NisDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/nis/{svm.uuid}][%d] nis_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/nis/{svm.uuid}][%d] nis_delete default %s", o._statusCode, payload)
 }
 
 func (o *NisDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /name-services/nis/{svm.uuid}][%d] nis_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/nis/{svm.uuid}][%d] nis_delete default %s", o._statusCode, payload)
 }
 
 func (o *NisDeleteDefault) GetPayload() *models.ErrorResponse {

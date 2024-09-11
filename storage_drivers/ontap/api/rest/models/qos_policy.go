@@ -43,11 +43,12 @@ type QosPolicy struct {
 
 	// Class of the QoS policy.
 	// Read Only: true
-	// Enum: [undefined preset user_defined system_defined autovolume load_control]
+	// Enum: ["undefined","preset","user_defined","system_defined","autovolume","load_control"]
 	PolicyClass *string `json:"policy_class,omitempty"`
 
 	// Scope of the entity. Set to "cluster" for cluster owned objects and to "svm" for SVM owned objects.
-	// Enum: [cluster svm]
+	// Read Only: true
+	// Enum: ["cluster","svm"]
 	Scope *string `json:"scope,omitempty"`
 
 	// svm
@@ -341,6 +342,10 @@ func (m *QosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateScope(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -424,6 +429,15 @@ func (m *QosPolicy) contextValidatePolicyClass(ctx context.Context, formats strf
 	return nil
 }
 
+func (m *QosPolicy) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "scope", "body", m.Scope); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *QosPolicy) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
@@ -474,21 +488,21 @@ type QosPolicyInlineAdaptive struct {
 	AbsoluteMinIops *int64 `json:"absolute_min_iops,omitempty"`
 
 	// Specifies the block size
-	// Enum: [any 4k 8k 16k 32k 64k 128k]
+	// Enum: ["any","4k","8k","16k","32k","64k","128k"]
 	BlockSize *string `json:"block_size,omitempty"`
 
 	// Expected IOPS. Specifies the minimum expected IOPS per TB allocated based on the storage object allocated size. These floors are not guaranteed on non-AFF platforms or when FabricPool tiering policies are set.
 	ExpectedIops *int64 `json:"expected_iops,omitempty"`
 
 	// Specifies the size to be used to calculate expected IOPS per TB. The size options are either the storage object allocated space or the storage object used space.
-	// Enum: [used_space allocated_space]
+	// Enum: ["used_space","allocated_space"]
 	ExpectedIopsAllocation *string `json:"expected_iops_allocation,omitempty"`
 
 	// Peak IOPS. Specifies the maximum possible IOPS per TB allocated based on the storage object allocated size or the storage object used size.
 	PeakIops *int64 `json:"peak_iops,omitempty"`
 
 	// Specifies the size to be used to calculate peak IOPS per TB. The size options are either the storage object allocated space or the storage object used space.
-	// Enum: [used_space allocated_space]
+	// Enum: ["used_space","allocated_space"]
 	PeakIopsAllocation *string `json:"peak_iops_allocation,omitempty"`
 }
 
@@ -764,20 +778,113 @@ type QosPolicyInlineFixed struct {
 	CapacityShared *bool `json:"capacity_shared,omitempty"`
 
 	// Maximum throughput defined by this policy.  It is specified in terms of IOPS. 0 means no maximum throughput is enforced.
+	// Maximum: 2.147483647e+09
+	// Minimum: 0
 	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
 	// Maximum throughput defined by this policy.  It is specified in terms of Mbps. 0 means no maximum throughput is enforced.
+	// Maximum: 4.194303e+06
+	// Minimum: 0
 	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
 	// Minimum throughput defined by this policy.  It is specified in terms of IOPS. 0 means no minimum throughput is enforced. These floors are not guaranteed on non-AFF platforms or when FabricPool tiering policies are set.
+	// Maximum: 2.147483647e+09
+	// Minimum: 0
 	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
 	// Minimum throughput defined by this policy.  It is specified in terms of Mbps. 0 means no minimum throughput is enforced.
+	// Maximum: 4.194303e+06
+	// Minimum: 0
 	MinThroughputMbps *int64 `json:"min_throughput_mbps,omitempty"`
 }
 
 // Validate validates this qos policy inline fixed
 func (m *QosPolicyInlineFixed) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateMaxThroughputIops(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMaxThroughputMbps(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMinThroughputIops(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMinThroughputMbps(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *QosPolicyInlineFixed) validateMaxThroughputIops(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxThroughputIops) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("fixed"+"."+"max_throughput_iops", "body", *m.MaxThroughputIops, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("fixed"+"."+"max_throughput_iops", "body", *m.MaxThroughputIops, 2.147483647e+09, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *QosPolicyInlineFixed) validateMaxThroughputMbps(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxThroughputMbps) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("fixed"+"."+"max_throughput_mbps", "body", *m.MaxThroughputMbps, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("fixed"+"."+"max_throughput_mbps", "body", *m.MaxThroughputMbps, 4.194303e+06, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *QosPolicyInlineFixed) validateMinThroughputIops(formats strfmt.Registry) error {
+	if swag.IsZero(m.MinThroughputIops) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("fixed"+"."+"min_throughput_iops", "body", *m.MinThroughputIops, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("fixed"+"."+"min_throughput_iops", "body", *m.MinThroughputIops, 2.147483647e+09, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *QosPolicyInlineFixed) validateMinThroughputMbps(formats strfmt.Registry) error {
+	if swag.IsZero(m.MinThroughputMbps) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("fixed"+"."+"min_throughput_mbps", "body", *m.MinThroughputMbps, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("fixed"+"."+"min_throughput_mbps", "body", *m.MinThroughputMbps, 4.194303e+06, false); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -890,7 +997,7 @@ func (m *QosPolicyInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QosPolicyInlineSvm qos policy inline svm
+// QosPolicyInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model qos_policy_inline_svm
 type QosPolicyInlineSvm struct {
@@ -898,12 +1005,12 @@ type QosPolicyInlineSvm struct {
 	// links
 	Links *QosPolicyInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

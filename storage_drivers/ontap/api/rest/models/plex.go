@@ -39,7 +39,7 @@ type Plex struct {
 
 	// SyncMirror pool assignment
 	// Read Only: true
-	// Enum: [pool0 pool1]
+	// Enum: ["pool0","pool1"]
 	Pool *string `json:"pool,omitempty"`
 
 	// resync
@@ -47,7 +47,7 @@ type Plex struct {
 
 	// Plex state
 	// Read Only: true
-	// Enum: [normal failed out_of_date]
+	// Enum: ["normal","failed","out_of_date"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -403,7 +403,7 @@ func (m *Plex) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PlexInlineAggregate plex inline aggregate
+// PlexInlineAggregate Aggregate
 //
 // swagger:model plex_inline_aggregate
 type PlexInlineAggregate struct {
@@ -594,7 +594,7 @@ type PlexInlineResync struct {
 
 	// Plex resyncing level
 	// Read Only: true
-	// Enum: [full incremental]
+	// Enum: ["full","incremental"]
 	Level *string `json:"level,omitempty"`
 
 	// Plex resyncing percentage

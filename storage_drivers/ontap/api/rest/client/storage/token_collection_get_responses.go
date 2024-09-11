@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *TokenCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the token collection get o k response
+func (o *TokenCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *TokenCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/file/clone/tokens][%d] tokenCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/file/clone/tokens][%d] tokenCollectionGetOK %s", 200, payload)
 }
 
 func (o *TokenCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/file/clone/tokens][%d] tokenCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/file/clone/tokens][%d] tokenCollectionGetOK %s", 200, payload)
 }
 
 func (o *TokenCollectionGetOK) GetPayload() *models.TokenResponse {
@@ -122,11 +130,6 @@ type TokenCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the token collection get default response
-func (o *TokenCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this token collection get default response has a 2xx status code
 func (o *TokenCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *TokenCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the token collection get default response
+func (o *TokenCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *TokenCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/file/clone/tokens][%d] token_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/file/clone/tokens][%d] token_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *TokenCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/file/clone/tokens][%d] token_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/file/clone/tokens][%d] token_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *TokenCollectionGetDefault) GetPayload() *models.ErrorResponse {

@@ -62,6 +62,12 @@ FpolicyPolicyCollectionGetParams contains all the parameters to send to the API 
 */
 type FpolicyPolicyCollectionGetParams struct {
 
+	/* AllowPrivilegedAccess.
+
+	   Filter by allow_privileged_access
+	*/
+	AllowPrivilegedAccess *bool
+
 	/* Enabled.
 
 	   Filter by enabled
@@ -115,6 +121,12 @@ type FpolicyPolicyCollectionGetParams struct {
 	   Filter by passthrough_read
 	*/
 	PassthroughRead *bool
+
+	/* PersistentStore.
+
+	   Filter by persistent_store
+	*/
+	PersistentStore *string
 
 	/* Priority.
 
@@ -277,6 +289,17 @@ func (o *FpolicyPolicyCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithAllowPrivilegedAccess adds the allowPrivilegedAccess to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithAllowPrivilegedAccess(allowPrivilegedAccess *bool) *FpolicyPolicyCollectionGetParams {
+	o.SetAllowPrivilegedAccess(allowPrivilegedAccess)
+	return o
+}
+
+// SetAllowPrivilegedAccess adds the allowPrivilegedAccess to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetAllowPrivilegedAccess(allowPrivilegedAccess *bool) {
+	o.AllowPrivilegedAccess = allowPrivilegedAccess
+}
+
 // WithEnabled adds the enabled to the fpolicy policy collection get params
 func (o *FpolicyPolicyCollectionGetParams) WithEnabled(enabled *bool) *FpolicyPolicyCollectionGetParams {
 	o.SetEnabled(enabled)
@@ -374,6 +397,17 @@ func (o *FpolicyPolicyCollectionGetParams) WithPassthroughRead(passthroughRead *
 // SetPassthroughRead adds the passthroughRead to the fpolicy policy collection get params
 func (o *FpolicyPolicyCollectionGetParams) SetPassthroughRead(passthroughRead *bool) {
 	o.PassthroughRead = passthroughRead
+}
+
+// WithPersistentStore adds the persistentStore to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithPersistentStore(persistentStore *string) *FpolicyPolicyCollectionGetParams {
+	o.SetPersistentStore(persistentStore)
+	return o
+}
+
+// SetPersistentStore adds the persistentStore to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetPersistentStore(persistentStore *string) {
+	o.PersistentStore = persistentStore
 }
 
 // WithPriority adds the priority to the fpolicy policy collection get params
@@ -549,6 +583,23 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
+	if o.AllowPrivilegedAccess != nil {
+
+		// query param allow_privileged_access
+		var qrAllowPrivilegedAccess bool
+
+		if o.AllowPrivilegedAccess != nil {
+			qrAllowPrivilegedAccess = *o.AllowPrivilegedAccess
+		}
+		qAllowPrivilegedAccess := swag.FormatBool(qrAllowPrivilegedAccess)
+		if qAllowPrivilegedAccess != "" {
+
+			if err := r.SetQueryParam("allow_privileged_access", qAllowPrivilegedAccess); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.Enabled != nil {
 
 		// query param enabled
@@ -685,6 +736,23 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qPassthroughRead != "" {
 
 			if err := r.SetQueryParam("passthrough_read", qPassthroughRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PersistentStore != nil {
+
+		// query param persistent_store
+		var qrPersistentStore string
+
+		if o.PersistentStore != nil {
+			qrPersistentStore = *o.PersistentStore
+		}
+		qPersistentStore := qrPersistentStore
+		if qPersistentStore != "" {
+
+			if err := r.SetQueryParam("persistent_store", qPersistentStore); err != nil {
 				return err
 			}
 		}

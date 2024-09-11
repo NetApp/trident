@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *IgroupNestedCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the igroup nested collection get o k response
+func (o *IgroupNestedCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *IgroupNestedCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroupNestedCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroupNestedCollectionGetOK %s", 200, payload)
 }
 
 func (o *IgroupNestedCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroupNestedCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroupNestedCollectionGetOK %s", 200, payload)
 }
 
 func (o *IgroupNestedCollectionGetOK) GetPayload() *models.IgroupNestedResponse {
@@ -119,16 +127,12 @@ func NewIgroupNestedCollectionGetDefault(code int) *IgroupNestedCollectionGetDef
 | Error Code | Description |
 | ---------- | ----------- |
 | 5374852 | The initiator group specified in the URI does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IgroupNestedCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the igroup nested collection get default response
-func (o *IgroupNestedCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this igroup nested collection get default response has a 2xx status code
@@ -156,12 +160,19 @@ func (o *IgroupNestedCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the igroup nested collection get default response
+func (o *IgroupNestedCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IgroupNestedCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroup_nested_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroup_nested_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *IgroupNestedCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroup_nested_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroup_nested_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *IgroupNestedCollectionGetDefault) GetPayload() *models.ErrorResponse {

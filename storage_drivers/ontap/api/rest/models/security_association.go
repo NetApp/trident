@@ -21,7 +21,7 @@ import (
 type SecurityAssociation struct {
 
 	// Cipher suite for the security association.
-	// Enum: [suite_aescbc suiteb_gcm256 suiteb_gmac256]
+	// Enum: ["suite_aescbc","suiteb_gcm256","suiteb_gmac256"]
 	CipherSuite *string `json:"cipher_suite,omitempty"`
 
 	// ike
@@ -52,7 +52,7 @@ type SecurityAssociation struct {
 	Svm *SecurityAssociationInlineSvm `json:"svm,omitempty"`
 
 	// Type of security association, it can be IPsec or IKE (Internet Key Exchange).
-	// Enum: [ipsec ike]
+	// Enum: ["ipsec","ike"]
 	Type *string `json:"type,omitempty"`
 
 	// Unique identifier of the security association.
@@ -428,7 +428,7 @@ func (m *SecurityAssociation) UnmarshalBinary(b []byte) error {
 type SecurityAssociationInlineIke struct {
 
 	// Authentication method for internet key exchange protocol.
-	// Enum: [none psk cert]
+	// Enum: ["none","psk","cert"]
 	Authentication *string `json:"authentication,omitempty"`
 
 	// Initiator's security parameter index for the IKE security association.
@@ -441,7 +441,7 @@ type SecurityAssociationInlineIke struct {
 	ResponderSecurityParameterIndex *string `json:"responder_security_parameter_index,omitempty"`
 
 	// State of the IKE connection.
-	// Enum: [none connecting established dead_peer_probe]
+	// Enum: ["none","connecting","established","dead_peer_probe"]
 	State *string `json:"state,omitempty"`
 
 	// Internet key exchange protocol version.
@@ -637,7 +637,7 @@ func (m *SecurityAssociationInlineIke) UnmarshalBinary(b []byte) error {
 type SecurityAssociationInlineIpsec struct {
 
 	// Action for the IPsec security association.
-	// Enum: [bypass discard esp_transport]
+	// Enum: ["bypass","discard","esp_transport"]
 	Action *string `json:"action,omitempty"`
 
 	// inbound
@@ -844,6 +844,12 @@ type SecurityAssociationInlineIpsecInlineInbound struct {
 	// Number of inbound bytes for the IPsec security association.
 	Bytes *int64 `json:"bytes,omitempty"`
 
+	// Number of inbound bytes processed by offload for the IPsec security association.
+	OffloadBytes *int64 `json:"offload_bytes,omitempty"`
+
+	// Number of inbound packets processed by offload for the IPsec security association.
+	OffloadPackets *int64 `json:"offload_packets,omitempty"`
+
 	// Number of inbound packets for the IPsec security association.
 	Packets *int64 `json:"packets,omitempty"`
 
@@ -886,6 +892,12 @@ type SecurityAssociationInlineIpsecInlineOutbound struct {
 
 	// Number of outbound bytes for the IPsec security association.
 	Bytes *int64 `json:"bytes,omitempty"`
+
+	// Number of outbound bytes processed by offload for the IPsec security association.
+	OffloadBytes *int64 `json:"offload_bytes,omitempty"`
+
+	// Number of outbound packets processed by offload for the IPsec security association.
+	OffloadPackets *int64 `json:"offload_packets,omitempty"`
 
 	// Number of outbound packets for the IPsec security association.
 	Packets *int64 `json:"packets,omitempty"`
@@ -1102,7 +1114,7 @@ func (m *SecurityAssociationInlineNodeInlineLinks) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// SecurityAssociationInlineSvm security association inline svm
+// SecurityAssociationInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model security_association_inline_svm
 type SecurityAssociationInlineSvm struct {
@@ -1110,12 +1122,12 @@ type SecurityAssociationInlineSvm struct {
 	// links
 	Links *SecurityAssociationInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

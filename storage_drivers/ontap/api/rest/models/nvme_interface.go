@@ -36,7 +36,7 @@ type NvmeInterface struct {
 	// The underlying interface type of the NVMe interface. This property identifies which of _fc_interface_ and _ip_interface_ will be further populated.
 	//
 	// Read Only: true
-	// Enum: [fc_interface ip_interface]
+	// Enum: ["fc_interface","ip_interface"]
 	InterfaceType *string `json:"interface_type,omitempty"`
 
 	// ip interface
@@ -1616,7 +1616,7 @@ func (m *NvmeInterfaceInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeInterfaceInlineSvm nvme interface inline svm
+// NvmeInterfaceInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model nvme_interface_inline_svm
 type NvmeInterfaceInlineSvm struct {
@@ -1624,12 +1624,12 @@ type NvmeInterfaceInlineSvm struct {
 	// links
 	Links *NvmeInterfaceInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

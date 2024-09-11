@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *MetroclusterDrGroupCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the metrocluster dr group collection get o k response
+func (o *MetroclusterDrGroupCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *MetroclusterDrGroupCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups][%d] metroclusterDrGroupCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups][%d] metroclusterDrGroupCollectionGetOK %s", 200, payload)
 }
 
 func (o *MetroclusterDrGroupCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups][%d] metroclusterDrGroupCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups][%d] metroclusterDrGroupCollectionGetOK %s", 200, payload)
 }
 
 func (o *MetroclusterDrGroupCollectionGetOK) GetPayload() *models.MetroclusterDrGroupResponse {
@@ -119,17 +127,14 @@ func NewMetroclusterDrGroupCollectionGetDefault(code int) *MetroclusterDrGroupCo
 | Error Code | Description |
 | ---------- | ----------- |
 | 2425734 | An internal error occurred. Wait a few minutes, and try the operation again. For further assistance, contact technical support. |
-| 2427132 | MetroCluster is not configured on this cluster. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
+  - name: MCC_CONFIG_SETTINGS_UNABLE_TO_REACH_PARTNER_CLUSTER
+    message: Unable to reach the partner cluster "cluster"
 */
 type MetroclusterDrGroupCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the metrocluster dr group collection get default response
-func (o *MetroclusterDrGroupCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this metrocluster dr group collection get default response has a 2xx status code
@@ -157,12 +162,19 @@ func (o *MetroclusterDrGroupCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the metrocluster dr group collection get default response
+func (o *MetroclusterDrGroupCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MetroclusterDrGroupCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups][%d] metrocluster_dr_group_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups][%d] metrocluster_dr_group_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *MetroclusterDrGroupCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups][%d] metrocluster_dr_group_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups][%d] metrocluster_dr_group_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *MetroclusterDrGroupCollectionGetDefault) GetPayload() *models.ErrorResponse {

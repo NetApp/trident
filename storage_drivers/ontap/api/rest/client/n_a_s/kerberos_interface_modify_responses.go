@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *KerberosInterfaceModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the kerberos interface modify o k response
+func (o *KerberosInterfaceModifyOK) Code() int {
+	return 200
+}
+
 func (o *KerberosInterfaceModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberosInterfaceModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberosInterfaceModifyOK", 200)
 }
 
 func (o *KerberosInterfaceModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberosInterfaceModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberosInterfaceModifyOK", 200)
 }
 
 func (o *KerberosInterfaceModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,7 +112,7 @@ func NewKerberosInterfaceModifyDefault(code int) *KerberosInterfaceModifyDefault
 
 | Error codes | Description |
 | ----------- | ----------- |
-| 1966082     | LIF could not be found in database. Contact technical support for assistance.|
+| 4           | The entry doesn't exist|
 | 3276801     | Failed to bind service principal name on LIF.|
 | 3276809     | Failed to disable NFS Kerberos on LIF.|
 | 3276832     | Failed to insert Kerberos attributes to database.|
@@ -130,11 +136,6 @@ type KerberosInterfaceModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the kerberos interface modify default response
-func (o *KerberosInterfaceModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this kerberos interface modify default response has a 2xx status code
@@ -162,12 +163,19 @@ func (o *KerberosInterfaceModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the kerberos interface modify default response
+func (o *KerberosInterfaceModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *KerberosInterfaceModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberos_interface_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberos_interface_modify default %s", o._statusCode, payload)
 }
 
 func (o *KerberosInterfaceModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberos_interface_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberos_interface_modify default %s", o._statusCode, payload)
 }
 
 func (o *KerberosInterfaceModifyDefault) GetPayload() *models.ErrorResponse {

@@ -21,7 +21,7 @@ import (
 type ConsistencyGroupVdiskProvisioningOptions struct {
 
 	// Operation to perform
-	// Enum: [create]
+	// Enum: ["create"]
 	Action *string `json:"action,omitempty"`
 
 	// Number of elements to perform the operation on.

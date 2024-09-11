@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *FcInterfaceGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fc interface get o k response
+func (o *FcInterfaceGetOK) Code() int {
+	return 200
+}
+
 func (o *FcInterfaceGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/fc/interfaces/{uuid}][%d] fcInterfaceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/interfaces/{uuid}][%d] fcInterfaceGetOK %s", 200, payload)
 }
 
 func (o *FcInterfaceGetOK) String() string {
-	return fmt.Sprintf("[GET /network/fc/interfaces/{uuid}][%d] fcInterfaceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/interfaces/{uuid}][%d] fcInterfaceGetOK %s", 200, payload)
 }
 
 func (o *FcInterfaceGetOK) GetPayload() *models.FcInterface {
@@ -122,11 +130,6 @@ type FcInterfaceGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the fc interface get default response
-func (o *FcInterfaceGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this fc interface get default response has a 2xx status code
 func (o *FcInterfaceGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *FcInterfaceGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fc interface get default response
+func (o *FcInterfaceGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FcInterfaceGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/fc/interfaces/{uuid}][%d] fc_interface_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/interfaces/{uuid}][%d] fc_interface_get default %s", o._statusCode, payload)
 }
 
 func (o *FcInterfaceGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/fc/interfaces/{uuid}][%d] fc_interface_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/interfaces/{uuid}][%d] fc_interface_get default %s", o._statusCode, payload)
 }
 
 func (o *FcInterfaceGetDefault) GetPayload() *models.ErrorResponse {

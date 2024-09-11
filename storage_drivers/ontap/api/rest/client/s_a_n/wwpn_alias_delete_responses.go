@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *WwpnAliasDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the wwpn alias delete o k response
+func (o *WwpnAliasDeleteOK) Code() int {
+	return 200
+}
+
 func (o *WwpnAliasDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpnAliasDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpnAliasDeleteOK", 200)
 }
 
 func (o *WwpnAliasDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpnAliasDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpnAliasDeleteOK", 200)
 }
 
 func (o *WwpnAliasDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,18 +112,14 @@ func NewWwpnAliasDeleteDefault(code int) *WwpnAliasDeleteDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 1260882    | An SVM with the specified UUID does not exist. |
-| 5374046    | The alias could not be found. |
+| 2621462 | The specified SVM does not exist or cannot be accessed by this user. |
+| 5374046 | The alias could not be found. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type WwpnAliasDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the wwpn alias delete default response
-func (o *WwpnAliasDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this wwpn alias delete default response has a 2xx status code
@@ -145,12 +147,19 @@ func (o *WwpnAliasDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the wwpn alias delete default response
+func (o *WwpnAliasDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *WwpnAliasDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpn_alias_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpn_alias_delete default %s", o._statusCode, payload)
 }
 
 func (o *WwpnAliasDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpn_alias_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpn_alias_delete default %s", o._statusCode, payload)
 }
 
 func (o *WwpnAliasDeleteDefault) GetPayload() *models.ErrorResponse {

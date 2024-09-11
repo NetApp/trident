@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ActiveDirectoryCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the active directory collection get o k response
+func (o *ActiveDirectoryCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *ActiveDirectoryCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/active-directory][%d] activeDirectoryCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/active-directory][%d] activeDirectoryCollectionGetOK %s", 200, payload)
 }
 
 func (o *ActiveDirectoryCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/active-directory][%d] activeDirectoryCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/active-directory][%d] activeDirectoryCollectionGetOK %s", 200, payload)
 }
 
 func (o *ActiveDirectoryCollectionGetOK) GetPayload() *models.ActiveDirectoryResponse {
@@ -122,11 +130,6 @@ type ActiveDirectoryCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the active directory collection get default response
-func (o *ActiveDirectoryCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this active directory collection get default response has a 2xx status code
 func (o *ActiveDirectoryCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *ActiveDirectoryCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the active directory collection get default response
+func (o *ActiveDirectoryCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ActiveDirectoryCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/active-directory][%d] active_directory_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/active-directory][%d] active_directory_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ActiveDirectoryCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/active-directory][%d] active_directory_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/active-directory][%d] active_directory_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *ActiveDirectoryCollectionGetDefault) GetPayload() *models.ErrorResponse {

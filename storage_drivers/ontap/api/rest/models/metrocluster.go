@@ -26,8 +26,11 @@ type Metrocluster struct {
 
 	// Displays the MetroCluster configuration type.
 	// Read Only: true
-	// Enum: [invalid stretch fabric two_node_fabric ip_fabric ip_two_node_fabric mixed_fabric]
+	// Enum: ["invalid","stretch","fabric","two_node_fabric","ip_fabric","ip_two_node_fabric","mixed_fabric"]
 	ConfigurationType *string `json:"configuration_type,omitempty"`
+
+	// Indicates if the encryption for NVLog and storage traffic is enabled.
+	EncryptionEnabled *bool `json:"encryption_enabled,omitempty"`
 
 	// local
 	Local *MetroclusterInlineLocal `json:"local,omitempty"`
@@ -997,17 +1000,30 @@ func (m *MetroclusterInlineDrPairsInlineArrayItemInlinePartnerInlineLinks) Unmar
 // swagger:model metrocluster_inline_local
 type MetroclusterInlineLocal struct {
 
+	// This parameter specifies the configuration of automatic switchover.
+	// The valid values for the parameter are ':'
+	// cluster':' triggers an unplanned switchover if all nodes in a DR cluster are down.
+	// dr_group':' triggers an unplanned switchover if both nodes of a DR group are down.
+	// disabled':' automatic switchover is disabled.
+	// If the cluster is not reachable due to errors, the parameter value will be set to
+	// not_reachable. This value is read only.
+	// If the cluster configuration is unknown, the parameter value will be set to
+	// unknown and the value is read only.
+	//
+	// Enum: ["dr_group","cluster","disabled","not_reachable","unknown"]
+	AutomaticUsoFailureDomain *string `json:"automatic_uso_failure_domain,omitempty"`
+
 	// cluster
 	Cluster *MetroclusterInlineLocalInlineCluster `json:"cluster,omitempty"`
 
 	// Indicates the state of the local cluster configuration.
 	// Read Only: true
-	// Enum: [configuration_error configured not_configured not_reachable partially_configured unknown]
+	// Enum: ["configuration_error","configured","not_configured","not_reachable","partially_configured","unknown"]
 	ConfigurationState *string `json:"configuration_state,omitempty"`
 
 	// Specifies the mode of operation of the local cluster.
 	// Read Only: true
-	// Enum: [normal not_configured not_reachable partial_switchback partial_switchover switchover unknown waiting_for_switchback]
+	// Enum: ["normal","not_configured","not_reachable","partial_switchback","partial_switchover","switchover","unknown","waiting_for_switchback"]
 	Mode *string `json:"mode,omitempty"`
 
 	// Specifies whether the partner cluster is reachable from the local cluster.
@@ -1022,6 +1038,10 @@ type MetroclusterInlineLocal struct {
 // Validate validates this metrocluster inline local
 func (m *MetroclusterInlineLocal) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateAutomaticUsoFailureDomain(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateCluster(formats); err != nil {
 		res = append(res, err)
@@ -1038,6 +1058,92 @@ func (m *MetroclusterInlineLocal) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+var metroclusterInlineLocalTypeAutomaticUsoFailureDomainPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["dr_group","cluster","disabled","not_reachable","unknown"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		metroclusterInlineLocalTypeAutomaticUsoFailureDomainPropEnum = append(metroclusterInlineLocalTypeAutomaticUsoFailureDomainPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
+	// automatic_uso_failure_domain
+	// AutomaticUsoFailureDomain
+	// dr_group
+	// END DEBUGGING
+	// MetroclusterInlineLocalAutomaticUsoFailureDomainDrGroup captures enum value "dr_group"
+	MetroclusterInlineLocalAutomaticUsoFailureDomainDrGroup string = "dr_group"
+
+	// BEGIN DEBUGGING
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
+	// automatic_uso_failure_domain
+	// AutomaticUsoFailureDomain
+	// cluster
+	// END DEBUGGING
+	// MetroclusterInlineLocalAutomaticUsoFailureDomainCluster captures enum value "cluster"
+	MetroclusterInlineLocalAutomaticUsoFailureDomainCluster string = "cluster"
+
+	// BEGIN DEBUGGING
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
+	// automatic_uso_failure_domain
+	// AutomaticUsoFailureDomain
+	// disabled
+	// END DEBUGGING
+	// MetroclusterInlineLocalAutomaticUsoFailureDomainDisabled captures enum value "disabled"
+	MetroclusterInlineLocalAutomaticUsoFailureDomainDisabled string = "disabled"
+
+	// BEGIN DEBUGGING
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
+	// automatic_uso_failure_domain
+	// AutomaticUsoFailureDomain
+	// not_reachable
+	// END DEBUGGING
+	// MetroclusterInlineLocalAutomaticUsoFailureDomainNotReachable captures enum value "not_reachable"
+	MetroclusterInlineLocalAutomaticUsoFailureDomainNotReachable string = "not_reachable"
+
+	// BEGIN DEBUGGING
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
+	// automatic_uso_failure_domain
+	// AutomaticUsoFailureDomain
+	// unknown
+	// END DEBUGGING
+	// MetroclusterInlineLocalAutomaticUsoFailureDomainUnknown captures enum value "unknown"
+	MetroclusterInlineLocalAutomaticUsoFailureDomainUnknown string = "unknown"
+)
+
+// prop value enum
+func (m *MetroclusterInlineLocal) validateAutomaticUsoFailureDomainEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterInlineLocalTypeAutomaticUsoFailureDomainPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MetroclusterInlineLocal) validateAutomaticUsoFailureDomain(formats strfmt.Registry) error {
+	if swag.IsZero(m.AutomaticUsoFailureDomain) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAutomaticUsoFailureDomainEnum("local"+"."+"automatic_uso_failure_domain", "body", *m.AutomaticUsoFailureDomain); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -1587,7 +1693,7 @@ type MetroclusterInlineMccipPortsInlineArrayItem struct {
 	// VLAN ID
 	// Example: 200
 	// Maximum: 4095
-	// Minimum: 10
+	// Minimum: 101
 	VlanID *int64 `json:"vlan_id,omitempty"`
 }
 
@@ -1652,7 +1758,7 @@ func (m *MetroclusterInlineMccipPortsInlineArrayItem) validateVlanID(formats str
 		return nil
 	}
 
-	if err := validate.MinimumInt("vlan_id", "body", *m.VlanID, 10, false); err != nil {
+	if err := validate.MinimumInt("vlan_id", "body", *m.VlanID, 101, false); err != nil {
 		return err
 	}
 
@@ -2742,17 +2848,30 @@ func (m *MetroclusterInlinePartnerClusterInlineLinks) UnmarshalBinary(b []byte) 
 // swagger:model metrocluster_inline_remote
 type MetroclusterInlineRemote struct {
 
+	// This parameter specifies the configuration of automatic switchover.
+	// The valid values for the parameter are ':'
+	// cluster':' triggers an unplanned switchover if all nodes in a DR cluster are down.
+	// dr_group':' triggers an unplanned switchover if both nodes of a DR group are down.
+	// disabled':' automatic switchover is disabled.
+	// If the cluster is not reachable due to errors, the parameter value will be set to
+	// not_reachable. This value is read only.
+	// If the cluster configuration is unknown, the parameter value will be set to
+	// unknown and the value is read only.
+	//
+	// Enum: ["dr_group","cluster","disabled","not_reachable","unknown"]
+	AutomaticUsoFailureDomain *string `json:"automatic_uso_failure_domain,omitempty"`
+
 	// cluster
 	Cluster *MetroclusterInlineRemoteInlineCluster `json:"cluster,omitempty"`
 
 	// Indicates the state of the remote cluster configuration.
 	// Read Only: true
-	// Enum: [configuration_error configured not_configured not_reachable partially_configured unknown]
+	// Enum: ["configuration_error","configured","not_configured","not_reachable","partially_configured","unknown"]
 	ConfigurationState *string `json:"configuration_state,omitempty"`
 
 	// Specifies the mode of operation of the remote cluster.
 	// Read Only: true
-	// Enum: [normal not_configured not_reachable partial_switchback partial_switchover switchover unknown waiting_for_switchback]
+	// Enum: ["normal","not_configured","not_reachable","partial_switchback","partial_switchover","switchover","unknown","waiting_for_switchback"]
 	Mode *string `json:"mode,omitempty"`
 
 	// Indicates whether or not a periodic check is enabled on the remote cluster.
@@ -2763,6 +2882,10 @@ type MetroclusterInlineRemote struct {
 // Validate validates this metrocluster inline remote
 func (m *MetroclusterInlineRemote) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateAutomaticUsoFailureDomain(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateCluster(formats); err != nil {
 		res = append(res, err)
@@ -2779,6 +2902,92 @@ func (m *MetroclusterInlineRemote) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+var metroclusterInlineRemoteTypeAutomaticUsoFailureDomainPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["dr_group","cluster","disabled","not_reachable","unknown"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		metroclusterInlineRemoteTypeAutomaticUsoFailureDomainPropEnum = append(metroclusterInlineRemoteTypeAutomaticUsoFailureDomainPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
+	// automatic_uso_failure_domain
+	// AutomaticUsoFailureDomain
+	// dr_group
+	// END DEBUGGING
+	// MetroclusterInlineRemoteAutomaticUsoFailureDomainDrGroup captures enum value "dr_group"
+	MetroclusterInlineRemoteAutomaticUsoFailureDomainDrGroup string = "dr_group"
+
+	// BEGIN DEBUGGING
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
+	// automatic_uso_failure_domain
+	// AutomaticUsoFailureDomain
+	// cluster
+	// END DEBUGGING
+	// MetroclusterInlineRemoteAutomaticUsoFailureDomainCluster captures enum value "cluster"
+	MetroclusterInlineRemoteAutomaticUsoFailureDomainCluster string = "cluster"
+
+	// BEGIN DEBUGGING
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
+	// automatic_uso_failure_domain
+	// AutomaticUsoFailureDomain
+	// disabled
+	// END DEBUGGING
+	// MetroclusterInlineRemoteAutomaticUsoFailureDomainDisabled captures enum value "disabled"
+	MetroclusterInlineRemoteAutomaticUsoFailureDomainDisabled string = "disabled"
+
+	// BEGIN DEBUGGING
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
+	// automatic_uso_failure_domain
+	// AutomaticUsoFailureDomain
+	// not_reachable
+	// END DEBUGGING
+	// MetroclusterInlineRemoteAutomaticUsoFailureDomainNotReachable captures enum value "not_reachable"
+	MetroclusterInlineRemoteAutomaticUsoFailureDomainNotReachable string = "not_reachable"
+
+	// BEGIN DEBUGGING
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
+	// automatic_uso_failure_domain
+	// AutomaticUsoFailureDomain
+	// unknown
+	// END DEBUGGING
+	// MetroclusterInlineRemoteAutomaticUsoFailureDomainUnknown captures enum value "unknown"
+	MetroclusterInlineRemoteAutomaticUsoFailureDomainUnknown string = "unknown"
+)
+
+// prop value enum
+func (m *MetroclusterInlineRemote) validateAutomaticUsoFailureDomainEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterInlineRemoteTypeAutomaticUsoFailureDomainPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MetroclusterInlineRemote) validateAutomaticUsoFailureDomain(formats strfmt.Registry) error {
+	if swag.IsZero(m.AutomaticUsoFailureDomain) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAutomaticUsoFailureDomainEnum("remote"+"."+"automatic_uso_failure_domain", "body", *m.AutomaticUsoFailureDomain); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SoftwarePackagesCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the software packages collection get o k response
+func (o *SoftwarePackagesCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *SoftwarePackagesCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/software/packages][%d] softwarePackagesCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/software/packages][%d] softwarePackagesCollectionGetOK %s", 200, payload)
 }
 
 func (o *SoftwarePackagesCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/software/packages][%d] softwarePackagesCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/software/packages][%d] softwarePackagesCollectionGetOK %s", 200, payload)
 }
 
 func (o *SoftwarePackagesCollectionGetOK) GetPayload() *models.SoftwarePackageResponse {
@@ -122,11 +130,6 @@ type SoftwarePackagesCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the software packages collection get default response
-func (o *SoftwarePackagesCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this software packages collection get default response has a 2xx status code
 func (o *SoftwarePackagesCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SoftwarePackagesCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the software packages collection get default response
+func (o *SoftwarePackagesCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SoftwarePackagesCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/software/packages][%d] software_packages_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/software/packages][%d] software_packages_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SoftwarePackagesCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/software/packages][%d] software_packages_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/software/packages][%d] software_packages_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SoftwarePackagesCollectionGetDefault) GetPayload() *models.ErrorResponse {

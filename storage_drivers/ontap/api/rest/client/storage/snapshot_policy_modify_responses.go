@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SnapshotPolicyModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snapshot policy modify o k response
+func (o *SnapshotPolicyModifyOK) Code() int {
+	return 200
+}
+
 func (o *SnapshotPolicyModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{uuid}][%d] snapshotPolicyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{uuid}][%d] snapshotPolicyModifyOK", 200)
 }
 
 func (o *SnapshotPolicyModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{uuid}][%d] snapshotPolicyModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{uuid}][%d] snapshotPolicyModifyOK", 200)
 }
 
 func (o *SnapshotPolicyModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,17 +112,12 @@ func NewSnapshotPolicyModifyDefault(code int) *SnapshotPolicyModifyDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 1638414    | Cannot enable policy. Reason: Specified schedule not found. |
+| 1638414    | Cannot enable policy. Reason: Schedule not found. |
 */
 type SnapshotPolicyModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snapshot policy modify default response
-func (o *SnapshotPolicyModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snapshot policy modify default response has a 2xx status code
@@ -144,12 +145,19 @@ func (o *SnapshotPolicyModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snapshot policy modify default response
+func (o *SnapshotPolicyModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnapshotPolicyModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{uuid}][%d] snapshot_policy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{uuid}][%d] snapshot_policy_modify default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotPolicyModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{uuid}][%d] snapshot_policy_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{uuid}][%d] snapshot_policy_modify default %s", o._statusCode, payload)
 }
 
 func (o *SnapshotPolicyModifyDefault) GetPayload() *models.ErrorResponse {

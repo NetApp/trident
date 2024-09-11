@@ -35,13 +35,13 @@ type ConsistencyGroupNvmeSubsystem struct {
 	// The name of the NVMe subsystem. Once created, an NVMe subsystem cannot be renamed. Required in POST.
 	//
 	// Example: subsystem1
-	// Max Length: 96
+	// Max Length: 64
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
 
 	// The host operating system of the NVMe subsystem's hosts. Required in POST.
 	//
-	// Enum: [aix linux vmware windows]
+	// Enum: ["aix","linux","vmware","windows"]
 	OsType *string `json:"os_type,omitempty"`
 
 	// The unique identifier of the NVMe subsystem.
@@ -126,7 +126,7 @@ func (m *ConsistencyGroupNvmeSubsystem) validateName(formats strfmt.Registry) er
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 64); err != nil {
 		return err
 	}
 

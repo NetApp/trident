@@ -80,6 +80,12 @@ type CloudStoreCollectionGetParams struct {
 	*/
 	Availability *string
 
+	/* AvailabilityAtPartner.
+
+	   Filter by availability_at_partner
+	*/
+	AvailabilityAtPartner *string
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -109,6 +115,12 @@ type CloudStoreCollectionGetParams struct {
 	   Filter by primary
 	*/
 	Primary *bool
+
+	/* ResyncProgress.
+
+	   Filter by resync-progress
+	*/
+	ResyncProgress *int64
 
 	/* ReturnRecords.
 
@@ -256,6 +268,17 @@ func (o *CloudStoreCollectionGetParams) SetAvailability(availability *string) {
 	o.Availability = availability
 }
 
+// WithAvailabilityAtPartner adds the availabilityAtPartner to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithAvailabilityAtPartner(availabilityAtPartner *string) *CloudStoreCollectionGetParams {
+	o.SetAvailabilityAtPartner(availabilityAtPartner)
+	return o
+}
+
+// SetAvailabilityAtPartner adds the availabilityAtPartner to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetAvailabilityAtPartner(availabilityAtPartner *string) {
+	o.AvailabilityAtPartner = availabilityAtPartner
+}
+
 // WithFields adds the fields to the cloud store collection get params
 func (o *CloudStoreCollectionGetParams) WithFields(fields []string) *CloudStoreCollectionGetParams {
 	o.SetFields(fields)
@@ -309,6 +332,17 @@ func (o *CloudStoreCollectionGetParams) WithPrimary(primary *bool) *CloudStoreCo
 // SetPrimary adds the primary to the cloud store collection get params
 func (o *CloudStoreCollectionGetParams) SetPrimary(primary *bool) {
 	o.Primary = primary
+}
+
+// WithResyncProgress adds the resyncProgress to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithResyncProgress(resyncProgress *int64) *CloudStoreCollectionGetParams {
+	o.SetResyncProgress(resyncProgress)
+	return o
+}
+
+// SetResyncProgress adds the resyncProgress to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetResyncProgress(resyncProgress *int64) {
+	o.ResyncProgress = resyncProgress
 }
 
 // WithReturnRecords adds the returnRecords to the cloud store collection get params
@@ -435,6 +469,23 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
+	if o.AvailabilityAtPartner != nil {
+
+		// query param availability_at_partner
+		var qrAvailabilityAtPartner string
+
+		if o.AvailabilityAtPartner != nil {
+			qrAvailabilityAtPartner = *o.AvailabilityAtPartner
+		}
+		qAvailabilityAtPartner := qrAvailabilityAtPartner
+		if qAvailabilityAtPartner != "" {
+
+			if err := r.SetQueryParam("availability_at_partner", qAvailabilityAtPartner); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.Fields != nil {
 
 		// binding items for fields
@@ -503,6 +554,23 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		if qPrimary != "" {
 
 			if err := r.SetQueryParam("primary", qPrimary); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ResyncProgress != nil {
+
+		// query param resync-progress
+		var qrResyncProgress int64
+
+		if o.ResyncProgress != nil {
+			qrResyncProgress = *o.ResyncProgress
+		}
+		qResyncProgress := swag.FormatInt64(qrResyncProgress)
+		if qResyncProgress != "" {
+
+			if err := r.SetQueryParam("resync-progress", qResyncProgress); err != nil {
 				return err
 			}
 		}

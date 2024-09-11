@@ -28,7 +28,7 @@ type SvmPeerPermission struct {
 	// svm
 	Svm *SvmPeerPermissionInlineSvm `json:"svm,omitempty"`
 
-	// A list of applications for an SVM peer relation.
+	// A list of applications for an SVM peer relationship.
 	// Example: ["snapmirror","flexcache"]
 	SvmPeerPermissionInlineApplications []*SvmPeerPermissionApplications `json:"applications,omitempty"`
 }
@@ -504,7 +504,7 @@ func (m *SvmPeerPermissionInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmPeerPermissionInlineSvm Local SVM permitted for peer relation. To create peer permissions for all SVMs, specify the SVM name as "*".
+// SvmPeerPermissionInlineSvm Local SVM permitted for peer relationship. To create peer permissions for all SVMs, specify the SVM name as "*".
 //
 // swagger:model svm_peer_permission_inline_svm
 type SvmPeerPermissionInlineSvm struct {
@@ -512,12 +512,12 @@ type SvmPeerPermissionInlineSvm struct {
 	// links
 	Links *SvmPeerPermissionInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

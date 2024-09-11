@@ -25,7 +25,7 @@ type ZappNvmeComponentsSubsystem struct {
 	Name *string `json:"name,omitempty"`
 
 	// The name of the host OS accessing the component. The default value is the host OS that is running the application.
-	// Enum: [aix linux vmware windows]
+	// Enum: ["aix","linux","vmware","windows"]
 	OsType *string `json:"os_type,omitempty"`
 
 	// The UUID of an existing subsystem to be granted access to the component.
@@ -208,17 +208,133 @@ func (m *ZappNvmeComponentsSubsystem) UnmarshalBinary(b []byte) error {
 // swagger:model zapp_nvme_components_subsystem_inline_hosts_inline_array_item
 type ZappNvmeComponentsSubsystemInlineHostsInlineArrayItem struct {
 
+	// dh hmac chap
+	DhHmacChap *ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap `json:"dh_hmac_chap,omitempty"`
+
 	// The host NQN.
 	Nqn *string `json:"nqn,omitempty"`
+
+	// Host Priority.
+	// Enum: ["high","regular"]
+	Priority *string `json:"priority,omitempty"`
 }
 
 // Validate validates this zapp nvme components subsystem inline hosts inline array item
 func (m *ZappNvmeComponentsSubsystemInlineHostsInlineArrayItem) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateDhHmacChap(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePriority(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this zapp nvme components subsystem inline hosts inline array item based on context it is used
+func (m *ZappNvmeComponentsSubsystemInlineHostsInlineArrayItem) validateDhHmacChap(formats strfmt.Registry) error {
+	if swag.IsZero(m.DhHmacChap) { // not required
+		return nil
+	}
+
+	if m.DhHmacChap != nil {
+		if err := m.DhHmacChap.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("dh_hmac_chap")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var zappNvmeComponentsSubsystemInlineHostsInlineArrayItemTypePriorityPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["high","regular"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		zappNvmeComponentsSubsystemInlineHostsInlineArrayItemTypePriorityPropEnum = append(zappNvmeComponentsSubsystemInlineHostsInlineArrayItemTypePriorityPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// zapp_nvme_components_subsystem_inline_hosts_inline_array_item
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItem
+	// priority
+	// Priority
+	// high
+	// END DEBUGGING
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemPriorityHigh captures enum value "high"
+	ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemPriorityHigh string = "high"
+
+	// BEGIN DEBUGGING
+	// zapp_nvme_components_subsystem_inline_hosts_inline_array_item
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItem
+	// priority
+	// Priority
+	// regular
+	// END DEBUGGING
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemPriorityRegular captures enum value "regular"
+	ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemPriorityRegular string = "regular"
+)
+
+// prop value enum
+func (m *ZappNvmeComponentsSubsystemInlineHostsInlineArrayItem) validatePriorityEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, zappNvmeComponentsSubsystemInlineHostsInlineArrayItemTypePriorityPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ZappNvmeComponentsSubsystemInlineHostsInlineArrayItem) validatePriority(formats strfmt.Registry) error {
+	if swag.IsZero(m.Priority) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validatePriorityEnum("priority", "body", *m.Priority); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this zapp nvme components subsystem inline hosts inline array item based on the context it is used
 func (m *ZappNvmeComponentsSubsystemInlineHostsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDhHmacChap(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ZappNvmeComponentsSubsystemInlineHostsInlineArrayItem) contextValidateDhHmacChap(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.DhHmacChap != nil {
+		if err := m.DhHmacChap.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("dh_hmac_chap")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -233,6 +349,219 @@ func (m *ZappNvmeComponentsSubsystemInlineHostsInlineArrayItem) MarshalBinary() 
 // UnmarshalBinary interface implementation
 func (m *ZappNvmeComponentsSubsystemInlineHostsInlineArrayItem) UnmarshalBinary(b []byte) error {
 	var res ZappNvmeComponentsSubsystemInlineHostsInlineArrayItem
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap zapp nvme components subsystem inline hosts inline array item inline dh hmac chap
+//
+// swagger:model zapp_nvme_components_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+type ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap struct {
+
+	// Authentication Controller Secret.
+	ControllerSecretKey *string `json:"controller_secret_key,omitempty"`
+
+	// Authentication Diffie-Hellman Group.
+	// Enum: ["2048_bit","3072_bit","4096_bit","6144_bit","8192_bit","none"]
+	GroupSize *string `json:"group_size,omitempty"`
+
+	// Authentication Hash Function.
+	// Enum: ["sha_256","sha_512"]
+	HashFunction *string `json:"hash_function,omitempty"`
+
+	// Authentication Host Secret.
+	HostSecretKey *string `json:"host_secret_key,omitempty"`
+}
+
+// Validate validates this zapp nvme components subsystem inline hosts inline array item inline dh hmac chap
+func (m *ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateGroupSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateHashFunction(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var zappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeGroupSizePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["2048_bit","3072_bit","4096_bit","6144_bit","8192_bit","none"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		zappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeGroupSizePropEnum = append(zappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeGroupSizePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// zapp_nvme_components_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// group_size
+	// GroupSize
+	// 2048_bit
+	// END DEBUGGING
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr2048Bit captures enum value "2048_bit"
+	ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr2048Bit string = "2048_bit"
+
+	// BEGIN DEBUGGING
+	// zapp_nvme_components_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// group_size
+	// GroupSize
+	// 3072_bit
+	// END DEBUGGING
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr3072Bit captures enum value "3072_bit"
+	ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr3072Bit string = "3072_bit"
+
+	// BEGIN DEBUGGING
+	// zapp_nvme_components_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// group_size
+	// GroupSize
+	// 4096_bit
+	// END DEBUGGING
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr4096Bit captures enum value "4096_bit"
+	ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr4096Bit string = "4096_bit"
+
+	// BEGIN DEBUGGING
+	// zapp_nvme_components_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// group_size
+	// GroupSize
+	// 6144_bit
+	// END DEBUGGING
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr6144Bit captures enum value "6144_bit"
+	ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr6144Bit string = "6144_bit"
+
+	// BEGIN DEBUGGING
+	// zapp_nvme_components_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// group_size
+	// GroupSize
+	// 8192_bit
+	// END DEBUGGING
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr8192Bit captures enum value "8192_bit"
+	ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr8192Bit string = "8192_bit"
+
+	// BEGIN DEBUGGING
+	// zapp_nvme_components_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// group_size
+	// GroupSize
+	// none
+	// END DEBUGGING
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNone captures enum value "none"
+	ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNone string = "none"
+)
+
+// prop value enum
+func (m *ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) validateGroupSizeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, zappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeGroupSizePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) validateGroupSize(formats strfmt.Registry) error {
+	if swag.IsZero(m.GroupSize) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateGroupSizeEnum("dh_hmac_chap"+"."+"group_size", "body", *m.GroupSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var zappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeHashFunctionPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["sha_256","sha_512"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		zappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeHashFunctionPropEnum = append(zappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeHashFunctionPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// zapp_nvme_components_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// hash_function
+	// HashFunction
+	// sha_256
+	// END DEBUGGING
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapHashFunctionSha256 captures enum value "sha_256"
+	ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapHashFunctionSha256 string = "sha_256"
+
+	// BEGIN DEBUGGING
+	// zapp_nvme_components_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// hash_function
+	// HashFunction
+	// sha_512
+	// END DEBUGGING
+	// ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapHashFunctionSha512 captures enum value "sha_512"
+	ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapHashFunctionSha512 string = "sha_512"
+)
+
+// prop value enum
+func (m *ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) validateHashFunctionEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, zappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeHashFunctionPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) validateHashFunction(formats strfmt.Registry) error {
+	if swag.IsZero(m.HashFunction) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateHashFunctionEnum("dh_hmac_chap"+"."+"hash_function", "body", *m.HashFunction); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this zapp nvme components subsystem inline hosts inline array item inline dh hmac chap based on context it is used
+func (m *ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) UnmarshalBinary(b []byte) error {
+	var res ZappNvmeComponentsSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

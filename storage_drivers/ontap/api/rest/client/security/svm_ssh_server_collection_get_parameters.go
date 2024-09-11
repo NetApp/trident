@@ -74,6 +74,18 @@ type SvmSSHServerCollectionGetParams struct {
 	*/
 	Fields []string
 
+	/* HostKeyAlgorithms.
+
+	   Filter by host_key_algorithms
+	*/
+	HostKeyAlgorithms *string
+
+	/* IsRsaInPublickeyAlgorithmsEnabled.
+
+	   Filter by is_rsa_in_publickey_algorithms_enabled
+	*/
+	IsRsaInPublickeyAlgorithmsEnabled *bool
+
 	/* KeyExchangeAlgorithms.
 
 	   Filter by key_exchange_algorithms
@@ -221,6 +233,28 @@ func (o *SvmSSHServerCollectionGetParams) SetFields(fields []string) {
 	o.Fields = fields
 }
 
+// WithHostKeyAlgorithms adds the hostKeyAlgorithms to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) WithHostKeyAlgorithms(hostKeyAlgorithms *string) *SvmSSHServerCollectionGetParams {
+	o.SetHostKeyAlgorithms(hostKeyAlgorithms)
+	return o
+}
+
+// SetHostKeyAlgorithms adds the hostKeyAlgorithms to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) SetHostKeyAlgorithms(hostKeyAlgorithms *string) {
+	o.HostKeyAlgorithms = hostKeyAlgorithms
+}
+
+// WithIsRsaInPublickeyAlgorithmsEnabled adds the isRsaInPublickeyAlgorithmsEnabled to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) WithIsRsaInPublickeyAlgorithmsEnabled(isRsaInPublickeyAlgorithmsEnabled *bool) *SvmSSHServerCollectionGetParams {
+	o.SetIsRsaInPublickeyAlgorithmsEnabled(isRsaInPublickeyAlgorithmsEnabled)
+	return o
+}
+
+// SetIsRsaInPublickeyAlgorithmsEnabled adds the isRsaInPublickeyAlgorithmsEnabled to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) SetIsRsaInPublickeyAlgorithmsEnabled(isRsaInPublickeyAlgorithmsEnabled *bool) {
+	o.IsRsaInPublickeyAlgorithmsEnabled = isRsaInPublickeyAlgorithmsEnabled
+}
+
 // WithKeyExchangeAlgorithms adds the keyExchangeAlgorithms to the svm ssh server collection get params
 func (o *SvmSSHServerCollectionGetParams) WithKeyExchangeAlgorithms(keyExchangeAlgorithms *string) *SvmSSHServerCollectionGetParams {
 	o.SetKeyExchangeAlgorithms(keyExchangeAlgorithms)
@@ -353,6 +387,40 @@ func (o *SvmSSHServerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.HostKeyAlgorithms != nil {
+
+		// query param host_key_algorithms
+		var qrHostKeyAlgorithms string
+
+		if o.HostKeyAlgorithms != nil {
+			qrHostKeyAlgorithms = *o.HostKeyAlgorithms
+		}
+		qHostKeyAlgorithms := qrHostKeyAlgorithms
+		if qHostKeyAlgorithms != "" {
+
+			if err := r.SetQueryParam("host_key_algorithms", qHostKeyAlgorithms); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IsRsaInPublickeyAlgorithmsEnabled != nil {
+
+		// query param is_rsa_in_publickey_algorithms_enabled
+		var qrIsRsaInPublickeyAlgorithmsEnabled bool
+
+		if o.IsRsaInPublickeyAlgorithmsEnabled != nil {
+			qrIsRsaInPublickeyAlgorithmsEnabled = *o.IsRsaInPublickeyAlgorithmsEnabled
+		}
+		qIsRsaInPublickeyAlgorithmsEnabled := swag.FormatBool(qrIsRsaInPublickeyAlgorithmsEnabled)
+		if qIsRsaInPublickeyAlgorithmsEnabled != "" {
+
+			if err := r.SetQueryParam("is_rsa_in_publickey_algorithms_enabled", qIsRsaInPublickeyAlgorithmsEnabled); err != nil {
+				return err
+			}
 		}
 	}
 

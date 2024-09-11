@@ -27,6 +27,12 @@ type KerberosRealm struct {
 	// ad server
 	AdServer *KerberosRealmInlineAdServer `json:"ad_server,omitempty"`
 
+	// admin server
+	AdminServer *KerberosRealmInlineAdminServer `json:"admin_server,omitempty"`
+
+	// Specifies the allowed time of clock-skew between the server and clients, in minutes.
+	ClockSkew *int64 `json:"clock_skew,omitempty"`
+
 	// Comment
 	Comment *string `json:"comment,omitempty"`
 
@@ -39,6 +45,9 @@ type KerberosRealm struct {
 
 	// Kerberos realm
 	Name *string `json:"name,omitempty"`
+
+	// password server
+	PasswordServer *KerberosRealmInlinePasswordServer `json:"password_server,omitempty"`
 
 	// svm
 	Svm *KerberosRealmInlineSvm `json:"svm,omitempty"`
@@ -56,11 +65,19 @@ func (m *KerberosRealm) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateAdminServer(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateEncryptionTypes(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateKdc(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePasswordServer(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -100,6 +117,23 @@ func (m *KerberosRealm) validateAdServer(formats strfmt.Registry) error {
 		if err := m.AdServer.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("ad_server")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KerberosRealm) validateAdminServer(formats strfmt.Registry) error {
+	if swag.IsZero(m.AdminServer) { // not required
+		return nil
+	}
+
+	if m.AdminServer != nil {
+		if err := m.AdminServer.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("admin_server")
 			}
 			return err
 		}
@@ -164,6 +198,23 @@ func (m *KerberosRealm) validateKdc(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *KerberosRealm) validatePasswordServer(formats strfmt.Registry) error {
+	if swag.IsZero(m.PasswordServer) { // not required
+		return nil
+	}
+
+	if m.PasswordServer != nil {
+		if err := m.PasswordServer.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("password_server")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *KerberosRealm) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
@@ -193,11 +244,19 @@ func (m *KerberosRealm) ContextValidate(ctx context.Context, formats strfmt.Regi
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAdminServer(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateEncryptionTypes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateKdc(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePasswordServer(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -239,6 +298,20 @@ func (m *KerberosRealm) contextValidateAdServer(ctx context.Context, formats str
 	return nil
 }
 
+func (m *KerberosRealm) contextValidateAdminServer(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AdminServer != nil {
+		if err := m.AdminServer.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("admin_server")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *KerberosRealm) contextValidateEncryptionTypes(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "encryption_types", "body", []*string(m.EncryptionTypes)); err != nil {
@@ -262,6 +335,20 @@ func (m *KerberosRealm) contextValidateKdc(ctx context.Context, formats strfmt.R
 		if err := m.Kdc.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("kdc")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KerberosRealm) contextValidatePasswordServer(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.PasswordServer != nil {
+		if err := m.PasswordServer.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("password_server")
 			}
 			return err
 		}
@@ -343,6 +430,47 @@ func (m *KerberosRealmInlineAdServer) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// KerberosRealmInlineAdminServer kerberos realm inline admin server
+//
+// swagger:model kerberos_realm_inline_admin_server
+type KerberosRealmInlineAdminServer struct {
+
+	// Admin server IP address.
+	// Example: 1.2.3.4
+	Address *string `json:"address,omitempty"`
+
+	// Specifies the port number of admin server.
+	Port *int64 `json:"port,omitempty"`
+}
+
+// Validate validates this kerberos realm inline admin server
+func (m *KerberosRealmInlineAdminServer) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this kerberos realm inline admin server based on context it is used
+func (m *KerberosRealmInlineAdminServer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *KerberosRealmInlineAdminServer) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *KerberosRealmInlineAdminServer) UnmarshalBinary(b []byte) error {
+	var res KerberosRealmInlineAdminServer
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // KerberosRealmInlineKdc kerberos realm inline kdc
 //
 // swagger:model kerberos_realm_inline_kdc
@@ -358,11 +486,11 @@ type KerberosRealmInlineKdc struct {
 	// Minimum: 1
 	Port *int64 `json:"port,omitempty"`
 
-	// Key Distribution Center (KDC) vendor. Following values are suported:
+	// Key Distribution Center (KDC) vendor. Following values are supported:
 	// * microsoft - Microsoft Active Directory KDC
 	// * other - MIT Kerberos KDC or other KDC
 	//
-	// Enum: [microsoft other]
+	// Enum: ["microsoft","other"]
 	Vendor *string `json:"vendor,omitempty"`
 }
 
@@ -565,7 +693,48 @@ func (m *KerberosRealmInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KerberosRealmInlineSvm kerberos realm inline svm
+// KerberosRealmInlinePasswordServer kerberos realm inline password server
+//
+// swagger:model kerberos_realm_inline_password_server
+type KerberosRealmInlinePasswordServer struct {
+
+	// Password server IP address.
+	// Example: 1.2.3.4
+	Address *string `json:"address,omitempty"`
+
+	// Specifies the port number of password server.
+	Port *int64 `json:"port,omitempty"`
+}
+
+// Validate validates this kerberos realm inline password server
+func (m *KerberosRealmInlinePasswordServer) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this kerberos realm inline password server based on context it is used
+func (m *KerberosRealmInlinePasswordServer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *KerberosRealmInlinePasswordServer) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *KerberosRealmInlinePasswordServer) UnmarshalBinary(b []byte) error {
+	var res KerberosRealmInlinePasswordServer
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// KerberosRealmInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model kerberos_realm_inline_svm
 type KerberosRealmInlineSvm struct {
@@ -573,12 +742,12 @@ type KerberosRealmInlineSvm struct {
 	// links
 	Links *KerberosRealmInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NetworkEthernetBroadcastDomainsGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the network ethernet broadcast domains get o k response
+func (o *NetworkEthernetBroadcastDomainsGetOK) Code() int {
+	return 200
+}
+
 func (o *NetworkEthernetBroadcastDomainsGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/ethernet/broadcast-domains][%d] networkEthernetBroadcastDomainsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/broadcast-domains][%d] networkEthernetBroadcastDomainsGetOK %s", 200, payload)
 }
 
 func (o *NetworkEthernetBroadcastDomainsGetOK) String() string {
-	return fmt.Sprintf("[GET /network/ethernet/broadcast-domains][%d] networkEthernetBroadcastDomainsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/broadcast-domains][%d] networkEthernetBroadcastDomainsGetOK %s", 200, payload)
 }
 
 func (o *NetworkEthernetBroadcastDomainsGetOK) GetPayload() *models.BroadcastDomainResponse {
@@ -122,11 +130,6 @@ type NetworkEthernetBroadcastDomainsGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the network ethernet broadcast domains get default response
-func (o *NetworkEthernetBroadcastDomainsGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this network ethernet broadcast domains get default response has a 2xx status code
 func (o *NetworkEthernetBroadcastDomainsGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *NetworkEthernetBroadcastDomainsGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the network ethernet broadcast domains get default response
+func (o *NetworkEthernetBroadcastDomainsGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetworkEthernetBroadcastDomainsGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/ethernet/broadcast-domains][%d] network_ethernet_broadcast_domains_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/broadcast-domains][%d] network_ethernet_broadcast_domains_get default %s", o._statusCode, payload)
 }
 
 func (o *NetworkEthernetBroadcastDomainsGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/ethernet/broadcast-domains][%d] network_ethernet_broadcast_domains_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/ethernet/broadcast-domains][%d] network_ethernet_broadcast_domains_get default %s", o._statusCode, payload)
 }
 
 func (o *NetworkEthernetBroadcastDomainsGetDefault) GetPayload() *models.ErrorResponse {

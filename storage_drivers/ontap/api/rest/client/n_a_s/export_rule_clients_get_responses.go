@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ExportRuleClientsGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the export rule clients get o k response
+func (o *ExportRuleClientsGetOK) Code() int {
+	return 200
+}
+
 func (o *ExportRuleClientsGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients][%d] exportRuleClientsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients][%d] exportRuleClientsGetOK %s", 200, payload)
 }
 
 func (o *ExportRuleClientsGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients][%d] exportRuleClientsGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients][%d] exportRuleClientsGetOK %s", 200, payload)
 }
 
 func (o *ExportRuleClientsGetOK) GetPayload() *models.ExportClientResponse {
@@ -112,19 +120,18 @@ func NewExportRuleClientsGetDefault(code int) *ExportRuleClientsGetDefault {
 }
 
 /*
-ExportRuleClientsGetDefault describes a response with status code -1, with default header values.
+	ExportRuleClientsGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 6691623    | User is not authorized |
 */
 type ExportRuleClientsGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the export rule clients get default response
-func (o *ExportRuleClientsGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this export rule clients get default response has a 2xx status code
@@ -152,12 +159,19 @@ func (o *ExportRuleClientsGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the export rule clients get default response
+func (o *ExportRuleClientsGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ExportRuleClientsGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients][%d] export_rule_clients_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients][%d] export_rule_clients_get default %s", o._statusCode, payload)
 }
 
 func (o *ExportRuleClientsGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients][%d] export_rule_clients_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients][%d] export_rule_clients_get default %s", o._statusCode, payload)
 }
 
 func (o *ExportRuleClientsGetDefault) GetPayload() *models.ErrorResponse {

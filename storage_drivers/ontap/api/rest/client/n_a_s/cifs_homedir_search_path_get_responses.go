@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CifsHomedirSearchPathGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs homedir search path get o k response
+func (o *CifsHomedirSearchPathGetOK) Code() int {
+	return 200
+}
+
 func (o *CifsHomedirSearchPathGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifsHomedirSearchPathGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifsHomedirSearchPathGetOK %s", 200, payload)
 }
 
 func (o *CifsHomedirSearchPathGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifsHomedirSearchPathGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifsHomedirSearchPathGetOK %s", 200, payload)
 }
 
 func (o *CifsHomedirSearchPathGetOK) GetPayload() *models.CifsSearchPath {
@@ -122,11 +130,6 @@ type CifsHomedirSearchPathGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cifs homedir search path get default response
-func (o *CifsHomedirSearchPathGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cifs homedir search path get default response has a 2xx status code
 func (o *CifsHomedirSearchPathGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *CifsHomedirSearchPathGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs homedir search path get default response
+func (o *CifsHomedirSearchPathGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsHomedirSearchPathGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifs_homedir_search_path_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifs_homedir_search_path_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsHomedirSearchPathGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifs_homedir_search_path_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/home-directory/search-paths/{svm.uuid}/{index}][%d] cifs_homedir_search_path_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsHomedirSearchPathGetDefault) GetPayload() *models.ErrorResponse {

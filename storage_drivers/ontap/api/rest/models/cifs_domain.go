@@ -21,17 +21,32 @@ import (
 // swagger:model cifs_domain
 type CifsDomain struct {
 
+	// ad domain
+	AdDomain *CifsDomainInlineAdDomain `json:"ad_domain,omitempty"`
+
 	// Specifies the discovered servers records.
 	//
+	// Read Only: true
 	CifsDomainInlineDiscoveredServers []*CifsDomainInlineDiscoveredServersInlineArrayItem `json:"discovered_servers,omitempty"`
 
 	// Specifies the preferred DC records.
 	//
+	// Read Only: true
 	CifsDomainInlinePreferredDcs []*CifsDomainInlinePreferredDcsInlineArrayItem `json:"preferred_dcs,omitempty"`
 
 	// Specifies the trusted domain records.
 	//
+	// Read Only: true
 	CifsDomainInlineTrustRelationships []*CifsDomainInlineTrustRelationshipsInlineArrayItem `json:"trust_relationships,omitempty"`
+
+	// PKCS12 certificate used by the application to prove its identity to AKV.
+	// Example: PEM Cert
+	// Format: password
+	ClientCertificate *strfmt.Password `json:"client_certificate,omitempty"`
+
+	// Application client ID of the deployed Azure application with appropriate access to an AKV or EntraId.
+	// Example: e959d1b5-5a63-4284-9268-851e30e3eceb
+	ClientID *string `json:"client_id,omitempty"`
 
 	// name mapping
 	NameMapping *CifsDomainInlineNameMapping `json:"name_mapping,omitempty"`
@@ -39,13 +54,26 @@ type CifsDomain struct {
 	// password schedule
 	PasswordSchedule *CifsDomainInlinePasswordSchedule `json:"password_schedule,omitempty"`
 
+	// Specifies the mode of server discovery.
+	//
+	// Enum: ["all","site","none"]
+	ServerDiscoveryMode *string `json:"server_discovery_mode,omitempty"`
+
 	// svm
 	Svm *CifsDomainInlineSvm `json:"svm,omitempty"`
+
+	// Directory (tenant) ID of the deployed Azure application with appropriate access to an AKV or EntraId.
+	// Example: c9f32fcb-4ab7-40fe-af1b-1850d46cfbbe
+	TenantID *string `json:"tenant_id,omitempty"`
 }
 
 // Validate validates this cifs domain
 func (m *CifsDomain) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateAdDomain(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateCifsDomainInlineDiscoveredServers(formats); err != nil {
 		res = append(res, err)
@@ -59,11 +87,19 @@ func (m *CifsDomain) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateClientCertificate(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateNameMapping(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validatePasswordSchedule(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateServerDiscoveryMode(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -74,6 +110,23 @@ func (m *CifsDomain) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *CifsDomain) validateAdDomain(formats strfmt.Registry) error {
+	if swag.IsZero(m.AdDomain) { // not required
+		return nil
+	}
+
+	if m.AdDomain != nil {
+		if err := m.AdDomain.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ad_domain")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -149,6 +202,18 @@ func (m *CifsDomain) validateCifsDomainInlineTrustRelationships(formats strfmt.R
 	return nil
 }
 
+func (m *CifsDomain) validateClientCertificate(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClientCertificate) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("client_certificate", "body", "password", m.ClientCertificate.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *CifsDomain) validateNameMapping(formats strfmt.Registry) error {
 	if swag.IsZero(m.NameMapping) { // not required
 		return nil
@@ -183,6 +248,72 @@ func (m *CifsDomain) validatePasswordSchedule(formats strfmt.Registry) error {
 	return nil
 }
 
+var cifsDomainTypeServerDiscoveryModePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["all","site","none"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		cifsDomainTypeServerDiscoveryModePropEnum = append(cifsDomainTypeServerDiscoveryModePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cifs_domain
+	// CifsDomain
+	// server_discovery_mode
+	// ServerDiscoveryMode
+	// all
+	// END DEBUGGING
+	// CifsDomainServerDiscoveryModeAll captures enum value "all"
+	CifsDomainServerDiscoveryModeAll string = "all"
+
+	// BEGIN DEBUGGING
+	// cifs_domain
+	// CifsDomain
+	// server_discovery_mode
+	// ServerDiscoveryMode
+	// site
+	// END DEBUGGING
+	// CifsDomainServerDiscoveryModeSite captures enum value "site"
+	CifsDomainServerDiscoveryModeSite string = "site"
+
+	// BEGIN DEBUGGING
+	// cifs_domain
+	// CifsDomain
+	// server_discovery_mode
+	// ServerDiscoveryMode
+	// none
+	// END DEBUGGING
+	// CifsDomainServerDiscoveryModeNone captures enum value "none"
+	CifsDomainServerDiscoveryModeNone string = "none"
+)
+
+// prop value enum
+func (m *CifsDomain) validateServerDiscoveryModeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsDomainTypeServerDiscoveryModePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CifsDomain) validateServerDiscoveryMode(formats strfmt.Registry) error {
+	if swag.IsZero(m.ServerDiscoveryMode) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateServerDiscoveryModeEnum("server_discovery_mode", "body", *m.ServerDiscoveryMode); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *CifsDomain) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
@@ -203,6 +334,10 @@ func (m *CifsDomain) validateSvm(formats strfmt.Registry) error {
 // ContextValidate validate this cifs domain based on the context it is used
 func (m *CifsDomain) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.contextValidateAdDomain(ctx, formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.contextValidateCifsDomainInlineDiscoveredServers(ctx, formats); err != nil {
 		res = append(res, err)
@@ -234,7 +369,25 @@ func (m *CifsDomain) ContextValidate(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
+func (m *CifsDomain) contextValidateAdDomain(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AdDomain != nil {
+		if err := m.AdDomain.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ad_domain")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *CifsDomain) contextValidateCifsDomainInlineDiscoveredServers(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "discovered_servers", "body", []*CifsDomainInlineDiscoveredServersInlineArrayItem(m.CifsDomainInlineDiscoveredServers)); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(m.CifsDomainInlineDiscoveredServers); i++ {
 
@@ -254,6 +407,10 @@ func (m *CifsDomain) contextValidateCifsDomainInlineDiscoveredServers(ctx contex
 
 func (m *CifsDomain) contextValidateCifsDomainInlinePreferredDcs(ctx context.Context, formats strfmt.Registry) error {
 
+	if err := validate.ReadOnly(ctx, "preferred_dcs", "body", []*CifsDomainInlinePreferredDcsInlineArrayItem(m.CifsDomainInlinePreferredDcs)); err != nil {
+		return err
+	}
+
 	for i := 0; i < len(m.CifsDomainInlinePreferredDcs); i++ {
 
 		if m.CifsDomainInlinePreferredDcs[i] != nil {
@@ -271,6 +428,10 @@ func (m *CifsDomain) contextValidateCifsDomainInlinePreferredDcs(ctx context.Con
 }
 
 func (m *CifsDomain) contextValidateCifsDomainInlineTrustRelationships(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "trust_relationships", "body", []*CifsDomainInlineTrustRelationshipsInlineArrayItem(m.CifsDomainInlineTrustRelationships)); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(m.CifsDomainInlineTrustRelationships); i++ {
 
@@ -348,6 +509,48 @@ func (m *CifsDomain) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// CifsDomainInlineAdDomain Specifies the credentials of a user with permissions to reset the password in the organizational unit for the machine account.
+//
+// swagger:model cifs_domain_inline_ad_domain
+type CifsDomainInlineAdDomain struct {
+
+	// The account password of the user with permissions to reset the password in the organizational unit for the machine account.
+	//
+	Password *string `json:"password,omitempty"`
+
+	// The username of a user with permissions to reset the password in the organizational unit for the machine account.
+	//
+	User *string `json:"user,omitempty"`
+}
+
+// Validate validates this cifs domain inline ad domain
+func (m *CifsDomainInlineAdDomain) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this cifs domain inline ad domain based on context it is used
+func (m *CifsDomainInlineAdDomain) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *CifsDomainInlineAdDomain) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *CifsDomainInlineAdDomain) UnmarshalBinary(b []byte) error {
+	var res CifsDomainInlineAdDomain
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // CifsDomainInlineDiscoveredServersInlineArrayItem cifs domain inline discovered servers inline array item
 //
 // swagger:model cifs_domain_inline_discovered_servers_inline_array_item
@@ -363,7 +566,7 @@ type CifsDomainInlineDiscoveredServersInlineArrayItem struct {
 
 	// Server Preference
 	//
-	// Enum: [unknown preferred favored adequate]
+	// Enum: ["unknown","preferred","favored","adequate"]
 	Preference *string `json:"preference,omitempty"`
 
 	// Server IP address
@@ -376,12 +579,12 @@ type CifsDomainInlineDiscoveredServersInlineArrayItem struct {
 
 	// Server Type
 	//
-	// Enum: [unknown kerberos ms_ldap ms_dc ldap]
+	// Enum: ["unknown","kerberos","ms_ldap","ms_dc","ldap"]
 	ServerType *string `json:"server_type,omitempty"`
 
 	// Server status
 	//
-	// Enum: [ok unavailable slow expired undetermined unreachable]
+	// Enum: ["ok","unavailable","slow","expired","undetermined","unreachable"]
 	State *string `json:"state,omitempty"`
 }
 
@@ -926,8 +1129,13 @@ func (m *CifsDomainInlineNameMapping) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this cifs domain inline name mapping based on context it is used
+// ContextValidate validate this cifs domain inline name mapping based on the context it is used
 func (m *CifsDomainInlineNameMapping) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -954,13 +1162,19 @@ func (m *CifsDomainInlineNameMapping) UnmarshalBinary(b []byte) error {
 // swagger:model cifs_domain_inline_password_schedule
 type CifsDomainInlinePasswordSchedule struct {
 
+	// Day of the week for password change schedule.
+	// Example: Sunday
+	ScheduleDayOfWeek *string `json:"schedule_day_of_week,omitempty"`
+
 	// Schedule description.
+	// Read Only: true
 	ScheduleDescription *string `json:"schedule_description,omitempty"`
 
 	// Is password schedule enabled.
 	ScheduleEnabled *bool `json:"schedule_enabled,omitempty"`
 
 	// Last successful password change time.
+	// Read Only: true
 	// Format: date-time
 	ScheduleLastChangedTime *strfmt.DateTime `json:"schedule_last_changed_time,omitempty"`
 
@@ -969,7 +1183,12 @@ type CifsDomainInlinePasswordSchedule struct {
 	// Minimum: 1
 	ScheduleRandomizedMinute *int64 `json:"schedule_randomized_minute,omitempty"`
 
+	// Start time for password change schedule.
+	// Example: 36900
+	ScheduleTimeOfDay *string `json:"schedule_time_of_day,omitempty"`
+
 	// Warning message in case job is deleted.
+	// Read Only: true
 	ScheduleWarnMessage *string `json:"schedule_warn_message,omitempty"`
 
 	// Interval in weeks for password change schedule.
@@ -1044,8 +1263,52 @@ func (m *CifsDomainInlinePasswordSchedule) validateScheduleWeeklyInterval(format
 	return nil
 }
 
-// ContextValidate validates this cifs domain inline password schedule based on context it is used
+// ContextValidate validate this cifs domain inline password schedule based on the context it is used
 func (m *CifsDomainInlinePasswordSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScheduleDescription(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateScheduleLastChangedTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateScheduleWarnMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *CifsDomainInlinePasswordSchedule) contextValidateScheduleDescription(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "password_schedule"+"."+"schedule_description", "body", m.ScheduleDescription); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CifsDomainInlinePasswordSchedule) contextValidateScheduleLastChangedTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "password_schedule"+"."+"schedule_last_changed_time", "body", m.ScheduleLastChangedTime); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CifsDomainInlinePasswordSchedule) contextValidateScheduleWarnMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "password_schedule"+"."+"schedule_warn_message", "body", m.ScheduleWarnMessage); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -1075,45 +1338,18 @@ type CifsDomainInlinePreferredDcsInlineArrayItem struct {
 	// Fully Qualified Domain Name.
 	//
 	// Example: test.com
+	// Read Only: true
 	Fqdn *string `json:"fqdn,omitempty"`
 
 	// IP address of the preferred domain controller (DC). The address can be either an IPv4 or an IPv6 address.
 	//
 	// Example: 4.4.4.4
+	// Read Only: true
 	ServerIP *string `json:"server_ip,omitempty"`
-
-	// status
-	Status *CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus `json:"status,omitempty"`
 }
 
 // Validate validates this cifs domain inline preferred dcs inline array item
 func (m *CifsDomainInlinePreferredDcsInlineArrayItem) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateStatus(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *CifsDomainInlinePreferredDcsInlineArrayItem) validateStatus(formats strfmt.Registry) error {
-	if swag.IsZero(m.Status) { // not required
-		return nil
-	}
-
-	if m.Status != nil {
-		if err := m.Status.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("status")
-			}
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -1121,7 +1357,11 @@ func (m *CifsDomainInlinePreferredDcsInlineArrayItem) validateStatus(formats str
 func (m *CifsDomainInlinePreferredDcsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateStatus(ctx, formats); err != nil {
+	if err := m.contextValidateFqdn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateServerIP(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1131,15 +1371,19 @@ func (m *CifsDomainInlinePreferredDcsInlineArrayItem) ContextValidate(ctx contex
 	return nil
 }
 
-func (m *CifsDomainInlinePreferredDcsInlineArrayItem) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainInlinePreferredDcsInlineArrayItem) contextValidateFqdn(ctx context.Context, formats strfmt.Registry) error {
 
-	if m.Status != nil {
-		if err := m.Status.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("status")
-			}
-			return err
-		}
+	if err := validate.ReadOnly(ctx, "fqdn", "body", m.Fqdn); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CifsDomainInlinePreferredDcsInlineArrayItem) contextValidateServerIP(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "server_ip", "body", m.ServerIP); err != nil {
+		return err
 	}
 
 	return nil
@@ -1163,84 +1407,7 @@ func (m *CifsDomainInlinePreferredDcsInlineArrayItem) UnmarshalBinary(b []byte) 
 	return nil
 }
 
-// CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus Status of CIFS preferred domain controller.
-//
-// swagger:model cifs_domain_inline_preferred_dcs_inline_array_item_inline_status
-type CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus struct {
-
-	// Provides a detailed description of the state if the state is 'down' or
-	// the response time of the DNS server if the state is 'up'.
-	//
-	// Example: Response time (msec): 111
-	// Read Only: true
-	Details *string `json:"details,omitempty"`
-
-	// Indicates whether or not the domain controller is reachable.
-	// Example: true
-	// Read Only: true
-	Reachable *bool `json:"reachable,omitempty"`
-}
-
-// Validate validates this cifs domain inline preferred dcs inline array item inline status
-func (m *CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// ContextValidate validate this cifs domain inline preferred dcs inline array item inline status based on the context it is used
-func (m *CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateDetails(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateReachable(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus) contextValidateDetails(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "status"+"."+"details", "body", m.Details); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus) contextValidateReachable(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "status"+"."+"reachable", "body", m.Reachable); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus) UnmarshalBinary(b []byte) error {
-	var res CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// CifsDomainInlineSvm cifs domain inline svm
+// CifsDomainInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model cifs_domain_inline_svm
 type CifsDomainInlineSvm struct {
@@ -1248,12 +1415,12 @@ type CifsDomainInlineSvm struct {
 	// links
 	Links *CifsDomainInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

@@ -62,6 +62,12 @@ SnapmirrorRelationshipDeleteParams contains all the parameters to send to the AP
 */
 type SnapmirrorRelationshipDeleteParams struct {
 
+	/* DeleteLunMapsInDestination.
+
+	   Deletes LUN mapping for the volumes of the CG in destination.
+	*/
+	DeleteLunMapsInDestination *bool
+
 	/* DestinationOnly.
 
 	   Deletes a relationship on the destination only. This parameter is applicable only when the call is executed on the cluster that contains the destination endpoint.
@@ -88,7 +94,7 @@ type SnapmirrorRelationshipDeleteParams struct {
 
 	/* UUID.
 
-	   Relationship UUID
+	   SnapMirror relationship UUID
 	*/
 	UUID string
 
@@ -110,11 +116,14 @@ func (o *SnapmirrorRelationshipDeleteParams) WithDefaults() *SnapmirrorRelations
 // All values with no default are reset to their zero value.
 func (o *SnapmirrorRelationshipDeleteParams) SetDefaults() {
 	var (
+		deleteLunMapsInDestinationDefault = bool(false)
+
 		returnTimeoutDefault = int64(0)
 	)
 
 	val := SnapmirrorRelationshipDeleteParams{
-		ReturnTimeout: &returnTimeoutDefault,
+		DeleteLunMapsInDestination: &deleteLunMapsInDestinationDefault,
+		ReturnTimeout:              &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -154,6 +163,17 @@ func (o *SnapmirrorRelationshipDeleteParams) WithHTTPClient(client *http.Client)
 // SetHTTPClient adds the HTTPClient to the snapmirror relationship delete params
 func (o *SnapmirrorRelationshipDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithDeleteLunMapsInDestination adds the deleteLunMapsInDestination to the snapmirror relationship delete params
+func (o *SnapmirrorRelationshipDeleteParams) WithDeleteLunMapsInDestination(deleteLunMapsInDestination *bool) *SnapmirrorRelationshipDeleteParams {
+	o.SetDeleteLunMapsInDestination(deleteLunMapsInDestination)
+	return o
+}
+
+// SetDeleteLunMapsInDestination adds the deleteLunMapsInDestination to the snapmirror relationship delete params
+func (o *SnapmirrorRelationshipDeleteParams) SetDeleteLunMapsInDestination(deleteLunMapsInDestination *bool) {
+	o.DeleteLunMapsInDestination = deleteLunMapsInDestination
 }
 
 // WithDestinationOnly adds the destinationOnly to the snapmirror relationship delete params
@@ -218,6 +238,23 @@ func (o *SnapmirrorRelationshipDeleteParams) WriteToRequest(r runtime.ClientRequ
 		return err
 	}
 	var res []error
+
+	if o.DeleteLunMapsInDestination != nil {
+
+		// query param delete_lun_maps_in_destination
+		var qrDeleteLunMapsInDestination bool
+
+		if o.DeleteLunMapsInDestination != nil {
+			qrDeleteLunMapsInDestination = *o.DeleteLunMapsInDestination
+		}
+		qDeleteLunMapsInDestination := swag.FormatBool(qrDeleteLunMapsInDestination)
+		if qDeleteLunMapsInDestination != "" {
+
+			if err := r.SetQueryParam("delete_lun_maps_in_destination", qDeleteLunMapsInDestination); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.DestinationOnly != nil {
 

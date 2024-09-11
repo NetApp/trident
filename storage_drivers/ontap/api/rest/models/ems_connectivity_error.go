@@ -143,7 +143,7 @@ func (m *EmsConnectivityError) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsConnectivityErrorInlineMessage ems connectivity error inline message
+// EmsConnectivityErrorInlineMessage Information to be displayed to the user.
 //
 // swagger:model ems_connectivity_error_inline_message
 type EmsConnectivityErrorInlineMessage struct {

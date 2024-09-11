@@ -6,6 +6,7 @@ package snaplock
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SnaplockRetentionOperationDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snaplock retention operation delete o k response
+func (o *SnaplockRetentionOperationDeleteOK) Code() int {
+	return 200
+}
+
 func (o *SnaplockRetentionOperationDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/operations/{id}][%d] snaplockRetentionOperationDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/operations/{id}][%d] snaplockRetentionOperationDeleteOK", 200)
 }
 
 func (o *SnaplockRetentionOperationDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/operations/{id}][%d] snaplockRetentionOperationDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/operations/{id}][%d] snaplockRetentionOperationDeleteOK", 200)
 }
 
 func (o *SnaplockRetentionOperationDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,16 +113,12 @@ func NewSnaplockRetentionOperationDeleteDefault(code int) *SnaplockRetentionOper
 | Error code  |  Description |
 |-------------|--------------|
 | 14090541    | A completed or failed operation cannot be aborted |
+| 14090242    | Only a user with the security login role \"vsadmin-snaplock\" is allowed to perform this operation. |
 */
 type SnaplockRetentionOperationDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snaplock retention operation delete default response
-func (o *SnaplockRetentionOperationDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snaplock retention operation delete default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *SnaplockRetentionOperationDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snaplock retention operation delete default response
+func (o *SnaplockRetentionOperationDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnaplockRetentionOperationDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/operations/{id}][%d] snaplock_retention_operation_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/operations/{id}][%d] snaplock_retention_operation_delete default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockRetentionOperationDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/operations/{id}][%d] snaplock_retention_operation_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/operations/{id}][%d] snaplock_retention_operation_delete default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockRetentionOperationDeleteDefault) GetPayload() *models.ErrorResponse {

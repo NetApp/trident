@@ -70,7 +70,7 @@ type SplitLoadGetParams struct {
 
 	/* NodeUUID.
 
-	   Node Uuid
+	   Node UUID
 	*/
 	NodeUUID string
 

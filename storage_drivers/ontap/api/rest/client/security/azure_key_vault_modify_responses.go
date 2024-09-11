@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,17 @@ func (o *AzureKeyVaultModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the azure key vault modify o k response
+func (o *AzureKeyVaultModifyOK) Code() int {
+	return 200
+}
+
 func (o *AzureKeyVaultModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azureKeyVaultModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azureKeyVaultModifyOK", 200)
 }
 
 func (o *AzureKeyVaultModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azureKeyVaultModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azureKeyVaultModifyOK", 200)
 }
 
 func (o *AzureKeyVaultModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,6 +115,7 @@ AzureKeyVaultModifyAccepted describes a response with status code 202, with defa
 Accepted
 */
 type AzureKeyVaultModifyAccepted struct {
+	Payload *models.AzureKeyVaultJobLinkResponse
 }
 
 // IsSuccess returns true when this azure key vault modify accepted response has a 2xx status code
@@ -136,15 +143,33 @@ func (o *AzureKeyVaultModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the azure key vault modify accepted response
+func (o *AzureKeyVaultModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *AzureKeyVaultModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azureKeyVaultModifyAccepted ", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azureKeyVaultModifyAccepted %s", 202, payload)
 }
 
 func (o *AzureKeyVaultModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azureKeyVaultModifyAccepted ", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azureKeyVaultModifyAccepted %s", 202, payload)
+}
+
+func (o *AzureKeyVaultModifyAccepted) GetPayload() *models.AzureKeyVaultJobLinkResponse {
+	return o.Payload
 }
 
 func (o *AzureKeyVaultModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.AzureKeyVaultJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }
@@ -171,16 +196,12 @@ func NewAzureKeyVaultModifyDefault(code int) *AzureKeyVaultModifyDefault {
 | 65537547 | One or more volume encryption keys for encrypted volumes of this data SVM are stored in the key manager configured for the admin SVM. Use the REST API POST method to migrate this data SVM's keys from the admin SVM's key manager to this data SVM's key manager before running the rekey operation. |
 | 65537573 | Invalid client certificate. |
 | 65537577 | The AKV certificate authentication method cannot be configured for the given SVM as not all nodes in the cluster support the AKV certificate authentication. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AzureKeyVaultModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the azure key vault modify default response
-func (o *AzureKeyVaultModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this azure key vault modify default response has a 2xx status code
@@ -208,12 +229,19 @@ func (o *AzureKeyVaultModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the azure key vault modify default response
+func (o *AzureKeyVaultModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AzureKeyVaultModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azure_key_vault_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azure_key_vault_modify default %s", o._statusCode, payload)
 }
 
 func (o *AzureKeyVaultModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azure_key_vault_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azure_key_vault_modify default %s", o._statusCode, payload)
 }
 
 func (o *AzureKeyVaultModifyDefault) GetPayload() *models.ErrorResponse {

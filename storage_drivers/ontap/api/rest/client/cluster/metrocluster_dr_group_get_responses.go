@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *MetroclusterDrGroupGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the metrocluster dr group get o k response
+func (o *MetroclusterDrGroupGetOK) Code() int {
+	return 200
+}
+
 func (o *MetroclusterDrGroupGetOK) Error() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups/{id}][%d] metroclusterDrGroupGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups/{id}][%d] metroclusterDrGroupGetOK %s", 200, payload)
 }
 
 func (o *MetroclusterDrGroupGetOK) String() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups/{id}][%d] metroclusterDrGroupGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups/{id}][%d] metroclusterDrGroupGetOK %s", 200, payload)
 }
 
 func (o *MetroclusterDrGroupGetOK) GetPayload() *models.MetroclusterDrGroup {
@@ -122,11 +130,6 @@ type MetroclusterDrGroupGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the metrocluster dr group get default response
-func (o *MetroclusterDrGroupGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this metrocluster dr group get default response has a 2xx status code
 func (o *MetroclusterDrGroupGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *MetroclusterDrGroupGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the metrocluster dr group get default response
+func (o *MetroclusterDrGroupGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MetroclusterDrGroupGetDefault) Error() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups/{id}][%d] metrocluster_dr_group_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups/{id}][%d] metrocluster_dr_group_get default %s", o._statusCode, payload)
 }
 
 func (o *MetroclusterDrGroupGetDefault) String() string {
-	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups/{id}][%d] metrocluster_dr_group_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups/{id}][%d] metrocluster_dr_group_get default %s", o._statusCode, payload)
 }
 
 func (o *MetroclusterDrGroupGetDefault) GetPayload() *models.ErrorResponse {

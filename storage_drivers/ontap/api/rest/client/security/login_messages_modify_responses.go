@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *LoginMessagesModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the login messages modify o k response
+func (o *LoginMessagesModifyOK) Code() int {
+	return 200
+}
+
 func (o *LoginMessagesModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /security/login/messages/{uuid}][%d] loginMessagesModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/login/messages/{uuid}][%d] loginMessagesModifyOK", 200)
 }
 
 func (o *LoginMessagesModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /security/login/messages/{uuid}][%d] loginMessagesModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /security/login/messages/{uuid}][%d] loginMessagesModifyOK", 200)
 }
 
 func (o *LoginMessagesModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -114,11 +120,6 @@ type LoginMessagesModifyDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the login messages modify default response
-func (o *LoginMessagesModifyDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this login messages modify default response has a 2xx status code
 func (o *LoginMessagesModifyDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -144,12 +145,19 @@ func (o *LoginMessagesModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the login messages modify default response
+func (o *LoginMessagesModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *LoginMessagesModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /security/login/messages/{uuid}][%d] login_messages_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/login/messages/{uuid}][%d] login_messages_modify default %s", o._statusCode, payload)
 }
 
 func (o *LoginMessagesModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /security/login/messages/{uuid}][%d] login_messages_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /security/login/messages/{uuid}][%d] login_messages_modify default %s", o._statusCode, payload)
 }
 
 func (o *LoginMessagesModifyDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,12 +92,19 @@ func (o *ConsistencyGroupCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the consistency group create created response
+func (o *ConsistencyGroupCreateCreated) Code() int {
+	return 201
+}
+
 func (o *ConsistencyGroupCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistencyGroupCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistencyGroupCreateCreated %s", 201, payload)
 }
 
 func (o *ConsistencyGroupCreateCreated) String() string {
-	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistencyGroupCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistencyGroupCreateCreated %s", 201, payload)
 }
 
 func (o *ConsistencyGroupCreateCreated) GetPayload() *models.ConsistencyGroupResponse {
@@ -138,7 +146,7 @@ type ConsistencyGroupCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.ConsistencyGroupJobLinkResponse
 }
 
 // IsSuccess returns true when this consistency group create accepted response has a 2xx status code
@@ -166,15 +174,22 @@ func (o *ConsistencyGroupCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the consistency group create accepted response
+func (o *ConsistencyGroupCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *ConsistencyGroupCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistencyGroupCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistencyGroupCreateAccepted %s", 202, payload)
 }
 
 func (o *ConsistencyGroupCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistencyGroupCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistencyGroupCreateAccepted %s", 202, payload)
 }
 
-func (o *ConsistencyGroupCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *ConsistencyGroupCreateAccepted) GetPayload() *models.ConsistencyGroupJobLinkResponse {
 	return o.Payload
 }
 
@@ -187,7 +202,7 @@ func (o *ConsistencyGroupCreateAccepted) readResponse(response runtime.ClientRes
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.ConsistencyGroupJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -211,6 +226,8 @@ func NewConsistencyGroupCreateDefault(code int) *ConsistencyGroupCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 5374127 | The specified LUN name is invalid. |
+| 5440509 | No suitable storage can be found for the specified requirements. |
 | 53411842 | Consistency group does not exist. |
 | 53411843 | A consistency group with specified UUID was not found. |
 | 53411844 | Specified consistency group was not found in the specified SVM. |
@@ -228,16 +245,14 @@ func NewConsistencyGroupCreateDefault(code int) *ConsistencyGroupCreateDefault {
 | 53411867 | LUN name is too long after appending a unique suffix. |
 | 53411869 | Volume name is too long after appending a unique suffix. |
 | 53411870 | When using the \"round_robin\" layout, the volume count must not be greater than the LUN count. |
+| 53411959 | Volumes with snapshot locking enabled cannot be added to a consistency group. |
+| 53412040 | Splitting a non-snaplock clone from a Snaplock consistency group during clone creation is not supported. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ConsistencyGroupCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the consistency group create default response
-func (o *ConsistencyGroupCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this consistency group create default response has a 2xx status code
@@ -265,12 +280,19 @@ func (o *ConsistencyGroupCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the consistency group create default response
+func (o *ConsistencyGroupCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ConsistencyGroupCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistency_group_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistency_group_create default %s", o._statusCode, payload)
 }
 
 func (o *ConsistencyGroupCreateDefault) String() string {
-	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistency_group_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistency_group_create default %s", o._statusCode, payload)
 }
 
 func (o *ConsistencyGroupCreateDefault) GetPayload() *models.ErrorResponse {

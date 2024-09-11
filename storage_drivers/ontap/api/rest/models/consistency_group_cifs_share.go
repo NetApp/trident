@@ -53,7 +53,7 @@ type ConsistencyGroupCifsShare struct {
 	ContinuouslyAvailable *bool `json:"continuously_available,omitempty"`
 
 	// Directory mode creation mask to be viewed as an octal number.
-	// Example: 22
+	// Example: 18
 	DirUmask *int64 `json:"dir_umask,omitempty"`
 
 	// Specifies whether SMB encryption must be used when accessing this share. Clients that do not support encryption are not
@@ -62,7 +62,7 @@ type ConsistencyGroupCifsShare struct {
 	Encryption *bool `json:"encryption,omitempty"`
 
 	// File mode creation mask to be viewed as an octal number.
-	// Example: 22
+	// Example: 18
 	FileUmask *int64 `json:"file_umask,omitempty"`
 
 	// Specifies whether or not the share is a home directory share, where the share and path names are dynamic.
@@ -103,7 +103,7 @@ type ConsistencyGroupCifsShare struct {
 	//   * programs - Clients may automatically cache files that are used by the user for offline access
 	//                and may use those files in an offline mode even if the share is available.
 	//
-	// Enum: [none manual documents programs]
+	// Enum: ["none","manual","documents","programs"]
 	OfflineFiles *string `json:"offline_files,omitempty"`
 
 	// Specifies whether opportunistic locks are enabled on this share. "Oplocks" allow clients to lock files and cache content locally,
@@ -111,7 +111,7 @@ type ConsistencyGroupCifsShare struct {
 	//
 	Oplocks *bool `json:"oplocks,omitempty"`
 
-	// Specifies whether or not the Snapshot copies can be viewed and traversed by clients.
+	// Specifies whether or not the snapshots can be viewed and traversed by clients.
 	//
 	ShowSnapshot *bool `json:"show_snapshot,omitempty"`
 
@@ -121,7 +121,7 @@ type ConsistencyGroupCifsShare struct {
 	//     * widelink - Enables both local symlinks and widelinks.
 	//     * disable - Disables local symlinks and widelinks.
 	//
-	// Enum: [local widelink disable]
+	// Enum: ["local","widelink","disable"]
 	UnixSymlink *string `json:"unix_symlink,omitempty"`
 
 	// Vscan File-Operations Profile
@@ -131,7 +131,7 @@ type ConsistencyGroupCifsShare struct {
 	//   * strict - Virus scans can be triggered by open, read, close, and rename operations.
 	//   * writes_only - Virus scans can be triggered only when a file that has been modified is closed.
 	//
-	// Enum: [no_scan standard strict writes_only]
+	// Enum: ["no_scan","standard","strict","writes_only"]
 	VscanProfile *string `json:"vscan_profile,omitempty"`
 }
 
@@ -547,7 +547,7 @@ type ConsistencyGroupCifsShareInlineAclsInlineArrayItem struct {
 	// * change       - User has change access
 	// * full_control - User has full_control access
 	//
-	// Enum: [no_access read change full_control]
+	// Enum: ["no_access","read","change","full_control"]
 	Permission *string `json:"permission,omitempty"`
 
 	// Specifies the type of the user or group to add to the access control
@@ -556,12 +556,15 @@ type ConsistencyGroupCifsShareInlineAclsInlineArrayItem struct {
 	// * unix_user  - UNIX user
 	// * unix_group - UNIX group
 	//
-	// Enum: [windows unix_user unix_group]
+	// Enum: ["windows","unix_user","unix_group"]
 	Type *string `json:"type,omitempty"`
 
 	// Specifies the user or group name to add to the access control list of a CIFS share.
 	// Example: ENGDOMAIN\\ad_user
 	UserOrGroup *string `json:"user_or_group,omitempty"`
+
+	// Windows SID/UNIX ID depending on access-control type.
+	WinSidUnixID *string `json:"win_sid_unix_id,omitempty"`
 }
 
 // Validate validates this consistency group cifs share inline acls inline array item

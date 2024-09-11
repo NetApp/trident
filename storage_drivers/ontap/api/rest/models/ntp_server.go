@@ -36,7 +36,7 @@ type NtpServer struct {
 
 	// NTP protocol version for server. Valid versions are 3, 4, or auto.
 	// Example: auto
-	// Enum: [3 4 auto]
+	// Enum: ["3","4","auto"]
 	Version *string `json:"version,omitempty"`
 }
 

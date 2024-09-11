@@ -7,6 +7,7 @@ package security
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -26,6 +27,12 @@ type SecurityKeyManagerMigrateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *SecurityKeyManagerMigrateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewSecurityKeyManagerMigrateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewSecurityKeyManagerMigrateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -44,6 +51,76 @@ func (o *SecurityKeyManagerMigrateReader) ReadResponse(response runtime.ClientRe
 	}
 }
 
+// NewSecurityKeyManagerMigrateCreated creates a SecurityKeyManagerMigrateCreated with default headers values
+func NewSecurityKeyManagerMigrateCreated() *SecurityKeyManagerMigrateCreated {
+	return &SecurityKeyManagerMigrateCreated{}
+}
+
+/*
+SecurityKeyManagerMigrateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type SecurityKeyManagerMigrateCreated struct {
+	Payload *models.SecurityKeyManagerJobLinkResponse
+}
+
+// IsSuccess returns true when this security key manager migrate created response has a 2xx status code
+func (o *SecurityKeyManagerMigrateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security key manager migrate created response has a 3xx status code
+func (o *SecurityKeyManagerMigrateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security key manager migrate created response has a 4xx status code
+func (o *SecurityKeyManagerMigrateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security key manager migrate created response has a 5xx status code
+func (o *SecurityKeyManagerMigrateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security key manager migrate created response a status code equal to that given
+func (o *SecurityKeyManagerMigrateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the security key manager migrate created response
+func (o *SecurityKeyManagerMigrateCreated) Code() int {
+	return 201
+}
+
+func (o *SecurityKeyManagerMigrateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers/{source.uuid}/migrate][%d] securityKeyManagerMigrateCreated %s", 201, payload)
+}
+
+func (o *SecurityKeyManagerMigrateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers/{source.uuid}/migrate][%d] securityKeyManagerMigrateCreated %s", 201, payload)
+}
+
+func (o *SecurityKeyManagerMigrateCreated) GetPayload() *models.SecurityKeyManagerJobLinkResponse {
+	return o.Payload
+}
+
+func (o *SecurityKeyManagerMigrateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.SecurityKeyManagerJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewSecurityKeyManagerMigrateAccepted creates a SecurityKeyManagerMigrateAccepted with default headers values
 func NewSecurityKeyManagerMigrateAccepted() *SecurityKeyManagerMigrateAccepted {
 	return &SecurityKeyManagerMigrateAccepted{}
@@ -55,7 +132,7 @@ SecurityKeyManagerMigrateAccepted describes a response with status code 202, wit
 Accepted
 */
 type SecurityKeyManagerMigrateAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.SecurityKeyManagerJobLinkResponse
 }
 
 // IsSuccess returns true when this security key manager migrate accepted response has a 2xx status code
@@ -83,21 +160,28 @@ func (o *SecurityKeyManagerMigrateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the security key manager migrate accepted response
+func (o *SecurityKeyManagerMigrateAccepted) Code() int {
+	return 202
+}
+
 func (o *SecurityKeyManagerMigrateAccepted) Error() string {
-	return fmt.Sprintf("[POST /security/key-managers/{source.uuid}/migrate][%d] securityKeyManagerMigrateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers/{source.uuid}/migrate][%d] securityKeyManagerMigrateAccepted %s", 202, payload)
 }
 
 func (o *SecurityKeyManagerMigrateAccepted) String() string {
-	return fmt.Sprintf("[POST /security/key-managers/{source.uuid}/migrate][%d] securityKeyManagerMigrateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers/{source.uuid}/migrate][%d] securityKeyManagerMigrateAccepted %s", 202, payload)
 }
 
-func (o *SecurityKeyManagerMigrateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *SecurityKeyManagerMigrateAccepted) GetPayload() *models.SecurityKeyManagerJobLinkResponse {
 	return o.Payload
 }
 
 func (o *SecurityKeyManagerMigrateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.SecurityKeyManagerJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -129,19 +213,18 @@ func NewSecurityKeyManagerMigrateDefault(code int) *SecurityKeyManagerMigrateDef
 | 65537551 | Top-level internal key protection key (KEK) is unavailable on one or more nodes. |
 | 65537552 | Embedded KMIP server status is not available. |
 | 65537564 | Check that the Azure Key Vault Service is healthy and retry the operation. |
+| 65537611 | Key migration cannot be performed on the SVM while the enabled keystore configuration is being switched. If a previous attempt to switch the keystore configuration failed, or was interrupted, the system will continue to prevent key migration for the SVM. Use the REST API PATCH method "/api/security/key-stores/{uuid}" to re-run and complete the operation. |
 | 65537720 | Failed to configure the Google Cloud Key Management Service for an SVM because a key manager is already configured. |
 | 65537736 | Check that the Google Cloud Key Management Service is healthy and retry the operation. |
 | 65538107 | Key migration to an IBM Key Lore key manager is not supported. |
+| 65539434 | Cannot perform key migration on the SVM while the keystore is being initialized. Wait until the keystore is in the active state, and rerun the key migration operation. |
+| 65539435 | Cannot perform key migration on the SVM while the keystore is being disabled. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SecurityKeyManagerMigrateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security key manager migrate default response
-func (o *SecurityKeyManagerMigrateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security key manager migrate default response has a 2xx status code
@@ -169,12 +252,19 @@ func (o *SecurityKeyManagerMigrateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security key manager migrate default response
+func (o *SecurityKeyManagerMigrateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityKeyManagerMigrateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/key-managers/{source.uuid}/migrate][%d] security_key_manager_migrate default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers/{source.uuid}/migrate][%d] security_key_manager_migrate default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeyManagerMigrateDefault) String() string {
-	return fmt.Sprintf("[POST /security/key-managers/{source.uuid}/migrate][%d] security_key_manager_migrate default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/key-managers/{source.uuid}/migrate][%d] security_key_manager_migrate default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeyManagerMigrateDefault) GetPayload() *models.ErrorResponse {

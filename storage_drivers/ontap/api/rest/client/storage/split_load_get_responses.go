@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SplitLoadGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the split load get o k response
+func (o *SplitLoadGetOK) Code() int {
+	return 200
+}
+
 func (o *SplitLoadGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/file/clone/split-loads/{node.uuid}][%d] splitLoadGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/file/clone/split-loads/{node.uuid}][%d] splitLoadGetOK %s", 200, payload)
 }
 
 func (o *SplitLoadGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/file/clone/split-loads/{node.uuid}][%d] splitLoadGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/file/clone/split-loads/{node.uuid}][%d] splitLoadGetOK %s", 200, payload)
 }
 
 func (o *SplitLoadGetOK) GetPayload() *models.SplitLoad {
@@ -122,11 +130,6 @@ type SplitLoadGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the split load get default response
-func (o *SplitLoadGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this split load get default response has a 2xx status code
 func (o *SplitLoadGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SplitLoadGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the split load get default response
+func (o *SplitLoadGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SplitLoadGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/file/clone/split-loads/{node.uuid}][%d] split_load_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/file/clone/split-loads/{node.uuid}][%d] split_load_get default %s", o._statusCode, payload)
 }
 
 func (o *SplitLoadGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/file/clone/split-loads/{node.uuid}][%d] split_load_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/file/clone/split-loads/{node.uuid}][%d] split_load_get default %s", o._statusCode, payload)
 }
 
 func (o *SplitLoadGetDefault) GetPayload() *models.ErrorResponse {

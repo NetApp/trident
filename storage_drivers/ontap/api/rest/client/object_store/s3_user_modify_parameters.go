@@ -64,6 +64,13 @@ S3UserModifyParams contains all the parameters to send to the API endpoint
 */
 type S3UserModifyParams struct {
 
+	/* DeleteKeys.
+
+	   Specifies whether or not to delete the user keys.
+
+	*/
+	DeleteKeys *bool
+
 	/* Info.
 
 	   Info specification
@@ -107,10 +114,13 @@ func (o *S3UserModifyParams) WithDefaults() *S3UserModifyParams {
 // All values with no default are reset to their zero value.
 func (o *S3UserModifyParams) SetDefaults() {
 	var (
+		deleteKeysDefault = bool(false)
+
 		regenerateKeysDefault = bool(false)
 	)
 
 	val := S3UserModifyParams{
+		DeleteKeys:     &deleteKeysDefault,
 		RegenerateKeys: &regenerateKeysDefault,
 	}
 
@@ -151,6 +161,17 @@ func (o *S3UserModifyParams) WithHTTPClient(client *http.Client) *S3UserModifyPa
 // SetHTTPClient adds the HTTPClient to the s3 user modify params
 func (o *S3UserModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithDeleteKeys adds the deleteKeys to the s3 user modify params
+func (o *S3UserModifyParams) WithDeleteKeys(deleteKeys *bool) *S3UserModifyParams {
+	o.SetDeleteKeys(deleteKeys)
+	return o
+}
+
+// SetDeleteKeys adds the deleteKeys to the s3 user modify params
+func (o *S3UserModifyParams) SetDeleteKeys(deleteKeys *bool) {
+	o.DeleteKeys = deleteKeys
 }
 
 // WithInfo adds the info to the s3 user modify params
@@ -204,6 +225,23 @@ func (o *S3UserModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		return err
 	}
 	var res []error
+
+	if o.DeleteKeys != nil {
+
+		// query param delete_keys
+		var qrDeleteKeys bool
+
+		if o.DeleteKeys != nil {
+			qrDeleteKeys = *o.DeleteKeys
+		}
+		qDeleteKeys := swag.FormatBool(qrDeleteKeys)
+		if qDeleteKeys != "" {
+
+			if err := r.SetQueryParam("delete_keys", qDeleteKeys); err != nil {
+				return err
+			}
+		}
+	}
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err

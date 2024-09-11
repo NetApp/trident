@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CifsSessionCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs session collection get o k response
+func (o *CifsSessionCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *CifsSessionCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/sessions][%d] cifsSessionCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/sessions][%d] cifsSessionCollectionGetOK %s", 200, payload)
 }
 
 func (o *CifsSessionCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/sessions][%d] cifsSessionCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/sessions][%d] cifsSessionCollectionGetOK %s", 200, payload)
 }
 
 func (o *CifsSessionCollectionGetOK) GetPayload() *models.CifsSessionResponse {
@@ -122,11 +130,6 @@ type CifsSessionCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cifs session collection get default response
-func (o *CifsSessionCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cifs session collection get default response has a 2xx status code
 func (o *CifsSessionCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *CifsSessionCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs session collection get default response
+func (o *CifsSessionCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsSessionCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/sessions][%d] cifs_session_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/sessions][%d] cifs_session_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsSessionCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/sessions][%d] cifs_session_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/sessions][%d] cifs_session_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsSessionCollectionGetDefault) GetPayload() *models.ErrorResponse {

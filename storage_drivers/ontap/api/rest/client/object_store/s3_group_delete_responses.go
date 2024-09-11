@@ -6,6 +6,7 @@ package object_store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *S3GroupDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the s3 group delete o k response
+func (o *S3GroupDeleteOK) Code() int {
+	return 200
+}
+
 func (o *S3GroupDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3GroupDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3GroupDeleteOK", 200)
 }
 
 func (o *S3GroupDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3GroupDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3GroupDeleteOK", 200)
 }
 
 func (o *S3GroupDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type S3GroupDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the s3 group delete default response
-func (o *S3GroupDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this s3 group delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *S3GroupDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the s3 group delete default response
+func (o *S3GroupDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *S3GroupDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3_group_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3_group_delete default %s", o._statusCode, payload)
 }
 
 func (o *S3GroupDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3_group_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3_group_delete default %s", o._statusCode, payload)
 }
 
 func (o *S3GroupDeleteDefault) GetPayload() *models.ErrorResponse {

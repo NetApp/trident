@@ -27,13 +27,13 @@ type ClientLock struct {
 	// Example: 0.0.0.0
 	ClientAddress *string `json:"client_address,omitempty"`
 
-	// Indicate if volume is contituent or not.
+	// Indicate if volume is constituent or not.
 	// Read Only: true
 	Constituent *bool `json:"constituent,omitempty"`
 
 	// Type of delegation.
 	// Read Only: true
-	// Enum: [read write]
+	// Enum: ["read","write"]
 	Delegation *string `json:"delegation,omitempty"`
 
 	// interface
@@ -44,7 +44,7 @@ type ClientLock struct {
 
 	// The oplock level determines which operations the client may cache locally.
 	// Read Only: true
-	// Enum: [exclusive level2 batch null read_batch]
+	// Enum: ["exclusive","level2","batch","null","read_batch"]
 	OplockLevel *string `json:"oplock_level,omitempty"`
 
 	// Owner ID.
@@ -55,7 +55,7 @@ type ClientLock struct {
 	Path *string `json:"path,omitempty"`
 
 	// Type of lock protocol.
-	// Enum: [cifs fcache nfsv4 http nlm nfsv4.1 crposix]
+	// Enum: ["cifs","fcache","nfsv4","http","nlm","nfsv4.1","crposix"]
 	Protocol *string `json:"protocol,omitempty"`
 
 	// share lock
@@ -66,7 +66,7 @@ type ClientLock struct {
 
 	// State of lock.
 	// Read Only: true
-	// Enum: [granted revoking adjusted denied subsumed gone unused waiting timeout]
+	// Enum: ["granted","revoking","adjusted","denied","subsumed","gone","unused","waiting","timeout"]
 	State *string `json:"state,omitempty"`
 
 	// svm
@@ -74,7 +74,7 @@ type ClientLock struct {
 
 	// Type of lock.
 	// Read Only: true
-	// Enum: [byte_range share_level op_lock delegation]
+	// Enum: ["byte_range","share_level","op_lock","delegation"]
 	Type *string `json:"type,omitempty"`
 
 	// Lock UUID
@@ -944,7 +944,7 @@ func (m *ClientLock) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClientLockInlineInterface client lock inline interface
+// ClientLockInlineInterface A network interface. Either UUID or name may be supplied on input.
 //
 // swagger:model client_lock_inline_interface
 type ClientLockInlineInterface struct {
@@ -1434,7 +1434,7 @@ func (m *ClientLockInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClientLockInlineSvm client lock inline svm
+// ClientLockInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model client_lock_inline_svm
 type ClientLockInlineSvm struct {
@@ -1442,12 +1442,12 @@ type ClientLockInlineSvm struct {
 	// links
 	Links *ClientLockInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -1624,7 +1624,7 @@ type ClientLockInlineVolume struct {
 	// links
 	Links *ClientLockInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

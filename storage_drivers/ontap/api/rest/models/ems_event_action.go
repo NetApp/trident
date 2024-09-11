@@ -31,6 +31,35 @@ type EmsEventAction struct {
 	// Read Only: true
 	EmsEventActionInlineParameters []*EmsEventActionInlineParametersInlineArrayItem `json:"parameters,omitempty"`
 
+	// JSON object describing the structure of the request body if arguments must be
+	// provided in the body when invoking the action.
+	// A JSON string value that takes the form of {parameter-name} must be substituted by user input
+	// values encoded as the appropriate JSON type.
+	// The following table gives examples where the parameter type is a string, an integer, and
+	// an array:
+	// | request_body_template value | parameter value              | request body                    |
+	// | --------------------------- | ---------------------------- | ------------------------------- |
+	// | {"name": "{user-name}"}     | user-name="Joe"              | {"name": "Joe"}                 |
+	// | {"retry count": "{count}"}  | count=10                     | {"retry_count": 10}             |
+	// | {"domains": "{dns-names}"}  | dns-names=["dns-1", "dns-2"] | {"domains": ["dns-1", "dns-2"]} |
+	// Only JSON string values that start with a '{' and end with a '}' should be considered
+	// for parameter substitutions. A JSON string value such as "{user-name} is the syntax" should
+	// be treated as a literal string with no parameter substitution to be performed.
+	// Double curly braces '{{' and '}}' are used to escape parameter substitutions, therefore double
+	// curly braces must be converted to single curly braces.
+	// For example, "{{user-name}}" is converted to the JSON string value "{user-name}".
+	// Note that this rule only applies if a JSON string starts with '{{' and ends with '}}'.
+	// The following table provides examples of when parameter substitutions must not be performed:
+	// | request_body_template value       | request body                     |
+	// | --------------------------------- | -------------------------------- |
+	// | {"name": "{user-name} is bad"}    | {"name": "{user-name} is bad"}   |
+	// | {"name": "{{user-name}}"}         | {"name": "{user-name}"}          |
+	// | {"name": "{{user-name}} is bad"}  | {"name": "{{user-name}} is bad"} |
+	// | {"name": "{{{{user-name}}}}"}     | {"name": "{{user-name}}"}        |
+	//
+	// Read Only: true
+	EmsEventActionInlineRequestBodyTemplate interface{} `json:"request_body_template,omitempty"`
+
 	// URI on which to perform the action, using the HTTP method specified in the method property.
 	// Example: /api/resourcelink
 	// Read Only: true
@@ -728,6 +757,20 @@ type EmsEventActionInlineParametersInlineArrayItem struct {
 	// description
 	Description *EmsEventActionInlineParametersInlineArrayItemInlineDescription `json:"description,omitempty"`
 
+	// If the type of the parameter is an array, this specifies the type of items in the form of a JSON object where other properties applicable to that type can be included.
+	// Example: {"format":"date-time","type":"string"}
+	// Read Only: true
+	EmsEventActionInlineParametersInlineArrayItemInlineItems interface{} `json:"items,omitempty"`
+
+	// If the type of the parameter is an object, this specifies what properties make up the object in the form of a JSON array where multiple parameters can be embedded within a single parameter. It is primarily used as a schema for an array type parameter.
+	// Example: [{"format":"date-time","name":"start-date","type":"string"},{"format":"date-time","name":"end-date","type":"string"}]
+	// Read Only: true
+	EmsEventActionInlineParametersInlineArrayItemInlineProperties interface{} `json:"properties,omitempty"`
+
+	// Specifies the current value(s) for the parameter encoded in the appropriate JSON type.
+	// Read Only: true
+	EmsEventActionInlineParametersInlineArrayItemInlineValue interface{} `json:"value,omitempty"`
+
 	// Specifies the possible values of the parameter.
 	// Example: ["value-1","value-2"]
 	// Read Only: true
@@ -749,10 +792,11 @@ type EmsEventActionInlineParametersInlineArrayItem struct {
 	// help
 	Help *EmsEventActionInlineParametersInlineArrayItemInlineHelp `json:"help,omitempty"`
 
-	// If the type of the parameter is an array, this specifies the type of items in the form of a JSON object, {"type":"type-value"}, where the type-value is one of the values for the type property.
-	// Example: {"type":"string"}
+	// Specifies where the parameter is placed when invoking the action.
+	// Example: body
 	// Read Only: true
-	Items *string `json:"items,omitempty"`
+	// Enum: ["body","query"]
+	In *string `json:"in,omitempty"`
 
 	// Specifies the maximum length of an array type parameter.
 	// Read Only: true
@@ -778,16 +822,23 @@ type EmsEventActionInlineParametersInlineArrayItem struct {
 	// Read Only: true
 	Minimum *int64 `json:"minimum,omitempty"`
 
+	// Specifies that a number type parameter must be the multiple of this number.
+	// Read Only: true
+	MultipleOf *float64 `json:"multipleOf,omitempty"`
+
 	// Parameter name.
 	// Example: schedule-at
 	// Read Only: true
 	Name *string `json:"name,omitempty"`
 
-	// Specifies where the parameter is placed when invoking the action.
-	// Example: body
+	// By default, all properties of an object type parameter are mandatory. This property specifies the list of optional properties.
+	// Example: ["end-time"]
 	// Read Only: true
-	// Enum: [body query]
-	ParamIn *string `json:"param_in,omitempty"`
+	Optional []*string `json:"optional"`
+
+	// Specifies a regular expression template for a string type parameter.
+	// Read Only: true
+	Pattern *string `json:"pattern,omitempty"`
 
 	// title
 	Title *EmsEventActionInlineParametersInlineArrayItemInlineTitle `json:"title,omitempty"`
@@ -795,8 +846,12 @@ type EmsEventActionInlineParametersInlineArrayItem struct {
 	// Parameter type.
 	// Example: string
 	// Read Only: true
-	// Enum: [string number integer boolean array]
+	// Enum: ["string","number","integer","boolean","array","object"]
 	Type *string `json:"type,omitempty"`
+
+	// Specifies whether the "maximum" value is excluded in the parameter value range.
+	// Read Only: true
+	UniqueItems *bool `json:"uniqueItems,omitempty"`
 
 	// validation error message
 	ValidationErrorMessage *EmsEventActionInlineParametersInlineArrayItemInlineValidationErrorMessage `json:"validation_error_message,omitempty"`
@@ -814,7 +869,7 @@ func (m *EmsEventActionInlineParametersInlineArrayItem) Validate(formats strfmt.
 		res = append(res, err)
 	}
 
-	if err := m.validateParamIn(formats); err != nil {
+	if err := m.validateIn(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -870,7 +925,7 @@ func (m *EmsEventActionInlineParametersInlineArrayItem) validateHelp(formats str
 	return nil
 }
 
-var emsEventActionInlineParametersInlineArrayItemTypeParamInPropEnum []interface{}
+var emsEventActionInlineParametersInlineArrayItemTypeInPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -878,7 +933,7 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		emsEventActionInlineParametersInlineArrayItemTypeParamInPropEnum = append(emsEventActionInlineParametersInlineArrayItemTypeParamInPropEnum, v)
+		emsEventActionInlineParametersInlineArrayItemTypeInPropEnum = append(emsEventActionInlineParametersInlineArrayItemTypeInPropEnum, v)
 	}
 }
 
@@ -887,39 +942,39 @@ const (
 	// BEGIN DEBUGGING
 	// ems_event_action_inline_parameters_inline_array_item
 	// EmsEventActionInlineParametersInlineArrayItem
-	// param_in
-	// ParamIn
+	// in
+	// In
 	// body
 	// END DEBUGGING
-	// EmsEventActionInlineParametersInlineArrayItemParamInBody captures enum value "body"
-	EmsEventActionInlineParametersInlineArrayItemParamInBody string = "body"
+	// EmsEventActionInlineParametersInlineArrayItemInBody captures enum value "body"
+	EmsEventActionInlineParametersInlineArrayItemInBody string = "body"
 
 	// BEGIN DEBUGGING
 	// ems_event_action_inline_parameters_inline_array_item
 	// EmsEventActionInlineParametersInlineArrayItem
-	// param_in
-	// ParamIn
+	// in
+	// In
 	// query
 	// END DEBUGGING
-	// EmsEventActionInlineParametersInlineArrayItemParamInQuery captures enum value "query"
-	EmsEventActionInlineParametersInlineArrayItemParamInQuery string = "query"
+	// EmsEventActionInlineParametersInlineArrayItemInQuery captures enum value "query"
+	EmsEventActionInlineParametersInlineArrayItemInQuery string = "query"
 )
 
 // prop value enum
-func (m *EmsEventActionInlineParametersInlineArrayItem) validateParamInEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, emsEventActionInlineParametersInlineArrayItemTypeParamInPropEnum, true); err != nil {
+func (m *EmsEventActionInlineParametersInlineArrayItem) validateInEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, emsEventActionInlineParametersInlineArrayItemTypeInPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *EmsEventActionInlineParametersInlineArrayItem) validateParamIn(formats strfmt.Registry) error {
-	if swag.IsZero(m.ParamIn) { // not required
+func (m *EmsEventActionInlineParametersInlineArrayItem) validateIn(formats strfmt.Registry) error {
+	if swag.IsZero(m.In) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateParamInEnum("param_in", "body", *m.ParamIn); err != nil {
+	if err := m.validateInEnum("in", "body", *m.In); err != nil {
 		return err
 	}
 
@@ -947,7 +1002,7 @@ var emsEventActionInlineParametersInlineArrayItemTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["string","number","integer","boolean","array"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["string","number","integer","boolean","array","object"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1006,6 +1061,16 @@ const (
 	// END DEBUGGING
 	// EmsEventActionInlineParametersInlineArrayItemTypeArray captures enum value "array"
 	EmsEventActionInlineParametersInlineArrayItemTypeArray string = "array"
+
+	// BEGIN DEBUGGING
+	// ems_event_action_inline_parameters_inline_array_item
+	// EmsEventActionInlineParametersInlineArrayItem
+	// type
+	// Type
+	// object
+	// END DEBUGGING
+	// EmsEventActionInlineParametersInlineArrayItemTypeObject captures enum value "object"
+	EmsEventActionInlineParametersInlineArrayItemTypeObject string = "object"
 )
 
 // prop value enum
@@ -1074,7 +1139,7 @@ func (m *EmsEventActionInlineParametersInlineArrayItem) ContextValidate(ctx cont
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateItems(ctx, formats); err != nil {
+	if err := m.contextValidateIn(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1102,11 +1167,19 @@ func (m *EmsEventActionInlineParametersInlineArrayItem) ContextValidate(ctx cont
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateMultipleOf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateName(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateParamIn(ctx, formats); err != nil {
+	if err := m.contextValidateOptional(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePattern(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1115,6 +1188,10 @@ func (m *EmsEventActionInlineParametersInlineArrayItem) ContextValidate(ctx cont
 	}
 
 	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUniqueItems(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1192,9 +1269,9 @@ func (m *EmsEventActionInlineParametersInlineArrayItem) contextValidateHelp(ctx 
 	return nil
 }
 
-func (m *EmsEventActionInlineParametersInlineArrayItem) contextValidateItems(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsEventActionInlineParametersInlineArrayItem) contextValidateIn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "items", "body", m.Items); err != nil {
+	if err := validate.ReadOnly(ctx, "in", "body", m.In); err != nil {
 		return err
 	}
 
@@ -1255,6 +1332,15 @@ func (m *EmsEventActionInlineParametersInlineArrayItem) contextValidateMinimum(c
 	return nil
 }
 
+func (m *EmsEventActionInlineParametersInlineArrayItem) contextValidateMultipleOf(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "multipleOf", "body", m.MultipleOf); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *EmsEventActionInlineParametersInlineArrayItem) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
@@ -1264,9 +1350,18 @@ func (m *EmsEventActionInlineParametersInlineArrayItem) contextValidateName(ctx 
 	return nil
 }
 
-func (m *EmsEventActionInlineParametersInlineArrayItem) contextValidateParamIn(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsEventActionInlineParametersInlineArrayItem) contextValidateOptional(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "param_in", "body", m.ParamIn); err != nil {
+	if err := validate.ReadOnly(ctx, "optional", "body", []*string(m.Optional)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *EmsEventActionInlineParametersInlineArrayItem) contextValidatePattern(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "pattern", "body", m.Pattern); err != nil {
 		return err
 	}
 
@@ -1290,6 +1385,15 @@ func (m *EmsEventActionInlineParametersInlineArrayItem) contextValidateTitle(ctx
 func (m *EmsEventActionInlineParametersInlineArrayItem) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *EmsEventActionInlineParametersInlineArrayItem) contextValidateUniqueItems(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "uniqueItems", "body", m.UniqueItems); err != nil {
 		return err
 	}
 

@@ -24,13 +24,13 @@ type MetroclusterDiagCheck struct {
 	AdditionalInfo *MetroclusterDiagCheckInlineAdditionalInfo `json:"additional_info,omitempty"`
 
 	// Name of type of diagnostic operation run for the component.
-	// Example: mirrror_status
+	// Example: mirror_status
 	// Read Only: true
 	Name *string `json:"name,omitempty"`
 
 	// Result of the diagnostic operation on this component.
 	// Read Only: true
-	// Enum: [ok warning not_run not_applicable]
+	// Enum: ["ok","warning","not_run","not_applicable"]
 	Result *string `json:"result,omitempty"`
 }
 

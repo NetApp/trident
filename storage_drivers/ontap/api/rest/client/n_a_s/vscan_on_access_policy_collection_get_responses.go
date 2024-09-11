@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *VscanOnAccessPolicyCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the vscan on access policy collection get o k response
+func (o *VscanOnAccessPolicyCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *VscanOnAccessPolicyCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies][%d] vscanOnAccessPolicyCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies][%d] vscanOnAccessPolicyCollectionGetOK %s", 200, payload)
 }
 
 func (o *VscanOnAccessPolicyCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies][%d] vscanOnAccessPolicyCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies][%d] vscanOnAccessPolicyCollectionGetOK %s", 200, payload)
 }
 
 func (o *VscanOnAccessPolicyCollectionGetOK) GetPayload() *models.VscanOnAccessResponse {
@@ -122,11 +130,6 @@ type VscanOnAccessPolicyCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the vscan on access policy collection get default response
-func (o *VscanOnAccessPolicyCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this vscan on access policy collection get default response has a 2xx status code
 func (o *VscanOnAccessPolicyCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *VscanOnAccessPolicyCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the vscan on access policy collection get default response
+func (o *VscanOnAccessPolicyCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VscanOnAccessPolicyCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies][%d] vscan_on_access_policy_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies][%d] vscan_on_access_policy_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *VscanOnAccessPolicyCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies][%d] vscan_on_access_policy_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies][%d] vscan_on_access_policy_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *VscanOnAccessPolicyCollectionGetDefault) GetPayload() *models.ErrorResponse {

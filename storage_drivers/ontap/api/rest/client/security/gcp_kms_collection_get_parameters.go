@@ -62,6 +62,18 @@ GcpKmsCollectionGetParams contains all the parameters to send to the API endpoin
 */
 type GcpKmsCollectionGetParams struct {
 
+	/* CallerAccount.
+
+	   Filter by caller_account
+	*/
+	CallerAccount *string
+
+	/* CloudkmsHost.
+
+	   Filter by cloudkms_host
+	*/
+	CloudkmsHost *string
+
 	/* EkmipReachabilityCode.
 
 	   Filter by ekmip_reachability.code
@@ -140,11 +152,35 @@ type GcpKmsCollectionGetParams struct {
 	*/
 	MaxRecords *int64
 
+	/* OauthHost.
+
+	   Filter by oauth_host
+	*/
+	OauthHost *string
+
+	/* OauthURL.
+
+	   Filter by oauth_url
+	*/
+	OauthURL *string
+
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
 	OrderBy []string
+
+	/* Port.
+
+	   Filter by port
+	*/
+	Port *int64
+
+	/* PrivilegedAccount.
+
+	   Filter by privileged_account
+	*/
+	PrivilegedAccount *string
 
 	/* ProjectID.
 
@@ -234,6 +270,18 @@ type GcpKmsCollectionGetParams struct {
 	*/
 	UUID *string
 
+	/* VerifyHost.
+
+	   Filter by verify_host
+	*/
+	VerifyHost *bool
+
+	/* VerifyIP.
+
+	   Filter by verify_ip
+	*/
+	VerifyIP *bool
+
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -299,6 +347,28 @@ func (o *GcpKmsCollectionGetParams) WithHTTPClient(client *http.Client) *GcpKmsC
 // SetHTTPClient adds the HTTPClient to the gcp kms collection get params
 func (o *GcpKmsCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithCallerAccount adds the callerAccount to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithCallerAccount(callerAccount *string) *GcpKmsCollectionGetParams {
+	o.SetCallerAccount(callerAccount)
+	return o
+}
+
+// SetCallerAccount adds the callerAccount to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetCallerAccount(callerAccount *string) {
+	o.CallerAccount = callerAccount
+}
+
+// WithCloudkmsHost adds the cloudkmsHost to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithCloudkmsHost(cloudkmsHost *string) *GcpKmsCollectionGetParams {
+	o.SetCloudkmsHost(cloudkmsHost)
+	return o
+}
+
+// SetCloudkmsHost adds the cloudkmsHost to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetCloudkmsHost(cloudkmsHost *string) {
+	o.CloudkmsHost = cloudkmsHost
 }
 
 // WithEkmipReachabilityCode adds the ekmipReachabilityCode to the gcp kms collection get params
@@ -444,6 +514,28 @@ func (o *GcpKmsCollectionGetParams) SetMaxRecords(maxRecords *int64) {
 	o.MaxRecords = maxRecords
 }
 
+// WithOauthHost adds the oauthHost to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithOauthHost(oauthHost *string) *GcpKmsCollectionGetParams {
+	o.SetOauthHost(oauthHost)
+	return o
+}
+
+// SetOauthHost adds the oauthHost to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetOauthHost(oauthHost *string) {
+	o.OauthHost = oauthHost
+}
+
+// WithOauthURL adds the oauthURL to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithOauthURL(oauthURL *string) *GcpKmsCollectionGetParams {
+	o.SetOauthURL(oauthURL)
+	return o
+}
+
+// SetOauthURL adds the oauthUrl to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetOauthURL(oauthURL *string) {
+	o.OauthURL = oauthURL
+}
+
 // WithOrderBy adds the orderBy to the gcp kms collection get params
 func (o *GcpKmsCollectionGetParams) WithOrderBy(orderBy []string) *GcpKmsCollectionGetParams {
 	o.SetOrderBy(orderBy)
@@ -453,6 +545,28 @@ func (o *GcpKmsCollectionGetParams) WithOrderBy(orderBy []string) *GcpKmsCollect
 // SetOrderBy adds the orderBy to the gcp kms collection get params
 func (o *GcpKmsCollectionGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
+}
+
+// WithPort adds the port to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithPort(port *int64) *GcpKmsCollectionGetParams {
+	o.SetPort(port)
+	return o
+}
+
+// SetPort adds the port to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetPort(port *int64) {
+	o.Port = port
+}
+
+// WithPrivilegedAccount adds the privilegedAccount to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithPrivilegedAccount(privilegedAccount *string) *GcpKmsCollectionGetParams {
+	o.SetPrivilegedAccount(privilegedAccount)
+	return o
+}
+
+// SetPrivilegedAccount adds the privilegedAccount to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetPrivilegedAccount(privilegedAccount *string) {
+	o.PrivilegedAccount = privilegedAccount
 }
 
 // WithProjectID adds the projectID to the gcp kms collection get params
@@ -609,6 +723,28 @@ func (o *GcpKmsCollectionGetParams) SetUUID(uuid *string) {
 	o.UUID = uuid
 }
 
+// WithVerifyHost adds the verifyHost to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithVerifyHost(verifyHost *bool) *GcpKmsCollectionGetParams {
+	o.SetVerifyHost(verifyHost)
+	return o
+}
+
+// SetVerifyHost adds the verifyHost to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetVerifyHost(verifyHost *bool) {
+	o.VerifyHost = verifyHost
+}
+
+// WithVerifyIP adds the verifyIP to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithVerifyIP(verifyIP *bool) *GcpKmsCollectionGetParams {
+	o.SetVerifyIP(verifyIP)
+	return o
+}
+
+// SetVerifyIP adds the verifyIp to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetVerifyIP(verifyIP *bool) {
+	o.VerifyIP = verifyIP
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -616,6 +752,40 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		return err
 	}
 	var res []error
+
+	if o.CallerAccount != nil {
+
+		// query param caller_account
+		var qrCallerAccount string
+
+		if o.CallerAccount != nil {
+			qrCallerAccount = *o.CallerAccount
+		}
+		qCallerAccount := qrCallerAccount
+		if qCallerAccount != "" {
+
+			if err := r.SetQueryParam("caller_account", qCallerAccount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloudkmsHost != nil {
+
+		// query param cloudkms_host
+		var qrCloudkmsHost string
+
+		if o.CloudkmsHost != nil {
+			qrCloudkmsHost = *o.CloudkmsHost
+		}
+		qCloudkmsHost := qrCloudkmsHost
+		if qCloudkmsHost != "" {
+
+			if err := r.SetQueryParam("cloudkms_host", qCloudkmsHost); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.EkmipReachabilityCode != nil {
 
@@ -832,6 +1002,40 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.OauthHost != nil {
+
+		// query param oauth_host
+		var qrOauthHost string
+
+		if o.OauthHost != nil {
+			qrOauthHost = *o.OauthHost
+		}
+		qOauthHost := qrOauthHost
+		if qOauthHost != "" {
+
+			if err := r.SetQueryParam("oauth_host", qOauthHost); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OauthURL != nil {
+
+		// query param oauth_url
+		var qrOauthURL string
+
+		if o.OauthURL != nil {
+			qrOauthURL = *o.OauthURL
+		}
+		qOauthURL := qrOauthURL
+		if qOauthURL != "" {
+
+			if err := r.SetQueryParam("oauth_url", qOauthURL); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.OrderBy != nil {
 
 		// binding items for order_by
@@ -840,6 +1044,40 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.Port != nil {
+
+		// query param port
+		var qrPort int64
+
+		if o.Port != nil {
+			qrPort = *o.Port
+		}
+		qPort := swag.FormatInt64(qrPort)
+		if qPort != "" {
+
+			if err := r.SetQueryParam("port", qPort); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PrivilegedAccount != nil {
+
+		// query param privileged_account
+		var qrPrivilegedAccount string
+
+		if o.PrivilegedAccount != nil {
+			qrPrivilegedAccount = *o.PrivilegedAccount
+		}
+		qPrivilegedAccount := qrPrivilegedAccount
+		if qPrivilegedAccount != "" {
+
+			if err := r.SetQueryParam("privileged_account", qPrivilegedAccount); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -1076,6 +1314,40 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qUUID != "" {
 
 			if err := r.SetQueryParam("uuid", qUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VerifyHost != nil {
+
+		// query param verify_host
+		var qrVerifyHost bool
+
+		if o.VerifyHost != nil {
+			qrVerifyHost = *o.VerifyHost
+		}
+		qVerifyHost := swag.FormatBool(qrVerifyHost)
+		if qVerifyHost != "" {
+
+			if err := r.SetQueryParam("verify_host", qVerifyHost); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VerifyIP != nil {
+
+		// query param verify_ip
+		var qrVerifyIP bool
+
+		if o.VerifyIP != nil {
+			qrVerifyIP = *o.VerifyIP
+		}
+		qVerifyIP := swag.FormatBool(qrVerifyIP)
+		if qVerifyIP != "" {
+
+			if err := r.SetQueryParam("verify_ip", qVerifyIP); err != nil {
 				return err
 			}
 		}

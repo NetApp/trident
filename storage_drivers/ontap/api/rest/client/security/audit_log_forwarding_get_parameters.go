@@ -80,6 +80,12 @@ type AuditLogForwardingGetParams struct {
 	*/
 	Fields []string
 
+	/* HostnameFormatOverride.
+
+	   Filter by hostname_format_override
+	*/
+	HostnameFormatOverride *string
+
 	/* IpspaceName.
 
 	   Filter by ipspace.name
@@ -97,6 +103,12 @@ type AuditLogForwardingGetParams struct {
 	   Limit the number of records returned.
 	*/
 	MaxRecords *int64
+
+	/* MessageFormat.
+
+	   Filter by message_format
+	*/
+	MessageFormat *string
 
 	/* OrderBy.
 
@@ -131,6 +143,12 @@ type AuditLogForwardingGetParams struct {
 	   Default: 15
 	*/
 	ReturnTimeout *int64
+
+	/* TimestampFormatOverride.
+
+	   Filter by timestamp_format_override
+	*/
+	TimestampFormatOverride *string
 
 	/* VerifyServer.
 
@@ -238,6 +256,17 @@ func (o *AuditLogForwardingGetParams) SetFields(fields []string) {
 	o.Fields = fields
 }
 
+// WithHostnameFormatOverride adds the hostnameFormatOverride to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) WithHostnameFormatOverride(hostnameFormatOverride *string) *AuditLogForwardingGetParams {
+	o.SetHostnameFormatOverride(hostnameFormatOverride)
+	return o
+}
+
+// SetHostnameFormatOverride adds the hostnameFormatOverride to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) SetHostnameFormatOverride(hostnameFormatOverride *string) {
+	o.HostnameFormatOverride = hostnameFormatOverride
+}
+
 // WithIpspaceName adds the ipspaceName to the audit log forwarding get params
 func (o *AuditLogForwardingGetParams) WithIpspaceName(ipspaceName *string) *AuditLogForwardingGetParams {
 	o.SetIpspaceName(ipspaceName)
@@ -269,6 +298,17 @@ func (o *AuditLogForwardingGetParams) WithMaxRecords(maxRecords *int64) *AuditLo
 // SetMaxRecords adds the maxRecords to the audit log forwarding get params
 func (o *AuditLogForwardingGetParams) SetMaxRecords(maxRecords *int64) {
 	o.MaxRecords = maxRecords
+}
+
+// WithMessageFormat adds the messageFormat to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) WithMessageFormat(messageFormat *string) *AuditLogForwardingGetParams {
+	o.SetMessageFormat(messageFormat)
+	return o
+}
+
+// SetMessageFormat adds the messageFormat to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) SetMessageFormat(messageFormat *string) {
+	o.MessageFormat = messageFormat
 }
 
 // WithOrderBy adds the orderBy to the audit log forwarding get params
@@ -324,6 +364,17 @@ func (o *AuditLogForwardingGetParams) WithReturnTimeout(returnTimeout *int64) *A
 // SetReturnTimeout adds the returnTimeout to the audit log forwarding get params
 func (o *AuditLogForwardingGetParams) SetReturnTimeout(returnTimeout *int64) {
 	o.ReturnTimeout = returnTimeout
+}
+
+// WithTimestampFormatOverride adds the timestampFormatOverride to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) WithTimestampFormatOverride(timestampFormatOverride *string) *AuditLogForwardingGetParams {
+	o.SetTimestampFormatOverride(timestampFormatOverride)
+	return o
+}
+
+// SetTimestampFormatOverride adds the timestampFormatOverride to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) SetTimestampFormatOverride(timestampFormatOverride *string) {
+	o.TimestampFormatOverride = timestampFormatOverride
 }
 
 // WithVerifyServer adds the verifyServer to the audit log forwarding get params
@@ -390,6 +441,23 @@ func (o *AuditLogForwardingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
+	if o.HostnameFormatOverride != nil {
+
+		// query param hostname_format_override
+		var qrHostnameFormatOverride string
+
+		if o.HostnameFormatOverride != nil {
+			qrHostnameFormatOverride = *o.HostnameFormatOverride
+		}
+		qHostnameFormatOverride := qrHostnameFormatOverride
+		if qHostnameFormatOverride != "" {
+
+			if err := r.SetQueryParam("hostname_format_override", qHostnameFormatOverride); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.IpspaceName != nil {
 
 		// query param ipspace.name
@@ -436,6 +504,23 @@ func (o *AuditLogForwardingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qMaxRecords != "" {
 
 			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MessageFormat != nil {
+
+		// query param message_format
+		var qrMessageFormat string
+
+		if o.MessageFormat != nil {
+			qrMessageFormat = *o.MessageFormat
+		}
+		qMessageFormat := qrMessageFormat
+		if qMessageFormat != "" {
+
+			if err := r.SetQueryParam("message_format", qMessageFormat); err != nil {
 				return err
 			}
 		}
@@ -515,6 +600,23 @@ func (o *AuditLogForwardingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TimestampFormatOverride != nil {
+
+		// query param timestamp_format_override
+		var qrTimestampFormatOverride string
+
+		if o.TimestampFormatOverride != nil {
+			qrTimestampFormatOverride = *o.TimestampFormatOverride
+		}
+		qTimestampFormatOverride := qrTimestampFormatOverride
+		if qTimestampFormatOverride != "" {
+
+			if err := r.SetQueryParam("timestamp_format_override", qTimestampFormatOverride); err != nil {
 				return err
 			}
 		}

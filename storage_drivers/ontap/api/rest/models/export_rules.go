@@ -34,7 +34,7 @@ type ExportRules struct {
 	AnonymousUser *string `json:"anonymous_user,omitempty"`
 
 	// Specifies who is authorized to change the ownership mode of a file.
-	// Enum: [restricted unrestricted]
+	// Enum: ["restricted","unrestricted"]
 	ChownMode *string `json:"chown_mode,omitempty"`
 
 	// Array of client matches
@@ -54,11 +54,10 @@ type ExportRules struct {
 
 	// Index of the rule within the export policy.
 	//
-	// Read Only: true
 	Index *int64 `json:"index,omitempty"`
 
 	// NTFS export UNIX security options.
-	// Enum: [fail ignore]
+	// Enum: ["fail","ignore"]
 	NtfsUnixSecurity *string `json:"ntfs_unix_security,omitempty"`
 
 	// protocols
@@ -395,10 +394,6 @@ func (m *ExportRules) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateIndex(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -486,15 +481,6 @@ func (m *ExportRules) contextValidateExportRulesInlineSuperuser(ctx context.Cont
 			}
 		}
 
-	}
-
-	return nil
-}
-
-func (m *ExportRules) contextValidateIndex(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "index", "body", m.Index); err != nil {
-		return err
 	}
 
 	return nil

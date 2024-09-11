@@ -23,6 +23,13 @@ type SecurityKeyManager struct {
 	// links
 	Links *SecurityKeyManagerInlineLinks `json:"_links,omitempty"`
 
+	// configuration
+	Configuration *SecurityKeyManagerInlineConfiguration `json:"configuration,omitempty"`
+
+	// Indicates whether the configuration is enabled.
+	// Read Only: true
+	Enabled *bool `json:"enabled,omitempty"`
+
 	// external
 	External *SecurityKeyManagerInlineExternal `json:"external,omitempty"`
 
@@ -57,6 +64,10 @@ func (m *SecurityKeyManager) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateConfiguration(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -99,6 +110,23 @@ func (m *SecurityKeyManager) validateLinks(formats strfmt.Registry) error {
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *SecurityKeyManager) validateConfiguration(formats strfmt.Registry) error {
+	if swag.IsZero(m.Configuration) { // not required
+		return nil
+	}
+
+	if m.Configuration != nil {
+		if err := m.Configuration.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration")
 			}
 			return err
 		}
@@ -217,6 +245,14 @@ func (m *SecurityKeyManager) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateConfiguration(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEnabled(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateExternal(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -260,6 +296,29 @@ func (m *SecurityKeyManager) contextValidateLinks(ctx context.Context, formats s
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SecurityKeyManager) contextValidateConfiguration(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Configuration != nil {
+		if err := m.Configuration.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *SecurityKeyManager) contextValidateEnabled(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "enabled", "body", m.Enabled); err != nil {
+		return err
 	}
 
 	return nil
@@ -376,6 +435,186 @@ func (m *SecurityKeyManager) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// SecurityKeyManagerInlineConfiguration Security keystore object reference.
+//
+// swagger:model security_key_manager_inline_configuration
+type SecurityKeyManagerInlineConfiguration struct {
+
+	// links
+	Links *SecurityKeyManagerInlineConfigurationInlineLinks `json:"_links,omitempty"`
+
+	// Name of the configuration.
+	// Example: default
+	Name *string `json:"name,omitempty"`
+
+	// Keystore UUID.
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563434
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this security key manager inline configuration
+func (m *SecurityKeyManagerInlineConfiguration) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SecurityKeyManagerInlineConfiguration) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this security key manager inline configuration based on the context it is used
+func (m *SecurityKeyManagerInlineConfiguration) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SecurityKeyManagerInlineConfiguration) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SecurityKeyManagerInlineConfiguration) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SecurityKeyManagerInlineConfiguration) UnmarshalBinary(b []byte) error {
+	var res SecurityKeyManagerInlineConfiguration
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SecurityKeyManagerInlineConfigurationInlineLinks security key manager inline configuration inline links
+//
+// swagger:model security_key_manager_inline_configuration_inline__links
+type SecurityKeyManagerInlineConfigurationInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this security key manager inline configuration inline links
+func (m *SecurityKeyManagerInlineConfigurationInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SecurityKeyManagerInlineConfigurationInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this security key manager inline configuration inline links based on the context it is used
+func (m *SecurityKeyManagerInlineConfigurationInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SecurityKeyManagerInlineConfigurationInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configuration" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SecurityKeyManagerInlineConfigurationInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SecurityKeyManagerInlineConfigurationInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityKeyManagerInlineConfigurationInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // SecurityKeyManagerInlineExternal Configures external key management
 //
 // swagger:model security_key_manager_inline_external
@@ -384,7 +623,7 @@ type SecurityKeyManagerInlineExternal struct {
 	// client certificate
 	ClientCertificate *SecurityKeyManagerInlineExternalInlineClientCertificate `json:"client_certificate,omitempty"`
 
-	// The UUIDs of the server CA certificates already installed in the cluster or SVM. The array of certificates are common for all the keyservers per SVM.
+	// The array of certificates that are common for all the keyservers per SVM.
 	ServerCaCertificates []*SecurityKeyManagerExternalServerCaCertificatesItems0 `json:"server_ca_certificates,omitempty"`
 
 	// The set of external key servers.
@@ -575,13 +814,16 @@ func (m *SecurityKeyManagerInlineExternal) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityKeyManagerInlineExternalInlineClientCertificate Client certificate
+// SecurityKeyManagerInlineExternalInlineClientCertificate Client certificate (name and UUID)
 //
 // swagger:model security_key_manager_inline_external_inline_client_certificate
 type SecurityKeyManagerInlineExternalInlineClientCertificate struct {
 
 	// links
 	Links *SecurityKeyManagerInlineExternalInlineClientCertificateInlineLinks `json:"_links,omitempty"`
+
+	// Certificate name
+	Name *string `json:"name,omitempty"`
 
 	// Certificate UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
@@ -751,13 +993,16 @@ func (m *SecurityKeyManagerInlineExternalInlineClientCertificateInlineLinks) Unm
 	return nil
 }
 
-// SecurityKeyManagerExternalServerCaCertificatesItems0 security key manager external server ca certificates items0
+// SecurityKeyManagerExternalServerCaCertificatesItems0 Security certificate object reference
 //
 // swagger:model SecurityKeyManagerExternalServerCaCertificatesItems0
 type SecurityKeyManagerExternalServerCaCertificatesItems0 struct {
 
 	// links
 	Links *SecurityKeyManagerExternalServerCaCertificatesItems0Links `json:"_links,omitempty"`
+
+	// Certificate name
+	Name *string `json:"name,omitempty"`
 
 	// Certificate UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
@@ -1179,7 +1424,7 @@ func (m *SecurityKeyManagerInlineStatus) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityKeyManagerInlineSvm security key manager inline svm
+// SecurityKeyManagerInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model security_key_manager_inline_svm
 type SecurityKeyManagerInlineSvm struct {
@@ -1187,12 +1432,12 @@ type SecurityKeyManagerInlineSvm struct {
 	// links
 	Links *SecurityKeyManagerInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

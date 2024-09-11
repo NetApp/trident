@@ -34,21 +34,43 @@ type ClientService interface {
 
 	PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceS3MetricCollectionGetOK, error)
 
-	S3BucketCreate(params *S3BucketCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketCreateAccepted, error)
+	S3BucketCreate(params *S3BucketCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketCreateCreated, *S3BucketCreateAccepted, error)
 
-	S3BucketDelete(params *S3BucketDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketDeleteAccepted, error)
+	S3BucketDelete(params *S3BucketDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketDeleteOK, *S3BucketDeleteAccepted, error)
+
+	S3BucketDeleteCollection(params *S3BucketDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketDeleteCollectionOK, *S3BucketDeleteCollectionAccepted, error)
 
 	S3BucketGet(params *S3BucketGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketGetOK, error)
 
-	S3BucketModify(params *S3BucketModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketModifyAccepted, error)
+	S3BucketLifecycleRuleCollectionGet(params *S3BucketLifecycleRuleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketLifecycleRuleCollectionGetOK, error)
 
-	S3BucketSvmCreate(params *S3BucketSvmCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmCreateAccepted, error)
+	S3BucketLifecycleRuleCreate(params *S3BucketLifecycleRuleCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketLifecycleRuleCreateCreated, *S3BucketLifecycleRuleCreateAccepted, error)
 
-	S3BucketSvmDelete(params *S3BucketSvmDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmDeleteAccepted, error)
+	S3BucketLifecycleRuleDelete(params *S3BucketLifecycleRuleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketLifecycleRuleDeleteOK, error)
+
+	S3BucketLifecycleRuleDeleteCollection(params *S3BucketLifecycleRuleDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketLifecycleRuleDeleteCollectionOK, error)
+
+	S3BucketLifecycleRuleGet(params *S3BucketLifecycleRuleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketLifecycleRuleGetOK, error)
+
+	S3BucketLifecycleRuleModify(params *S3BucketLifecycleRuleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketLifecycleRuleModifyOK, *S3BucketLifecycleRuleModifyAccepted, error)
+
+	S3BucketLifecycleRuleModifyCollection(params *S3BucketLifecycleRuleModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketLifecycleRuleModifyCollectionOK, *S3BucketLifecycleRuleModifyCollectionAccepted, error)
+
+	S3BucketModify(params *S3BucketModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketModifyOK, *S3BucketModifyAccepted, error)
+
+	S3BucketModifyCollection(params *S3BucketModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketModifyCollectionOK, *S3BucketModifyCollectionAccepted, error)
+
+	S3BucketSvmCreate(params *S3BucketSvmCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmCreateCreated, *S3BucketSvmCreateAccepted, error)
+
+	S3BucketSvmDelete(params *S3BucketSvmDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmDeleteOK, *S3BucketSvmDeleteAccepted, error)
+
+	S3BucketSvmDeleteCollection(params *S3BucketSvmDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmDeleteCollectionOK, *S3BucketSvmDeleteCollectionAccepted, error)
 
 	S3BucketSvmGet(params *S3BucketSvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmGetOK, error)
 
-	S3BucketSvmModify(params *S3BucketSvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmModifyAccepted, error)
+	S3BucketSvmModify(params *S3BucketSvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmModifyOK, *S3BucketSvmModifyAccepted, error)
+
+	S3BucketSvmModifyCollection(params *S3BucketSvmModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmModifyCollectionOK, *S3BucketSvmModifyCollectionAccepted, error)
 
 	S3GroupCollectionGet(params *S3GroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupCollectionGetOK, error)
 
@@ -56,9 +78,13 @@ type ClientService interface {
 
 	S3GroupDelete(params *S3GroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupDeleteOK, error)
 
+	S3GroupDeleteCollection(params *S3GroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupDeleteCollectionOK, error)
+
 	S3GroupGet(params *S3GroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupGetOK, error)
 
 	S3GroupModify(params *S3GroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupModifyOK, error)
+
+	S3GroupModifyCollection(params *S3GroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupModifyCollectionOK, error)
 
 	S3PolicyCollectionGet(params *S3PolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyCollectionGetOK, error)
 
@@ -66,9 +92,13 @@ type ClientService interface {
 
 	S3PolicyDelete(params *S3PolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyDeleteOK, error)
 
+	S3PolicyDeleteCollection(params *S3PolicyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyDeleteCollectionOK, error)
+
 	S3PolicyGet(params *S3PolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyGetOK, error)
 
 	S3PolicyModify(params *S3PolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyModifyOK, error)
+
+	S3PolicyModifyCollection(params *S3PolicyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyModifyCollectionOK, error)
 
 	S3ServiceCollectionGet(params *S3ServiceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceCollectionGetOK, error)
 
@@ -76,9 +106,13 @@ type ClientService interface {
 
 	S3ServiceDelete(params *S3ServiceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceDeleteOK, error)
 
+	S3ServiceDeleteCollection(params *S3ServiceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceDeleteCollectionOK, error)
+
 	S3ServiceGet(params *S3ServiceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceGetOK, error)
 
 	S3ServiceModify(params *S3ServiceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceModifyOK, error)
+
+	S3ServiceModifyCollection(params *S3ServiceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceModifyCollectionOK, error)
 
 	S3UserCollectionGet(params *S3UserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3UserCollectionGetOK, error)
 
@@ -86,9 +120,13 @@ type ClientService interface {
 
 	S3UserDelete(params *S3UserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3UserDeleteOK, error)
 
+	S3UserDeleteCollection(params *S3UserDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3UserDeleteCollectionOK, error)
+
 	S3UserGet(params *S3UserGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3UserGetOK, error)
 
 	S3UserModify(params *S3UserModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3UserModifyOK, error)
+
+	S3UserModifyCollection(params *S3UserModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3UserModifyCollectionOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -100,6 +138,8 @@ type ClientService interface {
 * `vserver object-store-server bucket show`
 * `vserver object-store-server bucket policy statement show`
 * `vserver object-store-server bucket policy-statement-condition show`
+* `vserver object-store-server bucket lifecycle-management-rule show`
+* `vserver object-store-server bucket cors-rule show`
 ### Learn more
 * [`DOC /protocols/s3/buckets`](#docs-object-store-protocols_s3_buckets)
 */
@@ -112,8 +152,8 @@ func (a *Client) AllSvmBucketsCollectionGet(params *AllSvmBucketsCollectionGetPa
 		ID:                 "all_svm_buckets_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/s3/buckets",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &AllSvmBucketsCollectionGetReader{formats: a.formats},
@@ -145,6 +185,7 @@ func (a *Client) AllSvmBucketsCollectionGet(params *AllSvmBucketsCollectionGetPa
 * `vserver object-store-server bucket show`
 * `vserver object-store-server bucket policy statement show`
 * `vserver object-store-server bucket policy-statement-condition show`
+* `vserver object-store-server bucket lifecycle-management-rule show`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
 */
@@ -157,8 +198,8 @@ func (a *Client) BucketsCollectionGet(params *BucketsCollectionGetParams, authIn
 		ID:                 "buckets_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &BucketsCollectionGetReader{formats: a.formats},
@@ -195,8 +236,8 @@ func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCol
 		ID:                 "performance_s3_metric_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/metrics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &PerformanceS3MetricCollectionGetReader{formats: a.formats},
@@ -231,6 +272,7 @@ func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCol
 - An access policy can be created along with a bucket create. If creating an access policy fails, bucket configurations are saved and the access policy can be created using the PATCH endpoint.
 - "qos_policy" can be specified if a bucket needs to be attached to a QoS group policy during creation time.
 - "audit_event_selector" can be specified if a bucket needs to be specify access and permission type for auditing.
+- A CORS configuration can be specified along with bucket creation.
 ### Required properties
 * `svm.uuid or svm.name` - Existing SVM in which to create the bucket configuration.
 * `name` - Bucket name that is to be created.
@@ -244,24 +286,34 @@ func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCol
 * `versioning_state` - Versioning state for buckets.
 * `type` - Type of bucket.
 * `nas_path` - NAS path to which the bucket corresponds to.
+* `use_mirrored_aggregates` - Specifies whether mirrored aggregates are selected when provisioning a FlexGroup volume.
+* `lifecycle_management` - Object store server lifecycle management policy.
+* `retention.mode` - Object lock mode supported on the bucket.
+* `retention.default_period` - Specifies the duration of default-retention applicable for objects on the object store bucket.
+* `cors' - Specifying CORS rules enables the bucket to service the cross-origin requests.
+* `snapshot_policy` - Snapshot policy for the bucket.
 ### Default property values
 * `size` - 800MB
 * `comment` - ""
 * `aggregates` - No default value.
 * `constituents_per_aggregate` - _4_ , if an aggregates list is specified. Otherwise, no default value.
 * `policy.statements.actions` - GetObject, PutObject, DeleteObject, ListBucket, ListBucketMultipartUploads, ListMultipartUploadParts, GetObjectTagging, PutObjectTagging, DeleteObjectTagging, GetBucketVersioning, PutBucketVersioning.
-* `policy.statements.principals` - all S3 users and groups in the SVM.
+* `policy.statements.principals` - all S3 users and groups in the SVM or the NAS groups.
 * `policy.statements.resources` - all objects in the bucket.
 * `policy.statements.conditions` - list of bucket policy conditions.
 * `versioning_state` - disabled.
+* `use_mirrored_aggregates` - _true_ for a MetroCluster configuration and _false_ for a non-MetroCluster configuration.
 * `type` - S3
+* `retention.mode` - no_lock
 ### Related ONTAP commands
 * `vserver object-store-server bucket create`
 * `vserver object-store-server bucket policy statement create`
+* `vserver object-store-server bucket lifecycle-management-rule create`
+* `vserver object-store-server bucket cors-rule create`
 ### Learn more
 * [`DOC /protocols/s3/buckets`](#docs-object-store-protocols_s3_buckets)
 */
-func (a *Client) S3BucketCreate(params *S3BucketCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketCreateAccepted, error) {
+func (a *Client) S3BucketCreate(params *S3BucketCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketCreateCreated, *S3BucketCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewS3BucketCreateParams()
@@ -270,8 +322,8 @@ func (a *Client) S3BucketCreate(params *S3BucketCreateParams, authInfo runtime.C
 		ID:                 "s3_bucket_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/s3/buckets",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3BucketCreateReader{formats: a.formats},
@@ -285,15 +337,17 @@ func (a *Client) S3BucketCreate(params *S3BucketCreateParams, authInfo runtime.C
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*S3BucketCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *S3BucketCreateCreated:
+		return value, nil, nil
+	case *S3BucketCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*S3BucketCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -303,10 +357,12 @@ func (a *Client) S3BucketCreate(params *S3BucketCreateParams, authInfo runtime.C
 * `vserver object-store-server bucket delete`
 * `vserver object-store-server bucket policy statement delete`
 * `vserver object-store-server bucket policy-statement-condition delete`
+* `vserver object-store-server bucket lifecycle-management-rule delete`
+* `vserver object-store-server bucket cors-rule delete`
 ### Learn more
 * [`DOC /protocols/s3/buckets`](#docs-object-store-protocols_s3_buckets)
 */
-func (a *Client) S3BucketDelete(params *S3BucketDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketDeleteAccepted, error) {
+func (a *Client) S3BucketDelete(params *S3BucketDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketDeleteOK, *S3BucketDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewS3BucketDeleteParams()
@@ -315,8 +371,8 @@ func (a *Client) S3BucketDelete(params *S3BucketDeleteParams, authInfo runtime.C
 		ID:                 "s3_bucket_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/s3/buckets/{svm.uuid}/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3BucketDeleteReader{formats: a.formats},
@@ -330,15 +386,57 @@ func (a *Client) S3BucketDelete(params *S3BucketDeleteParams, authInfo runtime.C
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*S3BucketDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *S3BucketDeleteOK:
+		return value, nil, nil
+	case *S3BucketDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*S3BucketDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+S3BucketDeleteCollection s3 bucket delete collection API
+*/
+func (a *Client) S3BucketDeleteCollection(params *S3BucketDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketDeleteCollectionOK, *S3BucketDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/s3/buckets",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *S3BucketDeleteCollectionOK:
+		return value, nil, nil
+	case *S3BucketDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -348,6 +446,8 @@ func (a *Client) S3BucketDelete(params *S3BucketDeleteParams, authInfo runtime.C
 * `vserver object-store-server bucket show`
 * `vserver object-store-server bucket policy statement show`
 * `vserver object-store-server bucket policy-statement-condition show`
+* `vserver object-store-server bucket lifecycle-management-rule show`
+* `vserver object-store-server bucket cors-rule show`
 ### Learn more
 * [`DOC /protocols/s3/buckets`](#docs-object-store-protocols_s3_buckets)
 */
@@ -360,8 +460,8 @@ func (a *Client) S3BucketGet(params *S3BucketGetParams, authInfo runtime.ClientA
 		ID:                 "s3_bucket_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/s3/buckets/{svm.uuid}/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3BucketGetReader{formats: a.formats},
@@ -387,6 +487,328 @@ func (a *Client) S3BucketGet(params *S3BucketGetParams, authInfo runtime.ClientA
 }
 
 /*
+	S3BucketLifecycleRuleCollectionGet Retrieves all S3 Lifecycle rules associated with a bucket. Note that in order to retrieve S3 bucket rule parameters, the 'fields' option should be set to '**'.
+
+### Related ONTAP commands
+* `vserver object-store-server bucket lifecycle-management-rule show`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/rules`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets_{s3_bucket.uuid}_rules)
+*/
+func (a *Client) S3BucketLifecycleRuleCollectionGet(params *S3BucketLifecycleRuleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketLifecycleRuleCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketLifecycleRuleCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_lifecycle_rule_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/rules",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketLifecycleRuleCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3BucketLifecycleRuleCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketLifecycleRuleCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	S3BucketLifecycleRuleCreate Creates the S3 bucket lifecycle rule configuration.
+
+### Required properties
+* `name` - Lifecycle Management rule to be created.
+* `actions` - Lifecycle Management actions associated with the rule.
+### Recommended optional properties
+* `enabled` - Lifecycle Management rule is enabled or not.
+* `object_filter.prefix` - Lifecycle Management rule filter prefix.
+* `object_filter.tags` - Lifecycle Management rule filter tags.
+* `object_filter.size_greater_than` - Lifecycle Management rule filter minimum object size.
+* `object_filter.size_less_than` - Lifecycle Management rule filter maximum object size.
+* `object_age_days` - Number of days since creation after which objects can be deleted.
+* `object_expiry_date` - Specific date from when objects can expire.
+* `expired_object_delete_marker` - Cleanup object delete markers.
+* `new_non_current_versions` - Number of latest non-current versions to be retained.
+* `non_current_days` - Number of days after which non-current versions can be deleted.
+* `after_initiation_days` - Number of days of initiation after which uploads can be aborted.
+### Related ONTAP commands
+* `vserver object-store-server bucket lifecycle-management-rule create`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/rules`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets_{s3_bucket.uuid}_rules)
+*/
+func (a *Client) S3BucketLifecycleRuleCreate(params *S3BucketLifecycleRuleCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketLifecycleRuleCreateCreated, *S3BucketLifecycleRuleCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketLifecycleRuleCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_lifecycle_rule_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/rules",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketLifecycleRuleCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *S3BucketLifecycleRuleCreateCreated:
+		return value, nil, nil
+	case *S3BucketLifecycleRuleCreateAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketLifecycleRuleCreateDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	S3BucketLifecycleRuleDelete Deletes the S3 bucket lifecycle rule configuration.
+
+### Related ONTAP commands
+* `vserver object-store-server bucket lifecycle-management-rule delete`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/rules`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets_{s3_bucket.uuid}_rules)
+*/
+func (a *Client) S3BucketLifecycleRuleDelete(params *S3BucketLifecycleRuleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketLifecycleRuleDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketLifecycleRuleDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_lifecycle_rule_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/rules/{name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketLifecycleRuleDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3BucketLifecycleRuleDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketLifecycleRuleDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+S3BucketLifecycleRuleDeleteCollection s3 bucket lifecycle rule delete collection API
+*/
+func (a *Client) S3BucketLifecycleRuleDeleteCollection(params *S3BucketLifecycleRuleDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketLifecycleRuleDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketLifecycleRuleDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_lifecycle_rule_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/rules",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketLifecycleRuleDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3BucketLifecycleRuleDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketLifecycleRuleDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	S3BucketLifecycleRuleGet Retrieves all S3 Lifecycle rules associated with a bucket. Note that in order to retrieve S3 bucket rule parameters, the 'fields' option should be set to '**'.
+
+### Related ONTAP commands
+* `vserver object-store-server bucket lifecycle-management-rule show`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/rules`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets_{s3_bucket.uuid}_rules)
+*/
+func (a *Client) S3BucketLifecycleRuleGet(params *S3BucketLifecycleRuleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketLifecycleRuleGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketLifecycleRuleGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_lifecycle_rule_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/rules/{name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketLifecycleRuleGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3BucketLifecycleRuleGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketLifecycleRuleGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	S3BucketLifecycleRuleModify Updates the S3 bucket lifecycle rule configuration.
+
+### Important notes
+- The following fields can be modified for a bucket:
+* `actions` - Lifecycle Management actions associated with the rule.
+* `enabled` - Lifecycle Management rule is enabled or not..
+* `object_age_days` - Number of days since creation after which objects can be deleted.
+* `object_expiry_date` - Specific date from when objects can expire.
+* `expired_object_delete_marker` - Cleanup object delete markers.
+* `new_non_current_versions` - Number of latest non-current versions to be retained.
+* `non_current_days` - Number of days after which non-current versions can be deleted.
+* `after_initiation_days` - Number of days of initiation after which uploads can be aborted.
+### Related ONTAP commands
+* `vserver object-store-server bucket lifecycle-management-rule modify`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/rules`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets_{s3_bucket.uuid}_rules)
+*/
+func (a *Client) S3BucketLifecycleRuleModify(params *S3BucketLifecycleRuleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketLifecycleRuleModifyOK, *S3BucketLifecycleRuleModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketLifecycleRuleModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_lifecycle_rule_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/rules/{name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketLifecycleRuleModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *S3BucketLifecycleRuleModifyOK:
+		return value, nil, nil
+	case *S3BucketLifecycleRuleModifyAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketLifecycleRuleModifyDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+S3BucketLifecycleRuleModifyCollection s3 bucket lifecycle rule modify collection API
+*/
+func (a *Client) S3BucketLifecycleRuleModifyCollection(params *S3BucketLifecycleRuleModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketLifecycleRuleModifyCollectionOK, *S3BucketLifecycleRuleModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketLifecycleRuleModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_lifecycle_rule_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/rules",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketLifecycleRuleModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *S3BucketLifecycleRuleModifyCollectionOK:
+		return value, nil, nil
+	case *S3BucketLifecycleRuleModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketLifecycleRuleModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	S3BucketModify Updates the S3 bucket configuration of an SVM.
 
 ### Important notes
@@ -398,15 +820,20 @@ func (a *Client) S3BucketGet(params *S3BucketGetParams, authInfo runtime.ClientA
   - `audit_event_selector` - Audit policy for buckets. None can be specified for both access and permission to remove an audit event selector.
   - `versioning-state` - Versioning state of the buckets.
   - `nas_path` - NAS path to which the bucket corresponds to.
+  - `retention.default_period` - Specifies the duration of default-retention applicable for objects on the object store bucket.
+  - `cors' - Specifying CORS rules enables the bucket to service the cross-origin requests. Note that the new CORS configuration specified will replace the existing one. If you need to retain any of the existing CORS rules, specify those rules again as part of the new CORS rules. To remove all the existing rules, specify an empty CORS configuration as input.
+  - `snapshot_policy` - Snapshot policy for the bucket.
 
 ### Related ONTAP commands
 * `vserver object-store-server bucket modify`
 * `vserver object-store-server bucket policy statement modify`
 * `vserver object-store-server bucket policy-statement-condition modify`
+* `vserver object-store-server bucket cors-rule create`
+* `vserver object-store-server bucket cors-rule delete`
 ### Learn more
 * [`DOC /protocols/s3/buckets`](#docs-object-store-protocols_s3_buckets)
 */
-func (a *Client) S3BucketModify(params *S3BucketModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketModifyAccepted, error) {
+func (a *Client) S3BucketModify(params *S3BucketModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketModifyOK, *S3BucketModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewS3BucketModifyParams()
@@ -415,8 +842,8 @@ func (a *Client) S3BucketModify(params *S3BucketModifyParams, authInfo runtime.C
 		ID:                 "s3_bucket_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/s3/buckets/{svm.uuid}/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3BucketModifyReader{formats: a.formats},
@@ -430,15 +857,57 @@ func (a *Client) S3BucketModify(params *S3BucketModifyParams, authInfo runtime.C
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*S3BucketModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *S3BucketModifyOK:
+		return value, nil, nil
+	case *S3BucketModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*S3BucketModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+S3BucketModifyCollection s3 bucket modify collection API
+*/
+func (a *Client) S3BucketModifyCollection(params *S3BucketModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketModifyCollectionOK, *S3BucketModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/s3/buckets",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *S3BucketModifyCollectionOK:
+		return value, nil, nil
+	case *S3BucketModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -451,6 +920,7 @@ func (a *Client) S3BucketModify(params *S3BucketModifyParams, authInfo runtime.C
 - An access policy can be created when a bucket is created.
 - "qos_policy" can be specified if a bucket needs to be attached to a QoS group policy during creation time.
 - "audit_event_selector" can be specified if a bucket needs to be specify access and permission type for auditing.
+- Cross-origin resource sharing (CORS) configuration can be specified when a bucket is created.
 ### Required properties
 * `svm.uuid` - Existing SVM in which to create the bucket configuration.
 * `name` - Bucket name that is to be created.
@@ -464,26 +934,36 @@ func (a *Client) S3BucketModify(params *S3BucketModifyParams, authInfo runtime.C
 * `versioning_state` - Versioning state for buckets.
 * `type` - Type of bucket.
 * `nas_path` - The NAS path to which the NAS bucket corresponds to.
+* `use_mirrored_aggregates` - Specifies whether mirrored aggregates are selected when provisioning a FlexGroup volume.
+* `lifecycle_management` - Object store server lifecycle management policy.
+* `retention.mode` - Object lock mode supported on the bucket.
+* `retention.default_period` - Specifies the duration of default-retention applicable for objects on the object store bucket.
+* `cors` - Specifying CORS rules enables the bucket to service the cross-origin requests.
+* `snapshot_policy` - Snapshot policy for the bucket.
 ### Default property values
 * `size` - 800MB
 * `comment` - ""
 * `aggregates` - No default value.
 * `constituents_per_aggregate` - _4_ , if an aggregates list is specified. Otherwise, no default value.
 * `policy.statements.actions` - GetObject, PutObject, DeleteObject, ListBucket, ListBucketMultipartUploads, ListMultipartUploadParts, GetObjectTagging, PutObjectTagging, DeleteObjectTagging, GetBucketVersioning, PutBucketVersioning.
-* `policy.statements.principals` - all S3 users and groups in the SVM.
+* `policy.statements.principals` - all S3 users and groups in the SVM or the NAS groups.
 * `policy.statements.resources` - all objects in the bucket.
 * `policy.statements.conditions` - list of bucket policy conditions.
 * `qos-policy` - No default value.
 * `versioning_state` - disabled.
+* `use_mirrored_aggregates` - _true_ for a MetroCluster configuration and _false_ for a non-MetroCluster configuration.
 * `type` - S3.
+* `retention.mode` - no_lock
 ### Related ONTAP commands
 * `vserver object-store-server bucket create`
 * `vserver object-store-server bucket policy statement create`
 * `vserver object-store-server bucket policy-statement-condition create`
+* `vserver object-store-server bucket lifecycle-management-rule create`
+* `vserver object-store-server bucket cors-rule create`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
 */
-func (a *Client) S3BucketSvmCreate(params *S3BucketSvmCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmCreateAccepted, error) {
+func (a *Client) S3BucketSvmCreate(params *S3BucketSvmCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmCreateCreated, *S3BucketSvmCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewS3BucketSvmCreateParams()
@@ -492,8 +972,8 @@ func (a *Client) S3BucketSvmCreate(params *S3BucketSvmCreateParams, authInfo run
 		ID:                 "s3_bucket_svm_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3BucketSvmCreateReader{formats: a.formats},
@@ -507,28 +987,32 @@ func (a *Client) S3BucketSvmCreate(params *S3BucketSvmCreateParams, authInfo run
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*S3BucketSvmCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *S3BucketSvmCreateCreated:
+		return value, nil, nil
+	case *S3BucketSvmCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*S3BucketSvmCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-	S3BucketSvmDelete Deletes the S3 bucket configuration of an SVM. An access policy is also deleted on an S3 bucket "delete" command.
+	S3BucketSvmDelete Deletes the S3 bucket configuration of an SVM. An access policy is also deleted on an S3 bucket "delete" command. All CORS rules are also deleted on bucket deletion.
 
 ### Related ONTAP commands
 * `vserver object-store-server bucket delete`
 * `vserver object-store-server bucket policy statement delete`
 * `vserver object-store-server bucket policy-statement-condition delete`
+* `vserver object-store-server bucket lifecycle-management-rule delete`
+* `vserver object-store-server bucket cors-rule delete`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
 */
-func (a *Client) S3BucketSvmDelete(params *S3BucketSvmDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmDeleteAccepted, error) {
+func (a *Client) S3BucketSvmDelete(params *S3BucketSvmDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmDeleteOK, *S3BucketSvmDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewS3BucketSvmDeleteParams()
@@ -537,8 +1021,8 @@ func (a *Client) S3BucketSvmDelete(params *S3BucketSvmDeleteParams, authInfo run
 		ID:                 "s3_bucket_svm_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3BucketSvmDeleteReader{formats: a.formats},
@@ -552,15 +1036,57 @@ func (a *Client) S3BucketSvmDelete(params *S3BucketSvmDeleteParams, authInfo run
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*S3BucketSvmDeleteAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *S3BucketSvmDeleteOK:
+		return value, nil, nil
+	case *S3BucketSvmDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*S3BucketSvmDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+S3BucketSvmDeleteCollection s3 bucket svm delete collection API
+*/
+func (a *Client) S3BucketSvmDeleteCollection(params *S3BucketSvmDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmDeleteCollectionOK, *S3BucketSvmDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketSvmDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_svm_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketSvmDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *S3BucketSvmDeleteCollectionOK:
+		return value, nil, nil
+	case *S3BucketSvmDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketSvmDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -570,6 +1096,8 @@ func (a *Client) S3BucketSvmDelete(params *S3BucketSvmDeleteParams, authInfo run
 * `vserver object-store-server bucket show`
 * `vserver object-store-server bucket policy statement show`
 * `vserver object-store-server bucket policy-statement-condition show`
+* `vserver object-store-server bucket lifecycle-management-rule show`
+* `vserver object-store-server bucket cors-rule show`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
 */
@@ -582,8 +1110,8 @@ func (a *Client) S3BucketSvmGet(params *S3BucketSvmGetParams, authInfo runtime.C
 		ID:                 "s3_bucket_svm_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3BucketSvmGetReader{formats: a.formats},
@@ -620,15 +1148,20 @@ func (a *Client) S3BucketSvmGet(params *S3BucketSvmGetParams, authInfo runtime.C
   - `audit_event_selector` - Audit policy for buckets.  None can be specified for both access and permission to remove audit event selector.
   - `versioning_state` - Versioning state for buckets.
   - `nas_path` - NAS path to which the NAS bucket corresponds to.
+  - `retention.default_period` - Specifies the duration of default-retention applicable for objects on the object store bucket.
+  - `cors' - Specifying CORS rules enables the bucket to service the cross-origin requests. New CORS rules are created after existing rules are deleted. To retain any of the existing rules, you need to specify those CORS rules again. To remove all the existing CORS rules, specify an empty CORS rules list.
+  - `snapshot_policy` - Snapshot policy for the bucket.
 
 ### Related ONTAP commands
 * `vserver object-store-server bucket modify`
 * `vserver object-store-server bucket policy statement modify`
 * `vserver object-store-server bucket policy-statement-condition modify`
+* `vserver object-store-server bucket cors-rule create`
+* `vserver object-store-server bucket cors-rule delete`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
 */
-func (a *Client) S3BucketSvmModify(params *S3BucketSvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmModifyAccepted, error) {
+func (a *Client) S3BucketSvmModify(params *S3BucketSvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmModifyOK, *S3BucketSvmModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewS3BucketSvmModifyParams()
@@ -637,8 +1170,8 @@ func (a *Client) S3BucketSvmModify(params *S3BucketSvmModifyParams, authInfo run
 		ID:                 "s3_bucket_svm_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3BucketSvmModifyReader{formats: a.formats},
@@ -652,15 +1185,57 @@ func (a *Client) S3BucketSvmModify(params *S3BucketSvmModifyParams, authInfo run
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*S3BucketSvmModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *S3BucketSvmModifyOK:
+		return value, nil, nil
+	case *S3BucketSvmModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*S3BucketSvmModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+S3BucketSvmModifyCollection s3 bucket svm modify collection API
+*/
+func (a *Client) S3BucketSvmModifyCollection(params *S3BucketSvmModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmModifyCollectionOK, *S3BucketSvmModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketSvmModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_svm_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketSvmModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *S3BucketSvmModifyCollectionOK:
+		return value, nil, nil
+	case *S3BucketSvmModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketSvmModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -680,8 +1255,8 @@ func (a *Client) S3GroupCollectionGet(params *S3GroupCollectionGetParams, authIn
 		ID:                 "s3_group_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/groups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3GroupCollectionGetReader{formats: a.formats},
@@ -732,8 +1307,8 @@ func (a *Client) S3GroupCreate(params *S3GroupCreateParams, authInfo runtime.Cli
 		ID:                 "s3_group_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/groups",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3GroupCreateReader{formats: a.formats},
@@ -775,8 +1350,8 @@ func (a *Client) S3GroupDelete(params *S3GroupDeleteParams, authInfo runtime.Cli
 		ID:                 "s3_group_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/groups/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3GroupDeleteReader{formats: a.formats},
@@ -802,6 +1377,44 @@ func (a *Client) S3GroupDelete(params *S3GroupDeleteParams, authInfo runtime.Cli
 }
 
 /*
+S3GroupDeleteCollection s3 group delete collection API
+*/
+func (a *Client) S3GroupDeleteCollection(params *S3GroupDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3GroupDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_group_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3GroupDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3GroupDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3GroupDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	S3GroupGet Retrieves the S3 group configuration of an SVM.
 
 ### Related ONTAP commands
@@ -818,8 +1431,8 @@ func (a *Client) S3GroupGet(params *S3GroupGetParams, authInfo runtime.ClientAut
 		ID:                 "s3_group_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/groups/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3GroupGetReader{formats: a.formats},
@@ -868,8 +1481,8 @@ func (a *Client) S3GroupModify(params *S3GroupModifyParams, authInfo runtime.Cli
 		ID:                 "s3_group_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/groups/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3GroupModifyReader{formats: a.formats},
@@ -895,6 +1508,44 @@ func (a *Client) S3GroupModify(params *S3GroupModifyParams, authInfo runtime.Cli
 }
 
 /*
+S3GroupModifyCollection s3 group modify collection API
+*/
+func (a *Client) S3GroupModifyCollection(params *S3GroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3GroupModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_group_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/groups",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3GroupModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3GroupModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3GroupModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	S3PolicyCollectionGet Retrieves the S3 policies SVM configuration.
 
 ### Related ONTAP commands
@@ -911,8 +1562,8 @@ func (a *Client) S3PolicyCollectionGet(params *S3PolicyCollectionGetParams, auth
 		ID:                 "s3_policy_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3PolicyCollectionGetReader{formats: a.formats},
@@ -966,8 +1617,8 @@ func (a *Client) S3PolicyCreate(params *S3PolicyCreateParams, authInfo runtime.C
 		ID:                 "s3_policy_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/policies",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3PolicyCreateReader{formats: a.formats},
@@ -1010,8 +1661,8 @@ func (a *Client) S3PolicyDelete(params *S3PolicyDeleteParams, authInfo runtime.C
 		ID:                 "s3_policy_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/policies/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3PolicyDeleteReader{formats: a.formats},
@@ -1037,6 +1688,44 @@ func (a *Client) S3PolicyDelete(params *S3PolicyDeleteParams, authInfo runtime.C
 }
 
 /*
+S3PolicyDeleteCollection s3 policy delete collection API
+*/
+func (a *Client) S3PolicyDeleteCollection(params *S3PolicyDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3PolicyDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_policy_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/policies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3PolicyDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3PolicyDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3PolicyDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	S3PolicyGet Retrieves the S3 policy configuration of an SVM.
 
 ### Related ONTAP commands
@@ -1053,8 +1742,8 @@ func (a *Client) S3PolicyGet(params *S3PolicyGetParams, authInfo runtime.ClientA
 		ID:                 "s3_policy_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/policies/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3PolicyGetReader{formats: a.formats},
@@ -1102,8 +1791,8 @@ func (a *Client) S3PolicyModify(params *S3PolicyModifyParams, authInfo runtime.C
 		ID:                 "s3_policy_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/policies/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3PolicyModifyReader{formats: a.formats},
@@ -1129,6 +1818,44 @@ func (a *Client) S3PolicyModify(params *S3PolicyModifyParams, authInfo runtime.C
 }
 
 /*
+S3PolicyModifyCollection s3 policy modify collection API
+*/
+func (a *Client) S3PolicyModifyCollection(params *S3PolicyModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3PolicyModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_policy_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/policies",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3PolicyModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3PolicyModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3PolicyModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	S3ServiceCollectionGet Retrieves the S3 server configuration for all SVMs. Note that in order to retrieve S3 bucket policy conditions, 'fields' option should be set to '**'.
 
 ### Expensive properties
@@ -1149,8 +1876,8 @@ func (a *Client) S3ServiceCollectionGet(params *S3ServiceCollectionGetParams, au
 		ID:                 "s3_service_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/s3/services",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3ServiceCollectionGetReader{formats: a.formats},
@@ -1196,6 +1923,7 @@ func (a *Client) S3ServiceCollectionGet(params *S3ServiceCollectionGetParams, au
 * `vserver object-store-server bucket create`
 * `vserver object-store-server bucket policy statement create`
 * `vserver object-store-server bucket policy-statement-condition create`
+* `vserver object-store-server bucket cors-rule create`
 * `vserver object-store-server user create`
 ### Learn more
 * [`DOC /protocols/s3/services`](#docs-object-store-protocols_s3_services)
@@ -1209,8 +1937,8 @@ func (a *Client) S3ServiceCreate(params *S3ServiceCreateParams, authInfo runtime
 		ID:                 "s3_service_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/s3/services",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3ServiceCreateReader{formats: a.formats},
@@ -1252,8 +1980,8 @@ func (a *Client) S3ServiceDelete(params *S3ServiceDeleteParams, authInfo runtime
 		ID:                 "s3_service_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3ServiceDeleteReader{formats: a.formats},
@@ -1279,6 +2007,44 @@ func (a *Client) S3ServiceDelete(params *S3ServiceDeleteParams, authInfo runtime
 }
 
 /*
+S3ServiceDeleteCollection s3 service delete collection API
+*/
+func (a *Client) S3ServiceDeleteCollection(params *S3ServiceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3ServiceDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_service_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/s3/services",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3ServiceDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3ServiceDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3ServiceDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	S3ServiceGet Retrieves the S3 Server configuration of an SVM. Note that in order to retrieve S3 bucket policy conditions, the 'fields' option should be set to '**'.
 
 ### Related ONTAP commands
@@ -1295,8 +2061,8 @@ func (a *Client) S3ServiceGet(params *S3ServiceGetParams, authInfo runtime.Clien
 		ID:                 "s3_service_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3ServiceGetReader{formats: a.formats},
@@ -1338,8 +2104,8 @@ func (a *Client) S3ServiceModify(params *S3ServiceModifyParams, authInfo runtime
 		ID:                 "s3_service_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3ServiceModifyReader{formats: a.formats},
@@ -1365,6 +2131,44 @@ func (a *Client) S3ServiceModify(params *S3ServiceModifyParams, authInfo runtime
 }
 
 /*
+S3ServiceModifyCollection s3 service modify collection API
+*/
+func (a *Client) S3ServiceModifyCollection(params *S3ServiceModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3ServiceModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_service_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/s3/services",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3ServiceModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3ServiceModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3ServiceModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	S3UserCollectionGet Retrieves the S3 user's SVM configuration.
 
 ### Related ONTAP commands
@@ -1381,8 +2185,8 @@ func (a *Client) S3UserCollectionGet(params *S3UserCollectionGetParams, authInfo
 		ID:                 "s3_user_collection_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/users",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3UserCollectionGetReader{formats: a.formats},
@@ -1412,7 +2216,10 @@ func (a *Client) S3UserCollectionGet(params *S3UserCollectionGetParams, authInfo
 
 ### Important notes
 - Each SVM can have one or more user configurations.
+- If the user is a member of Active directory, the user name takes the format "user@FQDN". For example, "user1@domain1.com".
 - If user creation is successful, a user access_key and secret_key is returned as part of the response.
+- If user keys have expiry configuration, then "key_expiry_time" is also returned as part of the response.
+- User access and secret keys can be specified in the input. If not specified, keys are generated automatically.
 ### Required properties
 * `svm.uuid` - Existing SVM in which to create the user configuration.
 * `name` - User name that is to be created.
@@ -1432,8 +2239,8 @@ func (a *Client) S3UserCreate(params *S3UserCreateParams, authInfo runtime.Clien
 		ID:                 "s3_user_create",
 		Method:             "POST",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/users",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3UserCreateReader{formats: a.formats},
@@ -1475,8 +2282,8 @@ func (a *Client) S3UserDelete(params *S3UserDeleteParams, authInfo runtime.Clien
 		ID:                 "s3_user_delete",
 		Method:             "DELETE",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/users/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3UserDeleteReader{formats: a.formats},
@@ -1502,6 +2309,44 @@ func (a *Client) S3UserDelete(params *S3UserDeleteParams, authInfo runtime.Clien
 }
 
 /*
+S3UserDeleteCollection s3 user delete collection API
+*/
+func (a *Client) S3UserDeleteCollection(params *S3UserDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3UserDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3UserDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_user_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/users",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3UserDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3UserDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3UserDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	S3UserGet Retrieves the S3 user configuration of an SVM.
 
 ### Related ONTAP commands
@@ -1518,8 +2363,8 @@ func (a *Client) S3UserGet(params *S3UserGetParams, authInfo runtime.ClientAuthI
 		ID:                 "s3_user_get",
 		Method:             "GET",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/users/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3UserGetReader{formats: a.formats},
@@ -1550,12 +2395,16 @@ func (a *Client) S3UserGet(params *S3UserGetParams, authInfo runtime.ClientAuthI
 ### Important notes
 - User access_key and secret_key pair can be regenerated using the PATCH operation.
 - User access_key and secret_key is returned in a PATCH operation if the "regenerate_keys" field is specified as true.
+- If "regenerate_keys" is true and user keys have expiry configuration, then "key_expiry_time" is also returned as part of response.
+- User access_key and secret_key pair can be deleted using the PATCH operation.
 ### Recommended optional properties
 * `regenerate_keys` - Specifies if secret_key and access_key need to be regenerated.
+* `delete_keys` - Specifies if secret_key and access_key need to be deleted.
 * `comment` - Any information related to the S3 user.
 ### Related ONTAP commands
 * `vserver object-store-server user show`
 * `vserver object-store-server user regenerate-keys`
+* `vserver object-store-server user delete-keys`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/users`](#docs-object-store-protocols_s3_services_{svm.uuid}_users)
 */
@@ -1568,8 +2417,8 @@ func (a *Client) S3UserModify(params *S3UserModifyParams, authInfo runtime.Clien
 		ID:                 "s3_user_modify",
 		Method:             "PATCH",
 		PathPattern:        "/protocols/s3/services/{svm.uuid}/users/{name}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &S3UserModifyReader{formats: a.formats},
@@ -1591,6 +2440,44 @@ func (a *Client) S3UserModify(params *S3UserModifyParams, authInfo runtime.Clien
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*S3UserModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+S3UserModifyCollection s3 user modify collection API
+*/
+func (a *Client) S3UserModifyCollection(params *S3UserModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3UserModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3UserModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_user_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/users",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3UserModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3UserModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3UserModifyCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

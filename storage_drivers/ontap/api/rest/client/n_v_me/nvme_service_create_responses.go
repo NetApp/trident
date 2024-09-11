@@ -6,6 +6,7 @@ package n_v_me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *NvmeServiceCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the nvme service create created response
+func (o *NvmeServiceCreateCreated) Code() int {
+	return 201
+}
+
 func (o *NvmeServiceCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/nvme/services][%d] nvmeServiceCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nvme/services][%d] nvmeServiceCreateCreated %s", 201, payload)
 }
 
 func (o *NvmeServiceCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/nvme/services][%d] nvmeServiceCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nvme/services][%d] nvmeServiceCreateCreated %s", 201, payload)
 }
 
 func (o *NvmeServiceCreateCreated) GetPayload() *models.NvmeServiceResponse {
@@ -136,18 +144,15 @@ func NewNvmeServiceCreateDefault(code int) *NvmeServiceCreateDefault {
 | 2621706 | The specified `svm.uuid` and `svm.name` do not refer to the same SVM. |
 | 2621707 | No SVM was specified. Either `svm.name` or `svm.uuid` must be supplied. |
 | 5374893 | The SVM is stopped. The SVM must be running to create an NVMe service. |
+| 5376452 | Service POST and DELETE are not supported on ASA r2. |
 | 72089650 | An NVMe service already exists for the specified SVM. |
 | 72089900 | An NVMe service cannot be creating in an SVM that is configured for a SAN protocol. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NvmeServiceCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nvme service create default response
-func (o *NvmeServiceCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nvme service create default response has a 2xx status code
@@ -175,12 +180,19 @@ func (o *NvmeServiceCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nvme service create default response
+func (o *NvmeServiceCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NvmeServiceCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/nvme/services][%d] nvme_service_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nvme/services][%d] nvme_service_create default %s", o._statusCode, payload)
 }
 
 func (o *NvmeServiceCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/nvme/services][%d] nvme_service_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nvme/services][%d] nvme_service_create default %s", o._statusCode, payload)
 }
 
 func (o *NvmeServiceCreateDefault) GetPayload() *models.ErrorResponse {

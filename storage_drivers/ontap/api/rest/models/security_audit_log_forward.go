@@ -21,24 +21,38 @@ import (
 type SecurityAuditLogForward struct {
 
 	// Destination syslog|splunk host to forward audit records to. This can be an IP address (IPv4|IPv6) or a hostname.
+	// Example: 1.1.1.1
 	Address *string `json:"address,omitempty"`
 
 	// This is the standard Syslog Facility value that is used when sending audit records to a remote server.
-	// Enum: [kern user local0 local1 local2 local3 local4 local5 local6 local7]
+	// Enum: ["kern","user","local0","local1","local2","local3","local4","local5","local6","local7"]
 	Facility *string `json:"facility,omitempty"`
+
+	// Syslog Hostname Format Override
+	// Enum: ["no_override","fqdn","hostname_only"]
+	HostnameFormatOverride *string `json:"hostname_format_override,omitempty"`
 
 	// ipspace
 	Ipspace *SecurityAuditLogForwardInlineIpspace `json:"ipspace,omitempty"`
+
+	// Syslog message format to be used. legacy_netapp format (variation of RFC-3164) is default message format.
+	// Enum: ["legacy_netapp","rfc_5424"]
+	MessageFormat *string `json:"message_format,omitempty"`
 
 	// Destination Port. The default port depends on the protocol chosen:
 	// For un-encrypted destinations the default port is 514.
 	// For encrypted destinations the default port is 6514.
 	//
+	// Example: 514
 	Port *int64 `json:"port,omitempty"`
 
 	// Log forwarding protocol
-	// Enum: [udp_unencrypted tcp_unencrypted tcp_encrypted]
+	// Enum: ["udp_unencrypted","tcp_unencrypted","tcp_encrypted"]
 	Protocol *string `json:"protocol,omitempty"`
+
+	// Syslog Timestamp Format Override.
+	// Enum: ["no_override","rfc_3164","iso_8601_utc","iso_8601_local_time"]
+	TimestampFormatOverride *string `json:"timestamp_format_override,omitempty"`
 
 	// This is only applicable when the protocol is tcp_encrypted. This controls whether the remote server's certificate is validated. Setting "verify_server" to "true" will enforce validation of remote server's certificate. Setting "verify_server" to "false" will not enforce validation of remote server's certificate.
 	VerifyServer *bool `json:"verify_server,omitempty"`
@@ -52,11 +66,23 @@ func (m *SecurityAuditLogForward) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateHostnameFormatOverride(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateIpspace(formats); err != nil {
 		res = append(res, err)
 	}
 
+	if err := m.validateMessageFormat(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateProtocol(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestampFormatOverride(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -202,6 +228,72 @@ func (m *SecurityAuditLogForward) validateFacility(formats strfmt.Registry) erro
 	return nil
 }
 
+var securityAuditLogForwardTypeHostnameFormatOverridePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["no_override","fqdn","hostname_only"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		securityAuditLogForwardTypeHostnameFormatOverridePropEnum = append(securityAuditLogForwardTypeHostnameFormatOverridePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// security_audit_log_forward
+	// SecurityAuditLogForward
+	// hostname_format_override
+	// HostnameFormatOverride
+	// no_override
+	// END DEBUGGING
+	// SecurityAuditLogForwardHostnameFormatOverrideNoOverride captures enum value "no_override"
+	SecurityAuditLogForwardHostnameFormatOverrideNoOverride string = "no_override"
+
+	// BEGIN DEBUGGING
+	// security_audit_log_forward
+	// SecurityAuditLogForward
+	// hostname_format_override
+	// HostnameFormatOverride
+	// fqdn
+	// END DEBUGGING
+	// SecurityAuditLogForwardHostnameFormatOverrideFqdn captures enum value "fqdn"
+	SecurityAuditLogForwardHostnameFormatOverrideFqdn string = "fqdn"
+
+	// BEGIN DEBUGGING
+	// security_audit_log_forward
+	// SecurityAuditLogForward
+	// hostname_format_override
+	// HostnameFormatOverride
+	// hostname_only
+	// END DEBUGGING
+	// SecurityAuditLogForwardHostnameFormatOverrideHostnameOnly captures enum value "hostname_only"
+	SecurityAuditLogForwardHostnameFormatOverrideHostnameOnly string = "hostname_only"
+)
+
+// prop value enum
+func (m *SecurityAuditLogForward) validateHostnameFormatOverrideEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, securityAuditLogForwardTypeHostnameFormatOverridePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SecurityAuditLogForward) validateHostnameFormatOverride(formats strfmt.Registry) error {
+	if swag.IsZero(m.HostnameFormatOverride) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateHostnameFormatOverrideEnum("hostname_format_override", "body", *m.HostnameFormatOverride); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *SecurityAuditLogForward) validateIpspace(formats strfmt.Registry) error {
 	if swag.IsZero(m.Ipspace) { // not required
 		return nil
@@ -214,6 +306,62 @@ func (m *SecurityAuditLogForward) validateIpspace(formats strfmt.Registry) error
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var securityAuditLogForwardTypeMessageFormatPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["legacy_netapp","rfc_5424"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		securityAuditLogForwardTypeMessageFormatPropEnum = append(securityAuditLogForwardTypeMessageFormatPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// security_audit_log_forward
+	// SecurityAuditLogForward
+	// message_format
+	// MessageFormat
+	// legacy_netapp
+	// END DEBUGGING
+	// SecurityAuditLogForwardMessageFormatLegacyNetapp captures enum value "legacy_netapp"
+	SecurityAuditLogForwardMessageFormatLegacyNetapp string = "legacy_netapp"
+
+	// BEGIN DEBUGGING
+	// security_audit_log_forward
+	// SecurityAuditLogForward
+	// message_format
+	// MessageFormat
+	// rfc_5424
+	// END DEBUGGING
+	// SecurityAuditLogForwardMessageFormatRfc5424 captures enum value "rfc_5424"
+	SecurityAuditLogForwardMessageFormatRfc5424 string = "rfc_5424"
+)
+
+// prop value enum
+func (m *SecurityAuditLogForward) validateMessageFormatEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, securityAuditLogForwardTypeMessageFormatPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SecurityAuditLogForward) validateMessageFormat(formats strfmt.Registry) error {
+	if swag.IsZero(m.MessageFormat) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateMessageFormatEnum("message_format", "body", *m.MessageFormat); err != nil {
+		return err
 	}
 
 	return nil
@@ -285,6 +433,82 @@ func (m *SecurityAuditLogForward) validateProtocol(formats strfmt.Registry) erro
 	return nil
 }
 
+var securityAuditLogForwardTypeTimestampFormatOverridePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["no_override","rfc_3164","iso_8601_utc","iso_8601_local_time"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		securityAuditLogForwardTypeTimestampFormatOverridePropEnum = append(securityAuditLogForwardTypeTimestampFormatOverridePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// security_audit_log_forward
+	// SecurityAuditLogForward
+	// timestamp_format_override
+	// TimestampFormatOverride
+	// no_override
+	// END DEBUGGING
+	// SecurityAuditLogForwardTimestampFormatOverrideNoOverride captures enum value "no_override"
+	SecurityAuditLogForwardTimestampFormatOverrideNoOverride string = "no_override"
+
+	// BEGIN DEBUGGING
+	// security_audit_log_forward
+	// SecurityAuditLogForward
+	// timestamp_format_override
+	// TimestampFormatOverride
+	// rfc_3164
+	// END DEBUGGING
+	// SecurityAuditLogForwardTimestampFormatOverrideRfc3164 captures enum value "rfc_3164"
+	SecurityAuditLogForwardTimestampFormatOverrideRfc3164 string = "rfc_3164"
+
+	// BEGIN DEBUGGING
+	// security_audit_log_forward
+	// SecurityAuditLogForward
+	// timestamp_format_override
+	// TimestampFormatOverride
+	// iso_8601_utc
+	// END DEBUGGING
+	// SecurityAuditLogForwardTimestampFormatOverrideIso8601Utc captures enum value "iso_8601_utc"
+	SecurityAuditLogForwardTimestampFormatOverrideIso8601Utc string = "iso_8601_utc"
+
+	// BEGIN DEBUGGING
+	// security_audit_log_forward
+	// SecurityAuditLogForward
+	// timestamp_format_override
+	// TimestampFormatOverride
+	// iso_8601_local_time
+	// END DEBUGGING
+	// SecurityAuditLogForwardTimestampFormatOverrideIso8601LocalTime captures enum value "iso_8601_local_time"
+	SecurityAuditLogForwardTimestampFormatOverrideIso8601LocalTime string = "iso_8601_local_time"
+)
+
+// prop value enum
+func (m *SecurityAuditLogForward) validateTimestampFormatOverrideEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, securityAuditLogForwardTypeTimestampFormatOverridePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SecurityAuditLogForward) validateTimestampFormatOverride(formats strfmt.Registry) error {
+	if swag.IsZero(m.TimestampFormatOverride) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTimestampFormatOverrideEnum("timestamp_format_override", "body", *m.TimestampFormatOverride); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this security audit log forward based on the context it is used
 func (m *SecurityAuditLogForward) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -340,7 +564,7 @@ type SecurityAuditLogForwardInlineIpspace struct {
 	Links *SecurityAuditLogForwardInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
-	// Example: exchange
+	// Example: Default
 	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID

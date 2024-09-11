@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type FileDirectorySecurityCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *FileDirectorySecurityCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewFileDirectorySecurityCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewFileDirectorySecurityCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,88 @@ func (o *FileDirectorySecurityCreateReader) ReadResponse(response runtime.Client
 	}
 }
 
+// NewFileDirectorySecurityCreateCreated creates a FileDirectorySecurityCreateCreated with default headers values
+func NewFileDirectorySecurityCreateCreated() *FileDirectorySecurityCreateCreated {
+	return &FileDirectorySecurityCreateCreated{}
+}
+
+/*
+FileDirectorySecurityCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type FileDirectorySecurityCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.FileDirectorySecurityJobLinkResponse
+}
+
+// IsSuccess returns true when this file directory security create created response has a 2xx status code
+func (o *FileDirectorySecurityCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this file directory security create created response has a 3xx status code
+func (o *FileDirectorySecurityCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this file directory security create created response has a 4xx status code
+func (o *FileDirectorySecurityCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this file directory security create created response has a 5xx status code
+func (o *FileDirectorySecurityCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this file directory security create created response a status code equal to that given
+func (o *FileDirectorySecurityCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the file directory security create created response
+func (o *FileDirectorySecurityCreateCreated) Code() int {
+	return 201
+}
+
+func (o *FileDirectorySecurityCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityCreateCreated %s", 201, payload)
+}
+
+func (o *FileDirectorySecurityCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityCreateCreated %s", 201, payload)
+}
+
+func (o *FileDirectorySecurityCreateCreated) GetPayload() *models.FileDirectorySecurityJobLinkResponse {
+	return o.Payload
+}
+
+func (o *FileDirectorySecurityCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.FileDirectorySecurityJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewFileDirectorySecurityCreateAccepted creates a FileDirectorySecurityCreateAccepted with default headers values
 func NewFileDirectorySecurityCreateAccepted() *FileDirectorySecurityCreateAccepted {
 	return &FileDirectorySecurityCreateAccepted{}
@@ -57,7 +146,7 @@ type FileDirectorySecurityCreateAccepted struct {
 	 */
 	Location string
 
-	Payload *models.JobLinkResponse
+	Payload *models.FileDirectorySecurityJobLinkResponse
 }
 
 // IsSuccess returns true when this file directory security create accepted response has a 2xx status code
@@ -85,15 +174,22 @@ func (o *FileDirectorySecurityCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the file directory security create accepted response
+func (o *FileDirectorySecurityCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *FileDirectorySecurityCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityCreateAccepted %s", 202, payload)
 }
 
 func (o *FileDirectorySecurityCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityCreateAccepted %s", 202, payload)
 }
 
-func (o *FileDirectorySecurityCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *FileDirectorySecurityCreateAccepted) GetPayload() *models.FileDirectorySecurityJobLinkResponse {
 	return o.Payload
 }
 
@@ -106,7 +202,7 @@ func (o *FileDirectorySecurityCreateAccepted) readResponse(response runtime.Clie
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.FileDirectorySecurityJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -124,19 +220,27 @@ func NewFileDirectorySecurityCreateDefault(code int) *FileDirectorySecurityCreat
 }
 
 /*
-FileDirectorySecurityCreateDefault describes a response with status code -1, with default header values.
+	FileDirectorySecurityCreateDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 655865     | The specified file or directory does not exist.|
+| 10485813   | All values corresponding to rights cannot be false.|
+| 10485815   | The field \"acls.access_control\" is not allowed with POST method.|
+| 10485810   | User is a required field.|
+| 1260882    | Specified SVM not found.|
+| 6691623    | User is not authorized.|
+| 4849676    | The specified Windows user or group does not exist.|
+| 4849677    | Failed to convert SID to a Windows name. Reason: \"SecD Error: object not found\".|
+| 10485814   | The value provided for field control_flags is invalid.|
+| 10485813   | All values cannot be false.|
 */
 type FileDirectorySecurityCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the file directory security create default response
-func (o *FileDirectorySecurityCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this file directory security create default response has a 2xx status code
@@ -164,12 +268,19 @@ func (o *FileDirectorySecurityCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the file directory security create default response
+func (o *FileDirectorySecurityCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FileDirectorySecurityCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_create default %s", o._statusCode, payload)
 }
 
 func (o *FileDirectorySecurityCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_create default %s", o._statusCode, payload)
 }
 
 func (o *FileDirectorySecurityCreateDefault) GetPayload() *models.ErrorResponse {

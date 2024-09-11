@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *MultiAdminVerifyRequestDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the multi admin verify request delete o k response
+func (o *MultiAdminVerifyRequestDeleteOK) Code() int {
+	return 200
+}
+
 func (o *MultiAdminVerifyRequestDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /security/multi-admin-verify/requests/{index}][%d] multiAdminVerifyRequestDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/multi-admin-verify/requests/{index}][%d] multiAdminVerifyRequestDeleteOK", 200)
 }
 
 func (o *MultiAdminVerifyRequestDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /security/multi-admin-verify/requests/{index}][%d] multiAdminVerifyRequestDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/multi-admin-verify/requests/{index}][%d] multiAdminVerifyRequestDeleteOK", 200)
 }
 
 func (o *MultiAdminVerifyRequestDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -100,19 +106,19 @@ func NewMultiAdminVerifyRequestDeleteDefault(code int) *MultiAdminVerifyRequestD
 }
 
 /*
-MultiAdminVerifyRequestDeleteDefault describes a response with status code -1, with default header values.
+	MultiAdminVerifyRequestDeleteDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 262336 | User not authorized to delete the request. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type MultiAdminVerifyRequestDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the multi admin verify request delete default response
-func (o *MultiAdminVerifyRequestDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this multi admin verify request delete default response has a 2xx status code
@@ -140,12 +146,19 @@ func (o *MultiAdminVerifyRequestDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the multi admin verify request delete default response
+func (o *MultiAdminVerifyRequestDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *MultiAdminVerifyRequestDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /security/multi-admin-verify/requests/{index}][%d] multi_admin_verify_request_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/multi-admin-verify/requests/{index}][%d] multi_admin_verify_request_delete default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyRequestDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /security/multi-admin-verify/requests/{index}][%d] multi_admin_verify_request_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/multi-admin-verify/requests/{index}][%d] multi_admin_verify_request_delete default %s", o._statusCode, payload)
 }
 
 func (o *MultiAdminVerifyRequestDeleteDefault) GetPayload() *models.ErrorResponse {

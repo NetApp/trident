@@ -110,12 +110,6 @@ type ShelfCollectionGetParams struct {
 	*/
 	AcpsErrorReasonMessage *string
 
-	/* AcpsErrorReasonTarget.
-
-	   Filter by acps.error.reason.target
-	*/
-	AcpsErrorReasonTarget *string
-
 	/* AcpsErrorSeverity.
 
 	   Filter by acps.error.severity
@@ -212,6 +206,12 @@ type ShelfCollectionGetParams struct {
 	*/
 	CurrentSensorsID *int64
 
+	/* CurrentSensorsInstalled.
+
+	   Filter by current_sensors.installed
+	*/
+	CurrentSensorsInstalled *bool
+
 	/* CurrentSensorsLocation.
 
 	   Filter by current_sensors.location
@@ -296,17 +296,17 @@ type ShelfCollectionGetParams struct {
 	*/
 	ErrorsReasonMessage *string
 
-	/* ErrorsReasonTarget.
-
-	   Filter by errors.reason.target
-	*/
-	ErrorsReasonTarget *string
-
 	/* FansID.
 
 	   Filter by fans.id
 	*/
 	FansID *int64
+
+	/* FansInstalled.
+
+	   Filter by fans.installed
+	*/
+	FansInstalled *bool
 
 	/* FansLocation.
 
@@ -618,6 +618,12 @@ type ShelfCollectionGetParams struct {
 	*/
 	TemperatureSensorsID *int64
 
+	/* TemperatureSensorsInstalled.
+
+	   Filter by temperature_sensors.installed
+	*/
+	TemperatureSensorsInstalled *bool
+
 	/* TemperatureSensorsLocation.
 
 	   Filter by temperature_sensors.location
@@ -701,6 +707,12 @@ type ShelfCollectionGetParams struct {
 	   Filter by voltage_sensors.id
 	*/
 	VoltageSensorsID *int64
+
+	/* VoltageSensorsInstalled.
+
+	   Filter by voltage_sensors.installed
+	*/
+	VoltageSensorsInstalled *bool
 
 	/* VoltageSensorsLocation.
 
@@ -873,17 +885,6 @@ func (o *ShelfCollectionGetParams) WithAcpsErrorReasonMessage(acpsErrorReasonMes
 // SetAcpsErrorReasonMessage adds the acpsErrorReasonMessage to the shelf collection get params
 func (o *ShelfCollectionGetParams) SetAcpsErrorReasonMessage(acpsErrorReasonMessage *string) {
 	o.AcpsErrorReasonMessage = acpsErrorReasonMessage
-}
-
-// WithAcpsErrorReasonTarget adds the acpsErrorReasonTarget to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithAcpsErrorReasonTarget(acpsErrorReasonTarget *string) *ShelfCollectionGetParams {
-	o.SetAcpsErrorReasonTarget(acpsErrorReasonTarget)
-	return o
-}
-
-// SetAcpsErrorReasonTarget adds the acpsErrorReasonTarget to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetAcpsErrorReasonTarget(acpsErrorReasonTarget *string) {
-	o.AcpsErrorReasonTarget = acpsErrorReasonTarget
 }
 
 // WithAcpsErrorSeverity adds the acpsErrorSeverity to the shelf collection get params
@@ -1062,6 +1063,17 @@ func (o *ShelfCollectionGetParams) SetCurrentSensorsID(currentSensorsID *int64) 
 	o.CurrentSensorsID = currentSensorsID
 }
 
+// WithCurrentSensorsInstalled adds the currentSensorsInstalled to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithCurrentSensorsInstalled(currentSensorsInstalled *bool) *ShelfCollectionGetParams {
+	o.SetCurrentSensorsInstalled(currentSensorsInstalled)
+	return o
+}
+
+// SetCurrentSensorsInstalled adds the currentSensorsInstalled to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetCurrentSensorsInstalled(currentSensorsInstalled *bool) {
+	o.CurrentSensorsInstalled = currentSensorsInstalled
+}
+
 // WithCurrentSensorsLocation adds the currentSensorsLocation to the shelf collection get params
 func (o *ShelfCollectionGetParams) WithCurrentSensorsLocation(currentSensorsLocation *string) *ShelfCollectionGetParams {
 	o.SetCurrentSensorsLocation(currentSensorsLocation)
@@ -1216,17 +1228,6 @@ func (o *ShelfCollectionGetParams) SetErrorsReasonMessage(errorsReasonMessage *s
 	o.ErrorsReasonMessage = errorsReasonMessage
 }
 
-// WithErrorsReasonTarget adds the errorsReasonTarget to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithErrorsReasonTarget(errorsReasonTarget *string) *ShelfCollectionGetParams {
-	o.SetErrorsReasonTarget(errorsReasonTarget)
-	return o
-}
-
-// SetErrorsReasonTarget adds the errorsReasonTarget to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetErrorsReasonTarget(errorsReasonTarget *string) {
-	o.ErrorsReasonTarget = errorsReasonTarget
-}
-
 // WithFansID adds the fansID to the shelf collection get params
 func (o *ShelfCollectionGetParams) WithFansID(fansID *int64) *ShelfCollectionGetParams {
 	o.SetFansID(fansID)
@@ -1236,6 +1237,17 @@ func (o *ShelfCollectionGetParams) WithFansID(fansID *int64) *ShelfCollectionGet
 // SetFansID adds the fansId to the shelf collection get params
 func (o *ShelfCollectionGetParams) SetFansID(fansID *int64) {
 	o.FansID = fansID
+}
+
+// WithFansInstalled adds the fansInstalled to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFansInstalled(fansInstalled *bool) *ShelfCollectionGetParams {
+	o.SetFansInstalled(fansInstalled)
+	return o
+}
+
+// SetFansInstalled adds the fansInstalled to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFansInstalled(fansInstalled *bool) {
+	o.FansInstalled = fansInstalled
 }
 
 // WithFansLocation adds the fansLocation to the shelf collection get params
@@ -1799,6 +1811,17 @@ func (o *ShelfCollectionGetParams) SetTemperatureSensorsID(temperatureSensorsID 
 	o.TemperatureSensorsID = temperatureSensorsID
 }
 
+// WithTemperatureSensorsInstalled adds the temperatureSensorsInstalled to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithTemperatureSensorsInstalled(temperatureSensorsInstalled *bool) *ShelfCollectionGetParams {
+	o.SetTemperatureSensorsInstalled(temperatureSensorsInstalled)
+	return o
+}
+
+// SetTemperatureSensorsInstalled adds the temperatureSensorsInstalled to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetTemperatureSensorsInstalled(temperatureSensorsInstalled *bool) {
+	o.TemperatureSensorsInstalled = temperatureSensorsInstalled
+}
+
 // WithTemperatureSensorsLocation adds the temperatureSensorsLocation to the shelf collection get params
 func (o *ShelfCollectionGetParams) WithTemperatureSensorsLocation(temperatureSensorsLocation *string) *ShelfCollectionGetParams {
 	o.SetTemperatureSensorsLocation(temperatureSensorsLocation)
@@ -1951,6 +1974,17 @@ func (o *ShelfCollectionGetParams) WithVoltageSensorsID(voltageSensorsID *int64)
 // SetVoltageSensorsID adds the voltageSensorsId to the shelf collection get params
 func (o *ShelfCollectionGetParams) SetVoltageSensorsID(voltageSensorsID *int64) {
 	o.VoltageSensorsID = voltageSensorsID
+}
+
+// WithVoltageSensorsInstalled adds the voltageSensorsInstalled to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithVoltageSensorsInstalled(voltageSensorsInstalled *bool) *ShelfCollectionGetParams {
+	o.SetVoltageSensorsInstalled(voltageSensorsInstalled)
+	return o
+}
+
+// SetVoltageSensorsInstalled adds the voltageSensorsInstalled to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetVoltageSensorsInstalled(voltageSensorsInstalled *bool) {
+	o.VoltageSensorsInstalled = voltageSensorsInstalled
 }
 
 // WithVoltageSensorsLocation adds the voltageSensorsLocation to the shelf collection get params
@@ -2125,23 +2159,6 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		if qAcpsErrorReasonMessage != "" {
 
 			if err := r.SetQueryParam("acps.error.reason.message", qAcpsErrorReasonMessage); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.AcpsErrorReasonTarget != nil {
-
-		// query param acps.error.reason.target
-		var qrAcpsErrorReasonTarget string
-
-		if o.AcpsErrorReasonTarget != nil {
-			qrAcpsErrorReasonTarget = *o.AcpsErrorReasonTarget
-		}
-		qAcpsErrorReasonTarget := qrAcpsErrorReasonTarget
-		if qAcpsErrorReasonTarget != "" {
-
-			if err := r.SetQueryParam("acps.error.reason.target", qAcpsErrorReasonTarget); err != nil {
 				return err
 			}
 		}
@@ -2419,6 +2436,23 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
+	if o.CurrentSensorsInstalled != nil {
+
+		// query param current_sensors.installed
+		var qrCurrentSensorsInstalled bool
+
+		if o.CurrentSensorsInstalled != nil {
+			qrCurrentSensorsInstalled = *o.CurrentSensorsInstalled
+		}
+		qCurrentSensorsInstalled := swag.FormatBool(qrCurrentSensorsInstalled)
+		if qCurrentSensorsInstalled != "" {
+
+			if err := r.SetQueryParam("current_sensors.installed", qCurrentSensorsInstalled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CurrentSensorsLocation != nil {
 
 		// query param current_sensors.location
@@ -2657,23 +2691,6 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ErrorsReasonTarget != nil {
-
-		// query param errors.reason.target
-		var qrErrorsReasonTarget string
-
-		if o.ErrorsReasonTarget != nil {
-			qrErrorsReasonTarget = *o.ErrorsReasonTarget
-		}
-		qErrorsReasonTarget := qrErrorsReasonTarget
-		if qErrorsReasonTarget != "" {
-
-			if err := r.SetQueryParam("errors.reason.target", qErrorsReasonTarget); err != nil {
-				return err
-			}
-		}
-	}
-
 	if o.FansID != nil {
 
 		// query param fans.id
@@ -2686,6 +2703,23 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		if qFansID != "" {
 
 			if err := r.SetQueryParam("fans.id", qFansID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FansInstalled != nil {
+
+		// query param fans.installed
+		var qrFansInstalled bool
+
+		if o.FansInstalled != nil {
+			qrFansInstalled = *o.FansInstalled
+		}
+		qFansInstalled := swag.FormatBool(qrFansInstalled)
+		if qFansInstalled != "" {
+
+			if err := r.SetQueryParam("fans.installed", qFansInstalled); err != nil {
 				return err
 			}
 		}
@@ -3546,6 +3580,23 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
+	if o.TemperatureSensorsInstalled != nil {
+
+		// query param temperature_sensors.installed
+		var qrTemperatureSensorsInstalled bool
+
+		if o.TemperatureSensorsInstalled != nil {
+			qrTemperatureSensorsInstalled = *o.TemperatureSensorsInstalled
+		}
+		qTemperatureSensorsInstalled := swag.FormatBool(qrTemperatureSensorsInstalled)
+		if qTemperatureSensorsInstalled != "" {
+
+			if err := r.SetQueryParam("temperature_sensors.installed", qTemperatureSensorsInstalled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.TemperatureSensorsLocation != nil {
 
 		// query param temperature_sensors.location
@@ -3779,6 +3830,23 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		if qVoltageSensorsID != "" {
 
 			if err := r.SetQueryParam("voltage_sensors.id", qVoltageSensorsID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VoltageSensorsInstalled != nil {
+
+		// query param voltage_sensors.installed
+		var qrVoltageSensorsInstalled bool
+
+		if o.VoltageSensorsInstalled != nil {
+			qrVoltageSensorsInstalled = *o.VoltageSensorsInstalled
+		}
+		qVoltageSensorsInstalled := swag.FormatBool(qrVoltageSensorsInstalled)
+		if qVoltageSensorsInstalled != "" {
+
+			if err := r.SetQueryParam("voltage_sensors.installed", qVoltageSensorsInstalled); err != nil {
 				return err
 			}
 		}

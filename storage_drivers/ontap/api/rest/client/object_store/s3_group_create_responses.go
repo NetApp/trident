@@ -6,6 +6,7 @@ package object_store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *S3GroupCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the s3 group create created response
+func (o *S3GroupCreateCreated) Code() int {
+	return 201
+}
+
 func (o *S3GroupCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/groups][%d] s3GroupCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/groups][%d] s3GroupCreateCreated %s", 201, payload)
 }
 
 func (o *S3GroupCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/groups][%d] s3GroupCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/groups][%d] s3GroupCreateCreated %s", 201, payload)
 }
 
 func (o *S3GroupCreateCreated) GetPayload() *models.S3GroupResponse {
@@ -131,26 +139,23 @@ func NewS3GroupCreateDefault(code int) *S3GroupCreateDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 92405896   | Users list cannot be empty.
-| 92405930   | Group name is not valid. Group names must have between 1 and 128 characters.
-| 92405931   | Group name contains invalid characters. Valid characters for a group name are 0-9, A-Z, a-z, "_", "+", "=", ",", ".", "@", and "-".
+| 92405930   | Group name \\\"{group name}\\\" is not valid. Group names must have between 1 and 128 characters.
+| 92405931   | Group name \\\"{group name}\\\" contains invalid characters. Valid characters for a group name are 0-9, A-Z, a-z, "_", "+", "=", ",", ".", "@", and "-".
 | 92405932   | Creating an object store group requires an effective cluster version of 9.8 or later.
 | 92405933   | Failed to create group for SVM. Reason: "{reason of failure}".
-| 92405934   | User name specified in the user list do not exist for SVM. Use the "object-store-server user create" command to create a user.
+| 92405934   | Users {user name} specified in the user list do not exist for SVM \\\"{vserver name}\\\". Use the \"object-store-server user create\" command to create a user.
 | 92405935   | Internal Error. Unable to generate unique ID for the group.
 | 92405936   | Query characters such as * are not supported in the user list.
-| 92405937   | Policy name specified in the policy list do not exist for SVM.
-| 92405942   | Group name already exists for SVM.
-| 92405966   | User name is present more than once in the users field.
+| 92405937   | Policies {policy name} specified in the policy list do not exist for SVM \\\"{vserver name}\\\".
+| 92405942   | Group name \\\"{group name}\\\" already exists for SVM \\\"{vserver name}\\\".
+| 92405858   | Failed to \"create\" the \"group\" because the operation is only supported on data SVMs.
+| 262222     | User name is present more than once in the users field.
+| 92406154   | Users {user} specified in the user list do not exist for SVM "vs1". Use the "/protocols/s3/services/{svm.uuid}/users" endpoint to create a user.
 */
 type S3GroupCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the s3 group create default response
-func (o *S3GroupCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this s3 group create default response has a 2xx status code
@@ -178,12 +183,19 @@ func (o *S3GroupCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the s3 group create default response
+func (o *S3GroupCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *S3GroupCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/groups][%d] s3_group_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/groups][%d] s3_group_create default %s", o._statusCode, payload)
 }
 
 func (o *S3GroupCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/groups][%d] s3_group_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/groups][%d] s3_group_create default %s", o._statusCode, payload)
 }
 
 func (o *S3GroupCreateDefault) GetPayload() *models.ErrorResponse {

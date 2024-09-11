@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *UnixUserGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the unix user get o k response
+func (o *UnixUserGetOK) Code() int {
+	return 200
+}
+
 func (o *UnixUserGetOK) Error() string {
-	return fmt.Sprintf("[GET /name-services/unix-users/{svm.uuid}/{name}][%d] unixUserGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/unix-users/{svm.uuid}/{name}][%d] unixUserGetOK %s", 200, payload)
 }
 
 func (o *UnixUserGetOK) String() string {
-	return fmt.Sprintf("[GET /name-services/unix-users/{svm.uuid}/{name}][%d] unixUserGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/unix-users/{svm.uuid}/{name}][%d] unixUserGetOK %s", 200, payload)
 }
 
 func (o *UnixUserGetOK) GetPayload() *models.UnixUser {
@@ -122,11 +130,6 @@ type UnixUserGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the unix user get default response
-func (o *UnixUserGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this unix user get default response has a 2xx status code
 func (o *UnixUserGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *UnixUserGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the unix user get default response
+func (o *UnixUserGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *UnixUserGetDefault) Error() string {
-	return fmt.Sprintf("[GET /name-services/unix-users/{svm.uuid}/{name}][%d] unix_user_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/unix-users/{svm.uuid}/{name}][%d] unix_user_get default %s", o._statusCode, payload)
 }
 
 func (o *UnixUserGetDefault) String() string {
-	return fmt.Sprintf("[GET /name-services/unix-users/{svm.uuid}/{name}][%d] unix_user_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /name-services/unix-users/{svm.uuid}/{name}][%d] unix_user_get default %s", o._statusCode, payload)
 }
 
 func (o *UnixUserGetDefault) GetPayload() *models.ErrorResponse {

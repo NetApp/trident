@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *KeyManagerAuthKeyDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the key manager auth key delete o k response
+func (o *KeyManagerAuthKeyDeleteOK) Code() int {
+	return 200
+}
+
 func (o *KeyManagerAuthKeyDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /security/key-managers/{security_key_manager.uuid}/auth-keys/{key_id}][%d] keyManagerAuthKeyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/key-managers/{security_key_manager.uuid}/auth-keys/{key_id}][%d] keyManagerAuthKeyDeleteOK", 200)
 }
 
 func (o *KeyManagerAuthKeyDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /security/key-managers/{security_key_manager.uuid}/auth-keys/{key_id}][%d] keyManagerAuthKeyDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/key-managers/{security_key_manager.uuid}/auth-keys/{key_id}][%d] keyManagerAuthKeyDeleteOK", 200)
 }
 
 func (o *KeyManagerAuthKeyDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -113,16 +119,12 @@ func NewKeyManagerAuthKeyDeleteDefault(code int) *KeyManagerAuthKeyDeleteDefault
 | 65538801 | Internal error while accessing keymanager database. |
 | 65538802 | The UUID provided is not associated with the administrator SVM key manager. |
 | 66060296 | Failed to delete key from an external key server. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type KeyManagerAuthKeyDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the key manager auth key delete default response
-func (o *KeyManagerAuthKeyDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this key manager auth key delete default response has a 2xx status code
@@ -150,12 +152,19 @@ func (o *KeyManagerAuthKeyDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the key manager auth key delete default response
+func (o *KeyManagerAuthKeyDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *KeyManagerAuthKeyDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /security/key-managers/{security_key_manager.uuid}/auth-keys/{key_id}][%d] key_manager_auth_key_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/key-managers/{security_key_manager.uuid}/auth-keys/{key_id}][%d] key_manager_auth_key_delete default %s", o._statusCode, payload)
 }
 
 func (o *KeyManagerAuthKeyDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /security/key-managers/{security_key_manager.uuid}/auth-keys/{key_id}][%d] key_manager_auth_key_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/key-managers/{security_key_manager.uuid}/auth-keys/{key_id}][%d] key_manager_auth_key_delete default %s", o._statusCode, payload)
 }
 
 func (o *KeyManagerAuthKeyDeleteDefault) GetPayload() *models.ErrorResponse {

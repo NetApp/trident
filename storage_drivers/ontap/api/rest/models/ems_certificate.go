@@ -29,7 +29,6 @@ type EmsCertificate struct {
 	Ca *string `json:"ca,omitempty"`
 
 	// Certificate name
-	// Example: cert1
 	// Read Only: true
 	Name *string `json:"name,omitempty"`
 

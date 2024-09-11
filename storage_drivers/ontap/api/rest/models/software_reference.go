@@ -26,7 +26,7 @@ type SoftwareReference struct {
 
 	// User triggered action to apply to the install operation
 	// Example: pause
-	// Enum: [pause cancel resume]
+	// Enum: ["pause","cancel","resume"]
 	Action *string `json:"action,omitempty"`
 
 	// Elapsed time during the upgrade or validation operation
@@ -70,7 +70,7 @@ type SoftwareReference struct {
 	// Operational state of the upgrade
 	// Example: completed
 	// Read Only: true
-	// Enum: [in_progress waiting paused_by_user paused_on_error completed canceled failed pause_pending cancel_pending]
+	// Enum: ["in_progress","waiting","paused_by_user","paused_on_error","completed","canceled","failed","pause_pending","cancel_pending"]
 	State *string `json:"state,omitempty"`
 
 	// Version of ONTAP installed and currently active on the system. During PATCH, using the 'validate_only' parameter on the request executes pre-checks, but does not perform the full installation.

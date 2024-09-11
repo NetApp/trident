@@ -31,7 +31,7 @@ type FpolicyEngine struct {
 	//     * xml  - Notifications sent to the FPolicy server will be formatted using the XML schema.
 	//     * protobuf - Notifications sent to the FPolicy server will be formatted using Protobuf schema, which is a binary form.
 	//
-	// Enum: [xml protobuf]
+	// Enum: ["xml","protobuf"]
 	Format *string `json:"format,omitempty"`
 
 	// fpolicy engine inline primary servers
@@ -41,6 +41,10 @@ type FpolicyEngine struct {
 	// fpolicy engine inline secondary servers
 	// Example: ["10.132.145.20","10.132.145.21"]
 	FpolicyEngineInlineSecondaryServers []*string `json:"secondary_servers,omitempty"`
+
+	// Specifies the ISO-8601 interval time for a storage appliance to send Keep Alive message to an FPolicy server. The allowed range is between 10 to 600 seconds.
+	// Example: PT2M
+	KeepAliveInterval *string `json:"keep_alive_interval,omitempty"`
 
 	// Specifies the maximum number of outstanding requests for the FPolicy server. It is used to specify maximum outstanding requests that will be queued up for the FPolicy server. The value for this field must be between 1 and 10000.  The default values are 500, 1000 or 2000 for Low-end(<64 GB memory), Mid-end(>=64 GB memory) and High-end(>=128 GB memory) Platforms respectively.
 	// Example: 500
@@ -76,7 +80,7 @@ type FpolicyEngine struct {
 	// * server_auth   When set to "server_auth", only the FPolicy server is authenticated by the SVM. With this option, before creating the FPolicy external engine, the administrator must install the public certificate of the certificate authority (CA) that signed the FPolicy server certificate.
 	// * mutual_auth   When set to "mutual_auth", mutual authentication takes place between the SVM and the FPolicy server. This means authentication of the FPolicy server by the SVM along with authentication of the SVM by the FPolicy server. With this option, before creating the FPolicy external engine, the administrator must install the public certificate of the certificate authority (CA) that signed the FPolicy server certificate along with the public certificate and key file for authentication of the SVM.
 	//
-	// Enum: [no_auth server_auth mutual_auth]
+	// Enum: ["no_auth","server_auth","mutual_auth"]
 	SslOption *string `json:"ssl_option,omitempty"`
 
 	// Specifies the ISO-8601 interval time for a storage appliance to query a status request from an FPolicy server. The allowed range is between 0 to 50 seconds.
@@ -91,7 +95,7 @@ type FpolicyEngine struct {
 	//     * synchronous  - After sending a notification, wait for a response from the FPolicy server.
 	//     * asynchronous - After sending a notification, file request processing continues.
 	//
-	// Enum: [synchronous asynchronous]
+	// Enum: ["synchronous","asynchronous"]
 	Type *string `json:"type,omitempty"`
 }
 
@@ -499,7 +503,7 @@ func (m *FpolicyEngine) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyEngineInlineBufferSize Specifies the send and recieve buffer size of the connected socket for the FPolicy server.
+// FpolicyEngineInlineBufferSize Specifies the send and receive buffer size of the connected socket for the FPolicy server.
 //
 // swagger:model fpolicy_engine_inline_buffer_size
 type FpolicyEngineInlineBufferSize struct {
@@ -588,7 +592,7 @@ func (m *FpolicyEngineInlineBufferSize) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyEngineInlineCertificate Provides details about certificate used to authenticate the Fpolicy server.
+// FpolicyEngineInlineCertificate Provides details about certificate used to authenticate the FPolicy server.
 //
 // swagger:model fpolicy_engine_inline_certificate
 type FpolicyEngineInlineCertificate struct {

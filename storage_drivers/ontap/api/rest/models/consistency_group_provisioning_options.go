@@ -21,8 +21,12 @@ import (
 type ConsistencyGroupProvisioningOptions struct {
 
 	// Operation to perform
-	// Enum: [create]
+	// Enum: ["create","add","remove","promote","demote"]
 	Action *string `json:"action,omitempty"`
+
+	// New name for consistency group. Required to resolve naming collisions.
+	//
+	Name *string `json:"name,omitempty"`
 
 	// storage service
 	StorageService *ConsistencyGroupProvisioningOptionsInlineStorageService `json:"storage_service,omitempty"`
@@ -50,7 +54,7 @@ var consistencyGroupProvisioningOptionsTypeActionPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["create"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["create","add","remove","promote","demote"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -69,6 +73,46 @@ const (
 	// END DEBUGGING
 	// ConsistencyGroupProvisioningOptionsActionCreate captures enum value "create"
 	ConsistencyGroupProvisioningOptionsActionCreate string = "create"
+
+	// BEGIN DEBUGGING
+	// consistency_group_provisioning_options
+	// ConsistencyGroupProvisioningOptions
+	// action
+	// Action
+	// add
+	// END DEBUGGING
+	// ConsistencyGroupProvisioningOptionsActionAdd captures enum value "add"
+	ConsistencyGroupProvisioningOptionsActionAdd string = "add"
+
+	// BEGIN DEBUGGING
+	// consistency_group_provisioning_options
+	// ConsistencyGroupProvisioningOptions
+	// action
+	// Action
+	// remove
+	// END DEBUGGING
+	// ConsistencyGroupProvisioningOptionsActionRemove captures enum value "remove"
+	ConsistencyGroupProvisioningOptionsActionRemove string = "remove"
+
+	// BEGIN DEBUGGING
+	// consistency_group_provisioning_options
+	// ConsistencyGroupProvisioningOptions
+	// action
+	// Action
+	// promote
+	// END DEBUGGING
+	// ConsistencyGroupProvisioningOptionsActionPromote captures enum value "promote"
+	ConsistencyGroupProvisioningOptionsActionPromote string = "promote"
+
+	// BEGIN DEBUGGING
+	// consistency_group_provisioning_options
+	// ConsistencyGroupProvisioningOptions
+	// action
+	// Action
+	// demote
+	// END DEBUGGING
+	// ConsistencyGroupProvisioningOptionsActionDemote captures enum value "demote"
+	ConsistencyGroupProvisioningOptionsActionDemote string = "demote"
 )
 
 // prop value enum
@@ -162,7 +206,7 @@ type ConsistencyGroupProvisioningOptionsInlineStorageService struct {
 
 	// Storage service name. If not specified, the default value is the most performant for the platform.
 	//
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 

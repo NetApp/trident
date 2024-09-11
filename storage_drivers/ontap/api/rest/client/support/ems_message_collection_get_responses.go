@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *EmsMessageCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ems message collection get o k response
+func (o *EmsMessageCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *EmsMessageCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /support/ems/messages][%d] emsMessageCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems/messages][%d] emsMessageCollectionGetOK %s", 200, payload)
 }
 
 func (o *EmsMessageCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /support/ems/messages][%d] emsMessageCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems/messages][%d] emsMessageCollectionGetOK %s", 200, payload)
 }
 
 func (o *EmsMessageCollectionGetOK) GetPayload() *models.EmsMessageResponse {
@@ -112,19 +120,19 @@ func NewEmsMessageCollectionGetDefault(code int) *EmsMessageCollectionGetDefault
 }
 
 /*
-EmsMessageCollectionGetDefault describes a response with status code -1, with default header values.
+	EmsMessageCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 983093 | The provided filter is unknown. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type EmsMessageCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ems message collection get default response
-func (o *EmsMessageCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ems message collection get default response has a 2xx status code
@@ -152,12 +160,19 @@ func (o *EmsMessageCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ems message collection get default response
+func (o *EmsMessageCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *EmsMessageCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /support/ems/messages][%d] ems_message_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems/messages][%d] ems_message_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *EmsMessageCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /support/ems/messages][%d] ems_message_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /support/ems/messages][%d] ems_message_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *EmsMessageCollectionGetDefault) GetPayload() *models.ErrorResponse {

@@ -92,6 +92,18 @@ type PortCollectionGetParams struct {
 	*/
 	CableSerialNumber *string
 
+	/* CableTransceiver.
+
+	   Filter by cable.transceiver
+	*/
+	CableTransceiver *string
+
+	/* CableVendor.
+
+	   Filter by cable.vendor
+	*/
+	CableVendor *string
+
 	/* Description.
 
 	   Filter by description
@@ -360,6 +372,28 @@ func (o *PortCollectionGetParams) WithCableSerialNumber(cableSerialNumber *strin
 // SetCableSerialNumber adds the cableSerialNumber to the port collection get params
 func (o *PortCollectionGetParams) SetCableSerialNumber(cableSerialNumber *string) {
 	o.CableSerialNumber = cableSerialNumber
+}
+
+// WithCableTransceiver adds the cableTransceiver to the port collection get params
+func (o *PortCollectionGetParams) WithCableTransceiver(cableTransceiver *string) *PortCollectionGetParams {
+	o.SetCableTransceiver(cableTransceiver)
+	return o
+}
+
+// SetCableTransceiver adds the cableTransceiver to the port collection get params
+func (o *PortCollectionGetParams) SetCableTransceiver(cableTransceiver *string) {
+	o.CableTransceiver = cableTransceiver
+}
+
+// WithCableVendor adds the cableVendor to the port collection get params
+func (o *PortCollectionGetParams) WithCableVendor(cableVendor *string) *PortCollectionGetParams {
+	o.SetCableVendor(cableVendor)
+	return o
+}
+
+// SetCableVendor adds the cableVendor to the port collection get params
+func (o *PortCollectionGetParams) SetCableVendor(cableVendor *string) {
+	o.CableVendor = cableVendor
 }
 
 // WithDescription adds the description to the port collection get params
@@ -714,6 +748,40 @@ func (o *PortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qCableSerialNumber != "" {
 
 			if err := r.SetQueryParam("cable.serial_number", qCableSerialNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CableTransceiver != nil {
+
+		// query param cable.transceiver
+		var qrCableTransceiver string
+
+		if o.CableTransceiver != nil {
+			qrCableTransceiver = *o.CableTransceiver
+		}
+		qCableTransceiver := qrCableTransceiver
+		if qCableTransceiver != "" {
+
+			if err := r.SetQueryParam("cable.transceiver", qCableTransceiver); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CableVendor != nil {
+
+		// query param cable.vendor
+		var qrCableVendor string
+
+		if o.CableVendor != nil {
+			qrCableVendor = *o.CableVendor
+		}
+		qCableVendor := qrCableVendor
+		if qCableVendor != "" {
+
+			if err := r.SetQueryParam("cable.vendor", qCableVendor); err != nil {
 				return err
 			}
 		}

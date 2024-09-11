@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SnmpTraphostsDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snmp traphosts delete o k response
+func (o *SnmpTraphostsDeleteOK) Code() int {
+	return 200
+}
+
 func (o *SnmpTraphostsDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /support/snmp/traphosts/{host}][%d] snmpTraphostsDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /support/snmp/traphosts/{host}][%d] snmpTraphostsDeleteOK", 200)
 }
 
 func (o *SnmpTraphostsDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /support/snmp/traphosts/{host}][%d] snmpTraphostsDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /support/snmp/traphosts/{host}][%d] snmpTraphostsDeleteOK", 200)
 }
 
 func (o *SnmpTraphostsDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,17 +112,14 @@ func NewSnmpTraphostsDeleteDefault(code int) *SnmpTraphostsDeleteDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 8847365 | Unknown host. |
 | 9043970 | Traphost entry does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SnmpTraphostsDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snmp traphosts delete default response
-func (o *SnmpTraphostsDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snmp traphosts delete default response has a 2xx status code
@@ -144,12 +147,19 @@ func (o *SnmpTraphostsDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snmp traphosts delete default response
+func (o *SnmpTraphostsDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnmpTraphostsDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /support/snmp/traphosts/{host}][%d] snmp_traphosts_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /support/snmp/traphosts/{host}][%d] snmp_traphosts_delete default %s", o._statusCode, payload)
 }
 
 func (o *SnmpTraphostsDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /support/snmp/traphosts/{host}][%d] snmp_traphosts_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /support/snmp/traphosts/{host}][%d] snmp_traphosts_delete default %s", o._statusCode, payload)
 }
 
 func (o *SnmpTraphostsDeleteDefault) GetPayload() *models.ErrorResponse {

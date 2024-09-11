@@ -128,12 +128,6 @@ type FileMoveCollectionGetParams struct {
 	*/
 	FailureMessage *string
 
-	/* FailureTarget.
-
-	   Filter by failure.target
-	*/
-	FailureTarget *string
-
 	/* Fields.
 
 	   Specify the fields to return.
@@ -486,17 +480,6 @@ func (o *FileMoveCollectionGetParams) WithFailureMessage(failureMessage *string)
 // SetFailureMessage adds the failureMessage to the file move collection get params
 func (o *FileMoveCollectionGetParams) SetFailureMessage(failureMessage *string) {
 	o.FailureMessage = failureMessage
-}
-
-// WithFailureTarget adds the failureTarget to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithFailureTarget(failureTarget *string) *FileMoveCollectionGetParams {
-	o.SetFailureTarget(failureTarget)
-	return o
-}
-
-// SetFailureTarget adds the failureTarget to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetFailureTarget(failureTarget *string) {
-	o.FailureTarget = failureTarget
 }
 
 // WithFields adds the fields to the file move collection get params
@@ -986,23 +969,6 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qFailureMessage != "" {
 
 			if err := r.SetQueryParam("failure.message", qFailureMessage); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.FailureTarget != nil {
-
-		// query param failure.target
-		var qrFailureTarget string
-
-		if o.FailureTarget != nil {
-			qrFailureTarget = *o.FailureTarget
-		}
-		qFailureTarget := qrFailureTarget
-		if qFailureTarget != "" {
-
-			if err := r.SetQueryParam("failure.target", qFailureTarget); err != nil {
 				return err
 			}
 		}

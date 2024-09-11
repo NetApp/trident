@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,17 @@ func (o *WebModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the web modify o k response
+func (o *WebModifyOK) Code() int {
+	return 200
+}
+
 func (o *WebModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /cluster/web][%d] webModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /cluster/web][%d] webModifyOK", 200)
 }
 
 func (o *WebModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /cluster/web][%d] webModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /cluster/web][%d] webModifyOK", 200)
 }
 
 func (o *WebModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,7 +115,7 @@ WebModifyAccepted describes a response with status code 202, with default header
 Accepted
 */
 type WebModifyAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.WebJobLinkResponse
 }
 
 // IsSuccess returns true when this web modify accepted response has a 2xx status code
@@ -137,21 +143,28 @@ func (o *WebModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the web modify accepted response
+func (o *WebModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *WebModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /cluster/web][%d] webModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/web][%d] webModifyAccepted %s", 202, payload)
 }
 
 func (o *WebModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /cluster/web][%d] webModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/web][%d] webModifyAccepted %s", 202, payload)
 }
 
-func (o *WebModifyAccepted) GetPayload() *models.JobLinkResponse {
+func (o *WebModifyAccepted) GetPayload() *models.WebJobLinkResponse {
 	return o.Payload
 }
 
 func (o *WebModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.WebJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -188,16 +201,12 @@ func NewWebModifyDefault(code int) *WebModifyDefault {
 | 9830487 | The HTTP and HTTPS ports must not have the same value. |
 | 9830488 | The certificate is not a "server" certificate. |
 | 9830489 | The certificate does not exist for the given SVM. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type WebModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the web modify default response
-func (o *WebModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this web modify default response has a 2xx status code
@@ -225,12 +234,19 @@ func (o *WebModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the web modify default response
+func (o *WebModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *WebModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /cluster/web][%d] web_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/web][%d] web_modify default %s", o._statusCode, payload)
 }
 
 func (o *WebModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /cluster/web][%d] web_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /cluster/web][%d] web_modify default %s", o._statusCode, payload)
 }
 
 func (o *WebModifyDefault) GetPayload() *models.ErrorResponse {

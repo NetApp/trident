@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *FcInterfaceCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the fc interface create created response
+func (o *FcInterfaceCreateCreated) Code() int {
+	return 201
+}
+
 func (o *FcInterfaceCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /network/fc/interfaces][%d] fcInterfaceCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/fc/interfaces][%d] fcInterfaceCreateCreated %s", 201, payload)
 }
 
 func (o *FcInterfaceCreateCreated) String() string {
-	return fmt.Sprintf("[POST /network/fc/interfaces][%d] fcInterfaceCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/fc/interfaces][%d] fcInterfaceCreateCreated %s", 201, payload)
 }
 
 func (o *FcInterfaceCreateCreated) GetPayload() *models.FcInterfaceResponse {
@@ -136,23 +144,23 @@ func NewFcInterfaceCreateDefault(code int) *FcInterfaceCreateDefault {
 | 2621706 | The specified `svm.uuid` and `svm.name` do not refer to the same SVM. |
 | 2621707 | No SVM was specified. Either `svm.name` or `svm.uuid` must be supplied. |
 | 5373966 | A Fibre Channel interface with the _fcp_ protocol cannot be created in an SVM that is configured for NVMe. |
+| 5373982 | An invalid WWN was specified. The length is incorrect. |
+| 5373983 | An invalid WWN was specified. The format is incorrect. |
 | 5374102 | The specified Fibre Channel interface cannot be created because the Fibre Channel adapter is down. Bring the adapter up and try again. |
 | 5374871 | The Fibre Channel port identified by the specified UUID does not refer to the same port as that identified by the specified node name and/or port name. |
 | 5374872 | If either `location.port.node.name` or `location.port.name` is supplied, both properties must be supplied. |
 | 5374873 | The Fibre Channel port must be specified using either `location.port.uuid` or `location.port.node.name` and `location.port.name`. |
+| 5375057 | An FC port with the provided UUID does not exist. |
 | 72089652 | An NVMe service must be created before creating a Fibre Channel interface using the NVMe over FC data protocol. |
 | 72089672 | The specified Fibre Channel port does not support the NVMe over FC data protocol. |
 | 72089900 | A Fibre Channel interface with the _fc\_nvme_ protocol cannot be created in an SVM that is configured for a SAN protocol. |
+| 72089901 | NVMe over Fabrics does not support more than 2 LIFs per node per SVM. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type FcInterfaceCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the fc interface create default response
-func (o *FcInterfaceCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this fc interface create default response has a 2xx status code
@@ -180,12 +188,19 @@ func (o *FcInterfaceCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fc interface create default response
+func (o *FcInterfaceCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FcInterfaceCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /network/fc/interfaces][%d] fc_interface_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/fc/interfaces][%d] fc_interface_create default %s", o._statusCode, payload)
 }
 
 func (o *FcInterfaceCreateDefault) String() string {
-	return fmt.Sprintf("[POST /network/fc/interfaces][%d] fc_interface_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /network/fc/interfaces][%d] fc_interface_create default %s", o._statusCode, payload)
 }
 
 func (o *FcInterfaceCreateDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,17 @@ func (o *ConsistencyGroupModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the consistency group modify o k response
+func (o *ConsistencyGroupModifyOK) Code() int {
+	return 200
+}
+
 func (o *ConsistencyGroupModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /application/consistency-groups/{uuid}][%d] consistencyGroupModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /application/consistency-groups/{uuid}][%d] consistencyGroupModifyOK", 200)
 }
 
 func (o *ConsistencyGroupModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /application/consistency-groups/{uuid}][%d] consistencyGroupModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /application/consistency-groups/{uuid}][%d] consistencyGroupModifyOK", 200)
 }
 
 func (o *ConsistencyGroupModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,7 +115,7 @@ ConsistencyGroupModifyAccepted describes a response with status code 202, with d
 Accepted
 */
 type ConsistencyGroupModifyAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.ConsistencyGroupJobLinkResponse
 }
 
 // IsSuccess returns true when this consistency group modify accepted response has a 2xx status code
@@ -137,21 +143,28 @@ func (o *ConsistencyGroupModifyAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the consistency group modify accepted response
+func (o *ConsistencyGroupModifyAccepted) Code() int {
+	return 202
+}
+
 func (o *ConsistencyGroupModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /application/consistency-groups/{uuid}][%d] consistencyGroupModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /application/consistency-groups/{uuid}][%d] consistencyGroupModifyAccepted %s", 202, payload)
 }
 
 func (o *ConsistencyGroupModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /application/consistency-groups/{uuid}][%d] consistencyGroupModifyAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /application/consistency-groups/{uuid}][%d] consistencyGroupModifyAccepted %s", 202, payload)
 }
 
-func (o *ConsistencyGroupModifyAccepted) GetPayload() *models.JobLinkResponse {
+func (o *ConsistencyGroupModifyAccepted) GetPayload() *models.ConsistencyGroupJobLinkResponse {
 	return o.Payload
 }
 
 func (o *ConsistencyGroupModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.ConsistencyGroupJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -175,6 +188,8 @@ func NewConsistencyGroupModifyDefault(code int) *ConsistencyGroupModifyDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 262285 | Consistency group does not support removing elements using a PATCH request. |
+| 2621761 | Consistency groups with DP volumes are not supported on storage-limit enabled SVM. |
 | 53411842 | Consistency group does not exist. |
 | 53411843 | A consistency group with specified UUID was not found. |
 | 53411844 | Specified consistency group was not found in the specified SVM. |
@@ -193,16 +208,14 @@ func NewConsistencyGroupModifyDefault(code int) *ConsistencyGroupModifyDefault {
 | 53411867 | LUN name is too long after appending a unique suffix. |
 | 53411869 | Volume name is too long after appending a unique suffix. |
 | 53411870 | When using the \"round_robin\" layout, the volume count must not be greater than the LUN count. |
+| 53411942 | The application or component type of a consistency group that has an associated SnapMirror relationship cannot be changed. |
+| 53411959 | Volumes with snapshot locking enabled cannot be added to a consistency group. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ConsistencyGroupModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the consistency group modify default response
-func (o *ConsistencyGroupModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this consistency group modify default response has a 2xx status code
@@ -230,12 +243,19 @@ func (o *ConsistencyGroupModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the consistency group modify default response
+func (o *ConsistencyGroupModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ConsistencyGroupModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /application/consistency-groups/{uuid}][%d] consistency_group_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /application/consistency-groups/{uuid}][%d] consistency_group_modify default %s", o._statusCode, payload)
 }
 
 func (o *ConsistencyGroupModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /application/consistency-groups/{uuid}][%d] consistency_group_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /application/consistency-groups/{uuid}][%d] consistency_group_modify default %s", o._statusCode, payload)
 }
 
 func (o *ConsistencyGroupModifyDefault) GetPayload() *models.ErrorResponse {

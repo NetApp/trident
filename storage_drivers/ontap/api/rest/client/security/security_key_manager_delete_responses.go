@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *SecurityKeyManagerDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the security key manager delete o k response
+func (o *SecurityKeyManagerDeleteOK) Code() int {
+	return 200
+}
+
 func (o *SecurityKeyManagerDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}][%d] securityKeyManagerDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}][%d] securityKeyManagerDeleteOK", 200)
 }
 
 func (o *SecurityKeyManagerDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}][%d] securityKeyManagerDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}][%d] securityKeyManagerDeleteOK", 200)
 }
 
 func (o *SecurityKeyManagerDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -115,22 +121,19 @@ func NewSecurityKeyManagerDeleteDefault(code int) *SecurityKeyManagerDeleteDefau
 | 65536800 | Failed to lookup onboard keys. |
 | 65536813 | Encrypted kernel core files found. |
 | 65536817 | Failed to determine if key manager is safe to disable. |
-| 65536822 | Multitenant key management is not supported in the current cluster version. |
 | 65536827 | Failed to determine if the SVM has any encrypted volumes. |
 | 65536828 | External key management is not enabled for the SVM. |
 | 65536867 | Encrypted volumes are found for the SVM. |
 | 196608301 | Failed to determine the type of encryption. |
 | 196608305 | NAE aggregates are found in the cluster. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
+  - name: KEYMANAGER_MESSAGE_ERR_KM_DISABLE_ENC_CORE_CHECK_TIMEOUT
+    message: Failed to disable the key manager because of a timeout when checking for encrypted cores.
 */
 type SecurityKeyManagerDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security key manager delete default response
-func (o *SecurityKeyManagerDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security key manager delete default response has a 2xx status code
@@ -158,12 +161,19 @@ func (o *SecurityKeyManagerDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security key manager delete default response
+func (o *SecurityKeyManagerDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityKeyManagerDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}][%d] security_key_manager_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}][%d] security_key_manager_delete default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeyManagerDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}][%d] security_key_manager_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}][%d] security_key_manager_delete default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeyManagerDeleteDefault) GetPayload() *models.ErrorResponse {

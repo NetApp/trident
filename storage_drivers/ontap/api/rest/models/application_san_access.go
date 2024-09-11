@@ -218,7 +218,7 @@ type ApplicationSanAccessInlineBackingStorage struct {
 
 	// Backing storage type
 	// Read Only: true
-	// Enum: [lun]
+	// Enum: ["lun"]
 	Type *string `json:"type,omitempty"`
 
 	// Backing storage UUID

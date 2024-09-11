@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *DNSDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the dns delete o k response
+func (o *DNSDeleteOK) Code() int {
+	return 200
+}
+
 func (o *DNSDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/dns/{svm.uuid}][%d] dnsDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/dns/{uuid}][%d] dnsDeleteOK", 200)
 }
 
 func (o *DNSDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /name-services/dns/{svm.uuid}][%d] dnsDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /name-services/dns/{uuid}][%d] dnsDeleteOK", 200)
 }
 
 func (o *DNSDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type DNSDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the dns delete default response
-func (o *DNSDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this dns delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *DNSDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the dns delete default response
+func (o *DNSDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *DNSDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /name-services/dns/{svm.uuid}][%d] dns_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/dns/{uuid}][%d] dns_delete default %s", o._statusCode, payload)
 }
 
 func (o *DNSDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /name-services/dns/{svm.uuid}][%d] dns_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /name-services/dns/{uuid}][%d] dns_delete default %s", o._statusCode, payload)
 }
 
 func (o *DNSDeleteDefault) GetPayload() *models.ErrorResponse {

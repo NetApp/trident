@@ -32,6 +32,10 @@ type SvmLdapReference struct {
 	// Enable LDAP? Setting to true creates a configuration if not already created.
 	Enabled *bool `json:"enabled,omitempty"`
 
+	// Specifies whether or not LDAP server discovery is restricted to site-scope.
+	//
+	RestrictDiscoveryToSite *bool `json:"restrict_discovery_to_site,omitempty"`
+
 	// svm ldap reference inline servers
 	SvmLdapReferenceInlineServers []*string `json:"servers,omitempty"`
 }

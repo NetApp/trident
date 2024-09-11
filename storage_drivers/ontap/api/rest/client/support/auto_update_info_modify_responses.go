@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *AutoUpdateInfoModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the auto update info modify o k response
+func (o *AutoUpdateInfoModifyOK) Code() int {
+	return 200
+}
+
 func (o *AutoUpdateInfoModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /support/auto-update][%d] autoUpdateInfoModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /support/auto-update][%d] autoUpdateInfoModifyOK", 200)
 }
 
 func (o *AutoUpdateInfoModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /support/auto-update][%d] autoUpdateInfoModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /support/auto-update][%d] autoUpdateInfoModifyOK", 200)
 }
 
 func (o *AutoUpdateInfoModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -110,16 +116,12 @@ func NewAutoUpdateInfoModifyDefault(code int) *AutoUpdateInfoModifyDefault {
 | 131072216 | Automatic update requires AutoSupport to be enabled. |
 | 131072217 | Automatic update requires AutoSupport OnDemand to be enabled. |
 | 131072218 | Automatic update requires AutoSupport to use the HTTPS transport. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AutoUpdateInfoModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the auto update info modify default response
-func (o *AutoUpdateInfoModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this auto update info modify default response has a 2xx status code
@@ -147,12 +149,19 @@ func (o *AutoUpdateInfoModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the auto update info modify default response
+func (o *AutoUpdateInfoModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AutoUpdateInfoModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /support/auto-update][%d] auto_update_info_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/auto-update][%d] auto_update_info_modify default %s", o._statusCode, payload)
 }
 
 func (o *AutoUpdateInfoModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /support/auto-update][%d] auto_update_info_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/auto-update][%d] auto_update_info_modify default %s", o._statusCode, payload)
 }
 
 func (o *AutoUpdateInfoModifyDefault) GetPayload() *models.ErrorResponse {

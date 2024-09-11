@@ -23,6 +23,9 @@ type TopMetricsUserResponse struct {
 	// links
 	Links *TopMetricsUserResponseInlineLinks `json:"_links,omitempty"`
 
+	// incomplete response reason
+	IncompleteResponseReason *TopMetricsUserResponseInlineIncompleteResponseReason `json:"incomplete_response_reason,omitempty"`
+
 	// notice
 	Notice *TopMetricsUserResponseInlineNotice `json:"notice,omitempty"`
 
@@ -39,6 +42,10 @@ func (m *TopMetricsUserResponse) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIncompleteResponseReason(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,6 +72,23 @@ func (m *TopMetricsUserResponse) validateLinks(formats strfmt.Registry) error {
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *TopMetricsUserResponse) validateIncompleteResponseReason(formats strfmt.Registry) error {
+	if swag.IsZero(m.IncompleteResponseReason) { // not required
+		return nil
+	}
+
+	if m.IncompleteResponseReason != nil {
+		if err := m.IncompleteResponseReason.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("incomplete_response_reason")
 			}
 			return err
 		}
@@ -122,6 +146,10 @@ func (m *TopMetricsUserResponse) ContextValidate(ctx context.Context, formats st
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateIncompleteResponseReason(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateNotice(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -142,6 +170,20 @@ func (m *TopMetricsUserResponse) contextValidateLinks(ctx context.Context, forma
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *TopMetricsUserResponse) contextValidateIncompleteResponseReason(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.IncompleteResponseReason != nil {
+		if err := m.IncompleteResponseReason.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("incomplete_response_reason")
 			}
 			return err
 		}
@@ -193,6 +235,81 @@ func (m *TopMetricsUserResponse) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *TopMetricsUserResponse) UnmarshalBinary(b []byte) error {
 	var res TopMetricsUserResponse
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// TopMetricsUserResponseInlineIncompleteResponseReason Indicates that the metric report provides incomplete data.
+//
+// swagger:model top_metrics_user_response_inline_incomplete_response_reason
+type TopMetricsUserResponseInlineIncompleteResponseReason struct {
+
+	// Warning code indicating why partial data was reported.
+	// Example: 111411207
+	// Read Only: true
+	Code *string `json:"code,omitempty"`
+
+	// A message describing the reason for partial data.
+	// Example: Partial data has been returned for this metric report. Reason: The activity tracking report for this volume is not available because the system is busy collecting tracking data.
+	// Read Only: true
+	Message *string `json:"message,omitempty"`
+}
+
+// Validate validates this top metrics user response inline incomplete response reason
+func (m *TopMetricsUserResponseInlineIncompleteResponseReason) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this top metrics user response inline incomplete response reason based on the context it is used
+func (m *TopMetricsUserResponseInlineIncompleteResponseReason) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *TopMetricsUserResponseInlineIncompleteResponseReason) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "incomplete_response_reason"+"."+"code", "body", m.Code); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TopMetricsUserResponseInlineIncompleteResponseReason) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "incomplete_response_reason"+"."+"message", "body", m.Message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *TopMetricsUserResponseInlineIncompleteResponseReason) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *TopMetricsUserResponseInlineIncompleteResponseReason) UnmarshalBinary(b []byte) error {
+	var res TopMetricsUserResponseInlineIncompleteResponseReason
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

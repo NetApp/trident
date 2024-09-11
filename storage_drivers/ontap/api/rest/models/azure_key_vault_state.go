@@ -13,7 +13,7 @@ import (
 )
 
 // AzureKeyVaultState Indicates whether or not the AKV wrapped internal key is available cluster wide.
-// This is an advanced property; there is an added computationl cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
+// This is an advanced property; there is an added computational cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
 //
 // swagger:model azure_key_vault_state
 type AzureKeyVaultState struct {

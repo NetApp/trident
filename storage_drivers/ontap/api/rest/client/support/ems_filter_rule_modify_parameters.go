@@ -66,7 +66,7 @@ type EmsFilterRuleModifyParams struct {
 
 	/* Index.
 
-	   Filter index
+	   Filter rule index
 	*/
 	Index string
 

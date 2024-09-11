@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *UserGroupPrivilegesModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the user group privileges modify o k response
+func (o *UserGroupPrivilegesModifyOK) Code() int {
+	return 200
+}
+
 func (o *UserGroupPrivilegesModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] userGroupPrivilegesModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] userGroupPrivilegesModifyOK", 200)
 }
 
 func (o *UserGroupPrivilegesModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] userGroupPrivilegesModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] userGroupPrivilegesModifyOK", 200)
 }
 
 func (o *UserGroupPrivilegesModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,6 +112,8 @@ func NewUserGroupPrivilegesModifyDefault(code int) *UserGroupPrivilegesModifyDef
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 262196     | Field 'svm.name' is not supported in the body of PATCH request. |
+| 262203     | Field 'svm.uuid' is not supported in the body of PATCH request. |
 | 655673     | Failed to resolve the user or group. |
 | 655730     | The specified local user to which privileges are to be associated to does not exist. |
 */
@@ -113,11 +121,6 @@ type UserGroupPrivilegesModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the user group privileges modify default response
-func (o *UserGroupPrivilegesModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this user group privileges modify default response has a 2xx status code
@@ -145,12 +148,19 @@ func (o *UserGroupPrivilegesModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the user group privileges modify default response
+func (o *UserGroupPrivilegesModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *UserGroupPrivilegesModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] user_group_privileges_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] user_group_privileges_modify default %s", o._statusCode, payload)
 }
 
 func (o *UserGroupPrivilegesModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] user_group_privileges_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] user_group_privileges_modify default %s", o._statusCode, payload)
 }
 
 func (o *UserGroupPrivilegesModifyDefault) GetPayload() *models.ErrorResponse {

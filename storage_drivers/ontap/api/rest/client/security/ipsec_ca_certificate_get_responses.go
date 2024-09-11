@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *IpsecCaCertificateGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ipsec ca certificate get o k response
+func (o *IpsecCaCertificateGetOK) Code() int {
+	return 200
+}
+
 func (o *IpsecCaCertificateGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/ipsec/ca-certificates/{certificate.uuid}][%d] ipsecCaCertificateGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/ca-certificates/{certificate.uuid}][%d] ipsecCaCertificateGetOK %s", 200, payload)
 }
 
 func (o *IpsecCaCertificateGetOK) String() string {
-	return fmt.Sprintf("[GET /security/ipsec/ca-certificates/{certificate.uuid}][%d] ipsecCaCertificateGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/ca-certificates/{certificate.uuid}][%d] ipsecCaCertificateGetOK %s", 200, payload)
 }
 
 func (o *IpsecCaCertificateGetOK) GetPayload() *models.IpsecCaCertificate {
@@ -122,11 +130,6 @@ type IpsecCaCertificateGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the ipsec ca certificate get default response
-func (o *IpsecCaCertificateGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this ipsec ca certificate get default response has a 2xx status code
 func (o *IpsecCaCertificateGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *IpsecCaCertificateGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ipsec ca certificate get default response
+func (o *IpsecCaCertificateGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IpsecCaCertificateGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/ipsec/ca-certificates/{certificate.uuid}][%d] ipsec_ca_certificate_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/ca-certificates/{certificate.uuid}][%d] ipsec_ca_certificate_get default %s", o._statusCode, payload)
 }
 
 func (o *IpsecCaCertificateGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/ipsec/ca-certificates/{certificate.uuid}][%d] ipsec_ca_certificate_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/ca-certificates/{certificate.uuid}][%d] ipsec_ca_certificate_get default %s", o._statusCode, payload)
 }
 
 func (o *IpsecCaCertificateGetDefault) GetPayload() *models.ErrorResponse {

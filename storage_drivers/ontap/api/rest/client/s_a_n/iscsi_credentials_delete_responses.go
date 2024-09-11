@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *IscsiCredentialsDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the iscsi credentials delete o k response
+func (o *IscsiCredentialsDeleteOK) Code() int {
+	return 200
+}
+
 func (o *IscsiCredentialsDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsiCredentialsDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsiCredentialsDeleteOK", 200)
 }
 
 func (o *IscsiCredentialsDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsiCredentialsDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsiCredentialsDeleteOK", 200)
 }
 
 func (o *IscsiCredentialsDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -111,16 +117,12 @@ func NewIscsiCredentialsDeleteDefault(code int) *IscsiCredentialsDeleteDefault {
 | 2621707 | No SVM was specified. Either `svm.name` or `svm.uuid` must be supplied. |
 | 5374148 | The default security credential cannot be deleted for an SVM. |
 | 5374895 | The iSCSI security credential does not exist on the specified SVM. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IscsiCredentialsDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the iscsi credentials delete default response
-func (o *IscsiCredentialsDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this iscsi credentials delete default response has a 2xx status code
@@ -148,12 +150,19 @@ func (o *IscsiCredentialsDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the iscsi credentials delete default response
+func (o *IscsiCredentialsDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IscsiCredentialsDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsi_credentials_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsi_credentials_delete default %s", o._statusCode, payload)
 }
 
 func (o *IscsiCredentialsDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsi_credentials_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsi_credentials_delete default %s", o._statusCode, payload)
 }
 
 func (o *IscsiCredentialsDeleteDefault) GetPayload() *models.ErrorResponse {

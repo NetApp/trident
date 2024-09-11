@@ -18,23 +18,31 @@ import (
 // swagger:model snapmirror_policy_rule
 type SnapmirrorPolicyRule struct {
 
-	// Number of Snapshot copies to be kept for retention.
+	// Number of snapshots to be kept for retention. Maximum value will differ based on type of relationship and scaling factor.
 	// Example: 7
 	Count *int64 `json:"count,omitempty"`
 
 	// creation schedule
 	CreationSchedule *SnapmirrorPolicyRuleInlineCreationSchedule `json:"creation_schedule,omitempty"`
 
-	// Snapshot copy label
+	// Snapshot label
 	// Example: hourly
 	Label *string `json:"label,omitempty"`
 
-	// Specifies the duration for which the Snapshot copies are locked. The retention period value represents a duration and must be in the ISO-8601 duration format. Years, months, days, hours, minutes, and seconds are represented as "P<num>Y","P<num>M","P<num>D","PT<num>H","PT<num>M" and "PT<num>S". Value "infinite" is also a valid input for Flexvol volumes and FlexGroup volumes. A duration which combines different periods is not supported, for example "P1Y10M" is not supported. The range of supported retention period values is between 1 second to infinite.
+	// Specifies the duration for which the snapshots are locked. The retention period value represents a duration and must be in the ISO-8601 duration format. Years, months, days, hours, minutes, and seconds are represented as "P<num>Y","P<num>M","P<num>D","PT<num>H","PT<num>M" and "PT<num>S". Value "infinite" is also a valid input for Flexvol volumes and FlexGroup volumes. A duration which combines different periods is not supported, for example "P1Y10M" is not supported. The range of supported retention period values is between 1 second to infinite.
 	// Example: P30D
 	Period *string `json:"period,omitempty"`
 
-	// Specifies the prefix for the Snapshot copy name to be created as per the schedule. If no value is specified, then the label is used as the prefix.
+	// Specifies the prefix for the snapshot name to be created as per the schedule. If no value is specified, then the label is used as the prefix.
 	Prefix *string `json:"prefix,omitempty"`
+
+	// Specifies the behavior when the snapshot retention count is reached on the SnapMirror destination for the rule. The default value is false, which means that the oldest snapshot is deleted to make room for new ones but only if the number of snapshots has exceeded the retention count specified in the 'count' property. When set to true and where the snapshots have reached the retention count, an incremental SnapMirror transfer will fail or if the rule has a schedule, snapshots will be no longer be created on the SnapMirror destination.
+	// Example: true
+	Preserve *bool `json:"preserve,omitempty"`
+
+	// Specifies the warning threshold count for the rule. The default value is zero. When set to a value greater than zero, an event is generated after the number of snapshots (for the particular rule) retained on a SnapMirror destination reaches the specified warning limit. The preserve property for the rule must be true in order to set the warn property to a value greater than zero.
+	// Example: 4
+	Warn *int64 `json:"warn,omitempty"`
 }
 
 // Validate validates this snapmirror policy rule
@@ -114,7 +122,7 @@ func (m *SnapmirrorPolicyRule) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorPolicyRuleInlineCreationSchedule Schedule used to create Snapshot copies on the destination for long term retention. Only cron schedules are supported for SnapMirror.
+// SnapmirrorPolicyRuleInlineCreationSchedule Schedule used to create snapshots on the destination for long term retention. Only cron schedules are supported for SnapMirror.
 //
 // swagger:model snapmirror_policy_rule_inline_creation_schedule
 type SnapmirrorPolicyRuleInlineCreationSchedule struct {

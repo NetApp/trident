@@ -370,7 +370,7 @@ func (m *UnixGroupUsersInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// UnixGroupUsersInlineSvm unix group users inline svm
+// UnixGroupUsersInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model unix_group_users_inline_svm
 type UnixGroupUsersInlineSvm struct {
@@ -378,12 +378,12 @@ type UnixGroupUsersInlineSvm struct {
 	// links
 	Links *UnixGroupUsersInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -566,8 +566,13 @@ func (m *UnixGroupUsersInlineUnixGroup) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validates this unix group users inline unix group based on context it is used
+// ContextValidate validate this unix group users inline unix group based on the context it is used
 func (m *UnixGroupUsersInlineUnixGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 

@@ -77,7 +77,7 @@ type NodeModifyParams struct {
 
 	/* AllowDataOutage.
 
-	   This only applies when an action of reboot or shutdown is provided. It allows storage failover to be bypassed along with any failures related to mainintaing quorum in the cluster.
+	   This only applies when an action of reboot or shutdown is provided. It allows storage failover to be bypassed along with any failures related to maintaining quorum in the cluster.
 
 	*/
 	AllowDataOutage *bool
@@ -91,6 +91,13 @@ type NodeModifyParams struct {
 
 	// Info.
 	Info *models.Node
+
+	/* OverrideVetoes.
+
+	   Applies only when a giveback action is provided. If giveback is vetoed, you must check the EMS messages to determine the cause. Depending on the reason or reasons, you can decide whether you can safely override the vetoes.
+
+	*/
+	OverrideVetoes *bool
 
 	/* ReturnTimeout.
 
@@ -146,12 +153,15 @@ func (o *NodeModifyParams) SetDefaults() {
 
 		allowVersionMismatchDefault = bool(false)
 
+		overrideVetoesDefault = bool(false)
+
 		returnTimeoutDefault = int64(0)
 	)
 
 	val := NodeModifyParams{
 		AllowDataOutage:      &allowDataOutageDefault,
 		AllowVersionMismatch: &allowVersionMismatchDefault,
+		OverrideVetoes:       &overrideVetoesDefault,
 		ReturnTimeout:        &returnTimeoutDefault,
 	}
 
@@ -236,6 +246,17 @@ func (o *NodeModifyParams) WithInfo(info *models.Node) *NodeModifyParams {
 // SetInfo adds the info to the node modify params
 func (o *NodeModifyParams) SetInfo(info *models.Node) {
 	o.Info = info
+}
+
+// WithOverrideVetoes adds the overrideVetoes to the node modify params
+func (o *NodeModifyParams) WithOverrideVetoes(overrideVetoes *bool) *NodeModifyParams {
+	o.SetOverrideVetoes(overrideVetoes)
+	return o
+}
+
+// SetOverrideVetoes adds the overrideVetoes to the node modify params
+func (o *NodeModifyParams) SetOverrideVetoes(overrideVetoes *bool) {
+	o.OverrideVetoes = overrideVetoes
 }
 
 // WithReturnTimeout adds the returnTimeout to the node modify params
@@ -354,6 +375,23 @@ func (o *NodeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err
+		}
+	}
+
+	if o.OverrideVetoes != nil {
+
+		// query param override_vetoes
+		var qrOverrideVetoes bool
+
+		if o.OverrideVetoes != nil {
+			qrOverrideVetoes = *o.OverrideVetoes
+		}
+		qOverrideVetoes := swag.FormatBool(qrOverrideVetoes)
+		if qOverrideVetoes != "" {
+
+			if err := r.SetQueryParam("override_vetoes", qOverrideVetoes); err != nil {
+				return err
+			}
 		}
 	}
 

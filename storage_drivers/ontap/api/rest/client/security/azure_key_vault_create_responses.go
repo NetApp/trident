@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -25,6 +26,12 @@ func (o *AzureKeyVaultCreateReader) ReadResponse(response runtime.ClientResponse
 	switch response.Code() {
 	case 201:
 		result := NewAzureKeyVaultCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
+	case 202:
+		result := NewAzureKeyVaultCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -85,12 +92,19 @@ func (o *AzureKeyVaultCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the azure key vault create created response
+func (o *AzureKeyVaultCreateCreated) Code() int {
+	return 201
+}
+
 func (o *AzureKeyVaultCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/azure-key-vaults][%d] azureKeyVaultCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/azure-key-vaults][%d] azureKeyVaultCreateCreated %s", 201, payload)
 }
 
 func (o *AzureKeyVaultCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/azure-key-vaults][%d] azureKeyVaultCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/azure-key-vaults][%d] azureKeyVaultCreateCreated %s", 201, payload)
 }
 
 func (o *AzureKeyVaultCreateCreated) GetPayload() *models.AzureKeyVaultResponse {
@@ -107,6 +121,88 @@ func (o *AzureKeyVaultCreateCreated) readResponse(response runtime.ClientRespons
 	}
 
 	o.Payload = new(models.AzureKeyVaultResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewAzureKeyVaultCreateAccepted creates a AzureKeyVaultCreateAccepted with default headers values
+func NewAzureKeyVaultCreateAccepted() *AzureKeyVaultCreateAccepted {
+	return &AzureKeyVaultCreateAccepted{}
+}
+
+/*
+AzureKeyVaultCreateAccepted describes a response with status code 202, with default header values.
+
+Accepted
+*/
+type AzureKeyVaultCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.AzureKeyVaultJobLinkResponse
+}
+
+// IsSuccess returns true when this azure key vault create accepted response has a 2xx status code
+func (o *AzureKeyVaultCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this azure key vault create accepted response has a 3xx status code
+func (o *AzureKeyVaultCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this azure key vault create accepted response has a 4xx status code
+func (o *AzureKeyVaultCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this azure key vault create accepted response has a 5xx status code
+func (o *AzureKeyVaultCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this azure key vault create accepted response a status code equal to that given
+func (o *AzureKeyVaultCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
+// Code gets the status code for the azure key vault create accepted response
+func (o *AzureKeyVaultCreateAccepted) Code() int {
+	return 202
+}
+
+func (o *AzureKeyVaultCreateAccepted) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/azure-key-vaults][%d] azureKeyVaultCreateAccepted %s", 202, payload)
+}
+
+func (o *AzureKeyVaultCreateAccepted) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/azure-key-vaults][%d] azureKeyVaultCreateAccepted %s", 202, payload)
+}
+
+func (o *AzureKeyVaultCreateAccepted) GetPayload() *models.AzureKeyVaultJobLinkResponse {
+	return o.Payload
+}
+
+func (o *AzureKeyVaultCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.AzureKeyVaultJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -142,20 +238,23 @@ func NewAzureKeyVaultCreateDefault(code int) *AzureKeyVaultCreateDefault {
 | 65537512 | AKV cannot be configured for the given SVM as not all nodes in the cluster can enable the Azure Key Vault feature. |
 | 65537514 | Failed to check if the Azure Key Vault feature is enabled. |
 | 65537518 | Failed to find an interface with Cluster role. |
-| 65537523 | Invalid key ID format. Example key ID format\":" "https://mykeyvault.vault.azure.net/keys/key1". |
+| 65537523 | Invalid key ID format. Example key ID format\":" "https://mykeyvault.vault.azure.net/keys/key1/a8e619fd8f234db3b0b95c59540e2a74". |
 | 65537526 | Failed to enable Azure Key Vault feature. |
 | 65537567 | No authentication method provided. |
 | 65537573 | Invalid client certificate. |
+| 65537589 | The specified configuration.name already exists on the given SVM. |
+| 65537592 | The configuration.name field requires an ECV of 9.14.0 or greater. |
+| 65537593 | The create_inactive flag requires an effective cluster version of 9.14.0 or greater. |
+| 65537594 | The configuration.name field is required when the create_inactive flag is set to true. |
+| 65537595 | The configuration.name field can only be specified when the create_inactive flag is set to true. |
+| 65538902 | The configuration.name is reserved for use by the system. |
+| 65538903 | The configuration.name field cannot be an empty string. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AzureKeyVaultCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the azure key vault create default response
-func (o *AzureKeyVaultCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this azure key vault create default response has a 2xx status code
@@ -183,12 +282,19 @@ func (o *AzureKeyVaultCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the azure key vault create default response
+func (o *AzureKeyVaultCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AzureKeyVaultCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/azure-key-vaults][%d] azure_key_vault_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/azure-key-vaults][%d] azure_key_vault_create default %s", o._statusCode, payload)
 }
 
 func (o *AzureKeyVaultCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/azure-key-vaults][%d] azure_key_vault_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/azure-key-vaults][%d] azure_key_vault_create default %s", o._statusCode, payload)
 }
 
 func (o *AzureKeyVaultCreateDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *UserGroupPrivilegesGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the user group privileges get o k response
+func (o *UserGroupPrivilegesGetOK) Code() int {
+	return 200
+}
+
 func (o *UserGroupPrivilegesGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] userGroupPrivilegesGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] userGroupPrivilegesGetOK %s", 200, payload)
 }
 
 func (o *UserGroupPrivilegesGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] userGroupPrivilegesGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] userGroupPrivilegesGetOK %s", 200, payload)
 }
 
 func (o *UserGroupPrivilegesGetOK) GetPayload() *models.UserGroupPrivileges {
@@ -122,11 +130,6 @@ type UserGroupPrivilegesGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the user group privileges get default response
-func (o *UserGroupPrivilegesGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this user group privileges get default response has a 2xx status code
 func (o *UserGroupPrivilegesGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *UserGroupPrivilegesGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the user group privileges get default response
+func (o *UserGroupPrivilegesGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *UserGroupPrivilegesGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] user_group_privileges_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] user_group_privileges_get default %s", o._statusCode, payload)
 }
 
 func (o *UserGroupPrivilegesGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] user_group_privileges_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] user_group_privileges_get default %s", o._statusCode, payload)
 }
 
 func (o *UserGroupPrivilegesGetDefault) GetPayload() *models.ErrorResponse {

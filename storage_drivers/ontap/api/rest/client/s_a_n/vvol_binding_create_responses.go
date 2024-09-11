@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *VvolBindingCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the vvol binding create created response
+func (o *VvolBindingCreateCreated) Code() int {
+	return 201
+}
+
 func (o *VvolBindingCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/vvol-bindings][%d] vvolBindingCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/vvol-bindings][%d] vvolBindingCreateCreated %s", 201, payload)
 }
 
 func (o *VvolBindingCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/san/vvol-bindings][%d] vvolBindingCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/vvol-bindings][%d] vvolBindingCreateCreated %s", 201, payload)
 }
 
 func (o *VvolBindingCreateCreated) GetPayload() *models.VvolBindingResponse {
@@ -133,7 +141,7 @@ func NewVvolBindingCreateDefault(code int) *VvolBindingCreateDefault {
 | 2621462 | The specified SVM does not exist or is not accessible to the caller. |
 | 2621706 | Both the SVM UUID and SVM name were supplied, but don't refer to the same SVM. |
 | 2621707 | No SVM was specified. Either `svm.name` or `svm.uuid` must be supplied. |
-| 5374238 | A LUN in a Snapshot copy was specified. |
+| 5374238 | A LUN in a snapshot was specified. |
 | 5374323 | The LUN specified as the protocol endpoint LUN is not of class `protocol_endpoint`. |
 | 5374325 | The LUN specified as the vVol LUN is not of class `vvol`. |
 | 5374874 | The UUID and name supplied for the protocol endpoint of Vvol LUN do not refer to the same LUN. Use to the `target` property of the error object to differentiate between the protocol endpoint LUN and the vVol LUN. |
@@ -141,16 +149,12 @@ func NewVvolBindingCreateDefault(code int) *VvolBindingCreateDefault {
 | 5374876 | The protocol endpoint or vVol LUN was not found in the SVM. Use to the `target` property of the error object to differentiate between the protocol endpoint LUN and the vVol LUN. |
 | 5374924 | No protocol endpoint LUN was supplied. |
 | 5374925 | No vVol LUN was supplied. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type VvolBindingCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the vvol binding create default response
-func (o *VvolBindingCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this vvol binding create default response has a 2xx status code
@@ -178,12 +182,19 @@ func (o *VvolBindingCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the vvol binding create default response
+func (o *VvolBindingCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VvolBindingCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/san/vvol-bindings][%d] vvol_binding_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/vvol-bindings][%d] vvol_binding_create default %s", o._statusCode, payload)
 }
 
 func (o *VvolBindingCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/san/vvol-bindings][%d] vvol_binding_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/san/vvol-bindings][%d] vvol_binding_create default %s", o._statusCode, payload)
 }
 
 func (o *VvolBindingCreateDefault) GetPayload() *models.ErrorResponse {

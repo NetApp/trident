@@ -16,7 +16,7 @@ import (
 )
 
 // TopMetricsSvmUser Aggregated information about a user's IO activity at a SVM scope.
-// Example: {"iops":{"error":{"lower_bound":"10","upper_bound":"11"},"read":"10","write":"5"},"svm":{"name":"vserver_3","uuid":"42ee3002-67dd-11ea-8508-005056a7b8ac"},"throughput":{"error":{"lower_bound":"2","upper_bound":"3"},"read":"2","write":"1"},"user_id":"1876","user_name":"Ryan","volumes":[{"name":"vol_6","uuid":"02178914-5f67-11eb-b987-005056ac5da5"},{"name":"vol_8","uuid":"c05eb66a-685f-11ea-8508-005056a7b8ac"}]}
+// Example: {"iops":{"error":{"lower_bound":10,"upper_bound":11},"read":10,"write":5},"svm":{"name":"vserver_3","uuid":"42ee3002-67dd-11ea-8508-005056a7b8ac"},"throughput":{"error":{"lower_bound":2,"upper_bound":3},"read":2,"write":1},"user_id":1876,"user_name":"Ryan","volumes":[{"name":"vol_6","uuid":"02178914-5f67-11eb-b987-005056ac5da5"},{"name":"vol_8","uuid":"c05eb66a-685f-11ea-8508-005056a7b8ac"}]}
 //
 // swagger:model top_metrics_svm_user
 type TopMetricsSvmUser struct {
@@ -397,7 +397,7 @@ func (m *TopMetricsSvmUserInlineIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsSvmUserInlineSvm top metrics svm user inline svm
+// TopMetricsSvmUserInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model top_metrics_svm_user_inline_svm
 type TopMetricsSvmUserInlineSvm struct {
@@ -405,12 +405,12 @@ type TopMetricsSvmUserInlineSvm struct {
 	// links
 	Links *TopMetricsSvmUserInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -709,7 +709,7 @@ type TopMetricsSvmUserInlineVolumesInlineArrayItem struct {
 	// links
 	Links *TopMetricsSvmUserInlineVolumesInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

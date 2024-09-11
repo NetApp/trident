@@ -20,12 +20,12 @@ import (
 // swagger:model firmware_sp_bmc
 type FirmwareSpBmc struct {
 
-	// autoupdte
+	// autoupdate
 	// Example: false
-	Autoupdte *bool `json:"autoupdte,omitempty"`
+	Autoupdate *bool `json:"autoupdate,omitempty"`
 
 	// end time
-	// Example: 2020-05-17T20:00:00Z
+	// Example: 2020-05-17 20:00:00
 	// Read Only: true
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
@@ -33,13 +33,13 @@ type FirmwareSpBmc struct {
 	// fw type
 	// Example: SP
 	// Read Only: true
-	// Enum: [SP BMC]
+	// Enum: ["SP","BMC"]
 	FwType *string `json:"fw_type,omitempty"`
 
 	// image
 	// Example: primary
 	// Read Only: true
-	// Enum: [primary backup]
+	// Enum: ["primary","backup"]
 	Image *string `json:"image,omitempty"`
 
 	// in progress
@@ -54,7 +54,7 @@ type FirmwareSpBmc struct {
 	// last update state
 	// Example: passed
 	// Read Only: true
-	// Enum: [passed failed]
+	// Enum: ["passed","failed"]
 	LastUpdateState *string `json:"last_update_state,omitempty"`
 
 	// percent done
@@ -70,7 +70,7 @@ type FirmwareSpBmc struct {
 	RunningVersion *string `json:"running_version,omitempty"`
 
 	// start time
-	// Example: 2020-05-17T20:00:00Z
+	// Example: 2020-05-17 20:00:00
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
@@ -78,7 +78,7 @@ type FirmwareSpBmc struct {
 	// state
 	// Example: installed
 	// Read Only: true
-	// Enum: [installed corrupt updating autoupdating none]
+	// Enum: ["installed","corrupt","updating","autoupdating","none"]
 	State *string `json:"state,omitempty"`
 }
 

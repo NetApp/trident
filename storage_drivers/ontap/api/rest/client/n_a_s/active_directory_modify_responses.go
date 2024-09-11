@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ActiveDirectoryModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the active directory modify o k response
+func (o *ActiveDirectoryModifyOK) Code() int {
+	return 200
+}
+
 func (o *ActiveDirectoryModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/active-directory/{svm.uuid}][%d] activeDirectoryModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/active-directory/{svm.uuid}][%d] activeDirectoryModifyOK %s", 200, payload)
 }
 
 func (o *ActiveDirectoryModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/active-directory/{svm.uuid}][%d] activeDirectoryModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/active-directory/{svm.uuid}][%d] activeDirectoryModifyOK %s", 200, payload)
 }
 
 func (o *ActiveDirectoryModifyOK) GetPayload() *models.ActiveDirectory {
@@ -119,19 +127,17 @@ func NewActiveDirectoryModifyDefault(code int) *ActiveDirectoryModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 656464 | Failed to modify the Active Directory machine account. Reason: Invalid Credentials. |
-| 656465 | Failed to modify the Active Directory machine account. Reason: Account with same name already exists. |
-| 656466 | Failed to modify the Active Directory machine account. Reason: Domain Controller is not reachable or does not exist. |
+| 656465 | Failed to create the Active Directory machine account. Reason: An account with this name already exists. |
+| 656466 | Failed to create the Active Directory machine account. Reason: Unable to connect to any domain controllers. |
 | 656467 | Failed to modify the Active Directory machine account. Reason: Organizational-Unit not found. |
+| 656478 | Failed to create the Active Directory machine account. Reason: KDC has no support for encryption type. |
+| 656490 | Unable to modify the Active Directory account. The Active Directory account name is already used by another SVM. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ActiveDirectoryModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the active directory modify default response
-func (o *ActiveDirectoryModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this active directory modify default response has a 2xx status code
@@ -159,12 +165,19 @@ func (o *ActiveDirectoryModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the active directory modify default response
+func (o *ActiveDirectoryModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ActiveDirectoryModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/active-directory/{svm.uuid}][%d] active_directory_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/active-directory/{svm.uuid}][%d] active_directory_modify default %s", o._statusCode, payload)
 }
 
 func (o *ActiveDirectoryModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/active-directory/{svm.uuid}][%d] active_directory_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/active-directory/{svm.uuid}][%d] active_directory_modify default %s", o._statusCode, payload)
 }
 
 func (o *ActiveDirectoryModifyDefault) GetPayload() *models.ErrorResponse {

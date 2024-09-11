@@ -180,11 +180,29 @@ type KeyManagerKeysCollectionGetParams struct {
 	*/
 	ReturnTimeout *int64
 
+	/* Scope.
+
+	   Filter by scope
+	*/
+	Scope *string
+
 	/* SecurityKeyManagerUUID.
 
 	   Key manager UUID.
 	*/
 	SecurityKeyManagerUUID string
+
+	/* SvmName.
+
+	   Filter by svm.name
+	*/
+	SvmName *string
+
+	/* SvmUUID.
+
+	   Filter by svm.uuid
+	*/
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -462,6 +480,17 @@ func (o *KeyManagerKeysCollectionGetParams) SetReturnTimeout(returnTimeout *int6
 	o.ReturnTimeout = returnTimeout
 }
 
+// WithScope adds the scope to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithScope(scope *string) *KeyManagerKeysCollectionGetParams {
+	o.SetScope(scope)
+	return o
+}
+
+// SetScope adds the scope to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
+}
+
 // WithSecurityKeyManagerUUID adds the securityKeyManagerUUID to the key manager keys collection get params
 func (o *KeyManagerKeysCollectionGetParams) WithSecurityKeyManagerUUID(securityKeyManagerUUID string) *KeyManagerKeysCollectionGetParams {
 	o.SetSecurityKeyManagerUUID(securityKeyManagerUUID)
@@ -471,6 +500,28 @@ func (o *KeyManagerKeysCollectionGetParams) WithSecurityKeyManagerUUID(securityK
 // SetSecurityKeyManagerUUID adds the securityKeyManagerUuid to the key manager keys collection get params
 func (o *KeyManagerKeysCollectionGetParams) SetSecurityKeyManagerUUID(securityKeyManagerUUID string) {
 	o.SecurityKeyManagerUUID = securityKeyManagerUUID
+}
+
+// WithSvmName adds the svmName to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithSvmName(svmName *string) *KeyManagerKeysCollectionGetParams {
+	o.SetSvmName(svmName)
+	return o
+}
+
+// SetSvmName adds the svmName to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
+}
+
+// WithSvmUUID adds the svmUUID to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithSvmUUID(svmUUID *string) *KeyManagerKeysCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
+	return o
+}
+
+// SetSvmUUID adds the svmUuid to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -780,9 +831,60 @@ func (o *KeyManagerKeysCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
+	if o.Scope != nil {
+
+		// query param scope
+		var qrScope string
+
+		if o.Scope != nil {
+			qrScope = *o.Scope
+		}
+		qScope := qrScope
+		if qScope != "" {
+
+			if err := r.SetQueryParam("scope", qScope); err != nil {
+				return err
+			}
+		}
+	}
+
 	// path param security_key_manager.uuid
 	if err := r.SetPathParam("security_key_manager.uuid", o.SecurityKeyManagerUUID); err != nil {
 		return err
+	}
+
+	if o.SvmName != nil {
+
+		// query param svm.name
+		var qrSvmName string
+
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
+		}
+		qSvmName := qrSvmName
+		if qSvmName != "" {
+
+			if err := r.SetQueryParam("svm.name", qSvmName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SvmUUID != nil {
+
+		// query param svm.uuid
+		var qrSvmUUID string
+
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
+		}
+		qSvmUUID := qrSvmUUID
+		if qSvmUUID != "" {
+
+			if err := r.SetQueryParam("svm.uuid", qSvmUUID); err != nil {
+				return err
+			}
+		}
 	}
 
 	if len(res) > 0 {

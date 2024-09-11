@@ -21,11 +21,11 @@ import (
 type IpsecPolicy struct {
 
 	// Action for the IPsec policy.
-	// Enum: [bypass discard esp_transport esp_udp]
+	// Enum: ["bypass","discard","esp_transport","esp_udp"]
 	Action *string `json:"action,omitempty"`
 
 	// Authentication method for the IPsec policy.
-	// Enum: [none psk pki]
+	// Enum: ["none","psk","pki"]
 	AuthenticationMethod *string `json:"authentication_method,omitempty"`
 
 	// certificate
@@ -44,6 +44,8 @@ type IpsecPolicy struct {
 	LocalIdentity *string `json:"local_identity,omitempty"`
 
 	// IPsec policy name.
+	// Max Length: 64
+	// Min Length: 1
 	Name *string `json:"name,omitempty"`
 
 	// Lower layer protocol to be covered by the IPsec policy.
@@ -94,6 +96,10 @@ func (m *IpsecPolicy) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateLocalEndpoint(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -307,6 +313,22 @@ func (m *IpsecPolicy) validateLocalEndpoint(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *IpsecPolicy) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("name", "body", *m.Name, 64); err != nil {
+		return err
 	}
 
 	return nil
@@ -537,7 +559,6 @@ type IpsecPolicyInlineCertificate struct {
 	Links *IpsecPolicyInlineCertificateInlineLinks `json:"_links,omitempty"`
 
 	// Certificate name
-	// Example: cert1
 	Name *string `json:"name,omitempty"`
 
 	// Certificate UUID
@@ -717,7 +738,7 @@ type IpsecPolicyInlineIpspace struct {
 	Links *IpsecPolicyInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
-	// Example: exchange
+	// Example: Default
 	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
@@ -1236,7 +1257,7 @@ func (m *IpsecPolicyInlineRemoteEndpoint) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IpsecPolicyInlineSvm ipsec policy inline svm
+// IpsecPolicyInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model ipsec_policy_inline_svm
 type IpsecPolicyInlineSvm struct {
@@ -1244,12 +1265,12 @@ type IpsecPolicyInlineSvm struct {
 	// links
 	Links *IpsecPolicyInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

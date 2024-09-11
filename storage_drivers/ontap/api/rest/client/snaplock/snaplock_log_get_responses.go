@@ -6,6 +6,7 @@ package snaplock
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SnaplockLogGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snaplock log get o k response
+func (o *SnaplockLogGetOK) Code() int {
+	return 200
+}
+
 func (o *SnaplockLogGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/snaplock/audit-logs/{svm.uuid}][%d] snaplockLogGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/audit-logs/{svm.uuid}][%d] snaplockLogGetOK %s", 200, payload)
 }
 
 func (o *SnaplockLogGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/snaplock/audit-logs/{svm.uuid}][%d] snaplockLogGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/audit-logs/{svm.uuid}][%d] snaplockLogGetOK %s", 200, payload)
 }
 
 func (o *SnaplockLogGetOK) GetPayload() *models.SnaplockLog {
@@ -122,11 +130,6 @@ type SnaplockLogGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the snaplock log get default response
-func (o *SnaplockLogGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this snaplock log get default response has a 2xx status code
 func (o *SnaplockLogGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *SnaplockLogGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snaplock log get default response
+func (o *SnaplockLogGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnaplockLogGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/snaplock/audit-logs/{svm.uuid}][%d] snaplock_log_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/audit-logs/{svm.uuid}][%d] snaplock_log_get default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockLogGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/snaplock/audit-logs/{svm.uuid}][%d] snaplock_log_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/audit-logs/{svm.uuid}][%d] snaplock_log_get default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockLogGetDefault) GetPayload() *models.ErrorResponse {

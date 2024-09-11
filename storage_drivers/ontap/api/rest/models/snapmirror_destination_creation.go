@@ -15,16 +15,22 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// SnapmirrorDestinationCreation Use this object to provision the destination endpoint when establishing a SnapMirror relationship for a FlexVol volume, FlexGroup volume, SVM, Consistency Group or ONTAP S3 Bucket. Given a source endpoint, the destination endpoint is provisioned in the SVM specified in the "destination.path" property. While protecting an SVM, the SVM destination endpoint can only be provisioned on the local cluster. To provision the SVM destination endpoint use the optional "source.cluster.name" property to specify the remote cluster name or use the optional "source.cluster.uuid" property to specify the remote cluster UUID. When "create_destination.enabled" option is specified while making a POST for a SnapMirror relationship, the relationship can be automatically initialized by setting the "state" either to "snapmirrored" when the policy is of type "async" or to "in_sync" when the policy is of type "sync". The "destination.path" property must specify the destination endpoint path. For example, for FlexVol volume and FlexGroup volume, the "destination.path" can be specified as <destination-SVM-name:dp-volume-name>, for SVM data protection, the "destination.path" must be specified as <destination-SVM-name:>, and for Consistency Group, the "destination.path" must be specified as <destination-SVM-name:/cg/consistency-group-name> along with the "destination.consistency_group_volumes" property to indicate the list of destination volumes of type "DP" in the Consistency Group. For a FlexVol volume, a FlexGroup volume, Consistency Group or a Bucket destination endpoint, the properties in this object can be specified either from the source or the destination cluster. For an SVM destination endpoint, the properties in this object can be specified from the destination cluster only. This object is not supported for non ONTAP endpoints. While protecting a S3 Bucket, the optional "size" property can be used to create ONTAP S3 Bucket destination endpoint of the specified size.
+// SnapmirrorDestinationCreation Use this object to provision the destination endpoint when establishing a SnapMirror relationship for a FlexVol volume, FlexGroup volume, SVM, Consistency Group or ONTAP S3 Bucket. Given a source endpoint, the destination endpoint is provisioned in the SVM specified in the "destination.path" property. While protecting an SVM, the SVM destination endpoint can only be provisioned on the local cluster. To provision the SVM destination endpoint use the optional "source.cluster.name" property to specify the remote cluster name or use the optional "source.cluster.uuid" property to specify the remote cluster UUID. When "create_destination.enabled" option is specified while making a POST for a SnapMirror relationship, the relationship can be automatically initialized by setting the "state" either to "snapmirrored" when the policy is of type "async" or to "in_sync" when the policy is of type "sync". The "destination.path" property must specify the destination endpoint path. For example, for FlexVol volume and FlexGroup volume, the "destination.path" can be specified as <destination-SVM-name:dp-volume-name>, for SVM data protection, the "destination.path" must be specified as <destination-SVM-name:>, and for Consistency Group, the "destination.path" must be specified as <destination-SVM-name:/cg/consistency-group-name> along with the "destination.consistency_group_volumes" or "destination.luns" property to indicate the list of destination volumes or LUNs of type "DP" in the Consistency Group. For a FlexVol volume, a FlexGroup volume, Consistency Group or a Bucket destination endpoint, the properties in this object can be specified either from the source or the destination cluster. For an SVM destination endpoint, the properties in this object can be specified from the destination cluster only. This object is not supported for non ONTAP endpoints. While protecting a S3 Bucket, the optional "size" property can be used to create ONTAP S3 Bucket destination endpoint of the specified size.
 //
 // swagger:model snapmirror_destination_creation
 type SnapmirrorDestinationCreation struct {
+
+	// bucket retention
+	BucketRetention *SnapmirrorDestinationCreationInlineBucketRetention `json:"bucket_retention,omitempty"`
 
 	// Optional property to create the destination endpoint when establishing a SnapMirror relationship. It is assumed to be "false" if no other property is set and assumed to be "true" if any other property is set.
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// Optional property to specify the size of destination endpoint in bytes. This property is applicable only to ONTAP S3 Bucket endpoints. The minimum size for S3 bucket is 80MB and maximum size is 64TB. If not specified, system will create destination with default size of 800GB.
 	Size *int64 `json:"size,omitempty"`
+
+	// Optional property to create the destination endpoint with snapshot locking enabled when establishing a SnapMirror relationship. This property is applicable to FlexVol volumes and FlexGroup volumes.
+	SnapshotLockingEnabled *bool `json:"snapshot_locking_enabled,omitempty"`
 
 	// storage service
 	StorageService *SnapmirrorDestinationCreationInlineStorageService `json:"storage_service,omitempty"`
@@ -37,6 +43,10 @@ type SnapmirrorDestinationCreation struct {
 func (m *SnapmirrorDestinationCreation) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateBucketRetention(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateStorageService(formats); err != nil {
 		res = append(res, err)
 	}
@@ -48,6 +58,23 @@ func (m *SnapmirrorDestinationCreation) Validate(formats strfmt.Registry) error 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *SnapmirrorDestinationCreation) validateBucketRetention(formats strfmt.Registry) error {
+	if swag.IsZero(m.BucketRetention) { // not required
+		return nil
+	}
+
+	if m.BucketRetention != nil {
+		if err := m.BucketRetention.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("bucket_retention")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -89,6 +116,10 @@ func (m *SnapmirrorDestinationCreation) validateTiering(formats strfmt.Registry)
 func (m *SnapmirrorDestinationCreation) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateBucketRetention(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -100,6 +131,20 @@ func (m *SnapmirrorDestinationCreation) ContextValidate(ctx context.Context, for
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *SnapmirrorDestinationCreation) contextValidateBucketRetention(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.BucketRetention != nil {
+		if err := m.BucketRetention.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("bucket_retention")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -149,6 +194,124 @@ func (m *SnapmirrorDestinationCreation) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// SnapmirrorDestinationCreationInlineBucketRetention Specifies the retention-mode and default retention period configured on the destination bucket.
+//
+// swagger:model snapmirror_destination_creation_inline_bucket_retention
+type SnapmirrorDestinationCreationInlineBucketRetention struct {
+
+	// Specifies the default retention period that is applied to objects while committing them to the WORM state without an associated retention period. The retention period can be in years, or days. The retention period value represents a duration and must be specified in the ISO-8601 duration format.  A period specified for years and days is represented in the ISO-8601 format as "P<num>Y" and "P<num>D" respectively, for example "P10Y" represents a duration of 10 years. The period string must contain only a single time element that is, either years, or days. A duration which combines different periods is not supported, for example "P1Y10D" is not supported.
+	// Example: P10Y
+	DefaultPeriod *string `json:"default_period,omitempty"`
+
+	// The lock mode of the bucket. <br>compliance &dash; A SnapLock Compliance (SLC) bucket provides the highest level of WORM protection and an administrator cannot destroy a compliance bucket if it contains unexpired WORM objects. <br> governance &dash; An administrator can delete a Governance bucket.<br> no_lock &dash; Indicates the bucket does not support object locking.
+	// Example: governance
+	// Enum: ["no_lock","compliance","governance"]
+	Mode *string `json:"mode,omitempty"`
+}
+
+// Validate validates this snapmirror destination creation inline bucket retention
+func (m *SnapmirrorDestinationCreationInlineBucketRetention) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateMode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var snapmirrorDestinationCreationInlineBucketRetentionTypeModePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["no_lock","compliance","governance"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		snapmirrorDestinationCreationInlineBucketRetentionTypeModePropEnum = append(snapmirrorDestinationCreationInlineBucketRetentionTypeModePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// snapmirror_destination_creation_inline_bucket_retention
+	// SnapmirrorDestinationCreationInlineBucketRetention
+	// mode
+	// Mode
+	// no_lock
+	// END DEBUGGING
+	// SnapmirrorDestinationCreationInlineBucketRetentionModeNoLock captures enum value "no_lock"
+	SnapmirrorDestinationCreationInlineBucketRetentionModeNoLock string = "no_lock"
+
+	// BEGIN DEBUGGING
+	// snapmirror_destination_creation_inline_bucket_retention
+	// SnapmirrorDestinationCreationInlineBucketRetention
+	// mode
+	// Mode
+	// compliance
+	// END DEBUGGING
+	// SnapmirrorDestinationCreationInlineBucketRetentionModeCompliance captures enum value "compliance"
+	SnapmirrorDestinationCreationInlineBucketRetentionModeCompliance string = "compliance"
+
+	// BEGIN DEBUGGING
+	// snapmirror_destination_creation_inline_bucket_retention
+	// SnapmirrorDestinationCreationInlineBucketRetention
+	// mode
+	// Mode
+	// governance
+	// END DEBUGGING
+	// SnapmirrorDestinationCreationInlineBucketRetentionModeGovernance captures enum value "governance"
+	SnapmirrorDestinationCreationInlineBucketRetentionModeGovernance string = "governance"
+)
+
+// prop value enum
+func (m *SnapmirrorDestinationCreationInlineBucketRetention) validateModeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, snapmirrorDestinationCreationInlineBucketRetentionTypeModePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SnapmirrorDestinationCreationInlineBucketRetention) validateMode(formats strfmt.Registry) error {
+	if swag.IsZero(m.Mode) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateModeEnum("bucket_retention"+"."+"mode", "body", *m.Mode); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this snapmirror destination creation inline bucket retention based on context it is used
+func (m *SnapmirrorDestinationCreationInlineBucketRetention) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SnapmirrorDestinationCreationInlineBucketRetention) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SnapmirrorDestinationCreationInlineBucketRetention) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorDestinationCreationInlineBucketRetention
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // SnapmirrorDestinationCreationInlineStorageService snapmirror destination creation inline storage service
 //
 // swagger:model snapmirror_destination_creation_inline_storage_service
@@ -161,7 +324,7 @@ type SnapmirrorDestinationCreationInlineStorageService struct {
 	EnforcePerformance *bool `json:"enforce_performance,omitempty"`
 
 	// Optional property to specify the storage service name for the destination endpoint. This property is considered when the property "create_destination.storage_service.enabled" is set to "true". When the property "create_destination.storage_service.enabled" is set to "true" and the "create_destination.storage_service.name" for the endpoint is not specified, then ONTAP selects the highest storage service available on the cluster to provision the destination endpoint. This property is applicable to FlexVol volume, FlexGroup volume, and Consistency Group endpoints.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -273,8 +436,8 @@ func (m *SnapmirrorDestinationCreationInlineStorageService) UnmarshalBinary(b []
 // swagger:model snapmirror_destination_creation_inline_tiering
 type SnapmirrorDestinationCreationInlineTiering struct {
 
-	// Optional property to specify the destination endpoint's tiering policy when "create_destination.tiering.supported" is set to "true". This property is applicable to FlexVol volume, FlexGroup volume, and Consistency Group endpoints. This property determines whether the user data blocks of the destination endpoint in a FabricPool will be tiered to the cloud store when they become cold. FabricPool combines flash (performance tier) with a cloud store into a single aggregate. Temperature of the destination endpoint volume blocks increases if they are accessed frequently and decreases when they are not.<br>all &dash; This policy allows tiering of both destination endpoint Snapshot copies and the user transfered data blocks to the cloud store as soon as possible by ignoring the temperature on the volume blocks. This tiering policy is not applicable for Consistency Group destination endpoints or for synchronous relationships.<br>auto &dash; This policy allows tiering of both destination endpoint Snapshot copies and the active file system user data to the cloud store<br>none &dash; Destination endpoint volume blocks will not be tiered to the cloud store.<br>snapshot_only &dash; This policy allows tiering of only the destination endpoint volume Snapshot copies not associated with the active file system. The default tiering policy is "snapshot_only" for a FlexVol volume and "none" for a FlexGroup volume.
-	// Enum: [all auto none snapshot_only]
+	// Optional property to specify the destination endpoint's tiering policy when "create_destination.tiering.supported" is set to "true". This property is applicable to FlexVol volume, FlexGroup volume, and Consistency Group endpoints. This property determines whether the user data blocks of the destination endpoint in a FabricPool will be tiered to the cloud store when they become cold. FabricPool combines flash (performance tier) with a cloud store into a single aggregate. Temperature of the destination endpoint volume blocks increases if they are accessed frequently and decreases when they are not.<br>all &dash; This policy allows tiering of both destination endpoint snapshots and the user transferred data blocks to the cloud store as soon as possible by ignoring the temperature on the volume blocks. This tiering policy is not applicable for Consistency Group destination endpoints or for synchronous relationships.<br>auto &dash; This policy allows tiering of both destination endpoint snapshots and the active file system user data to the cloud store<br>none &dash; Destination endpoint volume blocks will not be tiered to the cloud store.<br>snapshot_only &dash; This policy allows tiering of only the destination endpoint volume snapshots not associated with the active file system. The default tiering policy is "snapshot_only" for a FlexVol volume and "none" for a FlexGroup volume.
+	// Enum: ["all","auto","none","snapshot_only"]
 	Policy *string `json:"policy,omitempty"`
 
 	// Optional property to enable provisioning of the destination endpoint volumes on FabricPool aggregates. This property is applicable to FlexVol volume, FlexGroup volume, and Consistency Group endpoints. Only FabricPool aggregates are used if this property is set to "true" and only non FabricPool aggregates are used if this property is set to "false". Tiering support for a FlexGroup volume can be changed by moving all of the constituents to the required aggregates. Note that in order to tier data, not only do the destination endpoint volumes need to support tiering by using FabricPools, the "create_destination.tiering.policy" must not be "none". A destination endpoint that uses FabricPools but has a tiering "policy" of "none" supports tiering but will not tier any data.

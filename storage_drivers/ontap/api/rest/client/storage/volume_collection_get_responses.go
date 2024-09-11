@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *VolumeCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the volume collection get o k response
+func (o *VolumeCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *VolumeCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/volumes][%d] volumeCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes][%d] volumeCollectionGetOK %s", 200, payload)
 }
 
 func (o *VolumeCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/volumes][%d] volumeCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes][%d] volumeCollectionGetOK %s", 200, payload)
 }
 
 func (o *VolumeCollectionGetOK) GetPayload() *models.VolumeResponse {
@@ -122,11 +130,6 @@ type VolumeCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the volume collection get default response
-func (o *VolumeCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this volume collection get default response has a 2xx status code
 func (o *VolumeCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *VolumeCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the volume collection get default response
+func (o *VolumeCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VolumeCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/volumes][%d] volume_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes][%d] volume_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *VolumeCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/volumes][%d] volume_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/volumes][%d] volume_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *VolumeCollectionGetDefault) GetPayload() *models.ErrorResponse {

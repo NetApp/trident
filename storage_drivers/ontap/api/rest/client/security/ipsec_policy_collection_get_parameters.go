@@ -62,6 +62,12 @@ IpsecPolicyCollectionGetParams contains all the parameters to send to the API en
 */
 type IpsecPolicyCollectionGetParams struct {
 
+	/* Action.
+
+	   Filter by action
+	*/
+	Action *string
+
 	/* AuthenticationMethod.
 
 	   Filter by authentication_method
@@ -293,6 +299,17 @@ func (o *IpsecPolicyCollectionGetParams) WithHTTPClient(client *http.Client) *Ip
 // SetHTTPClient adds the HTTPClient to the ipsec policy collection get params
 func (o *IpsecPolicyCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithAction adds the action to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithAction(action *string) *IpsecPolicyCollectionGetParams {
+	o.SetAction(action)
+	return o
+}
+
+// SetAction adds the action to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetAction(action *string) {
+	o.Action = action
 }
 
 // WithAuthenticationMethod adds the authenticationMethod to the ipsec policy collection get params
@@ -599,6 +616,23 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		return err
 	}
 	var res []error
+
+	if o.Action != nil {
+
+		// query param action
+		var qrAction string
+
+		if o.Action != nil {
+			qrAction = *o.Action
+		}
+		qAction := qrAction
+		if qAction != "" {
+
+			if err := r.SetQueryParam("action", qAction); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.AuthenticationMethod != nil {
 

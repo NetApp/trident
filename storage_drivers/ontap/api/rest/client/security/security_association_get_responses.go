@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SecurityAssociationGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the security association get o k response
+func (o *SecurityAssociationGetOK) Code() int {
+	return 200
+}
+
 func (o *SecurityAssociationGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/ipsec/security-associations/{uuid}][%d] securityAssociationGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/security-associations/{uuid}][%d] securityAssociationGetOK %s", 200, payload)
 }
 
 func (o *SecurityAssociationGetOK) String() string {
-	return fmt.Sprintf("[GET /security/ipsec/security-associations/{uuid}][%d] securityAssociationGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/security-associations/{uuid}][%d] securityAssociationGetOK %s", 200, payload)
 }
 
 func (o *SecurityAssociationGetOK) GetPayload() *models.SecurityAssociation {
@@ -112,24 +120,14 @@ func NewSecurityAssociationGetDefault(code int) *SecurityAssociationGetDefault {
 }
 
 /*
-	SecurityAssociationGetDefault describes a response with status code -1, with default header values.
+SecurityAssociationGetDefault describes a response with status code -1, with default header values.
 
-	ONTAP Error Response Codes
-
-| Error Code | Description |
-| ---------- | ----------- |
-| 66257118 | IPsec SA with the specified UUID was not found. |
-| 66257119 | IPsec SA with the specified UUID was not found. |
+Error
 */
 type SecurityAssociationGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security association get default response
-func (o *SecurityAssociationGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security association get default response has a 2xx status code
@@ -157,12 +155,19 @@ func (o *SecurityAssociationGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security association get default response
+func (o *SecurityAssociationGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityAssociationGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/ipsec/security-associations/{uuid}][%d] security_association_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/security-associations/{uuid}][%d] security_association_get default %s", o._statusCode, payload)
 }
 
 func (o *SecurityAssociationGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/ipsec/security-associations/{uuid}][%d] security_association_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec/security-associations/{uuid}][%d] security_association_get default %s", o._statusCode, payload)
 }
 
 func (o *SecurityAssociationGetDefault) GetPayload() *models.ErrorResponse {

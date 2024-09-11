@@ -31,6 +31,7 @@ type LocalUserMembership struct {
 	// The security ID of the local group which uniquely identifies the group. The group SID is automatically generated in POST and it is retrieved using the GET method.
 	//
 	// Example: S-1-5-21-256008430-3394229847-3930036330-1001
+	// Read Only: true
 	Sid *string `json:"sid,omitempty"`
 }
 
@@ -89,6 +90,10 @@ func (m *LocalUserMembership) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSid(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -104,6 +109,15 @@ func (m *LocalUserMembership) contextValidateLinks(ctx context.Context, formats 
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *LocalUserMembership) contextValidateSid(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "sid", "body", m.Sid); err != nil {
+		return err
 	}
 
 	return nil

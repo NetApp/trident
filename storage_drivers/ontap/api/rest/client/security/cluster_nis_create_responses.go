@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *ClusterNisCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the cluster nis create created response
+func (o *ClusterNisCreateCreated) Code() int {
+	return 201
+}
+
 func (o *ClusterNisCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /security/authentication/cluster/nis][%d] clusterNisCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/cluster/nis][%d] clusterNisCreateCreated %s", 201, payload)
 }
 
 func (o *ClusterNisCreateCreated) String() string {
-	return fmt.Sprintf("[POST /security/authentication/cluster/nis][%d] clusterNisCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/cluster/nis][%d] clusterNisCreateCreated %s", 201, payload)
 }
 
 func (o *ClusterNisCreateCreated) GetPayload() *models.ClusterNisServiceResponse {
@@ -138,16 +146,14 @@ func NewClusterNisCreateDefault(code int) *ClusterNisCreateDefault {
 | 23724112   | DNS resolution failed due to an internal error. Contact technical support if this issue persists.  |
 | 23724132   | DNS resolution failed for all the specified servers.  |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 interfaces. |
+| 23724111   | Invalid value specified for nis-servers. The value must be a valid hostname or IP address. |
+| 23724087   | The specified IPv6 address is not supported because it is one of the following: ::, link-local, multicast, v4-compatible, v4-mapped, loopback. |
+| 23724086   | The specified IPv4 address is not supported because it is one of the following: multicast, loopback, 0.0.0.0 or broadcast. |
 */
 type ClusterNisCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cluster nis create default response
-func (o *ClusterNisCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cluster nis create default response has a 2xx status code
@@ -175,12 +181,19 @@ func (o *ClusterNisCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster nis create default response
+func (o *ClusterNisCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterNisCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /security/authentication/cluster/nis][%d] cluster_nis_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/cluster/nis][%d] cluster_nis_create default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNisCreateDefault) String() string {
-	return fmt.Sprintf("[POST /security/authentication/cluster/nis][%d] cluster_nis_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/authentication/cluster/nis][%d] cluster_nis_create default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNisCreateDefault) GetPayload() *models.ErrorResponse {

@@ -57,7 +57,7 @@ type Job struct {
 
 	// The state of the job.
 	// Read Only: true
-	// Enum: [queued running paused success failure]
+	// Enum: ["queued","running","paused","success","failure"]
 	State *string `json:"state,omitempty"`
 
 	// svm
@@ -511,11 +511,6 @@ type JobInlineError struct {
 	// Example: entry doesn't exist
 	// Read Only: true
 	Message *string `json:"message,omitempty"`
-
-	// The target parameter that caused the error.
-	// Example: uuid
-	// Read Only: true
-	Target *string `json:"target,omitempty"`
 }
 
 // Validate validates this job inline error
@@ -572,10 +567,6 @@ func (m *JobInlineError) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateTarget(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -616,15 +607,6 @@ func (m *JobInlineError) contextValidateCode(ctx context.Context, formats strfmt
 func (m *JobInlineError) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "error"+"."+"message", "body", m.Message); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *JobInlineError) contextValidateTarget(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "error"+"."+"target", "body", m.Target); err != nil {
 		return err
 	}
 
@@ -777,7 +759,7 @@ func (m *JobInlineNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// JobInlineSvm job inline svm
+// JobInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model job_inline_svm
 type JobInlineSvm struct {
@@ -785,12 +767,12 @@ type JobInlineSvm struct {
 	// links
 	Links *JobInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

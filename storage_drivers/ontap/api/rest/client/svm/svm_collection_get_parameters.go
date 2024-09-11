@@ -74,6 +74,48 @@ type SvmCollectionGetParams struct {
 	*/
 	AggregatesUUID *string
 
+	/* AntiRansomwareAutoSwitchDurationWithoutNewFileExtension.
+
+	   Filter by anti_ransomware_auto_switch_duration_without_new_file_extension
+	*/
+	AntiRansomwareAutoSwitchDurationWithoutNewFileExtension *int64
+
+	/* AntiRansomwareAutoSwitchFromLearningToEnabled.
+
+	   Filter by anti_ransomware_auto_switch_from_learning_to_enabled
+	*/
+	AntiRansomwareAutoSwitchFromLearningToEnabled *bool
+
+	/* AntiRansomwareAutoSwitchMinimumFileCount.
+
+	   Filter by anti_ransomware_auto_switch_minimum_file_count
+	*/
+	AntiRansomwareAutoSwitchMinimumFileCount *int64
+
+	/* AntiRansomwareAutoSwitchMinimumFileExtension.
+
+	   Filter by anti_ransomware_auto_switch_minimum_file_extension
+	*/
+	AntiRansomwareAutoSwitchMinimumFileExtension *int64
+
+	/* AntiRansomwareAutoSwitchMinimumIncomingData.
+
+	   Filter by anti_ransomware_auto_switch_minimum_incoming_data
+	*/
+	AntiRansomwareAutoSwitchMinimumIncomingData *string
+
+	/* AntiRansomwareAutoSwitchMinimumIncomingDataPercent.
+
+	   Filter by anti_ransomware_auto_switch_minimum_incoming_data_percent
+	*/
+	AntiRansomwareAutoSwitchMinimumIncomingDataPercent *int64
+
+	/* AntiRansomwareAutoSwitchMinimumLearningPeriod.
+
+	   Filter by anti_ransomware_auto_switch_minimum_learning_period
+	*/
+	AntiRansomwareAutoSwitchMinimumLearningPeriod *int64
+
 	/* AntiRansomwareDefaultVolumeState.
 
 	   Filter by anti_ransomware_default_volume_state
@@ -320,6 +362,12 @@ type SvmCollectionGetParams struct {
 	*/
 	NsswitchPasswd *string
 
+	/* NumberOfVolumesInRecoveryQueue.
+
+	   Filter by number_of_volumes_in_recovery_queue
+	*/
+	NumberOfVolumesInRecoveryQueue *int64
+
 	/* NvmeAllowed.
 
 	   Filter by nvme.allowed
@@ -338,6 +386,18 @@ type SvmCollectionGetParams struct {
 	*/
 	OrderBy []string
 
+	/* QosAdaptivePolicyGroupTemplateName.
+
+	   Filter by qos_adaptive_policy_group_template.name
+	*/
+	QosAdaptivePolicyGroupTemplateName *string
+
+	/* QosAdaptivePolicyGroupTemplateUUID.
+
+	   Filter by qos_adaptive_policy_group_template.uuid
+	*/
+	QosAdaptivePolicyGroupTemplateUUID *string
+
 	/* QosPolicyName.
 
 	   Filter qos_policy.name
@@ -349,6 +409,18 @@ type SvmCollectionGetParams struct {
 	   Filter qos_policy.uuid
 	*/
 	QosPolicyUUID *string
+
+	/* QosPolicyGroupTemplateName.
+
+	   Filter by qos_policy_group_template.name
+	*/
+	QosPolicyGroupTemplateName *string
+
+	/* QosPolicyGroupTemplateUUID.
+
+	   Filter by qos_policy_group_template.uuid
+	*/
+	QosPolicyGroupTemplateUUID *string
 
 	/* ReturnRecords.
 
@@ -402,11 +474,53 @@ type SvmCollectionGetParams struct {
 	*/
 	State *string
 
+	/* StorageAllocated.
+
+	   Filter by storage_allocated
+	*/
+	StorageAllocated *int64
+
+	/* StorageAvailable.
+
+	   Filter by storage_available
+	*/
+	StorageAvailable *int64
+
+	/* StorageLimit.
+
+	   Filter by storage.limit
+	*/
+	StorageLimit *int64
+
+	/* StorageLimitThresholdAlert.
+
+	   Filter by storage.limit_threshold_alert
+	*/
+	StorageLimitThresholdAlert *int64
+
+	/* StorageLimitThresholdExceeded.
+
+	   Filter by storage.limit_threshold_exceeded
+	*/
+	StorageLimitThresholdExceeded *int64
+
+	/* StorageUsedPercentage.
+
+	   Filter by storage_used_percentage
+	*/
+	StorageUsedPercentage *int64
+
 	/* Subtype.
 
 	   Filter by subtype
 	*/
 	Subtype *string
+
+	/* TotalVolumeSizeInRecoveryQueue.
+
+	   Filter by total_volume_size_in_recovery_queue
+	*/
+	TotalVolumeSizeInRecoveryQueue *int64
 
 	/* UUID.
 
@@ -501,6 +615,83 @@ func (o *SvmCollectionGetParams) WithAggregatesUUID(aggregatesUUID *string) *Svm
 // SetAggregatesUUID adds the aggregatesUuid to the svm collection get params
 func (o *SvmCollectionGetParams) SetAggregatesUUID(aggregatesUUID *string) {
 	o.AggregatesUUID = aggregatesUUID
+}
+
+// WithAntiRansomwareAutoSwitchDurationWithoutNewFileExtension adds the antiRansomwareAutoSwitchDurationWithoutNewFileExtension to the svm collection get params
+func (o *SvmCollectionGetParams) WithAntiRansomwareAutoSwitchDurationWithoutNewFileExtension(antiRansomwareAutoSwitchDurationWithoutNewFileExtension *int64) *SvmCollectionGetParams {
+	o.SetAntiRansomwareAutoSwitchDurationWithoutNewFileExtension(antiRansomwareAutoSwitchDurationWithoutNewFileExtension)
+	return o
+}
+
+// SetAntiRansomwareAutoSwitchDurationWithoutNewFileExtension adds the antiRansomwareAutoSwitchDurationWithoutNewFileExtension to the svm collection get params
+func (o *SvmCollectionGetParams) SetAntiRansomwareAutoSwitchDurationWithoutNewFileExtension(antiRansomwareAutoSwitchDurationWithoutNewFileExtension *int64) {
+	o.AntiRansomwareAutoSwitchDurationWithoutNewFileExtension = antiRansomwareAutoSwitchDurationWithoutNewFileExtension
+}
+
+// WithAntiRansomwareAutoSwitchFromLearningToEnabled adds the antiRansomwareAutoSwitchFromLearningToEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) WithAntiRansomwareAutoSwitchFromLearningToEnabled(antiRansomwareAutoSwitchFromLearningToEnabled *bool) *SvmCollectionGetParams {
+	o.SetAntiRansomwareAutoSwitchFromLearningToEnabled(antiRansomwareAutoSwitchFromLearningToEnabled)
+	return o
+}
+
+// SetAntiRansomwareAutoSwitchFromLearningToEnabled adds the antiRansomwareAutoSwitchFromLearningToEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) SetAntiRansomwareAutoSwitchFromLearningToEnabled(antiRansomwareAutoSwitchFromLearningToEnabled *bool) {
+	o.AntiRansomwareAutoSwitchFromLearningToEnabled = antiRansomwareAutoSwitchFromLearningToEnabled
+}
+
+// WithAntiRansomwareAutoSwitchMinimumFileCount adds the antiRansomwareAutoSwitchMinimumFileCount to the svm collection get params
+func (o *SvmCollectionGetParams) WithAntiRansomwareAutoSwitchMinimumFileCount(antiRansomwareAutoSwitchMinimumFileCount *int64) *SvmCollectionGetParams {
+	o.SetAntiRansomwareAutoSwitchMinimumFileCount(antiRansomwareAutoSwitchMinimumFileCount)
+	return o
+}
+
+// SetAntiRansomwareAutoSwitchMinimumFileCount adds the antiRansomwareAutoSwitchMinimumFileCount to the svm collection get params
+func (o *SvmCollectionGetParams) SetAntiRansomwareAutoSwitchMinimumFileCount(antiRansomwareAutoSwitchMinimumFileCount *int64) {
+	o.AntiRansomwareAutoSwitchMinimumFileCount = antiRansomwareAutoSwitchMinimumFileCount
+}
+
+// WithAntiRansomwareAutoSwitchMinimumFileExtension adds the antiRansomwareAutoSwitchMinimumFileExtension to the svm collection get params
+func (o *SvmCollectionGetParams) WithAntiRansomwareAutoSwitchMinimumFileExtension(antiRansomwareAutoSwitchMinimumFileExtension *int64) *SvmCollectionGetParams {
+	o.SetAntiRansomwareAutoSwitchMinimumFileExtension(antiRansomwareAutoSwitchMinimumFileExtension)
+	return o
+}
+
+// SetAntiRansomwareAutoSwitchMinimumFileExtension adds the antiRansomwareAutoSwitchMinimumFileExtension to the svm collection get params
+func (o *SvmCollectionGetParams) SetAntiRansomwareAutoSwitchMinimumFileExtension(antiRansomwareAutoSwitchMinimumFileExtension *int64) {
+	o.AntiRansomwareAutoSwitchMinimumFileExtension = antiRansomwareAutoSwitchMinimumFileExtension
+}
+
+// WithAntiRansomwareAutoSwitchMinimumIncomingData adds the antiRansomwareAutoSwitchMinimumIncomingData to the svm collection get params
+func (o *SvmCollectionGetParams) WithAntiRansomwareAutoSwitchMinimumIncomingData(antiRansomwareAutoSwitchMinimumIncomingData *string) *SvmCollectionGetParams {
+	o.SetAntiRansomwareAutoSwitchMinimumIncomingData(antiRansomwareAutoSwitchMinimumIncomingData)
+	return o
+}
+
+// SetAntiRansomwareAutoSwitchMinimumIncomingData adds the antiRansomwareAutoSwitchMinimumIncomingData to the svm collection get params
+func (o *SvmCollectionGetParams) SetAntiRansomwareAutoSwitchMinimumIncomingData(antiRansomwareAutoSwitchMinimumIncomingData *string) {
+	o.AntiRansomwareAutoSwitchMinimumIncomingData = antiRansomwareAutoSwitchMinimumIncomingData
+}
+
+// WithAntiRansomwareAutoSwitchMinimumIncomingDataPercent adds the antiRansomwareAutoSwitchMinimumIncomingDataPercent to the svm collection get params
+func (o *SvmCollectionGetParams) WithAntiRansomwareAutoSwitchMinimumIncomingDataPercent(antiRansomwareAutoSwitchMinimumIncomingDataPercent *int64) *SvmCollectionGetParams {
+	o.SetAntiRansomwareAutoSwitchMinimumIncomingDataPercent(antiRansomwareAutoSwitchMinimumIncomingDataPercent)
+	return o
+}
+
+// SetAntiRansomwareAutoSwitchMinimumIncomingDataPercent adds the antiRansomwareAutoSwitchMinimumIncomingDataPercent to the svm collection get params
+func (o *SvmCollectionGetParams) SetAntiRansomwareAutoSwitchMinimumIncomingDataPercent(antiRansomwareAutoSwitchMinimumIncomingDataPercent *int64) {
+	o.AntiRansomwareAutoSwitchMinimumIncomingDataPercent = antiRansomwareAutoSwitchMinimumIncomingDataPercent
+}
+
+// WithAntiRansomwareAutoSwitchMinimumLearningPeriod adds the antiRansomwareAutoSwitchMinimumLearningPeriod to the svm collection get params
+func (o *SvmCollectionGetParams) WithAntiRansomwareAutoSwitchMinimumLearningPeriod(antiRansomwareAutoSwitchMinimumLearningPeriod *int64) *SvmCollectionGetParams {
+	o.SetAntiRansomwareAutoSwitchMinimumLearningPeriod(antiRansomwareAutoSwitchMinimumLearningPeriod)
+	return o
+}
+
+// SetAntiRansomwareAutoSwitchMinimumLearningPeriod adds the antiRansomwareAutoSwitchMinimumLearningPeriod to the svm collection get params
+func (o *SvmCollectionGetParams) SetAntiRansomwareAutoSwitchMinimumLearningPeriod(antiRansomwareAutoSwitchMinimumLearningPeriod *int64) {
+	o.AntiRansomwareAutoSwitchMinimumLearningPeriod = antiRansomwareAutoSwitchMinimumLearningPeriod
 }
 
 // WithAntiRansomwareDefaultVolumeState adds the antiRansomwareDefaultVolumeState to the svm collection get params
@@ -954,6 +1145,17 @@ func (o *SvmCollectionGetParams) SetNsswitchPasswd(nsswitchPasswd *string) {
 	o.NsswitchPasswd = nsswitchPasswd
 }
 
+// WithNumberOfVolumesInRecoveryQueue adds the numberOfVolumesInRecoveryQueue to the svm collection get params
+func (o *SvmCollectionGetParams) WithNumberOfVolumesInRecoveryQueue(numberOfVolumesInRecoveryQueue *int64) *SvmCollectionGetParams {
+	o.SetNumberOfVolumesInRecoveryQueue(numberOfVolumesInRecoveryQueue)
+	return o
+}
+
+// SetNumberOfVolumesInRecoveryQueue adds the numberOfVolumesInRecoveryQueue to the svm collection get params
+func (o *SvmCollectionGetParams) SetNumberOfVolumesInRecoveryQueue(numberOfVolumesInRecoveryQueue *int64) {
+	o.NumberOfVolumesInRecoveryQueue = numberOfVolumesInRecoveryQueue
+}
+
 // WithNvmeAllowed adds the nvmeAllowed to the svm collection get params
 func (o *SvmCollectionGetParams) WithNvmeAllowed(nvmeAllowed *bool) *SvmCollectionGetParams {
 	o.SetNvmeAllowed(nvmeAllowed)
@@ -987,6 +1189,28 @@ func (o *SvmCollectionGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
 }
 
+// WithQosAdaptivePolicyGroupTemplateName adds the qosAdaptivePolicyGroupTemplateName to the svm collection get params
+func (o *SvmCollectionGetParams) WithQosAdaptivePolicyGroupTemplateName(qosAdaptivePolicyGroupTemplateName *string) *SvmCollectionGetParams {
+	o.SetQosAdaptivePolicyGroupTemplateName(qosAdaptivePolicyGroupTemplateName)
+	return o
+}
+
+// SetQosAdaptivePolicyGroupTemplateName adds the qosAdaptivePolicyGroupTemplateName to the svm collection get params
+func (o *SvmCollectionGetParams) SetQosAdaptivePolicyGroupTemplateName(qosAdaptivePolicyGroupTemplateName *string) {
+	o.QosAdaptivePolicyGroupTemplateName = qosAdaptivePolicyGroupTemplateName
+}
+
+// WithQosAdaptivePolicyGroupTemplateUUID adds the qosAdaptivePolicyGroupTemplateUUID to the svm collection get params
+func (o *SvmCollectionGetParams) WithQosAdaptivePolicyGroupTemplateUUID(qosAdaptivePolicyGroupTemplateUUID *string) *SvmCollectionGetParams {
+	o.SetQosAdaptivePolicyGroupTemplateUUID(qosAdaptivePolicyGroupTemplateUUID)
+	return o
+}
+
+// SetQosAdaptivePolicyGroupTemplateUUID adds the qosAdaptivePolicyGroupTemplateUuid to the svm collection get params
+func (o *SvmCollectionGetParams) SetQosAdaptivePolicyGroupTemplateUUID(qosAdaptivePolicyGroupTemplateUUID *string) {
+	o.QosAdaptivePolicyGroupTemplateUUID = qosAdaptivePolicyGroupTemplateUUID
+}
+
 // WithQosPolicyName adds the qosPolicyName to the svm collection get params
 func (o *SvmCollectionGetParams) WithQosPolicyName(qosPolicyName *string) *SvmCollectionGetParams {
 	o.SetQosPolicyName(qosPolicyName)
@@ -1007,6 +1231,28 @@ func (o *SvmCollectionGetParams) WithQosPolicyUUID(qosPolicyUUID *string) *SvmCo
 // SetQosPolicyUUID adds the qosPolicyUuid to the svm collection get params
 func (o *SvmCollectionGetParams) SetQosPolicyUUID(qosPolicyUUID *string) {
 	o.QosPolicyUUID = qosPolicyUUID
+}
+
+// WithQosPolicyGroupTemplateName adds the qosPolicyGroupTemplateName to the svm collection get params
+func (o *SvmCollectionGetParams) WithQosPolicyGroupTemplateName(qosPolicyGroupTemplateName *string) *SvmCollectionGetParams {
+	o.SetQosPolicyGroupTemplateName(qosPolicyGroupTemplateName)
+	return o
+}
+
+// SetQosPolicyGroupTemplateName adds the qosPolicyGroupTemplateName to the svm collection get params
+func (o *SvmCollectionGetParams) SetQosPolicyGroupTemplateName(qosPolicyGroupTemplateName *string) {
+	o.QosPolicyGroupTemplateName = qosPolicyGroupTemplateName
+}
+
+// WithQosPolicyGroupTemplateUUID adds the qosPolicyGroupTemplateUUID to the svm collection get params
+func (o *SvmCollectionGetParams) WithQosPolicyGroupTemplateUUID(qosPolicyGroupTemplateUUID *string) *SvmCollectionGetParams {
+	o.SetQosPolicyGroupTemplateUUID(qosPolicyGroupTemplateUUID)
+	return o
+}
+
+// SetQosPolicyGroupTemplateUUID adds the qosPolicyGroupTemplateUuid to the svm collection get params
+func (o *SvmCollectionGetParams) SetQosPolicyGroupTemplateUUID(qosPolicyGroupTemplateUUID *string) {
+	o.QosPolicyGroupTemplateUUID = qosPolicyGroupTemplateUUID
 }
 
 // WithReturnRecords adds the returnRecords to the svm collection get params
@@ -1097,6 +1343,72 @@ func (o *SvmCollectionGetParams) SetState(state *string) {
 	o.State = state
 }
 
+// WithStorageAllocated adds the storageAllocated to the svm collection get params
+func (o *SvmCollectionGetParams) WithStorageAllocated(storageAllocated *int64) *SvmCollectionGetParams {
+	o.SetStorageAllocated(storageAllocated)
+	return o
+}
+
+// SetStorageAllocated adds the storageAllocated to the svm collection get params
+func (o *SvmCollectionGetParams) SetStorageAllocated(storageAllocated *int64) {
+	o.StorageAllocated = storageAllocated
+}
+
+// WithStorageAvailable adds the storageAvailable to the svm collection get params
+func (o *SvmCollectionGetParams) WithStorageAvailable(storageAvailable *int64) *SvmCollectionGetParams {
+	o.SetStorageAvailable(storageAvailable)
+	return o
+}
+
+// SetStorageAvailable adds the storageAvailable to the svm collection get params
+func (o *SvmCollectionGetParams) SetStorageAvailable(storageAvailable *int64) {
+	o.StorageAvailable = storageAvailable
+}
+
+// WithStorageLimit adds the storageLimit to the svm collection get params
+func (o *SvmCollectionGetParams) WithStorageLimit(storageLimit *int64) *SvmCollectionGetParams {
+	o.SetStorageLimit(storageLimit)
+	return o
+}
+
+// SetStorageLimit adds the storageLimit to the svm collection get params
+func (o *SvmCollectionGetParams) SetStorageLimit(storageLimit *int64) {
+	o.StorageLimit = storageLimit
+}
+
+// WithStorageLimitThresholdAlert adds the storageLimitThresholdAlert to the svm collection get params
+func (o *SvmCollectionGetParams) WithStorageLimitThresholdAlert(storageLimitThresholdAlert *int64) *SvmCollectionGetParams {
+	o.SetStorageLimitThresholdAlert(storageLimitThresholdAlert)
+	return o
+}
+
+// SetStorageLimitThresholdAlert adds the storageLimitThresholdAlert to the svm collection get params
+func (o *SvmCollectionGetParams) SetStorageLimitThresholdAlert(storageLimitThresholdAlert *int64) {
+	o.StorageLimitThresholdAlert = storageLimitThresholdAlert
+}
+
+// WithStorageLimitThresholdExceeded adds the storageLimitThresholdExceeded to the svm collection get params
+func (o *SvmCollectionGetParams) WithStorageLimitThresholdExceeded(storageLimitThresholdExceeded *int64) *SvmCollectionGetParams {
+	o.SetStorageLimitThresholdExceeded(storageLimitThresholdExceeded)
+	return o
+}
+
+// SetStorageLimitThresholdExceeded adds the storageLimitThresholdExceeded to the svm collection get params
+func (o *SvmCollectionGetParams) SetStorageLimitThresholdExceeded(storageLimitThresholdExceeded *int64) {
+	o.StorageLimitThresholdExceeded = storageLimitThresholdExceeded
+}
+
+// WithStorageUsedPercentage adds the storageUsedPercentage to the svm collection get params
+func (o *SvmCollectionGetParams) WithStorageUsedPercentage(storageUsedPercentage *int64) *SvmCollectionGetParams {
+	o.SetStorageUsedPercentage(storageUsedPercentage)
+	return o
+}
+
+// SetStorageUsedPercentage adds the storageUsedPercentage to the svm collection get params
+func (o *SvmCollectionGetParams) SetStorageUsedPercentage(storageUsedPercentage *int64) {
+	o.StorageUsedPercentage = storageUsedPercentage
+}
+
 // WithSubtype adds the subtype to the svm collection get params
 func (o *SvmCollectionGetParams) WithSubtype(subtype *string) *SvmCollectionGetParams {
 	o.SetSubtype(subtype)
@@ -1106,6 +1418,17 @@ func (o *SvmCollectionGetParams) WithSubtype(subtype *string) *SvmCollectionGetP
 // SetSubtype adds the subtype to the svm collection get params
 func (o *SvmCollectionGetParams) SetSubtype(subtype *string) {
 	o.Subtype = subtype
+}
+
+// WithTotalVolumeSizeInRecoveryQueue adds the totalVolumeSizeInRecoveryQueue to the svm collection get params
+func (o *SvmCollectionGetParams) WithTotalVolumeSizeInRecoveryQueue(totalVolumeSizeInRecoveryQueue *int64) *SvmCollectionGetParams {
+	o.SetTotalVolumeSizeInRecoveryQueue(totalVolumeSizeInRecoveryQueue)
+	return o
+}
+
+// SetTotalVolumeSizeInRecoveryQueue adds the totalVolumeSizeInRecoveryQueue to the svm collection get params
+func (o *SvmCollectionGetParams) SetTotalVolumeSizeInRecoveryQueue(totalVolumeSizeInRecoveryQueue *int64) {
+	o.TotalVolumeSizeInRecoveryQueue = totalVolumeSizeInRecoveryQueue
 }
 
 // WithUUID adds the uuid to the svm collection get params
@@ -1156,6 +1479,125 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qAggregatesUUID != "" {
 
 			if err := r.SetQueryParam("aggregates.uuid", qAggregatesUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareAutoSwitchDurationWithoutNewFileExtension != nil {
+
+		// query param anti_ransomware_auto_switch_duration_without_new_file_extension
+		var qrAntiRansomwareAutoSwitchDurationWithoutNewFileExtension int64
+
+		if o.AntiRansomwareAutoSwitchDurationWithoutNewFileExtension != nil {
+			qrAntiRansomwareAutoSwitchDurationWithoutNewFileExtension = *o.AntiRansomwareAutoSwitchDurationWithoutNewFileExtension
+		}
+		qAntiRansomwareAutoSwitchDurationWithoutNewFileExtension := swag.FormatInt64(qrAntiRansomwareAutoSwitchDurationWithoutNewFileExtension)
+		if qAntiRansomwareAutoSwitchDurationWithoutNewFileExtension != "" {
+
+			if err := r.SetQueryParam("anti_ransomware_auto_switch_duration_without_new_file_extension", qAntiRansomwareAutoSwitchDurationWithoutNewFileExtension); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareAutoSwitchFromLearningToEnabled != nil {
+
+		// query param anti_ransomware_auto_switch_from_learning_to_enabled
+		var qrAntiRansomwareAutoSwitchFromLearningToEnabled bool
+
+		if o.AntiRansomwareAutoSwitchFromLearningToEnabled != nil {
+			qrAntiRansomwareAutoSwitchFromLearningToEnabled = *o.AntiRansomwareAutoSwitchFromLearningToEnabled
+		}
+		qAntiRansomwareAutoSwitchFromLearningToEnabled := swag.FormatBool(qrAntiRansomwareAutoSwitchFromLearningToEnabled)
+		if qAntiRansomwareAutoSwitchFromLearningToEnabled != "" {
+
+			if err := r.SetQueryParam("anti_ransomware_auto_switch_from_learning_to_enabled", qAntiRansomwareAutoSwitchFromLearningToEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareAutoSwitchMinimumFileCount != nil {
+
+		// query param anti_ransomware_auto_switch_minimum_file_count
+		var qrAntiRansomwareAutoSwitchMinimumFileCount int64
+
+		if o.AntiRansomwareAutoSwitchMinimumFileCount != nil {
+			qrAntiRansomwareAutoSwitchMinimumFileCount = *o.AntiRansomwareAutoSwitchMinimumFileCount
+		}
+		qAntiRansomwareAutoSwitchMinimumFileCount := swag.FormatInt64(qrAntiRansomwareAutoSwitchMinimumFileCount)
+		if qAntiRansomwareAutoSwitchMinimumFileCount != "" {
+
+			if err := r.SetQueryParam("anti_ransomware_auto_switch_minimum_file_count", qAntiRansomwareAutoSwitchMinimumFileCount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareAutoSwitchMinimumFileExtension != nil {
+
+		// query param anti_ransomware_auto_switch_minimum_file_extension
+		var qrAntiRansomwareAutoSwitchMinimumFileExtension int64
+
+		if o.AntiRansomwareAutoSwitchMinimumFileExtension != nil {
+			qrAntiRansomwareAutoSwitchMinimumFileExtension = *o.AntiRansomwareAutoSwitchMinimumFileExtension
+		}
+		qAntiRansomwareAutoSwitchMinimumFileExtension := swag.FormatInt64(qrAntiRansomwareAutoSwitchMinimumFileExtension)
+		if qAntiRansomwareAutoSwitchMinimumFileExtension != "" {
+
+			if err := r.SetQueryParam("anti_ransomware_auto_switch_minimum_file_extension", qAntiRansomwareAutoSwitchMinimumFileExtension); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareAutoSwitchMinimumIncomingData != nil {
+
+		// query param anti_ransomware_auto_switch_minimum_incoming_data
+		var qrAntiRansomwareAutoSwitchMinimumIncomingData string
+
+		if o.AntiRansomwareAutoSwitchMinimumIncomingData != nil {
+			qrAntiRansomwareAutoSwitchMinimumIncomingData = *o.AntiRansomwareAutoSwitchMinimumIncomingData
+		}
+		qAntiRansomwareAutoSwitchMinimumIncomingData := qrAntiRansomwareAutoSwitchMinimumIncomingData
+		if qAntiRansomwareAutoSwitchMinimumIncomingData != "" {
+
+			if err := r.SetQueryParam("anti_ransomware_auto_switch_minimum_incoming_data", qAntiRansomwareAutoSwitchMinimumIncomingData); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareAutoSwitchMinimumIncomingDataPercent != nil {
+
+		// query param anti_ransomware_auto_switch_minimum_incoming_data_percent
+		var qrAntiRansomwareAutoSwitchMinimumIncomingDataPercent int64
+
+		if o.AntiRansomwareAutoSwitchMinimumIncomingDataPercent != nil {
+			qrAntiRansomwareAutoSwitchMinimumIncomingDataPercent = *o.AntiRansomwareAutoSwitchMinimumIncomingDataPercent
+		}
+		qAntiRansomwareAutoSwitchMinimumIncomingDataPercent := swag.FormatInt64(qrAntiRansomwareAutoSwitchMinimumIncomingDataPercent)
+		if qAntiRansomwareAutoSwitchMinimumIncomingDataPercent != "" {
+
+			if err := r.SetQueryParam("anti_ransomware_auto_switch_minimum_incoming_data_percent", qAntiRansomwareAutoSwitchMinimumIncomingDataPercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareAutoSwitchMinimumLearningPeriod != nil {
+
+		// query param anti_ransomware_auto_switch_minimum_learning_period
+		var qrAntiRansomwareAutoSwitchMinimumLearningPeriod int64
+
+		if o.AntiRansomwareAutoSwitchMinimumLearningPeriod != nil {
+			qrAntiRansomwareAutoSwitchMinimumLearningPeriod = *o.AntiRansomwareAutoSwitchMinimumLearningPeriod
+		}
+		qAntiRansomwareAutoSwitchMinimumLearningPeriod := swag.FormatInt64(qrAntiRansomwareAutoSwitchMinimumLearningPeriod)
+		if qAntiRansomwareAutoSwitchMinimumLearningPeriod != "" {
+
+			if err := r.SetQueryParam("anti_ransomware_auto_switch_minimum_learning_period", qAntiRansomwareAutoSwitchMinimumLearningPeriod); err != nil {
 				return err
 			}
 		}
@@ -1852,6 +2294,23 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.NumberOfVolumesInRecoveryQueue != nil {
+
+		// query param number_of_volumes_in_recovery_queue
+		var qrNumberOfVolumesInRecoveryQueue int64
+
+		if o.NumberOfVolumesInRecoveryQueue != nil {
+			qrNumberOfVolumesInRecoveryQueue = *o.NumberOfVolumesInRecoveryQueue
+		}
+		qNumberOfVolumesInRecoveryQueue := swag.FormatInt64(qrNumberOfVolumesInRecoveryQueue)
+		if qNumberOfVolumesInRecoveryQueue != "" {
+
+			if err := r.SetQueryParam("number_of_volumes_in_recovery_queue", qNumberOfVolumesInRecoveryQueue); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.NvmeAllowed != nil {
 
 		// query param nvme.allowed
@@ -1897,6 +2356,40 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.QosAdaptivePolicyGroupTemplateName != nil {
+
+		// query param qos_adaptive_policy_group_template.name
+		var qrQosAdaptivePolicyGroupTemplateName string
+
+		if o.QosAdaptivePolicyGroupTemplateName != nil {
+			qrQosAdaptivePolicyGroupTemplateName = *o.QosAdaptivePolicyGroupTemplateName
+		}
+		qQosAdaptivePolicyGroupTemplateName := qrQosAdaptivePolicyGroupTemplateName
+		if qQosAdaptivePolicyGroupTemplateName != "" {
+
+			if err := r.SetQueryParam("qos_adaptive_policy_group_template.name", qQosAdaptivePolicyGroupTemplateName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosAdaptivePolicyGroupTemplateUUID != nil {
+
+		// query param qos_adaptive_policy_group_template.uuid
+		var qrQosAdaptivePolicyGroupTemplateUUID string
+
+		if o.QosAdaptivePolicyGroupTemplateUUID != nil {
+			qrQosAdaptivePolicyGroupTemplateUUID = *o.QosAdaptivePolicyGroupTemplateUUID
+		}
+		qQosAdaptivePolicyGroupTemplateUUID := qrQosAdaptivePolicyGroupTemplateUUID
+		if qQosAdaptivePolicyGroupTemplateUUID != "" {
+
+			if err := r.SetQueryParam("qos_adaptive_policy_group_template.uuid", qQosAdaptivePolicyGroupTemplateUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.QosPolicyName != nil {
 
 		// query param qos_policy.name
@@ -1926,6 +2419,40 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qQosPolicyUUID != "" {
 
 			if err := r.SetQueryParam("qos_policy.uuid", qQosPolicyUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyGroupTemplateName != nil {
+
+		// query param qos_policy_group_template.name
+		var qrQosPolicyGroupTemplateName string
+
+		if o.QosPolicyGroupTemplateName != nil {
+			qrQosPolicyGroupTemplateName = *o.QosPolicyGroupTemplateName
+		}
+		qQosPolicyGroupTemplateName := qrQosPolicyGroupTemplateName
+		if qQosPolicyGroupTemplateName != "" {
+
+			if err := r.SetQueryParam("qos_policy_group_template.name", qQosPolicyGroupTemplateName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyGroupTemplateUUID != nil {
+
+		// query param qos_policy_group_template.uuid
+		var qrQosPolicyGroupTemplateUUID string
+
+		if o.QosPolicyGroupTemplateUUID != nil {
+			qrQosPolicyGroupTemplateUUID = *o.QosPolicyGroupTemplateUUID
+		}
+		qQosPolicyGroupTemplateUUID := qrQosPolicyGroupTemplateUUID
+		if qQosPolicyGroupTemplateUUID != "" {
+
+			if err := r.SetQueryParam("qos_policy_group_template.uuid", qQosPolicyGroupTemplateUUID); err != nil {
 				return err
 			}
 		}
@@ -2067,6 +2594,108 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.StorageAllocated != nil {
+
+		// query param storage.allocated
+		var qrStorageAllocated int64
+
+		if o.StorageAllocated != nil {
+			qrStorageAllocated = *o.StorageAllocated
+		}
+		qStorageAllocated := swag.FormatInt64(qrStorageAllocated)
+		if qStorageAllocated != "" {
+
+			if err := r.SetQueryParam("storage.allocated", qStorageAllocated); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StorageAvailable != nil {
+
+		// query param storage.available
+		var qrStorageAvailable int64
+
+		if o.StorageAvailable != nil {
+			qrStorageAvailable = *o.StorageAvailable
+		}
+		qStorageAvailable := swag.FormatInt64(qrStorageAvailable)
+		if qStorageAvailable != "" {
+
+			if err := r.SetQueryParam("storage.available", qStorageAvailable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StorageLimit != nil {
+
+		// query param storage.limit
+		var qrStorageLimit int64
+
+		if o.StorageLimit != nil {
+			qrStorageLimit = *o.StorageLimit
+		}
+		qStorageLimit := swag.FormatInt64(qrStorageLimit)
+		if qStorageLimit != "" {
+
+			if err := r.SetQueryParam("storage.limit", qStorageLimit); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StorageLimitThresholdAlert != nil {
+
+		// query param storage.limit_threshold_alert
+		var qrStorageLimitThresholdAlert int64
+
+		if o.StorageLimitThresholdAlert != nil {
+			qrStorageLimitThresholdAlert = *o.StorageLimitThresholdAlert
+		}
+		qStorageLimitThresholdAlert := swag.FormatInt64(qrStorageLimitThresholdAlert)
+		if qStorageLimitThresholdAlert != "" {
+
+			if err := r.SetQueryParam("storage.limit_threshold_alert", qStorageLimitThresholdAlert); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StorageLimitThresholdExceeded != nil {
+
+		// query param storage.limit_threshold_exceeded
+		var qrStorageLimitThresholdExceeded int64
+
+		if o.StorageLimitThresholdExceeded != nil {
+			qrStorageLimitThresholdExceeded = *o.StorageLimitThresholdExceeded
+		}
+		qStorageLimitThresholdExceeded := swag.FormatInt64(qrStorageLimitThresholdExceeded)
+		if qStorageLimitThresholdExceeded != "" {
+
+			if err := r.SetQueryParam("storage.limit_threshold_exceeded", qStorageLimitThresholdExceeded); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StorageUsedPercentage != nil {
+
+		// query param storage.used_percentage
+		var qrStorageUsedPercentage int64
+
+		if o.StorageUsedPercentage != nil {
+			qrStorageUsedPercentage = *o.StorageUsedPercentage
+		}
+		qStorageUsedPercentage := swag.FormatInt64(qrStorageUsedPercentage)
+		if qStorageUsedPercentage != "" {
+
+			if err := r.SetQueryParam("storage.used_percentage", qStorageUsedPercentage); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.Subtype != nil {
 
 		// query param subtype
@@ -2079,6 +2708,23 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qSubtype != "" {
 
 			if err := r.SetQueryParam("subtype", qSubtype); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TotalVolumeSizeInRecoveryQueue != nil {
+
+		// query param total_volume_size_in_recovery_queue
+		var qrTotalVolumeSizeInRecoveryQueue int64
+
+		if o.TotalVolumeSizeInRecoveryQueue != nil {
+			qrTotalVolumeSizeInRecoveryQueue = *o.TotalVolumeSizeInRecoveryQueue
+		}
+		qTotalVolumeSizeInRecoveryQueue := swag.FormatInt64(qrTotalVolumeSizeInRecoveryQueue)
+		if qTotalVolumeSizeInRecoveryQueue != "" {
+
+			if err := r.SetQueryParam("total_volume_size_in_recovery_queue", qTotalVolumeSizeInRecoveryQueue); err != nil {
 				return err
 			}
 		}

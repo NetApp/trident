@@ -22,7 +22,7 @@ type IpspaceReference struct {
 	Links *IpspaceReferenceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
-	// Example: exchange
+	// Example: Default
 	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID

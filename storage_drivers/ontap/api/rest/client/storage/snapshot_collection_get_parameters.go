@@ -162,6 +162,18 @@ type SnapshotCollectionGetParams struct {
 	*/
 	Size *int64
 
+	/* SnaplockExpired.
+
+	   Filter by snaplock.expired
+	*/
+	SnaplockExpired *bool
+
+	/* SnaplockTimeUntilExpiry.
+
+	   Filter by snaplock.time_until_expiry
+	*/
+	SnaplockTimeUntilExpiry *string
+
 	/* SnaplockExpiryTime.
 
 	   Filter by snaplock_expiry_time
@@ -457,6 +469,28 @@ func (o *SnapshotCollectionGetParams) WithSize(size *int64) *SnapshotCollectionG
 // SetSize adds the size to the snapshot collection get params
 func (o *SnapshotCollectionGetParams) SetSize(size *int64) {
 	o.Size = size
+}
+
+// WithSnaplockExpired adds the snaplockExpired to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithSnaplockExpired(snaplockExpired *bool) *SnapshotCollectionGetParams {
+	o.SetSnaplockExpired(snaplockExpired)
+	return o
+}
+
+// SetSnaplockExpired adds the snaplockExpired to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetSnaplockExpired(snaplockExpired *bool) {
+	o.SnaplockExpired = snaplockExpired
+}
+
+// WithSnaplockTimeUntilExpiry adds the snaplockTimeUntilExpiry to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithSnaplockTimeUntilExpiry(snaplockTimeUntilExpiry *string) *SnapshotCollectionGetParams {
+	o.SetSnaplockTimeUntilExpiry(snaplockTimeUntilExpiry)
+	return o
+}
+
+// SetSnaplockTimeUntilExpiry adds the snaplockTimeUntilExpiry to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetSnaplockTimeUntilExpiry(snaplockTimeUntilExpiry *string) {
+	o.SnaplockTimeUntilExpiry = snaplockTimeUntilExpiry
 }
 
 // WithSnaplockExpiryTime adds the snaplockExpiryTime to the snapshot collection get params
@@ -821,6 +855,40 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qSize != "" {
 
 			if err := r.SetQueryParam("size", qSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnaplockExpired != nil {
+
+		// query param snaplock.expired
+		var qrSnaplockExpired bool
+
+		if o.SnaplockExpired != nil {
+			qrSnaplockExpired = *o.SnaplockExpired
+		}
+		qSnaplockExpired := swag.FormatBool(qrSnaplockExpired)
+		if qSnaplockExpired != "" {
+
+			if err := r.SetQueryParam("snaplock.expired", qSnaplockExpired); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnaplockTimeUntilExpiry != nil {
+
+		// query param snaplock.time_until_expiry
+		var qrSnaplockTimeUntilExpiry string
+
+		if o.SnaplockTimeUntilExpiry != nil {
+			qrSnaplockTimeUntilExpiry = *o.SnaplockTimeUntilExpiry
+		}
+		qSnaplockTimeUntilExpiry := qrSnaplockTimeUntilExpiry
+		if qSnaplockTimeUntilExpiry != "" {
+
+			if err := r.SetQueryParam("snaplock.time_until_expiry", qSnaplockTimeUntilExpiry); err != nil {
 				return err
 			}
 		}

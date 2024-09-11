@@ -22,7 +22,7 @@ import (
 type ZappNvme struct {
 
 	// The name of the host OS running the application.
-	// Enum: [aix linux vmware windows]
+	// Enum: ["aix","linux","vmware","windows"]
 	OsType *string `json:"os_type,omitempty"`
 
 	// rpo
@@ -260,17 +260,17 @@ type ZappNvmeInlineComponentsInlineArrayItem struct {
 
 	// The name of the application component.
 	// Required: true
-	// Max Length: 512
+	// Max Length: 203
 	// Min Length: 1
 	Name *string `json:"name"`
 
-	// The number of namespaces in the component.
-	// Maximum: 1024
+	// The number of namespaces supported per request, with a total limit of 1024 per volume.
+	// Maximum: 32
 	// Minimum: 1
 	NamespaceCount *int64 `json:"namespace_count,omitempty"`
 
 	// The name of the host OS running the application.
-	// Enum: [aix linux vmware windows]
+	// Enum: ["aix","linux","vmware","windows"]
 	OsType *string `json:"os_type,omitempty"`
 
 	// performance
@@ -337,7 +337,7 @@ func (m *ZappNvmeInlineComponentsInlineArrayItem) validateName(formats strfmt.Re
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", *m.Name, 512); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 203); err != nil {
 		return err
 	}
 
@@ -353,7 +353,7 @@ func (m *ZappNvmeInlineComponentsInlineArrayItem) validateNamespaceCount(formats
 		return err
 	}
 
-	if err := validate.MaximumInt("namespace_count", "body", *m.NamespaceCount, 1024, false); err != nil {
+	if err := validate.MaximumInt("namespace_count", "body", *m.NamespaceCount, 32, false); err != nil {
 		return err
 	}
 
@@ -696,7 +696,7 @@ func (m *ZappNvmeInlineComponentsInlineArrayItemInlinePerformance) UnmarshalBina
 type ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageService struct {
 
 	// The storage service of the application component.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -936,6 +936,9 @@ type ZappNvmeInlineRpo struct {
 
 	// local
 	Local *ZappNvmeInlineRpoInlineLocal `json:"local,omitempty"`
+
+	// remote
+	Remote *ZappNvmeInlineRpoInlineRemote `json:"remote,omitempty"`
 }
 
 // Validate validates this zapp nvme inline rpo
@@ -943,6 +946,10 @@ func (m *ZappNvmeInlineRpo) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLocal(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRemote(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -969,11 +976,32 @@ func (m *ZappNvmeInlineRpo) validateLocal(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *ZappNvmeInlineRpo) validateRemote(formats strfmt.Registry) error {
+	if swag.IsZero(m.Remote) { // not required
+		return nil
+	}
+
+	if m.Remote != nil {
+		if err := m.Remote.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("rpo" + "." + "remote")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this zapp nvme inline rpo based on the context it is used
 func (m *ZappNvmeInlineRpo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRemote(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -989,6 +1017,20 @@ func (m *ZappNvmeInlineRpo) contextValidateLocal(ctx context.Context, formats st
 		if err := m.Local.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("rpo" + "." + "local")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ZappNvmeInlineRpo) contextValidateRemote(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Remote != nil {
+		if err := m.Remote.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("rpo" + "." + "remote")
 			}
 			return err
 		}
@@ -1021,7 +1063,7 @@ func (m *ZappNvmeInlineRpo) UnmarshalBinary(b []byte) error {
 type ZappNvmeInlineRpoInlineLocal struct {
 
 	// The local RPO of the application.
-	// Enum: [hourly none]
+	// Enum: ["hourly","none"]
 	Name *string `json:"name,omitempty"`
 
 	// The Snapshot copy policy to apply to each volume in the smart container. This property is only supported for smart containers. Usage: &lt;snapshot policy&gt;
@@ -1114,6 +1156,109 @@ func (m *ZappNvmeInlineRpoInlineLocal) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ZappNvmeInlineRpoInlineLocal) UnmarshalBinary(b []byte) error {
 	var res ZappNvmeInlineRpoInlineLocal
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ZappNvmeInlineRpoInlineRemote zapp nvme inline rpo inline remote
+//
+// swagger:model zapp_nvme_inline_rpo_inline_remote
+type ZappNvmeInlineRpoInlineRemote struct {
+
+	// The remote RPO of the application.
+	// Enum: ["none","zero"]
+	Name *string `json:"name,omitempty"`
+}
+
+// Validate validates this zapp nvme inline rpo inline remote
+func (m *ZappNvmeInlineRpoInlineRemote) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var zappNvmeInlineRpoInlineRemoteTypeNamePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["none","zero"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		zappNvmeInlineRpoInlineRemoteTypeNamePropEnum = append(zappNvmeInlineRpoInlineRemoteTypeNamePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// zapp_nvme_inline_rpo_inline_remote
+	// ZappNvmeInlineRpoInlineRemote
+	// name
+	// Name
+	// none
+	// END DEBUGGING
+	// ZappNvmeInlineRpoInlineRemoteNameNone captures enum value "none"
+	ZappNvmeInlineRpoInlineRemoteNameNone string = "none"
+
+	// BEGIN DEBUGGING
+	// zapp_nvme_inline_rpo_inline_remote
+	// ZappNvmeInlineRpoInlineRemote
+	// name
+	// Name
+	// zero
+	// END DEBUGGING
+	// ZappNvmeInlineRpoInlineRemoteNameZero captures enum value "zero"
+	ZappNvmeInlineRpoInlineRemoteNameZero string = "zero"
+)
+
+// prop value enum
+func (m *ZappNvmeInlineRpoInlineRemote) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, zappNvmeInlineRpoInlineRemoteTypeNamePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ZappNvmeInlineRpoInlineRemote) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateNameEnum("rpo"+"."+"remote"+"."+"name", "body", *m.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this zapp nvme inline rpo inline remote based on context it is used
+func (m *ZappNvmeInlineRpoInlineRemote) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ZappNvmeInlineRpoInlineRemote) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ZappNvmeInlineRpoInlineRemote) UnmarshalBinary(b []byte) error {
+	var res ZappNvmeInlineRpoInlineRemote
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

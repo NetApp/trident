@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type AggregateDeleteReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *AggregateDeleteReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewAggregateDeleteOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewAggregateDeleteAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +48,76 @@ func (o *AggregateDeleteReader) ReadResponse(response runtime.ClientResponse, co
 	}
 }
 
+// NewAggregateDeleteOK creates a AggregateDeleteOK with default headers values
+func NewAggregateDeleteOK() *AggregateDeleteOK {
+	return &AggregateDeleteOK{}
+}
+
+/*
+AggregateDeleteOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type AggregateDeleteOK struct {
+	Payload *models.AggregateJobLinkResponse
+}
+
+// IsSuccess returns true when this aggregate delete o k response has a 2xx status code
+func (o *AggregateDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this aggregate delete o k response has a 3xx status code
+func (o *AggregateDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this aggregate delete o k response has a 4xx status code
+func (o *AggregateDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this aggregate delete o k response has a 5xx status code
+func (o *AggregateDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this aggregate delete o k response a status code equal to that given
+func (o *AggregateDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
+// Code gets the status code for the aggregate delete o k response
+func (o *AggregateDeleteOK) Code() int {
+	return 200
+}
+
+func (o *AggregateDeleteOK) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/aggregates/{uuid}][%d] aggregateDeleteOK %s", 200, payload)
+}
+
+func (o *AggregateDeleteOK) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/aggregates/{uuid}][%d] aggregateDeleteOK %s", 200, payload)
+}
+
+func (o *AggregateDeleteOK) GetPayload() *models.AggregateJobLinkResponse {
+	return o.Payload
+}
+
+func (o *AggregateDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.AggregateJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewAggregateDeleteAccepted creates a AggregateDeleteAccepted with default headers values
 func NewAggregateDeleteAccepted() *AggregateDeleteAccepted {
 	return &AggregateDeleteAccepted{}
@@ -52,7 +129,7 @@ AggregateDeleteAccepted describes a response with status code 202, with default 
 Accepted
 */
 type AggregateDeleteAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.AggregateJobLinkResponse
 }
 
 // IsSuccess returns true when this aggregate delete accepted response has a 2xx status code
@@ -80,21 +157,28 @@ func (o *AggregateDeleteAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the aggregate delete accepted response
+func (o *AggregateDeleteAccepted) Code() int {
+	return 202
+}
+
 func (o *AggregateDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /storage/aggregates/{uuid}][%d] aggregateDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/aggregates/{uuid}][%d] aggregateDeleteAccepted %s", 202, payload)
 }
 
 func (o *AggregateDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /storage/aggregates/{uuid}][%d] aggregateDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/aggregates/{uuid}][%d] aggregateDeleteAccepted %s", 202, payload)
 }
 
-func (o *AggregateDeleteAccepted) GetPayload() *models.JobLinkResponse {
+func (o *AggregateDeleteAccepted) GetPayload() *models.AggregateJobLinkResponse {
 	return o.Payload
 }
 
 func (o *AggregateDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.AggregateJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -128,16 +212,13 @@ func NewAggregateDeleteDefault(code int) *AggregateDeleteDefault {
 | 786771 | Aggregate does not exist. |
 | 786867 | Specified aggregate resides on the remote cluster. |
 | 786897 | Specified aggregate cannot be deleted as it is a switched-over root aggregate. |
+| 19726544 | DELETE on the aggregate endpoint is not supported on this version of ONTAP. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AggregateDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the aggregate delete default response
-func (o *AggregateDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this aggregate delete default response has a 2xx status code
@@ -165,12 +246,19 @@ func (o *AggregateDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the aggregate delete default response
+func (o *AggregateDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AggregateDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /storage/aggregates/{uuid}][%d] aggregate_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/aggregates/{uuid}][%d] aggregate_delete default %s", o._statusCode, payload)
 }
 
 func (o *AggregateDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /storage/aggregates/{uuid}][%d] aggregate_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/aggregates/{uuid}][%d] aggregate_delete default %s", o._statusCode, payload)
 }
 
 func (o *AggregateDeleteDefault) GetPayload() *models.ErrorResponse {

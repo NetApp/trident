@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *IgroupCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the igroup collection get o k response
+func (o *IgroupCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *IgroupCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/igroups][%d] igroupCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/igroups][%d] igroupCollectionGetOK %s", 200, payload)
 }
 
 func (o *IgroupCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/san/igroups][%d] igroupCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/igroups][%d] igroupCollectionGetOK %s", 200, payload)
 }
 
 func (o *IgroupCollectionGetOK) GetPayload() *models.IgroupResponse {
@@ -122,11 +130,6 @@ type IgroupCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the igroup collection get default response
-func (o *IgroupCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this igroup collection get default response has a 2xx status code
 func (o *IgroupCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *IgroupCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the igroup collection get default response
+func (o *IgroupCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IgroupCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/san/igroups][%d] igroup_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/igroups][%d] igroup_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *IgroupCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/san/igroups][%d] igroup_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/san/igroups][%d] igroup_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *IgroupCollectionGetDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *FpolicyConnectionModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fpolicy connection modify o k response
+func (o *FpolicyConnectionModifyOK) Code() int {
+	return 200
+}
+
 func (o *FpolicyConnectionModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/connections/{node.uuid}/{policy.name}/{server}][%d] fpolicyConnectionModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/connections/{node.uuid}/{policy.name}/{server}][%d] fpolicyConnectionModifyOK", 200)
 }
 
 func (o *FpolicyConnectionModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/connections/{node.uuid}/{policy.name}/{server}][%d] fpolicyConnectionModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/connections/{node.uuid}/{policy.name}/{server}][%d] fpolicyConnectionModifyOK", 200)
 }
 
 func (o *FpolicyConnectionModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,18 +114,15 @@ func NewFpolicyConnectionModifyDefault(code int) *FpolicyConnectionModifyDefault
 | ---------- | ----------- |
 | 9764954    | The specified policy does not exist |
 | 9764911    | Failed to connect to the FPolicy server. Reason: The specified entry does not exist |
-| 9764948    | The specified policy is disabled. Using a disabled policy with this command is not supported. Use the 'fpolicy enable' command to enable the policy |
 | 9764912    | Failed to disconnect the FPolicy server. Reason: The specified entry does not exist |
+| 9764948    | The specified policy is disabled. Using a disabled policy with this API is not supported. Use the 'PATCH /protocols/fpolicy/{svm.uuid}/policies/{name}' API to enable the policy |
+| 9764963    | The specified server is already connected |
+| 9764964    | The specified server is already disconnected |
 */
 type FpolicyConnectionModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the fpolicy connection modify default response
-func (o *FpolicyConnectionModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this fpolicy connection modify default response has a 2xx status code
@@ -147,12 +150,19 @@ func (o *FpolicyConnectionModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fpolicy connection modify default response
+func (o *FpolicyConnectionModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FpolicyConnectionModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/connections/{node.uuid}/{policy.name}/{server}][%d] fpolicy_connection_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/connections/{node.uuid}/{policy.name}/{server}][%d] fpolicy_connection_modify default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyConnectionModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/connections/{node.uuid}/{policy.name}/{server}][%d] fpolicy_connection_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/connections/{node.uuid}/{policy.name}/{server}][%d] fpolicy_connection_modify default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyConnectionModifyDefault) GetPayload() *models.ErrorResponse {

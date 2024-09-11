@@ -37,7 +37,7 @@ type SoftwareMccReference struct {
 	// Upgrade state of MetroCluster.
 	// Example: in_progress
 	// Read Only: true
-	// Enum: [in_progress waiting paused_by_user paused_on_error completed canceled failed pause_pending cancel_pending]
+	// Enum: ["in_progress","waiting","paused_by_user","paused_on_error","completed","canceled","failed","pause_pending","cancel_pending"]
 	State interface{} `json:"state,omitempty"`
 }
 

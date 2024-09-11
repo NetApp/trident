@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *EmsConfigModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ems config modify o k response
+func (o *EmsConfigModifyOK) Code() int {
+	return 200
+}
+
 func (o *EmsConfigModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /support/ems][%d] emsConfigModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /support/ems][%d] emsConfigModifyOK", 200)
 }
 
 func (o *EmsConfigModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /support/ems][%d] emsConfigModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /support/ems][%d] emsConfigModifyOK", 200)
 }
 
 func (o *EmsConfigModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -106,22 +112,23 @@ func NewEmsConfigModifyDefault(code int) *EmsConfigModifyDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 983123     | The validation of the mail server provided failed |
-| 983136     | The proxy URL cannot contain a username or password |
-| 983137     | The proxy URL provided is invalid |
-| 983139     | The IPv6 proxy URL provided is invalid |
-| 983140     | The proxy URL provided contains an invalid scheme. Supported scheme is 'http' |
-| 983160     | The provided parameter requires an effective cluster version of ONTAP 9.9.1 or later |
+| 983123 | The validation of the mail server provided failed |
+| 983137 | The proxy URL provided is invalid |
+| 983139 | The IPv6 proxy URL provided is invalid |
+| 983140 | The proxy URL provided contains an invalid scheme. The only supported scheme is 'http' |
+| 983160 | The provided parameter requires an effective cluster version of ONTAP 9.9.1 or later |
+| 983220 | The proxy URL provided contains an invalid scheme. The only supported schemes are 'http' and 'https' |
+| 983224 | The mail server URL cannot contain a username or password |
+| 983225 | The mail server username cannot be set without a mail server URL |
+| 983226 | The mail server password cannot be set without a mail server username |
+| 983227 | The provided field requires an effective cluster version of ONTAP 9.15.1 or later |
+| 983229 | The proxy URL cannot contain a username or password |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type EmsConfigModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ems config modify default response
-func (o *EmsConfigModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ems config modify default response has a 2xx status code
@@ -149,12 +156,19 @@ func (o *EmsConfigModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ems config modify default response
+func (o *EmsConfigModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *EmsConfigModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /support/ems][%d] ems_config_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/ems][%d] ems_config_modify default %s", o._statusCode, payload)
 }
 
 func (o *EmsConfigModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /support/ems][%d] ems_config_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /support/ems][%d] ems_config_modify default %s", o._statusCode, payload)
 }
 
 func (o *EmsConfigModifyDefault) GetPayload() *models.ErrorResponse {

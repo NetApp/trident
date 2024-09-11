@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type AwsKmsRekeyExternalReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *AwsKmsRekeyExternalReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewAwsKmsRekeyExternalCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewAwsKmsRekeyExternalAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -39,6 +46,62 @@ func (o *AwsKmsRekeyExternalReader) ReadResponse(response runtime.ClientResponse
 		}
 		return nil, result
 	}
+}
+
+// NewAwsKmsRekeyExternalCreated creates a AwsKmsRekeyExternalCreated with default headers values
+func NewAwsKmsRekeyExternalCreated() *AwsKmsRekeyExternalCreated {
+	return &AwsKmsRekeyExternalCreated{}
+}
+
+/*
+AwsKmsRekeyExternalCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type AwsKmsRekeyExternalCreated struct {
+}
+
+// IsSuccess returns true when this aws kms rekey external created response has a 2xx status code
+func (o *AwsKmsRekeyExternalCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this aws kms rekey external created response has a 3xx status code
+func (o *AwsKmsRekeyExternalCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this aws kms rekey external created response has a 4xx status code
+func (o *AwsKmsRekeyExternalCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this aws kms rekey external created response has a 5xx status code
+func (o *AwsKmsRekeyExternalCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this aws kms rekey external created response a status code equal to that given
+func (o *AwsKmsRekeyExternalCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the aws kms rekey external created response
+func (o *AwsKmsRekeyExternalCreated) Code() int {
+	return 201
+}
+
+func (o *AwsKmsRekeyExternalCreated) Error() string {
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] awsKmsRekeyExternalCreated", 201)
+}
+
+func (o *AwsKmsRekeyExternalCreated) String() string {
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] awsKmsRekeyExternalCreated", 201)
+}
+
+func (o *AwsKmsRekeyExternalCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	return nil
 }
 
 // NewAwsKmsRekeyExternalAccepted creates a AwsKmsRekeyExternalAccepted with default headers values
@@ -79,12 +142,17 @@ func (o *AwsKmsRekeyExternalAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the aws kms rekey external accepted response
+func (o *AwsKmsRekeyExternalAccepted) Code() int {
+	return 202
+}
+
 func (o *AwsKmsRekeyExternalAccepted) Error() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] awsKmsRekeyExternalAccepted ", 202)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] awsKmsRekeyExternalAccepted", 202)
 }
 
 func (o *AwsKmsRekeyExternalAccepted) String() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] awsKmsRekeyExternalAccepted ", 202)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] awsKmsRekeyExternalAccepted", 202)
 }
 
 func (o *AwsKmsRekeyExternalAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,18 +177,17 @@ func NewAwsKmsRekeyExternalDefault(code int) *AwsKmsRekeyExternalDefault {
 | 65537538 | Internal error. Failed to get unwrapped key for a given key ID. |
 | 65537543 | Internal Error. Missing top-level internal key protection key (KEK) on a node. |
 | 65537547 | One or more volume encryption keys for encrypted volumes of this data SVM are stored in the key manager configured for the admin SVM. Use the REST API POST method to migrate this data SVM's keys from the admin SVM's key manager before running the rekey operation. |
+| 65537610 | Rekey cannot be performed on the SVM while the enabled keystore configuration is being switched. If a previous attempt to switch the keystore configuration failed, or was interrupted, the system will continue to prevent rekeying for the SVM. Use the REST API PATCH method "/api/security/key-stores/{uuid}" to re-run and complete the operation. |
 | 65537919 | External rekey failed on one or more nodes. |
 | 65537926 | AWS KMS is not configured for the given SVM. |
+| 65539436 | Rekey cannot be performed on the SVM while the enabled keystore configuration is being initialized. Wait until the keystore is in the active state, and rerun the rekey operation. |
+| 65539437 | Rekey cannot be performed on the SVM while the enabled keystore configuration is being disabled. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AwsKmsRekeyExternalDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the aws kms rekey external default response
-func (o *AwsKmsRekeyExternalDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this aws kms rekey external default response has a 2xx status code
@@ -148,12 +215,19 @@ func (o *AwsKmsRekeyExternalDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the aws kms rekey external default response
+func (o *AwsKmsRekeyExternalDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AwsKmsRekeyExternalDefault) Error() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] aws_kms_rekey_external default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] aws_kms_rekey_external default %s", o._statusCode, payload)
 }
 
 func (o *AwsKmsRekeyExternalDefault) String() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] aws_kms_rekey_external default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] aws_kms_rekey_external default %s", o._statusCode, payload)
 }
 
 func (o *AwsKmsRekeyExternalDefault) GetPayload() *models.ErrorResponse {

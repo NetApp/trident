@@ -31,7 +31,7 @@ type SplitStatus struct {
 
 	// Specifies the space occupied by unsplit file clones in the volume.
 	// Read Only: true
-	UnsplitCloneSize *int64 `json:"unsplit_clone_size,omitempty"`
+	UnsplitSize *int64 `json:"unsplit_size,omitempty"`
 
 	// volume
 	Volume *SplitStatusInlineVolume `json:"volume,omitempty"`
@@ -126,7 +126,7 @@ func (m *SplitStatus) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateUnsplitCloneSize(ctx, formats); err != nil {
+	if err := m.contextValidateUnsplitSize(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -177,9 +177,9 @@ func (m *SplitStatus) contextValidateSvm(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *SplitStatus) contextValidateUnsplitCloneSize(ctx context.Context, formats strfmt.Registry) error {
+func (m *SplitStatus) contextValidateUnsplitSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "unsplit_clone_size", "body", m.UnsplitCloneSize); err != nil {
+	if err := validate.ReadOnly(ctx, "unsplit_size", "body", m.UnsplitSize); err != nil {
 		return err
 	}
 
@@ -218,7 +218,7 @@ func (m *SplitStatus) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SplitStatusInlineSvm split status inline svm
+// SplitStatusInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model split_status_inline_svm
 type SplitStatusInlineSvm struct {
@@ -226,12 +226,12 @@ type SplitStatusInlineSvm struct {
 	// links
 	Links *SplitStatusInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -408,7 +408,7 @@ type SplitStatusInlineVolume struct {
 	// links
 	Links *SplitStatusInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

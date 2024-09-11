@@ -41,6 +41,7 @@ type LocalCifsUser struct {
 
 	// Specifies local groups of which this local user is a member.
 	//
+	// Read Only: true
 	LocalCifsUserInlineMembership []*LocalCifsUserInlineMembershipInlineArrayItem `json:"membership,omitempty"`
 
 	// Local user name. The maximum supported length of an user name is 20 characters.
@@ -57,6 +58,7 @@ type LocalCifsUser struct {
 	// The security ID of the local user which uniquely identifies the user. The user SID is automatically generated in POST and it is retrieved using the GET method.
 	//
 	// Example: S-1-5-21-256008430-3394229847-3930036330-1001
+	// Read Only: true
 	Sid *string `json:"sid,omitempty"`
 
 	// svm
@@ -219,6 +221,10 @@ func (m *LocalCifsUser) ContextValidate(ctx context.Context, formats strfmt.Regi
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSid(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -245,6 +251,10 @@ func (m *LocalCifsUser) contextValidateLinks(ctx context.Context, formats strfmt
 
 func (m *LocalCifsUser) contextValidateLocalCifsUserInlineMembership(ctx context.Context, formats strfmt.Registry) error {
 
+	if err := validate.ReadOnly(ctx, "membership", "body", []*LocalCifsUserInlineMembershipInlineArrayItem(m.LocalCifsUserInlineMembership)); err != nil {
+		return err
+	}
+
 	for i := 0; i < len(m.LocalCifsUserInlineMembership); i++ {
 
 		if m.LocalCifsUserInlineMembership[i] != nil {
@@ -256,6 +266,15 @@ func (m *LocalCifsUser) contextValidateLocalCifsUserInlineMembership(ctx context
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *LocalCifsUser) contextValidateSid(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "sid", "body", m.Sid); err != nil {
+		return err
 	}
 
 	return nil
@@ -396,6 +415,7 @@ type LocalCifsUserInlineMembershipInlineArrayItem struct {
 	// The security ID of the local group which uniquely identifies the group. The group SID is automatically generated in POST and it is retrieved using the GET method.
 	//
 	// Example: S-1-5-21-256008430-3394229847-3930036330-1001
+	// Read Only: true
 	Sid *string `json:"sid,omitempty"`
 }
 
@@ -454,6 +474,10 @@ func (m *LocalCifsUserInlineMembershipInlineArrayItem) ContextValidate(ctx conte
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSid(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -469,6 +493,15 @@ func (m *LocalCifsUserInlineMembershipInlineArrayItem) contextValidateLinks(ctx 
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *LocalCifsUserInlineMembershipInlineArrayItem) contextValidateSid(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "sid", "body", m.Sid); err != nil {
+		return err
 	}
 
 	return nil
@@ -578,7 +611,7 @@ func (m *LocalCifsUserInlineMembershipInlineArrayItemInlineLinks) UnmarshalBinar
 	return nil
 }
 
-// LocalCifsUserInlineSvm local cifs user inline svm
+// LocalCifsUserInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model local_cifs_user_inline_svm
 type LocalCifsUserInlineSvm struct {
@@ -586,12 +619,12 @@ type LocalCifsUserInlineSvm struct {
 	// links
 	Links *LocalCifsUserInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

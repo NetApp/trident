@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ClusterLdapGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cluster ldap get o k response
+func (o *ClusterLdapGetOK) Code() int {
+	return 200
+}
+
 func (o *ClusterLdapGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/authentication/cluster/ldap][%d] clusterLdapGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/cluster/ldap][%d] clusterLdapGetOK %s", 200, payload)
 }
 
 func (o *ClusterLdapGetOK) String() string {
-	return fmt.Sprintf("[GET /security/authentication/cluster/ldap][%d] clusterLdapGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/cluster/ldap][%d] clusterLdapGetOK %s", 200, payload)
 }
 
 func (o *ClusterLdapGetOK) GetPayload() *models.ClusterLdap {
@@ -122,11 +130,6 @@ type ClusterLdapGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cluster ldap get default response
-func (o *ClusterLdapGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cluster ldap get default response has a 2xx status code
 func (o *ClusterLdapGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *ClusterLdapGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster ldap get default response
+func (o *ClusterLdapGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterLdapGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/authentication/cluster/ldap][%d] cluster_ldap_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/cluster/ldap][%d] cluster_ldap_get default %s", o._statusCode, payload)
 }
 
 func (o *ClusterLdapGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/authentication/cluster/ldap][%d] cluster_ldap_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/cluster/ldap][%d] cluster_ldap_get default %s", o._statusCode, payload)
 }
 
 func (o *ClusterLdapGetDefault) GetPayload() *models.ErrorResponse {

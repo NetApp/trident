@@ -6,6 +6,7 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *NetworkIPBgpPeerGroupDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the network Ip bgp peer group delete o k response
+func (o *NetworkIPBgpPeerGroupDeleteOK) Code() int {
+	return 200
+}
+
 func (o *NetworkIPBgpPeerGroupDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /network/ip/bgp/peer-groups/{uuid}][%d] networkIpBgpPeerGroupDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /network/ip/bgp/peer-groups/{uuid}][%d] networkIpBgpPeerGroupDeleteOK", 200)
 }
 
 func (o *NetworkIPBgpPeerGroupDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /network/ip/bgp/peer-groups/{uuid}][%d] networkIpBgpPeerGroupDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /network/ip/bgp/peer-groups/{uuid}][%d] networkIpBgpPeerGroupDeleteOK", 200)
 }
 
 func (o *NetworkIPBgpPeerGroupDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,16 +113,12 @@ func NewNetworkIPBgpPeerGroupDeleteDefault(code int) *NetworkIPBgpPeerGroupDelet
 | Error Code | Description |
 | ---------- | ----------- |
 | 53282019 | Internal error. Failed to remove BGP peer group on node. Wait a few minutes and try the command again. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NetworkIPBgpPeerGroupDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the network ip bgp peer group delete default response
-func (o *NetworkIPBgpPeerGroupDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this network ip bgp peer group delete default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *NetworkIPBgpPeerGroupDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the network ip bgp peer group delete default response
+func (o *NetworkIPBgpPeerGroupDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetworkIPBgpPeerGroupDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /network/ip/bgp/peer-groups/{uuid}][%d] network_ip_bgp_peer_group_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/ip/bgp/peer-groups/{uuid}][%d] network_ip_bgp_peer_group_delete default %s", o._statusCode, payload)
 }
 
 func (o *NetworkIPBgpPeerGroupDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /network/ip/bgp/peer-groups/{uuid}][%d] network_ip_bgp_peer_group_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/ip/bgp/peer-groups/{uuid}][%d] network_ip_bgp_peer_group_delete default %s", o._statusCode, payload)
 }
 
 func (o *NetworkIPBgpPeerGroupDeleteDefault) GetPayload() *models.ErrorResponse {

@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *KerberosRealmDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the kerberos realm delete o k response
+func (o *KerberosRealmDeleteOK) Code() int {
+	return 200
+}
+
 func (o *KerberosRealmDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberosRealmDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberosRealmDeleteOK", 200)
 }
 
 func (o *KerberosRealmDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberosRealmDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberosRealmDeleteOK", 200)
 }
 
 func (o *KerberosRealmDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -120,11 +126,6 @@ type KerberosRealmDeleteDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the kerberos realm delete default response
-func (o *KerberosRealmDeleteDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this kerberos realm delete default response has a 2xx status code
 func (o *KerberosRealmDeleteDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -150,12 +151,19 @@ func (o *KerberosRealmDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the kerberos realm delete default response
+func (o *KerberosRealmDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *KerberosRealmDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberos_realm_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberos_realm_delete default %s", o._statusCode, payload)
 }
 
 func (o *KerberosRealmDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberos_realm_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberos_realm_delete default %s", o._statusCode, payload)
 }
 
 func (o *KerberosRealmDeleteDefault) GetPayload() *models.ErrorResponse {

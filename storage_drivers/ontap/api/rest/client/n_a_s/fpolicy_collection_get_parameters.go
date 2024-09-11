@@ -98,6 +98,12 @@ type FpolicyCollectionGetParams struct {
 	*/
 	EnginesFormat *string
 
+	/* EnginesKeepAliveInterval.
+
+	   Filter by engines.keep_alive_interval
+	*/
+	EnginesKeepAliveInterval *string
+
 	/* EnginesMaxServerRequests.
 
 	   Filter by engines.max_server_requests
@@ -181,6 +187,12 @@ type FpolicyCollectionGetParams struct {
 	   Filter by engines.type
 	*/
 	EnginesType *string
+
+	/* EventsFileOperationsAccess.
+
+	   Filter by events.file_operations.access
+	*/
+	EventsFileOperationsAccess *bool
 
 	/* EventsFileOperationsClose.
 
@@ -398,6 +410,12 @@ type FpolicyCollectionGetParams struct {
 	*/
 	EventsFiltersWriteWithSizeChange *bool
 
+	/* EventsMonitorFileopFailure.
+
+	   Filter by events.monitor_fileop_failure
+	*/
+	EventsMonitorFileopFailure *bool
+
 	/* EventsName.
 
 	   Filter by events.name
@@ -434,6 +452,36 @@ type FpolicyCollectionGetParams struct {
 	*/
 	OrderBy []string
 
+	/* PersistentStoresAutosizeMode.
+
+	   Filter by persistent_stores.autosize_mode
+	*/
+	PersistentStoresAutosizeMode *string
+
+	/* PersistentStoresName.
+
+	   Filter by persistent_stores.name
+	*/
+	PersistentStoresName *string
+
+	/* PersistentStoresSize.
+
+	   Filter by persistent_stores.size
+	*/
+	PersistentStoresSize *int64
+
+	/* PersistentStoresVolume.
+
+	   Filter by persistent_stores.volume
+	*/
+	PersistentStoresVolume *string
+
+	/* PoliciesAllowPrivilegedAccess.
+
+	   Filter by policies.allow_privileged_access
+	*/
+	PoliciesAllowPrivilegedAccess *bool
+
 	/* PoliciesEnabled.
 
 	   Filter by policies.enabled
@@ -469,6 +517,12 @@ type FpolicyCollectionGetParams struct {
 	   Filter by policies.passthrough_read
 	*/
 	PoliciesPassthroughRead *bool
+
+	/* PoliciesPersistentStore.
+
+	   Filter by policies.persistent_store
+	*/
+	PoliciesPersistentStore *string
 
 	/* PoliciesPriority.
 
@@ -703,6 +757,17 @@ func (o *FpolicyCollectionGetParams) SetEnginesFormat(enginesFormat *string) {
 	o.EnginesFormat = enginesFormat
 }
 
+// WithEnginesKeepAliveInterval adds the enginesKeepAliveInterval to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesKeepAliveInterval(enginesKeepAliveInterval *string) *FpolicyCollectionGetParams {
+	o.SetEnginesKeepAliveInterval(enginesKeepAliveInterval)
+	return o
+}
+
+// SetEnginesKeepAliveInterval adds the enginesKeepAliveInterval to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesKeepAliveInterval(enginesKeepAliveInterval *string) {
+	o.EnginesKeepAliveInterval = enginesKeepAliveInterval
+}
+
 // WithEnginesMaxServerRequests adds the enginesMaxServerRequests to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) WithEnginesMaxServerRequests(enginesMaxServerRequests *int64) *FpolicyCollectionGetParams {
 	o.SetEnginesMaxServerRequests(enginesMaxServerRequests)
@@ -855,6 +920,17 @@ func (o *FpolicyCollectionGetParams) WithEnginesType(enginesType *string) *Fpoli
 // SetEnginesType adds the enginesType to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) SetEnginesType(enginesType *string) {
 	o.EnginesType = enginesType
+}
+
+// WithEventsFileOperationsAccess adds the eventsFileOperationsAccess to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEventsFileOperationsAccess(eventsFileOperationsAccess *bool) *FpolicyCollectionGetParams {
+	o.SetEventsFileOperationsAccess(eventsFileOperationsAccess)
+	return o
+}
+
+// SetEventsFileOperationsAccess adds the eventsFileOperationsAccess to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEventsFileOperationsAccess(eventsFileOperationsAccess *bool) {
+	o.EventsFileOperationsAccess = eventsFileOperationsAccess
 }
 
 // WithEventsFileOperationsClose adds the eventsFileOperationsClose to the fpolicy collection get params
@@ -1253,6 +1329,17 @@ func (o *FpolicyCollectionGetParams) SetEventsFiltersWriteWithSizeChange(eventsF
 	o.EventsFiltersWriteWithSizeChange = eventsFiltersWriteWithSizeChange
 }
 
+// WithEventsMonitorFileopFailure adds the eventsMonitorFileopFailure to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEventsMonitorFileopFailure(eventsMonitorFileopFailure *bool) *FpolicyCollectionGetParams {
+	o.SetEventsMonitorFileopFailure(eventsMonitorFileopFailure)
+	return o
+}
+
+// SetEventsMonitorFileopFailure adds the eventsMonitorFileopFailure to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEventsMonitorFileopFailure(eventsMonitorFileopFailure *bool) {
+	o.EventsMonitorFileopFailure = eventsMonitorFileopFailure
+}
+
 // WithEventsName adds the eventsName to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) WithEventsName(eventsName *string) *FpolicyCollectionGetParams {
 	o.SetEventsName(eventsName)
@@ -1319,6 +1406,61 @@ func (o *FpolicyCollectionGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
 }
 
+// WithPersistentStoresAutosizeMode adds the persistentStoresAutosizeMode to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithPersistentStoresAutosizeMode(persistentStoresAutosizeMode *string) *FpolicyCollectionGetParams {
+	o.SetPersistentStoresAutosizeMode(persistentStoresAutosizeMode)
+	return o
+}
+
+// SetPersistentStoresAutosizeMode adds the persistentStoresAutosizeMode to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetPersistentStoresAutosizeMode(persistentStoresAutosizeMode *string) {
+	o.PersistentStoresAutosizeMode = persistentStoresAutosizeMode
+}
+
+// WithPersistentStoresName adds the persistentStoresName to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithPersistentStoresName(persistentStoresName *string) *FpolicyCollectionGetParams {
+	o.SetPersistentStoresName(persistentStoresName)
+	return o
+}
+
+// SetPersistentStoresName adds the persistentStoresName to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetPersistentStoresName(persistentStoresName *string) {
+	o.PersistentStoresName = persistentStoresName
+}
+
+// WithPersistentStoresSize adds the persistentStoresSize to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithPersistentStoresSize(persistentStoresSize *int64) *FpolicyCollectionGetParams {
+	o.SetPersistentStoresSize(persistentStoresSize)
+	return o
+}
+
+// SetPersistentStoresSize adds the persistentStoresSize to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetPersistentStoresSize(persistentStoresSize *int64) {
+	o.PersistentStoresSize = persistentStoresSize
+}
+
+// WithPersistentStoresVolume adds the persistentStoresVolume to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithPersistentStoresVolume(persistentStoresVolume *string) *FpolicyCollectionGetParams {
+	o.SetPersistentStoresVolume(persistentStoresVolume)
+	return o
+}
+
+// SetPersistentStoresVolume adds the persistentStoresVolume to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetPersistentStoresVolume(persistentStoresVolume *string) {
+	o.PersistentStoresVolume = persistentStoresVolume
+}
+
+// WithPoliciesAllowPrivilegedAccess adds the policiesAllowPrivilegedAccess to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithPoliciesAllowPrivilegedAccess(policiesAllowPrivilegedAccess *bool) *FpolicyCollectionGetParams {
+	o.SetPoliciesAllowPrivilegedAccess(policiesAllowPrivilegedAccess)
+	return o
+}
+
+// SetPoliciesAllowPrivilegedAccess adds the policiesAllowPrivilegedAccess to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetPoliciesAllowPrivilegedAccess(policiesAllowPrivilegedAccess *bool) {
+	o.PoliciesAllowPrivilegedAccess = policiesAllowPrivilegedAccess
+}
+
 // WithPoliciesEnabled adds the policiesEnabled to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) WithPoliciesEnabled(policiesEnabled *bool) *FpolicyCollectionGetParams {
 	o.SetPoliciesEnabled(policiesEnabled)
@@ -1383,6 +1525,17 @@ func (o *FpolicyCollectionGetParams) WithPoliciesPassthroughRead(policiesPassthr
 // SetPoliciesPassthroughRead adds the policiesPassthroughRead to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) SetPoliciesPassthroughRead(policiesPassthroughRead *bool) {
 	o.PoliciesPassthroughRead = policiesPassthroughRead
+}
+
+// WithPoliciesPersistentStore adds the policiesPersistentStore to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithPoliciesPersistentStore(policiesPersistentStore *string) *FpolicyCollectionGetParams {
+	o.SetPoliciesPersistentStore(policiesPersistentStore)
+	return o
+}
+
+// SetPoliciesPersistentStore adds the policiesPersistentStore to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetPoliciesPersistentStore(policiesPersistentStore *string) {
+	o.PoliciesPersistentStore = policiesPersistentStore
 }
 
 // WithPoliciesPriority adds the policiesPriority to the fpolicy collection get params
@@ -1671,6 +1824,23 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
+	if o.EnginesKeepAliveInterval != nil {
+
+		// query param engines.keep_alive_interval
+		var qrEnginesKeepAliveInterval string
+
+		if o.EnginesKeepAliveInterval != nil {
+			qrEnginesKeepAliveInterval = *o.EnginesKeepAliveInterval
+		}
+		qEnginesKeepAliveInterval := qrEnginesKeepAliveInterval
+		if qEnginesKeepAliveInterval != "" {
+
+			if err := r.SetQueryParam("engines.keep_alive_interval", qEnginesKeepAliveInterval); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.EnginesMaxServerRequests != nil {
 
 		// query param engines.max_server_requests
@@ -1904,6 +2074,23 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		if qEnginesType != "" {
 
 			if err := r.SetQueryParam("engines.type", qEnginesType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EventsFileOperationsAccess != nil {
+
+		// query param events.file_operations.access
+		var qrEventsFileOperationsAccess bool
+
+		if o.EventsFileOperationsAccess != nil {
+			qrEventsFileOperationsAccess = *o.EventsFileOperationsAccess
+		}
+		qEventsFileOperationsAccess := swag.FormatBool(qrEventsFileOperationsAccess)
+		if qEventsFileOperationsAccess != "" {
+
+			if err := r.SetQueryParam("events.file_operations.access", qEventsFileOperationsAccess); err != nil {
 				return err
 			}
 		}
@@ -2521,6 +2708,23 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
+	if o.EventsMonitorFileopFailure != nil {
+
+		// query param events.monitor_fileop_failure
+		var qrEventsMonitorFileopFailure bool
+
+		if o.EventsMonitorFileopFailure != nil {
+			qrEventsMonitorFileopFailure = *o.EventsMonitorFileopFailure
+		}
+		qEventsMonitorFileopFailure := swag.FormatBool(qrEventsMonitorFileopFailure)
+		if qEventsMonitorFileopFailure != "" {
+
+			if err := r.SetQueryParam("events.monitor_fileop_failure", qEventsMonitorFileopFailure); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.EventsName != nil {
 
 		// query param events.name
@@ -2608,6 +2812,91 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.PersistentStoresAutosizeMode != nil {
+
+		// query param persistent_stores.autosize_mode
+		var qrPersistentStoresAutosizeMode string
+
+		if o.PersistentStoresAutosizeMode != nil {
+			qrPersistentStoresAutosizeMode = *o.PersistentStoresAutosizeMode
+		}
+		qPersistentStoresAutosizeMode := qrPersistentStoresAutosizeMode
+		if qPersistentStoresAutosizeMode != "" {
+
+			if err := r.SetQueryParam("persistent_stores.autosize_mode", qPersistentStoresAutosizeMode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PersistentStoresName != nil {
+
+		// query param persistent_stores.name
+		var qrPersistentStoresName string
+
+		if o.PersistentStoresName != nil {
+			qrPersistentStoresName = *o.PersistentStoresName
+		}
+		qPersistentStoresName := qrPersistentStoresName
+		if qPersistentStoresName != "" {
+
+			if err := r.SetQueryParam("persistent_stores.name", qPersistentStoresName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PersistentStoresSize != nil {
+
+		// query param persistent_stores.size
+		var qrPersistentStoresSize int64
+
+		if o.PersistentStoresSize != nil {
+			qrPersistentStoresSize = *o.PersistentStoresSize
+		}
+		qPersistentStoresSize := swag.FormatInt64(qrPersistentStoresSize)
+		if qPersistentStoresSize != "" {
+
+			if err := r.SetQueryParam("persistent_stores.size", qPersistentStoresSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PersistentStoresVolume != nil {
+
+		// query param persistent_stores.volume
+		var qrPersistentStoresVolume string
+
+		if o.PersistentStoresVolume != nil {
+			qrPersistentStoresVolume = *o.PersistentStoresVolume
+		}
+		qPersistentStoresVolume := qrPersistentStoresVolume
+		if qPersistentStoresVolume != "" {
+
+			if err := r.SetQueryParam("persistent_stores.volume", qPersistentStoresVolume); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PoliciesAllowPrivilegedAccess != nil {
+
+		// query param policies.allow_privileged_access
+		var qrPoliciesAllowPrivilegedAccess bool
+
+		if o.PoliciesAllowPrivilegedAccess != nil {
+			qrPoliciesAllowPrivilegedAccess = *o.PoliciesAllowPrivilegedAccess
+		}
+		qPoliciesAllowPrivilegedAccess := swag.FormatBool(qrPoliciesAllowPrivilegedAccess)
+		if qPoliciesAllowPrivilegedAccess != "" {
+
+			if err := r.SetQueryParam("policies.allow_privileged_access", qPoliciesAllowPrivilegedAccess); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -2708,6 +2997,23 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		if qPoliciesPassthroughRead != "" {
 
 			if err := r.SetQueryParam("policies.passthrough_read", qPoliciesPassthroughRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PoliciesPersistentStore != nil {
+
+		// query param policies.persistent_store
+		var qrPoliciesPersistentStore string
+
+		if o.PoliciesPersistentStore != nil {
+			qrPoliciesPersistentStore = *o.PoliciesPersistentStore
+		}
+		qPoliciesPersistentStore := qrPoliciesPersistentStore
+		if qPoliciesPersistentStore != "" {
+
+			if err := r.SetQueryParam("policies.persistent_store", qPoliciesPersistentStore); err != nil {
 				return err
 			}
 		}

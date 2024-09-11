@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,12 +92,19 @@ func (o *AggregateCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the aggregate create created response
+func (o *AggregateCreateCreated) Code() int {
+	return 201
+}
+
 func (o *AggregateCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregateCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregateCreateCreated %s", 201, payload)
 }
 
 func (o *AggregateCreateCreated) String() string {
-	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregateCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregateCreateCreated %s", 201, payload)
 }
 
 func (o *AggregateCreateCreated) GetPayload() *models.AggregateSimulate {
@@ -166,12 +174,19 @@ func (o *AggregateCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the aggregate create accepted response
+func (o *AggregateCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *AggregateCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregateCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregateCreateAccepted %s", 202, payload)
 }
 
 func (o *AggregateCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregateCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregateCreateAccepted %s", 202, payload)
 }
 
 func (o *AggregateCreateAccepted) GetPayload() *models.AggregateSimulate {
@@ -219,8 +234,10 @@ func NewAggregateCreateDefault(code int) *AggregateCreateDefault {
 | 786819 | The value is invalid for the specified option at the current privilege level. |
 | 786902 | RAID-TEC aggregate is not fully supported. |
 | 786911 | Not every node in the cluster has the Data ONTAP version required for the feature. |
+| 786973 | The number of disks specified does not meet the minimum number of disks required for this operation. |
 | 787069 | Node is setup for MetroCluster over IP configuration; creating an unmirrored aggregate is not supported in this configuration. |
 | 787092 | The target field cannot be specified for this operation. |
+| 787267 | The number of disks specified does not meet the minimum number of disks required for the creation of a new RAID group. |
 | 918138 | Internal error. Failed to get encryption operation status. |
 | 1114292 | The required SnapLock license is not installed. |
 | 2425736 | No matching node found for the target UUID. |
@@ -236,18 +253,16 @@ func NewAggregateCreateDefault(code int) *AggregateCreateDefault {
 | 19726401 | Aggregate recommendations are not supported when the DR group is not in the "normal" state. |
 | 19726402 | Internal error. Unable to determine the MetroCluster configuration state. |
 | 19726403 | Aggregate recommendation is not supported when there are no healthy target connections to remote storage. |
+| 19726544 | POST on the aggregate endpoint is not supported on this version of ONTAP. |
+| 65537119 | Key management is not configured for the admin SVM. Configure a key manager for the admin SVM. |
 | 196608055 | Aggregate recommendation is not supported on this node because it does not support NetApp Aggregate Encryption (NAE). |
 | 196608206 | Internal error. Failed to get encryption operation status. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AggregateCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the aggregate create default response
-func (o *AggregateCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this aggregate create default response has a 2xx status code
@@ -275,12 +290,19 @@ func (o *AggregateCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the aggregate create default response
+func (o *AggregateCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AggregateCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregate_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregate_create default %s", o._statusCode, payload)
 }
 
 func (o *AggregateCreateDefault) String() string {
-	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregate_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregate_create default %s", o._statusCode, payload)
 }
 
 func (o *AggregateCreateDefault) GetPayload() *models.ErrorResponse {

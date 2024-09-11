@@ -15,7 +15,7 @@ import (
 )
 
 // AnalyticsHistogramByTimeLabelsArrayInline Labels for this histogram
-// Example: ["2019-07","2019-06","2019-05",2019,2018,"--2017","unknown"]
+// Example: ["2019-07","2019-06","2019-05","2019","2018","--2017","unknown"]
 //
 // swagger:model analytics_histogram_by_time_labels_array_inline
 type AnalyticsHistogramByTimeLabelsArrayInline []*AnalyticsHistogramTimeLabel

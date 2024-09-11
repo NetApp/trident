@@ -6,6 +6,7 @@ package svm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SvmPeerPermissionModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the svm peer permission modify o k response
+func (o *SvmPeerPermissionModifyOK) Code() int {
+	return 200
+}
+
 func (o *SvmPeerPermissionModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svmPeerPermissionModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svmPeerPermissionModifyOK %s", 200, payload)
 }
 
 func (o *SvmPeerPermissionModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svmPeerPermissionModifyOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svmPeerPermissionModifyOK %s", 200, payload)
 }
 
 func (o *SvmPeerPermissionModifyOK) GetPayload() *models.SvmPeerPermission {
@@ -122,6 +130,7 @@ func NewSvmPeerPermissionModifyDefault(code int) *SvmPeerPermissionModifyDefault
 | ----------- | ----------- |
 | 26345572    | {field} is a required field. |
 | 26345574    | Failed to find the SVM or volume name with UUID. |
+| 9896059     | SVM peer permission does not exist. |
 ```
 <br/>
 */
@@ -129,11 +138,6 @@ type SvmPeerPermissionModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the svm peer permission modify default response
-func (o *SvmPeerPermissionModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this svm peer permission modify default response has a 2xx status code
@@ -161,12 +165,19 @@ func (o *SvmPeerPermissionModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the svm peer permission modify default response
+func (o *SvmPeerPermissionModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SvmPeerPermissionModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svm_peer_permission_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svm_peer_permission_modify default %s", o._statusCode, payload)
 }
 
 func (o *SvmPeerPermissionModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svm_peer_permission_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svm_peer_permission_modify default %s", o._statusCode, payload)
 }
 
 func (o *SvmPeerPermissionModifyDefault) GetPayload() *models.ErrorResponse {

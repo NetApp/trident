@@ -29,6 +29,25 @@ type EmsActionParameter struct {
 	// Read Only: true
 	EmsActionParameterInlineEnum []*string `json:"enum,omitempty"`
 
+	// If the type of the parameter is an array, this specifies the type of items in the form of a JSON object where other properties applicable to that type can be included.
+	// Example: {"format":"date-time","type":"string"}
+	// Read Only: true
+	EmsActionParameterInlineItems interface{} `json:"items,omitempty"`
+
+	// By default, all properties of an object type parameter are mandatory. This property specifies the list of optional properties.
+	// Example: ["end-time"]
+	// Read Only: true
+	EmsActionParameterInlineOptional []*string `json:"optional,omitempty"`
+
+	// If the type of the parameter is an object, this specifies what properties make up the object in the form of a JSON array where multiple parameters can be embedded within a single parameter. It is primarily used as a schema for an array type parameter.
+	// Example: [{"format":"date-time","name":"start-date","type":"string"},{"format":"date-time","name":"end-date","type":"string"}]
+	// Read Only: true
+	EmsActionParameterInlineProperties interface{} `json:"properties,omitempty"`
+
+	// Specifies the current value(s) for the parameter encoded in the appropriate JSON type.
+	// Read Only: true
+	EmsActionParameterInlineValue interface{} `json:"value,omitempty"`
+
 	// Specifies whether the "maximum" value is excluded in the parameter value range.
 	// Read Only: true
 	ExclusiveMaximum *bool `json:"exclusiveMaximum,omitempty"`
@@ -45,10 +64,11 @@ type EmsActionParameter struct {
 	// help
 	Help *EmsActionParameterInlineHelp `json:"help,omitempty"`
 
-	// If the type of the parameter is an array, this specifies the type of items in the form of a JSON object, {"type":"type-value"}, where the type-value is one of the values for the type property.
-	// Example: {"type":"string"}
+	// Specifies where the parameter is placed when invoking the action.
+	// Example: body
 	// Read Only: true
-	Items *string `json:"items,omitempty"`
+	// Enum: ["body","query"]
+	In *string `json:"in,omitempty"`
 
 	// Specifies the maximum length of an array type parameter.
 	// Read Only: true
@@ -74,16 +94,18 @@ type EmsActionParameter struct {
 	// Read Only: true
 	Minimum *int64 `json:"minimum,omitempty"`
 
+	// Specifies that a number type parameter must be the multiple of this number.
+	// Read Only: true
+	MultipleOf *float64 `json:"multipleOf,omitempty"`
+
 	// Parameter name.
 	// Example: schedule-at
 	// Read Only: true
 	Name *string `json:"name,omitempty"`
 
-	// Specifies where the parameter is placed when invoking the action.
-	// Example: body
+	// Specifies a regular expression template for a string type parameter.
 	// Read Only: true
-	// Enum: [body query]
-	ParamIn *string `json:"param_in,omitempty"`
+	Pattern *string `json:"pattern,omitempty"`
 
 	// title
 	Title *EmsActionParameterInlineTitle `json:"title,omitempty"`
@@ -91,8 +113,12 @@ type EmsActionParameter struct {
 	// Parameter type.
 	// Example: string
 	// Read Only: true
-	// Enum: [string number integer boolean array]
+	// Enum: ["string","number","integer","boolean","array","object"]
 	Type *string `json:"type,omitempty"`
+
+	// Specifies whether the "maximum" value is excluded in the parameter value range.
+	// Read Only: true
+	UniqueItems *bool `json:"uniqueItems,omitempty"`
 
 	// validation error message
 	ValidationErrorMessage *EmsActionParameterInlineValidationErrorMessage `json:"validation_error_message,omitempty"`
@@ -110,7 +136,7 @@ func (m *EmsActionParameter) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateParamIn(formats); err != nil {
+	if err := m.validateIn(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -166,7 +192,7 @@ func (m *EmsActionParameter) validateHelp(formats strfmt.Registry) error {
 	return nil
 }
 
-var emsActionParameterTypeParamInPropEnum []interface{}
+var emsActionParameterTypeInPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -174,7 +200,7 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		emsActionParameterTypeParamInPropEnum = append(emsActionParameterTypeParamInPropEnum, v)
+		emsActionParameterTypeInPropEnum = append(emsActionParameterTypeInPropEnum, v)
 	}
 }
 
@@ -183,39 +209,39 @@ const (
 	// BEGIN DEBUGGING
 	// ems_action_parameter
 	// EmsActionParameter
-	// param_in
-	// ParamIn
+	// in
+	// In
 	// body
 	// END DEBUGGING
-	// EmsActionParameterParamInBody captures enum value "body"
-	EmsActionParameterParamInBody string = "body"
+	// EmsActionParameterInBody captures enum value "body"
+	EmsActionParameterInBody string = "body"
 
 	// BEGIN DEBUGGING
 	// ems_action_parameter
 	// EmsActionParameter
-	// param_in
-	// ParamIn
+	// in
+	// In
 	// query
 	// END DEBUGGING
-	// EmsActionParameterParamInQuery captures enum value "query"
-	EmsActionParameterParamInQuery string = "query"
+	// EmsActionParameterInQuery captures enum value "query"
+	EmsActionParameterInQuery string = "query"
 )
 
 // prop value enum
-func (m *EmsActionParameter) validateParamInEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, emsActionParameterTypeParamInPropEnum, true); err != nil {
+func (m *EmsActionParameter) validateInEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, emsActionParameterTypeInPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *EmsActionParameter) validateParamIn(formats strfmt.Registry) error {
-	if swag.IsZero(m.ParamIn) { // not required
+func (m *EmsActionParameter) validateIn(formats strfmt.Registry) error {
+	if swag.IsZero(m.In) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateParamInEnum("param_in", "body", *m.ParamIn); err != nil {
+	if err := m.validateInEnum("in", "body", *m.In); err != nil {
 		return err
 	}
 
@@ -243,7 +269,7 @@ var emsActionParameterTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["string","number","integer","boolean","array"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["string","number","integer","boolean","array","object"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -302,6 +328,16 @@ const (
 	// END DEBUGGING
 	// EmsActionParameterTypeArray captures enum value "array"
 	EmsActionParameterTypeArray string = "array"
+
+	// BEGIN DEBUGGING
+	// ems_action_parameter
+	// EmsActionParameter
+	// type
+	// Type
+	// object
+	// END DEBUGGING
+	// EmsActionParameterTypeObject captures enum value "object"
+	EmsActionParameterTypeObject string = "object"
 )
 
 // prop value enum
@@ -354,6 +390,10 @@ func (m *EmsActionParameter) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateEmsActionParameterInlineOptional(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateExclusiveMaximum(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -370,7 +410,7 @@ func (m *EmsActionParameter) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateItems(ctx, formats); err != nil {
+	if err := m.contextValidateIn(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -398,11 +438,15 @@ func (m *EmsActionParameter) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateMultipleOf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateName(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateParamIn(ctx, formats); err != nil {
+	if err := m.contextValidatePattern(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -411,6 +455,10 @@ func (m *EmsActionParameter) ContextValidate(ctx context.Context, formats strfmt
 	}
 
 	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUniqueItems(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -441,6 +489,15 @@ func (m *EmsActionParameter) contextValidateDescription(ctx context.Context, for
 func (m *EmsActionParameter) contextValidateEmsActionParameterInlineEnum(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "enum", "body", []*string(m.EmsActionParameterInlineEnum)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *EmsActionParameter) contextValidateEmsActionParameterInlineOptional(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "optional", "body", []*string(m.EmsActionParameterInlineOptional)); err != nil {
 		return err
 	}
 
@@ -488,9 +545,9 @@ func (m *EmsActionParameter) contextValidateHelp(ctx context.Context, formats st
 	return nil
 }
 
-func (m *EmsActionParameter) contextValidateItems(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsActionParameter) contextValidateIn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "items", "body", m.Items); err != nil {
+	if err := validate.ReadOnly(ctx, "in", "body", m.In); err != nil {
 		return err
 	}
 
@@ -551,6 +608,15 @@ func (m *EmsActionParameter) contextValidateMinimum(ctx context.Context, formats
 	return nil
 }
 
+func (m *EmsActionParameter) contextValidateMultipleOf(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "multipleOf", "body", m.MultipleOf); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *EmsActionParameter) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
@@ -560,9 +626,9 @@ func (m *EmsActionParameter) contextValidateName(ctx context.Context, formats st
 	return nil
 }
 
-func (m *EmsActionParameter) contextValidateParamIn(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsActionParameter) contextValidatePattern(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "param_in", "body", m.ParamIn); err != nil {
+	if err := validate.ReadOnly(ctx, "pattern", "body", m.Pattern); err != nil {
 		return err
 	}
 
@@ -586,6 +652,15 @@ func (m *EmsActionParameter) contextValidateTitle(ctx context.Context, formats s
 func (m *EmsActionParameter) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *EmsActionParameter) contextValidateUniqueItems(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "uniqueItems", "body", m.UniqueItems); err != nil {
 		return err
 	}
 

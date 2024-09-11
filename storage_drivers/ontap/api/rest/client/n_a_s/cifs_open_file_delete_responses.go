@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *CifsOpenFileDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs open file delete o k response
+func (o *CifsOpenFileDeleteOK) Code() int {
+	return 200
+}
+
 func (o *CifsOpenFileDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}][%d] cifsOpenFileDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}][%d] cifsOpenFileDeleteOK", 200)
 }
 
 func (o *CifsOpenFileDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}][%d] cifsOpenFileDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}][%d] cifsOpenFileDeleteOK", 200)
 }
 
 func (o *CifsOpenFileDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -108,11 +114,6 @@ type CifsOpenFileDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cifs open file delete default response
-func (o *CifsOpenFileDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cifs open file delete default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *CifsOpenFileDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs open file delete default response
+func (o *CifsOpenFileDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsOpenFileDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}][%d] cifs_open_file_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}][%d] cifs_open_file_delete default %s", o._statusCode, payload)
 }
 
 func (o *CifsOpenFileDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}][%d] cifs_open_file_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}][%d] cifs_open_file_delete default %s", o._statusCode, payload)
 }
 
 func (o *CifsOpenFileDeleteDefault) GetPayload() *models.ErrorResponse {

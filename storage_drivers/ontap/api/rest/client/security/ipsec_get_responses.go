@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *IpsecGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ipsec get o k response
+func (o *IpsecGetOK) Code() int {
+	return 200
+}
+
 func (o *IpsecGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/ipsec][%d] ipsecGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec][%d] ipsecGetOK %s", 200, payload)
 }
 
 func (o *IpsecGetOK) String() string {
-	return fmt.Sprintf("[GET /security/ipsec][%d] ipsecGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec][%d] ipsecGetOK %s", 200, payload)
 }
 
 func (o *IpsecGetOK) GetPayload() *models.Ipsec {
@@ -122,11 +130,6 @@ type IpsecGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the ipsec get default response
-func (o *IpsecGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this ipsec get default response has a 2xx status code
 func (o *IpsecGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *IpsecGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ipsec get default response
+func (o *IpsecGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *IpsecGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/ipsec][%d] ipsec_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec][%d] ipsec_get default %s", o._statusCode, payload)
 }
 
 func (o *IpsecGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/ipsec][%d] ipsec_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/ipsec][%d] ipsec_get default %s", o._statusCode, payload)
 }
 
 func (o *IpsecGetDefault) GetPayload() *models.ErrorResponse {

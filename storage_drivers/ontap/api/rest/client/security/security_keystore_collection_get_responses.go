@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SecurityKeystoreCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the security keystore collection get o k response
+func (o *SecurityKeystoreCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *SecurityKeystoreCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/key-stores][%d] securityKeystoreCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/key-stores][%d] securityKeystoreCollectionGetOK %s", 200, payload)
 }
 
 func (o *SecurityKeystoreCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /security/key-stores][%d] securityKeystoreCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/key-stores][%d] securityKeystoreCollectionGetOK %s", 200, payload)
 }
 
 func (o *SecurityKeystoreCollectionGetOK) GetPayload() *models.SecurityKeystoreResponse {
@@ -112,19 +120,19 @@ func NewSecurityKeystoreCollectionGetDefault(code int) *SecurityKeystoreCollecti
 }
 
 /*
-SecurityKeystoreCollectionGetDefault describes a response with status code -1, with default header values.
+	SecurityKeystoreCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 13434920 | SVM does not exist. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SecurityKeystoreCollectionGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the security keystore collection get default response
-func (o *SecurityKeystoreCollectionGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this security keystore collection get default response has a 2xx status code
@@ -152,12 +160,19 @@ func (o *SecurityKeystoreCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the security keystore collection get default response
+func (o *SecurityKeystoreCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SecurityKeystoreCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/key-stores][%d] security_keystore_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/key-stores][%d] security_keystore_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeystoreCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/key-stores][%d] security_keystore_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/key-stores][%d] security_keystore_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *SecurityKeystoreCollectionGetDefault) GetPayload() *models.ErrorResponse {

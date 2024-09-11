@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ClusterNisGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cluster nis get o k response
+func (o *ClusterNisGetOK) Code() int {
+	return 200
+}
+
 func (o *ClusterNisGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/authentication/cluster/nis][%d] clusterNisGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/cluster/nis][%d] clusterNisGetOK %s", 200, payload)
 }
 
 func (o *ClusterNisGetOK) String() string {
-	return fmt.Sprintf("[GET /security/authentication/cluster/nis][%d] clusterNisGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/cluster/nis][%d] clusterNisGetOK %s", 200, payload)
 }
 
 func (o *ClusterNisGetOK) GetPayload() *models.ClusterNisService {
@@ -122,11 +130,6 @@ type ClusterNisGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cluster nis get default response
-func (o *ClusterNisGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cluster nis get default response has a 2xx status code
 func (o *ClusterNisGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *ClusterNisGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster nis get default response
+func (o *ClusterNisGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterNisGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/authentication/cluster/nis][%d] cluster_nis_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/cluster/nis][%d] cluster_nis_get default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNisGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/authentication/cluster/nis][%d] cluster_nis_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/authentication/cluster/nis][%d] cluster_nis_get default %s", o._statusCode, payload)
 }
 
 func (o *ClusterNisGetDefault) GetPayload() *models.ErrorResponse {

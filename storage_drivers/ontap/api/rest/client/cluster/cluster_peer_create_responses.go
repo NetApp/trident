@@ -6,6 +6,7 @@ package cluster
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -57,7 +58,7 @@ type ClusterPeerCreateCreated struct {
 	 */
 	Location string
 
-	Payload *models.ClusterPeerSetupResponse
+	Payload *models.ClusterPeerResponse
 }
 
 // IsSuccess returns true when this cluster peer create created response has a 2xx status code
@@ -85,15 +86,22 @@ func (o *ClusterPeerCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the cluster peer create created response
+func (o *ClusterPeerCreateCreated) Code() int {
+	return 201
+}
+
 func (o *ClusterPeerCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /cluster/peers][%d] clusterPeerCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/peers][%d] clusterPeerCreateCreated %s", 201, payload)
 }
 
 func (o *ClusterPeerCreateCreated) String() string {
-	return fmt.Sprintf("[POST /cluster/peers][%d] clusterPeerCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/peers][%d] clusterPeerCreateCreated %s", 201, payload)
 }
 
-func (o *ClusterPeerCreateCreated) GetPayload() *models.ClusterPeerSetupResponse {
+func (o *ClusterPeerCreateCreated) GetPayload() *models.ClusterPeerResponse {
 	return o.Payload
 }
 
@@ -106,7 +114,7 @@ func (o *ClusterPeerCreateCreated) readResponse(response runtime.ClientResponse,
 		o.Location = hdrLocation
 	}
 
-	o.Payload = new(models.ClusterPeerSetupResponse)
+	o.Payload = new(models.ClusterPeerResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -131,7 +139,16 @@ func NewClusterPeerCreateDefault(code int) *ClusterPeerCreateDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 1966366 | The system SVM of the cluster IPspace hosts cluster LIFs only. |
+| 4653058 | Cannot peer with self. |
+| 4653075 | Cannot peer with two clusters using the same cluster peer relationship name. |
+| 4653075 | Cannot peer two clusters with the same name. |
+| 4653076 | Cannot peer two clusters with the same UUID. |
+| 4653229 | Value for \"expiry_time\" is obsolete. |
+| 4653236 | The specified passphrase is too short. |
 | 4653365 | IPspaces are unavailable with cluster peering: {ipspace}. |
+| 4653368 | Invalid peer address passed in \"ip_addresses\": Verify that the peer address is correct, and then try the operation again. |
+| 4653419 | An unencrypted peering relationship is not supported because the cluster peering policy requires the use of encryption. |
+| 4653708 | The specified addresses must be of the same address family. |
 | 4656069 | Specifying a passphrase without remote IP addresses is not supported. |
 | 4656070 | The encryption protocol is meaningful only with authenticated cluster peer relationships. |
 | 4656071 | Cannot peer with a cluster bearing the same name as the local cluster. |
@@ -148,17 +165,18 @@ func NewClusterPeerCreateDefault(code int) *ClusterPeerCreateDefault {
 | 4656089 | Found no matching entry for IPspace. |
 | 4656090 | The given IPspace differs from the IPspace entry found. |
 | 4656091 | Creating an intercluster LIF requires a subnet mask or a subnet mask length. |
+| 4656094 | Found no ports to bind to intercluster LIFs. Check your network configuration. |
+| 4656095 | The address family of the specified peer addresses is not valid in IPspace. Use /api/network/ip/interfaces/ to verify that required LIFs are present and operational on each cluster node. |
 | 4656096 | Creating an intercluster LIF requires an IPv4 or IPv6 address of the default router. |
+| 4656100 | Cannot use peer address \"ip_addresses\" because it is already in use on the local cluster. Use /api/network/ip/interfaces to view the address in use. |
+| 4656101 | Cannot specify a remote IP that resolves to both IPv4 and IPv6. Specify an IPv4 or IPv6 address. |
+| 8847365 | Unknown Host |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ClusterPeerCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the cluster peer create default response
-func (o *ClusterPeerCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this cluster peer create default response has a 2xx status code
@@ -186,12 +204,19 @@ func (o *ClusterPeerCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cluster peer create default response
+func (o *ClusterPeerCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ClusterPeerCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /cluster/peers][%d] cluster_peer_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/peers][%d] cluster_peer_create default %s", o._statusCode, payload)
 }
 
 func (o *ClusterPeerCreateDefault) String() string {
-	return fmt.Sprintf("[POST /cluster/peers][%d] cluster_peer_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /cluster/peers][%d] cluster_peer_create default %s", o._statusCode, payload)
 }
 
 func (o *ClusterPeerCreateDefault) GetPayload() *models.ErrorResponse {

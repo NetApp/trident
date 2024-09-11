@@ -128,15 +128,21 @@ type HostsSettingsGetParams struct {
 
 	/* SvmUUID.
 
-	   SVM UUID.
+	   Filter by svm.uuid
 	*/
-	SvmUUID string
+	SvmUUID *string
 
 	/* TTL.
 
 	   Filter by ttl
 	*/
 	TTL *string
+
+	/* UUID.
+
+	   UUID for the host record.
+	*/
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -316,13 +322,13 @@ func (o *HostsSettingsGetParams) SetSvmName(svmName *string) {
 }
 
 // WithSvmUUID adds the svmUUID to the hosts settings get params
-func (o *HostsSettingsGetParams) WithSvmUUID(svmUUID string) *HostsSettingsGetParams {
+func (o *HostsSettingsGetParams) WithSvmUUID(svmUUID *string) *HostsSettingsGetParams {
 	o.SetSvmUUID(svmUUID)
 	return o
 }
 
 // SetSvmUUID adds the svmUuid to the hosts settings get params
-func (o *HostsSettingsGetParams) SetSvmUUID(svmUUID string) {
+func (o *HostsSettingsGetParams) SetSvmUUID(svmUUID *string) {
 	o.SvmUUID = svmUUID
 }
 
@@ -335,6 +341,17 @@ func (o *HostsSettingsGetParams) WithTTL(ttl *string) *HostsSettingsGetParams {
 // SetTTL adds the ttl to the hosts settings get params
 func (o *HostsSettingsGetParams) SetTTL(ttl *string) {
 	o.TTL = ttl
+}
+
+// WithUUID adds the uuid to the hosts settings get params
+func (o *HostsSettingsGetParams) WithUUID(uuid string) *HostsSettingsGetParams {
+	o.SetUUID(uuid)
+	return o
+}
+
+// SetUUID adds the uuid to the hosts settings get params
+func (o *HostsSettingsGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -503,9 +520,21 @@ func (o *HostsSettingsGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
-		return err
+	if o.SvmUUID != nil {
+
+		// query param svm.uuid
+		var qrSvmUUID string
+
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
+		}
+		qSvmUUID := qrSvmUUID
+		if qSvmUUID != "" {
+
+			if err := r.SetQueryParam("svm.uuid", qSvmUUID); err != nil {
+				return err
+			}
+		}
 	}
 
 	if o.TTL != nil {
@@ -523,6 +552,11 @@ func (o *HostsSettingsGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 				return err
 			}
 		}
+	}
+
+	// path param uuid
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
+		return err
 	}
 
 	if len(res) > 0 {

@@ -6,10 +6,14 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
+
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
 
 // IpspaceModifyReader is a Reader for the IpspaceModify structure.
@@ -27,7 +31,14 @@ func (o *IpspaceModifyReader) ReadResponse(response runtime.ClientResponse, cons
 		}
 		return result, nil
 	default:
-		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+		result := NewIpspaceModifyDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -69,15 +80,106 @@ func (o *IpspaceModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ipspace modify o k response
+func (o *IpspaceModifyOK) Code() int {
+	return 200
+}
+
 func (o *IpspaceModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /network/ipspaces/{uuid}][%d] ipspaceModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/ipspaces/{uuid}][%d] ipspaceModifyOK", 200)
 }
 
 func (o *IpspaceModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /network/ipspaces/{uuid}][%d] ipspaceModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/ipspaces/{uuid}][%d] ipspaceModifyOK", 200)
 }
 
 func (o *IpspaceModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	return nil
+}
+
+// NewIpspaceModifyDefault creates a IpspaceModifyDefault with default headers values
+func NewIpspaceModifyDefault(code int) *IpspaceModifyDefault {
+	return &IpspaceModifyDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+	IpspaceModifyDefault describes a response with status code -1, with default header values.
+
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 1377256 | Another IPspace with the same name exists. |
+| 1377259 | System-defined IPspaces cannot be modified or removed. |
+| 1966449 | Invalid IPspace name in MetroCluster configurations. |
+| 9240587 | IPspace name cannot be empty. |
+| 9240588 | The specified name is too long. |
+| 9240589 | Invalid character in specified name. |
+| 9240590 | Invalid name, the name is reserved by the system. |
+| 9240591 | Invalid name.  The name is already in use by a cluster node, Vserver, or it is the name of the local cluster. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
+*/
+type IpspaceModifyDefault struct {
+	_statusCode int
+
+	Payload *models.ErrorResponse
+}
+
+// IsSuccess returns true when this ipspace modify default response has a 2xx status code
+func (o *IpspaceModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ipspace modify default response has a 3xx status code
+func (o *IpspaceModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ipspace modify default response has a 4xx status code
+func (o *IpspaceModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ipspace modify default response has a 5xx status code
+func (o *IpspaceModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ipspace modify default response a status code equal to that given
+func (o *IpspaceModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the ipspace modify default response
+func (o *IpspaceModifyDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *IpspaceModifyDefault) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/ipspaces/{uuid}][%d] ipspace_modify default %s", o._statusCode, payload)
+}
+
+func (o *IpspaceModifyDefault) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/ipspaces/{uuid}][%d] ipspace_modify default %s", o._statusCode, payload)
+}
+
+func (o *IpspaceModifyDefault) GetPayload() *models.ErrorResponse {
+	return o.Payload
+}
+
+func (o *IpspaceModifyDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ErrorResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }

@@ -6,6 +6,7 @@ package snaplock
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *SnaplockLegalHoldFilesGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the snaplock legal hold files get o k response
+func (o *SnaplockLegalHoldFilesGetOK) Code() int {
+	return 200
+}
+
 func (o *SnaplockLegalHoldFilesGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/files][%d] snaplockLegalHoldFilesGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/files][%d] snaplockLegalHoldFilesGetOK %s", 200, payload)
 }
 
 func (o *SnaplockLegalHoldFilesGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/files][%d] snaplockLegalHoldFilesGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/files][%d] snaplockLegalHoldFilesGetOK %s", 200, payload)
 }
 
 func (o *SnaplockLegalHoldFilesGetOK) GetPayload() *models.SnaplockLitigationFileResponse {
@@ -112,19 +120,18 @@ func NewSnaplockLegalHoldFilesGetDefault(code int) *SnaplockLegalHoldFilesGetDef
 }
 
 /*
-SnaplockLegalHoldFilesGetDefault describes a response with status code -1, with default header values.
+	SnaplockLegalHoldFilesGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response codes
+
+| Error code  |  Description |
+|-------------|--------------|
+| 13763280    | Only a user with security login role \"vsadmin-snaplock\" is allowed to perform this operation.  |
 */
 type SnaplockLegalHoldFilesGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snaplock legal hold files get default response
-func (o *SnaplockLegalHoldFilesGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snaplock legal hold files get default response has a 2xx status code
@@ -152,12 +159,19 @@ func (o *SnaplockLegalHoldFilesGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snaplock legal hold files get default response
+func (o *SnaplockLegalHoldFilesGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnaplockLegalHoldFilesGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/files][%d] snaplock_legal_hold_files_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/files][%d] snaplock_legal_hold_files_get default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockLegalHoldFilesGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/files][%d] snaplock_legal_hold_files_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/files][%d] snaplock_legal_hold_files_get default %s", o._statusCode, payload)
 }
 
 func (o *SnaplockLegalHoldFilesGetDefault) GetPayload() *models.ErrorResponse {

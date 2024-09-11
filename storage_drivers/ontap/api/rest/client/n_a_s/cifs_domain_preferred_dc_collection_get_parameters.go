@@ -126,6 +126,12 @@ type CifsDomainPreferredDcCollectionGetParams struct {
 	*/
 	StatusReachable *bool
 
+	/* SvmName.
+
+	   Filter by svm.name
+	*/
+	SvmName *string
+
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
@@ -312,6 +318,17 @@ func (o *CifsDomainPreferredDcCollectionGetParams) SetStatusReachable(statusReac
 	o.StatusReachable = statusReachable
 }
 
+// WithSvmName adds the svmName to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) WithSvmName(svmName *string) *CifsDomainPreferredDcCollectionGetParams {
+	o.SetSvmName(svmName)
+	return o
+}
+
+// SetSvmName adds the svmName to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
+}
+
 // WithSvmUUID adds the svmUUID to the cifs domain preferred dc collection get params
 func (o *CifsDomainPreferredDcCollectionGetParams) WithSvmUUID(svmUUID string) *CifsDomainPreferredDcCollectionGetParams {
 	o.SetSvmUUID(svmUUID)
@@ -484,6 +501,23 @@ func (o *CifsDomainPreferredDcCollectionGetParams) WriteToRequest(r runtime.Clie
 		if qStatusReachable != "" {
 
 			if err := r.SetQueryParam("status.reachable", qStatusReachable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SvmName != nil {
+
+		// query param svm.name
+		var qrSvmName string
+
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
+		}
+		qSvmName := qrSvmName
+		if qSvmName != "" {
+
+			if err := r.SetQueryParam("svm.name", qSvmName); err != nil {
 				return err
 			}
 		}

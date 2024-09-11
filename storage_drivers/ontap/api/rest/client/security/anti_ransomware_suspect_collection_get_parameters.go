@@ -98,12 +98,6 @@ type AntiRansomwareSuspectCollectionGetParams struct {
 	*/
 	FileSuspectTime *string
 
-	/* IsFalsePositive.
-
-	   Filter by is_false_positive
-	*/
-	IsFalsePositive *bool
-
 	/* MaxRecords.
 
 	   Limit the number of records returned.
@@ -277,17 +271,6 @@ func (o *AntiRansomwareSuspectCollectionGetParams) SetFileSuspectTime(fileSuspec
 	o.FileSuspectTime = fileSuspectTime
 }
 
-// WithIsFalsePositive adds the isFalsePositive to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) WithIsFalsePositive(isFalsePositive *bool) *AntiRansomwareSuspectCollectionGetParams {
-	o.SetIsFalsePositive(isFalsePositive)
-	return o
-}
-
-// SetIsFalsePositive adds the isFalsePositive to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) SetIsFalsePositive(isFalsePositive *bool) {
-	o.IsFalsePositive = isFalsePositive
-}
-
 // WithMaxRecords adds the maxRecords to the anti ransomware suspect collection get params
 func (o *AntiRansomwareSuspectCollectionGetParams) WithMaxRecords(maxRecords *int64) *AntiRansomwareSuspectCollectionGetParams {
 	o.SetMaxRecords(maxRecords)
@@ -453,23 +436,6 @@ func (o *AntiRansomwareSuspectCollectionGetParams) WriteToRequest(r runtime.Clie
 		if qFileSuspectTime != "" {
 
 			if err := r.SetQueryParam("file.suspect_time", qFileSuspectTime); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.IsFalsePositive != nil {
-
-		// query param is_false_positive
-		var qrIsFalsePositive bool
-
-		if o.IsFalsePositive != nil {
-			qrIsFalsePositive = *o.IsFalsePositive
-		}
-		qIsFalsePositive := swag.FormatBool(qrIsFalsePositive)
-		if qIsFalsePositive != "" {
-
-			if err := r.SetQueryParam("is_false_positive", qIsFalsePositive); err != nil {
 				return err
 			}
 		}

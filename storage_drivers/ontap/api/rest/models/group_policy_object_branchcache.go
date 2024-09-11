@@ -22,12 +22,12 @@ type GroupPolicyObjectBranchcache struct {
 
 	// Hash publication mode.
 	// Example: disabled
-	// Enum: [per_share disabled all_shares]
+	// Enum: ["per_share","disabled","all_shares"]
 	HashPublicationMode *string `json:"hash_publication_mode,omitempty"`
 
 	// Hash version.
 	// Example: version1
-	// Enum: [version1 version2 all_versions]
+	// Enum: ["version1","version2","all_versions"]
 	SupportedHashVersion *string `json:"supported_hash_version,omitempty"`
 }
 

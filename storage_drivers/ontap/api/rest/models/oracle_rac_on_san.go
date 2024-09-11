@@ -50,7 +50,7 @@ type OracleRacOnSan struct {
 
 	// The name of the host OS running the application.
 	// Required: true
-	// Enum: [aix hpux hyper_v linux solaris solaris_efi vmware windows windows_2008 windows_gpt xen]
+	// Enum: ["aix","hpux","hyper_v","linux","solaris","solaris_efi","vmware","windows","windows_2008","windows_gpt","xen"]
 	OsType *string `json:"os_type"`
 
 	// protection type
@@ -741,7 +741,7 @@ func (m *OracleRacOnSanInlineArchiveLog) UnmarshalBinary(b []byte) error {
 type OracleRacOnSanInlineArchiveLogInlineStorageService struct {
 
 	// The storage service of the archive log.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -1023,7 +1023,7 @@ func (m *OracleRacOnSanInlineDbSidsInlineArrayItem) UnmarshalBinary(b []byte) er
 type OracleRacOnSanInlineDbInlineStorageService struct {
 
 	// The storage service of the database.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -1225,7 +1225,7 @@ func (m *OracleRacOnSanInlineGridBinary) UnmarshalBinary(b []byte) error {
 type OracleRacOnSanInlineGridBinaryInlineStorageService struct {
 
 	// The storage service of the Oracle grid binary storage volume.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -1427,7 +1427,7 @@ func (m *OracleRacOnSanInlineOraHome) UnmarshalBinary(b []byte) error {
 type OracleRacOnSanInlineOraHomeInlineStorageService struct {
 
 	// The storage service of the ORACLE_HOME storage volume.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -1654,7 +1654,7 @@ func (m *OracleRacOnSanInlineOracleCrs) UnmarshalBinary(b []byte) error {
 type OracleRacOnSanInlineOracleCrsInlineStorageService struct {
 
 	// The storage service of the Oracle CRS volume.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 
@@ -1767,11 +1767,11 @@ func (m *OracleRacOnSanInlineOracleCrsInlineStorageService) UnmarshalBinary(b []
 type OracleRacOnSanInlineProtectionType struct {
 
 	// The local RPO of the application.
-	// Enum: [hourly none]
+	// Enum: ["hourly","none"]
 	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
-	// Enum: [none zero]
+	// Enum: ["none","zero"]
 	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 
@@ -1934,7 +1934,7 @@ func (m *OracleRacOnSanInlineProtectionType) UnmarshalBinary(b []byte) error {
 type OracleRacOnSanInlineRedoLog struct {
 
 	// Specifies whether the redo log group should be mirrored.
-	// Enum: [false true]
+	// Enum: [false,true]
 	Mirrored *bool `json:"mirrored,omitempty"`
 
 	// The size of the redo log group. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
@@ -2078,7 +2078,7 @@ func (m *OracleRacOnSanInlineRedoLog) UnmarshalBinary(b []byte) error {
 type OracleRacOnSanInlineRedoLogInlineStorageService struct {
 
 	// The storage service of the redo log group.
-	// Enum: [extreme performance value]
+	// Enum: ["extreme","performance","value"]
 	Name *string `json:"name,omitempty"`
 }
 

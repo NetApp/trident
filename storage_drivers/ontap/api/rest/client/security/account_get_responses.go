@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *AccountGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the account get o k response
+func (o *AccountGetOK) Code() int {
+	return 200
+}
+
 func (o *AccountGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/accounts/{owner.uuid}/{name}][%d] accountGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/accounts/{owner.uuid}/{name}][%d] accountGetOK %s", 200, payload)
 }
 
 func (o *AccountGetOK) String() string {
-	return fmt.Sprintf("[GET /security/accounts/{owner.uuid}/{name}][%d] accountGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/accounts/{owner.uuid}/{name}][%d] accountGetOK %s", 200, payload)
 }
 
 func (o *AccountGetOK) GetPayload() *models.Account {
@@ -122,11 +130,6 @@ type AccountGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the account get default response
-func (o *AccountGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this account get default response has a 2xx status code
 func (o *AccountGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *AccountGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the account get default response
+func (o *AccountGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AccountGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/accounts/{owner.uuid}/{name}][%d] account_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/accounts/{owner.uuid}/{name}][%d] account_get default %s", o._statusCode, payload)
 }
 
 func (o *AccountGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/accounts/{owner.uuid}/{name}][%d] account_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/accounts/{owner.uuid}/{name}][%d] account_get default %s", o._statusCode, payload)
 }
 
 func (o *AccountGetDefault) GetPayload() *models.ErrorResponse {

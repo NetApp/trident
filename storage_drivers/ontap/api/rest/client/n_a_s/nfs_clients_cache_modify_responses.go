@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *NfsClientsCacheModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the nfs clients cache modify o k response
+func (o *NfsClientsCacheModifyOK) Code() int {
+	return 200
+}
+
 func (o *NfsClientsCacheModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/connected-client-settings][%d] nfsClientsCacheModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/nfs/connected-client-settings][%d] nfsClientsCacheModifyOK", 200)
 }
 
 func (o *NfsClientsCacheModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/connected-client-settings][%d] nfsClientsCacheModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /protocols/nfs/connected-client-settings][%d] nfsClientsCacheModifyOK", 200)
 }
 
 func (o *NfsClientsCacheModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -100,19 +106,19 @@ func NewNfsClientsCacheModifyDefault(code int) *NfsClientsCacheModifyDefault {
 }
 
 /*
-NfsClientsCacheModifyDefault describes a response with status code -1, with default header values.
+	NfsClientsCacheModifyDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 3277172    | The value for \"client_retention_interval\" must be between 12 and 168 hours or its equivalent in days, minutes or seconds. |
+| 3277170    | The \"client_retention_interval\" must be set to a value which is a multiple of 12 hours or to its equivalent in days, minutes or seconds.|
 */
 type NfsClientsCacheModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nfs clients cache modify default response
-func (o *NfsClientsCacheModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nfs clients cache modify default response has a 2xx status code
@@ -140,12 +146,19 @@ func (o *NfsClientsCacheModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nfs clients cache modify default response
+func (o *NfsClientsCacheModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NfsClientsCacheModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/connected-client-settings][%d] nfs_clients_cache_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/nfs/connected-client-settings][%d] nfs_clients_cache_modify default %s", o._statusCode, payload)
 }
 
 func (o *NfsClientsCacheModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /protocols/nfs/connected-client-settings][%d] nfs_clients_cache_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/nfs/connected-client-settings][%d] nfs_clients_cache_modify default %s", o._statusCode, payload)
 }
 
 func (o *NfsClientsCacheModifyDefault) GetPayload() *models.ErrorResponse {

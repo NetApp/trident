@@ -41,7 +41,7 @@ type SoftwareUpdateDetailsReference struct {
 	// State of the update phase
 	// Example: failed
 	// Read Only: true
-	// Enum: [in_progress waiting paused_by_user paused_on_error completed canceled failed pause_pending cancel_pending]
+	// Enum: ["in_progress","waiting","paused_by_user","paused_on_error","completed","canceled","failed","pause_pending","cancel_pending"]
 	State *string `json:"state,omitempty"`
 }
 

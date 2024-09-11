@@ -6,6 +6,7 @@ package object_store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *S3UserCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the s3 user create created response
+func (o *S3UserCreateCreated) Code() int {
+	return 201
+}
+
 func (o *S3UserCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/users][%d] s3UserCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/users][%d] s3UserCreateCreated %s", 201, payload)
 }
 
 func (o *S3UserCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/users][%d] s3UserCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/users][%d] s3UserCreateCreated %s", 201, payload)
 }
 
 func (o *S3UserCreateCreated) GetPayload() *models.S3UserPostPatchResponse {
@@ -130,21 +138,23 @@ func NewS3UserCreateDefault(code int) *S3UserCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 92405773   | Object store server is not present for specified SVM. Create a object store server and retry the operation. |
-| 92405787   | The specified user name contains invalid characters. Valid characters for a user name are 0-9, A-Z, a-z, \"_\", \"+\", \"=\", \",\", \".\", \"@\", and \"-\". |
-| 92405788   | User names must have between 1 and 64 characters. |
+| 92405787   | User name \"User#1\" contains invalid characters. Valid characters for a user name are 0-9, A-Z, a-z, \"_\", \"+\", \"=\", \",\", \".\", \"@\", and \"-\". |
+| 92405788   | User name \"User0123456789012345678901234567890123456789012345678901234567890123456789012345\" is not valid. User names must have between 1 and 64 characters. |
 | 92405791   | Failed to create access-key and secret-key. |
-| 92405817   | S3 users can be created only on data SVM. |
+| 92405817   | SVM \"<non-data SVM name>\" is not a data SVM. Specify a data SVM. |
+| 92406083   | The maximum supported value for user key expiry configuration is \"1095\" days. |
+| 92406096   | The user does not have permission to access the requested resource \\\"{0}\\\". |
+| 92406097   | Internal error. The operation configuration is not correct. |
+| 92406196   | The specified value for the \"key_time_to_live\" field cannot be greater than the maximum limit specified for the \"max_key_time_to_live\" field in the object store server. |
+| 92406197   | Object store user \"user-2\" must have a non-zero value for the \"key_time_to_live\" field because the maximum limit specified for the \"max_key_time_to_live\" field in the object store server is not zero.
+| 92406200   | An object store user with the same access-key already exists. |
+| 92406201   | Missing access-key or secret-key. Either provide both of the keys or none. If not provided, keys are generated automatically. |
+| 92406205   | The object store user access key contains invalid characters. Valid characters are 0-9 and A-Z. |
 */
 type S3UserCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the s3 user create default response
-func (o *S3UserCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this s3 user create default response has a 2xx status code
@@ -172,12 +182,19 @@ func (o *S3UserCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the s3 user create default response
+func (o *S3UserCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *S3UserCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/users][%d] s3_user_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/users][%d] s3_user_create default %s", o._statusCode, payload)
 }
 
 func (o *S3UserCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/users][%d] s3_user_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/users][%d] s3_user_create default %s", o._statusCode, payload)
 }
 
 func (o *S3UserCreateDefault) GetPayload() *models.ErrorResponse {

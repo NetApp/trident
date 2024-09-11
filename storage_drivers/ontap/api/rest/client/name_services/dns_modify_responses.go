@@ -6,6 +6,7 @@ package name_services
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *DNSModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the dns modify o k response
+func (o *DNSModifyOK) Code() int {
+	return 200
+}
+
 func (o *DNSModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /name-services/dns/{svm.uuid}][%d] dnsModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /name-services/dns/{uuid}][%d] dnsModifyOK", 200)
 }
 
 func (o *DNSModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /name-services/dns/{svm.uuid}][%d] dnsModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /name-services/dns/{uuid}][%d] dnsModifyOK", 200)
 }
 
 func (o *DNSModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -115,7 +121,7 @@ func NewDNSModifyDefault(code int) *DNSModifyDefault {
 | 8847383    | The specified TTL exceeds the maximum supported value of 720 hours. |
 | 8847392    | Domain name cannot be an IP address |
 | 8847393    | Top level domain name is invalid |
-| 8847394    | FQDN name voilated the limitations |
+| 8847394    | FQDN name violated the limitations |
 | 8847399    | One or more of the specified DNS servers do not exist or cannot be reached |
 | 8847404    | Dynamic DNS is applicable only for data SVMs |
 | 8847405    | DNS parameters updated successfully; however the update of Dynamic DNS-related parameters has failed. |
@@ -131,11 +137,6 @@ type DNSModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the dns modify default response
-func (o *DNSModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this dns modify default response has a 2xx status code
@@ -163,12 +164,19 @@ func (o *DNSModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the dns modify default response
+func (o *DNSModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *DNSModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /name-services/dns/{svm.uuid}][%d] dns_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /name-services/dns/{uuid}][%d] dns_modify default %s", o._statusCode, payload)
 }
 
 func (o *DNSModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /name-services/dns/{svm.uuid}][%d] dns_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /name-services/dns/{uuid}][%d] dns_modify default %s", o._statusCode, payload)
 }
 
 func (o *DNSModifyDefault) GetPayload() *models.ErrorResponse {

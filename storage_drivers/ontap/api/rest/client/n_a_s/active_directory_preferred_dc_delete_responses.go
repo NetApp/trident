@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ActiveDirectoryPreferredDcDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the active directory preferred dc delete o k response
+func (o *ActiveDirectoryPreferredDcDeleteOK) Code() int {
+	return 200
+}
+
 func (o *ActiveDirectoryPreferredDcDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/active-directory/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] activeDirectoryPreferredDcDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/active-directory/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] activeDirectoryPreferredDcDeleteOK", 200)
 }
 
 func (o *ActiveDirectoryPreferredDcDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/active-directory/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] activeDirectoryPreferredDcDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/active-directory/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] activeDirectoryPreferredDcDeleteOK", 200)
 }
 
 func (o *ActiveDirectoryPreferredDcDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -107,16 +113,12 @@ func NewActiveDirectoryPreferredDcDeleteDefault(code int) *ActiveDirectoryPrefer
 | Error Code | Description |
 | ---------- | ----------- |
 | 655507 | Failed to remove preferred-dc. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ActiveDirectoryPreferredDcDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the active directory preferred dc delete default response
-func (o *ActiveDirectoryPreferredDcDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this active directory preferred dc delete default response has a 2xx status code
@@ -144,12 +146,19 @@ func (o *ActiveDirectoryPreferredDcDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the active directory preferred dc delete default response
+func (o *ActiveDirectoryPreferredDcDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ActiveDirectoryPreferredDcDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/active-directory/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] active_directory_preferred_dc_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/active-directory/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] active_directory_preferred_dc_delete default %s", o._statusCode, payload)
 }
 
 func (o *ActiveDirectoryPreferredDcDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/active-directory/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] active_directory_preferred_dc_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/active-directory/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] active_directory_preferred_dc_delete default %s", o._statusCode, payload)
 }
 
 func (o *ActiveDirectoryPreferredDcDeleteDefault) GetPayload() *models.ErrorResponse {

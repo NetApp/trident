@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *FpolicyEngineDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the fpolicy engine delete o k response
+func (o *FpolicyEngineDeleteOK) Code() int {
+	return 200
+}
+
 func (o *FpolicyEngineDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/engines/{name}][%d] fpolicyEngineDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/engines/{name}][%d] fpolicyEngineDeleteOK", 200)
 }
 
 func (o *FpolicyEngineDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/engines/{name}][%d] fpolicyEngineDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/engines/{name}][%d] fpolicyEngineDeleteOK", 200)
 }
 
 func (o *FpolicyEngineDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -115,11 +121,6 @@ type FpolicyEngineDeleteDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the fpolicy engine delete default response
-func (o *FpolicyEngineDeleteDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this fpolicy engine delete default response has a 2xx status code
 func (o *FpolicyEngineDeleteDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -145,12 +146,19 @@ func (o *FpolicyEngineDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the fpolicy engine delete default response
+func (o *FpolicyEngineDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FpolicyEngineDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/engines/{name}][%d] fpolicy_engine_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/engines/{name}][%d] fpolicy_engine_delete default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyEngineDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/engines/{name}][%d] fpolicy_engine_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/engines/{name}][%d] fpolicy_engine_delete default %s", o._statusCode, payload)
 }
 
 func (o *FpolicyEngineDeleteDefault) GetPayload() *models.ErrorResponse {

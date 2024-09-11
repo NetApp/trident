@@ -55,12 +55,12 @@ type SnaplockLegalHoldOperation struct {
 	// Specifies the status of legal-hold operation.
 	// Example: completed
 	// Read Only: true
-	// Enum: [in_progress failed aborting completed]
+	// Enum: ["in_progress","failed","aborting","completed"]
 	State *string `json:"state,omitempty"`
 
 	// Specifies the type of legal-hold operation.
 	// Example: begin
-	// Enum: [begin end]
+	// Enum: ["begin","end"]
 	Type *string `json:"type,omitempty"`
 }
 

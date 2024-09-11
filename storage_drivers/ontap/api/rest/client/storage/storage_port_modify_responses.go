@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *StoragePortModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the storage port modify o k response
+func (o *StoragePortModifyOK) Code() int {
+	return 200
+}
+
 func (o *StoragePortModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/ports/{node.uuid}/{name}][%d] storagePortModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/ports/{node.uuid}/{name}][%d] storagePortModifyOK", 200)
 }
 
 func (o *StoragePortModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /storage/ports/{node.uuid}/{name}][%d] storagePortModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/ports/{node.uuid}/{name}][%d] storagePortModifyOK", 200)
 }
 
 func (o *StoragePortModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -126,16 +132,12 @@ func NewStoragePortModifyDefault(code int) *StoragePortModifyDefault {
 | 17891354 | Unable to disable port \"<port>\" because it is in network mode. |
 | 17891355 | Port operation \"<operation>\" failed on port \"<name>\" because it is not supported on dedicated ports. |
 | 17891356 | Unable to <operation> port \"<port>\" when setting mode to \"<mode>\". |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type StoragePortModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the storage port modify default response
-func (o *StoragePortModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this storage port modify default response has a 2xx status code
@@ -163,12 +165,19 @@ func (o *StoragePortModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the storage port modify default response
+func (o *StoragePortModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *StoragePortModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/ports/{node.uuid}/{name}][%d] storage_port_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/ports/{node.uuid}/{name}][%d] storage_port_modify default %s", o._statusCode, payload)
 }
 
 func (o *StoragePortModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /storage/ports/{node.uuid}/{name}][%d] storage_port_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/ports/{node.uuid}/{name}][%d] storage_port_modify default %s", o._statusCode, payload)
 }
 
 func (o *StoragePortModifyDefault) GetPayload() *models.ErrorResponse {

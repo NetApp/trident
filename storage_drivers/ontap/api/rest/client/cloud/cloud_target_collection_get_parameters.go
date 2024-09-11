@@ -164,6 +164,12 @@ type CloudTargetCollectionGetParams struct {
 	*/
 	ProviderType *string
 
+	/* ReadLatencyWarningThreshold.
+
+	   Filter by read_latency_warning_threshold
+	*/
+	ReadLatencyWarningThreshold *int64
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -498,6 +504,17 @@ func (o *CloudTargetCollectionGetParams) WithProviderType(providerType *string) 
 // SetProviderType adds the providerType to the cloud target collection get params
 func (o *CloudTargetCollectionGetParams) SetProviderType(providerType *string) {
 	o.ProviderType = providerType
+}
+
+// WithReadLatencyWarningThreshold adds the readLatencyWarningThreshold to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithReadLatencyWarningThreshold(readLatencyWarningThreshold *int64) *CloudTargetCollectionGetParams {
+	o.SetReadLatencyWarningThreshold(readLatencyWarningThreshold)
+	return o
+}
+
+// SetReadLatencyWarningThreshold adds the readLatencyWarningThreshold to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetReadLatencyWarningThreshold(readLatencyWarningThreshold *int64) {
+	o.ReadLatencyWarningThreshold = readLatencyWarningThreshold
 }
 
 // WithReturnRecords adds the returnRecords to the cloud target collection get params
@@ -923,6 +940,23 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qProviderType != "" {
 
 			if err := r.SetQueryParam("provider_type", qProviderType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReadLatencyWarningThreshold != nil {
+
+		// query param read_latency_warning_threshold
+		var qrReadLatencyWarningThreshold int64
+
+		if o.ReadLatencyWarningThreshold != nil {
+			qrReadLatencyWarningThreshold = *o.ReadLatencyWarningThreshold
+		}
+		qReadLatencyWarningThreshold := swag.FormatInt64(qrReadLatencyWarningThreshold)
+		if qReadLatencyWarningThreshold != "" {
+
+			if err := r.SetQueryParam("read_latency_warning_threshold", qReadLatencyWarningThreshold); err != nil {
 				return err
 			}
 		}

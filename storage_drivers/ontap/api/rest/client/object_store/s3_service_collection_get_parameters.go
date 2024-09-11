@@ -86,11 +86,143 @@ type S3ServiceCollectionGetParams struct {
 	*/
 	BucketsComment *string
 
+	/* BucketsCorsRulesAllowedHeaders.
+
+	   Filter by buckets.cors.rules.allowed_headers
+	*/
+	BucketsCorsRulesAllowedHeaders *string
+
+	/* BucketsCorsRulesAllowedMethods.
+
+	   Filter by buckets.cors.rules.allowed_methods
+	*/
+	BucketsCorsRulesAllowedMethods *string
+
+	/* BucketsCorsRulesAllowedOrigins.
+
+	   Filter by buckets.cors.rules.allowed_origins
+	*/
+	BucketsCorsRulesAllowedOrigins *string
+
+	/* BucketsCorsRulesExposeHeaders.
+
+	   Filter by buckets.cors.rules.expose_headers
+	*/
+	BucketsCorsRulesExposeHeaders *string
+
+	/* BucketsCorsRulesID.
+
+	   Filter by buckets.cors.rules.id
+	*/
+	BucketsCorsRulesID *string
+
+	/* BucketsCorsRulesMaxAgeSeconds.
+
+	   Filter by buckets.cors.rules.max_age_seconds
+	*/
+	BucketsCorsRulesMaxAgeSeconds *int64
+
 	/* BucketsEncryptionEnabled.
 
 	   Filter by buckets.encryption.enabled
 	*/
 	BucketsEncryptionEnabled *bool
+
+	/* BucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays.
+
+	   Filter by buckets.lifecycle_management.rules.abort_incomplete_multipart_upload.after_initiation_days
+	*/
+	BucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays *int64
+
+	/* BucketsLifecycleManagementRulesBucketName.
+
+	   Filter by buckets.lifecycle_management.rules.bucket_name
+	*/
+	BucketsLifecycleManagementRulesBucketName *string
+
+	/* BucketsLifecycleManagementRulesEnabled.
+
+	   Filter by buckets.lifecycle_management.rules.enabled
+	*/
+	BucketsLifecycleManagementRulesEnabled *bool
+
+	/* BucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker.
+
+	   Filter by buckets.lifecycle_management.rules.expiration.expired_object_delete_marker
+	*/
+	BucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker *bool
+
+	/* BucketsLifecycleManagementRulesExpirationObjectAgeDays.
+
+	   Filter by buckets.lifecycle_management.rules.expiration.object_age_days
+	*/
+	BucketsLifecycleManagementRulesExpirationObjectAgeDays *int64
+
+	/* BucketsLifecycleManagementRulesExpirationObjectExpiryDate.
+
+	   Filter by buckets.lifecycle_management.rules.expiration.object_expiry_date
+	*/
+	BucketsLifecycleManagementRulesExpirationObjectExpiryDate *string
+
+	/* BucketsLifecycleManagementRulesName.
+
+	   Filter by buckets.lifecycle_management.rules.name
+	*/
+	BucketsLifecycleManagementRulesName *string
+
+	/* BucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions.
+
+	   Filter by buckets.lifecycle_management.rules.non_current_version_expiration.new_non_current_versions
+	*/
+	BucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions *int64
+
+	/* BucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays.
+
+	   Filter by buckets.lifecycle_management.rules.non_current_version_expiration.non_current_days
+	*/
+	BucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays *int64
+
+	/* BucketsLifecycleManagementRulesObjectFilterPrefix.
+
+	   Filter by buckets.lifecycle_management.rules.object_filter.prefix
+	*/
+	BucketsLifecycleManagementRulesObjectFilterPrefix *string
+
+	/* BucketsLifecycleManagementRulesObjectFilterSizeGreaterThan.
+
+	   Filter by buckets.lifecycle_management.rules.object_filter.size_greater_than
+	*/
+	BucketsLifecycleManagementRulesObjectFilterSizeGreaterThan *int64
+
+	/* BucketsLifecycleManagementRulesObjectFilterSizeLessThan.
+
+	   Filter by buckets.lifecycle_management.rules.object_filter.size_less_than
+	*/
+	BucketsLifecycleManagementRulesObjectFilterSizeLessThan *int64
+
+	/* BucketsLifecycleManagementRulesObjectFilterTags.
+
+	   Filter by buckets.lifecycle_management.rules.object_filter.tags
+	*/
+	BucketsLifecycleManagementRulesObjectFilterTags *string
+
+	/* BucketsLifecycleManagementRulesSvmName.
+
+	   Filter by buckets.lifecycle_management.rules.svm.name
+	*/
+	BucketsLifecycleManagementRulesSvmName *string
+
+	/* BucketsLifecycleManagementRulesSvmUUID.
+
+	   Filter by buckets.lifecycle_management.rules.svm.uuid
+	*/
+	BucketsLifecycleManagementRulesSvmUUID *string
+
+	/* BucketsLifecycleManagementRulesUUID.
+
+	   Filter by buckets.lifecycle_management.rules.uuid
+	*/
+	BucketsLifecycleManagementRulesUUID *string
 
 	/* BucketsLogicalUsedSize.
 
@@ -236,6 +368,18 @@ type S3ServiceCollectionGetParams struct {
 	*/
 	BucketsQosPolicyUUID *string
 
+	/* BucketsRetentionDefaultPeriod.
+
+	   Filter by buckets.retention.default_period
+	*/
+	BucketsRetentionDefaultPeriod *string
+
+	/* BucketsRetentionMode.
+
+	   Filter by buckets.retention.mode
+	*/
+	BucketsRetentionMode *string
+
 	/* BucketsRole.
 
 	   Filter by buckets.role
@@ -247,6 +391,18 @@ type S3ServiceCollectionGetParams struct {
 	   Filter by buckets.size
 	*/
 	BucketsSize *int64
+
+	/* BucketsSnapshotPolicyName.
+
+	   Filter by buckets.snapshot_policy.name
+	*/
+	BucketsSnapshotPolicyName *string
+
+	/* BucketsSnapshotPolicyUUID.
+
+	   Filter by buckets.snapshot_policy.uuid
+	*/
+	BucketsSnapshotPolicyUUID *string
 
 	/* BucketsSvmName.
 
@@ -344,6 +500,18 @@ type S3ServiceCollectionGetParams struct {
 	*/
 	IsHTTPSEnabled *bool
 
+	/* MaxKeyTimeToLive.
+
+	   Filter by max_key_time_to_live
+	*/
+	MaxKeyTimeToLive *string
+
+	/* MaxLockRetentionPeriod.
+
+	   Filter by max_lock_retention_period
+	*/
+	MaxLockRetentionPeriod *string
+
 	/* MaxRecords.
 
 	   Limit the number of records returned.
@@ -433,6 +601,12 @@ type S3ServiceCollectionGetParams struct {
 	   Filter by metric.timestamp
 	*/
 	MetricTimestamp *string
+
+	/* MinLockRetentionPeriod.
+
+	   Filter by min_lock_retention_period
+	*/
+	MinLockRetentionPeriod *string
 
 	/* Name.
 
@@ -576,6 +750,18 @@ type S3ServiceCollectionGetParams struct {
 	*/
 	UsersComment *string
 
+	/* UsersKeyExpiryTime.
+
+	   Filter by users.key_expiry_time
+	*/
+	UsersKeyExpiryTime *string
+
+	/* UsersKeyTimeToLive.
+
+	   Filter by users.key_time_to_live
+	*/
+	UsersKeyTimeToLive *string
+
 	/* UsersName.
 
 	   Filter by users.name
@@ -705,6 +891,72 @@ func (o *S3ServiceCollectionGetParams) SetBucketsComment(bucketsComment *string)
 	o.BucketsComment = bucketsComment
 }
 
+// WithBucketsCorsRulesAllowedHeaders adds the bucketsCorsRulesAllowedHeaders to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsCorsRulesAllowedHeaders(bucketsCorsRulesAllowedHeaders *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsCorsRulesAllowedHeaders(bucketsCorsRulesAllowedHeaders)
+	return o
+}
+
+// SetBucketsCorsRulesAllowedHeaders adds the bucketsCorsRulesAllowedHeaders to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsCorsRulesAllowedHeaders(bucketsCorsRulesAllowedHeaders *string) {
+	o.BucketsCorsRulesAllowedHeaders = bucketsCorsRulesAllowedHeaders
+}
+
+// WithBucketsCorsRulesAllowedMethods adds the bucketsCorsRulesAllowedMethods to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsCorsRulesAllowedMethods(bucketsCorsRulesAllowedMethods *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsCorsRulesAllowedMethods(bucketsCorsRulesAllowedMethods)
+	return o
+}
+
+// SetBucketsCorsRulesAllowedMethods adds the bucketsCorsRulesAllowedMethods to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsCorsRulesAllowedMethods(bucketsCorsRulesAllowedMethods *string) {
+	o.BucketsCorsRulesAllowedMethods = bucketsCorsRulesAllowedMethods
+}
+
+// WithBucketsCorsRulesAllowedOrigins adds the bucketsCorsRulesAllowedOrigins to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsCorsRulesAllowedOrigins(bucketsCorsRulesAllowedOrigins *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsCorsRulesAllowedOrigins(bucketsCorsRulesAllowedOrigins)
+	return o
+}
+
+// SetBucketsCorsRulesAllowedOrigins adds the bucketsCorsRulesAllowedOrigins to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsCorsRulesAllowedOrigins(bucketsCorsRulesAllowedOrigins *string) {
+	o.BucketsCorsRulesAllowedOrigins = bucketsCorsRulesAllowedOrigins
+}
+
+// WithBucketsCorsRulesExposeHeaders adds the bucketsCorsRulesExposeHeaders to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsCorsRulesExposeHeaders(bucketsCorsRulesExposeHeaders *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsCorsRulesExposeHeaders(bucketsCorsRulesExposeHeaders)
+	return o
+}
+
+// SetBucketsCorsRulesExposeHeaders adds the bucketsCorsRulesExposeHeaders to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsCorsRulesExposeHeaders(bucketsCorsRulesExposeHeaders *string) {
+	o.BucketsCorsRulesExposeHeaders = bucketsCorsRulesExposeHeaders
+}
+
+// WithBucketsCorsRulesID adds the bucketsCorsRulesID to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsCorsRulesID(bucketsCorsRulesID *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsCorsRulesID(bucketsCorsRulesID)
+	return o
+}
+
+// SetBucketsCorsRulesID adds the bucketsCorsRulesId to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsCorsRulesID(bucketsCorsRulesID *string) {
+	o.BucketsCorsRulesID = bucketsCorsRulesID
+}
+
+// WithBucketsCorsRulesMaxAgeSeconds adds the bucketsCorsRulesMaxAgeSeconds to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsCorsRulesMaxAgeSeconds(bucketsCorsRulesMaxAgeSeconds *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsCorsRulesMaxAgeSeconds(bucketsCorsRulesMaxAgeSeconds)
+	return o
+}
+
+// SetBucketsCorsRulesMaxAgeSeconds adds the bucketsCorsRulesMaxAgeSeconds to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsCorsRulesMaxAgeSeconds(bucketsCorsRulesMaxAgeSeconds *int64) {
+	o.BucketsCorsRulesMaxAgeSeconds = bucketsCorsRulesMaxAgeSeconds
+}
+
 // WithBucketsEncryptionEnabled adds the bucketsEncryptionEnabled to the s3 service collection get params
 func (o *S3ServiceCollectionGetParams) WithBucketsEncryptionEnabled(bucketsEncryptionEnabled *bool) *S3ServiceCollectionGetParams {
 	o.SetBucketsEncryptionEnabled(bucketsEncryptionEnabled)
@@ -714,6 +966,182 @@ func (o *S3ServiceCollectionGetParams) WithBucketsEncryptionEnabled(bucketsEncry
 // SetBucketsEncryptionEnabled adds the bucketsEncryptionEnabled to the s3 service collection get params
 func (o *S3ServiceCollectionGetParams) SetBucketsEncryptionEnabled(bucketsEncryptionEnabled *bool) {
 	o.BucketsEncryptionEnabled = bucketsEncryptionEnabled
+}
+
+// WithBucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays adds the bucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays(bucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays(bucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays)
+	return o
+}
+
+// SetBucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays adds the bucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays(bucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays *int64) {
+	o.BucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays = bucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays
+}
+
+// WithBucketsLifecycleManagementRulesBucketName adds the bucketsLifecycleManagementRulesBucketName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsLifecycleManagementRulesBucketName(bucketsLifecycleManagementRulesBucketName *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsLifecycleManagementRulesBucketName(bucketsLifecycleManagementRulesBucketName)
+	return o
+}
+
+// SetBucketsLifecycleManagementRulesBucketName adds the bucketsLifecycleManagementRulesBucketName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsLifecycleManagementRulesBucketName(bucketsLifecycleManagementRulesBucketName *string) {
+	o.BucketsLifecycleManagementRulesBucketName = bucketsLifecycleManagementRulesBucketName
+}
+
+// WithBucketsLifecycleManagementRulesEnabled adds the bucketsLifecycleManagementRulesEnabled to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsLifecycleManagementRulesEnabled(bucketsLifecycleManagementRulesEnabled *bool) *S3ServiceCollectionGetParams {
+	o.SetBucketsLifecycleManagementRulesEnabled(bucketsLifecycleManagementRulesEnabled)
+	return o
+}
+
+// SetBucketsLifecycleManagementRulesEnabled adds the bucketsLifecycleManagementRulesEnabled to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsLifecycleManagementRulesEnabled(bucketsLifecycleManagementRulesEnabled *bool) {
+	o.BucketsLifecycleManagementRulesEnabled = bucketsLifecycleManagementRulesEnabled
+}
+
+// WithBucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker adds the bucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker(bucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker *bool) *S3ServiceCollectionGetParams {
+	o.SetBucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker(bucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker)
+	return o
+}
+
+// SetBucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker adds the bucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker(bucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker *bool) {
+	o.BucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker = bucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker
+}
+
+// WithBucketsLifecycleManagementRulesExpirationObjectAgeDays adds the bucketsLifecycleManagementRulesExpirationObjectAgeDays to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsLifecycleManagementRulesExpirationObjectAgeDays(bucketsLifecycleManagementRulesExpirationObjectAgeDays *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsLifecycleManagementRulesExpirationObjectAgeDays(bucketsLifecycleManagementRulesExpirationObjectAgeDays)
+	return o
+}
+
+// SetBucketsLifecycleManagementRulesExpirationObjectAgeDays adds the bucketsLifecycleManagementRulesExpirationObjectAgeDays to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsLifecycleManagementRulesExpirationObjectAgeDays(bucketsLifecycleManagementRulesExpirationObjectAgeDays *int64) {
+	o.BucketsLifecycleManagementRulesExpirationObjectAgeDays = bucketsLifecycleManagementRulesExpirationObjectAgeDays
+}
+
+// WithBucketsLifecycleManagementRulesExpirationObjectExpiryDate adds the bucketsLifecycleManagementRulesExpirationObjectExpiryDate to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsLifecycleManagementRulesExpirationObjectExpiryDate(bucketsLifecycleManagementRulesExpirationObjectExpiryDate *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsLifecycleManagementRulesExpirationObjectExpiryDate(bucketsLifecycleManagementRulesExpirationObjectExpiryDate)
+	return o
+}
+
+// SetBucketsLifecycleManagementRulesExpirationObjectExpiryDate adds the bucketsLifecycleManagementRulesExpirationObjectExpiryDate to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsLifecycleManagementRulesExpirationObjectExpiryDate(bucketsLifecycleManagementRulesExpirationObjectExpiryDate *string) {
+	o.BucketsLifecycleManagementRulesExpirationObjectExpiryDate = bucketsLifecycleManagementRulesExpirationObjectExpiryDate
+}
+
+// WithBucketsLifecycleManagementRulesName adds the bucketsLifecycleManagementRulesName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsLifecycleManagementRulesName(bucketsLifecycleManagementRulesName *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsLifecycleManagementRulesName(bucketsLifecycleManagementRulesName)
+	return o
+}
+
+// SetBucketsLifecycleManagementRulesName adds the bucketsLifecycleManagementRulesName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsLifecycleManagementRulesName(bucketsLifecycleManagementRulesName *string) {
+	o.BucketsLifecycleManagementRulesName = bucketsLifecycleManagementRulesName
+}
+
+// WithBucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions adds the bucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions(bucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions(bucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions)
+	return o
+}
+
+// SetBucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions adds the bucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions(bucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions *int64) {
+	o.BucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions = bucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions
+}
+
+// WithBucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays adds the bucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays(bucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays(bucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays)
+	return o
+}
+
+// SetBucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays adds the bucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays(bucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays *int64) {
+	o.BucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays = bucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays
+}
+
+// WithBucketsLifecycleManagementRulesObjectFilterPrefix adds the bucketsLifecycleManagementRulesObjectFilterPrefix to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsLifecycleManagementRulesObjectFilterPrefix(bucketsLifecycleManagementRulesObjectFilterPrefix *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsLifecycleManagementRulesObjectFilterPrefix(bucketsLifecycleManagementRulesObjectFilterPrefix)
+	return o
+}
+
+// SetBucketsLifecycleManagementRulesObjectFilterPrefix adds the bucketsLifecycleManagementRulesObjectFilterPrefix to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsLifecycleManagementRulesObjectFilterPrefix(bucketsLifecycleManagementRulesObjectFilterPrefix *string) {
+	o.BucketsLifecycleManagementRulesObjectFilterPrefix = bucketsLifecycleManagementRulesObjectFilterPrefix
+}
+
+// WithBucketsLifecycleManagementRulesObjectFilterSizeGreaterThan adds the bucketsLifecycleManagementRulesObjectFilterSizeGreaterThan to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsLifecycleManagementRulesObjectFilterSizeGreaterThan(bucketsLifecycleManagementRulesObjectFilterSizeGreaterThan *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsLifecycleManagementRulesObjectFilterSizeGreaterThan(bucketsLifecycleManagementRulesObjectFilterSizeGreaterThan)
+	return o
+}
+
+// SetBucketsLifecycleManagementRulesObjectFilterSizeGreaterThan adds the bucketsLifecycleManagementRulesObjectFilterSizeGreaterThan to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsLifecycleManagementRulesObjectFilterSizeGreaterThan(bucketsLifecycleManagementRulesObjectFilterSizeGreaterThan *int64) {
+	o.BucketsLifecycleManagementRulesObjectFilterSizeGreaterThan = bucketsLifecycleManagementRulesObjectFilterSizeGreaterThan
+}
+
+// WithBucketsLifecycleManagementRulesObjectFilterSizeLessThan adds the bucketsLifecycleManagementRulesObjectFilterSizeLessThan to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsLifecycleManagementRulesObjectFilterSizeLessThan(bucketsLifecycleManagementRulesObjectFilterSizeLessThan *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsLifecycleManagementRulesObjectFilterSizeLessThan(bucketsLifecycleManagementRulesObjectFilterSizeLessThan)
+	return o
+}
+
+// SetBucketsLifecycleManagementRulesObjectFilterSizeLessThan adds the bucketsLifecycleManagementRulesObjectFilterSizeLessThan to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsLifecycleManagementRulesObjectFilterSizeLessThan(bucketsLifecycleManagementRulesObjectFilterSizeLessThan *int64) {
+	o.BucketsLifecycleManagementRulesObjectFilterSizeLessThan = bucketsLifecycleManagementRulesObjectFilterSizeLessThan
+}
+
+// WithBucketsLifecycleManagementRulesObjectFilterTags adds the bucketsLifecycleManagementRulesObjectFilterTags to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsLifecycleManagementRulesObjectFilterTags(bucketsLifecycleManagementRulesObjectFilterTags *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsLifecycleManagementRulesObjectFilterTags(bucketsLifecycleManagementRulesObjectFilterTags)
+	return o
+}
+
+// SetBucketsLifecycleManagementRulesObjectFilterTags adds the bucketsLifecycleManagementRulesObjectFilterTags to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsLifecycleManagementRulesObjectFilterTags(bucketsLifecycleManagementRulesObjectFilterTags *string) {
+	o.BucketsLifecycleManagementRulesObjectFilterTags = bucketsLifecycleManagementRulesObjectFilterTags
+}
+
+// WithBucketsLifecycleManagementRulesSvmName adds the bucketsLifecycleManagementRulesSvmName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsLifecycleManagementRulesSvmName(bucketsLifecycleManagementRulesSvmName *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsLifecycleManagementRulesSvmName(bucketsLifecycleManagementRulesSvmName)
+	return o
+}
+
+// SetBucketsLifecycleManagementRulesSvmName adds the bucketsLifecycleManagementRulesSvmName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsLifecycleManagementRulesSvmName(bucketsLifecycleManagementRulesSvmName *string) {
+	o.BucketsLifecycleManagementRulesSvmName = bucketsLifecycleManagementRulesSvmName
+}
+
+// WithBucketsLifecycleManagementRulesSvmUUID adds the bucketsLifecycleManagementRulesSvmUUID to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsLifecycleManagementRulesSvmUUID(bucketsLifecycleManagementRulesSvmUUID *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsLifecycleManagementRulesSvmUUID(bucketsLifecycleManagementRulesSvmUUID)
+	return o
+}
+
+// SetBucketsLifecycleManagementRulesSvmUUID adds the bucketsLifecycleManagementRulesSvmUuid to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsLifecycleManagementRulesSvmUUID(bucketsLifecycleManagementRulesSvmUUID *string) {
+	o.BucketsLifecycleManagementRulesSvmUUID = bucketsLifecycleManagementRulesSvmUUID
+}
+
+// WithBucketsLifecycleManagementRulesUUID adds the bucketsLifecycleManagementRulesUUID to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsLifecycleManagementRulesUUID(bucketsLifecycleManagementRulesUUID *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsLifecycleManagementRulesUUID(bucketsLifecycleManagementRulesUUID)
+	return o
+}
+
+// SetBucketsLifecycleManagementRulesUUID adds the bucketsLifecycleManagementRulesUuid to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsLifecycleManagementRulesUUID(bucketsLifecycleManagementRulesUUID *string) {
+	o.BucketsLifecycleManagementRulesUUID = bucketsLifecycleManagementRulesUUID
 }
 
 // WithBucketsLogicalUsedSize adds the bucketsLogicalUsedSize to the s3 service collection get params
@@ -980,6 +1408,28 @@ func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyUUID(bucketsQosPolicyU
 	o.BucketsQosPolicyUUID = bucketsQosPolicyUUID
 }
 
+// WithBucketsRetentionDefaultPeriod adds the bucketsRetentionDefaultPeriod to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsRetentionDefaultPeriod(bucketsRetentionDefaultPeriod *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsRetentionDefaultPeriod(bucketsRetentionDefaultPeriod)
+	return o
+}
+
+// SetBucketsRetentionDefaultPeriod adds the bucketsRetentionDefaultPeriod to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsRetentionDefaultPeriod(bucketsRetentionDefaultPeriod *string) {
+	o.BucketsRetentionDefaultPeriod = bucketsRetentionDefaultPeriod
+}
+
+// WithBucketsRetentionMode adds the bucketsRetentionMode to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsRetentionMode(bucketsRetentionMode *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsRetentionMode(bucketsRetentionMode)
+	return o
+}
+
+// SetBucketsRetentionMode adds the bucketsRetentionMode to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsRetentionMode(bucketsRetentionMode *string) {
+	o.BucketsRetentionMode = bucketsRetentionMode
+}
+
 // WithBucketsRole adds the bucketsRole to the s3 service collection get params
 func (o *S3ServiceCollectionGetParams) WithBucketsRole(bucketsRole *string) *S3ServiceCollectionGetParams {
 	o.SetBucketsRole(bucketsRole)
@@ -1000,6 +1450,28 @@ func (o *S3ServiceCollectionGetParams) WithBucketsSize(bucketsSize *int64) *S3Se
 // SetBucketsSize adds the bucketsSize to the s3 service collection get params
 func (o *S3ServiceCollectionGetParams) SetBucketsSize(bucketsSize *int64) {
 	o.BucketsSize = bucketsSize
+}
+
+// WithBucketsSnapshotPolicyName adds the bucketsSnapshotPolicyName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsSnapshotPolicyName(bucketsSnapshotPolicyName *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsSnapshotPolicyName(bucketsSnapshotPolicyName)
+	return o
+}
+
+// SetBucketsSnapshotPolicyName adds the bucketsSnapshotPolicyName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsSnapshotPolicyName(bucketsSnapshotPolicyName *string) {
+	o.BucketsSnapshotPolicyName = bucketsSnapshotPolicyName
+}
+
+// WithBucketsSnapshotPolicyUUID adds the bucketsSnapshotPolicyUUID to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsSnapshotPolicyUUID(bucketsSnapshotPolicyUUID *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsSnapshotPolicyUUID(bucketsSnapshotPolicyUUID)
+	return o
+}
+
+// SetBucketsSnapshotPolicyUUID adds the bucketsSnapshotPolicyUuid to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsSnapshotPolicyUUID(bucketsSnapshotPolicyUUID *string) {
+	o.BucketsSnapshotPolicyUUID = bucketsSnapshotPolicyUUID
 }
 
 // WithBucketsSvmName adds the bucketsSvmName to the s3 service collection get params
@@ -1178,6 +1650,28 @@ func (o *S3ServiceCollectionGetParams) SetIsHTTPSEnabled(isHTTPSEnabled *bool) {
 	o.IsHTTPSEnabled = isHTTPSEnabled
 }
 
+// WithMaxKeyTimeToLive adds the maxKeyTimeToLive to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMaxKeyTimeToLive(maxKeyTimeToLive *string) *S3ServiceCollectionGetParams {
+	o.SetMaxKeyTimeToLive(maxKeyTimeToLive)
+	return o
+}
+
+// SetMaxKeyTimeToLive adds the maxKeyTimeToLive to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMaxKeyTimeToLive(maxKeyTimeToLive *string) {
+	o.MaxKeyTimeToLive = maxKeyTimeToLive
+}
+
+// WithMaxLockRetentionPeriod adds the maxLockRetentionPeriod to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMaxLockRetentionPeriod(maxLockRetentionPeriod *string) *S3ServiceCollectionGetParams {
+	o.SetMaxLockRetentionPeriod(maxLockRetentionPeriod)
+	return o
+}
+
+// SetMaxLockRetentionPeriod adds the maxLockRetentionPeriod to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMaxLockRetentionPeriod(maxLockRetentionPeriod *string) {
+	o.MaxLockRetentionPeriod = maxLockRetentionPeriod
+}
+
 // WithMaxRecords adds the maxRecords to the s3 service collection get params
 func (o *S3ServiceCollectionGetParams) WithMaxRecords(maxRecords *int64) *S3ServiceCollectionGetParams {
 	o.SetMaxRecords(maxRecords)
@@ -1341,6 +1835,17 @@ func (o *S3ServiceCollectionGetParams) WithMetricTimestamp(metricTimestamp *stri
 // SetMetricTimestamp adds the metricTimestamp to the s3 service collection get params
 func (o *S3ServiceCollectionGetParams) SetMetricTimestamp(metricTimestamp *string) {
 	o.MetricTimestamp = metricTimestamp
+}
+
+// WithMinLockRetentionPeriod adds the minLockRetentionPeriod to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMinLockRetentionPeriod(minLockRetentionPeriod *string) *S3ServiceCollectionGetParams {
+	o.SetMinLockRetentionPeriod(minLockRetentionPeriod)
+	return o
+}
+
+// SetMinLockRetentionPeriod adds the minLockRetentionPeriod to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMinLockRetentionPeriod(minLockRetentionPeriod *string) {
+	o.MinLockRetentionPeriod = minLockRetentionPeriod
 }
 
 // WithName adds the name to the s3 service collection get params
@@ -1596,6 +2101,28 @@ func (o *S3ServiceCollectionGetParams) SetUsersComment(usersComment *string) {
 	o.UsersComment = usersComment
 }
 
+// WithUsersKeyExpiryTime adds the usersKeyExpiryTime to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithUsersKeyExpiryTime(usersKeyExpiryTime *string) *S3ServiceCollectionGetParams {
+	o.SetUsersKeyExpiryTime(usersKeyExpiryTime)
+	return o
+}
+
+// SetUsersKeyExpiryTime adds the usersKeyExpiryTime to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetUsersKeyExpiryTime(usersKeyExpiryTime *string) {
+	o.UsersKeyExpiryTime = usersKeyExpiryTime
+}
+
+// WithUsersKeyTimeToLive adds the usersKeyTimeToLive to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithUsersKeyTimeToLive(usersKeyTimeToLive *string) *S3ServiceCollectionGetParams {
+	o.SetUsersKeyTimeToLive(usersKeyTimeToLive)
+	return o
+}
+
+// SetUsersKeyTimeToLive adds the usersKeyTimeToLive to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetUsersKeyTimeToLive(usersKeyTimeToLive *string) {
+	o.UsersKeyTimeToLive = usersKeyTimeToLive
+}
+
 // WithUsersName adds the usersName to the s3 service collection get params
 func (o *S3ServiceCollectionGetParams) WithUsersName(usersName *string) *S3ServiceCollectionGetParams {
 	o.SetUsersName(usersName)
@@ -1705,6 +2232,108 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.BucketsCorsRulesAllowedHeaders != nil {
+
+		// query param buckets.cors.rules.allowed_headers
+		var qrBucketsCorsRulesAllowedHeaders string
+
+		if o.BucketsCorsRulesAllowedHeaders != nil {
+			qrBucketsCorsRulesAllowedHeaders = *o.BucketsCorsRulesAllowedHeaders
+		}
+		qBucketsCorsRulesAllowedHeaders := qrBucketsCorsRulesAllowedHeaders
+		if qBucketsCorsRulesAllowedHeaders != "" {
+
+			if err := r.SetQueryParam("buckets.cors.rules.allowed_headers", qBucketsCorsRulesAllowedHeaders); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsCorsRulesAllowedMethods != nil {
+
+		// query param buckets.cors.rules.allowed_methods
+		var qrBucketsCorsRulesAllowedMethods string
+
+		if o.BucketsCorsRulesAllowedMethods != nil {
+			qrBucketsCorsRulesAllowedMethods = *o.BucketsCorsRulesAllowedMethods
+		}
+		qBucketsCorsRulesAllowedMethods := qrBucketsCorsRulesAllowedMethods
+		if qBucketsCorsRulesAllowedMethods != "" {
+
+			if err := r.SetQueryParam("buckets.cors.rules.allowed_methods", qBucketsCorsRulesAllowedMethods); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsCorsRulesAllowedOrigins != nil {
+
+		// query param buckets.cors.rules.allowed_origins
+		var qrBucketsCorsRulesAllowedOrigins string
+
+		if o.BucketsCorsRulesAllowedOrigins != nil {
+			qrBucketsCorsRulesAllowedOrigins = *o.BucketsCorsRulesAllowedOrigins
+		}
+		qBucketsCorsRulesAllowedOrigins := qrBucketsCorsRulesAllowedOrigins
+		if qBucketsCorsRulesAllowedOrigins != "" {
+
+			if err := r.SetQueryParam("buckets.cors.rules.allowed_origins", qBucketsCorsRulesAllowedOrigins); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsCorsRulesExposeHeaders != nil {
+
+		// query param buckets.cors.rules.expose_headers
+		var qrBucketsCorsRulesExposeHeaders string
+
+		if o.BucketsCorsRulesExposeHeaders != nil {
+			qrBucketsCorsRulesExposeHeaders = *o.BucketsCorsRulesExposeHeaders
+		}
+		qBucketsCorsRulesExposeHeaders := qrBucketsCorsRulesExposeHeaders
+		if qBucketsCorsRulesExposeHeaders != "" {
+
+			if err := r.SetQueryParam("buckets.cors.rules.expose_headers", qBucketsCorsRulesExposeHeaders); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsCorsRulesID != nil {
+
+		// query param buckets.cors.rules.id
+		var qrBucketsCorsRulesID string
+
+		if o.BucketsCorsRulesID != nil {
+			qrBucketsCorsRulesID = *o.BucketsCorsRulesID
+		}
+		qBucketsCorsRulesID := qrBucketsCorsRulesID
+		if qBucketsCorsRulesID != "" {
+
+			if err := r.SetQueryParam("buckets.cors.rules.id", qBucketsCorsRulesID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsCorsRulesMaxAgeSeconds != nil {
+
+		// query param buckets.cors.rules.max_age_seconds
+		var qrBucketsCorsRulesMaxAgeSeconds int64
+
+		if o.BucketsCorsRulesMaxAgeSeconds != nil {
+			qrBucketsCorsRulesMaxAgeSeconds = *o.BucketsCorsRulesMaxAgeSeconds
+		}
+		qBucketsCorsRulesMaxAgeSeconds := swag.FormatInt64(qrBucketsCorsRulesMaxAgeSeconds)
+		if qBucketsCorsRulesMaxAgeSeconds != "" {
+
+			if err := r.SetQueryParam("buckets.cors.rules.max_age_seconds", qBucketsCorsRulesMaxAgeSeconds); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.BucketsEncryptionEnabled != nil {
 
 		// query param buckets.encryption.enabled
@@ -1717,6 +2346,278 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qBucketsEncryptionEnabled != "" {
 
 			if err := r.SetQueryParam("buckets.encryption.enabled", qBucketsEncryptionEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays != nil {
+
+		// query param buckets.lifecycle_management.rules.abort_incomplete_multipart_upload.after_initiation_days
+		var qrBucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays int64
+
+		if o.BucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays != nil {
+			qrBucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays = *o.BucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays
+		}
+		qBucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays := swag.FormatInt64(qrBucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays)
+		if qBucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays != "" {
+
+			if err := r.SetQueryParam("buckets.lifecycle_management.rules.abort_incomplete_multipart_upload.after_initiation_days", qBucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsLifecycleManagementRulesBucketName != nil {
+
+		// query param buckets.lifecycle_management.rules.bucket_name
+		var qrBucketsLifecycleManagementRulesBucketName string
+
+		if o.BucketsLifecycleManagementRulesBucketName != nil {
+			qrBucketsLifecycleManagementRulesBucketName = *o.BucketsLifecycleManagementRulesBucketName
+		}
+		qBucketsLifecycleManagementRulesBucketName := qrBucketsLifecycleManagementRulesBucketName
+		if qBucketsLifecycleManagementRulesBucketName != "" {
+
+			if err := r.SetQueryParam("buckets.lifecycle_management.rules.bucket_name", qBucketsLifecycleManagementRulesBucketName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsLifecycleManagementRulesEnabled != nil {
+
+		// query param buckets.lifecycle_management.rules.enabled
+		var qrBucketsLifecycleManagementRulesEnabled bool
+
+		if o.BucketsLifecycleManagementRulesEnabled != nil {
+			qrBucketsLifecycleManagementRulesEnabled = *o.BucketsLifecycleManagementRulesEnabled
+		}
+		qBucketsLifecycleManagementRulesEnabled := swag.FormatBool(qrBucketsLifecycleManagementRulesEnabled)
+		if qBucketsLifecycleManagementRulesEnabled != "" {
+
+			if err := r.SetQueryParam("buckets.lifecycle_management.rules.enabled", qBucketsLifecycleManagementRulesEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker != nil {
+
+		// query param buckets.lifecycle_management.rules.expiration.expired_object_delete_marker
+		var qrBucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker bool
+
+		if o.BucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker != nil {
+			qrBucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker = *o.BucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker
+		}
+		qBucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker := swag.FormatBool(qrBucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker)
+		if qBucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker != "" {
+
+			if err := r.SetQueryParam("buckets.lifecycle_management.rules.expiration.expired_object_delete_marker", qBucketsLifecycleManagementRulesExpirationExpiredObjectDeleteMarker); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsLifecycleManagementRulesExpirationObjectAgeDays != nil {
+
+		// query param buckets.lifecycle_management.rules.expiration.object_age_days
+		var qrBucketsLifecycleManagementRulesExpirationObjectAgeDays int64
+
+		if o.BucketsLifecycleManagementRulesExpirationObjectAgeDays != nil {
+			qrBucketsLifecycleManagementRulesExpirationObjectAgeDays = *o.BucketsLifecycleManagementRulesExpirationObjectAgeDays
+		}
+		qBucketsLifecycleManagementRulesExpirationObjectAgeDays := swag.FormatInt64(qrBucketsLifecycleManagementRulesExpirationObjectAgeDays)
+		if qBucketsLifecycleManagementRulesExpirationObjectAgeDays != "" {
+
+			if err := r.SetQueryParam("buckets.lifecycle_management.rules.expiration.object_age_days", qBucketsLifecycleManagementRulesExpirationObjectAgeDays); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsLifecycleManagementRulesExpirationObjectExpiryDate != nil {
+
+		// query param buckets.lifecycle_management.rules.expiration.object_expiry_date
+		var qrBucketsLifecycleManagementRulesExpirationObjectExpiryDate string
+
+		if o.BucketsLifecycleManagementRulesExpirationObjectExpiryDate != nil {
+			qrBucketsLifecycleManagementRulesExpirationObjectExpiryDate = *o.BucketsLifecycleManagementRulesExpirationObjectExpiryDate
+		}
+		qBucketsLifecycleManagementRulesExpirationObjectExpiryDate := qrBucketsLifecycleManagementRulesExpirationObjectExpiryDate
+		if qBucketsLifecycleManagementRulesExpirationObjectExpiryDate != "" {
+
+			if err := r.SetQueryParam("buckets.lifecycle_management.rules.expiration.object_expiry_date", qBucketsLifecycleManagementRulesExpirationObjectExpiryDate); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsLifecycleManagementRulesName != nil {
+
+		// query param buckets.lifecycle_management.rules.name
+		var qrBucketsLifecycleManagementRulesName string
+
+		if o.BucketsLifecycleManagementRulesName != nil {
+			qrBucketsLifecycleManagementRulesName = *o.BucketsLifecycleManagementRulesName
+		}
+		qBucketsLifecycleManagementRulesName := qrBucketsLifecycleManagementRulesName
+		if qBucketsLifecycleManagementRulesName != "" {
+
+			if err := r.SetQueryParam("buckets.lifecycle_management.rules.name", qBucketsLifecycleManagementRulesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions != nil {
+
+		// query param buckets.lifecycle_management.rules.non_current_version_expiration.new_non_current_versions
+		var qrBucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions int64
+
+		if o.BucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions != nil {
+			qrBucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions = *o.BucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions
+		}
+		qBucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions := swag.FormatInt64(qrBucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions)
+		if qBucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions != "" {
+
+			if err := r.SetQueryParam("buckets.lifecycle_management.rules.non_current_version_expiration.new_non_current_versions", qBucketsLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays != nil {
+
+		// query param buckets.lifecycle_management.rules.non_current_version_expiration.non_current_days
+		var qrBucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays int64
+
+		if o.BucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays != nil {
+			qrBucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays = *o.BucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays
+		}
+		qBucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays := swag.FormatInt64(qrBucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays)
+		if qBucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays != "" {
+
+			if err := r.SetQueryParam("buckets.lifecycle_management.rules.non_current_version_expiration.non_current_days", qBucketsLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsLifecycleManagementRulesObjectFilterPrefix != nil {
+
+		// query param buckets.lifecycle_management.rules.object_filter.prefix
+		var qrBucketsLifecycleManagementRulesObjectFilterPrefix string
+
+		if o.BucketsLifecycleManagementRulesObjectFilterPrefix != nil {
+			qrBucketsLifecycleManagementRulesObjectFilterPrefix = *o.BucketsLifecycleManagementRulesObjectFilterPrefix
+		}
+		qBucketsLifecycleManagementRulesObjectFilterPrefix := qrBucketsLifecycleManagementRulesObjectFilterPrefix
+		if qBucketsLifecycleManagementRulesObjectFilterPrefix != "" {
+
+			if err := r.SetQueryParam("buckets.lifecycle_management.rules.object_filter.prefix", qBucketsLifecycleManagementRulesObjectFilterPrefix); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsLifecycleManagementRulesObjectFilterSizeGreaterThan != nil {
+
+		// query param buckets.lifecycle_management.rules.object_filter.size_greater_than
+		var qrBucketsLifecycleManagementRulesObjectFilterSizeGreaterThan int64
+
+		if o.BucketsLifecycleManagementRulesObjectFilterSizeGreaterThan != nil {
+			qrBucketsLifecycleManagementRulesObjectFilterSizeGreaterThan = *o.BucketsLifecycleManagementRulesObjectFilterSizeGreaterThan
+		}
+		qBucketsLifecycleManagementRulesObjectFilterSizeGreaterThan := swag.FormatInt64(qrBucketsLifecycleManagementRulesObjectFilterSizeGreaterThan)
+		if qBucketsLifecycleManagementRulesObjectFilterSizeGreaterThan != "" {
+
+			if err := r.SetQueryParam("buckets.lifecycle_management.rules.object_filter.size_greater_than", qBucketsLifecycleManagementRulesObjectFilterSizeGreaterThan); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsLifecycleManagementRulesObjectFilterSizeLessThan != nil {
+
+		// query param buckets.lifecycle_management.rules.object_filter.size_less_than
+		var qrBucketsLifecycleManagementRulesObjectFilterSizeLessThan int64
+
+		if o.BucketsLifecycleManagementRulesObjectFilterSizeLessThan != nil {
+			qrBucketsLifecycleManagementRulesObjectFilterSizeLessThan = *o.BucketsLifecycleManagementRulesObjectFilterSizeLessThan
+		}
+		qBucketsLifecycleManagementRulesObjectFilterSizeLessThan := swag.FormatInt64(qrBucketsLifecycleManagementRulesObjectFilterSizeLessThan)
+		if qBucketsLifecycleManagementRulesObjectFilterSizeLessThan != "" {
+
+			if err := r.SetQueryParam("buckets.lifecycle_management.rules.object_filter.size_less_than", qBucketsLifecycleManagementRulesObjectFilterSizeLessThan); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsLifecycleManagementRulesObjectFilterTags != nil {
+
+		// query param buckets.lifecycle_management.rules.object_filter.tags
+		var qrBucketsLifecycleManagementRulesObjectFilterTags string
+
+		if o.BucketsLifecycleManagementRulesObjectFilterTags != nil {
+			qrBucketsLifecycleManagementRulesObjectFilterTags = *o.BucketsLifecycleManagementRulesObjectFilterTags
+		}
+		qBucketsLifecycleManagementRulesObjectFilterTags := qrBucketsLifecycleManagementRulesObjectFilterTags
+		if qBucketsLifecycleManagementRulesObjectFilterTags != "" {
+
+			if err := r.SetQueryParam("buckets.lifecycle_management.rules.object_filter.tags", qBucketsLifecycleManagementRulesObjectFilterTags); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsLifecycleManagementRulesSvmName != nil {
+
+		// query param buckets.lifecycle_management.rules.svm.name
+		var qrBucketsLifecycleManagementRulesSvmName string
+
+		if o.BucketsLifecycleManagementRulesSvmName != nil {
+			qrBucketsLifecycleManagementRulesSvmName = *o.BucketsLifecycleManagementRulesSvmName
+		}
+		qBucketsLifecycleManagementRulesSvmName := qrBucketsLifecycleManagementRulesSvmName
+		if qBucketsLifecycleManagementRulesSvmName != "" {
+
+			if err := r.SetQueryParam("buckets.lifecycle_management.rules.svm.name", qBucketsLifecycleManagementRulesSvmName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsLifecycleManagementRulesSvmUUID != nil {
+
+		// query param buckets.lifecycle_management.rules.svm.uuid
+		var qrBucketsLifecycleManagementRulesSvmUUID string
+
+		if o.BucketsLifecycleManagementRulesSvmUUID != nil {
+			qrBucketsLifecycleManagementRulesSvmUUID = *o.BucketsLifecycleManagementRulesSvmUUID
+		}
+		qBucketsLifecycleManagementRulesSvmUUID := qrBucketsLifecycleManagementRulesSvmUUID
+		if qBucketsLifecycleManagementRulesSvmUUID != "" {
+
+			if err := r.SetQueryParam("buckets.lifecycle_management.rules.svm.uuid", qBucketsLifecycleManagementRulesSvmUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsLifecycleManagementRulesUUID != nil {
+
+		// query param buckets.lifecycle_management.rules.uuid
+		var qrBucketsLifecycleManagementRulesUUID string
+
+		if o.BucketsLifecycleManagementRulesUUID != nil {
+			qrBucketsLifecycleManagementRulesUUID = *o.BucketsLifecycleManagementRulesUUID
+		}
+		qBucketsLifecycleManagementRulesUUID := qrBucketsLifecycleManagementRulesUUID
+		if qBucketsLifecycleManagementRulesUUID != "" {
+
+			if err := r.SetQueryParam("buckets.lifecycle_management.rules.uuid", qBucketsLifecycleManagementRulesUUID); err != nil {
 				return err
 			}
 		}
@@ -2130,6 +3031,40 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.BucketsRetentionDefaultPeriod != nil {
+
+		// query param buckets.retention.default_period
+		var qrBucketsRetentionDefaultPeriod string
+
+		if o.BucketsRetentionDefaultPeriod != nil {
+			qrBucketsRetentionDefaultPeriod = *o.BucketsRetentionDefaultPeriod
+		}
+		qBucketsRetentionDefaultPeriod := qrBucketsRetentionDefaultPeriod
+		if qBucketsRetentionDefaultPeriod != "" {
+
+			if err := r.SetQueryParam("buckets.retention.default_period", qBucketsRetentionDefaultPeriod); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsRetentionMode != nil {
+
+		// query param buckets.retention.mode
+		var qrBucketsRetentionMode string
+
+		if o.BucketsRetentionMode != nil {
+			qrBucketsRetentionMode = *o.BucketsRetentionMode
+		}
+		qBucketsRetentionMode := qrBucketsRetentionMode
+		if qBucketsRetentionMode != "" {
+
+			if err := r.SetQueryParam("buckets.retention.mode", qBucketsRetentionMode); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.BucketsRole != nil {
 
 		// query param buckets.role
@@ -2159,6 +3094,40 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qBucketsSize != "" {
 
 			if err := r.SetQueryParam("buckets.size", qBucketsSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsSnapshotPolicyName != nil {
+
+		// query param buckets.snapshot_policy.name
+		var qrBucketsSnapshotPolicyName string
+
+		if o.BucketsSnapshotPolicyName != nil {
+			qrBucketsSnapshotPolicyName = *o.BucketsSnapshotPolicyName
+		}
+		qBucketsSnapshotPolicyName := qrBucketsSnapshotPolicyName
+		if qBucketsSnapshotPolicyName != "" {
+
+			if err := r.SetQueryParam("buckets.snapshot_policy.name", qBucketsSnapshotPolicyName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsSnapshotPolicyUUID != nil {
+
+		// query param buckets.snapshot_policy.uuid
+		var qrBucketsSnapshotPolicyUUID string
+
+		if o.BucketsSnapshotPolicyUUID != nil {
+			qrBucketsSnapshotPolicyUUID = *o.BucketsSnapshotPolicyUUID
+		}
+		qBucketsSnapshotPolicyUUID := qrBucketsSnapshotPolicyUUID
+		if qBucketsSnapshotPolicyUUID != "" {
+
+			if err := r.SetQueryParam("buckets.snapshot_policy.uuid", qBucketsSnapshotPolicyUUID); err != nil {
 				return err
 			}
 		}
@@ -2430,6 +3399,40 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.MaxKeyTimeToLive != nil {
+
+		// query param max_key_time_to_live
+		var qrMaxKeyTimeToLive string
+
+		if o.MaxKeyTimeToLive != nil {
+			qrMaxKeyTimeToLive = *o.MaxKeyTimeToLive
+		}
+		qMaxKeyTimeToLive := qrMaxKeyTimeToLive
+		if qMaxKeyTimeToLive != "" {
+
+			if err := r.SetQueryParam("max_key_time_to_live", qMaxKeyTimeToLive); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxLockRetentionPeriod != nil {
+
+		// query param max_lock_retention_period
+		var qrMaxLockRetentionPeriod string
+
+		if o.MaxLockRetentionPeriod != nil {
+			qrMaxLockRetentionPeriod = *o.MaxLockRetentionPeriod
+		}
+		qMaxLockRetentionPeriod := qrMaxLockRetentionPeriod
+		if qMaxLockRetentionPeriod != "" {
+
+			if err := r.SetQueryParam("max_lock_retention_period", qMaxLockRetentionPeriod); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.MaxRecords != nil {
 
 		// query param max_records
@@ -2680,6 +3683,23 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qMetricTimestamp != "" {
 
 			if err := r.SetQueryParam("metric.timestamp", qMetricTimestamp); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MinLockRetentionPeriod != nil {
+
+		// query param min_lock_retention_period
+		var qrMinLockRetentionPeriod string
+
+		if o.MinLockRetentionPeriod != nil {
+			qrMinLockRetentionPeriod = *o.MinLockRetentionPeriod
+		}
+		qMinLockRetentionPeriod := qrMinLockRetentionPeriod
+		if qMinLockRetentionPeriod != "" {
+
+			if err := r.SetQueryParam("min_lock_retention_period", qMinLockRetentionPeriod); err != nil {
 				return err
 			}
 		}
@@ -3065,6 +4085,40 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qUsersComment != "" {
 
 			if err := r.SetQueryParam("users.comment", qUsersComment); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UsersKeyExpiryTime != nil {
+
+		// query param users.key_expiry_time
+		var qrUsersKeyExpiryTime string
+
+		if o.UsersKeyExpiryTime != nil {
+			qrUsersKeyExpiryTime = *o.UsersKeyExpiryTime
+		}
+		qUsersKeyExpiryTime := qrUsersKeyExpiryTime
+		if qUsersKeyExpiryTime != "" {
+
+			if err := r.SetQueryParam("users.key_expiry_time", qUsersKeyExpiryTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UsersKeyTimeToLive != nil {
+
+		// query param users.key_time_to_live
+		var qrUsersKeyTimeToLive string
+
+		if o.UsersKeyTimeToLive != nil {
+			qrUsersKeyTimeToLive = *o.UsersKeyTimeToLive
+		}
+		qUsersKeyTimeToLive := qrUsersKeyTimeToLive
+		if qUsersKeyTimeToLive != "" {
+
+			if err := r.SetQueryParam("users.key_time_to_live", qUsersKeyTimeToLive); err != nil {
 				return err
 			}
 		}

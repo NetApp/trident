@@ -23,7 +23,7 @@ type ZappS3BucketApplicationComponentsAccessPolicies struct {
 
 	// Allow or Deny Access.
 	// Required: true
-	// Enum: [allow deny]
+	// Enum: ["allow","deny"]
 	Effect *string `json:"effect"`
 
 	// Statement Identifier Usage: &lt;(size 1..256)&gt;

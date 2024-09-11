@@ -6,6 +6,7 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *AzureKeyVaultGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the azure key vault get o k response
+func (o *AzureKeyVaultGetOK) Code() int {
+	return 200
+}
+
 func (o *AzureKeyVaultGetOK) Error() string {
-	return fmt.Sprintf("[GET /security/azure-key-vaults/{uuid}][%d] azureKeyVaultGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/azure-key-vaults/{uuid}][%d] azureKeyVaultGetOK %s", 200, payload)
 }
 
 func (o *AzureKeyVaultGetOK) String() string {
-	return fmt.Sprintf("[GET /security/azure-key-vaults/{uuid}][%d] azureKeyVaultGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/azure-key-vaults/{uuid}][%d] azureKeyVaultGetOK %s", 200, payload)
 }
 
 func (o *AzureKeyVaultGetOK) GetPayload() *models.AzureKeyVault {
@@ -112,19 +120,21 @@ func NewAzureKeyVaultGetDefault(code int) *AzureKeyVaultGetDefault {
 }
 
 /*
-AzureKeyVaultGetDefault describes a response with status code -1, with default header values.
+	AzureKeyVaultGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 65537549 | The Azure Key Vault Key Management Service is unreachable from one or more nodes. |
+| 65537551 | Top-level internal key protection key (KEK) unavailable on one or more nodes. |
+| 65537552 | Embedded KMIP server status not available. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AzureKeyVaultGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the azure key vault get default response
-func (o *AzureKeyVaultGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this azure key vault get default response has a 2xx status code
@@ -152,12 +162,19 @@ func (o *AzureKeyVaultGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the azure key vault get default response
+func (o *AzureKeyVaultGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AzureKeyVaultGetDefault) Error() string {
-	return fmt.Sprintf("[GET /security/azure-key-vaults/{uuid}][%d] azure_key_vault_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/azure-key-vaults/{uuid}][%d] azure_key_vault_get default %s", o._statusCode, payload)
 }
 
 func (o *AzureKeyVaultGetDefault) String() string {
-	return fmt.Sprintf("[GET /security/azure-key-vaults/{uuid}][%d] azure_key_vault_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /security/azure-key-vaults/{uuid}][%d] azure_key_vault_get default %s", o._statusCode, payload)
 }
 
 func (o *AzureKeyVaultGetDefault) GetPayload() *models.ErrorResponse {

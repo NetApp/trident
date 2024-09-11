@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -79,12 +80,17 @@ func (o *ShelfModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the shelf modify o k response
+func (o *ShelfModifyOK) Code() int {
+	return 200
+}
+
 func (o *ShelfModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/shelves/{uid}][%d] shelfModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/shelves/{uid}][%d] shelfModifyOK", 200)
 }
 
 func (o *ShelfModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /storage/shelves/{uid}][%d] shelfModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/shelves/{uid}][%d] shelfModifyOK", 200)
 }
 
 func (o *ShelfModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -110,16 +116,12 @@ func NewShelfModifyDefault(code int) *ShelfModifyDefault {
 | 17825873 | Shelf locate request failed because shelf \"<name>\" does not support this command. |
 | 17825874 | Shelf locate request failed for shelf \"<name>\" with an unknown error. |
 | 17825875 | Shelf locate request failed for shelf \"<name>\" because shelf modules are unreachable. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ShelfModifyDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the shelf modify default response
-func (o *ShelfModifyDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this shelf modify default response has a 2xx status code
@@ -147,12 +149,19 @@ func (o *ShelfModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the shelf modify default response
+func (o *ShelfModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ShelfModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/shelves/{uid}][%d] shelf_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/shelves/{uid}][%d] shelf_modify default %s", o._statusCode, payload)
 }
 
 func (o *ShelfModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /storage/shelves/{uid}][%d] shelf_modify default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/shelves/{uid}][%d] shelf_modify default %s", o._statusCode, payload)
 }
 
 func (o *ShelfModifyDefault) GetPayload() *models.ErrorResponse {

@@ -17,7 +17,7 @@ import (
 )
 
 // QuotaRule quota rule
-// Example: {"files":{"hard_limit":"100","soft_limit":"80"},"qtree":{"id":"1","name":"qt1"},"space":{"hard_limit":"1222800","soft_limit":"51200"},"svm":{"name":"svm1"},"type":"user","user_mapping":"on","users":[{"name":"fred"}],"uuid":"264a9e0b-2e03-11e9-a610-005056a7b72d","volume":{"name":"fv"}}
+// Example: {"files":{"hard_limit":100,"soft_limit":80},"qtree":{"id":1,"name":"qt1"},"space":{"hard_limit":1222800,"soft_limit":51200},"svm":{"name":"svm1"},"type":"user","user_mapping":true,"users":[{"name":"fred"}],"uuid":"264a9e0b-2e03-11e9-a610-005056a7b72d","volume":{"name":"fv"}}
 //
 // swagger:model quota_rule
 type QuotaRule struct {
@@ -34,7 +34,7 @@ type QuotaRule struct {
 	// qtree
 	Qtree *QuotaRuleInlineQtree `json:"qtree,omitempty"`
 
-	// This parameter specifies the target user to which the user quota policy rule applies. This parameter takes single or multiple user names or identifiers. This parameter is valid only for the POST operation of a user quota policy rule. If this parameter is used as an input to create a group or a tree quota policy rule, the POST operation will fail with an appropriate error. For POST, this input parameter takes either a user name or a user identifier, not both. For default quota rules, the user name must be chosen and specified as "". For explicit user quota rules, this parameter can indicate either a user name or user identifier. The user name can be a UNIX user name or a Windows user name. If a name contains a space, enclose the entire value in quotes. A UNIX user name cannot include a backslash (\) or an @ sign; user names with these characters are treated as Windows names. The user identifer can be a UNIX user identifier or a Windows security identifier. For multi-user quota, this parameter can contain multiple user targets separated by a comma.
+	// This parameter specifies the target user to which the user quota policy rule applies. This parameter takes single or multiple user names or identifiers. This parameter is valid only for the POST operation of a user quota policy rule. If this parameter is used as an input to create a group or a tree quota policy rule, the POST operation will fail with an appropriate error. For POST, this input parameter takes either a user name or a user identifier, not both. For default quota rules, the user name must be chosen and specified as "". For explicit user quota rules, this parameter can indicate either a user name or user identifier. The user name can be a UNIX user name or a Windows user name. If a name contains a space, enclose the entire value in quotes. A UNIX user name cannot include a backslash (\) or an @ sign; user names with these characters are treated as Windows names. The user identifier can be a UNIX user identifier or a Windows security identifier. For multi-user quota, this parameter can contain multiple user targets separated by a comma.
 	QuotaRuleInlineUsers []*QuotaRuleInlineUsersInlineArrayItem `json:"users,omitempty"`
 
 	// space
@@ -44,7 +44,7 @@ type QuotaRule struct {
 	Svm *QuotaRuleInlineSvm `json:"svm,omitempty"`
 
 	// This parameter specifies the quota policy rule type. This is required in POST only and can take either one of the \"user\", \"group\" or \"tree\" values.
-	// Enum: [tree user group]
+	// Enum: ["tree","user","group"]
 	Type *string `json:"type,omitempty"`
 
 	// This parameter enables user mapping for user quota policy rules. This is valid in POST or PATCH for user quota policy rules only.
@@ -903,7 +903,7 @@ func (m *QuotaRuleInlineSpace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QuotaRuleInlineSvm quota rule inline svm
+// QuotaRuleInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model quota_rule_inline_svm
 type QuotaRuleInlineSvm struct {
@@ -911,12 +911,12 @@ type QuotaRuleInlineSvm struct {
 	// links
 	Links *QuotaRuleInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
@@ -1133,7 +1133,7 @@ type QuotaRuleInlineVolume struct {
 	// links
 	Links *QuotaRuleInlineVolumeInlineLinks `json:"_links,omitempty"`
 
-	// The name of the volume.
+	// The name of the volume. This field cannot be specified in a PATCH method.
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 

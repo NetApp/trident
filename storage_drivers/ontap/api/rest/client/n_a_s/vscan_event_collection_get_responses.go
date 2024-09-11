@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *VscanEventCollectionGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the vscan event collection get o k response
+func (o *VscanEventCollectionGetOK) Code() int {
+	return 200
+}
+
 func (o *VscanEventCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/events][%d] vscanEventCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/events][%d] vscanEventCollectionGetOK %s", 200, payload)
 }
 
 func (o *VscanEventCollectionGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/events][%d] vscanEventCollectionGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/events][%d] vscanEventCollectionGetOK %s", 200, payload)
 }
 
 func (o *VscanEventCollectionGetOK) GetPayload() *models.VscanEventResponse {
@@ -122,11 +130,6 @@ type VscanEventCollectionGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the vscan event collection get default response
-func (o *VscanEventCollectionGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this vscan event collection get default response has a 2xx status code
 func (o *VscanEventCollectionGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *VscanEventCollectionGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the vscan event collection get default response
+func (o *VscanEventCollectionGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *VscanEventCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/events][%d] vscan_event_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/events][%d] vscan_event_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *VscanEventCollectionGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/events][%d] vscan_event_collection_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/events][%d] vscan_event_collection_get default %s", o._statusCode, payload)
 }
 
 func (o *VscanEventCollectionGetDefault) GetPayload() *models.ErrorResponse {

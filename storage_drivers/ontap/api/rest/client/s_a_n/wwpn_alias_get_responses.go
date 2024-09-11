@@ -6,6 +6,7 @@ package s_a_n
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *WwpnAliasGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the wwpn alias get o k response
+func (o *WwpnAliasGetOK) Code() int {
+	return 200
+}
+
 func (o *WwpnAliasGetOK) Error() string {
-	return fmt.Sprintf("[GET /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpnAliasGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpnAliasGetOK %s", 200, payload)
 }
 
 func (o *WwpnAliasGetOK) String() string {
-	return fmt.Sprintf("[GET /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpnAliasGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpnAliasGetOK %s", 200, payload)
 }
 
 func (o *WwpnAliasGetOK) GetPayload() *models.WwpnAlias {
@@ -118,17 +126,14 @@ func NewWwpnAliasGetDefault(code int) *WwpnAliasGetDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 1260882    | The supplied SVM does not exist. |
+| 2621462 | The specified SVM does not exist or cannot be accessed by this user. |
+| 5374046 | The alias could not be found. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type WwpnAliasGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the wwpn alias get default response
-func (o *WwpnAliasGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this wwpn alias get default response has a 2xx status code
@@ -156,12 +161,19 @@ func (o *WwpnAliasGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the wwpn alias get default response
+func (o *WwpnAliasGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *WwpnAliasGetDefault) Error() string {
-	return fmt.Sprintf("[GET /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpn_alias_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpn_alias_get default %s", o._statusCode, payload)
 }
 
 func (o *WwpnAliasGetDefault) String() string {
-	return fmt.Sprintf("[GET /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpn_alias_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpn_alias_get default %s", o._statusCode, payload)
 }
 
 func (o *WwpnAliasGetDefault) GetPayload() *models.ErrorResponse {

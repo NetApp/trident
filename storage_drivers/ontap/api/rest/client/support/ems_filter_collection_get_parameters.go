@@ -62,6 +62,12 @@ EmsFilterCollectionGetParams contains all the parameters to send to the API endp
 */
 type EmsFilterCollectionGetParams struct {
 
+	/* AccessControlRoleName.
+
+	   Filter by access_control_role.name
+	*/
+	AccessControlRoleName *string
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -125,6 +131,18 @@ type EmsFilterCollectionGetParams struct {
 	   Filter by rules.message_criteria.snmp_trap_types
 	*/
 	RulesMessageCriteriaSnmpTrapTypes *string
+
+	/* RulesParameterCriteriaNamePattern.
+
+	   Filter by rules.parameter_criteria.name_pattern
+	*/
+	RulesParameterCriteriaNamePattern *string
+
+	/* RulesParameterCriteriaValuePattern.
+
+	   Filter by rules.parameter_criteria.value_pattern
+	*/
+	RulesParameterCriteriaValuePattern *string
 
 	/* RulesType.
 
@@ -203,6 +221,17 @@ func (o *EmsFilterCollectionGetParams) WithHTTPClient(client *http.Client) *EmsF
 // SetHTTPClient adds the HTTPClient to the ems filter collection get params
 func (o *EmsFilterCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithAccessControlRoleName adds the accessControlRoleName to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) WithAccessControlRoleName(accessControlRoleName *string) *EmsFilterCollectionGetParams {
+	o.SetAccessControlRoleName(accessControlRoleName)
+	return o
+}
+
+// SetAccessControlRoleName adds the accessControlRoleName to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) SetAccessControlRoleName(accessControlRoleName *string) {
+	o.AccessControlRoleName = accessControlRoleName
 }
 
 // WithFields adds the fields to the ems filter collection get params
@@ -315,6 +344,28 @@ func (o *EmsFilterCollectionGetParams) SetRulesMessageCriteriaSnmpTrapTypes(rule
 	o.RulesMessageCriteriaSnmpTrapTypes = rulesMessageCriteriaSnmpTrapTypes
 }
 
+// WithRulesParameterCriteriaNamePattern adds the rulesParameterCriteriaNamePattern to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) WithRulesParameterCriteriaNamePattern(rulesParameterCriteriaNamePattern *string) *EmsFilterCollectionGetParams {
+	o.SetRulesParameterCriteriaNamePattern(rulesParameterCriteriaNamePattern)
+	return o
+}
+
+// SetRulesParameterCriteriaNamePattern adds the rulesParameterCriteriaNamePattern to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) SetRulesParameterCriteriaNamePattern(rulesParameterCriteriaNamePattern *string) {
+	o.RulesParameterCriteriaNamePattern = rulesParameterCriteriaNamePattern
+}
+
+// WithRulesParameterCriteriaValuePattern adds the rulesParameterCriteriaValuePattern to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) WithRulesParameterCriteriaValuePattern(rulesParameterCriteriaValuePattern *string) *EmsFilterCollectionGetParams {
+	o.SetRulesParameterCriteriaValuePattern(rulesParameterCriteriaValuePattern)
+	return o
+}
+
+// SetRulesParameterCriteriaValuePattern adds the rulesParameterCriteriaValuePattern to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) SetRulesParameterCriteriaValuePattern(rulesParameterCriteriaValuePattern *string) {
+	o.RulesParameterCriteriaValuePattern = rulesParameterCriteriaValuePattern
+}
+
 // WithRulesType adds the rulesType to the ems filter collection get params
 func (o *EmsFilterCollectionGetParams) WithRulesType(rulesType *string) *EmsFilterCollectionGetParams {
 	o.SetRulesType(rulesType)
@@ -344,6 +395,23 @@ func (o *EmsFilterCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		return err
 	}
 	var res []error
+
+	if o.AccessControlRoleName != nil {
+
+		// query param access_control_role.name
+		var qrAccessControlRoleName string
+
+		if o.AccessControlRoleName != nil {
+			qrAccessControlRoleName = *o.AccessControlRoleName
+		}
+		qAccessControlRoleName := qrAccessControlRoleName
+		if qAccessControlRoleName != "" {
+
+			if err := r.SetQueryParam("access_control_role.name", qAccessControlRoleName); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.Fields != nil {
 
@@ -498,6 +566,40 @@ func (o *EmsFilterCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qRulesMessageCriteriaSnmpTrapTypes != "" {
 
 			if err := r.SetQueryParam("rules.message_criteria.snmp_trap_types", qRulesMessageCriteriaSnmpTrapTypes); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RulesParameterCriteriaNamePattern != nil {
+
+		// query param rules.parameter_criteria.name_pattern
+		var qrRulesParameterCriteriaNamePattern string
+
+		if o.RulesParameterCriteriaNamePattern != nil {
+			qrRulesParameterCriteriaNamePattern = *o.RulesParameterCriteriaNamePattern
+		}
+		qRulesParameterCriteriaNamePattern := qrRulesParameterCriteriaNamePattern
+		if qRulesParameterCriteriaNamePattern != "" {
+
+			if err := r.SetQueryParam("rules.parameter_criteria.name_pattern", qRulesParameterCriteriaNamePattern); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RulesParameterCriteriaValuePattern != nil {
+
+		// query param rules.parameter_criteria.value_pattern
+		var qrRulesParameterCriteriaValuePattern string
+
+		if o.RulesParameterCriteriaValuePattern != nil {
+			qrRulesParameterCriteriaValuePattern = *o.RulesParameterCriteriaValuePattern
+		}
+		qRulesParameterCriteriaValuePattern := qrRulesParameterCriteriaValuePattern
+		if qRulesParameterCriteriaValuePattern != "" {
+
+			if err := r.SetQueryParam("rules.parameter_criteria.value_pattern", qRulesParameterCriteriaValuePattern); err != nil {
 				return err
 			}
 		}

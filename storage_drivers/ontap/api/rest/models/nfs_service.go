@@ -40,7 +40,7 @@ type NfsService struct {
 	// exports
 	Exports *NfsServiceInlineExports `json:"exports,omitempty"`
 
-	// Specifies the maximum auxillary groups supported over AUTH_SYS and RPCSEC_GSS.
+	// Specifies the maximum auxiliary groups supported over AUTH_SYS and RPCSEC_GSS.
 	// Example: 32
 	// Maximum: 1024
 	// Minimum: 32
@@ -48,13 +48,13 @@ type NfsService struct {
 
 	// Number of I/O operations on a file to be grouped and considered as one session for event generation applications, such as FPolicy.
 	// Example: 5000
-	// Maximum: 20000
+	// Maximum: 120000
 	// Minimum: 1000
 	FileSessionIoGroupingCount *int64 `json:"file_session_io_grouping_count,omitempty"`
 
 	// The duration for which I/O operations on a file will be grouped and considered as one session for event generation applications, such as FPolicy.
 	// Example: 120
-	// Maximum: 600
+	// Maximum: 3600
 	// Minimum: 60
 	FileSessionIoGroupingDuration *int64 `json:"file_session_io_grouping_duration,omitempty"`
 
@@ -87,7 +87,7 @@ type NfsService struct {
 	//           * offline - NFS server is not ready to accept client requests.
 	//
 	// Read Only: true
-	// Enum: [online offline]
+	// Enum: ["online","offline"]
 	State *string `json:"state,omitempty"`
 
 	// statistics
@@ -281,7 +281,7 @@ func (m *NfsService) validateFileSessionIoGroupingCount(formats strfmt.Registry)
 		return err
 	}
 
-	if err := validate.MaximumInt("file_session_io_grouping_count", "body", *m.FileSessionIoGroupingCount, 20000, false); err != nil {
+	if err := validate.MaximumInt("file_session_io_grouping_count", "body", *m.FileSessionIoGroupingCount, 120000, false); err != nil {
 		return err
 	}
 
@@ -297,7 +297,7 @@ func (m *NfsService) validateFileSessionIoGroupingDuration(formats strfmt.Regist
 		return err
 	}
 
-	if err := validate.MaximumInt("file_session_io_grouping_duration", "body", *m.FileSessionIoGroupingDuration, 600, false); err != nil {
+	if err := validate.MaximumInt("file_session_io_grouping_duration", "body", *m.FileSessionIoGroupingDuration, 3600, false); err != nil {
 		return err
 	}
 
@@ -829,18 +829,22 @@ func (m *NfsService) UnmarshalBinary(b []byte) error {
 type NfsServiceInlineAccessCacheConfig struct {
 
 	// Specifies the time after which an entry is deleted from the access cache, if unused.
+	// Example: 3600
 	HarvestTimeout *int64 `json:"harvest_timeout,omitempty"`
 
 	// Specifies whether Dns TTL is enabled.
 	IsDNSTTLEnabled *bool `json:"isDnsTTLEnabled,omitempty"`
 
 	// Specifies the time to live value for entries for which a failure was encountered, in seconds.
+	// Example: 1
 	TTLFailure *int64 `json:"ttl_failure,omitempty"`
 
 	// Specifies the time to live value of a negative access cache, in seconds.
+	// Example: 30
 	TTLNegative *int64 `json:"ttl_negative,omitempty"`
 
 	// Specifies the time to live value of a positive access cache, in seconds.
+	// Example: 60
 	TTLPositive *int64 `json:"ttl_positive,omitempty"`
 }
 
@@ -995,7 +999,7 @@ func (m *NfsServiceInlineCredentialCache) UnmarshalBinary(b []byte) error {
 type NfsServiceInlineExports struct {
 
 	// Specifies the protocol to use for doing name service lookups.
-	// Enum: [tcp udp]
+	// Enum: ["tcp","udp"]
 	NameServiceLookupProtocol *string `json:"name_service_lookup_protocol,omitempty"`
 
 	// Specifies if you can consider a no-match result from any of the netgroup ns-switch sources to be authoritative. If this option is enabled, then a no-match response from any of the netgroup ns-switch sources is deemed conclusive even if other sources could not be searched.
@@ -1363,7 +1367,7 @@ type NfsServiceInlineMetricInlineV3 struct {
 	//
 	// Example: PT15S
 	// Read Only: true
-	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
+	// Enum: ["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]
 	Duration *string `json:"duration,omitempty"`
 
 	// iops
@@ -1375,14 +1379,14 @@ type NfsServiceInlineMetricInlineV3 struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	// Enum: ["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *NfsServiceInlineMetricInlineV3InlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1903,7 +1907,7 @@ type NfsServiceInlineMetricInlineV3InlineIops struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -1957,7 +1961,7 @@ type NfsServiceInlineMetricInlineV3InlineLatency struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -2094,7 +2098,7 @@ type NfsServiceInlineMetricInlineV3InlineThroughput struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -2144,7 +2148,7 @@ type NfsServiceInlineMetricInlineV4 struct {
 	//
 	// Example: PT15S
 	// Read Only: true
-	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
+	// Enum: ["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]
 	Duration *string `json:"duration,omitempty"`
 
 	// iops
@@ -2156,14 +2160,14 @@ type NfsServiceInlineMetricInlineV4 struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	// Enum: ["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *NfsServiceInlineMetricInlineV4InlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -2680,7 +2684,7 @@ type NfsServiceInlineMetricInlineV41 struct {
 	//
 	// Example: PT15S
 	// Read Only: true
-	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
+	// Enum: ["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]
 	Duration *string `json:"duration,omitempty"`
 
 	// iops
@@ -2692,14 +2696,14 @@ type NfsServiceInlineMetricInlineV41 struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	// Enum: ["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *NfsServiceInlineMetricInlineV41InlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -3220,7 +3224,7 @@ type NfsServiceInlineMetricInlineV41InlineIops struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -3274,7 +3278,7 @@ type NfsServiceInlineMetricInlineV41InlineLatency struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -3411,7 +3415,7 @@ type NfsServiceInlineMetricInlineV41InlineThroughput struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -3465,7 +3469,7 @@ type NfsServiceInlineMetricInlineV4InlineIops struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -3519,7 +3523,7 @@ type NfsServiceInlineMetricInlineV4InlineLatency struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -3656,7 +3660,7 @@ type NfsServiceInlineMetricInlineV4InlineThroughput struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -3726,10 +3730,29 @@ type NfsServiceInlineProtocol struct {
 	// Specifies whether 64-bit support for NFSv4.x FSIDs and file IDs is enabled.
 	V464bitIdentifiersEnabled *bool `json:"v4_64bit_identifiers_enabled,omitempty"`
 
+	// Specifies whether the change in FSID when NFSv4 clients traverse file systems is displayed.
+	V4FsidChange *bool `json:"v4_fsid_change,omitempty"`
+
+	// Specifies the grace period for clients to reclaim file locks after a server failure.
+	V4GraceSeconds *int64 `json:"v4_grace_seconds,omitempty"`
+
 	// Specifies the domain portion of the string form of user and group
 	// names as defined by the NFSv4 protocol.
 	//
 	V4IDDomain *string `json:"v4_id_domain,omitempty"`
+
+	// Specifies the lease seconds of the NFSv4 clients. If it is inactive for more than the time displayed, all of the file lock states on a node might be lost.
+	V4LeaseSeconds *int64 `json:"v4_lease_seconds,omitempty"`
+
+	// Specifies the number of bytes of the reply that is cached in each NFSv4.x session slot.
+	// Maximum: 4096
+	// Minimum: 512
+	V4SessionSlotReplyCacheSize *int64 `json:"v4_session_slot_reply_cache_size,omitempty"`
+
+	// Specifies the number of entries in NFSv4.x session slot table.
+	// Maximum: 2000
+	// Minimum: 1
+	V4SessionSlots *int64 `json:"v4_session_slots,omitempty"`
 }
 
 // Validate validates this nfs service inline protocol
@@ -3749,6 +3772,14 @@ func (m *NfsServiceInlineProtocol) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateV42Features(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateV4SessionSlotReplyCacheSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateV4SessionSlots(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3821,6 +3852,38 @@ func (m *NfsServiceInlineProtocol) validateV42Features(formats strfmt.Registry) 
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceInlineProtocol) validateV4SessionSlotReplyCacheSize(formats strfmt.Registry) error {
+	if swag.IsZero(m.V4SessionSlotReplyCacheSize) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("protocol"+"."+"v4_session_slot_reply_cache_size", "body", *m.V4SessionSlotReplyCacheSize, 512, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("protocol"+"."+"v4_session_slot_reply_cache_size", "body", *m.V4SessionSlotReplyCacheSize, 4096, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsServiceInlineProtocol) validateV4SessionSlots(formats strfmt.Registry) error {
+	if swag.IsZero(m.V4SessionSlots) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("protocol"+"."+"v4_session_slots", "body", *m.V4SessionSlots, 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("protocol"+"."+"v4_session_slots", "body", *m.V4SessionSlots, 2000, false); err != nil {
+		return err
 	}
 
 	return nil
@@ -3932,15 +3995,18 @@ func (m *NfsServiceInlineProtocol) UnmarshalBinary(b []byte) error {
 type NfsServiceInlineProtocolAccessRules struct {
 
 	// Access available for the CIFS protocol.
-	// Enum: [read read_write denied]
+	// Read Only: true
+	// Enum: ["read","read_write","denied"]
 	CifsAccessType *string `json:"cifs_access_type,omitempty"`
 
 	// Access available for the NFSv3 protocol.
-	// Enum: [read read_write denied]
+	// Read Only: true
+	// Enum: ["read","read_write","denied"]
 	Nfs3AccessType *string `json:"nfs3_access_type,omitempty"`
 
 	// Access available for the NFSv4 protocol.
-	// Enum: [read read_write denied]
+	// Read Only: true
+	// Enum: ["read","read_write","denied"]
 	Nfs4AccessType *string `json:"nfs4_access_type,omitempty"`
 }
 
@@ -4164,8 +4230,52 @@ func (m *NfsServiceInlineProtocolAccessRules) validateNfs4AccessType(formats str
 	return nil
 }
 
-// ContextValidate validates this nfs service inline protocol access rules based on context it is used
+// ContextValidate validate this nfs service inline protocol access rules based on the context it is used
 func (m *NfsServiceInlineProtocolAccessRules) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCifsAccessType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNfs3AccessType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNfs4AccessType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsServiceInlineProtocolAccessRules) contextValidateCifsAccessType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "protocol_access_rules"+"."+"cifs_access_type", "body", m.CifsAccessType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsServiceInlineProtocolAccessRules) contextValidateNfs3AccessType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "protocol_access_rules"+"."+"nfs3_access_type", "body", m.Nfs3AccessType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsServiceInlineProtocolAccessRules) contextValidateNfs4AccessType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "protocol_access_rules"+"."+"nfs4_access_type", "body", m.Nfs4AccessType); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -4192,7 +4302,7 @@ func (m *NfsServiceInlineProtocolAccessRules) UnmarshalBinary(b []byte) error {
 // swagger:model nfs_service_inline_protocol_inline_v3_features
 type NfsServiceInlineProtocolInlineV3Features struct {
 
-	// Specfies whether the dropping of a connection when an NFSv3 request is dropped is enabled.
+	// Specifies whether the dropping of a connection when an NFSv3 request is dropped is enabled.
 	ConnectionDrop *bool `json:"connection_drop,omitempty"`
 
 	// Specifies whether NFSv3 EJUKEBOX error is enabled.
@@ -4200,6 +4310,9 @@ type NfsServiceInlineProtocolInlineV3Features struct {
 
 	// Specifies whether the change in FSID as NFSv3 clients traverse filesystems should be shown.
 	FsidChange *bool `json:"fsid_change,omitempty"`
+
+	// Specifies whether hiding a snapshot directory under a NFSv3 mount point is enabled.
+	HideSnapshotEnabled *bool `json:"hide_snapshot_enabled,omitempty"`
 
 	// Specifies which port the NFS mount daemon (mountd) uses.
 	MountDaemonPort *int64 `json:"mount_daemon_port,omitempty"`
@@ -4264,6 +4377,9 @@ type NfsServiceInlineProtocolInlineV40Features struct {
 
 	// Specifies whether NFSv4.0 Read Delegation is enabled.
 	ReadDelegationEnabled *bool `json:"read_delegation_enabled,omitempty"`
+
+	// Specifies whether NFSv4.0 referrals is enabled.
+	ReferralsEnabled *bool `json:"referrals_enabled,omitempty"`
 
 	// Specifies whether NFSv4.0 Write Delegation is enabled.
 	WriteDelegationEnabled *bool `json:"write_delegation_enabled,omitempty"`
@@ -4341,6 +4457,9 @@ type NfsServiceInlineProtocolInlineV41Features struct {
 
 	// Specifies whether NFSv4.1 or later Read Delegation is enabled.
 	ReadDelegationEnabled *bool `json:"read_delegation_enabled,omitempty"`
+
+	// Specifies whether NFSv4.1 referrals is enabled.
+	ReferralsEnabled *bool `json:"referrals_enabled,omitempty"`
 
 	// Specifies whether NFSv4.1 or later trunking is enabled.
 	TrunkingEnabled *bool `json:"trunking_enabled,omitempty"`
@@ -4426,6 +4545,7 @@ func (m *NfsServiceInlineProtocolInlineV42Features) UnmarshalBinary(b []byte) er
 type NfsServiceInlineQtree struct {
 
 	// Specifies whether qtree export is enabled.
+	// Read Only: true
 	ExportEnabled *bool `json:"export_enabled,omitempty"`
 
 	// Specifies whether qtree export validation is enabled.
@@ -4437,8 +4557,26 @@ func (m *NfsServiceInlineQtree) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this nfs service inline qtree based on context it is used
+// ContextValidate validate this nfs service inline qtree based on the context it is used
 func (m *NfsServiceInlineQtree) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateExportEnabled(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsServiceInlineQtree) contextValidateExportEnabled(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "qtree"+"."+"export_enabled", "body", m.ExportEnabled); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -4505,15 +4643,15 @@ func (m *NfsServiceInlineRoot) UnmarshalBinary(b []byte) error {
 // swagger:model nfs_service_inline_security
 type NfsServiceInlineSecurity struct {
 
-	// Specifies whether file ownership can be changed only by the superuser, or if a non-root user can also change file ownership. If you set this parameter to restricted, file ownership can be changed only by the superuser, even though the on-disk permissions allow a non-root user to change file ownership. If you set this parameter to unrestricted, file ownership can be changed by the superuser and by the non-root user, depending upon the access granted by on-disk permissions. If you set this parameter to use-export-policy, file ownership can be changed in accordance with the relevant export rules.
-	// Enum: [restricted unrestricted use_export_policy]
+	// Specifies whether file ownership can be changed only by the superuser, or if a non-root user can also change file ownership. If you set this parameter to restricted, file ownership can be changed only by the superuser, even though the on-disk permissions allow a non-root user to change file ownership. If you set this parameter to unrestricted, file ownership can be changed by the superuser and by the non-root user, depending upon the access granted by on-disk permissions. If you set this parameter to use_export_policy, file ownership can be changed in accordance with the relevant export rules.
+	// Enum: ["restricted","unrestricted","use_export_policy"]
 	ChownMode *string `json:"chown_mode,omitempty"`
 
 	// Controls the permissions that are displayed to NFSv3 and NFSv4 clients on a file or directory that has an NT ACL set. When true, the displayed permissions are based on the maximum access granted by the NT ACL to any user. When false, the displayed permissions are based on the minimum access granted by the NT ACL to any user.
 	NtACLDisplayPermission *bool `json:"nt_acl_display_permission,omitempty"`
 
 	// Specifies how NFSv3 security changes affect NTFS volumes. If you set this parameter to ignore, ONTAP ignores NFSv3 security changes. If you set this parameter to fail, this overrides the UNIX security options set in the relevant export rules. If you set this parameter to use_export_policy, ONTAP processes NFSv3 security changes in accordance with the relevant export rules.
-	// Enum: [ignore fail use_export_policy]
+	// Enum: ["ignore","fail","use_export_policy"]
 	NtfsUnixSecurity *string `json:"ntfs_unix_security,omitempty"`
 
 	// Specifies the permitted encryption types for Kerberos over NFS.
@@ -4923,14 +5061,14 @@ type NfsServiceInlineStatisticsInlineV3 struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	// Enum: ["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *NfsServiceInlineStatisticsInlineV3InlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -5299,7 +5437,7 @@ type NfsServiceInlineStatisticsInlineV3InlineIopsRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -5353,7 +5491,7 @@ type NfsServiceInlineStatisticsInlineV3InlineLatencyRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -5404,7 +5542,7 @@ type NfsServiceInlineStatisticsInlineV3InlineThroughputRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -5456,14 +5594,14 @@ type NfsServiceInlineStatisticsInlineV4 struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	// Enum: ["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *NfsServiceInlineStatisticsInlineV4InlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -5830,14 +5968,14 @@ type NfsServiceInlineStatisticsInlineV41 struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	// Enum: ["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]
 	Status *string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *NfsServiceInlineStatisticsInlineV41InlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25T11:20:13Z
+	// Example: 2017-01-25 11:20:13
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -6206,7 +6344,7 @@ type NfsServiceInlineStatisticsInlineV41InlineIopsRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -6260,7 +6398,7 @@ type NfsServiceInlineStatisticsInlineV41InlineLatencyRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -6311,7 +6449,7 @@ type NfsServiceInlineStatisticsInlineV41InlineThroughputRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -6365,7 +6503,7 @@ type NfsServiceInlineStatisticsInlineV4InlineIopsRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -6419,7 +6557,7 @@ type NfsServiceInlineStatisticsInlineV4InlineLatencyRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -6470,7 +6608,7 @@ type NfsServiceInlineStatisticsInlineV4InlineThroughputRaw struct {
 	// Example: 1000
 	Total *int64 `json:"total,omitempty"`
 
-	// Peformance metric for write I/O operations.
+	// Performance metric for write I/O operations.
 	// Example: 100
 	Write *int64 `json:"write,omitempty"`
 }
@@ -6508,7 +6646,7 @@ func (m *NfsServiceInlineStatisticsInlineV4InlineThroughputRaw) UnmarshalBinary(
 	return nil
 }
 
-// NfsServiceInlineSvm nfs service inline svm
+// NfsServiceInlineSvm SVM, applies only to SVM-scoped objects.
 //
 // swagger:model nfs_service_inline_svm
 type NfsServiceInlineSvm struct {
@@ -6516,12 +6654,12 @@ type NfsServiceInlineSvm struct {
 	// links
 	Links *NfsServiceInlineSvmInlineLinks `json:"_links,omitempty"`
 
-	// The name of the SVM.
+	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: svm1
 	Name *string `json:"name,omitempty"`
 
-	// The unique identifier of the SVM.
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`

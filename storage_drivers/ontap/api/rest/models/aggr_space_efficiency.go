@@ -35,6 +35,9 @@ type AggrSpaceEfficiency struct {
 	// Read Only: true
 	CrossVolumeInlineDedupe *bool `json:"cross_volume_inline_dedupe,omitempty"`
 
+	// Indicates whether Workload Informed TSSE is enabled on the system.
+	EnableWorkloadInformedTsse *bool `json:"enable_workload_informed_tsse,omitempty"`
+
 	// Logical used
 	// Read Only: true
 	LogicalUsed *int64 `json:"logical_used,omitempty"`
@@ -46,6 +49,9 @@ type AggrSpaceEfficiency struct {
 	// Space saved by storage efficiencies (logical_used - used)
 	// Read Only: true
 	Savings *int64 `json:"savings,omitempty"`
+
+	// Minimum amount of used data in aggregate required to trigger cold compression on TSSE volumes.
+	WiseTsseMinUsedCapacityPct *int64 `json:"wise_tsse_min_used_capacity_pct,omitempty"`
 }
 
 // Validate validates this aggr space efficiency

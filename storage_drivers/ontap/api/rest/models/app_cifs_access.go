@@ -21,7 +21,7 @@ import (
 type AppCifsAccess struct {
 
 	// The CIFS access granted to the user or group.
-	// Enum: [change full_control no_access read]
+	// Enum: ["change","full_control","no_access","read"]
 	Access *string `json:"access,omitempty"`
 
 	// The name of the CIFS user or group that will be granted access.

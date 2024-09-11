@@ -6,6 +6,7 @@ package n_v_me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *NvmeSubsystemCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the nvme subsystem create created response
+func (o *NvmeSubsystemCreateCreated) Code() int {
+	return 201
+}
+
 func (o *NvmeSubsystemCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /protocols/nvme/subsystems][%d] nvmeSubsystemCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nvme/subsystems][%d] nvmeSubsystemCreateCreated %s", 201, payload)
 }
 
 func (o *NvmeSubsystemCreateCreated) String() string {
-	return fmt.Sprintf("[POST /protocols/nvme/subsystems][%d] nvmeSubsystemCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nvme/subsystems][%d] nvmeSubsystemCreateCreated %s", 201, payload)
 }
 
 func (o *NvmeSubsystemCreateCreated) GetPayload() *models.NvmeSubsystemResponse {
@@ -134,29 +142,32 @@ func NewNvmeSubsystemCreateDefault(code int) *NvmeSubsystemCreateDefault {
 | 2621706 | The specified `svm.uuid` and `svm.name` do not refer to the same SVM. |
 | 2621707 | The svm.uuid or svm.name must be provided. |
 | 72089635 | Setting vendor-specific UUIDs on NVMe subsystems is not supported until the effective cluster version is 9.9 or later. |
+| 72089636 | Creating NVMe subsystems with `os_type` AIX is not supported until the effective cluster version is 9.13.1 or later. |
 | 72089709 | The NVMe subsystem name contains an invalid character. |
 | 72089711 | An invalid vendor-specific UUID was specified. |
 | 72089712 | A duplicate vendor-specific UUID was specific. |
 | 72089713 | Too many vendor UUIDs were supplied. |
+| 72089716 | The DH-HMAC-CHAP secret property is invalid. DH-HMAC-CHAP secrets must be in the format "DHHC-1:0X:<Base 64 encoded key and CRC>:", where X represents 0, 1, or 3 indicating no hash function, SHA-256, and SHA-512 respectively. |
 | 72089771 | The NQN is invalid. A non-empty qualifier is required after the prefix. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
 | 72089772 | The NQN is invalid. Add the prefix _'nqn'_. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
 | 72089773 | The NQN is invalid. The date field must be formatted _yyyy-mm_. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
 | 72090003 | A host to be added to an NVMe subsystem is missing the "nqn" property. |
 | 72090025 | The NVMe subsystem already exists for the SVM. |
 | 72090029 | The NVMe service does not exist. |
-| 72090030 | A partial success occured while adding multiple NVMe subsystem hosts to an NVMe subsystem. |
+| 72090030 | A partial success occurred while adding multiple NVMe subsystem hosts to an NVMe subsystem. |
 | 72090036 | An NVMe subsystem host NQN was duplicated in the input. |
-| 72090042 | The `dh_hmac_chap.host_secret_key` property is required when setting any other NVMe in-band authentication properties for a host. |
+| 72090042 | The DH-HMAC-CHAP secret property is required when setting any other NVMe in-band authentication properties for a host. |
+| 72090043 | An igroup already exists with the requested NVMe subsystem name. |
+| 72090151 | NVMe/TCP-TLS is not supported for the effective version of the cluster. |
+| 72090202 | A provided NVMe subsystem host TLS configured PSK is not valid. |
+| 72090204 | A TLS configured PSK was not provided when adding an NVMe subsystem host with the configured key type. |
+| 72090205 | An invalid combination for the TLS key type and configured PSK values was provided when adding an NVMe subsystem host. When key type is "none", no configured PSK is allowed. When key type is "configured", a configured PSK is required. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NvmeSubsystemCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the nvme subsystem create default response
-func (o *NvmeSubsystemCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this nvme subsystem create default response has a 2xx status code
@@ -184,12 +195,19 @@ func (o *NvmeSubsystemCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the nvme subsystem create default response
+func (o *NvmeSubsystemCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NvmeSubsystemCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/nvme/subsystems][%d] nvme_subsystem_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nvme/subsystems][%d] nvme_subsystem_create default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/nvme/subsystems][%d] nvme_subsystem_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/nvme/subsystems][%d] nvme_subsystem_create default %s", o._statusCode, payload)
 }
 
 func (o *NvmeSubsystemCreateDefault) GetPayload() *models.ErrorResponse {

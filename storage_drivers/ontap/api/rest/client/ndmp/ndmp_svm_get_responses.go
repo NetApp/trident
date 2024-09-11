@@ -6,6 +6,7 @@ package ndmp
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *NdmpSvmGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the ndmp svm get o k response
+func (o *NdmpSvmGetOK) Code() int {
+	return 200
+}
+
 func (o *NdmpSvmGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}][%d] ndmpSvmGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}][%d] ndmpSvmGetOK %s", 200, payload)
 }
 
 func (o *NdmpSvmGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}][%d] ndmpSvmGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}][%d] ndmpSvmGetOK %s", 200, payload)
 }
 
 func (o *NdmpSvmGetOK) GetPayload() *models.NdmpSvm {
@@ -112,19 +120,20 @@ func NewNdmpSvmGetDefault(code int) *NdmpSvmGetDefault {
 }
 
 /*
-NdmpSvmGetDefault describes a response with status code -1, with default header values.
+	NdmpSvmGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response codes
+
+| Error code  |  Description |
+|-------------|--------------|
+| 2           | The UUID provided is an invalid value for field \"svm.uuid\".|
+| 262197      | The value provided is invalid for field \"fields\".|
+| 65601536    | The operation is not supported because NDMP SVM-aware mode is disabled.|
 */
 type NdmpSvmGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the ndmp svm get default response
-func (o *NdmpSvmGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this ndmp svm get default response has a 2xx status code
@@ -152,12 +161,19 @@ func (o *NdmpSvmGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the ndmp svm get default response
+func (o *NdmpSvmGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NdmpSvmGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}][%d] ndmp_svm_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}][%d] ndmp_svm_get default %s", o._statusCode, payload)
 }
 
 func (o *NdmpSvmGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}][%d] ndmp_svm_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}][%d] ndmp_svm_get default %s", o._statusCode, payload)
 }
 
 func (o *NdmpSvmGetDefault) GetPayload() *models.ErrorResponse {

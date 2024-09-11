@@ -70,13 +70,13 @@ type SnapmirrorRelationshipTransferGetParams struct {
 
 	/* RelationshipUUID.
 
-	   Relationship UUID
+	   SnapMirror relationship UUID
 	*/
 	RelationshipUUID string
 
 	/* UUID.
 
-	   Transfer UUID
+	   SnapMirror transfer UUID
 	*/
 	UUID string
 

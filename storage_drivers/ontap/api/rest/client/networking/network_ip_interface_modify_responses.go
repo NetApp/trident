@@ -6,10 +6,14 @@ package networking
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
+
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
 
 // NetworkIPInterfaceModifyReader is a Reader for the NetworkIPInterfaceModify structure.
@@ -76,12 +80,17 @@ func (o *NetworkIPInterfaceModifyOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the network Ip interface modify o k response
+func (o *NetworkIPInterfaceModifyOK) Code() int {
+	return 200
+}
+
 func (o *NetworkIPInterfaceModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /network/ip/interfaces/{uuid}][%d] networkIpInterfaceModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/ip/interfaces/{uuid}][%d] networkIpInterfaceModifyOK", 200)
 }
 
 func (o *NetworkIPInterfaceModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /network/ip/interfaces/{uuid}][%d] networkIpInterfaceModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /network/ip/interfaces/{uuid}][%d] networkIpInterfaceModifyOK", 200)
 }
 
 func (o *NetworkIPInterfaceModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -103,21 +112,34 @@ func NewNetworkIPInterfaceModifyDefault(code int) *NetworkIPInterfaceModifyDefau
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 262196 | Field cannot be set in this operation. |
 | 1376663 | Cannot add interface to DNS zone because all interfaces from a single DNS zone must be in the same SVM. |
 | 1376963 | Duplicate IP address. |
 | 1376976 | The specified port is not capable of hosting this LIF. |
+| 1376986 | The interface could not migrate because no additional interfaces can be hosted on the specified node. |
 | 1376997 | Interface failed to migrate because the node hosting the port is not healthy. |
 | 1376998 | The specified location.node does not own any ports in the same broadcast domain as the home port of the interface. |
 | 1376999 | Interface failed to migrate because port is in the down admin state. |
 | 1377607 | The specified location.port is not in the same broadcast domain as the home port of the interface. |
+| 1377666 | Subnet does not have any addresses available. |
+| 1966081 | Failed to lookup the port on the node. |
+| 1966133 | The netmask cannot represent the entire IP subnet. |
+| 1966135 | Cluster configuration can only be changed from node where the cluster LIF resides. |
 | 1966138 | The same IP address may not be used for both a mgmt interface and a gateway address. |
 | 1966141 | Invalid DNS zone name. |
 | 1966142 | Only data LIFs can be assigned a DNS zone. |
+| 1966191 | The interface could not be created because interface identifier creation failed. |
 | 1966197 | Migration of cluster interfaces must be done from the local node. |
+| 1966238 | Cannot change the home-node or home-port of an active SAN or NVMe data interface. |
 | 1966267 | IPv6 addresses must have a prefix length between 1 and 127. |
 | 1966269 | IPv4 addresses must have a prefix length between 1 and 32. |
+| 1966299 | Changing a cluster LIF's administrative status to down is not a supported operation. |
+| 1966419 | Subnet not found in the IPspace of the SVM. |
+| 1966419 | Specified subnet not found in the IPspace of the LIF. |
 | 1966476 | DNS Update is supported only on data interfaces. |
 | 1966477 | DNS Update is supported only on interfaces configured with the NFS or CIFS protocol. |
+| 1966507 | A port on the node has been identified as potentially unhealthy. |
+| 1966685 | There are no ports on the node that are in the broadcast domain associated with the IPspace. |
 | 1967106 | The specified location.home_port.name does not match the specified port name of location.home_port.uuid. |
 | 1967107 | The specified location.home_port.uuid is not valid. |
 | 1967111 | A home node must be specified by at least one location.home_node, location.home_port, or location.broadcast_domain field. |
@@ -146,6 +168,7 @@ func NewNetworkIPInterfaceModifyDefault(code int) *NetworkIPInterfaceModifyDefau
 | 1967145 | The specified location.failover is not valid. |
 | 1967153 | No suitable port exists on location.home_node to host the interface. |
 | 1967380 | Cannot patch home_port for a VIP interface. The specified parameter location.home_port.node.name is not valid. Consider using location.home_node.name instead. |
+| 1967385 | VIP interface address and netmask error. |
 | 1967386 | Cannot patch port for a VIP interface. The specified parameter location.port.node.name is not valid. Consider using location.node.name instead. |
 | 1967387 | The specified IP address is in use by a subnet in this IPspace. |
 | 1967389 | Patching location.is_home to the value "false" is not supported. The value "true" would revert a network interface to its home port if the current value is "false". |
@@ -155,19 +178,26 @@ func NewNetworkIPInterfaceModifyDefault(code int) *NetworkIPInterfaceModifyDefau
 | 1967396 | The specified subnet.name does not match the subnet name of subnet.uuid. |
 | 1967397 | The specified subnet.uuid does not match any configured subnet."; |
 | 1967398 | Address must be specified by either ip.address and ip.netmask, or at least one subnet field, not both."; |
+| 2621574 | This operation is not permitted on an SVM that is configured as the destination of a MetroCluster SVM relationship. |
 | 53281018 | Failover policy is not compatible with one or more services in service policy |
 | 53281065 | The service_policy does not exist in the SVM. |
+| 53281072 | The failover policy is not valid for interfaces in the SVM. |
 | 53281086 | LIF would exceed the maximum number of supported intercluster LIFs in IPspace. |
+| 53281087 | SVM must have an NVMe service to perform this operation. |
 | 53281089 | LIF on SVM cannot be updated to use service policy because that service policy includes SAN services and the target LIF is not home. |
+| 53281096 | LIF could not be modified because the current port does not support the specified rdma-protocols. |
 | 53281106 | Failed checking the cluster capabilities. |
+| 53281109 | The interface could not be updated to use the service policy because the interface is currently associated with BGP peer group. |
+| 53281111 | Cannot update the service policy because the interface is associated with a BGP peer-group. |
+| 53281113 | Configuration details for LIF were modified but an error was encountered while updating the LIF's operational status. |
+| 53281114 | The specified parameter is only supported on data SVMs. |
+| 53281468 | Failed to update external route tables for IP. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NetworkIPInterfaceModifyDefault struct {
 	_statusCode int
-}
 
-// Code gets the status code for the network ip interface modify default response
-func (o *NetworkIPInterfaceModifyDefault) Code() int {
-	return o._statusCode
+	Payload *models.ErrorResponse
 }
 
 // IsSuccess returns true when this network ip interface modify default response has a 2xx status code
@@ -195,15 +225,33 @@ func (o *NetworkIPInterfaceModifyDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the network ip interface modify default response
+func (o *NetworkIPInterfaceModifyDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *NetworkIPInterfaceModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /network/ip/interfaces/{uuid}][%d] network_ip_interface_modify default ", o._statusCode)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/ip/interfaces/{uuid}][%d] network_ip_interface_modify default %s", o._statusCode, payload)
 }
 
 func (o *NetworkIPInterfaceModifyDefault) String() string {
-	return fmt.Sprintf("[PATCH /network/ip/interfaces/{uuid}][%d] network_ip_interface_modify default ", o._statusCode)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /network/ip/interfaces/{uuid}][%d] network_ip_interface_modify default %s", o._statusCode, payload)
+}
+
+func (o *NetworkIPInterfaceModifyDefault) GetPayload() *models.ErrorResponse {
+	return o.Payload
 }
 
 func (o *NetworkIPInterfaceModifyDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ErrorResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }

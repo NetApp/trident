@@ -86,6 +86,42 @@ type AllSvmBucketsCollectionGetParams struct {
 	*/
 	Comment *string
 
+	/* CorsRulesAllowedHeaders.
+
+	   Filter by cors.rules.allowed_headers
+	*/
+	CorsRulesAllowedHeaders *string
+
+	/* CorsRulesAllowedMethods.
+
+	   Filter by cors.rules.allowed_methods
+	*/
+	CorsRulesAllowedMethods *string
+
+	/* CorsRulesAllowedOrigins.
+
+	   Filter by cors.rules.allowed_origins
+	*/
+	CorsRulesAllowedOrigins *string
+
+	/* CorsRulesExposeHeaders.
+
+	   Filter by cors.rules.expose_headers
+	*/
+	CorsRulesExposeHeaders *string
+
+	/* CorsRulesID.
+
+	   Filter by cors.rules.id
+	*/
+	CorsRulesID *string
+
+	/* CorsRulesMaxAgeSeconds.
+
+	   Filter by cors.rules.max_age_seconds
+	*/
+	CorsRulesMaxAgeSeconds *int64
+
 	/* EncryptionEnabled.
 
 	   Filter by encryption.enabled
@@ -97,6 +133,102 @@ type AllSvmBucketsCollectionGetParams struct {
 	   Specify the fields to return.
 	*/
 	Fields []string
+
+	/* LifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays.
+
+	   Filter by lifecycle_management.rules.abort_incomplete_multipart_upload.after_initiation_days
+	*/
+	LifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays *int64
+
+	/* LifecycleManagementRulesBucketName.
+
+	   Filter by lifecycle_management.rules.bucket_name
+	*/
+	LifecycleManagementRulesBucketName *string
+
+	/* LifecycleManagementRulesEnabled.
+
+	   Filter by lifecycle_management.rules.enabled
+	*/
+	LifecycleManagementRulesEnabled *bool
+
+	/* LifecycleManagementRulesExpirationExpiredObjectDeleteMarker.
+
+	   Filter by lifecycle_management.rules.expiration.expired_object_delete_marker
+	*/
+	LifecycleManagementRulesExpirationExpiredObjectDeleteMarker *bool
+
+	/* LifecycleManagementRulesExpirationObjectAgeDays.
+
+	   Filter by lifecycle_management.rules.expiration.object_age_days
+	*/
+	LifecycleManagementRulesExpirationObjectAgeDays *int64
+
+	/* LifecycleManagementRulesExpirationObjectExpiryDate.
+
+	   Filter by lifecycle_management.rules.expiration.object_expiry_date
+	*/
+	LifecycleManagementRulesExpirationObjectExpiryDate *string
+
+	/* LifecycleManagementRulesName.
+
+	   Filter by lifecycle_management.rules.name
+	*/
+	LifecycleManagementRulesName *string
+
+	/* LifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions.
+
+	   Filter by lifecycle_management.rules.non_current_version_expiration.new_non_current_versions
+	*/
+	LifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions *int64
+
+	/* LifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays.
+
+	   Filter by lifecycle_management.rules.non_current_version_expiration.non_current_days
+	*/
+	LifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays *int64
+
+	/* LifecycleManagementRulesObjectFilterPrefix.
+
+	   Filter by lifecycle_management.rules.object_filter.prefix
+	*/
+	LifecycleManagementRulesObjectFilterPrefix *string
+
+	/* LifecycleManagementRulesObjectFilterSizeGreaterThan.
+
+	   Filter by lifecycle_management.rules.object_filter.size_greater_than
+	*/
+	LifecycleManagementRulesObjectFilterSizeGreaterThan *int64
+
+	/* LifecycleManagementRulesObjectFilterSizeLessThan.
+
+	   Filter by lifecycle_management.rules.object_filter.size_less_than
+	*/
+	LifecycleManagementRulesObjectFilterSizeLessThan *int64
+
+	/* LifecycleManagementRulesObjectFilterTags.
+
+	   Filter by lifecycle_management.rules.object_filter.tags
+	*/
+	LifecycleManagementRulesObjectFilterTags *string
+
+	/* LifecycleManagementRulesSvmName.
+
+	   Filter by lifecycle_management.rules.svm.name
+	*/
+	LifecycleManagementRulesSvmName *string
+
+	/* LifecycleManagementRulesSvmUUID.
+
+	   Filter by lifecycle_management.rules.svm.uuid
+	*/
+	LifecycleManagementRulesSvmUUID *string
+
+	/* LifecycleManagementRulesUUID.
+
+	   Filter by lifecycle_management.rules.uuid
+	*/
+	LifecycleManagementRulesUUID *string
 
 	/* LogicalUsedSize.
 
@@ -254,6 +386,18 @@ type AllSvmBucketsCollectionGetParams struct {
 	*/
 	QosPolicyUUID *string
 
+	/* RetentionDefaultPeriod.
+
+	   Filter by retention.default_period
+	*/
+	RetentionDefaultPeriod *string
+
+	/* RetentionMode.
+
+	   Filter by retention.mode
+	*/
+	RetentionMode *string
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -281,6 +425,18 @@ type AllSvmBucketsCollectionGetParams struct {
 	   Filter by size
 	*/
 	Size *int64
+
+	/* SnapshotPolicyName.
+
+	   Filter by snapshot_policy.name
+	*/
+	SnapshotPolicyName *string
+
+	/* SnapshotPolicyUUID.
+
+	   Filter by snapshot_policy.uuid
+	*/
+	SnapshotPolicyUUID *string
 
 	/* SvmName.
 
@@ -435,6 +591,72 @@ func (o *AllSvmBucketsCollectionGetParams) SetComment(comment *string) {
 	o.Comment = comment
 }
 
+// WithCorsRulesAllowedHeaders adds the corsRulesAllowedHeaders to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithCorsRulesAllowedHeaders(corsRulesAllowedHeaders *string) *AllSvmBucketsCollectionGetParams {
+	o.SetCorsRulesAllowedHeaders(corsRulesAllowedHeaders)
+	return o
+}
+
+// SetCorsRulesAllowedHeaders adds the corsRulesAllowedHeaders to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetCorsRulesAllowedHeaders(corsRulesAllowedHeaders *string) {
+	o.CorsRulesAllowedHeaders = corsRulesAllowedHeaders
+}
+
+// WithCorsRulesAllowedMethods adds the corsRulesAllowedMethods to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithCorsRulesAllowedMethods(corsRulesAllowedMethods *string) *AllSvmBucketsCollectionGetParams {
+	o.SetCorsRulesAllowedMethods(corsRulesAllowedMethods)
+	return o
+}
+
+// SetCorsRulesAllowedMethods adds the corsRulesAllowedMethods to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetCorsRulesAllowedMethods(corsRulesAllowedMethods *string) {
+	o.CorsRulesAllowedMethods = corsRulesAllowedMethods
+}
+
+// WithCorsRulesAllowedOrigins adds the corsRulesAllowedOrigins to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithCorsRulesAllowedOrigins(corsRulesAllowedOrigins *string) *AllSvmBucketsCollectionGetParams {
+	o.SetCorsRulesAllowedOrigins(corsRulesAllowedOrigins)
+	return o
+}
+
+// SetCorsRulesAllowedOrigins adds the corsRulesAllowedOrigins to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetCorsRulesAllowedOrigins(corsRulesAllowedOrigins *string) {
+	o.CorsRulesAllowedOrigins = corsRulesAllowedOrigins
+}
+
+// WithCorsRulesExposeHeaders adds the corsRulesExposeHeaders to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithCorsRulesExposeHeaders(corsRulesExposeHeaders *string) *AllSvmBucketsCollectionGetParams {
+	o.SetCorsRulesExposeHeaders(corsRulesExposeHeaders)
+	return o
+}
+
+// SetCorsRulesExposeHeaders adds the corsRulesExposeHeaders to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetCorsRulesExposeHeaders(corsRulesExposeHeaders *string) {
+	o.CorsRulesExposeHeaders = corsRulesExposeHeaders
+}
+
+// WithCorsRulesID adds the corsRulesID to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithCorsRulesID(corsRulesID *string) *AllSvmBucketsCollectionGetParams {
+	o.SetCorsRulesID(corsRulesID)
+	return o
+}
+
+// SetCorsRulesID adds the corsRulesId to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetCorsRulesID(corsRulesID *string) {
+	o.CorsRulesID = corsRulesID
+}
+
+// WithCorsRulesMaxAgeSeconds adds the corsRulesMaxAgeSeconds to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithCorsRulesMaxAgeSeconds(corsRulesMaxAgeSeconds *int64) *AllSvmBucketsCollectionGetParams {
+	o.SetCorsRulesMaxAgeSeconds(corsRulesMaxAgeSeconds)
+	return o
+}
+
+// SetCorsRulesMaxAgeSeconds adds the corsRulesMaxAgeSeconds to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetCorsRulesMaxAgeSeconds(corsRulesMaxAgeSeconds *int64) {
+	o.CorsRulesMaxAgeSeconds = corsRulesMaxAgeSeconds
+}
+
 // WithEncryptionEnabled adds the encryptionEnabled to the all svm buckets collection get params
 func (o *AllSvmBucketsCollectionGetParams) WithEncryptionEnabled(encryptionEnabled *bool) *AllSvmBucketsCollectionGetParams {
 	o.SetEncryptionEnabled(encryptionEnabled)
@@ -455,6 +677,182 @@ func (o *AllSvmBucketsCollectionGetParams) WithFields(fields []string) *AllSvmBu
 // SetFields adds the fields to the all svm buckets collection get params
 func (o *AllSvmBucketsCollectionGetParams) SetFields(fields []string) {
 	o.Fields = fields
+}
+
+// WithLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays adds the lifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays(lifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays *int64) *AllSvmBucketsCollectionGetParams {
+	o.SetLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays(lifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays)
+	return o
+}
+
+// SetLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays adds the lifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays(lifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays *int64) {
+	o.LifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays = lifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays
+}
+
+// WithLifecycleManagementRulesBucketName adds the lifecycleManagementRulesBucketName to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithLifecycleManagementRulesBucketName(lifecycleManagementRulesBucketName *string) *AllSvmBucketsCollectionGetParams {
+	o.SetLifecycleManagementRulesBucketName(lifecycleManagementRulesBucketName)
+	return o
+}
+
+// SetLifecycleManagementRulesBucketName adds the lifecycleManagementRulesBucketName to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetLifecycleManagementRulesBucketName(lifecycleManagementRulesBucketName *string) {
+	o.LifecycleManagementRulesBucketName = lifecycleManagementRulesBucketName
+}
+
+// WithLifecycleManagementRulesEnabled adds the lifecycleManagementRulesEnabled to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithLifecycleManagementRulesEnabled(lifecycleManagementRulesEnabled *bool) *AllSvmBucketsCollectionGetParams {
+	o.SetLifecycleManagementRulesEnabled(lifecycleManagementRulesEnabled)
+	return o
+}
+
+// SetLifecycleManagementRulesEnabled adds the lifecycleManagementRulesEnabled to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetLifecycleManagementRulesEnabled(lifecycleManagementRulesEnabled *bool) {
+	o.LifecycleManagementRulesEnabled = lifecycleManagementRulesEnabled
+}
+
+// WithLifecycleManagementRulesExpirationExpiredObjectDeleteMarker adds the lifecycleManagementRulesExpirationExpiredObjectDeleteMarker to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithLifecycleManagementRulesExpirationExpiredObjectDeleteMarker(lifecycleManagementRulesExpirationExpiredObjectDeleteMarker *bool) *AllSvmBucketsCollectionGetParams {
+	o.SetLifecycleManagementRulesExpirationExpiredObjectDeleteMarker(lifecycleManagementRulesExpirationExpiredObjectDeleteMarker)
+	return o
+}
+
+// SetLifecycleManagementRulesExpirationExpiredObjectDeleteMarker adds the lifecycleManagementRulesExpirationExpiredObjectDeleteMarker to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetLifecycleManagementRulesExpirationExpiredObjectDeleteMarker(lifecycleManagementRulesExpirationExpiredObjectDeleteMarker *bool) {
+	o.LifecycleManagementRulesExpirationExpiredObjectDeleteMarker = lifecycleManagementRulesExpirationExpiredObjectDeleteMarker
+}
+
+// WithLifecycleManagementRulesExpirationObjectAgeDays adds the lifecycleManagementRulesExpirationObjectAgeDays to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithLifecycleManagementRulesExpirationObjectAgeDays(lifecycleManagementRulesExpirationObjectAgeDays *int64) *AllSvmBucketsCollectionGetParams {
+	o.SetLifecycleManagementRulesExpirationObjectAgeDays(lifecycleManagementRulesExpirationObjectAgeDays)
+	return o
+}
+
+// SetLifecycleManagementRulesExpirationObjectAgeDays adds the lifecycleManagementRulesExpirationObjectAgeDays to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetLifecycleManagementRulesExpirationObjectAgeDays(lifecycleManagementRulesExpirationObjectAgeDays *int64) {
+	o.LifecycleManagementRulesExpirationObjectAgeDays = lifecycleManagementRulesExpirationObjectAgeDays
+}
+
+// WithLifecycleManagementRulesExpirationObjectExpiryDate adds the lifecycleManagementRulesExpirationObjectExpiryDate to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithLifecycleManagementRulesExpirationObjectExpiryDate(lifecycleManagementRulesExpirationObjectExpiryDate *string) *AllSvmBucketsCollectionGetParams {
+	o.SetLifecycleManagementRulesExpirationObjectExpiryDate(lifecycleManagementRulesExpirationObjectExpiryDate)
+	return o
+}
+
+// SetLifecycleManagementRulesExpirationObjectExpiryDate adds the lifecycleManagementRulesExpirationObjectExpiryDate to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetLifecycleManagementRulesExpirationObjectExpiryDate(lifecycleManagementRulesExpirationObjectExpiryDate *string) {
+	o.LifecycleManagementRulesExpirationObjectExpiryDate = lifecycleManagementRulesExpirationObjectExpiryDate
+}
+
+// WithLifecycleManagementRulesName adds the lifecycleManagementRulesName to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithLifecycleManagementRulesName(lifecycleManagementRulesName *string) *AllSvmBucketsCollectionGetParams {
+	o.SetLifecycleManagementRulesName(lifecycleManagementRulesName)
+	return o
+}
+
+// SetLifecycleManagementRulesName adds the lifecycleManagementRulesName to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetLifecycleManagementRulesName(lifecycleManagementRulesName *string) {
+	o.LifecycleManagementRulesName = lifecycleManagementRulesName
+}
+
+// WithLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions adds the lifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions(lifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions *int64) *AllSvmBucketsCollectionGetParams {
+	o.SetLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions(lifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions)
+	return o
+}
+
+// SetLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions adds the lifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions(lifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions *int64) {
+	o.LifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions = lifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions
+}
+
+// WithLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays adds the lifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays(lifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays *int64) *AllSvmBucketsCollectionGetParams {
+	o.SetLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays(lifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays)
+	return o
+}
+
+// SetLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays adds the lifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays(lifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays *int64) {
+	o.LifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays = lifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays
+}
+
+// WithLifecycleManagementRulesObjectFilterPrefix adds the lifecycleManagementRulesObjectFilterPrefix to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithLifecycleManagementRulesObjectFilterPrefix(lifecycleManagementRulesObjectFilterPrefix *string) *AllSvmBucketsCollectionGetParams {
+	o.SetLifecycleManagementRulesObjectFilterPrefix(lifecycleManagementRulesObjectFilterPrefix)
+	return o
+}
+
+// SetLifecycleManagementRulesObjectFilterPrefix adds the lifecycleManagementRulesObjectFilterPrefix to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetLifecycleManagementRulesObjectFilterPrefix(lifecycleManagementRulesObjectFilterPrefix *string) {
+	o.LifecycleManagementRulesObjectFilterPrefix = lifecycleManagementRulesObjectFilterPrefix
+}
+
+// WithLifecycleManagementRulesObjectFilterSizeGreaterThan adds the lifecycleManagementRulesObjectFilterSizeGreaterThan to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithLifecycleManagementRulesObjectFilterSizeGreaterThan(lifecycleManagementRulesObjectFilterSizeGreaterThan *int64) *AllSvmBucketsCollectionGetParams {
+	o.SetLifecycleManagementRulesObjectFilterSizeGreaterThan(lifecycleManagementRulesObjectFilterSizeGreaterThan)
+	return o
+}
+
+// SetLifecycleManagementRulesObjectFilterSizeGreaterThan adds the lifecycleManagementRulesObjectFilterSizeGreaterThan to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetLifecycleManagementRulesObjectFilterSizeGreaterThan(lifecycleManagementRulesObjectFilterSizeGreaterThan *int64) {
+	o.LifecycleManagementRulesObjectFilterSizeGreaterThan = lifecycleManagementRulesObjectFilterSizeGreaterThan
+}
+
+// WithLifecycleManagementRulesObjectFilterSizeLessThan adds the lifecycleManagementRulesObjectFilterSizeLessThan to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithLifecycleManagementRulesObjectFilterSizeLessThan(lifecycleManagementRulesObjectFilterSizeLessThan *int64) *AllSvmBucketsCollectionGetParams {
+	o.SetLifecycleManagementRulesObjectFilterSizeLessThan(lifecycleManagementRulesObjectFilterSizeLessThan)
+	return o
+}
+
+// SetLifecycleManagementRulesObjectFilterSizeLessThan adds the lifecycleManagementRulesObjectFilterSizeLessThan to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetLifecycleManagementRulesObjectFilterSizeLessThan(lifecycleManagementRulesObjectFilterSizeLessThan *int64) {
+	o.LifecycleManagementRulesObjectFilterSizeLessThan = lifecycleManagementRulesObjectFilterSizeLessThan
+}
+
+// WithLifecycleManagementRulesObjectFilterTags adds the lifecycleManagementRulesObjectFilterTags to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithLifecycleManagementRulesObjectFilterTags(lifecycleManagementRulesObjectFilterTags *string) *AllSvmBucketsCollectionGetParams {
+	o.SetLifecycleManagementRulesObjectFilterTags(lifecycleManagementRulesObjectFilterTags)
+	return o
+}
+
+// SetLifecycleManagementRulesObjectFilterTags adds the lifecycleManagementRulesObjectFilterTags to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetLifecycleManagementRulesObjectFilterTags(lifecycleManagementRulesObjectFilterTags *string) {
+	o.LifecycleManagementRulesObjectFilterTags = lifecycleManagementRulesObjectFilterTags
+}
+
+// WithLifecycleManagementRulesSvmName adds the lifecycleManagementRulesSvmName to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithLifecycleManagementRulesSvmName(lifecycleManagementRulesSvmName *string) *AllSvmBucketsCollectionGetParams {
+	o.SetLifecycleManagementRulesSvmName(lifecycleManagementRulesSvmName)
+	return o
+}
+
+// SetLifecycleManagementRulesSvmName adds the lifecycleManagementRulesSvmName to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetLifecycleManagementRulesSvmName(lifecycleManagementRulesSvmName *string) {
+	o.LifecycleManagementRulesSvmName = lifecycleManagementRulesSvmName
+}
+
+// WithLifecycleManagementRulesSvmUUID adds the lifecycleManagementRulesSvmUUID to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithLifecycleManagementRulesSvmUUID(lifecycleManagementRulesSvmUUID *string) *AllSvmBucketsCollectionGetParams {
+	o.SetLifecycleManagementRulesSvmUUID(lifecycleManagementRulesSvmUUID)
+	return o
+}
+
+// SetLifecycleManagementRulesSvmUUID adds the lifecycleManagementRulesSvmUuid to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetLifecycleManagementRulesSvmUUID(lifecycleManagementRulesSvmUUID *string) {
+	o.LifecycleManagementRulesSvmUUID = lifecycleManagementRulesSvmUUID
+}
+
+// WithLifecycleManagementRulesUUID adds the lifecycleManagementRulesUUID to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithLifecycleManagementRulesUUID(lifecycleManagementRulesUUID *string) *AllSvmBucketsCollectionGetParams {
+	o.SetLifecycleManagementRulesUUID(lifecycleManagementRulesUUID)
+	return o
+}
+
+// SetLifecycleManagementRulesUUID adds the lifecycleManagementRulesUuid to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetLifecycleManagementRulesUUID(lifecycleManagementRulesUUID *string) {
+	o.LifecycleManagementRulesUUID = lifecycleManagementRulesUUID
 }
 
 // WithLogicalUsedSize adds the logicalUsedSize to the all svm buckets collection get params
@@ -743,6 +1141,28 @@ func (o *AllSvmBucketsCollectionGetParams) SetQosPolicyUUID(qosPolicyUUID *strin
 	o.QosPolicyUUID = qosPolicyUUID
 }
 
+// WithRetentionDefaultPeriod adds the retentionDefaultPeriod to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithRetentionDefaultPeriod(retentionDefaultPeriod *string) *AllSvmBucketsCollectionGetParams {
+	o.SetRetentionDefaultPeriod(retentionDefaultPeriod)
+	return o
+}
+
+// SetRetentionDefaultPeriod adds the retentionDefaultPeriod to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetRetentionDefaultPeriod(retentionDefaultPeriod *string) {
+	o.RetentionDefaultPeriod = retentionDefaultPeriod
+}
+
+// WithRetentionMode adds the retentionMode to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithRetentionMode(retentionMode *string) *AllSvmBucketsCollectionGetParams {
+	o.SetRetentionMode(retentionMode)
+	return o
+}
+
+// SetRetentionMode adds the retentionMode to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetRetentionMode(retentionMode *string) {
+	o.RetentionMode = retentionMode
+}
+
 // WithReturnRecords adds the returnRecords to the all svm buckets collection get params
 func (o *AllSvmBucketsCollectionGetParams) WithReturnRecords(returnRecords *bool) *AllSvmBucketsCollectionGetParams {
 	o.SetReturnRecords(returnRecords)
@@ -785,6 +1205,28 @@ func (o *AllSvmBucketsCollectionGetParams) WithSize(size *int64) *AllSvmBucketsC
 // SetSize adds the size to the all svm buckets collection get params
 func (o *AllSvmBucketsCollectionGetParams) SetSize(size *int64) {
 	o.Size = size
+}
+
+// WithSnapshotPolicyName adds the snapshotPolicyName to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithSnapshotPolicyName(snapshotPolicyName *string) *AllSvmBucketsCollectionGetParams {
+	o.SetSnapshotPolicyName(snapshotPolicyName)
+	return o
+}
+
+// SetSnapshotPolicyName adds the snapshotPolicyName to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetSnapshotPolicyName(snapshotPolicyName *string) {
+	o.SnapshotPolicyName = snapshotPolicyName
+}
+
+// WithSnapshotPolicyUUID adds the snapshotPolicyUUID to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithSnapshotPolicyUUID(snapshotPolicyUUID *string) *AllSvmBucketsCollectionGetParams {
+	o.SetSnapshotPolicyUUID(snapshotPolicyUUID)
+	return o
+}
+
+// SetSnapshotPolicyUUID adds the snapshotPolicyUuid to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetSnapshotPolicyUUID(snapshotPolicyUUID *string) {
+	o.SnapshotPolicyUUID = snapshotPolicyUUID
 }
 
 // WithSvmName adds the svmName to the all svm buckets collection get params
@@ -940,6 +1382,108 @@ func (o *AllSvmBucketsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.CorsRulesAllowedHeaders != nil {
+
+		// query param cors.rules.allowed_headers
+		var qrCorsRulesAllowedHeaders string
+
+		if o.CorsRulesAllowedHeaders != nil {
+			qrCorsRulesAllowedHeaders = *o.CorsRulesAllowedHeaders
+		}
+		qCorsRulesAllowedHeaders := qrCorsRulesAllowedHeaders
+		if qCorsRulesAllowedHeaders != "" {
+
+			if err := r.SetQueryParam("cors.rules.allowed_headers", qCorsRulesAllowedHeaders); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CorsRulesAllowedMethods != nil {
+
+		// query param cors.rules.allowed_methods
+		var qrCorsRulesAllowedMethods string
+
+		if o.CorsRulesAllowedMethods != nil {
+			qrCorsRulesAllowedMethods = *o.CorsRulesAllowedMethods
+		}
+		qCorsRulesAllowedMethods := qrCorsRulesAllowedMethods
+		if qCorsRulesAllowedMethods != "" {
+
+			if err := r.SetQueryParam("cors.rules.allowed_methods", qCorsRulesAllowedMethods); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CorsRulesAllowedOrigins != nil {
+
+		// query param cors.rules.allowed_origins
+		var qrCorsRulesAllowedOrigins string
+
+		if o.CorsRulesAllowedOrigins != nil {
+			qrCorsRulesAllowedOrigins = *o.CorsRulesAllowedOrigins
+		}
+		qCorsRulesAllowedOrigins := qrCorsRulesAllowedOrigins
+		if qCorsRulesAllowedOrigins != "" {
+
+			if err := r.SetQueryParam("cors.rules.allowed_origins", qCorsRulesAllowedOrigins); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CorsRulesExposeHeaders != nil {
+
+		// query param cors.rules.expose_headers
+		var qrCorsRulesExposeHeaders string
+
+		if o.CorsRulesExposeHeaders != nil {
+			qrCorsRulesExposeHeaders = *o.CorsRulesExposeHeaders
+		}
+		qCorsRulesExposeHeaders := qrCorsRulesExposeHeaders
+		if qCorsRulesExposeHeaders != "" {
+
+			if err := r.SetQueryParam("cors.rules.expose_headers", qCorsRulesExposeHeaders); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CorsRulesID != nil {
+
+		// query param cors.rules.id
+		var qrCorsRulesID string
+
+		if o.CorsRulesID != nil {
+			qrCorsRulesID = *o.CorsRulesID
+		}
+		qCorsRulesID := qrCorsRulesID
+		if qCorsRulesID != "" {
+
+			if err := r.SetQueryParam("cors.rules.id", qCorsRulesID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CorsRulesMaxAgeSeconds != nil {
+
+		// query param cors.rules.max_age_seconds
+		var qrCorsRulesMaxAgeSeconds int64
+
+		if o.CorsRulesMaxAgeSeconds != nil {
+			qrCorsRulesMaxAgeSeconds = *o.CorsRulesMaxAgeSeconds
+		}
+		qCorsRulesMaxAgeSeconds := swag.FormatInt64(qrCorsRulesMaxAgeSeconds)
+		if qCorsRulesMaxAgeSeconds != "" {
+
+			if err := r.SetQueryParam("cors.rules.max_age_seconds", qCorsRulesMaxAgeSeconds); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.EncryptionEnabled != nil {
 
 		// query param encryption.enabled
@@ -965,6 +1509,278 @@ func (o *AllSvmBucketsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.LifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays != nil {
+
+		// query param lifecycle_management.rules.abort_incomplete_multipart_upload.after_initiation_days
+		var qrLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays int64
+
+		if o.LifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays != nil {
+			qrLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays = *o.LifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays
+		}
+		qLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays := swag.FormatInt64(qrLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays)
+		if qLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays != "" {
+
+			if err := r.SetQueryParam("lifecycle_management.rules.abort_incomplete_multipart_upload.after_initiation_days", qLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LifecycleManagementRulesBucketName != nil {
+
+		// query param lifecycle_management.rules.bucket_name
+		var qrLifecycleManagementRulesBucketName string
+
+		if o.LifecycleManagementRulesBucketName != nil {
+			qrLifecycleManagementRulesBucketName = *o.LifecycleManagementRulesBucketName
+		}
+		qLifecycleManagementRulesBucketName := qrLifecycleManagementRulesBucketName
+		if qLifecycleManagementRulesBucketName != "" {
+
+			if err := r.SetQueryParam("lifecycle_management.rules.bucket_name", qLifecycleManagementRulesBucketName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LifecycleManagementRulesEnabled != nil {
+
+		// query param lifecycle_management.rules.enabled
+		var qrLifecycleManagementRulesEnabled bool
+
+		if o.LifecycleManagementRulesEnabled != nil {
+			qrLifecycleManagementRulesEnabled = *o.LifecycleManagementRulesEnabled
+		}
+		qLifecycleManagementRulesEnabled := swag.FormatBool(qrLifecycleManagementRulesEnabled)
+		if qLifecycleManagementRulesEnabled != "" {
+
+			if err := r.SetQueryParam("lifecycle_management.rules.enabled", qLifecycleManagementRulesEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LifecycleManagementRulesExpirationExpiredObjectDeleteMarker != nil {
+
+		// query param lifecycle_management.rules.expiration.expired_object_delete_marker
+		var qrLifecycleManagementRulesExpirationExpiredObjectDeleteMarker bool
+
+		if o.LifecycleManagementRulesExpirationExpiredObjectDeleteMarker != nil {
+			qrLifecycleManagementRulesExpirationExpiredObjectDeleteMarker = *o.LifecycleManagementRulesExpirationExpiredObjectDeleteMarker
+		}
+		qLifecycleManagementRulesExpirationExpiredObjectDeleteMarker := swag.FormatBool(qrLifecycleManagementRulesExpirationExpiredObjectDeleteMarker)
+		if qLifecycleManagementRulesExpirationExpiredObjectDeleteMarker != "" {
+
+			if err := r.SetQueryParam("lifecycle_management.rules.expiration.expired_object_delete_marker", qLifecycleManagementRulesExpirationExpiredObjectDeleteMarker); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LifecycleManagementRulesExpirationObjectAgeDays != nil {
+
+		// query param lifecycle_management.rules.expiration.object_age_days
+		var qrLifecycleManagementRulesExpirationObjectAgeDays int64
+
+		if o.LifecycleManagementRulesExpirationObjectAgeDays != nil {
+			qrLifecycleManagementRulesExpirationObjectAgeDays = *o.LifecycleManagementRulesExpirationObjectAgeDays
+		}
+		qLifecycleManagementRulesExpirationObjectAgeDays := swag.FormatInt64(qrLifecycleManagementRulesExpirationObjectAgeDays)
+		if qLifecycleManagementRulesExpirationObjectAgeDays != "" {
+
+			if err := r.SetQueryParam("lifecycle_management.rules.expiration.object_age_days", qLifecycleManagementRulesExpirationObjectAgeDays); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LifecycleManagementRulesExpirationObjectExpiryDate != nil {
+
+		// query param lifecycle_management.rules.expiration.object_expiry_date
+		var qrLifecycleManagementRulesExpirationObjectExpiryDate string
+
+		if o.LifecycleManagementRulesExpirationObjectExpiryDate != nil {
+			qrLifecycleManagementRulesExpirationObjectExpiryDate = *o.LifecycleManagementRulesExpirationObjectExpiryDate
+		}
+		qLifecycleManagementRulesExpirationObjectExpiryDate := qrLifecycleManagementRulesExpirationObjectExpiryDate
+		if qLifecycleManagementRulesExpirationObjectExpiryDate != "" {
+
+			if err := r.SetQueryParam("lifecycle_management.rules.expiration.object_expiry_date", qLifecycleManagementRulesExpirationObjectExpiryDate); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LifecycleManagementRulesName != nil {
+
+		// query param lifecycle_management.rules.name
+		var qrLifecycleManagementRulesName string
+
+		if o.LifecycleManagementRulesName != nil {
+			qrLifecycleManagementRulesName = *o.LifecycleManagementRulesName
+		}
+		qLifecycleManagementRulesName := qrLifecycleManagementRulesName
+		if qLifecycleManagementRulesName != "" {
+
+			if err := r.SetQueryParam("lifecycle_management.rules.name", qLifecycleManagementRulesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions != nil {
+
+		// query param lifecycle_management.rules.non_current_version_expiration.new_non_current_versions
+		var qrLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions int64
+
+		if o.LifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions != nil {
+			qrLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions = *o.LifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions
+		}
+		qLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions := swag.FormatInt64(qrLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions)
+		if qLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions != "" {
+
+			if err := r.SetQueryParam("lifecycle_management.rules.non_current_version_expiration.new_non_current_versions", qLifecycleManagementRulesNonCurrentVersionExpirationNewNonCurrentVersions); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays != nil {
+
+		// query param lifecycle_management.rules.non_current_version_expiration.non_current_days
+		var qrLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays int64
+
+		if o.LifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays != nil {
+			qrLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays = *o.LifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays
+		}
+		qLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays := swag.FormatInt64(qrLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays)
+		if qLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays != "" {
+
+			if err := r.SetQueryParam("lifecycle_management.rules.non_current_version_expiration.non_current_days", qLifecycleManagementRulesNonCurrentVersionExpirationNonCurrentDays); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LifecycleManagementRulesObjectFilterPrefix != nil {
+
+		// query param lifecycle_management.rules.object_filter.prefix
+		var qrLifecycleManagementRulesObjectFilterPrefix string
+
+		if o.LifecycleManagementRulesObjectFilterPrefix != nil {
+			qrLifecycleManagementRulesObjectFilterPrefix = *o.LifecycleManagementRulesObjectFilterPrefix
+		}
+		qLifecycleManagementRulesObjectFilterPrefix := qrLifecycleManagementRulesObjectFilterPrefix
+		if qLifecycleManagementRulesObjectFilterPrefix != "" {
+
+			if err := r.SetQueryParam("lifecycle_management.rules.object_filter.prefix", qLifecycleManagementRulesObjectFilterPrefix); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LifecycleManagementRulesObjectFilterSizeGreaterThan != nil {
+
+		// query param lifecycle_management.rules.object_filter.size_greater_than
+		var qrLifecycleManagementRulesObjectFilterSizeGreaterThan int64
+
+		if o.LifecycleManagementRulesObjectFilterSizeGreaterThan != nil {
+			qrLifecycleManagementRulesObjectFilterSizeGreaterThan = *o.LifecycleManagementRulesObjectFilterSizeGreaterThan
+		}
+		qLifecycleManagementRulesObjectFilterSizeGreaterThan := swag.FormatInt64(qrLifecycleManagementRulesObjectFilterSizeGreaterThan)
+		if qLifecycleManagementRulesObjectFilterSizeGreaterThan != "" {
+
+			if err := r.SetQueryParam("lifecycle_management.rules.object_filter.size_greater_than", qLifecycleManagementRulesObjectFilterSizeGreaterThan); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LifecycleManagementRulesObjectFilterSizeLessThan != nil {
+
+		// query param lifecycle_management.rules.object_filter.size_less_than
+		var qrLifecycleManagementRulesObjectFilterSizeLessThan int64
+
+		if o.LifecycleManagementRulesObjectFilterSizeLessThan != nil {
+			qrLifecycleManagementRulesObjectFilterSizeLessThan = *o.LifecycleManagementRulesObjectFilterSizeLessThan
+		}
+		qLifecycleManagementRulesObjectFilterSizeLessThan := swag.FormatInt64(qrLifecycleManagementRulesObjectFilterSizeLessThan)
+		if qLifecycleManagementRulesObjectFilterSizeLessThan != "" {
+
+			if err := r.SetQueryParam("lifecycle_management.rules.object_filter.size_less_than", qLifecycleManagementRulesObjectFilterSizeLessThan); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LifecycleManagementRulesObjectFilterTags != nil {
+
+		// query param lifecycle_management.rules.object_filter.tags
+		var qrLifecycleManagementRulesObjectFilterTags string
+
+		if o.LifecycleManagementRulesObjectFilterTags != nil {
+			qrLifecycleManagementRulesObjectFilterTags = *o.LifecycleManagementRulesObjectFilterTags
+		}
+		qLifecycleManagementRulesObjectFilterTags := qrLifecycleManagementRulesObjectFilterTags
+		if qLifecycleManagementRulesObjectFilterTags != "" {
+
+			if err := r.SetQueryParam("lifecycle_management.rules.object_filter.tags", qLifecycleManagementRulesObjectFilterTags); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LifecycleManagementRulesSvmName != nil {
+
+		// query param lifecycle_management.rules.svm.name
+		var qrLifecycleManagementRulesSvmName string
+
+		if o.LifecycleManagementRulesSvmName != nil {
+			qrLifecycleManagementRulesSvmName = *o.LifecycleManagementRulesSvmName
+		}
+		qLifecycleManagementRulesSvmName := qrLifecycleManagementRulesSvmName
+		if qLifecycleManagementRulesSvmName != "" {
+
+			if err := r.SetQueryParam("lifecycle_management.rules.svm.name", qLifecycleManagementRulesSvmName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LifecycleManagementRulesSvmUUID != nil {
+
+		// query param lifecycle_management.rules.svm.uuid
+		var qrLifecycleManagementRulesSvmUUID string
+
+		if o.LifecycleManagementRulesSvmUUID != nil {
+			qrLifecycleManagementRulesSvmUUID = *o.LifecycleManagementRulesSvmUUID
+		}
+		qLifecycleManagementRulesSvmUUID := qrLifecycleManagementRulesSvmUUID
+		if qLifecycleManagementRulesSvmUUID != "" {
+
+			if err := r.SetQueryParam("lifecycle_management.rules.svm.uuid", qLifecycleManagementRulesSvmUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LifecycleManagementRulesUUID != nil {
+
+		// query param lifecycle_management.rules.uuid
+		var qrLifecycleManagementRulesUUID string
+
+		if o.LifecycleManagementRulesUUID != nil {
+			qrLifecycleManagementRulesUUID = *o.LifecycleManagementRulesUUID
+		}
+		qLifecycleManagementRulesUUID := qrLifecycleManagementRulesUUID
+		if qLifecycleManagementRulesUUID != "" {
+
+			if err := r.SetQueryParam("lifecycle_management.rules.uuid", qLifecycleManagementRulesUUID); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -1404,6 +2220,40 @@ func (o *AllSvmBucketsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.RetentionDefaultPeriod != nil {
+
+		// query param retention.default_period
+		var qrRetentionDefaultPeriod string
+
+		if o.RetentionDefaultPeriod != nil {
+			qrRetentionDefaultPeriod = *o.RetentionDefaultPeriod
+		}
+		qRetentionDefaultPeriod := qrRetentionDefaultPeriod
+		if qRetentionDefaultPeriod != "" {
+
+			if err := r.SetQueryParam("retention.default_period", qRetentionDefaultPeriod); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RetentionMode != nil {
+
+		// query param retention.mode
+		var qrRetentionMode string
+
+		if o.RetentionMode != nil {
+			qrRetentionMode = *o.RetentionMode
+		}
+		qRetentionMode := qrRetentionMode
+		if qRetentionMode != "" {
+
+			if err := r.SetQueryParam("retention.mode", qRetentionMode); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ReturnRecords != nil {
 
 		// query param return_records
@@ -1467,6 +2317,40 @@ func (o *AllSvmBucketsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qSize != "" {
 
 			if err := r.SetQueryParam("size", qSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnapshotPolicyName != nil {
+
+		// query param snapshot_policy.name
+		var qrSnapshotPolicyName string
+
+		if o.SnapshotPolicyName != nil {
+			qrSnapshotPolicyName = *o.SnapshotPolicyName
+		}
+		qSnapshotPolicyName := qrSnapshotPolicyName
+		if qSnapshotPolicyName != "" {
+
+			if err := r.SetQueryParam("snapshot_policy.name", qSnapshotPolicyName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnapshotPolicyUUID != nil {
+
+		// query param snapshot_policy.uuid
+		var qrSnapshotPolicyUUID string
+
+		if o.SnapshotPolicyUUID != nil {
+			qrSnapshotPolicyUUID = *o.SnapshotPolicyUUID
+		}
+		qSnapshotPolicyUUID := qrSnapshotPolicyUUID
+		if qSnapshotPolicyUUID != "" {
+
+			if err := r.SetQueryParam("snapshot_policy.uuid", qSnapshotPolicyUUID); err != nil {
 				return err
 			}
 		}

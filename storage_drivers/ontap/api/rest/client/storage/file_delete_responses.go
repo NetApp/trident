@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,17 @@ func (o *FileDeleteOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the file delete o k response
+func (o *FileDeleteOK) Code() int {
+	return 200
+}
+
 func (o *FileDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] fileDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] fileDeleteOK", 200)
 }
 
 func (o *FileDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] fileDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] fileDeleteOK", 200)
 }
 
 func (o *FileDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -109,7 +115,7 @@ FileDeleteAccepted describes a response with status code 202, with default heade
 Accepted
 */
 type FileDeleteAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.FileInfoJobLinkResponse
 }
 
 // IsSuccess returns true when this file delete accepted response has a 2xx status code
@@ -137,21 +143,28 @@ func (o *FileDeleteAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the file delete accepted response
+func (o *FileDeleteAccepted) Code() int {
+	return 202
+}
+
 func (o *FileDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] fileDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] fileDeleteAccepted %s", 202, payload)
 }
 
 func (o *FileDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] fileDeleteAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] fileDeleteAccepted %s", 202, payload)
 }
 
-func (o *FileDeleteAccepted) GetPayload() *models.JobLinkResponse {
+func (o *FileDeleteAccepted) GetPayload() *models.FileInfoJobLinkResponse {
 	return o.Payload
 }
 
 func (o *FileDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.FileInfoJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -175,21 +188,18 @@ func NewFileDeleteDefault(code int) *FileDeleteDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 131074 | No such file or directory. |
 | 131102 | Read-only file system. |
 | 131138 | Directory not empty. |
 | 918235 | A volume with UUID {volume.uuid} was not found. |
 | 6488081 | The {field} field is not supported for DELETE operations. |
+| 6488110 | A volume delete is not supported on this endpoint. |
+| 6684674 | No such file or directory. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type FileDeleteDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the file delete default response
-func (o *FileDeleteDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this file delete default response has a 2xx status code
@@ -217,12 +227,19 @@ func (o *FileDeleteDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the file delete default response
+func (o *FileDeleteDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FileDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] file_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] file_delete default %s", o._statusCode, payload)
 }
 
 func (o *FileDeleteDefault) String() string {
-	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] file_delete default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] file_delete default %s", o._statusCode, payload)
 }
 
 func (o *FileDeleteDefault) GetPayload() *models.ErrorResponse {

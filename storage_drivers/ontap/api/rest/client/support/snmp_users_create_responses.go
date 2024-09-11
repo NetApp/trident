@@ -6,6 +6,7 @@ package support
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,12 +86,19 @@ func (o *SnmpUsersCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the snmp users create created response
+func (o *SnmpUsersCreateCreated) Code() int {
+	return 201
+}
+
 func (o *SnmpUsersCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /support/snmp/users][%d] snmpUsersCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/snmp/users][%d] snmpUsersCreateCreated %s", 201, payload)
 }
 
 func (o *SnmpUsersCreateCreated) String() string {
-	return fmt.Sprintf("[POST /support/snmp/users][%d] snmpUsersCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/snmp/users][%d] snmpUsersCreateCreated %s", 201, payload)
 }
 
 func (o *SnmpUsersCreateCreated) GetPayload() *models.SnmpUser {
@@ -145,28 +153,23 @@ func NewSnmpUsersCreateDefault(code int) *SnmpUsersCreateDefault {
 | 5636121 | User account name is reserved for use by the system. |
 | 5636123 | Cannot create an SNMP user with a role other than readonly, none, or admin. |
 | 5636124 | Cannot create an SNMP user with a role other than vsadmin-readonly, none, or vsadmin. |
-| 5636126 | Cannot create a user with the user name, group name, or role \"autosupport\" because it is reserved by the system. |
 | 5636148 | Failed to discover SNMPv3 engine ID of remote SNMP agent. |
 | 5636150 | The switch_address parameter can be specified only for administrative SVMs. |
 | 5636152 | 0.0.0.0 cannot be specified as the IP Address for the switch_address parameter. |
 | 5636153 | Engine ID is already associated with user. |
-| 5832711 | The only application permitted for user \"diag\" is \"console.\" |
 | 7077897 | Invalid character in username. Valid characters\":\" A-Z, a-z, 0-9, \".\", \"_\", and \"-\". Note that the user name cannot start with \"-\". |
-| 7077898 | The username must contain both letters and numbers. |
 | 7077899 | Username does not meet length requirements. |
 | 7077906 | Cannot use given role with this SVM because a role with that name has not been defined for the SVM. |
 | 9043995 | Failed to create SNMP community. Reason\":\" SNMPv1 and SNMPv2c are not supported when cluster FIPS mode is enabled. |
 | 9043999 | ONTAP failed to create an SNMPv3 user because SNMPv3 is disabled in the cluster. |
+| 9044021 | The specified authentication protocol is not supported when cluster FIPS mode is enabled. |
+| 9044022 | The specified privacy protocol is not supported when cluster FIPS mode is enabled. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SnmpUsersCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the snmp users create default response
-func (o *SnmpUsersCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this snmp users create default response has a 2xx status code
@@ -194,12 +197,19 @@ func (o *SnmpUsersCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the snmp users create default response
+func (o *SnmpUsersCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *SnmpUsersCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /support/snmp/users][%d] snmp_users_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/snmp/users][%d] snmp_users_create default %s", o._statusCode, payload)
 }
 
 func (o *SnmpUsersCreateDefault) String() string {
-	return fmt.Sprintf("[POST /support/snmp/users][%d] snmp_users_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /support/snmp/users][%d] snmp_users_create default %s", o._statusCode, payload)
 }
 
 func (o *SnmpUsersCreateDefault) GetPayload() *models.ErrorResponse {

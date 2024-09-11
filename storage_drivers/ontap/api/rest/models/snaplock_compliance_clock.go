@@ -26,7 +26,7 @@ type SnaplockComplianceClock struct {
 	Node *SnaplockComplianceClockInlineNode `json:"node,omitempty"`
 
 	// Compliance clock time
-	// Example: 2018-06-04T19:00:00Z
+	// Example: 2018-06-04 19:00:00
 	// Read Only: true
 	// Format: date-time
 	Time *strfmt.DateTime `json:"time,omitempty"`

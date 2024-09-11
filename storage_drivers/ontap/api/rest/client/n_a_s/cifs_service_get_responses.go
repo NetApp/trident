@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *CifsServiceGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the cifs service get o k response
+func (o *CifsServiceGetOK) Code() int {
+	return 200
+}
+
 func (o *CifsServiceGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}][%d] cifsServiceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}][%d] cifsServiceGetOK %s", 200, payload)
 }
 
 func (o *CifsServiceGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}][%d] cifsServiceGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}][%d] cifsServiceGetOK %s", 200, payload)
 }
 
 func (o *CifsServiceGetOK) GetPayload() *models.CifsService {
@@ -122,11 +130,6 @@ type CifsServiceGetDefault struct {
 	Payload *models.ErrorResponse
 }
 
-// Code gets the status code for the cifs service get default response
-func (o *CifsServiceGetDefault) Code() int {
-	return o._statusCode
-}
-
 // IsSuccess returns true when this cifs service get default response has a 2xx status code
 func (o *CifsServiceGetDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
@@ -152,12 +155,19 @@ func (o *CifsServiceGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the cifs service get default response
+func (o *CifsServiceGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *CifsServiceGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}][%d] cifs_service_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}][%d] cifs_service_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsServiceGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}][%d] cifs_service_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}][%d] cifs_service_get default %s", o._statusCode, payload)
 }
 
 func (o *CifsServiceGetDefault) GetPayload() *models.ErrorResponse {

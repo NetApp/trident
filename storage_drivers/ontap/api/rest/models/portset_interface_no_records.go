@@ -404,7 +404,7 @@ func (m *PortsetInterfaceNoRecordsInlineFcInlineLinks) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// PortsetInterfaceNoRecordsInlineIP portset interface no records inline ip
+// PortsetInterfaceNoRecordsInlineIP A network interface. Either UUID or name may be supplied on input.
 //
 // swagger:model portset_interface_no_records_inline_ip
 type PortsetInterfaceNoRecordsInlineIP struct {

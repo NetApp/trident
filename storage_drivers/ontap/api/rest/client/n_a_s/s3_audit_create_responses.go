@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -23,6 +24,12 @@ type S3AuditCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *S3AuditCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewS3AuditCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewS3AuditCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -39,6 +46,88 @@ func (o *S3AuditCreateReader) ReadResponse(response runtime.ClientResponse, cons
 		}
 		return nil, result
 	}
+}
+
+// NewS3AuditCreateCreated creates a S3AuditCreateCreated with default headers values
+func NewS3AuditCreateCreated() *S3AuditCreateCreated {
+	return &S3AuditCreateCreated{}
+}
+
+/*
+S3AuditCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type S3AuditCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.S3AuditResponse
+}
+
+// IsSuccess returns true when this s3 audit create created response has a 2xx status code
+func (o *S3AuditCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 audit create created response has a 3xx status code
+func (o *S3AuditCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 audit create created response has a 4xx status code
+func (o *S3AuditCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 audit create created response has a 5xx status code
+func (o *S3AuditCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 audit create created response a status code equal to that given
+func (o *S3AuditCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+// Code gets the status code for the s3 audit create created response
+func (o *S3AuditCreateCreated) Code() int {
+	return 201
+}
+
+func (o *S3AuditCreateCreated) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/audit/{svm.uuid}/object-store][%d] s3AuditCreateCreated %s", 201, payload)
+}
+
+func (o *S3AuditCreateCreated) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/audit/{svm.uuid}/object-store][%d] s3AuditCreateCreated %s", 201, payload)
+}
+
+func (o *S3AuditCreateCreated) GetPayload() *models.S3AuditResponse {
+	return o.Payload
+}
+
+func (o *S3AuditCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.S3AuditResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
 }
 
 // NewS3AuditCreateAccepted creates a S3AuditCreateAccepted with default headers values
@@ -85,12 +174,19 @@ func (o *S3AuditCreateAccepted) IsCode(code int) bool {
 	return code == 202
 }
 
+// Code gets the status code for the s3 audit create accepted response
+func (o *S3AuditCreateAccepted) Code() int {
+	return 202
+}
+
 func (o *S3AuditCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /protocols/audit/{svm.uuid}/object-store][%d] s3AuditCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/audit/{svm.uuid}/object-store][%d] s3AuditCreateAccepted %s", 202, payload)
 }
 
 func (o *S3AuditCreateAccepted) String() string {
-	return fmt.Sprintf("[POST /protocols/audit/{svm.uuid}/object-store][%d] s3AuditCreateAccepted  %+v", 202, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/audit/{svm.uuid}/object-store][%d] s3AuditCreateAccepted %s", 202, payload)
 }
 
 func (o *S3AuditCreateAccepted) GetPayload() *models.S3AuditResponse {
@@ -160,6 +256,7 @@ func NewS3AuditCreateDefault(code int) *S3AuditCreateDefault {
 | 140902490 | Audit configuration is absent for rotate. |
 | 140902491 | Failed to rotate audit log. |
 | 140902492 | Cannot rotate audit log, auditing is not enabled for this SVM. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
@@ -170,11 +267,6 @@ type S3AuditCreateDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the s3 audit create default response
-func (o *S3AuditCreateDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this s3 audit create default response has a 2xx status code
@@ -202,12 +294,19 @@ func (o *S3AuditCreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the s3 audit create default response
+func (o *S3AuditCreateDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *S3AuditCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_create default %s", o._statusCode, payload)
 }
 
 func (o *S3AuditCreateDefault) String() string {
-	return fmt.Sprintf("[POST /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_create default %s", o._statusCode, payload)
 }
 
 func (o *S3AuditCreateDefault) GetPayload() *models.ErrorResponse {

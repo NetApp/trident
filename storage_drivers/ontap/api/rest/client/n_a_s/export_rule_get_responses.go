@@ -6,6 +6,7 @@ package n_a_s
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -80,12 +81,19 @@ func (o *ExportRuleGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the export rule get o k response
+func (o *ExportRuleGetOK) Code() int {
+	return 200
+}
+
 func (o *ExportRuleGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] exportRuleGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] exportRuleGetOK %s", 200, payload)
 }
 
 func (o *ExportRuleGetOK) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] exportRuleGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] exportRuleGetOK %s", 200, payload)
 }
 
 func (o *ExportRuleGetOK) GetPayload() *models.ExportRule {
@@ -112,19 +120,19 @@ func NewExportRuleGetDefault(code int) *ExportRuleGetDefault {
 }
 
 /*
-ExportRuleGetDefault describes a response with status code -1, with default header values.
+	ExportRuleGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 262197     | The value provided is invalid for the field |
+| 6691623    | User is not authorized |
 */
 type ExportRuleGetDefault struct {
 	_statusCode int
 
 	Payload *models.ErrorResponse
-}
-
-// Code gets the status code for the export rule get default response
-func (o *ExportRuleGetDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this export rule get default response has a 2xx status code
@@ -152,12 +160,19 @@ func (o *ExportRuleGetDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the export rule get default response
+func (o *ExportRuleGetDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *ExportRuleGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] export_rule_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] export_rule_get default %s", o._statusCode, payload)
 }
 
 func (o *ExportRuleGetDefault) String() string {
-	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] export_rule_get default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] export_rule_get default %s", o._statusCode, payload)
 }
 
 func (o *ExportRuleGetDefault) GetPayload() *models.ErrorResponse {

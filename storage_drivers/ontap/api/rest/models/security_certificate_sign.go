@@ -20,11 +20,12 @@ import (
 // swagger:model security_certificate_sign
 type SecurityCertificateSign struct {
 
-	// Certificate expiration time. The allowed expiration time range is between 1 day to 10 years.
+	// Certificate expiration time, in ISO 8601 duration format or date and time format. The allowed expiration time range is between 1 day to 10 years.
+	// Example: P1DT2H3M4S or '2030-01-25T11:20:13Z'
 	ExpiryTime *string `json:"expiry_time,omitempty"`
 
 	// Hashing function
-	// Enum: [sha256 sha224 sha384 sha512]
+	// Enum: ["sha256","sha224","sha384","sha512"]
 	HashFunction *string `json:"hash_function,omitempty"`
 
 	// Certificate signing request to be signed by the given certificate authority. Request should be in X509 PEM format.
