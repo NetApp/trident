@@ -75,6 +75,7 @@ type TridentOrchestratorSpec struct {
 	ISCSISelfHealingInterval     string            `json:"iscsiSelfHealingInterval,omitempty"`
 	ISCSISelfHealingWaitTime     string            `json:"iscsiSelfHealingWaitTime,omitempty"`
 	K8sAPIQPS                    int               `json:"k8sAPIQPS,omitempty"`
+	NodePrep                     []string          `json:"nodePrep"`
 }
 
 // Toleration
@@ -151,6 +152,7 @@ type TridentOrchestratorSpecValues struct {
 	ACPImage                 string            `json:"acpImage"`
 	ISCSISelfHealingInterval string            `json:"iscsiSelfHealingInterval"`
 	ISCSISelfHealingWaitTime string            `json:"iscsiSelfHealingWaitTime"`
+	NodePrep                 []string          `json:"nodePrep"`
 }
 
 /************************

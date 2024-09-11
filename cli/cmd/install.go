@@ -24,6 +24,7 @@ import (
 	"github.com/netapp/trident/cli/api"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
+	"github.com/netapp/trident/internal/nodeprep"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
@@ -99,7 +100,7 @@ var (
 	silent                   bool
 	useIPv6                  bool
 	silenceAutosupport       bool
-	enableNodePrep           bool
+	nodePrep                 []string
 	skipK8sVersionCheck      bool
 	windows                  bool
 	enableForceDetach        bool
@@ -200,8 +201,7 @@ func init() {
 	installCmd.Flags().BoolVar(&useIPv6, "use-ipv6", false, "Use IPv6 for Trident's communication.")
 	installCmd.Flags().BoolVar(&silenceAutosupport, "silence-autosupport", tridentconfig.BuildType != "stable",
 		"Don't send autosupport bundles to NetApp automatically.")
-	installCmd.Flags().BoolVar(&enableNodePrep, "enable-node-prep", false,
-		"(Deprecated) Attempt to automatically install required packages on nodes.")
+	installCmd.Flags().StringSliceVar(&nodePrep, "node-prep", []string{}, "Comma separated list of protocols to prepare nodes for.  Currently only iSCSI is supported.")
 	installCmd.Flags().BoolVar(&enableForceDetach, "enable-force-detach", false,
 		"Enable the force detach feature.")
 	installCmd.Flags().BoolVar(&disableAuditLog, "disable-audit-log", true, "Disable the audit logger.")
@@ -263,10 +263,6 @@ func init() {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
 	if err := installCmd.Flags().MarkHidden("autosupport-hostname"); err != nil {
-		_, _ = fmt.Fprintln(os.Stderr, err)
-	}
-	if err := installCmd.Flags().MarkDeprecated("enable-node-prep",
-		"enable-node-prep is disabled; flag may be removed in a future release."); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
 }
@@ -429,6 +425,7 @@ func processInstallationArguments(_ *cobra.Command) {
 
 	persistentObjectLabelKey = TridentPersistentObjectLabelKey
 	persistentObjectLabelValue = TridentPersistentObjectLabelValue
+	nodePrep = nodeprep.FormatProtocols(nodePrep)
 }
 
 func validateInstallationArguments() error {
@@ -437,6 +434,10 @@ func validateInstallationArguments() error {
 
 	if !utils.DNS1123LabelRegex.MatchString(TridentPodNamespace) {
 		return fmt.Errorf("'%s' is not a valid namespace name; %s", TridentPodNamespace, labelFormat)
+	}
+
+	if err := nodeprep.ValidateProtocols(nodePrep); err != nil {
+		return err
 	}
 
 	switch logFormat {
@@ -703,6 +704,7 @@ func prepareYAMLFiles() error {
 		ImagePullPolicy:          imagePullPolicy,
 		ISCSISelfHealingInterval: iscsiSelfHealingInterval.String(),
 		ISCSISelfHealingWaitTime: iscsiSelfHealingWaitTime.String(),
+		NodePrep:                 nodePrep,
 	}
 	daemonSetYAML := k8sclient.GetCSIDaemonSetYAMLLinux(daemonArgs)
 	if err = writeFile(daemonsetPath, daemonSetYAML); err != nil {
@@ -778,6 +780,7 @@ func prepareYAMLFiles() error {
 			HTTPRequestTimeout:   httpRequestTimeout.String(),
 			ServiceAccountName:   getNodeRBACResourceName(true),
 			ImagePullPolicy:      imagePullPolicy,
+			NodePrep:             nodePrep,
 		}
 		windowsDaemonSetYAML := k8sclient.GetCSIDaemonSetYAMLWindows(daemonArgs)
 		if err = writeFile(windowsDaemonSetPath, windowsDaemonSetYAML); err != nil {
@@ -1169,6 +1172,7 @@ func installTrident() (returnError error) {
 				HTTPRequestTimeout:   httpRequestTimeout.String(),
 				ServiceAccountName:   getNodeRBACResourceName(true),
 				ImagePullPolicy:      imagePullPolicy,
+				NodePrep:             nodePrep,
 			}
 			returnError = client.CreateObjectByYAML(
 				k8sclient.GetCSIDaemonSetYAMLWindows(daemonSetArgs))
@@ -1223,6 +1227,7 @@ func installTrident() (returnError error) {
 			ImagePullPolicy:          imagePullPolicy,
 			ISCSISelfHealingInterval: iscsiSelfHealingInterval.String(),
 			ISCSISelfHealingWaitTime: iscsiSelfHealingWaitTime.String(),
+			NodePrep:                 nodePrep,
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDaemonSetYAMLLinux(daemonSetArgs))

@@ -230,43 +230,48 @@ spec:
 
 func TestValidateInstallationArguments(t *testing.T) {
 	tests := []struct {
-		TridentPodNamespace string
+		name                string
+		tridentPodNamespace string
 		logFormat           string
 		imagePullPolicy     string
 		cloudProvider       string
 		cloudIdentity       string
-		Valid               bool
+		nodePrep            []string
+		assertValid         assert.ErrorAssertionFunc
 	}{
 		// Valid arguments
-		{"default", "text", "IfNotPresent", "", "", true},
-		{"test-namespace", "text", "IfNotPresent", "", "", true},
-		{"test-namespace", "json", "Never", "", "", true},
-		{"test-namespace", "json", "Never", k8sclient.CloudProviderAzure, "", true},
-		{"test", "text", "Always", k8sclient.CloudProviderAzure, k8sclient.AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582", true},
-		{"test", "text", "Always", k8sclient.CloudProviderAzure, "", true},
+		{"default namespace", "default", "text", "IfNotPresent", "", "", nil, assert.NoError},
+		{"test namespace", "test-namespace", "text", "IfNotPresent", "", "", []string{}, assert.NoError},
+		{"image pull never", "test-namespace", "json", "Never", "", "", []string{"iscsi"}, assert.NoError},
+		{"cloud provider azure", "test-namespace", "json", "Never", k8sclient.CloudProviderAzure, "", []string{"iscsi"}, assert.NoError},
+		{"azure cloud identity key", "test", "text", "Always", k8sclient.CloudProviderAzure, k8sclient.AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582", []string{}, assert.NoError},
+		{"image pull always", "test", "text", "Always", k8sclient.CloudProviderAzure, "", []string{}, assert.NoError},
 
 		// Invalid arguments
-		{"", "", "", "", "", false},
-		{"test", "html", "", "", "", false},
-		{"test", "text", "Anyways", "", "", false},
-		{"test", "json", "Never", "Docker", "", false},
-		{"test", "json", "Never", "Docker", k8sclient.AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582", false},
-		{"test", "text", "IfNotPresent", k8sclient.CloudProviderAWS, "", false},
-		{"test", "text", "IfNotPresent", "", k8sclient.AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582", false},
-		{"test", "text", "Always", k8sclient.CloudProviderAzure, "a8rry78r8-7733-49bd-6656582", false},
+		{"invalid namespace", "", "", "", "", "", []string{}, assert.Error},
+		{"invalid log format", "test", "html", "", "", "", []string{}, assert.Error},
+		{"invalid image pull policy", "test", "text", "Anyways", "", "", []string{}, assert.Error},
+		{"invalid cloud provider", "test", "json", "Never", "Docker", "", []string{}, assert.Error},
+		{"invalid cloud provider with azure key", "test", "json", "Never", "Docker", k8sclient.AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582", []string{}, assert.Error},
+		{"invalid blank cloud identity", "test", "text", "IfNotPresent", k8sclient.CloudProviderAWS, "", []string{}, assert.Error},
+		{"invalid blank cloud provider", "test", "text", "IfNotPresent", "", k8sclient.AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582", []string{}, assert.Error},
+		{"invalid cloud identity", "test", "text", "Always", k8sclient.CloudProviderAzure, "a8rry78r8-7733-49bd-6656582", []string{}, assert.Error},
+		{"invalid blank node prep", "default", "text", "IfNotPresent", "", "", []string{""}, assert.Error},
+		{"invalid only node prep", "default", "text", "IfNotPresent", "", "", []string{"NVME"}, assert.Error},
+		{"invalid node prep in list", "default", "text", "IfNotPresent", "", "", []string{"iscsi", "nvme"}, assert.Error},
 	}
 
 	for _, test := range tests {
-		TridentPodNamespace = test.TridentPodNamespace
-		logFormat = test.logFormat
-		imagePullPolicy = test.imagePullPolicy
-		cloudProvider = test.cloudProvider
-		cloudIdentity = test.cloudIdentity
-		err := validateInstallationArguments()
-		if test.Valid {
-			assert.NoError(t, err, "should be valid")
-		} else {
-			assert.Error(t, err, "should be invalid")
-		}
+		t.Run(test.name, func(t *testing.T) {
+			// set global variables that are used in validateInstallationArguments
+			TridentPodNamespace = test.tridentPodNamespace
+			logFormat = test.logFormat
+			imagePullPolicy = test.imagePullPolicy
+			cloudProvider = test.cloudProvider
+			cloudIdentity = test.cloudIdentity
+			nodePrep = test.nodePrep
+			err := validateInstallationArguments()
+			test.assertValid(t, err)
+		})
 	}
 }

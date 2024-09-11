@@ -12,9 +12,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	mockExtendedK8sClient "github.com/netapp/trident/mocks/mock_operator/mock_controllers/mock_orchestrator/mock_installer"
+	netappv1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
+	"github.com/netapp/trident/utils/version"
 )
 
 const (
@@ -143,7 +146,7 @@ func TestCreateOrPatchCRD(t *testing.T) {
 	installer := newTestInstaller(mockK8sClient)
 
 	// Setup values for inputs and outputs of mocked functions.
-	crdName := VersionCRDName // use any valid CRD name here
+	crdName := VersionCRDName // use any validFunc CRD name here
 	crdYAML := k8sclient.GetVersionCRDYAML()
 
 	var crd v1.CustomResourceDefinition
@@ -218,7 +221,7 @@ func TestCloudProviderPrechecks(t *testing.T) {
 		cloudProvider = test.cloudProvider
 		err := installer.cloudProviderPrechecks()
 		if test.Valid {
-			assert.NoError(t, err, "should be valid")
+			assert.NoError(t, err, "should be validFunc")
 		} else {
 			assert.Error(t, err, "should be invalid")
 		}
@@ -253,9 +256,42 @@ func TestCloudIdentityPrechecks(t *testing.T) {
 		cloudIdentity = test.cloudIdentity
 		err := installer.cloudIdentityPrechecks()
 		if test.Valid {
-			assert.NoError(t, err, "should be valid")
+			assert.NoError(t, err, "should be validFunc")
 		} else {
 			assert.Error(t, err, "should be invalid")
 		}
+	}
+}
+
+func TestSetInstallationParams_NodePrep(t *testing.T) {
+	tests := []struct {
+		name        string
+		nodePrep    []string
+		assertValid assert.ErrorAssertionFunc
+	}{
+		{name: "validFunc nil", nodePrep: nil, assertValid: assert.NoError},
+		{name: "validFunc empty", nodePrep: []string{}, assertValid: assert.NoError},
+		{name: "validFunc one", nodePrep: []string{"iSCSI"}, assertValid: assert.NoError},
+		{name: "invalid one", nodePrep: []string{"NVME"}, assertValid: assert.Error},
+		{name: "invalid list", nodePrep: []string{"iSCSI", "NVME"}, assertValid: assert.Error},
+	}
+
+	mockK8sClient := newMockKubeClient(t)
+	mockK8sClient.EXPECT().ServerVersion().Return(&version.Version{}).AnyTimes()
+	installer := newTestInstaller(mockK8sClient)
+
+	to := netappv1.TridentOrchestrator{
+		TypeMeta:   metav1.TypeMeta{},
+		ObjectMeta: metav1.ObjectMeta{},
+		Spec:       netappv1.TridentOrchestratorSpec{},
+		Status:     netappv1.TridentOrchestratorStatus{},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			to.Spec.NodePrep = test.nodePrep
+			_, _, _, err := installer.setInstallationParams(to, "")
+			test.assertValid(t, err)
+		})
 	}
 }

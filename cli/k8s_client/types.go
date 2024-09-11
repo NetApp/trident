@@ -201,6 +201,7 @@ type DaemonsetYAMLArguments struct {
 	ImagePullPolicy          string                `json:"imagePullPolicy"`
 	ISCSISelfHealingInterval string                `json:"iscsiSelfHealingInterval"`
 	ISCSISelfHealingWaitTime string                `json:"iscsiSelfHealingWaitTime"`
+	NodePrep                 []string              `json:"nodePrep"`
 }
 
 type TridentVersionPodYAMLArguments struct {

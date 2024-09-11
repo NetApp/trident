@@ -4,6 +4,7 @@ package k8sclient
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -880,6 +881,8 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 	}
 
 	kubeletDir := strings.TrimRight(args.KubeletDir, "/")
+	// NodePrep this must come first because it adds a section that has tags in it
+	daemonSetYAML = replaceNodePrepTag(daemonSetYAML, args.NodePrep)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{TRIDENT_IMAGE}", args.TridentImage)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DAEMONSET_NAME}", args.DaemonsetName)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{CSI_SIDECAR_REGISTRY}", args.ImageRegistry)
@@ -912,6 +915,61 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 	return daemonSetYAML
 }
 
+func replaceNodePrepTag(daemonSetYAML string, nodePrep []string) string {
+	if len(nodePrep) > 0 {
+		prepareNodeLinuxFormatted := indentSection(daemonSetYAML, prepareNodeLinux, "{PREPARE_NODE}")
+		daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{PREPARE_NODE}", prepareNodeLinuxFormatted)
+		daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{NODE_PREP}", strings.Join(nodePrep, ","))
+	} else {
+		daemonSetYAML = removeSectionTag(daemonSetYAML, "{PREPARE_NODE}")
+	}
+	return daemonSetYAML
+}
+
+func removeSectionTag(daemonSetYAML, tag string) string {
+	r := regexp.MustCompile("\n +" + tag + "\n")
+	return string(r.ReplaceAll([]byte(daemonSetYAML), []byte("\n")))
+}
+
+func indentSection(daemonSetYAML, section, tag string) (indentedSection string) {
+	indent := getSectionIndentation(daemonSetYAML, tag)
+	indentedSection = strings.ReplaceAll(section, "{INDENT}", indent)
+	return
+}
+
+func getSectionIndentation(daemonSetYAML, tag string) (indent string) {
+	tagIdx := strings.Index(daemonSetYAML, tag)
+	lineStartIdx := strings.LastIndex(daemonSetYAML[0:tagIdx], "\n") + 1
+	return daemonSetYAML[lineStartIdx:tagIdx]
+}
+
+const prepareNodeLinux = `initContainers:
+{INDENT}- name: trident-prepare-node
+{INDENT}  securityContext:
+{INDENT}    privileged: true
+{INDENT}    allowPrivilegeEscalation: true
+{INDENT}    capabilities:
+{INDENT}      drop:
+{INDENT}      - all
+{INDENT}      add:
+{INDENT}      - SYS_ADMIN
+{INDENT}  image: {TRIDENT_IMAGE}
+{INDENT}  imagePullPolicy: {IMAGE_PULL_POLICY}
+{INDENT}  command:
+{INDENT}  - /node_prep
+{INDENT}  args:
+{INDENT}  - "--node-prep={NODE_PREP}"
+{INDENT}  - "--log-format={LOG_FORMAT}"
+{INDENT}  - "--log-level={LOG_LEVEL}"
+{INDENT}  {DEBUG}
+{INDENT}  env:
+{INDENT}  - name: PATH
+{INDENT}    value: /netapp:/bin
+{INDENT}  volumeMounts:
+{INDENT}  - name: host-dir
+{INDENT}    mountPath: /host
+{INDENT}    mountPropagation: "Bidirectional"`
+
 const daemonSet120YAMLTemplateLinux = `---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -936,6 +994,7 @@ spec:
       hostPID: true
       dnsPolicy: ClusterFirstWithHostNet
       priorityClassName: system-node-critical
+      {PREPARE_NODE}
       containers:
       - name: trident-main
         securityContext:

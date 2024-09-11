@@ -644,6 +644,62 @@ func TestGetCSIDaemonSetYAMLLinuxImagePullPolicy(t *testing.T) {
 	}
 }
 
+func TestGetCSIDaemonSetYAMLLinux_NodePrep(t *testing.T) {
+	defaultVersions := []string{"1.26.0"}
+	expected := "initContainers:"
+	expectedParam := "--node-prep=%s"
+
+	tests := []struct {
+		Name           string
+		Versions       []string
+		NodePrep       []string
+		ComparisonFunc assert.ComparisonAssertionFunc
+		ExpectedParam  string
+	}{
+		{
+			Name:           "nodePrep nil",
+			Versions:       defaultVersions,
+			NodePrep:       nil,
+			ComparisonFunc: assert.NotContains,
+		},
+		{
+			Name:           "nodePrep empty",
+			Versions:       defaultVersions,
+			NodePrep:       []string{},
+			ComparisonFunc: assert.NotContains,
+		},
+		{
+			Name:           "nodePrep list",
+			Versions:       defaultVersions,
+			NodePrep:       []string{"iSCSI", "NVME"},
+			ComparisonFunc: assert.Contains,
+			ExpectedParam:  fmt.Sprintf(expectedParam, "iSCSI,NVME"),
+		},
+		{
+			Name:           "nodePrep single",
+			Versions:       defaultVersions,
+			NodePrep:       []string{"iSCSI"},
+			ComparisonFunc: assert.Contains,
+			ExpectedParam:  fmt.Sprintf(expectedParam, "iSCSI"),
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			for _, versionString := range test.Versions {
+				version := versionutils.MustParseSemantic(versionString)
+				daemonsetArgs := &DaemonsetYAMLArguments{Version: version, NodePrep: test.NodePrep}
+				yamlData := GetCSIDaemonSetYAMLLinux(daemonsetArgs)
+				_, err := yaml.YAMLToJSON([]byte(yamlData))
+				assert.Nilf(t, err, "expected valid YAML for version %s", versionString)
+				test.ComparisonFunc(t, yamlData, expected)
+				assert.Contains(t, yamlData, test.ExpectedParam)
+				// this tag should never be left in the yaml
+				assert.NotContains(t, yamlData, "{PREPARE_NODE}")
+			}
+		})
+	}
+}
+
 func TestGetCSIDaemonSetYAMLLinux_NodeSelectors(t *testing.T) {
 	daemonsetArgs := &DaemonsetYAMLArguments{
 		NodeSelector: map[string]string{"node-label-key": "test1"},
