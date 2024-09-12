@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
@@ -25,6 +26,9 @@ const volumePublishInfoFilename = "volumePublishInfo.json"
 var (
 	osFs        = afero.NewOsFs()
 	fileDeleter = utils.DeleteFile
+
+	beforeWritingTempTrackingInfoFile = fiji.Register("beforeWritingTempTrackingInfoFile", "volume_publish_manager")
+	beforeUpdatingTrackingInfoFile    = fiji.Register("beforeUpdatingTrackingInfoFile", "volume_publish_manager")
 )
 
 type VolumePublishManager struct {
@@ -64,6 +68,11 @@ func (v *VolumePublishManager) WriteTrackingInfo(
 	// destination once it succeeds (a rename is just moving a filesystem pointer, not additional I/O).
 	tmpFile = path.Join(v.volumeTrackingInfoPath, tmpFile)
 	Logc(ctx).WithField("tempFile", tmpFile).Debug("Writing temporary tracking info file.")
+
+	if err := beforeWritingTempTrackingInfoFile.Inject(); err != nil {
+		return err
+	}
+
 	err := utils.JsonReaderWriter.WriteJSONFile(ctx, trackingInfo, tmpFile, "volume tracking info")
 	if err != nil {
 		return err
@@ -72,6 +81,11 @@ func (v *VolumePublishManager) WriteTrackingInfo(
 	trackingFile := path.Join(v.volumeTrackingInfoPath, filename)
 
 	Logc(ctx).WithField("fileName", trackingFile).Debug("Updating tracking info file.")
+
+	if err := beforeUpdatingTrackingInfoFile.Inject(); err != nil {
+		return err
+	}
+
 	return osFs.Rename(tmpFile, trackingFile)
 }
 

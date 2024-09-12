@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/afero"
 	"go.uber.org/multierr"
 
+	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
@@ -44,6 +45,9 @@ const (
 var (
 	osFs             = afero.NewOsFs()
 	JsonReaderWriter = NewJSONReaderWriter()
+
+	duringFormatVolume = fiji.Register("duringFormatVolume", "filesystem")
+	duringRepairVolume = fiji.Register("duringRepairVolume", "filesystem")
 )
 
 type jsonReaderWriter struct{}
@@ -99,8 +103,12 @@ func formatVolume(ctx context.Context, device, fstype string) error {
 	logFields := LogFields{"device": device, "fsType": fstype}
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.formatVolume")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.formatVolume")
-	var err error
 
+	if err := duringFormatVolume.Inject(); err != nil {
+		return err
+	}
+
+	var err error
 	switch fstype {
 	case fsXfs:
 		_, err = command.Execute(ctx, "mkfs.xfs", "-f", device)
@@ -153,8 +161,12 @@ func repairVolume(ctx context.Context, device, fstype string) {
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.repairVolume")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.repairVolume")
 
-	var err error
+	// Note: FIJI error injection will have no effect due to no error return. Panic injection is still valid.
+	if err := duringRepairVolume.Inject(); err != nil {
+		Logc(ctx).WithError(err).Debug("FIJI error in repairVolume has no effect, no error return.")
+	}
 
+	var err error
 	switch fstype {
 	case "xfs":
 		break // fsck.xfs does nothing

@@ -19,6 +19,7 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/sys/unix"
 
+	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -37,6 +38,12 @@ const (
 	// Return codes for `cryptsetup isLuks`
 	cryptsetupIsLuksDeviceIsLuksStatusCode    = 0
 	cryptsetupIsLuksDeviceIsNotLuksStatusCode = 1
+)
+
+var (
+	beforeCryptSetupFormat                    = fiji.Register("beforeCryptSetupFormat", "node_server")
+	duringOpenBeforeCryptSetupOpen            = fiji.Register("duringOpenBeforeCryptSetupOpen", "devices_linux")
+	duringRotatePassphraseBeforeLuksKeyChange = fiji.Register("duringRotatePassphraseBeforeLuksKeyChange", "devices_linux")
 )
 
 // flushOneDevice flushes any outstanding I/O to a disk
@@ -141,6 +148,11 @@ func (d *LUKSDevice) luksFormat(ctx context.Context, luksPassphrase string) erro
 	device := d.RawDevicePath()
 
 	Logc(ctx).WithField("device", device).Debug("Formatting LUKS device.")
+
+	if err := beforeCryptSetupFormat.Inject(); err != nil {
+		return err
+	}
+
 	if output, err := command.ExecuteWithTimeoutAndInput(
 		ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "luksFormat", device,
 		"--type", "luks2", "-c", "aes-xts-plain64",
@@ -204,6 +216,11 @@ func (d *LUKSDevice) Open(ctx context.Context, luksPassphrase string) error {
 
 	fields := LogFields{"device": device, "luksDeviceName": luksDeviceName}
 	Logc(ctx).WithFields(fields).Debug("Opening LUKS device.")
+
+	if err := duringOpenBeforeCryptSetupOpen.Inject(); err != nil {
+		return err
+	}
+
 	output, err := command.ExecuteWithTimeoutAndInput(
 		ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "open", device,
 		luksDeviceName, "--type", "luks2",
@@ -443,6 +460,10 @@ func (d *LUKSDevice) RotatePassphrase(
 
 	// Rely on Linux's ability to reference already-open files with /dev/fd/*
 	oldKeyFilename := fmt.Sprintf("/dev/fd/%d", fd)
+
+	if err = duringRotatePassphraseBeforeLuksKeyChange.Inject(); err != nil {
+		return err
+	}
 
 	output, err := command.ExecuteWithTimeoutAndInput(
 		ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "luksChangeKey", "-d",

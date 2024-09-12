@@ -20,6 +20,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
@@ -62,6 +63,11 @@ var (
 	// <up to and including 59 characters of a container orchestrator node name>-<36 characters of trident version uuid>
 	// ex: Kubernetes-NodeA-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z
 	perNodeIgroupRegex = regexp.MustCompile(`^[0-9A-z\-.]{1,59}-[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}`)
+
+	duringConfigureISCSITargetBeforeISCSIAdmUpdate = fiji.Register("duringConfigureISCSITargetBeforeISCSIAdmUpdate", "iscsi")
+	duringRescanOneLunBeforeFileWrite              = fiji.Register("duringRescanOneLunBeforeFileWrite", "iscsi")
+	duringPurgeOneLunBeforeFileWrite               = fiji.Register("duringPurgeOneLunBeforeFileWrite", "iscsi")
+	duringISCSIScanTargetLunAfterFileOpen          = fiji.Register("duringISCSIScanTargetLunAfterFileOpen", "iscsi")
 )
 
 // IsPerNodeIgroup accepts an igroup and returns whether that igroup matches the per-node igroup schema.
@@ -919,6 +925,10 @@ func iSCSIScanTargetLUN(ctx context.Context, lunID int, hosts []int) error {
 			return err
 		}
 
+		if err = duringISCSIScanTargetLunAfterFileOpen.Inject(); err != nil {
+			return err
+		}
+
 		if written, err := f.WriteString(scanCmd); err != nil {
 			Logc(ctx).WithFields(LogFields{"file": filename, "error": err}).Warning("Could not write to file.")
 			f.Close()
@@ -1001,6 +1011,10 @@ func purgeOneLun(ctx context.Context, path string) error {
 	}
 	defer f.Close()
 
+	if err = duringPurgeOneLunBeforeFileWrite.Inject(); err != nil {
+		return err
+	}
+
 	// Deleting a LUN is achieved by writing the string "1" to the "delete" file
 	written, err := f.WriteString("1")
 	if err != nil {
@@ -1026,6 +1040,10 @@ func rescanOneLun(ctx context.Context, path string) error {
 		return err
 	}
 	defer f.Close()
+
+	if err = duringRescanOneLunBeforeFileWrite.Inject(); err != nil {
+		return err
+	}
 
 	written, err := f.WriteString("1")
 	if err != nil {
@@ -1486,6 +1504,10 @@ func configureISCSITarget(ctx context.Context, iqn, portal, name, value string) 
 		"Value":  value,
 	}).Debug(">>>> iscsi.configureISCSITarget")
 	defer Logc(ctx).Debug("<<<< iscsi.configureISCSITarget")
+
+	if err := duringConfigureISCSITargetBeforeISCSIAdmUpdate.Inject(); err != nil {
+		return err
+	}
 
 	args := []string{"-m", "node", "-T", iqn, "-p", formatPortal(portal), "-o", "update", "-n", name, "-v", value}
 	if _, err := execIscsiadmCommand(ctx, args...); err != nil {
