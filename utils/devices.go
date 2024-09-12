@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
 	"golang.org/x/net/context"
 
 	. "github.com/netapp/trident/logging"
@@ -58,34 +57,6 @@ func flushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, force bool) er
 				return err
 			}
 		}
-	}
-
-	return nil
-}
-
-// ensureDeviceReadableWithRetry reads first 4 KiBs of the device to ensures it is readable and retries on errors.
-// This function will be deleted when BOF is moved to centralized retry.
-func ensureDeviceReadableWithRetry(ctx context.Context, device string) error {
-	readNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithField("increment", duration).Debug("Failed to read the device, retrying.")
-	}
-
-	attemptToRead := func() error {
-		return ensureDeviceReadable(ctx, device)
-	}
-
-	maxDuration := 30 * time.Second
-
-	readBackoff := backoff.NewExponentialBackOff()
-	readBackoff.InitialInterval = 2 * time.Second
-	readBackoff.Multiplier = 2
-	readBackoff.RandomizationFactor = 0.1
-	readBackoff.MaxElapsedTime = maxDuration
-
-	// Run the read check using an exponential backoff
-	if err := backoff.RetryNotify(attemptToRead, readBackoff, readNotify); err != nil {
-		Logc(ctx).Errorf("Could not read device %v after %3.2f seconds.", device, maxDuration.Seconds())
-		return err
 	}
 
 	return nil

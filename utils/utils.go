@@ -911,21 +911,6 @@ func RedactSecretsFromString(stringToSanitize string, replacements map[string]st
 	return stringToSanitize
 }
 
-// GetVerifiedBlockFsType retrieves and verifies the filesystem type for a BlockOnFile protocol
-func GetVerifiedBlockFsType(filesystemType string) (string, error) {
-	fsTypeSplit := strings.Split(filesystemType, "/")
-
-	if len(fsTypeSplit) != 2 {
-		return "", fmt.Errorf("unable to get filesystem type from '%v'", filesystemType)
-	}
-
-	if fsTypeSplit[0] != "nfs" {
-		return "", fmt.Errorf("unrecognized fileSystemType option: %s", filesystemType)
-	}
-
-	return VerifyFilesystemSupport(fsTypeSplit[1])
-}
-
 // VerifyFilesystemSupport checks for a supported file system type
 func VerifyFilesystemSupport(fs string) (string, error) {
 	fstype := strings.ToLower(fs)

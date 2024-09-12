@@ -172,7 +172,6 @@ func TestGetStorageDriver(t *testing.T) {
 		{"ontap-san-economy", "", true},
 		{"solidfire-san", "", true},
 		{"azure-netapp-files", "", true},
-		{"azure-netapp-files-subvolume", "", true},
 		{"gcp-cvs", "", true},
 		{"unknown", "", false},
 	}

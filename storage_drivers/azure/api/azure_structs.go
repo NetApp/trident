@@ -131,7 +131,6 @@ type FileSystem struct {
 	SubnetID           string
 	UnixPermissions    string
 	MountTargets       []MountTarget
-	SubvolumesEnabled  bool
 	NetworkFeatures    string
 	KerberosEnabled    bool
 	KeyVaultEndpointID string
@@ -203,27 +202,4 @@ type Snapshot struct {
 	Created           time.Time
 	SnapshotID        string
 	ProvisioningState string
-}
-
-// Subvolume records details of a discovered Azure Subvolume.
-type Subvolume struct {
-	ID                string
-	ResourceGroup     string
-	NetAppAccount     string
-	CapacityPool      string
-	Volume            string
-	Name              string
-	FullName          string
-	Type              string
-	ProvisioningState string
-	Size              int64
-	Created           time.Time
-}
-
-// SubvolumeCreateRequest embodies all the details of a subvolume to be created.
-type SubvolumeCreateRequest struct {
-	CreationToken string
-	Volume        string
-	Size          int64
-	Parent        string
 }

@@ -52,11 +52,6 @@ func TestGetDriverConfigByName(t *testing.T) {
 			errorExpected:        false,
 		},
 		{
-			driverName:           config.AzureNASBlockStorageDriverName,
-			expectedDriverConfig: &AzureNASStorageDriverConfig{},
-			errorExpected:        false,
-		},
-		{
 			driverName:           config.GCPNFSStorageDriverName,
 			expectedDriverConfig: &GCPNFSStorageDriverConfig{},
 			errorExpected:        false,

@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"reflect"
 	"sort"
@@ -3608,22 +3607,6 @@ func (o *TridentOrchestrator) AttachVolume(
 
 	if publishInfo.FilesystemType == "nfs" {
 		return utils.AttachNFSVolume(ctx, volumeName, mountpoint, publishInfo)
-	} else if strings.Contains(publishInfo.FilesystemType, "nfs/") {
-		// Determine where to mount the NFS share containing publishInfo.SubvolumeName
-		mountpointDir := path.Dir(mountpoint)
-		publishInfo.NFSMountpoint = path.Join(mountpointDir, publishInfo.NfsPath)
-
-		// TODO: Check if Docker can do raw block volumes, if not, then remove this part
-		isRawBlock := publishInfo.FilesystemType == "nfs/"+config.FsRaw
-		if isRawBlock {
-			publishInfo.SubvolumeMountOptions = utils.AppendToStringList(publishInfo.SubvolumeMountOptions, "bind", ",")
-		}
-
-		if loopDeviceName, _, err := utils.AttachBlockOnFileVolume(ctx, "", publishInfo); err != nil {
-			return err
-		} else {
-			return utils.MountDevice(ctx, loopDeviceName, mountpoint, publishInfo.SubvolumeMountOptions, isRawBlock)
-		}
 	} else {
 		var err error
 		if publishInfo.SANType == sa.NVMe {
@@ -4800,9 +4783,7 @@ func (o *TridentOrchestrator) resizeVolumeCleanup(
 
 // getProtocol returns the appropriate protocol based on a specified volume mode, access mode and protocol, or
 // an error if the two settings are incompatible.
-// NOTE: 1. DO NOT ALLOW ROX and RWX for block on file
-// 2. 'BlockOnFile' protocol set via the PVC annotation with multi-node access mode
-// 3. We do not support raw block volumes with block on file or NFS protocol.
+// NOTE: We do not support raw block volumes with NFS protocol.
 func (o *TridentOrchestrator) getProtocol(
 	ctx context.Context, volumeMode config.VolumeMode, accessMode config.AccessMode, protocol config.Protocol,
 ) (config.Protocol, error) {
@@ -4837,52 +4818,42 @@ func (o *TridentOrchestrator) getProtocol(
 		{config.Filesystem, config.ModeAny, config.ProtocolAny}: {config.ProtocolAny, nil},
 		{config.Filesystem, config.ModeAny, config.File}:        {config.File, nil},
 		{config.Filesystem, config.ModeAny, config.Block}:       {config.Block, nil},
-		{config.Filesystem, config.ModeAny, config.BlockOnFile}: {config.BlockOnFile, nil},
 
 		{config.Filesystem, config.ReadWriteOnce, config.ProtocolAny}: {config.ProtocolAny, nil},
 		{config.Filesystem, config.ReadWriteOnce, config.File}:        {config.File, nil},
 		{config.Filesystem, config.ReadWriteOnce, config.Block}:       {config.Block, nil},
-		{config.Filesystem, config.ReadWriteOnce, config.BlockOnFile}: {config.BlockOnFile, nil},
 
 		{config.Filesystem, config.ReadWriteOncePod, config.ProtocolAny}: {config.ProtocolAny, nil},
 		{config.Filesystem, config.ReadWriteOncePod, config.File}:        {config.File, nil},
 		{config.Filesystem, config.ReadWriteOncePod, config.Block}:       {config.Block, nil},
-		{config.Filesystem, config.ReadWriteOncePod, config.BlockOnFile}: {config.BlockOnFile, nil},
 
 		{config.Filesystem, config.ReadOnlyMany, config.ProtocolAny}: {config.ProtocolAny, nil},
 		{config.Filesystem, config.ReadOnlyMany, config.File}:        {config.File, nil},
 		{config.Filesystem, config.ReadOnlyMany, config.Block}:       {config.Block, nil},
-		{config.Filesystem, config.ReadOnlyMany, config.BlockOnFile}: {config.ProtocolAny, err},
 
 		{config.Filesystem, config.ReadWriteMany, config.ProtocolAny}: {config.File, nil},
 		{config.Filesystem, config.ReadWriteMany, config.File}:        {config.File, nil},
 		{config.Filesystem, config.ReadWriteMany, config.Block}:       {config.ProtocolAny, err},
-		{config.Filesystem, config.ReadWriteMany, config.BlockOnFile}: {config.ProtocolAny, err},
 
 		{config.RawBlock, config.ModeAny, config.ProtocolAny}: {config.Block, nil},
 		{config.RawBlock, config.ModeAny, config.File}:        {config.ProtocolAny, err},
 		{config.RawBlock, config.ModeAny, config.Block}:       {config.Block, nil},
-		{config.RawBlock, config.ModeAny, config.BlockOnFile}: {config.ProtocolAny, err},
 
 		{config.RawBlock, config.ReadWriteOnce, config.ProtocolAny}: {config.Block, nil},
 		{config.RawBlock, config.ReadWriteOnce, config.File}:        {config.ProtocolAny, err},
 		{config.RawBlock, config.ReadWriteOnce, config.Block}:       {config.Block, nil},
-		{config.RawBlock, config.ReadWriteOnce, config.BlockOnFile}: {config.ProtocolAny, err},
 
 		{config.RawBlock, config.ReadWriteOncePod, config.ProtocolAny}: {config.Block, nil},
 		{config.RawBlock, config.ReadWriteOncePod, config.File}:        {config.ProtocolAny, err},
 		{config.RawBlock, config.ReadWriteOncePod, config.Block}:       {config.Block, nil},
-		{config.RawBlock, config.ReadWriteOncePod, config.BlockOnFile}: {config.ProtocolAny, err},
 
 		{config.RawBlock, config.ReadOnlyMany, config.ProtocolAny}: {config.Block, nil},
 		{config.RawBlock, config.ReadOnlyMany, config.File}:        {config.ProtocolAny, err},
 		{config.RawBlock, config.ReadOnlyMany, config.Block}:       {config.Block, nil},
-		{config.RawBlock, config.ReadOnlyMany, config.BlockOnFile}: {config.ProtocolAny, err},
 
 		{config.RawBlock, config.ReadWriteMany, config.ProtocolAny}: {config.Block, nil},
 		{config.RawBlock, config.ReadWriteMany, config.File}:        {config.ProtocolAny, err},
 		{config.RawBlock, config.ReadWriteMany, config.Block}:       {config.Block, nil},
-		{config.RawBlock, config.ReadWriteMany, config.BlockOnFile}: {config.ProtocolAny, err},
 	}
 
 	res, isValid := protocolTable[accessVariables{volumeMode, accessMode, protocol}]

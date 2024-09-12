@@ -306,7 +306,7 @@ func validateStorageClass(
 	}
 	remaining := make([]*tu.PoolMatch, len(expected))
 	copy(remaining, expected)
-	for _, protocol := range []config.Protocol{config.File, config.Block, config.BlockOnFile} {
+	for _, protocol := range []config.Protocol{config.File, config.Block} {
 		for _, pool := range sc.GetStoragePoolsForProtocol(ctx(), protocol, config.ReadWriteOnce) {
 			nameFound := false
 			for _, scName := range pool.StorageClasses() {
@@ -4120,22 +4120,18 @@ func TestGetProtocol(t *testing.T) {
 		{config.Filesystem, config.ModeAny, config.ProtocolAny, config.ProtocolAny},
 		{config.Filesystem, config.ModeAny, config.File, config.File},
 		{config.Filesystem, config.ModeAny, config.Block, config.Block},
-		{config.Filesystem, config.ModeAny, config.BlockOnFile, config.BlockOnFile},
 		{config.Filesystem, config.ReadWriteOnce, config.ProtocolAny, config.ProtocolAny},
 		{config.Filesystem, config.ReadWriteOnce, config.File, config.File},
 		{config.Filesystem, config.ReadWriteOnce, config.Block, config.Block},
-		{config.Filesystem, config.ReadWriteOnce, config.BlockOnFile, config.BlockOnFile},
 		{config.Filesystem, config.ReadWriteOncePod, config.ProtocolAny, config.ProtocolAny},
 		{config.Filesystem, config.ReadWriteOncePod, config.File, config.File},
 		{config.Filesystem, config.ReadWriteOncePod, config.Block, config.Block},
-		{config.Filesystem, config.ReadWriteOncePod, config.BlockOnFile, config.BlockOnFile},
 		{config.Filesystem, config.ReadOnlyMany, config.Block, config.Block},
 		{config.Filesystem, config.ReadOnlyMany, config.ProtocolAny, config.ProtocolAny},
 		{config.Filesystem, config.ReadOnlyMany, config.File, config.File},
 		{config.Filesystem, config.ReadWriteMany, config.ProtocolAny, config.File},
 		{config.Filesystem, config.ReadWriteMany, config.File, config.File},
 		// {config.Filesystem, config.ReadWriteMany, config.Block, config.ProtocolAny},
-		// {config.Filesystem, config.ReadWriteMany, config.BlockOnFile, config.ProtocolAny},
 		{config.RawBlock, config.ModeAny, config.ProtocolAny, config.Block},
 		// {config.RawBlock, config.ModeAny, config.File, config.ProtocolAny},
 		{config.RawBlock, config.ModeAny, config.Block, config.Block},
@@ -4153,21 +4149,13 @@ func TestGetProtocol(t *testing.T) {
 	}
 
 	accessModesNegativeTests := []accessVariables{
-		{config.Filesystem, config.ReadOnlyMany, config.BlockOnFile, config.ProtocolAny},
 		{config.Filesystem, config.ReadWriteMany, config.Block, config.ProtocolAny},
-		{config.Filesystem, config.ReadWriteMany, config.BlockOnFile, config.ProtocolAny},
 		{config.RawBlock, config.ModeAny, config.File, config.ProtocolAny},
-		{config.RawBlock, config.ModeAny, config.BlockOnFile, config.ProtocolAny},
 		{config.RawBlock, config.ReadWriteOnce, config.File, config.ProtocolAny},
-		{config.RawBlock, config.ReadWriteOnce, config.BlockOnFile, config.ProtocolAny},
 		{config.RawBlock, config.ReadWriteOncePod, config.File, config.ProtocolAny},
-		{config.RawBlock, config.ReadWriteOncePod, config.BlockOnFile, config.ProtocolAny},
 
 		{config.RawBlock, config.ReadOnlyMany, config.File, config.ProtocolAny},
 		{config.RawBlock, config.ReadWriteMany, config.File, config.ProtocolAny},
-
-		{config.RawBlock, config.ReadOnlyMany, config.BlockOnFile, config.ProtocolAny},
-		{config.RawBlock, config.ReadWriteMany, config.BlockOnFile, config.ProtocolAny},
 	}
 
 	for _, tc := range accessModesPositiveTests {
@@ -7515,9 +7503,9 @@ func TestListLogLayers(t *testing.T) {
 
 	layers, err := o.ListLogLayers(ctx())
 	expected := []string{
-		"all", "azure-netapp-files", "azure-netapp-files-subvolume", "core", "crd_frontend",
-		"csi_frontend", "docker_frontend", "fake", "gcp-cvs", "ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup",
-		"ontap-san", "ontap-san-economy", "persistent_store", "rest_frontend", "solidfire-san",
+		"all", "azure-netapp-files", "core", "crd_frontend", "csi_frontend", "docker_frontend", "fake", "gcp-cvs",
+		"ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup", "ontap-san", "ontap-san-economy", "persistent_store",
+		"rest_frontend", "solidfire-san",
 	}
 	assert.Equal(t, expected, layers)
 	assert.NoError(t, err)

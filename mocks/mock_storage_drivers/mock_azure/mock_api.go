@@ -109,22 +109,6 @@ func (mr *MockAzureMockRecorder) CreateSnapshot(arg0, arg1, arg2 interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSnapshot", reflect.TypeOf((*MockAzure)(nil).CreateSnapshot), arg0, arg1, arg2)
 }
 
-// CreateSubvolume mocks base method.
-func (m *MockAzure) CreateSubvolume(arg0 context.Context, arg1 *api.SubvolumeCreateRequest) (*api.Subvolume, api.PollerResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateSubvolume", arg0, arg1)
-	ret0, _ := ret[0].(*api.Subvolume)
-	ret1, _ := ret[1].(api.PollerResponse)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// CreateSubvolume indicates an expected call of CreateSubvolume.
-func (mr *MockAzureMockRecorder) CreateSubvolume(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSubvolume", reflect.TypeOf((*MockAzure)(nil).CreateSubvolume), arg0, arg1)
-}
-
 // CreateVolume mocks base method.
 func (m *MockAzure) CreateVolume(arg0 context.Context, arg1 *api.FilesystemCreateRequest) (*api.FileSystem, error) {
 	m.ctrl.T.Helper()
@@ -152,21 +136,6 @@ func (m *MockAzure) DeleteSnapshot(arg0 context.Context, arg1 *api.FileSystem, a
 func (mr *MockAzureMockRecorder) DeleteSnapshot(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSnapshot", reflect.TypeOf((*MockAzure)(nil).DeleteSnapshot), arg0, arg1, arg2)
-}
-
-// DeleteSubvolume mocks base method.
-func (m *MockAzure) DeleteSubvolume(arg0 context.Context, arg1 *api.Subvolume) (api.PollerResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSubvolume", arg0, arg1)
-	ret0, _ := ret[0].(api.PollerResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DeleteSubvolume indicates an expected call of DeleteSubvolume.
-func (mr *MockAzureMockRecorder) DeleteSubvolume(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSubvolume", reflect.TypeOf((*MockAzure)(nil).DeleteSubvolume), arg0, arg1)
 }
 
 // DeleteVolume mocks base method.
@@ -342,20 +311,6 @@ func (mr *MockAzureMockRecorder) RefreshAzureResources(arg0 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RefreshAzureResources", reflect.TypeOf((*MockAzure)(nil).RefreshAzureResources), arg0)
 }
 
-// ResizeSubvolume mocks base method.
-func (m *MockAzure) ResizeSubvolume(arg0 context.Context, arg1 *api.Subvolume, arg2 int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResizeSubvolume", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ResizeSubvolume indicates an expected call of ResizeSubvolume.
-func (mr *MockAzureMockRecorder) ResizeSubvolume(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResizeSubvolume", reflect.TypeOf((*MockAzure)(nil).ResizeSubvolume), arg0, arg1, arg2)
-}
-
 // ResizeVolume mocks base method.
 func (m *MockAzure) ResizeVolume(arg0 context.Context, arg1 *api.FileSystem, arg2 int64) error {
 	m.ctrl.T.Helper()
@@ -426,144 +381,6 @@ func (m *MockAzure) SubnetsForStoragePool(arg0 context.Context, arg1 storage.Poo
 func (mr *MockAzureMockRecorder) SubnetsForStoragePool(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubnetsForStoragePool", reflect.TypeOf((*MockAzure)(nil).SubnetsForStoragePool), arg0, arg1)
-}
-
-// Subvolume mocks base method.
-func (m *MockAzure) Subvolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 bool) (*api.Subvolume, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Subvolume", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*api.Subvolume)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Subvolume indicates an expected call of Subvolume.
-func (mr *MockAzureMockRecorder) Subvolume(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subvolume", reflect.TypeOf((*MockAzure)(nil).Subvolume), arg0, arg1, arg2)
-}
-
-// SubvolumeByCreationToken mocks base method.
-func (m *MockAzure) SubvolumeByCreationToken(arg0 context.Context, arg1 string, arg2 []string, arg3 bool) (*api.Subvolume, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SubvolumeByCreationToken", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(*api.Subvolume)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SubvolumeByCreationToken indicates an expected call of SubvolumeByCreationToken.
-func (mr *MockAzureMockRecorder) SubvolumeByCreationToken(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubvolumeByCreationToken", reflect.TypeOf((*MockAzure)(nil).SubvolumeByCreationToken), arg0, arg1, arg2, arg3)
-}
-
-// SubvolumeByID mocks base method.
-func (m *MockAzure) SubvolumeByID(arg0 context.Context, arg1 string, arg2 bool) (*api.Subvolume, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SubvolumeByID", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*api.Subvolume)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SubvolumeByID indicates an expected call of SubvolumeByID.
-func (mr *MockAzureMockRecorder) SubvolumeByID(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubvolumeByID", reflect.TypeOf((*MockAzure)(nil).SubvolumeByID), arg0, arg1, arg2)
-}
-
-// SubvolumeExists mocks base method.
-func (m *MockAzure) SubvolumeExists(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 []string) (bool, *api.Subvolume, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SubvolumeExists", arg0, arg1, arg2)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(*api.Subvolume)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// SubvolumeExists indicates an expected call of SubvolumeExists.
-func (mr *MockAzureMockRecorder) SubvolumeExists(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubvolumeExists", reflect.TypeOf((*MockAzure)(nil).SubvolumeExists), arg0, arg1, arg2)
-}
-
-// SubvolumeExistsByCreationToken mocks base method.
-func (m *MockAzure) SubvolumeExistsByCreationToken(arg0 context.Context, arg1 string, arg2 []string) (bool, *api.Subvolume, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SubvolumeExistsByCreationToken", arg0, arg1, arg2)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(*api.Subvolume)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// SubvolumeExistsByCreationToken indicates an expected call of SubvolumeExistsByCreationToken.
-func (mr *MockAzureMockRecorder) SubvolumeExistsByCreationToken(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubvolumeExistsByCreationToken", reflect.TypeOf((*MockAzure)(nil).SubvolumeExistsByCreationToken), arg0, arg1, arg2)
-}
-
-// SubvolumeExistsByID mocks base method.
-func (m *MockAzure) SubvolumeExistsByID(arg0 context.Context, arg1 string) (bool, *api.Subvolume, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SubvolumeExistsByID", arg0, arg1)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(*api.Subvolume)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// SubvolumeExistsByID indicates an expected call of SubvolumeExistsByID.
-func (mr *MockAzureMockRecorder) SubvolumeExistsByID(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubvolumeExistsByID", reflect.TypeOf((*MockAzure)(nil).SubvolumeExistsByID), arg0, arg1)
-}
-
-// SubvolumeParentVolume mocks base method.
-func (m *MockAzure) SubvolumeParentVolume(arg0 context.Context, arg1 *storage.VolumeConfig) (*api.FileSystem, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SubvolumeParentVolume", arg0, arg1)
-	ret0, _ := ret[0].(*api.FileSystem)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SubvolumeParentVolume indicates an expected call of SubvolumeParentVolume.
-func (mr *MockAzureMockRecorder) SubvolumeParentVolume(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubvolumeParentVolume", reflect.TypeOf((*MockAzure)(nil).SubvolumeParentVolume), arg0, arg1)
-}
-
-// Subvolumes mocks base method.
-func (m *MockAzure) Subvolumes(arg0 context.Context, arg1 []string) (*[]*api.Subvolume, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Subvolumes", arg0, arg1)
-	ret0, _ := ret[0].(*[]*api.Subvolume)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Subvolumes indicates an expected call of Subvolumes.
-func (mr *MockAzureMockRecorder) Subvolumes(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subvolumes", reflect.TypeOf((*MockAzure)(nil).Subvolumes), arg0, arg1)
-}
-
-// ValidateFilePoolVolumes mocks base method.
-func (m *MockAzure) ValidateFilePoolVolumes(arg0 context.Context, arg1 []string) ([]*api.FileSystem, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ValidateFilePoolVolumes", arg0, arg1)
-	ret0, _ := ret[0].([]*api.FileSystem)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ValidateFilePoolVolumes indicates an expected call of ValidateFilePoolVolumes.
-func (mr *MockAzureMockRecorder) ValidateFilePoolVolumes(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateFilePoolVolumes", reflect.TypeOf((*MockAzure)(nil).ValidateFilePoolVolumes), arg0, arg1)
 }
 
 // Volume mocks base method.
@@ -686,21 +503,6 @@ func (m *MockAzure) WaitForSnapshotState(arg0 context.Context, arg1 *api.Snapsho
 func (mr *MockAzureMockRecorder) WaitForSnapshotState(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForSnapshotState", reflect.TypeOf((*MockAzure)(nil).WaitForSnapshotState), arg0, arg1, arg2, arg3, arg4, arg5)
-}
-
-// WaitForSubvolumeState mocks base method.
-func (m *MockAzure) WaitForSubvolumeState(arg0 context.Context, arg1 *api.Subvolume, arg2 string, arg3 []string, arg4 time.Duration) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WaitForSubvolumeState", arg0, arg1, arg2, arg3, arg4)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// WaitForSubvolumeState indicates an expected call of WaitForSubvolumeState.
-func (mr *MockAzureMockRecorder) WaitForSubvolumeState(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForSubvolumeState", reflect.TypeOf((*MockAzure)(nil).WaitForSubvolumeState), arg0, arg1, arg2, arg3, arg4)
 }
 
 // WaitForVolumeState mocks base method.

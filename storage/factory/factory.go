@@ -141,8 +141,6 @@ func GetStorageDriver(driverName, driverProtocol string) (storage.Driver, error)
 		storageDriver = &solidfire.SANStorageDriver{}
 	case config.AzureNASStorageDriverName:
 		storageDriver = &azure.NASStorageDriver{}
-	case config.AzureNASBlockStorageDriverName:
-		storageDriver = &azure.NASBlockStorageDriver{}
 	case config.GCPNFSStorageDriverName:
 		storageDriver = &gcp.NFSStorageDriver{}
 	case config.GCNVNASStorageDriverName:

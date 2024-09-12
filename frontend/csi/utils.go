@@ -163,30 +163,25 @@ func containsEncryptedCHAP(input map[string]string) bool {
 }
 
 // getVolumeProtocolFromPublishInfo examines the publish info read from the staging target path and determines
-// the protocol type from the volume (File or Block or Block-on-File).
+// the protocol type from the volume (File or Block).
 func getVolumeProtocolFromPublishInfo(publishInfo *models.VolumePublishInfo) (config.Protocol, error) {
 	nfsIP := publishInfo.VolumeAccessInfo.NfsServerIP
 	iqn := publishInfo.VolumeAccessInfo.IscsiTargetIQN
-	subvolName := publishInfo.VolumeAccessInfo.SubvolumeName
 	smbPath := publishInfo.SMBPath
 	nqn := publishInfo.VolumeAccessInfo.NVMeSubsystemNQN
 
 	nfsSet := nfsIP != ""
 	iqnSet := iqn != ""
-	subvolSet := subvolName != ""
 	smbSet := smbPath != ""
 	nqnSet := nqn != ""
 
 	isSmb := smbSet && !nfsSet && !iqnSet
 	isNfs := nfsSet && !iqnSet && !smbSet
-	isBof := isNfs && subvolSet
 	isIscsi := iqnSet && !nfsSet && !smbSet
 	isNVMe := nqnSet && !nfsSet && !smbSet && !iqnSet
 
-	if isSmb || (isNfs && !isBof) {
+	if isSmb || isNfs {
 		return config.File, nil
-	} else if isBof {
-		return config.BlockOnFile, nil
 	} else if isIscsi {
 		return config.Block, nil
 	} else if isNVMe {
@@ -195,7 +190,6 @@ func getVolumeProtocolFromPublishInfo(publishInfo *models.VolumePublishInfo) (co
 
 	fields := LogFields{
 		"SMBPath":          smbPath,
-		"SubvolumeName":    subvolName,
 		"IscsiTargetIQN":   iqn,
 		"NfsServerIP":      nfsIP,
 		"NVMeSubsystemNQN": nqn,
@@ -229,12 +223,6 @@ func performProtocolSpecificReconciliation(ctx context.Context, trackingInfo *mo
 		atLeastOneConditionMet, err = iscsiUtils.ReconcileISCSIVolumeInfo(ctx, trackingInfo)
 		if err != nil {
 			return false, fmt.Errorf("unable to reconcile ISCSI volume info: %v", err)
-		}
-		return atLeastOneConditionMet, nil
-	case config.BlockOnFile:
-		atLeastOneConditionMet, err = bofUtils.ReconcileBlockOnFileVolumeInfo(ctx, trackingInfo)
-		if err != nil {
-			return false, fmt.Errorf("unable to reconcile Block-on-file volume info: %v", err)
 		}
 		return atLeastOneConditionMet, nil
 	}

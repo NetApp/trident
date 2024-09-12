@@ -35,20 +35,9 @@ func TestGetVolumeProtocolFromPublishInfo(t *testing.T) {
 	assert.Equal(t, config.Protocol("block"), proto)
 	assert.NoError(t, err)
 
-	// Block on file
-	trackInfo = &models.VolumeTrackingInfo{}
-	testIP := "1.1.1.1"
-	subVolName := "foo"
-	trackInfo.VolumePublishInfo.NfsServerIP = testIP
-	trackInfo.VolumePublishInfo.SubvolumeName = subVolName
-
-	proto, err = getVolumeProtocolFromPublishInfo(&trackInfo.VolumePublishInfo)
-	assert.Equal(t, config.Protocol("blockOnFile"), proto)
-	assert.NoError(t, err)
-
 	// NFS
 	trackInfo = &models.VolumeTrackingInfo{}
-	testIP = "1.1.1.1"
+	testIP := "1.1.1.1"
 	trackInfo.VolumePublishInfo.NfsServerIP = testIP
 
 	proto, err = getVolumeProtocolFromPublishInfo(&trackInfo.VolumePublishInfo)
@@ -104,45 +93,13 @@ func TestPerformProtocolSpecificReconciliation_ISCSI(t *testing.T) {
 }
 
 func TestPerformProtocolSpecificReconciliation_NFS(t *testing.T) {
-	defer func() { iscsiUtils = utils.IscsiUtils; bofUtils = utils.BofUtils }()
+	defer func() { iscsiUtils = utils.IscsiUtils }()
 	trackInfo := &models.VolumeTrackingInfo{}
 	testIP := "1.1.1.1"
 	trackInfo.VolumePublishInfo.NfsServerIP = testIP
 	res, err := performProtocolSpecificReconciliation(context.Background(), trackInfo)
 	assert.False(t, res)
 	assert.NoError(t, err)
-}
-
-func TestPerformProtocolSpecificReconciliation_BOF(t *testing.T) {
-	defer func() { iscsiUtils = utils.IscsiUtils; bofUtils = utils.BofUtils }()
-	mockCtrl := gomock.NewController(t)
-	bofUtils = mock_utils.NewMockBlockOnFileReconcileUtils(mockCtrl)
-	mockBofUtils, ok := bofUtils.(*mock_utils.MockBlockOnFileReconcileUtils)
-	if !ok {
-		t.Fatal("can't cast bofUtils to mockBofUtils")
-	}
-
-	// Block on file
-	trackInfo := &models.VolumeTrackingInfo{}
-	testIP := "1.1.1.1"
-	subVolName := "foo"
-	trackInfo.VolumePublishInfo.NfsServerIP = testIP
-	trackInfo.VolumePublishInfo.SubvolumeName = subVolName
-
-	mockBofUtils.EXPECT().ReconcileBlockOnFileVolumeInfo(context.Background(), trackInfo).Return(true, nil)
-	res, err := performProtocolSpecificReconciliation(context.Background(), trackInfo)
-	assert.True(t, res)
-	assert.NoError(t, err)
-
-	mockBofUtils.EXPECT().ReconcileBlockOnFileVolumeInfo(context.Background(), trackInfo).Return(false, nil)
-	res, err = performProtocolSpecificReconciliation(context.Background(), trackInfo)
-	assert.False(t, res)
-	assert.NoError(t, err)
-
-	mockBofUtils.EXPECT().ReconcileBlockOnFileVolumeInfo(context.Background(), trackInfo).Return(true, errors.New("foo"))
-	res, err = performProtocolSpecificReconciliation(context.Background(), trackInfo)
-	assert.False(t, res)
-	assert.Error(t, err)
 }
 
 func TestEnsureLUKSVolumePassphrase(t *testing.T) {

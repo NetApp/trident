@@ -573,8 +573,8 @@ func TestUpgradeVolumeTrackingFile_MissingDevicePathAfterUpgrade(t *testing.T) {
 
 func TestValidateTrackingFile(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
+	mockiSCSIUtils := mock_utils.NewMockIscsiReconcileUtils(mockCtrl)
 	jsonReaderWriter := mock_models.NewMockJSONReaderWriter(mockCtrl)
-	mockBofUtils := mock_utils.NewMockBlockOnFileReconcileUtils(mockCtrl)
 
 	defer func() { osFs = afero.NewOsFs() }()
 	osFs = afero.NewMemMapFs()
@@ -586,9 +586,9 @@ func TestValidateTrackingFile(t *testing.T) {
 		return "", nil
 	}
 
-	oldBofUtils := bofUtils
-	defer func() { bofUtils = oldBofUtils }()
-	bofUtils = mockBofUtils
+	oldiSCSIUtils := iscsiUtils
+	defer func() { iscsiUtils = oldiSCSIUtils }()
+	iscsiUtils = mockiSCSIUtils
 
 	stagePath := "/foo"
 	trackPath := "."
@@ -599,15 +599,14 @@ func TestValidateTrackingFile(t *testing.T) {
 	trackInfo := &models.VolumeTrackingInfo{}
 	trackInfo.StagingTargetPath = stagePath
 	trackInfo.FilesystemType = fsType
-	// Make protocol reconcile choose BOF.
-	trackInfo.NfsServerIP = "1.1.1.1"
-	trackInfo.SubvolumeName = "bar"
+	trackInfo.IscsiTargetIQN = "iqn"
+
 	emptyTrackInfo := &models.VolumeTrackingInfo{}
 
 	// If staging path doesn't exist, check protocol specific reconciliation steps.
 	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), emptyTrackInfo, fName, gomock.Any()).
 		SetArg(1, *trackInfo).Return(nil)
-	mockBofUtils.EXPECT().ReconcileBlockOnFileVolumeInfo(gomock.Any(), trackInfo).Return(true, nil)
+	mockiSCSIUtils.EXPECT().ReconcileISCSIVolumeInfo(gomock.Any(), trackInfo).Return(true, nil)
 	needsDelete, err := v.ValidateTrackingFile(context.Background(), volName)
 	assert.False(t, needsDelete, "when protocol specific reconciliation returns true, we expect false")
 	assert.NoError(t, err, "expected no error during validation")
@@ -615,7 +614,7 @@ func TestValidateTrackingFile(t *testing.T) {
 	// If staging path doesn't exist, check protocol specific reconciliation steps (part 2).
 	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), emptyTrackInfo, fName, gomock.Any()).
 		SetArg(1, *trackInfo).Return(nil)
-	mockBofUtils.EXPECT().ReconcileBlockOnFileVolumeInfo(gomock.Any(), trackInfo).Return(false, nil)
+	mockiSCSIUtils.EXPECT().ReconcileISCSIVolumeInfo(gomock.Any(), trackInfo).Return(false, nil)
 	needsDelete, err = v.ValidateTrackingFile(context.Background(), volName)
 	assert.True(t, needsDelete, "when protocol specific reconciliation returns false, we expect true")
 	assert.NoError(t, err, "expected no error during validation")
@@ -623,7 +622,7 @@ func TestValidateTrackingFile(t *testing.T) {
 	// If staging path doesn't exist, check protocol specific reconciliation steps (part 3).
 	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), emptyTrackInfo, fName, gomock.Any()).
 		SetArg(1, *trackInfo).Return(nil)
-	mockBofUtils.EXPECT().ReconcileBlockOnFileVolumeInfo(gomock.Any(), trackInfo).Return(false, errors.New("foo"))
+	mockiSCSIUtils.EXPECT().ReconcileISCSIVolumeInfo(gomock.Any(), trackInfo).Return(false, errors.New("foo"))
 	needsDelete, err = v.ValidateTrackingFile(context.Background(), volName)
 	assert.False(t, needsDelete, "when protocol specific reconciliation returns an error, we expect false")
 	assert.Error(t, err, "we expect a protocol specific reconciliation error to cause an error")
@@ -640,7 +639,6 @@ func TestValidateTrackingFile(t *testing.T) {
 
 	// Make the protocol indeterminate.
 	trackInfo.NfsServerIP = ""
-	trackInfo.SubvolumeName = ""
 	trackInfo.IscsiTargetIQN = ""
 	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), emptyTrackInfo, fName, gomock.Any()).
 		SetArg(1, *trackInfo).Return(nil)
@@ -648,12 +646,11 @@ func TestValidateTrackingFile(t *testing.T) {
 	assert.True(t, needsDelete, "expected to get true if we can't determine the protocol of the volume")
 	assert.NoError(t, err, "expected no error if we can't determine the protocol of the volume")
 
-	// If staging path does exist, and the file is JSON, return false, because we know something related to the volum
+	// If staging path does exist, and the file is JSON, return false, because we know something related to the volume
 	// still exists.
 
-	// Make protocol reconcile choose BOF.
-	trackInfo.NfsServerIP = "1.1.1.1"
-	trackInfo.SubvolumeName = "bar"
+	// Make protocol reconcile choose iSCSI.
+	trackInfo.IscsiTargetIQN = "iqn"
 	err = osFs.Mkdir(stagePath, 0o777)
 	assert.NoError(t, err, "expected the test directory to be created without error")
 

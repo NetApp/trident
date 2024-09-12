@@ -385,7 +385,7 @@ func TestSpecificBackends(t *testing.T) {
 		for _, backend := range backends {
 			test.sc.CheckAndAddBackend(ctx(), backend)
 		}
-		for _, protocol := range []config.Protocol{config.File, config.Block, config.BlockOnFile} {
+		for _, protocol := range []config.Protocol{config.File, config.Block} {
 			for _, vc := range test.sc.GetStoragePoolsForProtocol(ctx(), protocol, config.ReadWriteOnce) {
 				nameFound := false
 				for _, scName := range vc.StorageClasses() {

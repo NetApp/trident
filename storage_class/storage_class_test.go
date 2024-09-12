@@ -182,7 +182,7 @@ func TestGetStoragePoolsForProtocolByBackend(t *testing.T) {
 
 	backend2 := mockstorage.NewMockBackend(mockCtrl)
 	fakePool2.EXPECT().Backend().Return(backend2)
-	backend2.EXPECT().GetProtocol(ctx).Return(config.BlockOnFile).AnyTimes()
+	backend2.EXPECT().GetProtocol(ctx).Return(config.Block).AnyTimes()
 
 	// Check for valid case
 	pools := sc.GetStoragePoolsForProtocolByBackend(ctx, config.File, requisiteTopologies, preferredTopologies,
@@ -1287,7 +1287,7 @@ func TestGetStoragePoolsForProtocolNegative(t *testing.T) {
 	fakePool1 := mockstorage.NewMockPool(mockCtrl)
 	backend1 := mockstorage.NewMockBackend(mockCtrl)
 	fakePool1.EXPECT().Backend().Return(backend1).Times(1)
-	backend1.EXPECT().GetProtocol(ctx).Return(config.BlockOnFile).Times(1)
+	backend1.EXPECT().GetProtocol(ctx).Return(config.Block).Times(1)
 
 	sc := New(&Config{
 		Name: "sc",
@@ -1296,7 +1296,7 @@ func TestGetStoragePoolsForProtocolNegative(t *testing.T) {
 		},
 	})
 	sc.pools = []storage.Pool{fakePool1}
-	storagePool := sc.GetStoragePoolsForProtocol(ctx, config.ProtocolAny, config.ReadOnlyMany)
+	storagePool := sc.GetStoragePoolsForProtocol(ctx, config.File, config.ReadWriteMany)
 
 	assert.Empty(t, storagePool, "unable to get storage pool")
 }

@@ -48,8 +48,6 @@ func GetDriverConfigByName(driverName string) (DriverConfig, error) {
 	case trident.SolidfireSANStorageDriverName:
 		storageDriverConfig = &SolidfireStorageDriverConfig{}
 	case trident.AzureNASStorageDriverName:
-		fallthrough
-	case trident.AzureNASBlockStorageDriverName:
 		storageDriverConfig = &AzureNASStorageDriverConfig{}
 	case trident.GCPNFSStorageDriverName:
 		storageDriverConfig = &GCPNFSStorageDriverConfig{}
@@ -169,7 +167,7 @@ type AWSConfig struct {
 // within a backend.
 type StorageBackendPool interface {
 	OntapFlexGroupStorageBackendPool | OntapStorageBackendPool | OntapEconomyStorageBackendPool |
-		ANFStorageBackendPool | ANFSubvolumeStorageBackendPool | SolidfireStorageBackendPool |
+		ANFStorageBackendPool | SolidfireStorageBackendPool |
 		GCPNFSStorageBackendPool | GCNVNASStorageBackendPool
 }
 
@@ -511,14 +509,6 @@ type ANFStorageBackendPool struct {
 	NetappAccount  string `json:"netappAccount"`
 	Location       string `json:"location"`
 	CapacityPool   string `json:"capacityPool"`
-}
-
-// ANFSubvolumeStorageBackendPool is a non-overlapping section of an Azure file backend that may be used for
-// provisioning storage.
-type ANFSubvolumeStorageBackendPool struct {
-	SubscriptionID string `json:"subscriptionID"`
-	Location       string `json:"location"`
-	FilePoolVolume string `json:"filePoolVolume"`
 }
 
 type AzureNASStorageDriverConfigDefaults struct {

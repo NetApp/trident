@@ -1078,36 +1078,6 @@ func TestRedactSecretsFromString(t *testing.T) {
 	}
 }
 
-func TestGetVerifiedBlockFsType(t *testing.T) {
-	Log().Debug("Running TestGetVerifiedBlockFsType...")
-
-	tests := []struct {
-		blockFsType string
-		fsType      string
-		errNotNil   bool
-	}{
-		// Positive tests
-		{"nfs/ext3", "ext3", false},
-		{"nfs/ext4", "ext4", false},
-		{"nfs/xfs", "xfs", false},
-		{"nfs/raw", "raw", false},
-
-		// Negative tests
-		{"abc/ext3", "", true},
-		{"ext4/xfs", "", true},
-		{"nfs/ext3/ext4", "", true},
-		{"ext3", "", true},
-		{"nfs/ext99", "", true},
-	}
-
-	for _, test := range tests {
-		fsType, err := GetVerifiedBlockFsType(test.blockFsType)
-
-		assert.Equal(t, test.fsType, fsType)
-		assert.Equal(t, test.errNotNil, err != nil)
-	}
-}
-
 func TestVerifyFilesystemSupport(t *testing.T) {
 	Log().Debug("Running TestVerifyFilesystemSupport...")
 

@@ -56,10 +56,9 @@ func TestVolumeState(t *testing.T) {
 
 func TestVolumeConfig_ConstructClone(t *testing.T) {
 	tests := map[string]*VolumeConfig{
-		"IscsiAccessInfoIsCloned":    constructIscsiVolumeConfig(),
-		"NfsAccessInfoIsCloned":      constructNFSVolumeConfig(),
-		"SMBAccessInfoIsCloned":      constructSMBVolumeConfig(),
-		"NfsBlockAccessInfoIsCloned": constructNfsBlockVolumeConfig(),
+		"IscsiAccessInfoIsCloned": constructIscsiVolumeConfig(),
+		"NfsAccessInfoIsCloned":   constructNFSVolumeConfig(),
+		"SMBAccessInfoIsCloned":   constructSMBVolumeConfig(),
 	}
 
 	for name, test := range tests {
@@ -145,28 +144,6 @@ func constructSMBVolumeConfig() *VolumeConfig {
 			SMBAccessInfo: models.SMBAccessInfo{
 				SMBServer: "server",
 				SMBPath:   "/smbshare",
-			},
-			PublishEnforcement: false,
-			ReadOnly:           false,
-			AccessMode:         1,
-		},
-		FileSystem: "ext4",
-	}
-}
-
-func constructNfsBlockVolumeConfig() *VolumeConfig {
-	return &VolumeConfig{
-		Version:      "1",
-		Name:         "foo",
-		InternalName: "internal_foo",
-		Size:         "1Gi",
-		StorageClass: "nas-sc",
-		AccessMode:   "1",
-		AccessInfo: models.VolumeAccessInfo{
-			NfsBlockAccessInfo: models.NfsBlockAccessInfo{
-				SubvolumeName:         "bar",
-				SubvolumeMountOptions: "mountoptions",
-				NFSMountpoint:         "/share",
 			},
 			PublishEnforcement: false,
 			ReadOnly:           false,

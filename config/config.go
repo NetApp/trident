@@ -80,7 +80,6 @@ const (
 	a Trident volume with  'file' protocol is most likely NFS, while a 'block' protocol volume is probably iSCSI. */
 	File        Protocol = "file"
 	Block       Protocol = "block"
-	BlockOnFile Protocol = "blockOnFile"
 	ProtocolAny Protocol = ""
 
 	/* Access mode constants */
@@ -103,12 +102,6 @@ const (
 	FsExt4 = "ext4"
 	FsRaw  = "raw"
 
-	// Block-On-File Filesystem types
-	FsNFSXfs  = "nfs/xfs"
-	FsNFSExt3 = "nfs/ext3"
-	FsNFSExt4 = "nfs/ext4"
-	FsNFSRaw  = "nfs/raw"
-
 	/* Volume type constants */
 	OntapNFS          VolumeType = "ONTAP_NFS"
 	OntapISCSI        VolumeType = "ONTAP_iSCSI"
@@ -129,7 +122,6 @@ const (
 	OntapSANEconomyStorageDriverName   = "ontap-san-economy"
 	SolidfireSANStorageDriverName      = "solidfire-san"
 	AzureNASStorageDriverName          = "azure-netapp-files"
-	AzureNASBlockStorageDriverName     = "azure-netapp-files-subvolume"
 	GCPNFSStorageDriverName            = "gcp-cvs"
 	GCNVNASStorageDriverName           = "google-cloud-netapp-volumes"
 	FakeStorageDriverName              = "fake"
@@ -200,7 +192,6 @@ var (
 	ValidProtocols = map[Protocol]bool{
 		File:        true,
 		Block:       true,
-		BlockOnFile: true,
 		ProtocolAny: true,
 	}
 

@@ -19,7 +19,6 @@ const (
 	LogLayerMetricsFrontend         = LogLayer("metrics_frontend")
 	LogLayerPersistentStore         = LogLayer("persistent_store")
 	LogLayerANFNASDriver            = LogLayer(AzureNASStorageDriverName)
-	LogLayerANFSubvolumeDriver      = LogLayer(AzureNASBlockStorageDriverName)
 	LogLayerSolidfireDriver         = LogLayer(SolidfireSANStorageDriverName)
 	LogLayerGCPNASDriver            = LogLayer(GCPNFSStorageDriverName)
 	LogLayerGCNVNASDriver           = LogLayer(GCNVNASStorageDriverName)
@@ -42,7 +41,6 @@ var layers = []LogLayer{
 	LogLayerDockerFrontend,
 	LogLayerPersistentStore,
 	LogLayerANFNASDriver,
-	LogLayerANFSubvolumeDriver,
 	LogLayerSolidfireDriver,
 	LogLayerGCPNASDriver,
 	LogLayerOntapNASDriver,

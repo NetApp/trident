@@ -15,7 +15,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/cenkalti/backoff/v4"
 	"golang.org/x/net/context"
 	"golang.org/x/sys/unix"
 
@@ -391,39 +390,6 @@ func getDeviceFSType(ctx context.Context, device string) (string, error) {
 	}
 
 	return fsType, nil
-}
-
-// getDeviceFSTypeRetry returns the filesystem for the supplied device.
-// This function will be deleted when BOF is moved to centralized retry
-func getDeviceFSTypeRetry(ctx context.Context, device string) (string, error) {
-	Logc(ctx).WithField("device", device).Debug(">>>> devices.getDeviceFSTypeRetry")
-	defer Logc(ctx).Debug("<<<< devices.getDeviceFSTypeRetry")
-
-	maxDuration := multipathDeviceDiscoveryTimeoutSecs * time.Second
-
-	checkDeviceFSType := func() error {
-		_, err := getDeviceFSType(ctx, device)
-		return err
-	}
-
-	FSTypeNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithField("increment", duration).Debug("FS type not available yet, waiting.")
-	}
-
-	fsTypeBackoff := backoff.NewExponentialBackOff()
-	fsTypeBackoff.InitialInterval = 1 * time.Second
-	fsTypeBackoff.Multiplier = 1.414 // approx sqrt(2)
-	fsTypeBackoff.RandomizationFactor = 0.1
-	fsTypeBackoff.MaxElapsedTime = maxDuration
-
-	// Run the check using an exponential backoff
-	if err := backoff.RetryNotify(checkDeviceFSType, fsTypeBackoff, FSTypeNotify); err != nil {
-		return "", fmt.Errorf("could not determine FS type after %3.2f seconds", maxDuration.Seconds())
-	} else {
-		Logc(ctx).WithField("FS type", device).Debug("Able to determine FS type.")
-		fstype, err := getDeviceFSType(ctx, device)
-		return fstype, err
-	}
 }
 
 // RotatePassphrase changes the passphrase in passphrase slot 1, in place, to the specified passphrase.

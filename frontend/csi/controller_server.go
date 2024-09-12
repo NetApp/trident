@@ -378,12 +378,7 @@ func (p *Plugin) ControllerPublishVolume(
 	// VolumePublishInfo struct are completely discarded and replaced by the CSI-supplied values.
 	mount := req.VolumeCapability.GetMount()
 	if mount != nil && len(mount.MountFlags) > 0 {
-		if volume.Config.Protocol == tridentconfig.BlockOnFile {
-			mount.MountFlags = utils.RemoveStringFromSlice(mount.MountFlags, "ro")
-			volumePublishInfo.SubvolumeMountOptions = strings.Join(mount.MountFlags, ",")
-		} else {
-			volumePublishInfo.MountOptions = strings.Join(mount.MountFlags, ",")
-		}
+		volumePublishInfo.MountOptions = strings.Join(mount.MountFlags, ",")
 	}
 
 	// Build CSI controller publish info from volume publish info
@@ -436,13 +431,6 @@ func (p *Plugin) ControllerPublishVolume(
 				}
 			}
 		}
-	case tridentconfig.BlockOnFile:
-		publishInfo["subvolumeMountOptions"] = volumePublishInfo.SubvolumeMountOptions
-		publishInfo["nfsServerIp"] = volumePublishInfo.NfsServerIP
-		publishInfo["nfsPath"] = volumePublishInfo.NfsPath
-		publishInfo["nfsUniqueID"] = volumePublishInfo.NfsUniqueID
-		publishInfo["subvolumeName"] = volumePublishInfo.SubvolumeName
-		publishInfo["backendUUID"] = volumePublishInfo.BackendUUID
 	}
 
 	return &csi.ControllerPublishVolumeResponse{PublishContext: publishInfo}, nil
@@ -962,8 +950,7 @@ func (p *Plugin) ControllerExpandVolume(
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
-	nodeExpansionRequired := volume.Config.Protocol == tridentconfig.Block ||
-		volume.Config.Protocol == tridentconfig.BlockOnFile
+	nodeExpansionRequired := volume.Config.Protocol == tridentconfig.Block
 
 	// Return success if the volume is already at least as large as required
 	if volumeSize, err := strconv.ParseInt(volume.Config.Size, 10, 64); err != nil {

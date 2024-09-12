@@ -26,7 +26,6 @@ func TestIsValidProtocol(t *testing.T) {
 	validProtocols := []Protocol{
 		File,
 		Block,
-		BlockOnFile,
 		ProtocolAny,
 	}
 
@@ -49,10 +48,9 @@ func TestIsValidProtocol(t *testing.T) {
 func TestGetValidProtocolNames(t *testing.T) {
 	// will need updated if or when we support new protocols
 	expectedProtocols := map[string]bool{
-		"file":        true,
-		"block":       true,
-		"blockOnFile": true,
-		"":            true, // ProtocolAny
+		"file":  true,
+		"block": true,
+		"":      true, // ProtocolAny
 	}
 
 	for _, protocol := range GetValidProtocolNames() {

@@ -45,7 +45,6 @@ const (
 var (
 	topologyLabels = make(map[string]string)
 	iscsiUtils     = utils.IscsiUtils
-	bofUtils       = utils.BofUtils
 
 	publishedISCSISessions, currentISCSISessions models.ISCSISessions
 	publishedNVMeSessions, currentNVMeSessions   utils.NVMeSessions
@@ -92,8 +91,6 @@ func (p *Plugin) NodeStageVolume(
 		}
 	case string(tridentconfig.Block):
 		return p.nodeStageSANVolume(ctx, req)
-	case string(tridentconfig.BlockOnFile):
-		return p.nodeStageNFSBlockVolume(ctx, req)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "unknown protocol")
 	}
@@ -182,12 +179,6 @@ func (p *Plugin) nodeUnstageVolume(
 			return p.nodeUnstageNVMeVolume(ctx, req, publishInfo, force)
 		}
 		return p.nodeUnstageISCSIVolumeRetry(ctx, req, publishInfo, force)
-	case tridentconfig.BlockOnFile:
-		if force {
-			Logc(ctx).WithFields(fields).WithField("protocol", tridentconfig.BlockOnFile).
-				Warning("forced unstage not supported for this protocol")
-		}
-		return p.nodeUnstageNFSBlockVolume(ctx, req, publishInfo)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "unknown protocol")
 	}
@@ -229,8 +220,6 @@ func (p *Plugin) NodePublishVolume(
 			return p.nodePublishNVMeVolume(ctx, req)
 		}
 		return p.nodePublishISCSIVolume(ctx, req)
-	case string(tridentconfig.BlockOnFile):
-		return p.nodePublishNFSBlockVolume(ctx, req)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "unknown protocol")
 	}
@@ -484,12 +473,6 @@ func (p *Plugin) nodeExpandVolume(
 			err = nodePrepareISCSIVolumeForExpansion(ctx, publishInfo, requiredBytes)
 		}
 		mountOptions = publishInfo.MountOptions
-	case tridentconfig.BlockOnFile:
-		if fsType, err = utils.GetVerifiedBlockFsType(publishInfo.FilesystemType); err != nil {
-			break
-		}
-		err = nodePrepareBlockOnFileVolumeForExpansion(ctx, publishInfo, requiredBytes)
-		mountOptions = publishInfo.SubvolumeMountOptions
 	default:
 		return status.Error(codes.InvalidArgument, "unknown protocol")
 	}
@@ -571,44 +554,6 @@ func nodePrepareISCSIVolumeForExpansion(
 		err = fmt.Errorf("device %s to expand is not attached", publishInfo.DevicePath)
 		Logc(ctx).WithField("devicePath", publishInfo.DevicePath).WithError(err).Error(
 			"Unable to expand volume.")
-		return status.Error(codes.Internal, err.Error())
-	}
-	return err
-}
-
-// nodePrepareBlockOnFileVolumeForExpansion readies volume expansion for BlockOnFile volumes
-func nodePrepareBlockOnFileVolumeForExpansion(
-	ctx context.Context, publishInfo *models.VolumePublishInfo, requiredBytes int64,
-) error {
-	Logc(ctx).WithFields(LogFields{
-		"nfsUniqueID":   publishInfo.NfsUniqueID,
-		"nfsPath":       publishInfo.NfsPath,
-		"subvolumeName": publishInfo.SubvolumeName,
-		"devicePath":    publishInfo.DevicePath,
-	}).Trace("PublishInfo for device to expand.")
-
-	nfsMountpoint := publishInfo.NFSMountpoint
-	loopFile := path.Join(nfsMountpoint, publishInfo.SubvolumeName)
-
-	var err error = nil
-
-	loopDeviceAttached, err := utils.IsLoopDeviceAttachedToFile(ctx, publishInfo.DevicePath, loopFile)
-	if err != nil {
-		return fmt.Errorf("unable to identify if loop device '%s' is attached to file '%s': %v",
-			publishInfo.DevicePath, loopFile, err)
-	}
-
-	// Make sure device is ready.
-	if loopDeviceAttached {
-		if err = utils.ResizeLoopDevice(ctx, publishInfo.DevicePath, loopFile, requiredBytes); err != nil {
-			Logc(ctx).WithField("device", publishInfo.DevicePath).WithError(err).Error(
-				"Unable to resize loop device.")
-			err = status.Error(codes.Internal, err.Error())
-		}
-	} else {
-		Logc(ctx).WithField("devicePath", publishInfo.DevicePath).Error(
-			"Unable to expand volume as device is not attached.")
-		err = fmt.Errorf("device %s to expand is not attached", publishInfo.DevicePath)
 		return status.Error(codes.Internal, err.Error())
 	}
 	return err
@@ -1068,7 +1013,7 @@ func (p *Plugin) populatePublishedSessions(ctx context.Context) {
 		if err != nil || trackingInfo == nil {
 			Logc(ctx).WithFields(LogFields{
 				"volumeID": volumeID,
-				"error":    err.Error(),
+				"error":    err,
 				"isEmpty":  trackingInfo == nil,
 			}).Error("Volume tracking file info not found or is empty.")
 
@@ -1500,217 +1445,6 @@ func (p *Plugin) nodePublishISCSIVolume(
 	}
 
 	return &csi.NodePublishVolumeResponse{}, nil
-}
-
-func (p *Plugin) nodeStageNFSBlockVolume(
-	ctx context.Context, req *csi.NodeStageVolumeRequest,
-) (*csi.NodeStageVolumeResponse, error) {
-	// Get VolumeID and Staging Path.
-	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
-	if err != nil {
-		return nil, err
-	}
-
-	publishInfo := &models.VolumePublishInfo{
-		Localhost: true,
-	}
-
-	publishInfo.MountOptions = utils.SanitizeMountOptions(req.PublishContext["mountOptions"], []string{"ro"})
-	publishInfo.NfsServerIP = req.PublishContext["nfsServerIp"]
-	publishInfo.NfsPath = req.PublishContext["nfsPath"]
-	publishInfo.NfsUniqueID = req.PublishContext["nfsUniqueID"]
-	publishInfo.SubvolumeName = req.PublishContext["subvolumeName"]
-	publishInfo.FilesystemType = req.PublishContext["filesystemType"]
-	publishInfo.SubvolumeMountOptions = utils.SanitizeMountOptions(req.PublishContext["subvolumeMountOptions"],
-		[]string{"ro"})
-
-	// The NFS mount path should be same for all the Subvolumes belonging to the same NFS volumes
-	// thus use NFS volume's Unique ID. This also means the subvolumes from different Virtual Pools,
-	// different backends but from the same NFS volume would be available under the same NFS mount
-	// path on the Node.
-	// NOTE: Store this value in the publishInfo so that other CSI plugin functions do not have to guess this value
-	//       in case location of the NFS mountpoint changes in the future.
-	publishInfo.NFSMountpoint = path.Join(tridentconfig.VolumeTrackingInfoPath, publishInfo.NfsUniqueID,
-		publishInfo.NfsPath)
-
-	loopFile := path.Join(publishInfo.NFSMountpoint, publishInfo.SubvolumeName)
-	loopDeviceName, stagingMountpoint, err := utils.AttachBlockOnFileVolume(ctx, stagingTargetPath, publishInfo)
-	if err != nil {
-		return nil, err
-	}
-	publishInfo.DevicePath = loopDeviceName
-	publishInfo.StagingMountpoint = stagingMountpoint
-
-	loopFileInfo, err := os.Stat(loopFile)
-	if err != nil {
-		Logc(ctx).WithField("loopFile", loopFile).WithError(err).Error("Failed to get loop file size")
-		return nil, fmt.Errorf("failed to get loop file size: %s, %s", loopFile, err.Error())
-	}
-
-	loopFileSize := loopFileInfo.Size()
-
-	err = p.nodeExpandVolume(ctx, publishInfo, loopFileSize, stagingTargetPath, volumeId, map[string]string{})
-	if err != nil {
-		return nil, err
-	}
-
-	volTrackingInfo := &models.VolumeTrackingInfo{
-		VolumePublishInfo: *publishInfo,
-		StagingTargetPath: stagingTargetPath,
-		PublishedPaths:    map[string]struct{}{},
-	}
-	// Save the device info to the volume tracking info path for use in the publish & unstage calls.
-	if err := p.nodeHelper.WriteTrackingInfo(ctx, volumeId, volTrackingInfo); err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	return &csi.NodeStageVolumeResponse{}, nil
-}
-
-func (p *Plugin) nodeUnstageNFSBlockVolume(
-	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *models.VolumePublishInfo,
-) (*csi.NodeUnstageVolumeResponse, error) {
-	volumeId, _, err := p.getVolumeIdAndStagingPath(req)
-	if err != nil {
-		return nil, err
-	}
-
-	// Ensure that the staging mount point is removed.
-	if err := utils.UmountAndRemoveMountPoint(ctx, publishInfo.StagingMountpoint); err != nil {
-		Logc(ctx).WithField("stagingMountPoint", publishInfo.StagingMountpoint).Errorf(
-			"Failed to remove the staging mount point directory; %s", err)
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to remove staging mount point directory %s; %s",
-			publishInfo.StagingMountpoint, err))
-	}
-
-	nfsMountpoint := publishInfo.NFSMountpoint
-	loopFile := path.Join(nfsMountpoint, publishInfo.SubvolumeName)
-
-	// Get the loop device name and see if it is attached or not.
-	isLoopDeviceAttached, loopDevice, err := bofUtils.GetLoopDeviceAttachedToFile(ctx, loopFile)
-	if err != nil {
-		return nil, status.Error(codes.Internal,
-			fmt.Sprintf("failed to get loop device for loop file '%s': %s", loopFile, err.Error()))
-	}
-
-	if isLoopDeviceAttached {
-		// Check if it is mounted or not (ideally it should never be mounted).
-		isLoopDeviceMounted, err := utils.IsLoopDeviceMounted(ctx, loopDevice.Name)
-		if err != nil {
-			return nil, status.Error(codes.Internal,
-				fmt.Sprintf("unable to identify if loop device '%s' is mounted; %v", loopDevice.Name, err))
-		}
-		// If not mounted anymore, proceed to remove the device and/or remove the NFS mount point.
-		if !isLoopDeviceMounted {
-			// Detach the loop device from the NFS mountpoint.
-			if err = utils.DetachBlockOnFileVolume(ctx, loopDevice.Name, loopFile); err != nil {
-				return nil, status.Error(codes.Internal, fmt.Sprintf("failed to detach loop device '%s': %s",
-					loopDevice.Name, err.Error()))
-			}
-
-			// Wait for the loop device to disappear.
-			if err = utils.WaitForLoopDeviceDetach(ctx, nfsMountpoint, loopFile, 10*time.Second); err != nil {
-				return nil, status.Error(codes.Internal, fmt.Sprintf("unable to detach loop device '%s': %s",
-					loopDevice.Name, err.Error()))
-			}
-		} else {
-			// We shall never be in this state, so error out.
-			Logc(ctx).WithFields(LogFields{
-				"loopFile":   loopFile,
-				"loopDevice": loopDevice.Name,
-			}).Error("Loop device is still mounted, skipping detach.")
-			return nil, status.Error(codes.FailedPrecondition,
-				fmt.Sprintf("unable to detach loop device '%s'; it is still mounted", loopDevice.Name))
-		}
-	}
-
-	// Identify if the NFS mount point has any subvolumes in use by loop devices, if not then it is safe to remove it.
-	if utils.SafeToRemoveNFSMount(ctx, nfsMountpoint) {
-		if err = utils.RemoveMountPointRetry(ctx, nfsMountpoint); err != nil {
-			Logc(ctx).Errorf("Failed to remove NFS mountpoint '%s': %s", nfsMountpoint, err.Error())
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-	}
-
-	// Delete the device info we saved to the volume tracking info path so unstage can succeed.
-	if err = p.nodeHelper.DeleteTrackingInfo(ctx, volumeId); err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	return &csi.NodeUnstageVolumeResponse{}, nil
-}
-
-func (p *Plugin) nodePublishNFSBlockVolume(
-	ctx context.Context, req *csi.NodePublishVolumeRequest,
-) (*csi.NodePublishVolumeResponse, error) {
-	// Ensure AccessMode is RWO or RWOP.
-	csiAccessMode := p.getAccessForCSIAccessMode(req.GetVolumeCapability().GetAccessMode().Mode)
-	if p.containsMultiNodeAccessMode([]tridentconfig.AccessMode{csiAccessMode}) {
-		return nil, status.Errorf(codes.InvalidArgument, "volume cannot be mounted using multi-node access mode")
-	}
-
-	trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeId)
-	if err != nil {
-		if errors.IsNotFoundError(err) {
-			return nil, status.Error(codes.FailedPrecondition, err.Error())
-		} else {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-	}
-	publishInfo := &trackingInfo.VolumePublishInfo
-
-	publishInfo.SubvolumeMountOptions = getSubvolumeMountOptions(false, publishInfo.SubvolumeMountOptions)
-
-	err = utils.MountDevice(ctx, publishInfo.StagingMountpoint, req.TargetPath, publishInfo.SubvolumeMountOptions,
-		false)
-	if err != nil {
-		if os.IsPermission(err) {
-			return nil, status.Error(codes.PermissionDenied, err.Error())
-		}
-		if strings.Contains(err.Error(), "invalid argument") {
-			return nil, status.Error(codes.InvalidArgument, err.Error())
-		}
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	// For read only behavior need to remount the bind mount for utils-linux < v2.27
-	// TODO (arorar): Verify if using `-o bind,ro` during initial mount is acceptable instead of a remount,
-	//                based on below commit it is now supported in util-linux >= 2.27:
-	// https://git.kernel.org/pub/scm/utils/util-linux/util-linux.git/commit/?id=9ac77b8a78452eab0612523d27fee52159f5016a
-	if req.GetReadonly() {
-		publishInfo.SubvolumeMountOptions = getSubvolumeMountOptions(true, publishInfo.SubvolumeMountOptions)
-
-		err = utils.RemountDevice(ctx, req.TargetPath, publishInfo.SubvolumeMountOptions)
-		if err != nil {
-			if os.IsPermission(err) {
-				return nil, status.Error(codes.PermissionDenied, err.Error())
-			}
-			if strings.Contains(err.Error(), "invalid argument") {
-				return nil, status.Error(codes.InvalidArgument, err.Error())
-			}
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-	}
-
-	err = p.nodeHelper.AddPublishedPath(ctx, req.VolumeId, req.TargetPath)
-	if err != nil {
-		return nil, err
-	}
-
-	return &csi.NodePublishVolumeResponse{}, nil
-}
-
-func getSubvolumeMountOptions(readOnly bool, subvolumeMountOptions string) string {
-	if !utils.AreMountOptionsInList(subvolumeMountOptions, []string{"bind"}) {
-		subvolumeMountOptions = utils.AppendToStringList(subvolumeMountOptions, "bind", ",")
-	}
-
-	if readOnly && !utils.AreMountOptionsInList(subvolumeMountOptions, []string{"ro", "remount"}) {
-		subvolumeMountOptions = utils.AppendToStringList(subvolumeMountOptions, "remount", ",")
-		subvolumeMountOptions = utils.AppendToStringList(subvolumeMountOptions, "ro", ",")
-	}
-
-	return subvolumeMountOptions
 }
 
 type RequestHandler interface {

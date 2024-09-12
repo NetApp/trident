@@ -21,7 +21,6 @@ type VolumeAccessInfo struct {
 	NVMeAccessInfo
 	NfsAccessInfo
 	SMBAccessInfo
-	NfsBlockAccessInfo
 	MountOptions       string `json:"mountOptions,omitempty"`
 	PublishEnforcement bool   `json:"publishEnforcement,omitempty"`
 	ReadOnly           bool   `json:"readOnly,omitempty"`
@@ -65,12 +64,6 @@ type NfsAccessInfo struct {
 type SMBAccessInfo struct {
 	SMBServer string `json:"smbServer,omitempty"`
 	SMBPath   string `json:"smbPath,omitempty"`
-}
-
-type NfsBlockAccessInfo struct {
-	SubvolumeName         string `json:"subvolumeName,omitempty"`
-	SubvolumeMountOptions string `json:"subvolumeMountOptions,omitempty"`
-	NFSMountpoint         string `json:"nfsMountpoint,omitempty"`
 }
 
 type NVMeAccessInfo struct {
