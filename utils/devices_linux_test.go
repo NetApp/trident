@@ -14,9 +14,8 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
-	mockluks "github.com/netapp/trident/mocks/mock_utils/mock_luks"
-
 	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
+	mockluks "github.com/netapp/trident/mocks/mock_utils/mock_models/mock_luks"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/exec"
 )

@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -23,6 +23,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -77,6 +78,8 @@ type Plugin struct {
 	nvmeSelfHealingTicker   *time.Ticker
 	nvmeSelfHealingChannel  chan struct{}
 	nvmeSelfHealingInterval time.Duration
+
+	iscsi iscsi.ISCSI
 }
 
 func NewControllerPlugin(
@@ -164,6 +167,10 @@ func NewNodePlugin(
 		iSCSISelfHealingWaitTime: iSCSIStaleSessionWaitTime,
 		nvmeHandler:              utils.NewNVMeHandler(),
 		nvmeSelfHealingInterval:  nvmeSelfHealingInterval,
+		// TODO (vivintw) the adaptors are being plugged in here as a temporary measure to prevent cyclic dependencies.
+		// NewClient() must plugin default implementation of the various package clients.
+		iscsi: iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
+			utils.NewMountClient()),
 	}
 
 	if runtime.GOOS == "windows" {
@@ -248,6 +255,10 @@ func NewAllInOnePlugin(
 		iSCSISelfHealingWaitTime: iSCSIStaleSessionWaitTime,
 		nvmeHandler:              utils.NewNVMeHandler(),
 		nvmeSelfHealingInterval:  nvmeSelfHealingInterval,
+		// TODO (vivintw) the adaptors are being plugged in here as a temporary measure to prevent cyclic dependencies.
+		// NewClient() must plugin default implementation of the various package clients.
+		iscsi: iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
+			utils.NewMountClient()),
 	}
 
 	// Define controller capabilities

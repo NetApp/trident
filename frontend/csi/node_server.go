@@ -26,6 +26,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -470,7 +471,7 @@ func (p *Plugin) nodeExpandVolume(
 		// everytime the NVMe controller is reset, or if the controller posts an asynchronous event indicating
 		// namespace attributes have changed.
 		if publishInfo.SANType != sa.NVMe {
-			err = nodePrepareISCSIVolumeForExpansion(ctx, publishInfo, requiredBytes)
+			err = p.nodePrepareISCSIVolumeForExpansion(ctx, publishInfo, requiredBytes)
 		}
 		mountOptions = publishInfo.MountOptions
 	default:
@@ -524,7 +525,7 @@ func (p *Plugin) nodeExpandVolume(
 }
 
 // nodePrepareISCSIVolumeForExpansion readies volume expansion for Block (i.e. iSCSI) volumes
-func nodePrepareISCSIVolumeForExpansion(
+func (p *Plugin) nodePrepareISCSIVolumeForExpansion(
 	ctx context.Context, publishInfo *models.VolumePublishInfo, requiredBytes int64,
 ) error {
 	lunID := int(publishInfo.IscsiLunNumber)
@@ -540,14 +541,12 @@ func nodePrepareISCSIVolumeForExpansion(
 	var err error
 
 	// Make sure device is ready.
-	if utils.IsAlreadyAttached(ctx, lunID, publishInfo.IscsiTargetIQN) {
+	if p.iscsi.IsAlreadyAttached(ctx, lunID, publishInfo.IscsiTargetIQN) {
 		// Rescan device to detect increased size.
-		if err = utils.ISCSIRescanDevices(
+		if err = p.iscsi.RescanDevices(
 			ctx, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunNumber, requiredBytes); err != nil {
-			Logc(ctx).WithFields(LogFields{
-				"device": publishInfo.DevicePath,
-				"error":  err,
-			}).Error("Unable to scan device.")
+			Logc(ctx).WithField("device", publishInfo.DevicePath).WithError(err).
+				Error("Unable to scan device.")
 			err = status.Error(codes.Internal, err.Error())
 		}
 	} else {
@@ -1023,8 +1022,8 @@ func (p *Plugin) populatePublishedSessions(ctx context.Context) {
 		publishInfo := &trackingInfo.VolumePublishInfo
 
 		if publishInfo.SANType != sa.NVMe {
-			newCtx := context.WithValue(ctx, utils.SessionInfoSource, utils.SessionSourceTrackingInfo)
-			utils.AddISCSISession(newCtx, &publishedISCSISessions, publishInfo, volumeID, "", models.NotInvalid)
+			newCtx := context.WithValue(ctx, iscsi.SessionInfoSource, utils.SessionSourceTrackingInfo)
+			p.iscsi.AddSession(newCtx, &publishedISCSISessions, publishInfo, volumeID, "", models.NotInvalid)
 		} else {
 			p.nvmeHandler.AddPublishedNVMeSession(&publishedNVMeSessions, publishInfo)
 		}
@@ -1149,7 +1148,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 			return err
 		}
 
-		var luksDevice utils.LUKSDeviceInterface
+		var luksDevice models.LUKSDeviceInterface
 		luksDevice, err = utils.NewLUKSDeviceFromMappingPath(
 			ctx, publishInfo.DevicePath,
 			req.VolumeContext["internalName"],
@@ -1182,8 +1181,8 @@ func (p *Plugin) nodeStageISCSIVolume(
 	// Update in-mem map used for self-healing; do it after a volume has been staged.
 	// Beyond here if there is a problem with the session or there are missing LUNs
 	// then self-healing should be able to fix those issues.
-	newCtx := context.WithValue(ctx, utils.SessionInfoSource, utils.SessionSourceNodeStage)
-	utils.AddISCSISession(newCtx, &publishedISCSISessions, publishInfo, req.GetVolumeId(), "", models.NotInvalid)
+	newCtx := context.WithValue(ctx, iscsi.SessionInfoSource, utils.SessionSourceNodeStage)
+	p.iscsi.AddSession(newCtx, &publishedISCSISessions, publishInfo, req.GetVolumeId(), "", models.NotInvalid)
 	return nil
 }
 
@@ -1197,7 +1196,8 @@ func (p *Plugin) ensureAttachISCSIVolume(
 	var mpathSize int64
 
 	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
-	if mpathSize, err = utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint, publishInfo,
+	if mpathSize, err = p.iscsi.AttachVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint,
+		publishInfo,
 		req.GetSecrets(), attachTimeout); err != nil {
 		// Did we fail to log in?
 		if errors.IsAuthError(err) {
@@ -1206,7 +1206,7 @@ func (p *Plugin) ensureAttachISCSIVolume(
 			if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
 				return mpathSize, status.Error(codes.Internal, err.Error())
 			}
-			if mpathSize, err = utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint,
+			if mpathSize, err = p.iscsi.AttachVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint,
 				publishInfo,
 				req.GetSecrets(), attachTimeout); err != nil {
 				// Bail out no matter what as we've now tried with updated credentials
@@ -1851,7 +1851,7 @@ func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
 		return
 	}
 
-	if err := utils.ISCSIPreChecks(ctx); err != nil {
+	if err := p.iscsi.PreChecks(ctx); err != nil {
 		Logc(ctx).Errorf("Skipping iSCSI self-heal cycle; pre-checks failed: %v.", err)
 	}
 
@@ -2231,29 +2231,25 @@ func (p *Plugin) nodeStageSANVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
 	var err error
-	var fstype string
 
 	mountCapability := req.GetVolumeCapability().GetMount()
 	blockCapability := req.GetVolumeCapability().GetBlock()
 
 	if mountCapability == nil && blockCapability == nil {
 		return nil, status.Error(codes.InvalidArgument, "mount or block capability required")
-	} else if mountCapability != nil && blockCapability != nil {
-		return nil, status.Error(codes.InvalidArgument, "mixed block and mount capabilities")
 	}
 
+	fsType := req.PublishContext["filesystemType"]
 	if mountCapability != nil && mountCapability.GetFsType() != "" {
-		fstype = mountCapability.GetFsType()
+		fsType = mountCapability.GetFsType()
 	}
 
-	if fstype == "" {
-		fstype = req.PublishContext["filesystemType"]
-	}
-
-	if fstype == tridentconfig.FsRaw && mountCapability != nil {
+	if fsType == tridentconfig.FsRaw && mountCapability != nil {
 		return nil, status.Error(codes.InvalidArgument, "mount capability requested with raw blocks")
-	} else if fstype != tridentconfig.FsRaw && blockCapability != nil {
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("block capability requested with %s", fstype))
+	}
+
+	if fsType != tridentconfig.FsRaw && blockCapability != nil {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("block capability requested with %s", fsType))
 	}
 
 	sharedTarget, err := strconv.ParseBool(req.PublishContext["sharedTarget"])
@@ -2263,7 +2259,7 @@ func (p *Plugin) nodeStageSANVolume(
 
 	publishInfo := &models.VolumePublishInfo{
 		Localhost:      true,
-		FilesystemType: fstype,
+		FilesystemType: fsType,
 		SharedTarget:   sharedTarget,
 	}
 

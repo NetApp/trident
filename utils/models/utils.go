@@ -10,7 +10,8 @@ import (
 	. "github.com/netapp/trident/logging"
 )
 
-// temporary utilities till we remove dependency on the original utils package,
+// These functions have no tight relation to any of the models and are widely used throughout the codebase,
+// so they could eventually live in utils or some other top-level package.
 // TODO remove this file once the refactoring is done.
 
 const (

@@ -234,7 +234,7 @@ func performProtocolSpecificReconciliation(ctx context.Context, trackingInfo *mo
 // of any possibly in use passphrases. If forceUpdate is true, the Trident controller will be notified of the current
 // passphrase name, regardless of a rotation.
 func ensureLUKSVolumePassphrase(
-	ctx context.Context, restClient controllerAPI.TridentController, luksDevice utils.LUKSDeviceInterface,
+	ctx context.Context, restClient controllerAPI.TridentController, luksDevice models.LUKSDeviceInterface,
 	volumeId string, secrets map[string]string, forceUpdate bool,
 ) error {
 	luksPassphraseName, luksPassphrase, previousLUKSPassphraseName, previousLUKSPassphrase := utils.GetLUKSPassphrasesFromSecretMap(secrets)

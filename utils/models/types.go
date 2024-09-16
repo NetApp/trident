@@ -2,6 +2,9 @@
 
 package models
 
+//go:generate mockgen -destination=../../mocks/mock_utils/mock_models/mock_json_utils.go github.com/netapp/trident/utils/models JSONReaderWriter
+//go:generate mockgen -destination=../../mocks/mock_utils/mock_models/mock_luks/mock_luks.go -package mock_luks github.com/netapp/trident/utils/models LUKSDeviceInterface
+
 import (
 	"context"
 	"fmt"
@@ -13,8 +16,6 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
 )
-
-//go:generate mockgen -destination=../../mocks/mock_utils/mock_models/mock_json_utils.go github.com/netapp/trident/utils/models JSONReaderWriter
 
 type VolumeAccessInfo struct {
 	IscsiAccessInfo
@@ -845,7 +846,7 @@ func (p *ISCSISessions) GeneratePublishInfo(portal string) (VolumePublishInfo, e
 }
 
 // String prints values of the map
-func (p ISCSISessions) String() string {
+func (p *ISCSISessions) String() string {
 	if p.IsEmpty() {
 		return "empty portal to LUN mapping"
 	}
@@ -871,8 +872,24 @@ func (p ISCSISessions) String() string {
 }
 
 // GoString prints Go-syntax representation of the map
-func (p ISCSISessions) GoString() string {
+func (p *ISCSISessions) GoString() string {
 	return p.String()
+}
+
+type LUKSDeviceInterface interface {
+	RawDevicePath() string
+	MappedDevicePath() string
+	MappedDeviceName() string
+
+	IsLUKSFormatted(ctx context.Context) (bool, error)
+	IsOpen(ctx context.Context) (bool, error)
+
+	Open(ctx context.Context, luksPassphrase string) error
+	LUKSFormat(ctx context.Context, luksPassphrase string) error
+	EnsureFormattedAndOpen(ctx context.Context, luksPassphrase string) (bool, error)
+	RotatePassphrase(ctx context.Context, volumeId, previousLUKSPassphrase, luksPassphrase string) error
+	CheckPassphrase(ctx context.Context, luksPassphrase string) (bool, error)
+	Resize(ctx context.Context, luksPassphrase string) error
 }
 
 // ParseHostportIP returns just the IP address part of the given input IP address and strips any port information

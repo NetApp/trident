@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -31,6 +31,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -97,6 +98,7 @@ type TridentOrchestrator struct {
 	stopNodeAccessLoop       chan bool
 	stopReconcileBackendLoop chan bool
 	uuid                     string
+	iscsi                    iscsi.ISCSI
 }
 
 // NewTridentOrchestrator returns a storage orchestrator instance
@@ -114,6 +116,10 @@ func NewTridentOrchestrator(client persistentstore.Client) *TridentOrchestrator 
 		storeClient:        client,
 		bootstrapped:       false,
 		bootstrapError:     errors.NotReadyError(),
+		// TODO (vivintw) the adaptors are being plugged in here as a temporary measure to prevent cyclic dependencies.
+		// NewClient() must plugin default implementation of the various package clients.
+		iscsi: iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
+			utils.NewMountClient()),
 	}
 }
 
@@ -3614,7 +3620,7 @@ func (o *TridentOrchestrator) AttachVolume(
 		}
 
 		if publishInfo.SANType == sa.ISCSI {
-			_, err = utils.AttachISCSIVolumeRetry(ctx, volumeName, mountpoint, publishInfo, map[string]string{},
+			_, err = o.iscsi.AttachVolumeRetry(ctx, volumeName, mountpoint, publishInfo, map[string]string{},
 				AttachISCSIVolumeTimeoutLong)
 		}
 		return err

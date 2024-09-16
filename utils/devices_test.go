@@ -1,3 +1,5 @@
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
+
 package utils
 
 import (
@@ -10,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
-	"github.com/netapp/trident/mocks/mock_utils/mock_luks"
+	"github.com/netapp/trident/mocks/mock_utils/mock_models/mock_luks"
 )
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -9,10 +9,6 @@ import (
 	"strconv"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/assert"
-
-	. "github.com/netapp/trident/logging"
 )
 
 var (
@@ -21,45 +17,6 @@ var (
 	execPadding     int
 	execDelay       time.Duration
 )
-
-func TestPidRunningOrIdleRegex(t *testing.T) {
-	Log().Debug("Running TestPidRegexes...")
-
-	tests := map[string]struct {
-		input          string
-		expectedOutput bool
-	}{
-		// Negative tests
-		"Negative input #1": {
-			input:          "",
-			expectedOutput: false,
-		},
-		"Negative input #2": {
-			input:          "pid -5 running",
-			expectedOutput: false,
-		},
-		"Negative input #3": {
-			input:          "pid running",
-			expectedOutput: false,
-		},
-		// Positive tests
-		"Positive input #1": {
-			input:          "pid 5 running",
-			expectedOutput: true,
-		},
-		// Positive tests
-		"Positive input #2": {
-			input:          "pid 2509 idle",
-			expectedOutput: true,
-		},
-	}
-	for testName, test := range tests {
-		t.Run(testName, func(t *testing.T) {
-			result := pidRunningOrIdleRegex.MatchString(test.input)
-			assert.True(t, test.expectedOutput == result)
-		})
-	}
-}
 
 // TestShellProcess is a method that is called as a substitute for a shell command,
 // the GO_TEST flag ensures that if it is called as part of the test suite, it is

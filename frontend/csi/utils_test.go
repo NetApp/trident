@@ -1,3 +1,5 @@
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
+
 package csi
 
 import (
@@ -10,8 +12,8 @@ import (
 
 	"github.com/netapp/trident/config"
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
-	"github.com/netapp/trident/mocks/mock_utils"
-	"github.com/netapp/trident/mocks/mock_utils/mock_luks"
+	"github.com/netapp/trident/mocks/mock_utils/mock_models/mock_luks"
+	mock_iscsi "github.com/netapp/trident/mocks/mock_utils/mock_reconcile_utils"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
@@ -62,8 +64,8 @@ func TestPerformProtocolSpecificReconciliation_BadProtocol(t *testing.T) {
 func TestPerformProtocolSpecificReconciliation_ISCSI(t *testing.T) {
 	defer func() { iscsiUtils = utils.IscsiUtils }()
 	mockCtrl := gomock.NewController(t)
-	iscsiUtils = mock_utils.NewMockIscsiReconcileUtils(mockCtrl)
-	mockIscsiUtils, ok := iscsiUtils.(*mock_utils.MockIscsiReconcileUtils)
+	iscsiUtils = mock_iscsi.NewMockIscsiReconcileUtils(mockCtrl)
+	mockIscsiUtils, ok := iscsiUtils.(*mock_iscsi.MockIscsiReconcileUtils)
 	if !ok {
 		t.Fatal("can't cast iscsiUtils to mockIscsiUtils")
 	}

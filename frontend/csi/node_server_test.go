@@ -1,10 +1,11 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package csi
 
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -14,15 +15,579 @@ import (
 	"github.com/mitchellh/copystructure"
 	"github.com/stretchr/testify/assert"
 
+	tridentconfig "github.com/netapp/trident/config"
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
+	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
 	mockUtils "github.com/netapp/trident/mocks/mock_utils"
+	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
+
+func TestNodeStageVolume(t *testing.T) {
+	type parameters struct {
+		getISCSIClient          func() iscsi.ISCSI
+		getNodeHelper           func() nodehelpers.NodeHelper
+		nodeStageVolumeRequest  csi.NodeStageVolumeRequest
+		assertError             assert.ErrorAssertionFunc
+		nodeStageVolumeResponse *csi.NodeStageVolumeResponse
+	}
+
+	request := NewNodeStageVolumeRequestBuilder().Build()
+
+	tests := map[string]parameters{
+		"SAN: iSCSI volume: happy path": {
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(1), nil)
+				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+			nodeStageVolumeRequest:  request,
+			assertError:             assert.NoError,
+			nodeStageVolumeResponse: &csi.NodeStageVolumeResponse{},
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			plugin := &Plugin{
+				role: CSINode,
+			}
+
+			if params.getISCSIClient != nil {
+				plugin.iscsi = params.getISCSIClient()
+			}
+
+			if params.getNodeHelper != nil {
+				plugin.nodeHelper = params.getNodeHelper()
+			}
+
+			nodeStageVolumeResponse, err := plugin.NodeStageVolume(context.Background(), &params.nodeStageVolumeRequest)
+			if params.assertError != nil {
+				params.assertError(t, err)
+			}
+
+			assert.Equal(t, params.nodeStageVolumeResponse, nodeStageVolumeResponse)
+		})
+	}
+}
+
+func TestNodeStageSANVolume(t *testing.T) {
+	type parameters struct {
+		getISCSIClient          func() iscsi.ISCSI
+		getNodeHelper           func() nodehelpers.NodeHelper
+		nodeStageVolumeRequest  csi.NodeStageVolumeRequest
+		assertError             assert.ErrorAssertionFunc
+		nodeStageVolumeResponse *csi.NodeStageVolumeResponse
+	}
+
+	noCapabilitiesRequest := NewNodeStageVolumeRequestBuilder().WithVolumeCapability(&csi.VolumeCapability{}).Build()
+	fileSystemRawMountCapabilityRequest := NewNodeStageVolumeRequestBuilder().WithFileSystemType(tridentconfig.FsRaw).Build()
+	fileSystemExt4BlockCapabilityRequest := NewNodeStageVolumeRequestBuilder().WithVolumeCapability(
+		&csi.VolumeCapability{
+			AccessType: &csi.VolumeCapability_Block{
+				Block: &csi.VolumeCapability_BlockVolume{},
+			},
+		},
+	).Build()
+
+	badSharedTargetRequest := NewNodeStageVolumeRequestBuilder().WithSharedTarget("foo").Build()
+
+	tests := map[string]parameters{
+		"mount and block capabilities not specified in the request": {
+			nodeStageVolumeRequest:  noCapabilitiesRequest,
+			assertError:             assert.Error,
+			nodeStageVolumeResponse: nil,
+		},
+		"raw file system requested with mount capability": {
+			nodeStageVolumeRequest:  fileSystemRawMountCapabilityRequest,
+			assertError:             assert.Error,
+			nodeStageVolumeResponse: nil,
+		},
+		"ext4 file system requested with block capability": {
+			nodeStageVolumeRequest:  fileSystemExt4BlockCapabilityRequest,
+			assertError:             assert.Error,
+			nodeStageVolumeResponse: nil,
+		},
+		"bad sharedTarget in publish context": {
+			nodeStageVolumeRequest:  badSharedTargetRequest,
+			assertError:             assert.Error,
+			nodeStageVolumeResponse: nil,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			plugin := &Plugin{
+				role: CSINode,
+			}
+
+			if params.getISCSIClient != nil {
+				plugin.iscsi = params.getISCSIClient()
+			}
+
+			if params.getNodeHelper != nil {
+				plugin.nodeHelper = params.getNodeHelper()
+			}
+
+			nodeStageVolumeResponse, err := plugin.nodeStageSANVolume(context.Background(), &params.nodeStageVolumeRequest)
+
+			if params.assertError != nil {
+				params.assertError(t, err)
+			}
+
+			assert.Equal(t, params.nodeStageVolumeResponse, nodeStageVolumeResponse)
+		})
+	}
+}
+
+func TestNodeStageISCSIVolume(t *testing.T) {
+	type parameters struct {
+		getISCSIClient         func() iscsi.ISCSI
+		getNodeHelper          func() nodehelpers.NodeHelper
+		getRestClient          func() controllerAPI.TridentController
+		nodeStageVolumeRequest csi.NodeStageVolumeRequest
+		assertError            assert.ErrorAssertionFunc
+		aesKey                 []byte
+	}
+
+	request := NewNodeStageVolumeRequestBuilder().Build()
+	badUseChapRequest := NewNodeStageVolumeRequestBuilder().WithUseCHAP("foo").Build()
+	badLunNumberRequest := NewNodeStageVolumeRequestBuilder().WithIscsiLunNumber("foo").Build()
+	badLuksEncryptionRequest := NewNodeStageVolumeRequestBuilder().WithLUKSEncryption("foo").Build()
+	badTargetPortalCountRequest := NewNodeStageVolumeRequestBuilder().WithIscsiTargetPortalCount("foo").Build()
+	zeroTargetPortalCountRequest := NewNodeStageVolumeRequestBuilder().WithIscsiTargetPortalCount("0").Build()
+	targetPortalCountThreeMissingPortalRequest := NewNodeStageVolumeRequestBuilder().WithIscsiTargetPortalCount("3").Build()
+	chapBadEncryptedISCSIUserNameRequest := NewNodeStageVolumeRequestBuilder().WithIscsiTargetPortalCount("1").
+		WithUseCHAP("true").WithEncryptedIscsiUsername("foo").Build()
+	chapBadEncryptedIscsiInitiatorSecretRequest := NewNodeStageVolumeRequestBuilder().WithIscsiTargetPortalCount("1").
+		WithUseCHAP("true").WithEncryptedIscsiInitiatorSecret("foo").Build()
+	chapBadEncryptedIscsiTargetUsernameRequest := NewNodeStageVolumeRequestBuilder().WithIscsiTargetPortalCount("1").
+		WithUseCHAP("true").WithEncryptedIscsiTargetUsername("foo").Build()
+	chapBadEncryptedIscsiTargetSecretRequest := NewNodeStageVolumeRequestBuilder().WithIscsiTargetPortalCount("1").
+		WithUseCHAP("true").WithEncryptedIscsiTargetSecret("foo").Build()
+	badVolumeIdRequest := NewNodeStageVolumeRequestBuilder().WithVolumeID("").Build()
+	badStagingPathRequest := NewNodeStageVolumeRequestBuilder().WithStagingTargetPath("").Build()
+
+	const mockAESKey = "thisIsMockAESKey"
+	encryptedValue, err := crypto.EncryptStringWithAES("mockValue", []byte(mockAESKey))
+	assert.Nil(t, err)
+
+	chapEncryptedISCSIUserNameRequest := NewNodeStageVolumeRequestBuilder().WithIscsiTargetPortalCount("1").
+		WithUseCHAP("true").WithEncryptedIscsiUsername(encryptedValue).Build()
+	chapEncryptedIscsiInitiatorSecretRequest := NewNodeStageVolumeRequestBuilder().WithIscsiTargetPortalCount("1").
+		WithUseCHAP("true").WithEncryptedIscsiInitiatorSecret(encryptedValue).Build()
+	chapEncryptedIscsiTargetUsernameRequest := NewNodeStageVolumeRequestBuilder().WithIscsiTargetPortalCount("1").
+		WithUseCHAP("true").WithEncryptedIscsiTargetUsername(encryptedValue).Build()
+	chapEncryptedIscsiTargetSecretRequest := NewNodeStageVolumeRequestBuilder().WithIscsiTargetPortalCount("1").
+		WithUseCHAP("true").WithEncryptedIscsiTargetSecret(encryptedValue).Build()
+
+	tests := map[string]parameters{
+		"bad useCHAP in publish context": {
+			nodeStageVolumeRequest: badUseChapRequest,
+			assertError:            assert.Error,
+		},
+		"bad lun number in publish context": {
+			nodeStageVolumeRequest: badLunNumberRequest,
+			assertError:            assert.Error,
+		},
+		"bad luks encryption in publish context": {
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(1), nil)
+				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+			nodeStageVolumeRequest: badLuksEncryptionRequest,
+			assertError:            assert.NoError,
+		},
+		"bad iscsi target portal count": {
+			nodeStageVolumeRequest: badTargetPortalCountRequest,
+			assertError:            assert.Error,
+		},
+		"iscsi target portal count set to 0": {
+			nodeStageVolumeRequest: zeroTargetPortalCountRequest,
+			assertError:            assert.Error,
+		},
+		"iscsi target portal count set to 3 but only 2 portals provided": {
+			nodeStageVolumeRequest: targetPortalCountThreeMissingPortalRequest,
+			assertError:            assert.Error,
+		},
+		"encrypted user name in request": {
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+			nodeStageVolumeRequest: chapEncryptedISCSIUserNameRequest,
+			assertError:            assert.NoError,
+			aesKey:                 []byte(mockAESKey),
+		},
+		"CHAP : bad encrypted user name in request": {
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+			getRestClient: func() controllerAPI.TridentController {
+				mockRestClient := mockControllerAPI.NewMockTridentController(gomock.NewController(t))
+				mockRestClient.EXPECT().GetChap(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(&models.IscsiChapInfo{}, nil)
+				return mockRestClient
+			},
+			nodeStageVolumeRequest: chapBadEncryptedISCSIUserNameRequest,
+			assertError:            assert.NoError,
+			aesKey:                 []byte(mockAESKey),
+		},
+		"CHAP : encrypted initiator secret in request": {
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+			nodeStageVolumeRequest: chapEncryptedIscsiInitiatorSecretRequest,
+			assertError:            assert.NoError,
+			aesKey:                 []byte(mockAESKey),
+		},
+		"CHAP : bad encrypted initiator secret in request": {
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+			getRestClient: func() controllerAPI.TridentController {
+				mockRestClient := mockControllerAPI.NewMockTridentController(gomock.NewController(t))
+				mockRestClient.EXPECT().GetChap(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(&models.IscsiChapInfo{}, nil)
+				return mockRestClient
+			},
+			nodeStageVolumeRequest: chapBadEncryptedIscsiInitiatorSecretRequest,
+			assertError:            assert.NoError,
+			aesKey:                 []byte(mockAESKey),
+		},
+		"CHAP : encrypted target username in request": {
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+			nodeStageVolumeRequest: chapEncryptedIscsiTargetUsernameRequest,
+			assertError:            assert.NoError,
+			aesKey:                 []byte(mockAESKey),
+		},
+		"CHAP : bad encrypted target username in request": {
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+			getRestClient: func() controllerAPI.TridentController {
+				mockRestClient := mockControllerAPI.NewMockTridentController(gomock.NewController(t))
+				mockRestClient.EXPECT().GetChap(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(&models.IscsiChapInfo{}, nil)
+				return mockRestClient
+			},
+			nodeStageVolumeRequest: chapBadEncryptedIscsiTargetUsernameRequest,
+			assertError:            assert.NoError,
+			aesKey:                 []byte(mockAESKey),
+		},
+		"CHAP : encrypted target secret in request": {
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+			nodeStageVolumeRequest: chapEncryptedIscsiTargetSecretRequest,
+			assertError:            assert.NoError,
+			aesKey:                 []byte(mockAESKey),
+		},
+		"CHAP : bad encrypted target secret in request": {
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+			getRestClient: func() controllerAPI.TridentController {
+				mockRestClient := mockControllerAPI.NewMockTridentController(gomock.NewController(t))
+				mockRestClient.EXPECT().GetChap(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(&models.IscsiChapInfo{}, nil)
+				return mockRestClient
+			},
+			nodeStageVolumeRequest: chapBadEncryptedIscsiTargetSecretRequest,
+			assertError:            assert.NoError,
+			aesKey:                 []byte(mockAESKey),
+		},
+		"CHAP : bad encrypted chap information in Request, failed to get key from controller": {
+			getRestClient: func() controllerAPI.TridentController {
+				mockRestClient := mockControllerAPI.NewMockTridentController(gomock.NewController(t))
+				mockRestClient.EXPECT().GetChap(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(nil, fmt.Errorf("some error"))
+				return mockRestClient
+			},
+			nodeStageVolumeRequest: chapBadEncryptedIscsiTargetSecretRequest,
+			assertError:            assert.Error,
+			aesKey:                 []byte(mockAESKey),
+		},
+		"CHAP : encrypted chap information but aes key not present on node": {
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+			getRestClient: func() controllerAPI.TridentController {
+				mockRestClient := mockControllerAPI.NewMockTridentController(gomock.NewController(t))
+				mockRestClient.EXPECT().GetChap(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(&models.IscsiChapInfo{}, nil)
+				return mockRestClient
+			},
+			nodeStageVolumeRequest: chapBadEncryptedIscsiTargetSecretRequest,
+			assertError:            assert.NoError,
+		},
+		"CHAP : encrypted chap information but aes key not present on node,failed to get key from controller": {
+			getRestClient: func() controllerAPI.TridentController {
+				mockRestClient := mockControllerAPI.NewMockTridentController(gomock.NewController(t))
+				mockRestClient.EXPECT().GetChap(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(nil, errors.New("some error"))
+				return mockRestClient
+			},
+			nodeStageVolumeRequest: chapBadEncryptedIscsiTargetSecretRequest,
+			assertError:            assert.Error,
+		},
+		"bad volume id": {
+			nodeStageVolumeRequest: badVolumeIdRequest,
+			assertError:            assert.Error,
+		},
+		"bad staging path": {
+			nodeStageVolumeRequest: badStagingPathRequest,
+			assertError:            assert.Error,
+		},
+		"failure to ensure volume attachment": {
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(0), errors.New("some error"))
+				return mockISCSIClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+			nodeStageVolumeRequest: request,
+			assertError:            assert.Error,
+		},
+		"volume is not already attached for expansion": {
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(1), nil)
+				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+			nodeStageVolumeRequest: request,
+			assertError:            assert.NoError,
+		},
+		"volume rescan error during expansion": {
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(1), nil)
+				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any()).Return(errors.New("some error"))
+				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+			nodeStageVolumeRequest: request,
+			assertError:            assert.NoError,
+		},
+		"error writing the tracking file": {
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(1), nil)
+				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("some error"))
+				return mockNodeHelper
+			},
+			nodeStageVolumeRequest: request,
+			assertError:            assert.Error,
+		},
+		"error writing the tracking file when attachment error exists": {
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(0), errors.New("some error"))
+				return mockISCSIClient
+			},
+
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("some error"))
+				return mockNodeHelper
+			},
+			nodeStageVolumeRequest: request,
+			assertError:            assert.Error,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			plugin := &Plugin{
+				role:   CSINode,
+				aesKey: params.aesKey,
+			}
+
+			if params.getISCSIClient != nil {
+				plugin.iscsi = params.getISCSIClient()
+			}
+
+			if params.getNodeHelper != nil {
+				plugin.nodeHelper = params.getNodeHelper()
+			}
+
+			if params.getRestClient != nil {
+				plugin.restClient = params.getRestClient()
+			}
+
+			sharedTarget, err := strconv.ParseBool(params.nodeStageVolumeRequest.PublishContext["sharedTarget"])
+			assert.Nil(t, err)
+
+			publishInfo := models.VolumePublishInfo{
+				Localhost:      true,
+				FilesystemType: params.nodeStageVolumeRequest.PublishContext["filesystemType"],
+				SharedTarget:   sharedTarget,
+			}
+
+			err = plugin.nodeStageISCSIVolume(context.Background(), &params.nodeStageVolumeRequest, &publishInfo)
+			if params.assertError != nil {
+				params.assertError(t, err)
+			}
+		})
+	}
+}
 
 func TestUpdateChapInfoFromController_Success(t *testing.T) {
 	testCtx := context.Background()
@@ -450,6 +1015,8 @@ func TestFixISCSISessions(t *testing.T) {
 	nodeServer := &Plugin{
 		nodeName: "someNode",
 		role:     CSINode,
+		iscsi: iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
+			utils.NewMountClient()),
 	}
 
 	for _, input := range inputs {
@@ -1350,4 +1917,118 @@ func TestNodeRegisterWithController_Failure(t *testing.T) {
 	nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
 
 	assert.True(t, nodeServer.nodeIsRegistered, "expected node to be registered, but it is not")
+}
+
+// ----- helpers ----
+type NodeStageVolumeRequestBuilder struct {
+	request csi.NodeStageVolumeRequest
+}
+
+func NewNodeStageVolumeRequestBuilder() *NodeStageVolumeRequestBuilder {
+	return &NodeStageVolumeRequestBuilder{
+		request: csi.NodeStageVolumeRequest{
+			PublishContext: map[string]string{
+				"protocol":               "block",
+				"sharedTarget":           "false",
+				"filesystemType":         tridentconfig.FsExt4,
+				"useCHAP":                "false",
+				"iscsiLunNumber":         "0",
+				"iscsiTargetIqn":         "iqn.2016-04.com.mock-iscsi:8a1e4b296331",
+				"iscsiTargetPortalCount": "2",
+				"p1":                     "127.0.0.1:4321",
+				"p2":                     "127.0.0.1:4322",
+			},
+			VolumeCapability: &csi.VolumeCapability{
+				AccessType: &csi.VolumeCapability_Mount{
+					Mount: &csi.VolumeCapability_MountVolume{
+						FsType: "ext4",
+					},
+				},
+			},
+			VolumeId:          "pvc-85987a99-648d-4d84-95df-47d0256ca2ab",
+			StagingTargetPath: "/foo",
+		},
+	}
+}
+
+func (builder *NodeStageVolumeRequestBuilder) WithVolumeCapability(capability *csi.VolumeCapability) *NodeStageVolumeRequestBuilder {
+	builder.request.VolumeCapability = capability
+	return builder
+}
+
+func (builder *NodeStageVolumeRequestBuilder) WithFileSystemType(fsType string) *NodeStageVolumeRequestBuilder {
+	builder.request.PublishContext["filesystemType"] = fsType
+	if builder.request.VolumeCapability.GetMount() != nil {
+		builder.request.VolumeCapability.GetMount().FsType = fsType
+	}
+	return builder
+}
+
+func (builder *NodeStageVolumeRequestBuilder) WithSharedTarget(sharedTarget string) *NodeStageVolumeRequestBuilder {
+	builder.request.PublishContext["sharedTarget"] = sharedTarget
+	return builder
+}
+
+func (builder *NodeStageVolumeRequestBuilder) WithUseCHAP(useCHAP string) *NodeStageVolumeRequestBuilder {
+	builder.request.PublishContext["useCHAP"] = useCHAP
+	return builder
+}
+
+func (builder *NodeStageVolumeRequestBuilder) WithIscsiLunNumber(lunNumber string) *NodeStageVolumeRequestBuilder {
+	builder.request.PublishContext["iscsiLunNumber"] = lunNumber
+	return builder
+}
+
+func (builder *NodeStageVolumeRequestBuilder) WithLUKSEncryption(lukeEncryption string) *NodeStageVolumeRequestBuilder {
+	builder.request.PublishContext["LUKSEncryption"] = lukeEncryption
+	return builder
+}
+
+func (builder *NodeStageVolumeRequestBuilder) WithIscsiTargetPortalCount(
+	iscsiTargetPortalCount string,
+) *NodeStageVolumeRequestBuilder {
+	builder.request.PublishContext["iscsiTargetPortalCount"] = iscsiTargetPortalCount
+	return builder
+}
+
+func (builder *NodeStageVolumeRequestBuilder) WithEncryptedIscsiUsername(
+	iscsiUsername string,
+) *NodeStageVolumeRequestBuilder {
+	builder.request.PublishContext["encryptedIscsiUsername"] = iscsiUsername
+	return builder
+}
+
+func (builder *NodeStageVolumeRequestBuilder) WithEncryptedIscsiInitiatorSecret(
+	encryptedIscsiInitiatorSecret string,
+) *NodeStageVolumeRequestBuilder {
+	builder.request.PublishContext["encryptedIscsiInitiatorSecret"] = encryptedIscsiInitiatorSecret
+	return builder
+}
+
+func (builder *NodeStageVolumeRequestBuilder) WithEncryptedIscsiTargetUsername(
+	encryptedIscsiTargetUsername string,
+) *NodeStageVolumeRequestBuilder {
+	builder.request.PublishContext["encryptedIscsiTargetUsername"] = encryptedIscsiTargetUsername
+	return builder
+}
+
+func (builder *NodeStageVolumeRequestBuilder) WithEncryptedIscsiTargetSecret(
+	encryptedIscsiTargetSecret string,
+) *NodeStageVolumeRequestBuilder {
+	builder.request.PublishContext["encryptedIscsiTargetSecret"] = encryptedIscsiTargetSecret
+	return builder
+}
+
+func (builder *NodeStageVolumeRequestBuilder) WithVolumeID(volumeID string) *NodeStageVolumeRequestBuilder {
+	builder.request.VolumeId = volumeID
+	return builder
+}
+
+func (builder *NodeStageVolumeRequestBuilder) WithStagingTargetPath(stagingTargetPath string) *NodeStageVolumeRequestBuilder {
+	builder.request.StagingTargetPath = stagingTargetPath
+	return builder
+}
+
+func (builder *NodeStageVolumeRequestBuilder) Build() csi.NodeStageVolumeRequest {
+	return builder.request
 }

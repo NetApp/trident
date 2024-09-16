@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -19,20 +19,15 @@ import (
 )
 
 var (
-	iqnRegex              = regexp.MustCompile(`^\s*InitiatorName\s*=\s*(?P<iqn>\S+)(|\s+.*)$`)
-	xtermControlRegex     = regexp.MustCompile(`\x1B\[[0-9;]*[a-zA-Z]`)
-	portalPortPattern     = regexp.MustCompile(`.+:\d+$`)
-	pidRunningOrIdleRegex = regexp.MustCompile(`pid \d+ (running|idle)`)
-	pidRegex              = regexp.MustCompile(`^\d+$`)
-	deviceRegex           = regexp.MustCompile(`/dev/(?P<device>[\w-]+)`)
+	iqnRegex          = regexp.MustCompile(`^\s*InitiatorName\s*=\s*(?P<iqn>\S+)(|\s+.*)$`)
+	xtermControlRegex = regexp.MustCompile(`\x1B\[[0-9;]*[a-zA-Z]`)
+	deviceRegex       = regexp.MustCompile(`/dev/(?P<device>[\w-]+)`)
 
 	chrootPathPrefix string
 
 	// FIXME: Instead of a package-level variable, pass command into other utils once their interfaces are defined.
 	command = exec.NewCommand()
 )
-
-const devMapperRoot = "/dev/mapper/"
 
 func init() {
 	if os.Getenv("DOCKER_PLUGIN_MODE") != "" {

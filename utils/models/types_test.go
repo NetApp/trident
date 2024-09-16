@@ -1331,3 +1331,57 @@ func TestNodePublicationStateFlags_IsNodeCleaned(t *testing.T) {
 		})
 	}
 }
+
+func TestParseHostportIP(t *testing.T) {
+	type IPAddresses struct {
+		InputIP  string
+		OutputIP string
+	}
+	tests := []IPAddresses{
+		{
+			InputIP:  "1.2.3.4:5678",
+			OutputIP: "1.2.3.4",
+		},
+		{
+			InputIP:  "1.2.3.4:5678,1001",
+			OutputIP: "1.2.3.4",
+		},
+		{
+			InputIP:  "1.2.3.4",
+			OutputIP: "1.2.3.4",
+		},
+		{
+			InputIP:  "[1:2:3:4]:5678",
+			OutputIP: "[1:2:3:4]",
+		},
+		{
+			InputIP:  "[1:2:3:4]:5678,1001",
+			OutputIP: "[1:2:3:4]",
+		},
+		{
+			InputIP:  "[1:2:3:4]",
+			OutputIP: "[1:2:3:4]",
+		},
+		{
+			InputIP:  "[2607:f8b0:4006:818:0:0:0:2004]",
+			OutputIP: "[2607:f8b0:4006:818:0:0:0:2004]",
+		},
+		{
+			InputIP:  "[2607:f8b0:4006:818:0:0:0:2004]:5678",
+			OutputIP: "[2607:f8b0:4006:818:0:0:0:2004]",
+		},
+		{
+			InputIP:  "[2607:f8b0:4006:818:0:0:0:2004]:5678,1001",
+			OutputIP: "[2607:f8b0:4006:818:0:0:0:2004]",
+		},
+		{
+			InputIP:  "2607:f8b0:4006:818:0:0:0:2004",
+			OutputIP: "[2607:f8b0:4006:818:0:0:0:2004]",
+		},
+	}
+	for _, testCase := range tests {
+		t.Run(testCase.InputIP, func(t *testing.T) {
+			assert.Equal(t, testCase.OutputIP, ParseHostportIP(testCase.InputIP), "IP mismatch")
+		})
+	}
+}

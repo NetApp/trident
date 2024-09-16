@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -7,13 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/mitchellh/copystructure"
 	"github.com/stretchr/testify/assert"
 
-	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
-	"github.com/netapp/trident/utils/errors"
-	"github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -68,121 +64,6 @@ func TestIsPerNodeIgroup(t *testing.T) {
 
 	for input, expected := range tt {
 		assert.Equal(t, expected, IsPerNodeIgroup(input))
-	}
-}
-
-func TestFormatPortal(t *testing.T) {
-	type IPAddresses struct {
-		InputPortal  string
-		OutputPortal string
-	}
-	tests := []IPAddresses{
-		{
-			InputPortal:  "203.0.113.1",
-			OutputPortal: "203.0.113.1:3260",
-		},
-		{
-			InputPortal:  "203.0.113.1:3260",
-			OutputPortal: "203.0.113.1:3260",
-		},
-		{
-			InputPortal:  "203.0.113.1:3261",
-			OutputPortal: "203.0.113.1:3261",
-		},
-		{
-			InputPortal:  "[2001:db8::1]",
-			OutputPortal: "[2001:db8::1]:3260",
-		},
-		{
-			InputPortal:  "[2001:db8::1]:3260",
-			OutputPortal: "[2001:db8::1]:3260",
-		},
-		{
-			InputPortal:  "[2001:db8::1]:3261",
-			OutputPortal: "[2001:db8::1]:3261",
-		},
-	}
-	for _, testCase := range tests {
-		t.Run(testCase.InputPortal, func(t *testing.T) {
-			assert.Equal(t, testCase.OutputPortal, formatPortal(testCase.InputPortal), "Portal not correctly formatted")
-		})
-	}
-}
-
-func TestFilterTargets(t *testing.T) {
-	type FilterCase struct {
-		CommandOutput string
-		InputPortal   string
-		OutputIQNs    []string
-	}
-	tests := []FilterCase{
-		{
-			// Simple positive test, expect first
-			CommandOutput: "" +
-				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
-				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n" +
-				"203.0.113.3:3260,-1 iqn.2010-01.com.solidfire:baz\n",
-			InputPortal: "203.0.113.1:3260",
-			OutputIQNs:  []string{"iqn.1992-08.com.netapp:foo"},
-		},
-		{
-			// Simple positive test, expect second
-			CommandOutput: "" +
-				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
-				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n",
-			InputPortal: "203.0.113.2:3260",
-			OutputIQNs:  []string{"iqn.1992-08.com.netapp:bar"},
-		},
-		{
-			// Expect empty list
-			CommandOutput: "" +
-				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
-				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n",
-			InputPortal: "203.0.113.3:3260",
-			OutputIQNs:  []string{},
-		},
-		{
-			// Expect multiple
-			CommandOutput: "" +
-				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
-				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n" +
-				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:baz\n",
-			InputPortal: "203.0.113.2:3260",
-			OutputIQNs:  []string{"iqn.1992-08.com.netapp:bar", "iqn.1992-08.com.netapp:baz"},
-		},
-		{
-			// Bad input
-			CommandOutput: "" +
-				"Foobar\n",
-			InputPortal: "203.0.113.2:3260",
-			OutputIQNs:  []string{},
-		},
-		{
-			// Good and bad input
-			CommandOutput: "" +
-				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
-				"Foo\n" +
-				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n" +
-				"Bar\n" +
-				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:baz\n",
-			InputPortal: "203.0.113.2:3260",
-			OutputIQNs:  []string{"iqn.1992-08.com.netapp:bar", "iqn.1992-08.com.netapp:baz"},
-		},
-		{
-			// Try nonstandard port number
-			CommandOutput: "" +
-				"203.0.113.1:3260,1024 iqn.1992-08.com.netapp:foo\n" +
-				"203.0.113.2:3260,1025 iqn.1992-08.com.netapp:bar\n" +
-				"203.0.113.2:3261,1025 iqn.1992-08.com.netapp:baz\n",
-			InputPortal: "203.0.113.2:3261",
-			OutputIQNs:  []string{"iqn.1992-08.com.netapp:baz"},
-		},
-	}
-	for _, testCase := range tests {
-		t.Run(testCase.InputPortal, func(t *testing.T) {
-			targets := filterTargets(testCase.CommandOutput, testCase.InputPortal)
-			assert.Equal(t, testCase.OutputIQNs, targets, "Wrong targets returned")
-		})
 	}
 }
 
@@ -796,50 +677,6 @@ func TestSortPortals(t *testing.T) {
 			SortPortals(input.InputPortals, input.PublishedPortals)
 
 			assert.Equal(t, input.ResultPortals, input.InputPortals, "sort order mismatch")
-		})
-	}
-}
-
-func TestMultipathdIsRunning(t *testing.T) {
-	// Reset exec command after tests
-	defer func(previousCommand exec.Command) {
-		command = previousCommand
-	}(command)
-
-	mockCtrl := gomock.NewController(t)
-	mockExec := mockexec.NewMockCommand(mockCtrl)
-	tests := []struct {
-		name          string
-		execOut       string
-		execErr       error
-		returnCode    int
-		expectedValue bool
-	}{
-		{name: "True", execOut: "1234", execErr: nil, expectedValue: true},
-		{name: "False", execOut: "", execErr: nil, expectedValue: false},
-		{name: "Error", execOut: "1234", execErr: errors.New("cmd error"), expectedValue: false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
-
-			// Setup mock calls.
-			mockExec.EXPECT().Execute(
-				ctx, gomock.Any(), gomock.Any(),
-			).Return([]byte(tt.execOut), tt.execErr)
-
-			// Only mock out the second call if the expected value isn't true.
-			if !tt.expectedValue {
-				mockExec.EXPECT().Execute(
-					ctx, gomock.Any(), gomock.Any(), gomock.Any(),
-				).Return([]byte(tt.execOut), tt.execErr)
-			}
-
-			// Assign the shared command to the mock.
-			command = mockExec
-
-			actualValue := multipathdIsRunning(context.Background())
-			assert.Equal(t, tt.expectedValue, actualValue)
 		})
 	}
 }

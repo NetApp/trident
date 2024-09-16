@@ -15,8 +15,8 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/mocks/mock_utils"
 	"github.com/netapp/trident/mocks/mock_utils/mock_models"
+	mock_iscsi "github.com/netapp/trident/mocks/mock_utils/mock_reconcile_utils"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
@@ -573,7 +573,7 @@ func TestUpgradeVolumeTrackingFile_MissingDevicePathAfterUpgrade(t *testing.T) {
 
 func TestValidateTrackingFile(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	mockiSCSIUtils := mock_utils.NewMockIscsiReconcileUtils(mockCtrl)
+	mockiSCSIUtils := mock_iscsi.NewMockIscsiReconcileUtils(mockCtrl)
 	jsonReaderWriter := mock_models.NewMockJSONReaderWriter(mockCtrl)
 
 	defer func() { osFs = afero.NewOsFs() }()

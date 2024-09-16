@@ -16,6 +16,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -24,7 +25,6 @@ const LUKSMetadataSize = 18874368
 
 const (
 	luksDevicePrefix = "luks-"
-	devPrefix        = "/dev/"
 )
 
 // waitForDevice accepts a device name and checks if it is present
@@ -43,12 +43,12 @@ func waitForDevice(ctx context.Context, device string) error {
 }
 
 // flushDevice flushes any outstanding I/O to all paths to a device.
-func flushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, force bool) error {
+func flushDevice(ctx context.Context, deviceInfo *iscsi.ScsiDeviceInfo, force bool) error {
 	Logc(ctx).Debug(">>>> devices.flushDevice")
 	defer Logc(ctx).Debug("<<<< devices.flushDevice")
 
 	for _, device := range deviceInfo.Devices {
-		err := flushOneDevice(ctx, devPrefix+device)
+		err := flushOneDevice(ctx, iscsi.DevPrefix+device)
 		if err != nil && !force {
 			// Return error only if this is a standalone device, i.e. no multipath device is present for this device.
 			// If a multipath device exists, then it should be flushed before flushing the device,
@@ -115,140 +115,6 @@ func isDeviceUnformatted(ctx context.Context, device string) (bool, error) {
 	return true, nil
 }
 
-func ISCSIRescanDevices(ctx context.Context, targetIQN string, lunID int32, minSize int64) error {
-	GenerateRequestContextForLayer(ctx, LogLayerUtils)
-
-	fields := LogFields{"targetIQN": targetIQN, "lunID": lunID}
-	Logc(ctx).WithFields(fields).Debug(">>>> devices.ISCSIRescanDevices")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.ISCSIRescanDevices")
-
-	deviceInfo, err := getDeviceInfoForLUN(ctx, int(lunID), targetIQN, false, false)
-	if err != nil {
-		return fmt.Errorf("error getting iSCSI device information: %s", err)
-	} else if deviceInfo == nil {
-		return fmt.Errorf("could not get iSCSI device information for LUN: %d", lunID)
-	}
-
-	allLargeEnough := true
-	for _, diskDevice := range deviceInfo.Devices {
-		size, err := getISCSIDiskSize(ctx, devPrefix+diskDevice)
-		if err != nil {
-			return err
-		}
-		if size < minSize {
-			allLargeEnough = false
-		} else {
-			continue
-		}
-
-		err = iSCSIRescanDisk(ctx, diskDevice)
-		if err != nil {
-			Logc(ctx).WithField("diskDevice", diskDevice).Error("Failed to rescan disk.")
-			return fmt.Errorf("failed to rescan disk %s: %s", diskDevice, err)
-		}
-	}
-
-	if !allLargeEnough {
-		time.Sleep(time.Second)
-		for _, diskDevice := range deviceInfo.Devices {
-			size, err := getISCSIDiskSize(ctx, devPrefix+diskDevice)
-			if err != nil {
-				return err
-			}
-			if size < minSize {
-				Logc(ctx).Error("Disk size not large enough after resize.")
-				return fmt.Errorf("disk size not large enough after resize: %d, %d", size, minSize)
-			}
-		}
-	}
-
-	if deviceInfo.MultipathDevice != "" {
-		multipathDevice := deviceInfo.MultipathDevice
-		size, err := getISCSIDiskSize(ctx, devPrefix+multipathDevice)
-		if err != nil {
-			return err
-		}
-
-		fields = LogFields{"size": size, "minSize": minSize}
-		if size < minSize {
-			Logc(ctx).WithFields(fields).Debug("Reloading the multipath device.")
-			err := reloadMultipathDevice(ctx, multipathDevice)
-			if err != nil {
-				return err
-			}
-			time.Sleep(time.Second)
-			size, err = getISCSIDiskSize(ctx, devPrefix+multipathDevice)
-			if err != nil {
-				return err
-			}
-			if size < minSize {
-				Logc(ctx).Error("Multipath device not large enough after resize.")
-				return fmt.Errorf("multipath device not large enough after resize: %d < %d", size, minSize)
-			}
-		} else {
-			Logc(ctx).WithFields(fields).Debug("Not reloading the multipath device because the size is greater than or equal to the minimum size.")
-		}
-	}
-
-	return nil
-}
-
-func reloadMultipathDevice(ctx context.Context, multipathDevice string) error {
-	fields := LogFields{"multipathDevice": multipathDevice}
-	Logc(ctx).WithFields(fields).Debug(">>>> devices.reloadMultipathDevice")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.reloadMultipathDevice")
-
-	if multipathDevice == "" {
-		return fmt.Errorf("cannot reload an empty multipathDevice")
-	}
-
-	_, err := command.ExecuteWithTimeout(ctx, "multipath", 10*time.Second, true, "-r", devPrefix+multipathDevice)
-	if err != nil {
-		Logc(ctx).WithFields(LogFields{
-			"device": multipathDevice,
-			"error":  err,
-		}).Error("Failed to reload multipathDevice.")
-		return fmt.Errorf("failed to reload multipathDevice %s: %s", multipathDevice, err)
-	}
-
-	Logc(ctx).WithFields(fields).Debug("Multipath device reloaded.")
-	return nil
-}
-
-// iSCSIRescanDisk causes the kernel to rescan a single iSCSI disk/block device.
-// This is how size changes are found when expanding a volume.
-func iSCSIRescanDisk(ctx context.Context, deviceName string) error {
-	fields := LogFields{"deviceName": deviceName}
-	Logc(ctx).WithFields(fields).Debug(">>>> devices.iSCSIRescanDisk")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.iSCSIRescanDisk")
-
-	listAllISCSIDevices(ctx)
-	filename := fmt.Sprintf(chrootPathPrefix+"/sys/block/%s/device/rescan", deviceName)
-	Logc(ctx).WithField("filename", filename).Debug("Opening file for writing.")
-
-	f, err := os.OpenFile(filename, os.O_WRONLY, 0)
-	if err != nil {
-		Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
-		return err
-	}
-	defer f.Close()
-
-	written, err := f.WriteString("1")
-	if err != nil {
-		Logc(ctx).WithFields(LogFields{
-			"file":  filename,
-			"error": err,
-		}).Warning("Could not write to file.")
-		return err
-	} else if written == 0 {
-		Logc(ctx).WithField("file", filename).Warning("Zero bytes written to file.")
-		return fmt.Errorf("no data written to %s", filename)
-	}
-
-	listAllISCSIDevices(ctx)
-	return nil
-}
-
 func GetDeviceNameFromMount(ctx context.Context, mountpath string) (string, int, error) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
@@ -293,43 +159,8 @@ func GetDeviceNameFromMount(ctx context.Context, mountpath string) (string, int,
 	return device, refCount, nil
 }
 
-// In the case of a iscsi trace debug, log info about session and what devices are present
-func listAllISCSIDevices(ctx context.Context) {
-	Logc(ctx).Trace(">>>> devices.listAllISCSIDevices")
-	defer Logc(ctx).Trace("<<<< devices.listAllISCSIDevices")
-	// Log information about all the devices
-	dmLog := make([]string, 0)
-	sdLog := make([]string, 0)
-	sysLog := make([]string, 0)
-	entries, _ := os.ReadDir(devPrefix)
-	for _, entry := range entries {
-		if strings.HasPrefix(entry.Name(), "dm-") {
-			dmLog = append(dmLog, entry.Name())
-		}
-		if strings.HasPrefix(entry.Name(), "sd") {
-			sdLog = append(sdLog, entry.Name())
-		}
-	}
-
-	entries, _ = os.ReadDir("/sys/block/")
-	for _, entry := range entries {
-		sysLog = append(sysLog, entry.Name())
-	}
-
-	// TODO: Call this only when verbose logging requires beyond debug level.
-	// out1, _ := command.ExecuteWithTimeout(ctx, "multipath", deviceOperationsTimeout, true, "-ll")
-	// out2, _ := execIscsiadmCommand(ctx, "-m", "session")
-	Logc(ctx).WithFields(LogFields{
-		"/dev/dm-*":    dmLog,
-		"/dev/sd*":     sdLog,
-		"/sys/block/*": sysLog,
-		//	"multipath -ll output":       string(out1),
-		//	"iscsiadm -m session output": string(out2),
-	}).Trace("Listing all iSCSI Devices.")
-}
-
 // removeDevice tells Linux that a device will be removed.
-func removeDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, ignoreErrors bool) error {
+func removeDevice(ctx context.Context, deviceInfo *iscsi.ScsiDeviceInfo, ignoreErrors bool) error {
 	Logc(ctx).Debug(">>>> devices.removeDevice")
 	defer Logc(ctx).Debug("<<<< devices.removeDevice")
 
@@ -424,7 +255,7 @@ func canFlushMultipathDevice(ctx context.Context, devicePath string) error {
 }
 
 // multipathFlushDevice invokes the 'multipath' commands to flush paths for a single device.
-func multipathFlushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) error {
+func multipathFlushDevice(ctx context.Context, deviceInfo *iscsi.ScsiDeviceInfo) error {
 	Logc(ctx).WithField("device", deviceInfo.MultipathDevice).Debug(">>>> devices.multipathFlushDevice")
 	defer Logc(ctx).Debug("<<<< devices.multipathFlushDevice")
 
@@ -432,7 +263,7 @@ func multipathFlushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) error
 		return nil
 	}
 
-	devicePath := devPrefix + deviceInfo.MultipathDevice
+	devicePath := iscsi.DevPrefix + deviceInfo.MultipathDevice
 
 	deviceErr := canFlushMultipathDevice(ctx, devicePath)
 	if deviceErr != nil {
@@ -472,7 +303,7 @@ func multipathFlushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) error
 }
 
 // GetMountedISCSIDevices returns a list of iSCSI devices that are *mounted* on this host.
-func GetMountedISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
+func GetMountedISCSIDevices(ctx context.Context) ([]*iscsi.ScsiDeviceInfo, error) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
 	Logc(ctx).Debug(">>>> devices.GetMountedISCSIDevices")
@@ -487,7 +318,7 @@ func GetMountedISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 	mountedDevices := make([]string, 0)
 	for _, procMount := range procSelfMountinfo {
 
-		hasDevMountSourcePrefix := strings.HasPrefix(procMount.MountSource, devPrefix)
+		hasDevMountSourcePrefix := strings.HasPrefix(procMount.MountSource, iscsi.DevPrefix)
 		hasPvcMountPoint := strings.Contains(procMount.MountPoint, "/pvc-")
 
 		if !hasPvcMountPoint {
@@ -502,7 +333,7 @@ func GetMountedISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 				Logc(ctx).Error(err)
 				continue
 			}
-			mountedDevice = strings.TrimPrefix(device, devPrefix)
+			mountedDevice = strings.TrimPrefix(device, iscsi.DevPrefix)
 		} else {
 			mountedDevice = strings.TrimPrefix(procMount.Root, "/")
 		}
@@ -516,7 +347,7 @@ func GetMountedISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 		return nil, err
 	}
 
-	mountedISCSIDevices := make([]*ScsiDeviceInfo, 0)
+	mountedISCSIDevices := make([]*iscsi.ScsiDeviceInfo, 0)
 
 	// For each mounted device, look for a matching iSCSI device
 	for _, mountedDevice := range mountedDevices {
@@ -554,13 +385,13 @@ func GetMountedISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 }
 
 // GetISCSIDevices returns a list of iSCSI devices that are attached to (but not necessarily mounted on) this host.
-func GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*ScsiDeviceInfo, error) {
+func GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*iscsi.ScsiDeviceInfo, error) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
 	Logc(ctx).Debug(">>>> devices.GetISCSIDevices")
 	defer Logc(ctx).Debug("<<<< devices.GetISCSIDevices")
 
-	devices := make([]*ScsiDeviceInfo, 0)
+	devices := make([]*iscsi.ScsiDeviceInfo, 0)
 	hostSessionMapCache := make(map[string]map[int]int)
 
 	// Start by reading the sessions from /sys/class/iscsi_session
@@ -744,7 +575,7 @@ func GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*ScsiDeviceInf
 					"hostSessionMap":  hostSessionMap,
 				}).Debug("Found iSCSI device.")
 
-				device := &ScsiDeviceInfo{
+				device := &iscsi.ScsiDeviceInfo{
 					Host:            hostNum,
 					Channel:         busNum,
 					Target:          deviceNum,
@@ -763,54 +594,6 @@ func GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*ScsiDeviceInf
 	}
 
 	return devices, nil
-}
-
-// waitForMultipathDeviceForDevices accepts a list of sd* device names which are associated with same LUN
-// and waits until a multipath device is present for at least one of those.  It returns the name of the
-// multipath device, or an empty string if multipathd isn't running or there is only one path.
-func waitForMultipathDeviceForDevices(ctx context.Context, devices []string) (string, error) {
-	fields := LogFields{"devices": devices}
-
-	Logc(ctx).WithFields(fields).Debug(">>>> devices.waitForMultipathDeviceForDevices")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.waitForMultipathDeviceForDevices")
-
-	multipathDevice := ""
-
-	for _, device := range devices {
-		multipathDevice = findMultipathDeviceForDevice(ctx, device)
-		if multipathDevice != "" {
-			break
-		}
-	}
-
-	if multipathDevice == "" {
-		Logc(ctx).WithField("multipathDevice", multipathDevice).Warn("Multipath device not found.")
-		return "", fmt.Errorf("multipath device not found when it is expected")
-
-	} else {
-		Logc(ctx).WithField("multipathDevice", multipathDevice).Debug("Multipath device found.")
-	}
-
-	return multipathDevice, nil
-}
-
-// findMultipathDeviceForDevice finds the devicemapper parent of a device name like /dev/sdx.
-func findMultipathDeviceForDevice(ctx context.Context, device string) string {
-	Logc(ctx).WithField("device", device).Debug(">>>> devices.findMultipathDeviceForDevice")
-	defer Logc(ctx).WithField("device", device).Debug("<<<< devices.findMultipathDeviceForDevice")
-
-	holdersDir := chrootPathPrefix + "/sys/block/" + device + "/holders"
-	if dirs, err := os.ReadDir(holdersDir); err == nil {
-		for _, f := range dirs {
-			name := f.Name()
-			if strings.HasPrefix(name, "dm-") {
-				return name
-			}
-		}
-	}
-
-	Logc(ctx).WithField("device", device).Debug("Could not find multipath device for device.")
-	return ""
 }
 
 // findDevicesForMultipathDevice finds the constituent devices for a devicemapper parent device like /dev/dm-0.
@@ -844,11 +627,11 @@ func findDevicesForMultipathDevice(ctx context.Context, device string) []string 
 
 // compareWithPublishedDevicePath verifies that published path matches the discovered device path
 func compareWithPublishedDevicePath(
-	ctx context.Context, publishInfo *models.VolumePublishInfo, deviceInfo *ScsiDeviceInfo,
+	ctx context.Context, publishInfo *models.VolumePublishInfo, deviceInfo *iscsi.ScsiDeviceInfo,
 ) (bool, error) {
 	isProbablyGhostDevice := false
-	discoverMpath := strings.TrimPrefix(deviceInfo.MultipathDevice, devPrefix)
-	publishedMpath := strings.TrimPrefix(publishInfo.DevicePath, devPrefix)
+	discoverMpath := strings.TrimPrefix(deviceInfo.MultipathDevice, iscsi.DevPrefix)
+	publishedMpath := strings.TrimPrefix(publishInfo.DevicePath, iscsi.DevPrefix)
 
 	if discoverMpath != publishedMpath {
 		// If this is the case, a wrong multipath device has been identified.
@@ -859,7 +642,7 @@ func compareWithPublishedDevicePath(
 			"publishedMultipathDevice":  publishedMpath,
 		}).Debug("Discovered multipath device may not be correct,")
 
-		deviceInfo.MultipathDevice = strings.TrimPrefix(publishedMpath, devPrefix)
+		deviceInfo.MultipathDevice = strings.TrimPrefix(publishedMpath, iscsi.DevPrefix)
 		deviceInfo.Devices = []string{}
 
 		// Get Device based on the multipath value at the same time identify if it is a ghost device.
@@ -898,7 +681,7 @@ func compareWithPublishedDevicePath(
 
 // compareWithPublishedSerialNumber verifies that device serial number matches the discovered LUNs
 func compareWithPublishedSerialNumber(
-	ctx context.Context, publishInfo *models.VolumePublishInfo, deviceInfo *ScsiDeviceInfo,
+	ctx context.Context, publishInfo *models.VolumePublishInfo, deviceInfo *iscsi.ScsiDeviceInfo,
 ) (bool, error) {
 	isProbablyGhostDevice := false
 	lunSerialCheckPassed := false
@@ -938,7 +721,7 @@ func compareWithPublishedSerialNumber(
 				publishInfo.IscsiLunSerial, err)
 		}
 
-		deviceInfo.MultipathDevice = strings.TrimPrefix(multipathDevice, devPrefix)
+		deviceInfo.MultipathDevice = strings.TrimPrefix(multipathDevice, iscsi.DevPrefix)
 
 		// Get Device based on the multipath value at the same time identify if it is a ghost device.
 		devices, err := IscsiUtils.GetMultipathDeviceDisks(ctx, multipathDevice)
@@ -972,7 +755,7 @@ func compareWithPublishedSerialNumber(
 // then it indicates a larger problem that user needs to manually fix
 func compareWithAllPublishInfos(
 	ctx context.Context, publishInfo *models.VolumePublishInfo,
-	allPublishInfos []models.VolumePublishInfo, deviceInfo *ScsiDeviceInfo,
+	allPublishInfos []models.VolumePublishInfo, deviceInfo *iscsi.ScsiDeviceInfo,
 ) error {
 	// During unstaging at least 1 publish info should exist else
 	// there is some issue on the node.
@@ -1020,7 +803,7 @@ func compareWithAllPublishInfos(
 // LUN number uniqueness.
 func verifyMultipathDevice(
 	ctx context.Context, publishInfo *models.VolumePublishInfo,
-	allPublishInfos []models.VolumePublishInfo, deviceInfo *ScsiDeviceInfo,
+	allPublishInfos []models.VolumePublishInfo, deviceInfo *iscsi.ScsiDeviceInfo,
 ) (bool, error) {
 	// Ensure a correct multipath device is being discovered.
 	// Following steps can be performed:
@@ -1088,7 +871,7 @@ func PrepareDeviceForRemoval(
 	var multipathDevice string
 	performDeferredDeviceRemoval, err := removeSCSIDevice(ctx, deviceInfo, ignoreErrors, force)
 	if performDeferredDeviceRemoval && deviceInfo.MultipathDevice != "" {
-		multipathDevice = devPrefix + deviceInfo.MultipathDevice
+		multipathDevice = iscsi.DevPrefix + deviceInfo.MultipathDevice
 		Logc(ctx).WithFields(LogFields{
 			"lunID":           lunID,
 			"multipathDevice": multipathDevice,
@@ -1165,7 +948,7 @@ func RemoveMultipathDeviceMapping(ctx context.Context, devicePath string) error 
 // loss or data corruption, there are times when data loss is unavoidable, or has already
 // happened, and in those cases it's better to be able to clean up than to be stuck in an
 // endless retry loop.
-func removeSCSIDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, ignoreErrors, skipFlush bool) (bool, error) {
+func removeSCSIDevice(ctx context.Context, deviceInfo *iscsi.ScsiDeviceInfo, ignoreErrors, skipFlush bool) (bool, error) {
 	listAllISCSIDevices(ctx)
 
 	// Flush multipath device
@@ -1210,109 +993,10 @@ func removeSCSIDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, ignoreErr
 	return ignoreErrors || skipFlush, nil
 }
 
-// ScsiDeviceInfo contains information about SCSI devices
-type ScsiDeviceInfo struct {
-	Host            string
-	Channel         string
-	Target          string
-	LUN             string
-	Devices         []string
-	DevicePaths     []string
-	MultipathDevice string
-	Filesystem      string
-	IQN             string
-	SessionNumber   int
-	HostSessionMap  map[int]int
-	CHAPInfo        models.IscsiChapInfo
-}
-
-// getDeviceInfoForLUN finds iSCSI devices using /dev/disk/by-path values.  This method should be
-// called after calling waitForDeviceScan so that the device paths are known to exist.
-func getDeviceInfoForLUN(
-	ctx context.Context, lunID int, iSCSINodeName string, needFSType, isDetachCall bool,
-) (*ScsiDeviceInfo, error) {
-	fields := LogFields{
-		"lunID":         lunID,
-		"iSCSINodeName": iSCSINodeName,
-		"needFSType":    needFSType,
-	}
-	Logc(ctx).WithFields(fields).Debug(">>>> devices.getDeviceInfoForLUN")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.getDeviceInfoForLUN")
-
-	hostSessionMap := IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
-
-	// During detach if hostSessionMap count is zero, we should be fine
-	if len(hostSessionMap) == 0 {
-		if isDetachCall {
-			Logc(ctx).WithFields(fields).Debug("No iSCSI hosts found for target.")
-			return nil, nil
-		} else {
-			return nil, fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
-		}
-	}
-
-	paths := IscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
-
-	devices, err := IscsiUtils.GetDevicesForLUN(paths)
-	if err != nil {
-		return nil, err
-	} else if 0 == len(devices) {
-		return nil, fmt.Errorf("scan not completed for LUN %d on target %s", lunID, iSCSINodeName)
-	}
-
-	multipathDevice := ""
-	for _, device := range devices {
-		multipathDevice = findMultipathDeviceForDevice(ctx, device)
-		if multipathDevice != "" {
-			break
-		}
-	}
-
-	var devicePath string
-	if multipathDevice != "" {
-		devicePath = devPrefix + multipathDevice
-	} else {
-		devicePath = devPrefix + devices[0]
-	}
-
-	fsType := ""
-	if needFSType {
-		err = ensureDeviceReadable(ctx, devicePath)
-		if err != nil {
-			return nil, err
-		}
-
-		fsType, err = getDeviceFSType(ctx, devicePath)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"lun":             strconv.Itoa(lunID),
-		"multipathDevice": multipathDevice,
-		"fsType":          fsType,
-		"deviceNames":     devices,
-		"hostSessionMap":  hostSessionMap,
-	}).Debug("Found SCSI device.")
-
-	info := &ScsiDeviceInfo{
-		LUN:             strconv.Itoa(lunID),
-		MultipathDevice: multipathDevice,
-		Devices:         devices,
-		DevicePaths:     paths,
-		Filesystem:      fsType,
-		IQN:             iSCSINodeName,
-		HostSessionMap:  hostSessionMap,
-	}
-
-	return info, nil
-}
-
 // getDeviceInfoForMountPath discovers the device that is currently mounted at the specified mount path.  It
 // uses the ScsiDeviceInfo struct so that it may return a multipath device (if any) plus one or more underlying
 // physical devices.
-func getDeviceInfoForMountPath(ctx context.Context, mountpath string) (*ScsiDeviceInfo, error) {
+func getDeviceInfoForMountPath(ctx context.Context, mountpath string) (*iscsi.ScsiDeviceInfo, error) {
 	fields := LogFields{"mountpath": mountpath}
 	Logc(ctx).WithFields(fields).Debug(">>>> devices.getDeviceInfoForMountPath")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.getDeviceInfoForMountPath")
@@ -1327,16 +1011,16 @@ func getDeviceInfoForMountPath(ctx context.Context, mountpath string) (*ScsiDevi
 		return nil, err
 	}
 
-	device = strings.TrimPrefix(device, devPrefix)
+	device = strings.TrimPrefix(device, iscsi.DevPrefix)
 
-	var deviceInfo *ScsiDeviceInfo
+	var deviceInfo *iscsi.ScsiDeviceInfo
 
 	if !strings.HasPrefix(device, "dm-") {
-		deviceInfo = &ScsiDeviceInfo{
+		deviceInfo = &iscsi.ScsiDeviceInfo{
 			Devices: []string{device},
 		}
 	} else {
-		deviceInfo = &ScsiDeviceInfo{
+		deviceInfo = &iscsi.ScsiDeviceInfo{
 			Devices:         findDevicesForMultipathDevice(ctx, device),
 			MultipathDevice: device,
 		}
@@ -1350,53 +1034,6 @@ func getDeviceInfoForMountPath(ctx context.Context, mountpath string) (*ScsiDevi
 	return deviceInfo, nil
 }
 
-// waitForMultipathDeviceForLUN
-// for the given LUN, this function waits for the associated multipath device to be present
-// first find the /dev/sd* devices assocaited with the LUN
-// Wait for the maultipath device dm-* for the /dev/sd* devices.
-func waitForMultipathDeviceForLUN(ctx context.Context, lunID int, iSCSINodeName string) error {
-	fields := LogFields{
-		"lunID":         lunID,
-		"iSCSINodeName": iSCSINodeName,
-	}
-	Logc(ctx).WithFields(fields).Debug(">>>> devices.waitForMultipathDeviceForLUN")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.waitForMultipathDeviceForLUN")
-
-	hostSessionMap := IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
-	if len(hostSessionMap) == 0 {
-		return fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
-	}
-
-	paths := IscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
-
-	devices, err := IscsiUtils.GetDevicesForLUN(paths)
-	if err != nil {
-		return err
-	}
-
-	_, err = waitForMultipathDeviceForDevices(ctx, devices)
-
-	return err
-}
-
-//go:generate mockgen -destination=../mocks/mock_utils/mock_luks/mock_luks.go -package mock_luks github.com/netapp/trident/utils LUKSDeviceInterface
-
-type LUKSDeviceInterface interface {
-	RawDevicePath() string
-	MappedDevicePath() string
-	MappedDeviceName() string
-
-	IsLUKSFormatted(ctx context.Context) (bool, error)
-	IsOpen(ctx context.Context) (bool, error)
-
-	Open(ctx context.Context, luksPassphrase string) error
-	LUKSFormat(ctx context.Context, luksPassphrase string) error
-	EnsureFormattedAndOpen(ctx context.Context, luksPassphrase string) (bool, error)
-	RotatePassphrase(ctx context.Context, volumeId, previousLUKSPassphrase, luksPassphrase string) error
-	CheckPassphrase(ctx context.Context, luksPassphrase string) (bool, error)
-	Resize(ctx context.Context, luksPassphrase string) error
-}
-
 type LUKSDevice struct {
 	rawDevicePath string
 	mappingName   string
@@ -1407,17 +1044,9 @@ func NewLUKSDevice(rawDevicePath, volumeId string) (*LUKSDevice, error) {
 	return &LUKSDevice{rawDevicePath, luksDeviceName}, nil
 }
 
-func NewLUKSDeviceFromMappingPath(ctx context.Context, mappingPath, volumeId string) (*LUKSDevice, error) {
-	rawDevicePath, err := GetUnderlyingDevicePathForLUKSDevice(ctx, mappingPath)
-	if err != nil {
-		return nil, fmt.Errorf("could not determine underlying device for LUKS mapping; %v", err)
-	}
-	return NewLUKSDevice(rawDevicePath, volumeId)
-}
-
 // MappedDevicePath returns the location of the LUKS device when opened.
 func (d *LUKSDevice) MappedDevicePath() string {
-	return devMapperRoot + d.mappingName
+	return iscsi.DevMapperRoot + d.mappingName
 }
 
 // MappedDeviceName returns the name of the LUKS device when opened.
@@ -1435,7 +1064,15 @@ func (d *LUKSDevice) EnsureFormattedAndOpen(ctx context.Context, luksPassphrase 
 	return ensureLUKSDevice(ctx, d, luksPassphrase)
 }
 
-func ensureLUKSDevice(ctx context.Context, luksDevice LUKSDeviceInterface, luksPassphrase string) (bool, error) {
+func NewLUKSDeviceFromMappingPath(ctx context.Context, mappingPath, volumeId string) (*LUKSDevice, error) {
+	rawDevicePath, err := GetUnderlyingDevicePathForLUKSDevice(ctx, mappingPath)
+	if err != nil {
+		return nil, fmt.Errorf("could not determine underlying device for LUKS mapping; %v", err)
+	}
+	return NewLUKSDevice(rawDevicePath, volumeId)
+}
+
+func ensureLUKSDevice(ctx context.Context, luksDevice models.LUKSDeviceInterface, luksPassphrase string) (bool, error) {
 	// First check if LUKS device is already opened. This is OK to check even if the device isn't LUKS formatted.
 	if isOpen, err := luksDevice.IsOpen(ctx); err != nil {
 		// If the LUKS device isn't found, it means that we need to check if the device is LUKS formatted.
@@ -1479,7 +1116,7 @@ func GetLUKSPassphrasesFromSecretMap(secrets map[string]string) (string, string,
 
 // EnsureLUKSDeviceMappedOnHost ensures the specified device is LUKS formatted, opened, and has the current passphrase.
 func EnsureLUKSDeviceMappedOnHost(
-	ctx context.Context, luksDevice LUKSDeviceInterface, name string, secrets map[string]string,
+	ctx context.Context, luksDevice models.LUKSDeviceInterface, name string, secrets map[string]string,
 ) (bool, error) {
 	// Try to Open with current luks passphrase
 	luksPassphraseName, luksPassphrase, previousLUKSPassphraseName, previousLUKSPassphrase := GetLUKSPassphrasesFromSecretMap(secrets)
@@ -1526,4 +1163,20 @@ func ResizeLUKSDevice(ctx context.Context, luksDevicePath, luksPassphrase string
 	luksDeviceName := filepath.Base(luksDevicePath)
 	luksDevice := &LUKSDevice{"", luksDeviceName}
 	return luksDevice.Resize(ctx, luksPassphrase)
+}
+
+// ------ TODO remove:  temporary functions to bridge the gap while we transition to the new iscsi client ------
+
+func getDeviceInfoForLUN(
+	ctx context.Context, lunID int, iSCSINodeName string, needFSType, isDetachCall bool,
+) (*iscsi.ScsiDeviceInfo, error) {
+	return iscsiClient.GetDeviceInfoForLUN(ctx, lunID, iSCSINodeName, needFSType, isDetachCall)
+}
+
+func findMultipathDeviceForDevice(ctx context.Context, device string) string {
+	return iscsiClient.FindMultipathDeviceForDevice(ctx, device)
+}
+
+func getLunSerial(ctx context.Context, path string) (string, error) {
+	return iscsi.GetLunSerial(ctx, path)
 }

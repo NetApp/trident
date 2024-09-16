@@ -1516,21 +1516,6 @@ func (mr *MockExtendedK8sClientInterfaceMockRecorder) GetVolumeSnapshots(arg0 in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeSnapshots", reflect.TypeOf((*MockExtendedK8sClientInterface)(nil).GetVolumeSnapshots), arg0)
 }
 
-// IsTopologyInUse mocks base method.
-func (m *MockExtendedK8sClientInterface) IsTopologyInUse() (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsTopologyInUse")
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// IsTopologyInUse indicates an expected call of IsTopologyInUse.
-func (mr *MockExtendedK8sClientInterfaceMockRecorder) IsTopologyInUse() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsTopologyInUse", reflect.TypeOf((*MockExtendedK8sClientInterface)(nil).IsTopologyInUse))
-}
-
 // Namespace mocks base method.
 func (m *MockExtendedK8sClientInterface) Namespace() string {
 	m.ctrl.T.Helper()
