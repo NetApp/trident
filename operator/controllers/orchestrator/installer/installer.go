@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package installer
 
@@ -19,7 +19,7 @@ import (
 	"github.com/netapp/trident/cli/api"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	commonconfig "github.com/netapp/trident/config"
-	"github.com/netapp/trident/internal/nodeprep"
+	"github.com/netapp/trident/internal/nodeprep/validation"
 	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
@@ -389,7 +389,7 @@ func (i *Installer) setInstallationParams(
 	logWorkflows = cr.Spec.LogWorkflows
 	logLayers = cr.Spec.LogLayers
 
-	nodePrep = nodeprep.FormatProtocols(cr.Spec.NodePrep)
+	nodePrep = validation.FormatProtocols(cr.Spec.NodePrep)
 
 	if cr.Spec.ProbePort != nil {
 		probePort = strconv.FormatInt(*cr.Spec.ProbePort, 10)
@@ -537,7 +537,7 @@ func (i *Installer) setInstallationParams(
 	}
 
 	// Perform nodePrep prechecks
-	if returnError = nodeprep.ValidateProtocols(nodePrep); returnError != nil {
+	if returnError = validation.ValidateProtocols(nodePrep); returnError != nil {
 		return nil, nil, false, returnError
 	}
 
