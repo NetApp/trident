@@ -996,6 +996,39 @@ func (d Client) VolumeCreate(
 	return response, err
 }
 
+func (d Client) VolumeCreateWithDP(
+    name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
+    exportPolicy, securityStyle string, encrypt bool, snapshotReserve int, dpVolume bool,
+) (*azgo.VolumeCreateResponse, error) {
+    request := azgo.NewVolumeCreateRequest().
+        SetVolume(name).
+        SetContainingAggrName(aggregateName).
+        SetSize(size).
+        SetSpaceReserve(spaceReserve).
+        SetSnapshotPolicy(snapshotPolicy).
+        SetExportPolicy(exportPolicy).
+        SetVolumeSecurityStyle(securityStyle).
+        SetEncrypt(encrypt)
+
+    if snapshotReserve != NumericalValueNotSet {
+        request.SetPercentageSnapshotReserve(snapshotReserve)
+    }
+
+    if dpVolume {
+        request.SetVolumeType("DP")
+    } else {
+        request.SetUnixPermissions(unixPermissions)
+    }
+
+    if d.SupportsFeature(NetAppFabricPoolFlexVol) {
+        request.SetTieringPolicy("none")
+    }
+
+    response, err := request.ExecuteUsing(d.zr)
+    return response, err
+}
+
+
 // VolumeCloneCreate clones a volume from a snapshot
 func (d Client) VolumeCloneCreate(name, source, snapshot string) (*azgo.VolumeCloneCreateResponse, error) {
 	response, err := azgo.NewVolumeCloneCreateRequest().
