@@ -24,7 +24,7 @@ func main() {
 		"binary":     os.Args[0],
 	}).Info("Running Trident node preparation.")
 
-	nodeprep.PrepareNode(strings.Split(strings.ToLower(*flags.nodePrep), ","))
+	nodeprep.NewNodePrep().PrepareNode(strings.Split(strings.ToLower(*flags.nodePrep), ","))
 }
 
 func initLogging(flags appFlags) {
