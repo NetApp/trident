@@ -175,6 +175,9 @@ rules:
     verbs: ["use"]
     resourceNames:
       - {CLUSTER_ROLE_NAME}
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["get"]
 `
 
 func GetRoleYAML(namespace, roleName string, labels, controllingCRDetails map[string]string) string {
