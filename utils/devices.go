@@ -14,6 +14,7 @@ import (
 
 	"golang.org/x/net/context"
 
+	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/iscsi"
@@ -25,6 +26,12 @@ const LUKSMetadataSize = 18874368
 
 const (
 	luksDevicePrefix = "luks-"
+)
+
+var (
+	beforeFlushMultipathDevice = fiji.Register("beforeFlushMultipathDevice", "devices")
+	beforeFlushDevice          = fiji.Register("beforeFlushDevice", "devices")
+	beforeRemoveFile           = fiji.Register("beforeRemoveFile", "devices")
 )
 
 // waitForDevice accepts a device name and checks if it is present
@@ -181,6 +188,9 @@ func removeDevice(ctx context.Context, deviceInfo *iscsi.ScsiDeviceInfo, ignoreE
 			return err
 		}
 
+		if err := beforeRemoveFile.Inject(); err != nil {
+			return err
+		}
 		if written, err := f.WriteString("1"); err != nil {
 			Logc(ctx).WithFields(LogFields{"file": filename, "error": err}).Warning("Could not write to file.")
 			f.Close()
@@ -915,7 +925,9 @@ func RemoveMultipathDeviceMapping(ctx context.Context, devicePath string) error 
 	if devicePath == "" {
 		return nil
 	}
-
+	if err := beforeFlushMultipathDevice.Inject(); err != nil {
+		return err
+	}
 	out, err := command.ExecuteWithTimeout(ctx, "multipath", 10*time.Second, false, "-f", devicePath)
 	if err != nil {
 		pathAlreadyRemoved := strings.Contains(string(out), fmt.Sprintf("'%s' is not a valid argument", devicePath))
@@ -966,6 +978,9 @@ func removeSCSIDevice(ctx context.Context, deviceInfo *iscsi.ScsiDeviceInfo, ign
 
 	// Flush devices
 	if !skipFlush {
+		if err := beforeFlushDevice.Inject(); err != nil {
+			return false, err
+		}
 		err := flushDevice(ctx, deviceInfo, ignoreErrors)
 		if err != nil && !ignoreErrors {
 			return false, err

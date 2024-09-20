@@ -27,6 +27,8 @@ var (
 	osFs        = afero.NewOsFs()
 	fileDeleter = utils.DeleteFile
 
+	beforeUpdateTrackingFile          = fiji.Register("beforeUpdateTrackingFile", "volume_publish_manager")
+	beforeTrackingInfoFound           = fiji.Register("beforeTrackingInfoFound", "volume_publish_manager")
 	beforeWritingTempTrackingInfoFile = fiji.Register("beforeWritingTempTrackingInfoFile", "volume_publish_manager")
 	beforeUpdatingTrackingInfoFile    = fiji.Register("beforeUpdatingTrackingInfoFile", "volume_publish_manager")
 )
@@ -63,6 +65,10 @@ func (v *VolumePublishManager) WriteTrackingInfo(
 
 	filename := volumeID + ".json"
 	tmpFile := "tmp-" + filename
+
+	if err := beforeUpdateTrackingFile.Inject(); err != nil {
+		return err
+	}
 
 	// Write to a tmp tmpFile first just in case the node goes down or the write otherwise fails, then move to the final
 	// destination once it succeeds (a rename is just moving a filesystem pointer, not additional I/O).
@@ -106,6 +112,11 @@ func (v *VolumePublishManager) readTrackingInfo(
 ) (*models.VolumeTrackingInfo, error) {
 	var volumeTrackingInfo models.VolumeTrackingInfo
 	filename := volumeID + ".json"
+
+	if err := beforeTrackingInfoFound.Inject(); err != nil {
+		return nil, err
+	}
+
 	err := utils.JsonReaderWriter.ReadJSONFile(ctx, &volumeTrackingInfo, path.Join(v.volumeTrackingInfoPath, filename),
 		"volume tracking info")
 	if err != nil {

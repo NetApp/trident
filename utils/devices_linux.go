@@ -40,6 +40,10 @@ const (
 )
 
 var (
+	afterLuksClose                            = fiji.Register("afterLuksClose", "devices_linux")
+	beforeLuksClose                           = fiji.Register("beforeLuksClose", "devices_linux")
+	beforeLuksCheck                           = fiji.Register("beforeLuksCheck", "devices_linux")
+	beforeBlockDeviceFlushBuffer              = fiji.Register("beforeBlockDeviceFlushBuffer", "devices_linux")
 	beforeCryptSetupFormat                    = fiji.Register("beforeCryptSetupFormat", "node_server")
 	duringOpenBeforeCryptSetupOpen            = fiji.Register("duringOpenBeforeCryptSetupOpen", "devices_linux")
 	duringRotatePassphraseBeforeLuksKeyChange = fiji.Register("duringRotatePassphraseBeforeLuksKeyChange", "devices_linux")
@@ -50,6 +54,10 @@ func flushOneDevice(ctx context.Context, devicePath string) error {
 	fields := LogFields{"rawDevicePath": devicePath}
 	Logc(ctx).WithFields(fields).Debug(">>>> devices_linux.flushOneDevice")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices_linux.flushOneDevice")
+
+	if err := beforeBlockDeviceFlushBuffer.Inject(); err != nil {
+		return err
+	}
 
 	out, err := command.ExecuteWithTimeout(
 		ctx, "blockdev", deviceOperationsTimeout, true, "--flushbufs", devicePath,
@@ -101,6 +109,11 @@ func (d *LUKSDevice) IsLUKSFormatted(ctx context.Context) (bool, error) {
 	device := d.RawDevicePath()
 
 	Logc(ctx).WithField("device", device).Debug("Checking if device is a LUKS device.")
+
+	if err := beforeLuksCheck.Inject(); err != nil {
+		return false, err
+	}
+
 	output, err := command.ExecuteWithTimeoutAndInput(
 		ctx, "cryptsetup", luksCommandTimeout, true, "", "isLuks", device,
 	)
@@ -252,9 +265,18 @@ func (d *LUKSDevice) Close(ctx context.Context) error {
 
 // closeLUKSDevice performs a luksClose on the device at the specified path (example: "/dev/mapper/<luks>").
 func closeLUKSDevice(ctx context.Context, devicePath string) error {
+	if err := beforeLuksClose.Inject(); err != nil {
+		return err
+	}
+
 	output, err := command.ExecuteWithTimeoutAndInput(
 		ctx, "cryptsetup", luksCommandTimeout, true, "", "luksClose", devicePath,
 	)
+
+	if err := afterLuksClose.Inject(); err != nil {
+		return err
+	}
+
 	if err != nil {
 		fields := LogFields{"luksDevicePath": devicePath, "output": string(output)}
 		Logc(ctx).WithFields(fields).WithError(err).Debug("Failed to close LUKS device")

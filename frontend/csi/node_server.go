@@ -54,6 +54,7 @@ var (
 	NVMeNamespacesFlushRetry = make(map[string]time.Time)
 
 	betweenAttachAndLUKSPassphrase = fiji.Register("betweenAttachAndLUKSPassphrase", "node_server")
+	duringIscsiLogout              = fiji.Register("duringIscsiLogout", "node_server")
 )
 
 func attemptLock(ctx context.Context, lockContext string, lockTimeout time.Duration) bool {
@@ -1322,6 +1323,11 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		}
 
 		for _, portal := range publishInfo.IscsiPortals {
+
+			if err := duringIscsiLogout.Inject(); err != nil {
+				return err
+			}
+
 			if err := utils.ISCSILogout(ctx, publishInfo.IscsiTargetIQN, portal); err != nil {
 				Logc(ctx).Error(err)
 			}

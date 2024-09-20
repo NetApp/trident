@@ -43,7 +43,9 @@ var (
 	// perNodeIgroupRegex is used to ensure an igroup meets the following format:
 	// <up to and including 59 characters of a container orchestrator node name>-<36 characters of trident version uuid>
 	// ex: Kubernetes-NodeA-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z
-	perNodeIgroupRegex                = regexp.MustCompile(`^[0-9A-z\-.]{1,59}-[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}`)
+	perNodeIgroupRegex = regexp.MustCompile(`^[0-9A-z\-.]{1,59}-[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}`)
+
+	beforeIscsiLogout                 = fiji.Register("beforeIscsiLogout", "iscsi")
 	duringRescanOneLunBeforeFileWrite = fiji.Register("duringRescanOneLunBeforeFileWrite", "iscsi")
 )
 
@@ -169,6 +171,9 @@ func ISCSILogout(ctx context.Context, targetIQN, targetPortal string) error {
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< iscsi.ISCSILogout")
 
 	defer listAllISCSIDevices(ctx)
+	if err := beforeIscsiLogout.Inject(); err != nil {
+		return err
+	}
 	if _, err := execIscsiadmCommand(ctx, "-m", "node", "-T", targetIQN, "--portal", targetPortal, "-u"); err != nil {
 		Logc(ctx).WithField("error", err).Debug("Error during iSCSI logout.")
 	}
