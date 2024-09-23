@@ -5,8 +5,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // VolumeSnapshotAutodeleteAttributesType is a structure to represent a volume-snapshot-autodelete-attributes ZAPI object

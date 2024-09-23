@@ -7,8 +7,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/mocks/mock_internal/mock_fiji/mock_store"

@@ -5,8 +5,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // VolumeAutosizeAttributesType is a structure to represent a volume-autosize-attributes ZAPI object

@@ -5,12 +5,13 @@
 package fake
 
 import (
-	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+
+	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 )
 
 var scheme = runtime.NewScheme()

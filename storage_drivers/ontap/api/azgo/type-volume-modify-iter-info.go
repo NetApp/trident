@@ -5,8 +5,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // VolumeModifyIterInfoType is a structure to represent a volume-modify-iter-info ZAPI object

@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	. "github.com/netapp/trident/logging"

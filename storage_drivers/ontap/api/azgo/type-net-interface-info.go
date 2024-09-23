@@ -5,8 +5,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // NetInterfaceInfoType is a structure to represent a net-interface-info ZAPI object

@@ -10,7 +10,8 @@ import (
 	reflect "reflect"
 	time "time"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
+
 	api "github.com/netapp/trident/storage_drivers/gcp/api"
 	version "github.com/netapp/trident/utils/version"
 )

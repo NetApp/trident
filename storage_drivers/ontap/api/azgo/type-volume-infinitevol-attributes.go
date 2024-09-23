@@ -5,8 +5,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // VolumeInfinitevolAttributesType is a structure to represent a volume-infinitevol-attributes ZAPI object

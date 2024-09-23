@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/mitchellh/copystructure"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/utils/models"

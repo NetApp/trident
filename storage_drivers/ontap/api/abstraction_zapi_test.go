@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	"github.com/netapp/trident/storage_drivers/ontap/api"

@@ -8,7 +8,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
+
 	utils "github.com/netapp/trident/utils"
 	models "github.com/netapp/trident/utils/models"
 )

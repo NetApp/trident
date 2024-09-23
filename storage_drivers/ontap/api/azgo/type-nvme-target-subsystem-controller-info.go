@@ -5,8 +5,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // NvmeTargetSubsystemControllerInfoType is a structure to represent a nvme-target-subsystem-controller-info ZAPI object

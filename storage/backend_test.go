@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/acp"
 	mockacp "github.com/netapp/trident/mocks/mock_acp"

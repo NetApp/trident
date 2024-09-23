@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
-	"github.com/golang/mock/gomock"
 	"github.com/mitchellh/copystructure"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	tridentconfig "github.com/netapp/trident/config"
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"

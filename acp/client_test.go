@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	mock_acp "github.com/netapp/trident/mocks/mock_acp/mock_rest"
 	"github.com/netapp/trident/utils/errors"

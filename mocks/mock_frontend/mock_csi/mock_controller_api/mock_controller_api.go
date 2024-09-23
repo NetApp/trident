@@ -9,7 +9,8 @@ import (
 	http "net/http"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
+
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	models "github.com/netapp/trident/utils/models"
 )

@@ -26,7 +26,6 @@ require (
 	github.com/go-openapi/strfmt v0.23.0
 	github.com/go-openapi/swag v0.23.0
 	github.com/go-openapi/validate v0.24.0
-	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.4
 	github.com/google/go-cmp v0.6.0
 	github.com/google/uuid v1.6.0
@@ -49,6 +48,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/vishvananda/netlink v1.1.0
 	github.com/zcalusic/sysinfo v1.1.0
+	go.uber.org/mock v0.4.0
 	go.uber.org/multierr v1.11.0 // github.com/uber-go/multierr
 	golang.org/x/crypto v0.23.0 // github.com/golang/crypto
 	golang.org/x/net v0.25.0 // github.com/golang/net

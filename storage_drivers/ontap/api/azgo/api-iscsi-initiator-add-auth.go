@@ -5,8 +5,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // IscsiInitiatorAddAuthRequest is a structure to represent a iscsi-initiator-add-auth Request ZAPI object

@@ -15,10 +15,10 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring"
-	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/logging"

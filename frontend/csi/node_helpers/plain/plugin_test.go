@@ -9,8 +9,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/frontend/csi"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"

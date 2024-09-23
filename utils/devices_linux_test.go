@@ -10,9 +10,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	mockluks "github.com/netapp/trident/mocks/mock_utils/mock_models/mock_luks"

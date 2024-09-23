@@ -5,8 +5,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // NvmeSubsystemGetIterRequest is a structure to represent a nvme-subsystem-get-iter Request ZAPI object

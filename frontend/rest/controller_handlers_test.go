@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	http_test "github.com/stretchr/testify/http"
+	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/frontend"
 	mockcore "github.com/netapp/trident/mocks/mock_core"

@@ -5,8 +5,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // LunSetQosPolicyGroupRequest is a structure to represent a lun-set-qos-policy-group Request ZAPI object

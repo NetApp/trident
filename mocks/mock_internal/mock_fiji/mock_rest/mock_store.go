@@ -7,7 +7,8 @@ package mock_rest
 import (
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
+
 	store "github.com/netapp/trident/internal/fiji/store"
 )
 

@@ -447,7 +447,7 @@ k8s_codegen_operator:
 	@mv $(OPERATOR_KUBERNETES_PKG)/apis/netapp/v1/zz_generated.deepcopy.go ./operator/crd/apis/netapp/v1/
 
 mocks:
-	@go install github.com/golang/mock/mockgen@v1.6.0
+	@go install go.uber.org/mock/mockgen@v0.4.0
 	@go generate ./...
 
 .git/hooks:

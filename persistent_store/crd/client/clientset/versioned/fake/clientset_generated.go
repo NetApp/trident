@@ -5,14 +5,15 @@
 package fake
 
 import (
-	clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
-	tridentv1 "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/typed/netapp/v1"
-	faketridentv1 "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/typed/netapp/v1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
 	fakediscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/testing"
+
+	clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
+	tridentv1 "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/typed/netapp/v1"
+	faketridentv1 "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/typed/netapp/v1/fake"
 )
 
 // NewSimpleClientset returns a clientset that will respond with the provided objects.

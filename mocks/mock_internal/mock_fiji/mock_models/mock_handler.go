@@ -7,7 +7,7 @@ package mock_models
 import (
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockFaultHandler is a mock of FaultHandler interface.

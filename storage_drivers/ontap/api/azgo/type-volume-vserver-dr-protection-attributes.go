@@ -5,8 +5,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // VolumeVserverDrProtectionAttributesType is a structure to represent a volume-vserver-dr-protection-attributes ZAPI object

@@ -5,8 +5,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // AggrSpaceGetIterRequest is a structure to represent a aggr-space-get-iter Request ZAPI object

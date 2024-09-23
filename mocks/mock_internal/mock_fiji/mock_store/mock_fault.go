@@ -7,7 +7,7 @@ package mock_store
 import (
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockFault is a mock of Fault interface.

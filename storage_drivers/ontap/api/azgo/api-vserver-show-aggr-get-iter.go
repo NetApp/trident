@@ -5,8 +5,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // VserverShowAggrGetIterRequest is a structure to represent a vserver-show-aggr-get-iter Request ZAPI object

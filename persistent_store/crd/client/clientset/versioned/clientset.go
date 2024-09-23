@@ -7,10 +7,11 @@ package versioned
 import (
 	"fmt"
 
-	tridentv1 "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/typed/netapp/v1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
+
+	tridentv1 "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/typed/netapp/v1"
 )
 
 type Interface interface {

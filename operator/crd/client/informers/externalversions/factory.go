@@ -9,13 +9,14 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "github.com/netapp/trident/operator/crd/client/clientset/versioned"
-	internalinterfaces "github.com/netapp/trident/operator/crd/client/informers/externalversions/internalinterfaces"
-	netapp "github.com/netapp/trident/operator/crd/client/informers/externalversions/netapp"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
+
+	versioned "github.com/netapp/trident/operator/crd/client/clientset/versioned"
+	internalinterfaces "github.com/netapp/trident/operator/crd/client/informers/externalversions/internalinterfaces"
+	netapp "github.com/netapp/trident/operator/crd/client/informers/externalversions/netapp"
 )
 
 // SharedInformerOption defines the functional option type for SharedInformerFactory.

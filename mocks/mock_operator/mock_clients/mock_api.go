@@ -7,11 +7,12 @@ package mock_clients
 import (
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	v1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
+	gomock "go.uber.org/mock/gomock"
+	types "k8s.io/apimachinery/pkg/types"
+
 	v10 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
 	v11 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
-	types "k8s.io/apimachinery/pkg/types"
 )
 
 // MockOperatorCRDClientInterface is a mock of OperatorCRDClientInterface interface.

@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	tridentconfig "github.com/netapp/trident/config"
 	mock_ontap "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"

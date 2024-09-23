@@ -5,9 +5,10 @@
 package fake
 
 import (
-	v1 "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/typed/netapp/v1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
+
+	v1 "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/typed/netapp/v1"
 )
 
 type FakeTridentV1 struct {

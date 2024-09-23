@@ -8,11 +8,8 @@ import (
 	reflect "reflect"
 	time "time"
 
-	gomock "github.com/golang/mock/gomock"
 	v1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
-	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	v10 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
-	version "github.com/netapp/trident/utils/version"
+	gomock "go.uber.org/mock/gomock"
 	v11 "k8s.io/api/apps/v1"
 	v12 "k8s.io/api/core/v1"
 	v1beta1 "k8s.io/api/policy/v1beta1"
@@ -21,6 +18,10 @@ import (
 	v15 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	version0 "k8s.io/apimachinery/pkg/version"
+
+	k8sclient "github.com/netapp/trident/cli/k8s_client"
+	v10 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
+	version "github.com/netapp/trident/utils/version"
 )
 
 // MockTridentInstaller is a mock of TridentInstaller interface.

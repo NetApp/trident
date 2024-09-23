@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/acp"
 	tridentconfig "github.com/netapp/trident/config"

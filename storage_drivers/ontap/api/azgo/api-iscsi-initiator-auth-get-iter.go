@@ -5,8 +5,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // IscsiInitiatorAuthGetIterRequest is a structure to represent a iscsi-initiator-auth-get-iter Request ZAPI object

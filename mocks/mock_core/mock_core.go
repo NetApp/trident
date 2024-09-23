@@ -9,7 +9,8 @@ import (
 	reflect "reflect"
 	time "time"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
+
 	core "github.com/netapp/trident/core"
 	frontend "github.com/netapp/trident/frontend"
 	storage "github.com/netapp/trident/storage"

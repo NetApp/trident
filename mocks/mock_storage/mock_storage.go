@@ -10,7 +10,8 @@ import (
 	time "time"
 
 	roaring "github.com/RoaringBitmap/roaring"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
+
 	config "github.com/netapp/trident/config"
 	storage "github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"

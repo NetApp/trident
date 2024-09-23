@@ -8,10 +8,8 @@ import (
 	reflect "reflect"
 	time "time"
 
-	gomock "github.com/golang/mock/gomock"
 	v1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
-	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	version "github.com/netapp/trident/utils/version"
+	gomock "go.uber.org/mock/gomock"
 	v10 "k8s.io/api/apps/v1"
 	v11 "k8s.io/api/core/v1"
 	v1beta1 "k8s.io/api/policy/v1beta1"
@@ -20,6 +18,9 @@ import (
 	v14 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	version0 "k8s.io/apimachinery/pkg/version"
+
+	k8sclient "github.com/netapp/trident/cli/k8s_client"
+	version "github.com/netapp/trident/utils/version"
 )
 
 // MockKubernetesClient is a mock of KubernetesClient interface.

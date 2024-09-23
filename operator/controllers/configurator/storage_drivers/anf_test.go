@@ -9,8 +9,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"

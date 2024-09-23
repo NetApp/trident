@@ -5,9 +5,10 @@
 package v1
 
 import (
+	rest "k8s.io/client-go/rest"
+
 	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/scheme"
-	rest "k8s.io/client-go/rest"
 )
 
 type TridentV1Interface interface {

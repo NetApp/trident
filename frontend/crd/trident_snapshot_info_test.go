@@ -5,8 +5,8 @@ package crd
 import (
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	mockcore "github.com/netapp/trident/mocks/mock_core"

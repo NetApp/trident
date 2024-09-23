@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/go-openapi/strfmt"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	sa "github.com/netapp/trident/storage_attribute"
