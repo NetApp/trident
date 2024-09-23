@@ -284,6 +284,28 @@ func IsTimeoutError(err error) bool {
 }
 
 // ///////////////////////////////////////////////////////////////////////////
+// maxWaitExceededError
+// ///////////////////////////////////////////////////////////////////////////
+
+type maxWaitExceededError struct {
+	message string
+}
+
+func (e *maxWaitExceededError) Error() string { return e.message }
+
+func MaxWaitExceededError(message string) error {
+	return &maxWaitExceededError{message}
+}
+
+func IsMaxWaitExceededError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*maxWaitExceededError)
+	return ok
+}
+
+// ///////////////////////////////////////////////////////////////////////////
 // reconcileDeferredError
 // ///////////////////////////////////////////////////////////////////////////
 

@@ -113,3 +113,9 @@ func GetUnderlyingDevicePathForLUKSDevice(ctx context.Context, luksDevicePath st
 	defer Logc(ctx).Debug("<<<< devices_windows.GetUnderlyingDevicePathForLUKSDevice")
 	return "", errors.UnsupportedError("GetUnderlyingDevicePathForLUKSDevice is not supported for windows")
 }
+
+func EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx context.Context, luksDevicePath string) error {
+	Logc(ctx).Debug(">>>> devices_windows.EnsureLUKSDeviceClosedWithMaxWaitLimit")
+	defer Logc(ctx).Debug("<<<< devices_windows.EnsureLUKSDeviceClosedWithMaxWaitLimit")
+	return errors.UnsupportedError("EnsureLUKSDeviceClosedWithMaxWaitLimit is not supported for windows")
+}

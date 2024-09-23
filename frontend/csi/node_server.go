@@ -1244,6 +1244,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	// Remove Portal/LUN entries in self-healing map.
 	utils.RemoveLUNFromSessions(ctx, publishInfo, &publishedISCSISessions)
 
+	var luksMapperPath string
 	if utils.ParseBool(publishInfo.LUKSEncryption) {
 		fields := LogFields{"luksDevicePath": publishInfo.DevicePath, "lunID": publishInfo.IscsiLunNumber}
 
@@ -1255,9 +1256,17 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		}
 		fields["mapperPath"] = mapperPath
 
-		if err = utils.EnsureLUKSDeviceClosed(ctx, publishInfo.DevicePath); err != nil {
-			Logc(ctx).WithFields(fields).WithError(err).Error("Failed to close LUKS device.")
-			return err
+		err = utils.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, publishInfo.DevicePath)
+		if err != nil {
+			if errors.IsMaxWaitExceededError(err) {
+				Logc(ctx).WithFields(LogFields{
+					"devicePath": publishInfo.DevicePath,
+					"lun":        publishInfo.IscsiLunNumber,
+					"err":        err,
+				}).Debug("LUKS close wait time exceeded, continuing with device removal.")
+			} else {
+				return err
+			}
 		}
 
 		// Get the underlying device mapper device for the block device used by LUKS.
@@ -1266,8 +1275,8 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 			Logc(ctx).WithFields(fields).WithError(err).Error("Failed to determine dm device from device mapper.")
 		}
 
-		// At this point, the LUKs device path is no longer useful.
-		// However, the device mapper device path is (/dev/dm-#).
+		luksMapperPath = publishInfo.DevicePath
+		// Save device mapper path to publishInfo for the subsequent removal steps.
 		publishInfo.DevicePath = dmDevicePath
 	}
 
@@ -1348,6 +1357,20 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		errStr := fmt.Sprintf("failed to remove temporary directory in staging target path %s; %s",
 			stagingTargetPath, err.Error())
 		return status.Error(codes.Internal, errStr)
+	}
+
+	// If the luks device still exists, it means the device was unable to be closed prior to removing the block
+	// device. This can happen if the LUN was deleted or offline. It should be removable by this point.
+	// It needs to be removed prior to removing the 'unmappedMpathDevice' device below.
+	if luksMapperPath != "" {
+		// EnsureLUKSDeviceClosed will not return an error if the device is already closed or removed.
+		if err = utils.EnsureLUKSDeviceClosed(ctx, luksMapperPath); err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"devicePath": luksMapperPath,
+			}).WithError(err).Warning("Unable to remove LUKS mapper device.")
+		}
+		// Clear the time duration for the LUKS device.
+		delete(utils.LuksCloseDurations, luksMapperPath)
 	}
 
 	// If there is multipath device, flush(remove) mappings

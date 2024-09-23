@@ -25,6 +25,7 @@ import (
 const (
 	temporaryMountDir          = "/tmp_mnt"
 	iSCSIMaxFlushWaitDuration  = 6 * time.Minute
+	luksCloseMaxWaitDuration   = 2 * time.Minute
 	SessionSourceNodeStage     = "nodeStage"
 	SessionSourceTrackingInfo  = "trackingInfo"
 	SessionSourceCurrentStatus = "currentStatus"
@@ -39,6 +40,9 @@ var (
 
 	// Non-persistent map to maintain flush delays/errors if any, for device path(s).
 	iSCSIVolumeFlushExceptions = make(map[string]time.Time)
+
+	// Non-persistent map to maintain LUKS close durations.
+	LuksCloseDurations = make(map[string]time.Time)
 
 	// perNodeIgroupRegex is used to ensure an igroup meets the following format:
 	// <up to and including 59 characters of a container orchestrator node name>-<36 characters of trident version uuid>

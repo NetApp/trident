@@ -326,27 +326,41 @@ func IsLUKSDeviceOpen(ctx context.Context, devicePath string) (bool, error) {
 // EnsureLUKSDeviceClosed ensures there is no open LUKS device at the specified path (example: "/dev/mapper/<luks>").
 func EnsureLUKSDeviceClosed(ctx context.Context, devicePath string) error {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
-
 	_, err := osFs.Stat(devicePath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			Logc(ctx).WithField("device", devicePath).Debug("LUKS device not found.")
-			return nil
-		}
-		Logc(ctx).WithField("device", devicePath).WithError(err).Debug("Failed to stat device")
-		return fmt.Errorf("could not stat device: %s %v", devicePath, err)
+	if err == nil {
+		return closeLUKSDevice(ctx, devicePath)
+	} else if !os.IsNotExist(err) {
+		Logc(ctx).WithFields(LogFields{
+			"device": devicePath,
+			"error":  err.Error(),
+		}).Debug("Failed to stat device")
+		return fmt.Errorf("could not stat device: %s %v.", devicePath, err)
 	}
+	Logc(ctx).WithFields(LogFields{
+		"device": devicePath,
+	}).Debug("LUKS device not found.")
 
-	// Only invoke close on a valid LUKS device.
-	luksDevice, err := NewLUKSDeviceFromMappingPath(ctx, devicePath, "")
-	if err != nil {
+	return nil
+}
+
+func EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx context.Context, luksDevicePath string) error {
+	if err := EnsureLUKSDeviceClosed(ctx, luksDevicePath); err != nil {
+		if LuksCloseDurations[luksDevicePath].IsZero() {
+			LuksCloseDurations[luksDevicePath] = time.Now()
+		}
+		elapsed := time.Since(LuksCloseDurations[luksDevicePath])
+		if elapsed > luksCloseMaxWaitDuration {
+			Logc(ctx).WithFields(
+				LogFields{
+					"device":  luksDevicePath,
+					"elapsed": elapsed,
+					"maxWait": luksDevicePath,
+				}).Debug("LUKS close max wait time expired, continuing with removal.")
+			return errors.MaxWaitExceededError(fmt.Sprintf("LUKS close wait time expired. Elapsed: %v", elapsed))
+		}
 		return err
 	}
-	if isLuks, err := luksDevice.IsLUKSFormatted(ctx); err != nil || !isLuks {
-		return fmt.Errorf("device %s is not a LUKS device", devicePath)
-	}
-
-	return closeLUKSDevice(ctx, devicePath)
+	return nil
 }
 
 // getDeviceFSType returns the filesystem for the supplied device.

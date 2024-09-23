@@ -113,3 +113,9 @@ func (d *LUKSDevice) Resize(ctx context.Context, luksPassphrase string) error {
 	defer Logc(ctx).Debug("<<<< devices_darwin.Resize")
 	return errors.UnsupportedError("Resize is not supported for darwin")
 }
+
+func EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx context.Context, luksDevicePath string) error {
+	Logc(ctx).Debug(">>>> devices_darwin.EnsureLUKSDeviceClosedWithMaxWaitLimit")
+	defer Logc(ctx).Debug("<<<< devices_darwin.EnsureLUKSDeviceClosedWithMaxWaitLimit")
+	return errors.UnsupportedError("EnsureLUKSDeviceClosedWithMaxWaitLimit is not supported for darwin")
+}

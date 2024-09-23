@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
@@ -360,8 +361,6 @@ func TestEnsureLUKSDeviceClosed_ClosesDevice(t *testing.T) {
 
 	// Setup mock calls and reassign any clients to their mock counterparts.
 	gomock.InOrder(
-		mockCryptsetupLuksStatus(mockCommand).Return([]byte("device:  /dev/mapper/luks-test-dev"), nil),
-		mockCryptsetupIsLuks(mockCommand).Return([]byte(""), nil),
 		mockCryptsetupLuksClose(mockCommand).Return([]byte(""), nil),
 	)
 	command = mockCommand
@@ -749,4 +748,69 @@ func TestResize_FailsWithExecError(t *testing.T) {
 
 	unexpectedError := errors.IncorrectLUKSPassphraseError("")
 	assert.NotErrorIs(t, err, unexpectedError)
+}
+
+func TestEnsureLUKSDeviceClosedWithMaxWaitLimit(t *testing.T) {
+	defer func(previousCommand exec.Command) {
+		command = previousCommand
+	}(command)
+
+	defer func() {
+		osFs = afero.NewOsFs()
+	}()
+
+	osFs = afero.NewMemMapFs()
+	luksDevicePath := "/dev/mapper/luks-test"
+	osFs.Create(luksDevicePath)
+	client := mockexec.NewMockCommand(gomock.NewController(t))
+	command = client // Set package var to mock
+
+	type testCase struct {
+		name            string
+		mockSetup       func(*mockexec.MockCommand)
+		expectedError   bool
+		expectedErrType error
+	}
+
+	testCases := []testCase{
+		{
+			name: "SucceedsWhenDeviceIsClosed",
+			mockSetup: func(mockCommand *mockexec.MockCommand) {
+				mockCryptsetupLuksClose(mockCommand).Return([]byte(""), nil)
+			},
+			expectedError: false,
+		},
+		{
+			name: "FailsBeforeMaxWaitLimit",
+			mockSetup: func(mockCommand *mockexec.MockCommand) {
+				mockCryptsetupLuksClose(mockCommand).Return([]byte(""), fmt.Errorf("close error"))
+			},
+			expectedError:   true,
+			expectedErrType: fmt.Errorf("%w", errors.New("")),
+		},
+		{
+			name: "FailsWithMaxWaitExceededError",
+			mockSetup: func(mockCommand *mockexec.MockCommand) {
+				mockCryptsetupLuksClose(mockCommand).Return([]byte(""), fmt.Errorf("close error"))
+				LuksCloseDurations[luksDevicePath] = time.Now().Add(-luksCloseMaxWaitDuration - time.Second)
+			},
+			expectedError:   true,
+			expectedErrType: errors.MaxWaitExceededError(""),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.mockSetup(client)
+			err := EnsureLUKSDeviceClosedWithMaxWaitLimit(context.TODO(), luksDevicePath)
+			if tc.expectedError {
+				assert.Error(t, err)
+				if tc.expectedErrType != nil {
+					assert.IsType(t, tc.expectedErrType, err)
+				}
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }
