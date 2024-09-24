@@ -12,9 +12,8 @@ package mock_mpathconfig
 import (
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-
 	mpathconfig "github.com/netapp/trident/internal/nodeprep/mpathconfig"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockMpathConfiguration is a mock of MpathConfiguration interface.

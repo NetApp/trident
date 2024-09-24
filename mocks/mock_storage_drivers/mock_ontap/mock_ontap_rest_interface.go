@@ -13,8 +13,6 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-
 	api "github.com/netapp/trident/storage_drivers/ontap/api"
 	cluster "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/cluster"
 	n_a_s "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
@@ -25,6 +23,7 @@ import (
 	storage "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/storage"
 	svm "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	models "github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockRestClientInterface is a mock of RestClientInterface interface.

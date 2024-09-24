@@ -14,9 +14,8 @@ import (
 	reflect "reflect"
 	time "time"
 
-	gomock "go.uber.org/mock/gomock"
-
 	api "github.com/netapp/trident/storage_drivers/ontap/api"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockOntapAPI is a mock of OntapAPI interface.
