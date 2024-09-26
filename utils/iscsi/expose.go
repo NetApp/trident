@@ -12,8 +12,8 @@ func (client *Client) ExecIscsiadmCommand(ctx context.Context, args ...string) (
 	return client.execIscsiadmCommand(ctx, args...)
 }
 
-func ListAllDevices(ctx context.Context) {
-	listAllDevices(ctx)
+func (client *Client) ListAllDevices(ctx context.Context) {
+	client.listAllDevices(ctx)
 }
 
 func (client *Client) GetSessionInfo(ctx context.Context) ([]SessionInfo, error) {
@@ -46,10 +46,10 @@ func (client *Client) FindMultipathDeviceForDevice(ctx context.Context, device s
 	return client.findMultipathDeviceForDevice(ctx, device)
 }
 
-func GetLunSerial(ctx context.Context, path string) (string, error) {
-	return getLunSerial(ctx, path)
+func (client *Client) GetLunSerial(ctx context.Context, path string) (string, error) {
+	return client.getLunSerial(ctx, path)
 }
 
-func FormatPortal(portal string) string {
-	return formatPortal(portal)
+func (client *Client) IsSessionStale(ctx context.Context, sessionID string) bool {
+	return client.isSessionStale(ctx, sessionID)
 }

@@ -1193,5 +1193,5 @@ func findMultipathDeviceForDevice(ctx context.Context, device string) string {
 }
 
 func getLunSerial(ctx context.Context, path string) (string, error) {
-	return iscsi.GetLunSerial(ctx, path)
+	return iscsiClient.GetLunSerial(ctx, path)
 }

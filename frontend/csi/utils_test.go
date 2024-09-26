@@ -12,8 +12,8 @@ import (
 
 	"github.com/netapp/trident/config"
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
+	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	"github.com/netapp/trident/mocks/mock_utils/mock_models/mock_luks"
-	mock_iscsi "github.com/netapp/trident/mocks/mock_utils/mock_reconcile_utils"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"

@@ -15,8 +15,8 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	"github.com/netapp/trident/mocks/mock_utils/mock_models"
-	mock_iscsi "github.com/netapp/trident/mocks/mock_utils/mock_reconcile_utils"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"

@@ -3,6 +3,10 @@
 package iscsi
 
 //go:generate mockgen -destination=../../mocks/mock_utils/mock_iscsi/mock_iscsi_client.go github.com/netapp/trident/utils/iscsi ISCSI
+//go:generate mockgen -destination=../../mocks/mock_utils/mock_iscsi/mock_iscsi_os_client.go github.com/netapp/trident/utils/iscsi OS
+//go:generate mockgen -destination=../../mocks/mock_utils/mock_iscsi/mock_iscsi_devices_client.go github.com/netapp/trident/utils/iscsi Devices
+//go:generate mockgen -destination=../../mocks/mock_utils/mock_iscsi/mock_iscsi_filesystem_client.go github.com/netapp/trident/utils/iscsi FileSystem
+//go:generate mockgen -destination=../../mocks/mock_utils/mock_iscsi/mock_iscsi_mount_client.go github.com/netapp/trident/utils/iscsi Mount
 
 import (
 	"context"
@@ -18,6 +22,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
+	"github.com/spf13/afero"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/fiji"
@@ -112,6 +117,7 @@ type Client struct {
 	fileSystemClient     FileSystem
 	mountClient          Mount
 	iscsiUtils           IscsiReconcileUtils
+	os                   afero.Afero
 }
 
 func New(osClient OS, deviceClient Devices, fileSystemClient FileSystem, mountClient Mount) *Client {
@@ -121,14 +127,15 @@ func New(osClient OS, deviceClient Devices, fileSystemClient FileSystem, mountCl
 	}
 
 	reconcileutils := NewReconcileUtils(chrootPathPrefix, osClient)
+	osUtils := afero.Afero{Fs: afero.NewOsFs()}
 
 	return NewDetailed(chrootPathPrefix, tridentexec.NewCommand(), DefaultSelfHealingExclusion, osClient,
-		deviceClient, fileSystemClient, mountClient, reconcileutils)
+		deviceClient, fileSystemClient, mountClient, reconcileutils, osUtils)
 }
 
-func NewDetailed(chrootPathPrefix string, command tridentexec.Command, selfHealingExclusion []string,
-	osClient OS, deviceClient Devices, fileSystemClient FileSystem, mountClient Mount,
-	iscsiUtils IscsiReconcileUtils,
+func NewDetailed(chrootPathPrefix string, command tridentexec.Command, selfHealingExclusion []string, osClient OS,
+	deviceClient Devices, fileSystemClient FileSystem, mountClient Mount, iscsiUtils IscsiReconcileUtils,
+	os afero.Afero,
 ) *Client {
 	return &Client{
 		chrootPathPrefix:     chrootPathPrefix,
@@ -139,6 +146,7 @@ func NewDetailed(chrootPathPrefix string, command tridentexec.Command, selfHeali
 		mountClient:          mountClient,
 		iscsiUtils:           iscsiUtils,
 		selfHealingExclusion: selfHealingExclusion,
+		os:                   os,
 	}
 }
 
@@ -176,6 +184,260 @@ func (client *Client) AttachVolumeRetry(
 
 	err = backoff.RetryNotify(checkAttachISCSIVolume, attachBackoff, attachNotify)
 	return mpathSize, err
+}
+
+// AttachVolume attaches the volume to the local host.
+// This method must be able to accomplish its task using only the publish information passed in.
+// It may be assumed that this method always runs on the host to which the volume will be attached.
+// If the mountpoint parameter is specified, the volume will be mounted to it.
+// The device path is set on the in-out publishInfo parameter so that it may be mounted later instead.
+// If multipath device size is found to be inconsistent with device size, then the correct size is returned.
+func (client *Client) AttachVolume(
+	ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo,
+	secrets map[string]string,
+) (int64, error) {
+	Logc(ctx).Debug(">>>> iscsi.AttachVolume")
+	defer Logc(ctx).Debug("<<<< iscsi.AttachVolume")
+
+	var err error
+	var mpathSize int64
+	lunID := int(publishInfo.IscsiLunNumber)
+
+	var portals []string
+
+	// IscsiTargetPortal is one of the ports on the target and IscsiPortals
+	// are rest of the target ports for establishing iSCSI session.
+	// If the target has multiple portals, then there will be multiple iSCSI sessions.
+	portals = append(portals, ensureHostportFormatted(publishInfo.IscsiTargetPortal))
+
+	for _, p := range publishInfo.IscsiPortals {
+		portals = append(portals, ensureHostportFormatted(p))
+	}
+
+	if publishInfo.IscsiInterface == "" {
+		publishInfo.IscsiInterface = "default"
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"volume":         name,
+		"mountPoint":     mountPoint,
+		"lunID":          lunID,
+		"portals":        portals,
+		"targetIQN":      publishInfo.IscsiTargetIQN,
+		"iscsiInterface": publishInfo.IscsiInterface,
+		"fstype":         publishInfo.FilesystemType,
+	}).Debug("Attaching iSCSI volume.")
+
+	if err = client.PreChecks(ctx); err != nil {
+		return mpathSize, err
+	}
+	// Ensure we are logged into correct portals
+	pendingPortalsToLogin, loggedIn, err := client.portalsToLogin(ctx, publishInfo.IscsiTargetIQN, portals)
+	if err != nil {
+		return mpathSize, err
+	}
+
+	newLogin, err := client.EnsureSessions(ctx, publishInfo, pendingPortalsToLogin)
+
+	if !loggedIn && !newLogin {
+		return mpathSize, err
+	}
+
+	// First attempt to fix invalid serials by rescanning them
+	err = client.handleInvalidSerials(ctx, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial,
+		client.rescanOneLun)
+	if err != nil {
+		return mpathSize, err
+	}
+
+	// Then attempt to fix invalid serials by purging them (to be scanned
+	// again later)
+	err = client.handleInvalidSerials(ctx, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial,
+		client.purgeOneLun)
+	if err != nil {
+		return mpathSize, err
+	}
+
+	// Scan the target and wait for the device(s) to appear
+	err = client.waitForDeviceScan(ctx, lunID, publishInfo.IscsiTargetIQN)
+	if err != nil {
+		Logc(ctx).Errorf("Could not find iSCSI device: %+v", err)
+		return mpathSize, err
+	}
+
+	// At this point if the serials are still invalid, give up so the
+	// caller can retry (invoking the remediation steps above in the
+	// process, if they haven't already been run).
+	failHandler := func(ctx context.Context, path string) error {
+		Logc(ctx).Error("Detected LUN serial number mismatch, attaching volume would risk data corruption, giving up")
+		return fmt.Errorf("LUN serial number mismatch, kernel has stale cached data")
+	}
+	err = client.handleInvalidSerials(ctx, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial, failHandler)
+	if err != nil {
+		return mpathSize, err
+	}
+
+	// Wait for multipath device i.e. /dev/dm-* for the given LUN
+	err = client.waitForMultipathDeviceForLUN(ctx, lunID, publishInfo.IscsiTargetIQN)
+	if err != nil {
+		return mpathSize, err
+	}
+
+	// Lookup all the SCSI device information
+	deviceInfo, err := client.getDeviceInfoForLUN(ctx, lunID, publishInfo.IscsiTargetIQN, false, false)
+	if err != nil {
+		return mpathSize, fmt.Errorf("error getting iSCSI device information: %v", err)
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"scsiLun":         deviceInfo.LUN,
+		"multipathDevice": deviceInfo.MultipathDevice,
+		"devices":         deviceInfo.Devices,
+		"iqn":             deviceInfo.IQN,
+	}).Debug("Found device.")
+
+	// Make sure we use the proper device
+	deviceToUse := deviceInfo.MultipathDevice
+
+	// To avoid LUN ID conflict with a ghost device below checks
+	// are necessary:
+	// Conflict 1: Due to race conditions, it is possible a ghost
+	//             DM device is discovered instead of the actual
+	//             DM device.
+	// Conflict 2: Some OS like RHEL displays the ghost device size
+	//             instead of the actual LUN size.
+	//
+	// Below check ensures that the correct device with the correct
+	// size is being discovered.
+
+	// If LUN Serial Number exists, then compare it with DM
+	// device's UUID in sysfs
+	if err = client.verifyMultipathDeviceSerial(ctx, deviceToUse, publishInfo.IscsiLunSerial); err != nil {
+		return mpathSize, err
+	}
+
+	// Once the multipath device has been found, compare its size with
+	// the size of one of the devices, if it differs then mark it for
+	// resize after the staging.
+	correctMpathSize, mpathSizeCorrect, err := client.verifyMultipathDeviceSize(ctx, deviceToUse, deviceInfo.Devices[0])
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"scsiLun":         deviceInfo.LUN,
+			"multipathDevice": deviceInfo.MultipathDevice,
+			"device":          deviceInfo.Devices[0],
+			"iqn":             deviceInfo.IQN,
+			"err":             err,
+		}).Error("Failed to verify multipath device size.")
+
+		return mpathSize, fmt.Errorf("failed to verify multipath device %s size", deviceInfo.MultipathDevice)
+	}
+
+	if !mpathSizeCorrect {
+		mpathSize = correctMpathSize
+
+		Logc(ctx).WithFields(LogFields{
+			"scsiLun":         deviceInfo.LUN,
+			"multipathDevice": deviceInfo.MultipathDevice,
+			"device":          deviceInfo.Devices[0],
+			"iqn":             deviceInfo.IQN,
+			"mpathSize":       mpathSize,
+		}).Error("Multipath device size does not match device size.")
+	}
+
+	devicePath := "/dev/" + deviceToUse
+	if err := client.deviceClient.WaitForDevice(ctx, devicePath); err != nil {
+		return mpathSize, fmt.Errorf("could not find device %v; %s", devicePath, err)
+	}
+
+	var isLUKSDevice, luksFormatted bool
+	if publishInfo.LUKSEncryption != "" {
+		isLUKSDevice, err = strconv.ParseBool(publishInfo.LUKSEncryption)
+		if err != nil {
+			return mpathSize, fmt.Errorf("could not parse LUKSEncryption into a bool, got %v",
+				publishInfo.LUKSEncryption)
+		}
+	}
+
+	if isLUKSDevice {
+		luksDevice, _ := client.deviceClient.NewLUKSDevice(devicePath, name)
+		luksFormatted, err = client.deviceClient.EnsureLUKSDeviceMappedOnHost(ctx, luksDevice, name, secrets)
+		if err != nil {
+			return mpathSize, err
+		}
+		devicePath = luksDevice.MappedDevicePath()
+	}
+
+	// Return the device in the publish info in case the mount will be done later
+	publishInfo.DevicePath = devicePath
+
+	if publishInfo.FilesystemType == config.FsRaw {
+		return mpathSize, nil
+	}
+
+	existingFstype, err := client.deviceClient.GetDeviceFSType(ctx, devicePath)
+	if err != nil {
+		return mpathSize, err
+	}
+	if existingFstype == "" {
+		if !isLUKSDevice {
+			if unformatted, err := client.deviceClient.IsDeviceUnformatted(ctx, devicePath); err != nil {
+				Logc(ctx).WithField("device",
+					devicePath).Errorf("Unable to identify if the device is formatted; err: %v", err)
+				return mpathSize, err
+			} else if !unformatted {
+				Logc(ctx).WithField("device", devicePath).Errorf("Device is already formatted; err: %v", err)
+				return mpathSize, fmt.Errorf("device %v is already formatted", devicePath)
+			}
+		} else {
+			// We can safely assume if we just luksFormatted the device, we can also add a filesystem without dataloss
+			if !luksFormatted {
+				Logc(ctx).WithField("device",
+					devicePath).Errorf("Unable to identify if the luks device is empty; err: %v", err)
+				return mpathSize, nil
+			}
+		}
+
+		Logc(ctx).WithFields(LogFields{"volume": name, "fstype": publishInfo.FilesystemType}).Debug("Formatting LUN.")
+		if err = client.fileSystemClient.FormatVolume(ctx, devicePath, publishInfo.FilesystemType); err != nil {
+			return mpathSize, fmt.Errorf("error formatting LUN %s, device %s: %v", name, deviceToUse, err)
+		}
+	} else if existingFstype != unknownFstype && existingFstype != publishInfo.FilesystemType {
+		Logc(ctx).WithFields(LogFields{
+			"volume":          name,
+			"existingFstype":  existingFstype,
+			"requestedFstype": publishInfo.FilesystemType,
+		}).Error("LUN already formatted with a different file system type.")
+		return mpathSize, fmt.Errorf("LUN %s, device %s already formatted with other filesystem: %s",
+			name, deviceToUse, existingFstype)
+	} else {
+		Logc(ctx).WithFields(LogFields{
+			"volume": name,
+			"fstype": deviceInfo.Filesystem,
+		}).Debug("LUN already formatted.")
+	}
+
+	// Attempt to resolve any filesystem inconsistencies that might be due to dirty node shutdowns, cloning
+	// in-use volumes, or creating volumes from snapshots taken from in-use volumes.  This is only safe to do
+	// if a device is not mounted.  The fsck command returns a non-zero exit code if filesystem errors are found,
+	// even if they are completely and automatically fixed, so we don't return any error here.
+	mounted, err := client.mountClient.IsMounted(ctx, devicePath, "", "")
+	if err != nil {
+		return mpathSize, err
+	}
+	if !mounted {
+		client.fileSystemClient.RepairVolume(ctx, devicePath, publishInfo.FilesystemType)
+	}
+
+	// Optionally mount the device
+	if mountPoint != "" {
+		if err := client.mountClient.MountDevice(ctx, devicePath, mountPoint, publishInfo.MountOptions,
+			false); err != nil {
+			return mpathSize, fmt.Errorf("error mounting LUN %v, device %v, mountpoint %v; %s",
+				name, deviceToUse, mountPoint, err)
+		}
+	}
+
+	return mpathSize, nil
 }
 
 // AddSession adds a portal and LUN data to the session map. Extracts the
@@ -273,8 +535,6 @@ func (client *Client) RescanDevices(ctx context.Context, targetIQN string, lunID
 	deviceInfo, err := client.getDeviceInfoForLUN(ctx, int(lunID), targetIQN, false, false)
 	if err != nil {
 		return fmt.Errorf("error getting iSCSI device information: %s", err)
-	} else if deviceInfo == nil {
-		return fmt.Errorf("could not get iSCSI device information for LUN: %d", lunID)
 	}
 
 	allLargeEnough := true
@@ -348,16 +608,19 @@ func (client *Client) rescanDisk(ctx context.Context, deviceName string) error {
 	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.rescanDisk")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.rescanDisk")
 
-	listAllDevices(ctx)
+	client.listAllDevices(ctx)
 	filename := fmt.Sprintf(client.chrootPathPrefix+"/sys/block/%s/device/rescan", deviceName)
 	Logc(ctx).WithField("filename", filename).Debug("Opening file for writing.")
 
-	f, err := os.OpenFile(filename, os.O_WRONLY, 0)
+	f, err := client.os.OpenFile(filename, os.O_WRONLY, 0)
 	if err != nil {
 		Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
 		return err
 	}
-	defer f.Close()
+
+	defer func() {
+		_ = f.Close()
+	}()
 
 	written, err := f.WriteString("1")
 	if err != nil {
@@ -371,7 +634,7 @@ func (client *Client) rescanDisk(ctx context.Context, deviceName string) error {
 		return fmt.Errorf("no data written to %s", filename)
 	}
 
-	listAllDevices(ctx)
+	client.listAllDevices(ctx)
 	return nil
 }
 
@@ -414,269 +677,6 @@ func (client *Client) IsAlreadyAttached(ctx context.Context, lunID int, targetIq
 
 	// return true even if a single device exists
 	return 0 < len(devices)
-}
-
-// AttachVolume attaches the volume to the local host.
-// This method must be able to accomplish its task using only the publish information passed in.
-// It may be assumed that this method always runs on the host to which the volume will be attached.
-// If the mountpoint parameter is specified, the volume will be mounted to it.
-// The device path is set on the in-out publishInfo parameter so that it may be mounted later instead.
-// If multipath device size is found to be inconsistent with device size, then the correct size is returned.
-func (client *Client) AttachVolume(
-	ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo,
-	secrets map[string]string,
-) (int64, error) {
-	Logc(ctx).Debug(">>>> iscsi.AttachVolume")
-	defer Logc(ctx).Debug("<<<< iscsi.AttachVolume")
-
-	var err error
-	var mpathSize int64
-	lunID := int(publishInfo.IscsiLunNumber)
-
-	var portals []string
-
-	// IscsiTargetPortal is one of the ports on the target and IscsiPortals
-	// are rest of the target ports for establishing iSCSI session.
-	// If the target has multiple portals, then there will be multiple iSCSI sessions.
-	portals = append(portals, ensureHostportFormatted(publishInfo.IscsiTargetPortal))
-
-	for _, p := range publishInfo.IscsiPortals {
-		portals = append(portals, ensureHostportFormatted(p))
-	}
-
-	if publishInfo.IscsiInterface == "" {
-		publishInfo.IscsiInterface = "default"
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"volume":         name,
-		"mountPoint":     mountPoint,
-		"lunID":          lunID,
-		"portals":        portals,
-		"targetIQN":      publishInfo.IscsiTargetIQN,
-		"iscsiInterface": publishInfo.IscsiInterface,
-		"fstype":         publishInfo.FilesystemType,
-	}).Debug("Attaching iSCSI volume.")
-
-	if err = client.PreChecks(ctx); err != nil {
-		return mpathSize, err
-	}
-	// Ensure we are logged into correct portals
-	pendingPortalsToLogin, loggedIn, err := client.portalsToLogin(ctx, publishInfo.IscsiTargetIQN, portals)
-	if err != nil {
-		return mpathSize, err
-	}
-
-	newLogin, err := client.EnsureSessions(ctx, publishInfo, pendingPortalsToLogin)
-
-	if !loggedIn && !newLogin {
-		return mpathSize, err
-	}
-
-	// First attempt to fix invalid serials by rescanning them
-	err = client.handleInvalidSerials(ctx, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial, rescanOneLun)
-	if err != nil {
-		return mpathSize, err
-	}
-
-	// Then attempt to fix invalid serials by purging them (to be scanned
-	// again later)
-	err = client.handleInvalidSerials(ctx, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial, purgeOneLun)
-	if err != nil {
-		return mpathSize, err
-	}
-
-	// Scan the target and wait for the device(s) to appear
-	err = client.waitForDeviceScan(ctx, lunID, publishInfo.IscsiTargetIQN)
-	if err != nil {
-		Logc(ctx).Errorf("Could not find iSCSI device: %+v", err)
-		return mpathSize, err
-	}
-
-	// At this point if the serials are still invalid, give up so the
-	// caller can retry (invoking the remediation steps above in the
-	// process, if they haven't already been run).
-	failHandler := func(ctx context.Context, path string) error {
-		Logc(ctx).Error("Detected LUN serial number mismatch, attaching volume would risk data corruption, giving up")
-		return fmt.Errorf("LUN serial number mismatch, kernel has stale cached data")
-	}
-	err = client.handleInvalidSerials(ctx, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial, failHandler)
-	if err != nil {
-		return mpathSize, err
-	}
-
-	// Wait for multipath device i.e. /dev/dm-* for the given LUN
-	err = client.waitForMultipathDeviceForLUN(ctx, lunID, publishInfo.IscsiTargetIQN)
-	if err != nil {
-		return mpathSize, err
-	}
-
-	// Lookup all the SCSI device information
-	deviceInfo, err := client.getDeviceInfoForLUN(ctx, lunID, publishInfo.IscsiTargetIQN, false, false)
-	if err != nil {
-		return mpathSize, fmt.Errorf("error getting iSCSI device information: %v", err)
-	} else if deviceInfo == nil {
-		return mpathSize, fmt.Errorf("could not get iSCSI device information for LUN %d", lunID)
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"scsiLun":         deviceInfo.LUN,
-		"multipathDevice": deviceInfo.MultipathDevice,
-		"devices":         deviceInfo.Devices,
-		"iqn":             deviceInfo.IQN,
-	}).Debug("Found device.")
-
-	// Make sure we use the proper device
-	deviceToUse := deviceInfo.Devices[0]
-	if deviceInfo.MultipathDevice != "" {
-		deviceToUse = deviceInfo.MultipathDevice
-
-		// To avoid LUN ID conflict with a ghost device below checks
-		// are necessary:
-		// Conflict 1: Due to race conditions, it is possible a ghost
-		//             DM device is discovered instead of the actual
-		//             DM device.
-		// Conflict 2: Some OS like RHEL displays the ghost device size
-		//             instead of the actual LUN size.
-		//
-		// Below check ensures that the correct device with the correct
-		// size is being discovered.
-
-		// If LUN Serial Number exists, then compare it with DM
-		// device's UUID in sysfs
-		if err = client.verifyMultipathDeviceSerial(ctx, deviceToUse, publishInfo.IscsiLunSerial); err != nil {
-			return mpathSize, err
-		}
-
-		// Once the multipath device has been found, compare its size with
-		// the size of one of the devices, if it differs then mark it for
-		// resize after the staging.
-		correctMpathSize, mpathSizeCorrect, err := client.verifyMultipathDeviceSize(ctx, deviceToUse, deviceInfo.Devices[0])
-		if err != nil {
-			Logc(ctx).WithFields(LogFields{
-				"scsiLun":         deviceInfo.LUN,
-				"multipathDevice": deviceInfo.MultipathDevice,
-				"device":          deviceInfo.Devices[0],
-				"iqn":             deviceInfo.IQN,
-				"err":             err,
-			}).Error("Failed to verify multipath device size.")
-
-			return mpathSize, fmt.Errorf("failed to verify multipath device %s size", deviceInfo.MultipathDevice)
-		}
-
-		if !mpathSizeCorrect {
-			mpathSize = correctMpathSize
-
-			Logc(ctx).WithFields(LogFields{
-				"scsiLun":         deviceInfo.LUN,
-				"multipathDevice": deviceInfo.MultipathDevice,
-				"device":          deviceInfo.Devices[0],
-				"iqn":             deviceInfo.IQN,
-				"mpathSize":       mpathSize,
-			}).Error("Multipath device size does not match device size.")
-		}
-	} else {
-		return mpathSize, fmt.Errorf("could not find multipath device for LUN %d", lunID)
-	}
-
-	if deviceToUse == "" {
-		return mpathSize, fmt.Errorf("could not determine device to use for %v", name)
-	}
-	devicePath := "/dev/" + deviceToUse
-	if err := client.deviceClient.WaitForDevice(ctx, devicePath); err != nil {
-		return mpathSize, fmt.Errorf("could not find device %v; %s", devicePath, err)
-	}
-
-	var isLUKSDevice, luksFormatted bool
-	if publishInfo.LUKSEncryption != "" {
-		isLUKSDevice, err = strconv.ParseBool(publishInfo.LUKSEncryption)
-		if err != nil {
-			return mpathSize, fmt.Errorf("could not parse LUKSEncryption into a bool, got %v",
-				publishInfo.LUKSEncryption)
-		}
-	}
-
-	if isLUKSDevice {
-		luksDevice, _ := client.deviceClient.NewLUKSDevice(devicePath, name)
-		luksFormatted, err = client.deviceClient.EnsureLUKSDeviceMappedOnHost(ctx, luksDevice, name, secrets)
-		if err != nil {
-			return mpathSize, err
-		}
-		devicePath = luksDevice.MappedDevicePath()
-	}
-
-	// Return the device in the publish info in case the mount will be done later
-	publishInfo.DevicePath = devicePath
-
-	if publishInfo.FilesystemType == config.FsRaw {
-		return mpathSize, nil
-	}
-
-	existingFstype, err := client.deviceClient.GetDeviceFSType(ctx, devicePath)
-	if err != nil {
-		return mpathSize, err
-	}
-	if existingFstype == "" {
-		if !isLUKSDevice {
-			if unformatted, err := client.deviceClient.IsDeviceUnformatted(ctx, devicePath); err != nil {
-				Logc(ctx).WithField("device",
-					devicePath).Errorf("Unable to identify if the device is unformatted; err: %v", err)
-				return mpathSize, err
-			} else if !unformatted {
-				Logc(ctx).WithField("device", devicePath).Errorf("Device is not unformatted; err: %v", err)
-				return mpathSize, fmt.Errorf("device %v is not unformatted", devicePath)
-			}
-		} else {
-			// We can safely assume if we just luksFormatted the device, we can also add a filesystem without dataloss
-			if !luksFormatted {
-				Logc(ctx).WithField("device",
-					devicePath).Errorf("Unable to identify if the luks device is empty; err: %v", err)
-				return mpathSize, err
-			}
-		}
-
-		Logc(ctx).WithFields(LogFields{"volume": name, "fstype": publishInfo.FilesystemType}).Debug("Formatting LUN.")
-		err := client.fileSystemClient.FormatVolume(ctx, devicePath, publishInfo.FilesystemType)
-		if err != nil {
-			return mpathSize, fmt.Errorf("error formatting LUN %s, device %s: %v", name, deviceToUse, err)
-		}
-	} else if existingFstype != unknownFstype && existingFstype != publishInfo.FilesystemType {
-		Logc(ctx).WithFields(LogFields{
-			"volume":          name,
-			"existingFstype":  existingFstype,
-			"requestedFstype": publishInfo.FilesystemType,
-		}).Error("LUN already formatted with a different file system type.")
-		return mpathSize, fmt.Errorf("LUN %s, device %s already formatted with other filesystem: %s",
-			name, deviceToUse, existingFstype)
-	} else {
-		Logc(ctx).WithFields(LogFields{
-			"volume": name,
-			"fstype": deviceInfo.Filesystem,
-		}).Debug("LUN already formatted.")
-	}
-
-	// Attempt to resolve any filesystem inconsistencies that might be due to dirty node shutdowns, cloning
-	// in-use volumes, or creating volumes from snapshots taken from in-use volumes.  This is only safe to do
-	// if a device is not mounted.  The fsck command returns a non-zero exit code if filesystem errors are found,
-	// even if they are completely and automatically fixed, so we don't return any error here.
-	mounted, err := client.mountClient.IsMounted(ctx, devicePath, "", "")
-	if err != nil {
-		return mpathSize, err
-	}
-	if !mounted {
-		client.fileSystemClient.RepairVolume(ctx, devicePath, publishInfo.FilesystemType)
-	}
-
-	// Optionally mount the device
-	if mountPoint != "" {
-		if err := client.mountClient.MountDevice(ctx, devicePath, mountPoint, publishInfo.MountOptions,
-			false); err != nil {
-			return mpathSize, fmt.Errorf("error mounting LUN %v, device %v, mountpoint %v; %s",
-				name, deviceToUse, mountPoint, err)
-		}
-	}
-
-	return mpathSize, nil
 }
 
 // ScsiDeviceInfo contains information about SCSI devices
@@ -746,8 +746,7 @@ func (client *Client) getDeviceInfoForLUN(
 
 	fsType := ""
 	if needFSType {
-		err = client.deviceClient.EnsureDeviceReadable(ctx, devicePath)
-		if err != nil {
+		if err = client.deviceClient.EnsureDeviceReadable(ctx, devicePath); err != nil {
 			return nil, err
 		}
 
@@ -779,11 +778,11 @@ func (client *Client) getDeviceInfoForLUN(
 }
 
 // purgeOneLun issues a delete for one LUN, based on the sysfs path
-func purgeOneLun(ctx context.Context, path string) error {
+func (client *Client) purgeOneLun(ctx context.Context, path string) error {
 	Logc(ctx).WithField("path", path).Debug("Purging one LUN")
 	filename := path + "/delete"
 
-	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0o200)
+	f, err := client.os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0o200)
 	if err != nil {
 		Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
 		return err
@@ -809,11 +808,11 @@ func purgeOneLun(ctx context.Context, path string) error {
 }
 
 // rescanOneLun issues a rescan for one LUN, based on the sysfs path
-func rescanOneLun(ctx context.Context, path string) error {
+func (client *Client) rescanOneLun(ctx context.Context, path string) error {
 	Logc(ctx).WithField("path", path).Debug("Rescaning one LUN")
 	filename := path + "/rescan"
 
-	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0o200)
+	f, err := client.os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0o200)
 	if err != nil {
 		Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
 		return err
@@ -897,7 +896,7 @@ func (client *Client) findMultipathDeviceForDevice(ctx context.Context, device s
 	defer Logc(ctx).WithField("device", device).Debug("<<<< iscsi.findMultipathDeviceForDevice")
 
 	holdersDir := client.chrootPathPrefix + "/sys/block/" + device + "/holders"
-	if dirs, err := os.ReadDir(holdersDir); err == nil {
+	if dirs, err := client.os.ReadDir(holdersDir); err == nil {
 		for _, f := range dirs {
 			name := f.Name()
 			if strings.HasPrefix(name, "dm-") {
@@ -931,7 +930,7 @@ func (client *Client) waitForDeviceScan(ctx context.Context, lunID int, iSCSINod
 		hosts = append(hosts, hostNumber)
 	}
 
-	if err := client.ScanTargetLUN(ctx, lunID, hosts); err != nil {
+	if err := client.scanTargetLUN(ctx, lunID, hosts); err != nil {
 		Logc(ctx).WithField("scanError", err).Error("Could not scan for new LUN.")
 	}
 
@@ -1000,7 +999,7 @@ func (client *Client) scanTargetLUN(ctx context.Context, lunID int, hosts []int)
 	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.scanTargetLUN")
 
 	var (
-		f   *os.File
+		f   afero.File
 		err error
 	)
 
@@ -1010,11 +1009,11 @@ func (client *Client) scanTargetLUN(ctx context.Context, lunID int, hosts []int)
 		scanCmd = fmt.Sprintf("0 0 %d", lunID)
 	}
 
-	listAllDevices(ctx)
+	client.listAllDevices(ctx)
 	for _, hostNumber := range hosts {
 
 		filename := fmt.Sprintf(client.chrootPathPrefix+"/sys/class/scsi_host/host%d/scan", hostNumber)
-		if f, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0o200); err != nil {
+		if f, err = client.os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0o200); err != nil {
 			Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
 			return err
 		}
@@ -1025,17 +1024,17 @@ func (client *Client) scanTargetLUN(ctx context.Context, lunID int, hosts []int)
 
 		if written, err := f.WriteString(scanCmd); err != nil {
 			Logc(ctx).WithFields(LogFields{"file": filename, "error": err}).Warning("Could not write to file.")
-			f.Close()
+			_ = f.Close()
 			return err
 		} else if written == 0 {
 			Logc(ctx).WithField("file", filename).Warning("No data written to file.")
-			f.Close()
+			_ = f.Close()
 			return fmt.Errorf("no data written to %s", filename)
 		}
 
-		f.Close()
+		_ = f.Close()
 
-		listAllDevices(ctx)
+		client.listAllDevices(ctx)
 		Logc(ctx).WithFields(LogFields{
 			"scanCmd":  scanCmd,
 			"scanFile": filename,
@@ -1060,7 +1059,7 @@ func (client *Client) handleInvalidSerials(
 	hostSessionMap := client.iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIqn)
 	paths := client.iscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
 	for _, path := range paths {
-		serial, err := getLunSerial(ctx, path)
+		serial, err := client.getLunSerial(ctx, path)
 		if err != nil {
 			if os.IsNotExist(err) {
 				// LUN either isn't scanned yet, or this kernel
@@ -1102,14 +1101,14 @@ func (client *Client) handleInvalidSerials(
 }
 
 // getLunSerial get Linux's idea of what the LUN serial number is
-func getLunSerial(ctx context.Context, path string) (string, error) {
+func (client *Client) getLunSerial(ctx context.Context, path string) (string, error) {
 	Logc(ctx).WithField("path", path).Debug("Get LUN Serial")
 	// We're going to read the SCSI VPD page 80 serial number
 	// information. Linux helpfully provides this through sysfs
 	// so we don't need to open the device and send the ioctl
 	// ourselves.
 	filename := path + "/vpd_pg80"
-	b, err := os.ReadFile(filename)
+	b, err := client.os.ReadFile(filename)
 	if err != nil {
 		return "", err
 	}
@@ -1153,25 +1152,28 @@ func (client *Client) portalsToLogin(ctx context.Context, targetIQN string, port
 	}
 
 	for _, e := range sessionInfo {
-		if e.TargetName == targetIQN {
-			// Portals (portalsNotLoggedIn) may/may not contain anything after ":", so instead of matching complete
-			// portal value (with e.Portal), check if e.Portal's IP address matches portal's IP address
-			matchFunc := func(main, val string) bool {
-				mainIpAddress := models.ParseHostportIP(main)
-				valIpAddress := models.ParseHostportIP(val)
 
-				return mainIpAddress == valIpAddress
-			}
+		if e.TargetName != targetIQN {
+			continue
+		}
 
-			lenBeforeCheck := len(portalsNotLoggedIn)
-			portalsNotLoggedIn = RemoveStringFromSliceConditionally(portalsNotLoggedIn, e.Portal, matchFunc)
-			lenAfterCheck := len(portalsNotLoggedIn)
+		// Portals (portalsNotLoggedIn) may/may not contain anything after ":", so instead of matching complete
+		// portal value (with e.Portal), check if e.Portal's IP address matches portal's IP address
+		matchFunc := func(main, val string) bool {
+			mainIpAddress := models.ParseHostportIP(main)
+			valIpAddress := models.ParseHostportIP(val)
 
-			// If the portal is logged in ensure it is not stale
-			if lenBeforeCheck != lenAfterCheck {
-				if client.IsSessionStale(ctx, e.SID) {
-					portalsInStaleState = append(portalsInStaleState, e.Portal)
-				}
+			return mainIpAddress == valIpAddress
+		}
+
+		lenBeforeCheck := len(portalsNotLoggedIn)
+		portalsNotLoggedIn = RemoveStringFromSliceConditionally(portalsNotLoggedIn, e.Portal, matchFunc)
+		lenAfterCheck := len(portalsNotLoggedIn)
+
+		// If the portal is logged in ensure it is not stale
+		if lenBeforeCheck != lenAfterCheck {
+			if client.isSessionStale(ctx, e.SID) {
+				portalsInStaleState = append(portalsInStaleState, e.Portal)
 			}
 		}
 	}
@@ -1188,13 +1190,13 @@ func (client *Client) portalsToLogin(ctx context.Context, targetIQN string, port
 // Looks that the state of an already established session to identify if it is
 // logged in or not, if it is not logged in then it could be a stale session.
 // For now, we are relying on the sysfs files
-func (client *Client) IsSessionStale(ctx context.Context, sessionID string) bool {
+func (client *Client) isSessionStale(ctx context.Context, sessionID string) bool {
 	Logc(ctx).WithField("sessionID", sessionID).Debug(">>>> iscsi.IsSessionStale")
 	defer Logc(ctx).Debug("<<<< iscsi.IsSessionStale")
 
 	// Find the session state from the session at /sys/class/iscsi_session/sessionXXX/state
 	filename := fmt.Sprintf(client.chrootPathPrefix+"/sys/class/iscsi_session/session%s/state", sessionID)
-	sessionStateBytes, err := os.ReadFile(filename)
+	sessionStateBytes, err := client.os.ReadFile(filename)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"path":  filename,
@@ -1401,7 +1403,7 @@ func (client *Client) EnsureSessions(ctx context.Context, publishInfo *models.Vo
 	loginFailedDueToChap := false
 
 	for _, portal := range portals {
-		listAllDevices(ctx)
+		client.listAllDevices(ctx)
 
 		formattedPortal := formatPortal(portal)
 		if err := client.ensureTarget(ctx, formattedPortal, publishInfo.IscsiTargetIQN, publishInfo.IscsiUsername,
@@ -1426,16 +1428,17 @@ func (client *Client) EnsureSessions(ctx context.Context, publishInfo *models.Vo
 
 		// Set scanning to manual
 		// Swallow this error, someone is running an old version of Debian/Ubuntu
-		_ = client.configureTarget(ctx, publishInfo.IscsiTargetIQN, portal, "node.session.scan", "manual")
+		const sessionScanParam = "node.session.scan"
+		_ = client.configureTarget(ctx, publishInfo.IscsiTargetIQN, portal, sessionScanParam, "manual")
 
 		// replacement_timeout controls how long iSCSI layer should wait for a timed-out path/session to reestablish
 		// itself before failing any commands on it.
-		timeout_param := "node.session.timeo.replacement_timeout"
-		if err := client.configureTarget(ctx, publishInfo.IscsiTargetIQN, portal, timeout_param, "5"); err != nil {
+		const timeoutParam = "node.session.timeo.replacement_timeout"
+		if err := client.configureTarget(ctx, publishInfo.IscsiTargetIQN, portal, timeoutParam, "5"); err != nil {
 			Logc(ctx).WithFields(LogFields{
 				"iqn":    publishInfo.IscsiTargetIQN,
 				"portal": portal,
-				"name":   timeout_param,
+				"name":   timeoutParam,
 				"value":  "5",
 				"err":    err,
 			}).Errorf("set replacement timeout failed: %v", err)
@@ -1531,7 +1534,7 @@ func (client *Client) LoginTarget(ctx context.Context, publishInfo *models.Volum
 	defer Logc(ctx).Debug("<<<< iscsi.LoginTarget")
 
 	args := []string{"-m", "node", "-T", publishInfo.IscsiTargetIQN, "-p", formatPortal(portal)}
-	listAllDevices(ctx)
+	client.listAllDevices(ctx)
 	if publishInfo.UseCHAP {
 		secretsToRedact := map[string]string{
 			"--value=" + publishInfo.IscsiUsername:        "--value=" + REDACTED,
@@ -1626,7 +1629,7 @@ func (client *Client) LoginTarget(ctx context.Context, publishInfo *models.Volum
 
 		return err
 	}
-	listAllDevices(ctx)
+	client.listAllDevices(ctx)
 	return nil
 }
 
@@ -1663,14 +1666,14 @@ func formatPortal(portal string) string {
 }
 
 // In the case of iscsi trace debug, log info about session and what devices are present
-func listAllDevices(ctx context.Context) {
+func (client *Client) listAllDevices(ctx context.Context) {
 	Logc(ctx).Trace(">>>> iscsi.listAllDevices")
 	defer Logc(ctx).Trace("<<<< iscsi.listAllDevices")
 	// Log information about all the devices
 	dmLog := make([]string, 0)
 	sdLog := make([]string, 0)
 	sysLog := make([]string, 0)
-	entries, _ := os.ReadDir(DevPrefix)
+	entries, _ := client.os.ReadDir(DevPrefix)
 	for _, entry := range entries {
 		if strings.HasPrefix(entry.Name(), "dm-") {
 			dmLog = append(dmLog, entry.Name())
@@ -1680,7 +1683,7 @@ func listAllDevices(ctx context.Context) {
 		}
 	}
 
-	entries, _ = os.ReadDir("/sys/block/")
+	entries, _ = client.os.ReadDir("/sys/block/")
 	for _, entry := range entries {
 		sysLog = append(sysLog, entry.Name())
 	}
@@ -1763,7 +1766,7 @@ func (client *Client) identifyFindMultipathsValue(ctx context.Context) (string, 
 		return "", fmt.Errorf("could not read multipathd configuration: %v", err)
 	}
 
-	findMultipathsValue := GetFindMultipathValue(string(output))
+	findMultipathsValue := getFindMultipathValue(string(output))
 	Logc(ctx).WithField("findMultipathsValue", findMultipathsValue).Debug("Multipath find_multipaths value found.")
 	return findMultipathsValue, nil
 }
@@ -1773,7 +1776,7 @@ func (client *Client) identifyFindMultipathsValue(ctx context.Context) (string, 
 // no (or off): Create a multipath device for every path that is not explicitly disabled
 // yes (or on): Create a device if one of some conditions are met
 // other possible values: smart, greedy, strict
-func GetFindMultipathValue(text string) string {
+func getFindMultipathValue(text string) string {
 	// This matches pattern in a multiline string of type "    find_multipaths: yes"
 	tagsWithIndentationRegex := regexp.MustCompile(`(?m)^[\t ]*find_multipaths[\t ]*["|']?(?P<tagName>[\w-_]+)["|']?[\t ]*$`)
 	tag := tagsWithIndentationRegex.FindStringSubmatch(text)
@@ -1814,16 +1817,17 @@ func (client *Client) supported(ctx context.Context) bool {
 // Note: Adding iSCSI targets using sendtargets rather than static discover
 // ensures that targets are added with the correct target group portal tags.
 func (client *Client) ensureTarget(
-	ctx context.Context, tp, targetIqn, username, password, targetUsername, targetInitiatorSecret, iface string,
+	ctx context.Context, targetPortal, targetIqn, username, password, targetUsername, targetInitiatorSecret,
+	iface string,
 ) error {
 	Logc(ctx).WithFields(LogFields{
 		"IQN":       targetIqn,
-		"Portal":    tp,
+		"Portal":    targetPortal,
 		"Interface": iface,
 	}).Debug(">>>> iscsi.ensureTarget")
 	defer Logc(ctx).Debug("<<<< iscsi.ensureTarget")
 
-	targets, err := client.getTargets(ctx, tp)
+	targets, err := client.getTargets(ctx, targetPortal)
 	if err != nil {
 		// Already logged
 		return err
@@ -1842,23 +1846,23 @@ func (client *Client) ensureTarget(
 
 		// Ignore result
 		_, _ = client.execIscsiadmCommandWithTimeout(ctx, iscsiadmLoginTimeout, "-m", "discoverydb", "-t", "st", "-p",
-			tp,
+			targetPortal,
 			"-I",
 			iface, "-o", "new")
 
-		err = client.updateDiscoveryDb(ctx, tp, iface, "discovery.sendtargets.auth.authmethod", "CHAP")
+		err = client.updateDiscoveryDb(ctx, targetPortal, iface, "discovery.sendtargets.auth.authmethod", "CHAP")
 		if err != nil {
 			// Already logged
 			return err
 		}
 
-		err = client.updateDiscoveryDb(ctx, tp, iface, "discovery.sendtargets.auth.username", username)
+		err = client.updateDiscoveryDb(ctx, targetPortal, iface, "discovery.sendtargets.auth.username", username)
 		if err != nil {
 			// Already logged
 			return err
 		}
 
-		err = client.updateDiscoveryDb(ctx, tp, iface, "discovery.sendtargets.auth.password", password)
+		err = client.updateDiscoveryDb(ctx, targetPortal, iface, "discovery.sendtargets.auth.password", password)
 		if err != nil {
 			// Already logged
 			return err
@@ -1867,13 +1871,13 @@ func (client *Client) ensureTarget(
 		if targetUsername != "" && targetInitiatorSecret != "" {
 			// Bidirectional CHAP case
 
-			err = client.updateDiscoveryDb(ctx, tp, iface, "discovery.sendtargets.auth.username_in", targetUsername)
+			err = client.updateDiscoveryDb(ctx, targetPortal, iface, "discovery.sendtargets.auth.username_in", targetUsername)
 			if err != nil {
 				// Already logged
 				return err
 			}
 
-			err = client.updateDiscoveryDb(ctx, tp, iface, "discovery.sendtargets.auth.password_in",
+			err = client.updateDiscoveryDb(ctx, targetPortal, iface, "discovery.sendtargets.auth.password_in",
 				targetInitiatorSecret)
 			if err != nil {
 				// Already logged
@@ -1885,10 +1889,10 @@ func (client *Client) ensureTarget(
 	// Discovery is here. This will populate the iscsiadm database with the
 	// All the nodes known to the given portal.
 	output, err := client.execIscsiadmCommandWithTimeout(ctx, iscsiadmLoginTimeout, "-m", "discoverydb",
-		"-t", "st", "-p", tp, "-I", iface, "-D")
+		"-t", "st", "-p", targetPortal, "-I", iface, "-D")
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
-			"portal": tp,
+			"portal": targetPortal,
 			"error":  err,
 			"output": string(output),
 		}).Error("Failed to discover targets")
@@ -1901,7 +1905,7 @@ func (client *Client) ensureTarget(
 		return fmt.Errorf("failed to discover targets: %v", err)
 	}
 
-	targets = filterTargets(string(output), tp)
+	targets = filterTargets(string(output), targetPortal)
 	for _, iqn := range targets {
 		if targetIqn == iqn {
 			Logc(ctx).WithField("Target", iqn).Info("Target discovered successfully")
@@ -1911,7 +1915,7 @@ func (client *Client) ensureTarget(
 	}
 
 	Logc(ctx).WithFields(LogFields{
-		"portal": tp,
+		"portal": targetPortal,
 		"iqn":    targetIqn,
 	}).Warning("Target not discovered")
 	return fmt.Errorf("target not discovered")

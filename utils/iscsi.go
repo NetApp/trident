@@ -14,6 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/afero"
+
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
@@ -36,7 +38,7 @@ const (
 var (
 	IscsiUtils  = iscsi.NewReconcileUtils(chrootPathPrefix, NewOSClient())
 	iscsiClient = iscsi.NewDetailed(chrootPathPrefix, command, iscsi.DefaultSelfHealingExclusion, NewOSClient(),
-		NewDevicesClient(), NewFilesystemClient(), NewMountClient(), IscsiUtils)
+		NewDevicesClient(), NewFilesystemClient(), NewMountClient(), IscsiUtils, afero.Afero{Fs: afero.NewOsFs()})
 
 	// Non-persistent map to maintain flush delays/errors if any, for device path(s).
 	iSCSIVolumeFlushExceptions = make(map[string]time.Time)
@@ -996,7 +998,7 @@ func execIscsiadmCommand(ctx context.Context, args ...string) ([]byte, error) {
 }
 
 func listAllISCSIDevices(ctx context.Context) {
-	iscsi.ListAllDevices(ctx)
+	iscsiClient.ListAllDevices(ctx)
 }
 
 func getISCSISessionInfo(ctx context.Context) ([]iscsi.SessionInfo, error) {

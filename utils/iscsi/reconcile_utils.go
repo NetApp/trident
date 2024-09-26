@@ -2,7 +2,7 @@
 
 package iscsi
 
-//go:generate mockgen -destination=../../mocks/mock_utils/mock_reconcile_utils/reconcile_utils.go github.com/netapp/trident/utils/iscsi IscsiReconcileUtils
+//go:generate mockgen -destination=../../mocks/mock_utils/mock_iscsi/mock_reconcile_utils.go github.com/netapp/trident/utils/iscsi IscsiReconcileUtils
 
 import (
 	"context"
