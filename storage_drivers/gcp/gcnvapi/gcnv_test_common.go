@@ -1,10 +1,7 @@
-package gcp
+package gcnvapi
 
 import (
 	"context"
-	"strconv"
-
-	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -27,13 +24,11 @@ const (
 	VolumeSizeStr   = "107374182400"
 	StateReady      = "Ready"
 	NetworkName     = "fake-network"
-	NetworkFullName = "projects/" + ProjectNumber + "/locations/" + Location + "/networks/" + Network
+	NetworkFullName = "projects/" + ProjectNumber + "/locations/" + Location + "/networks/network"
 	FullVolumeName  = "projects/" + ProjectNumber + "/locations/" + Location + "/volumes/"
 )
 
 var (
-	ctx                  = context.Background()
-	errFailed            = errors.New("failed")
-	debugTraceFlags      = map[string]bool{"method": true, "api": true, "discovery": true}
-	DefaultVolumeSize, _ = strconv.ParseInt(defaultVolumeSizeStr, 10, 64)
+	ctx             = context.Background()
+	debugTraceFlags = map[string]bool{"method": true, "api": true, "discovery": true}
 )

@@ -26,6 +26,13 @@ import (
 	"github.com/netapp/trident/utils/models"
 )
 
+var (
+	ctx                  = context.Background()
+	errFailed            = errors.New("failed")
+	debugTraceFlags      = map[string]bool{"method": true, "api": true, "discovery": true}
+	DefaultVolumeSize, _ = strconv.ParseInt(defaultVolumeSizeStr, 10, 64)
+)
+
 func newTestGCNVDriver(mockAPI gcnvapi.GCNV) *NASStorageDriver {
 	prefix := "test-"
 
@@ -35,19 +42,19 @@ func newTestGCNVDriver(mockAPI gcnvapi.GCNV) *NASStorageDriver {
 			StoragePrefix:     &prefix,
 			DebugTraceFlags:   debugTraceFlags,
 		},
-		ProjectNumber: ProjectNumber,
-		Location:      Location,
+		ProjectNumber: gcnvapi.ProjectNumber,
+		Location:      gcnvapi.Location,
 		APIKey: drivers.GCPPrivateKey{
-			Type:                    Type,
-			ProjectID:               ProjectID,
-			PrivateKeyID:            PrivateKeyID,
-			PrivateKey:              PrivateKey,
-			ClientEmail:             ClientEmail,
-			ClientID:                ClientID,
-			AuthURI:                 AuthURI,
-			TokenURI:                TokenURI,
-			AuthProviderX509CertURL: AuthProviderX509CertURL,
-			ClientX509CertURL:       ClientX509CertURL,
+			Type:                    gcnvapi.Type,
+			ProjectID:               gcnvapi.ProjectID,
+			PrivateKeyID:            gcnvapi.PrivateKeyID,
+			PrivateKey:              gcnvapi.PrivateKey,
+			ClientEmail:             gcnvapi.ClientEmail,
+			ClientID:                gcnvapi.ClientID,
+			AuthURI:                 gcnvapi.AuthURI,
+			TokenURI:                gcnvapi.TokenURI,
+			AuthProviderX509CertURL: gcnvapi.AuthProviderX509CertURL,
+			ClientX509CertURL:       gcnvapi.ClientX509CertURL,
 		},
 		NFSMountOptions:     "nfsvers=3",
 		VolumeCreateTimeout: "10",
@@ -236,23 +243,23 @@ func TestGCNVInitialize(t *testing.T) {
 	capacityPool := &gcnvapi.CapacityPool{
 		Name:            "CP1",
 		FullName:        "CP-premium-pool",
-		Location:        Location,
+		Location:        gcnvapi.Location,
 		ServiceLevel:    gcnvapi.ServiceLevelPremium,
-		State:           StateReady,
-		NetworkName:     NetworkName,
-		NetworkFullName: NetworkFullName,
+		State:           gcnvapi.StateReady,
+		NetworkName:     gcnvapi.NetworkName,
+		NetworkFullName: gcnvapi.NetworkFullName,
 	}
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePools(ctx).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		map[string]string{}, BackendUUID)
+		map[string]string{}, gcnvapi.BackendUUID)
 
 	assert.NoError(t, result, "initialize failed")
 	assert.NotNil(t, driver.Config, "config is nil")
 	assert.Equal(t, "trident-", *driver.Config.StoragePrefix, "wrong storage prefix")
 	assert.Equal(t, 1, len(driver.pools), "wrong number of pools")
-	assert.Equal(t, BackendUUID, driver.telemetry.TridentBackendUUID, "wrong backend UUID")
+	assert.Equal(t, gcnvapi.BackendUUID, driver.telemetry.TridentBackendUUID, "wrong backend UUID")
 	assert.Equal(t, driver.volumeCreateTimeout, 10*time.Second, "volume create timeout mismatch")
 	assert.True(t, driver.Initialized(), "not initialized")
 }
@@ -281,24 +288,24 @@ func TestGCNVInitialize_WithSecrets(t *testing.T) {
     }`
 
 	secrets := map[string]string{
-		"private_key_id": PrivateKeyID,
-		"private_key":    PrivateKey,
+		"private_key_id": gcnvapi.PrivateKeyID,
+		"private_key":    gcnvapi.PrivateKey,
 	}
 
 	capacityPool := &gcnvapi.CapacityPool{
 		Name:            "CP1",
 		FullName:        "CP-premium-pool",
-		Location:        Location,
+		Location:        gcnvapi.Location,
 		ServiceLevel:    gcnvapi.ServiceLevelPremium,
-		State:           StateReady,
-		NetworkName:     NetworkName,
-		NetworkFullName: NetworkFullName,
+		State:           gcnvapi.StateReady,
+		NetworkName:     gcnvapi.NetworkName,
+		NetworkFullName: gcnvapi.NetworkFullName,
 	}
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePools(ctx).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		secrets, BackendUUID)
+		secrets, gcnvapi.BackendUUID)
 
 	assert.NoError(t, result, "initialize failed")
 	assert.NotNil(t, driver.Config, "config is nil")
@@ -329,12 +336,12 @@ func TestGCNVInitialize_WithInvalidSecrets_WrongKeyName(t *testing.T) {
     }`
 
 	secrets := map[string]string{
-		"private_key_id": PrivateKeyID,
-		"private-key":    PrivateKey,
+		"private_key_id": gcnvapi.PrivateKeyID,
+		"private-key":    gcnvapi.PrivateKey,
 	}
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		secrets, BackendUUID)
+		secrets, gcnvapi.BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -364,12 +371,12 @@ func TestGCNVInitialize_WithInvalidSecrets_WrongKeyID(t *testing.T) {
     }`
 
 	secrets := map[string]string{
-		"private-key_id": PrivateKeyID,
-		"private_key":    PrivateKey,
+		"private-key_id": gcnvapi.PrivateKeyID,
+		"private_key":    gcnvapi.PrivateKey,
 	}
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		secrets, BackendUUID)
+		secrets, gcnvapi.BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -399,7 +406,7 @@ func TestGCNVInitialize_InvalidConfigJSON(t *testing.T) {
     }`
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		map[string]string{}, BackendUUID)
+		map[string]string{}, gcnvapi.BackendUUID)
 
 	assert.NotNil(t, driver.Config.CommonStorageDriverConfig, "Driver Config not set")
 	assert.Error(t, result, "initialize did not fail")
@@ -431,7 +438,7 @@ func TestGCNVInitialize_InvalidConfigValue(t *testing.T) {
     }`
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		map[string]string{}, BackendUUID)
+		map[string]string{}, gcnvapi.BackendUUID)
 
 	assert.NotNil(t, driver.Config.CommonStorageDriverConfig, "Driver Config not set")
 	assert.Error(t, result, "initialize did not fail")
@@ -463,7 +470,7 @@ func TestGCNVInitialize_APISetToNil(t *testing.T) {
 	driver.API = nil
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		map[string]string{}, BackendUUID)
+		map[string]string{}, gcnvapi.BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -494,7 +501,7 @@ func TestGCNVInitialize_InvalidSDKTimeout(t *testing.T) {
 	driver.API = nil
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		map[string]string{}, BackendUUID)
+		map[string]string{}, gcnvapi.BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -526,7 +533,7 @@ func TestGCNVInitialize_InvalidMaxCacheAge(t *testing.T) {
 	driver.API = nil
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		map[string]string{}, BackendUUID)
+		map[string]string{}, gcnvapi.BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -559,7 +566,7 @@ func TestGCNVInitialize_InvalidStoragePrefix(t *testing.T) {
     }`
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		map[string]string{}, BackendUUID)
+		map[string]string{}, gcnvapi.BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -589,7 +596,7 @@ func TestGCNVInitialize_InvalidPoolAttribute_InvalidServiceLevel(t *testing.T) {
     }`
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		map[string]string{}, BackendUUID)
+		map[string]string{}, gcnvapi.BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -620,7 +627,7 @@ func TestGCNVInitialize_InvalidPoolAttribute_InvalidExportRule(t *testing.T) {
        }`
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		map[string]string{}, BackendUUID)
+		map[string]string{}, gcnvapi.BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -651,7 +658,7 @@ func TestGCNVInitialize_InvalidPoolAttribute_InvalidSnapshotDir(t *testing.T) {
        }`
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		map[string]string{}, BackendUUID)
+		map[string]string{}, gcnvapi.BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -682,7 +689,7 @@ func TestGCNVInitialize_InvalidPoolAttribute_InvalidSnapshotReserve(t *testing.T
        }`
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		map[string]string{}, BackendUUID)
+		map[string]string{}, gcnvapi.BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -713,7 +720,7 @@ func TestGCNVInitialize_InvalidPoolAttribute_InvalidSnapshotReserve_GreaterThan9
        }`
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		map[string]string{}, BackendUUID)
+		map[string]string{}, gcnvapi.BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -744,7 +751,7 @@ func TestGCNVInitialize_InvalidPoolAttribute_InvalidSnapshotReserve_LesserThan0(
        }`
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		map[string]string{}, BackendUUID)
+		map[string]string{}, gcnvapi.BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -775,7 +782,7 @@ func TestGCNVInitialize_InvalidPoolAttribute_InvalidUnixPermissions(t *testing.T
        }`
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		map[string]string{}, BackendUUID)
+		map[string]string{}, gcnvapi.BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -806,7 +813,7 @@ func TestGCNVInitialize_InvalidPoolAttribute_InvalidDefaultVolumeSize(t *testing
        }`
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		map[string]string{}, BackendUUID)
+		map[string]string{}, gcnvapi.BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -1156,30 +1163,30 @@ func getStructsForCreateNFSVolume(ctx context.Context, driver *NASStorageDriver,
 		Version:      "1",
 		Name:         "testvol1",
 		InternalName: "trident-testvol1",
-		Size:         VolumeSizeStr,
+		Size:         gcnvapi.VolumeSizeStr,
 	}
 
 	capacityPool := &gcnvapi.CapacityPool{
 		Name:            "CP1",
 		FullName:        "CP-premium-pool",
-		Location:        Location,
+		Location:        gcnvapi.Location,
 		ServiceLevel:    gcnvapi.ServiceLevelPremium,
-		State:           StateReady,
-		NetworkName:     NetworkName,
-		NetworkFullName: NetworkFullName,
+		State:           gcnvapi.StateReady,
+		NetworkName:     gcnvapi.NetworkName,
+		NetworkFullName: gcnvapi.NetworkFullName,
 	}
 
 	volume := &gcnvapi.Volume{
 		Name:              "testvol1",
 		CreationToken:     "trident-testvol1",
-		FullName:          FullVolumeName + "testvol1",
-		Location:          Location,
-		State:             StateReady,
+		FullName:          gcnvapi.FullVolumeName + "testvol1",
+		Location:          gcnvapi.Location,
+		State:             gcnvapi.StateReady,
 		CapacityPool:      "CP1",
-		NetworkName:       NetworkName,
-		NetworkFullName:   NetworkFullName,
+		NetworkName:       gcnvapi.NetworkName,
+		NetworkFullName:   gcnvapi.NetworkFullName,
 		ServiceLevel:      gcnvapi.ServiceLevelPremium,
-		SizeBytes:         VolumeSizeI64,
+		SizeBytes:         gcnvapi.VolumeSizeI64,
 		ExportPolicy:      exportPolicy,
 		ProtocolTypes:     []string{gcnvapi.ProtocolTypeNFSv3},
 		MountTargets:      nil,
@@ -1194,12 +1201,12 @@ func getStructsForCreateNFSVolume(ctx context.Context, driver *NASStorageDriver,
 		Name:            "testvol1",
 		CreationToken:   "trident-testvol1",
 		CapacityPool:    "CP1",
-		SizeBytes:       VolumeSizeI64,
+		SizeBytes:       gcnvapi.VolumeSizeI64,
 		ExportPolicy:    exportPolicy,
 		ProtocolTypes:   []string{gcnvapi.ProtocolTypeNFSv3},
 		UnixPermissions: "0755",
 		Labels: map[string]string{
-			"backend_uuid":     BackendUUID,
+			"backend_uuid":     gcnvapi.BackendUUID,
 			"platform":         "",
 			"platform_version": "",
 			"plugin":           "google-cloud-netapp-volumes",
@@ -1218,29 +1225,29 @@ func getMultipleCapacityPoolsForCreateVolume() []*gcnvapi.CapacityPool {
 		{
 			Name:            "CP1",
 			FullName:        "CP-premium-pool",
-			Location:        Location,
+			Location:        gcnvapi.Location,
 			ServiceLevel:    gcnvapi.ServiceLevelPremium,
-			State:           StateReady,
-			NetworkName:     NetworkName,
-			NetworkFullName: NetworkFullName,
+			State:           gcnvapi.StateReady,
+			NetworkName:     gcnvapi.NetworkName,
+			NetworkFullName: gcnvapi.NetworkFullName,
 		},
 		{
 			Name:            "CP2",
 			FullName:        "CP-premium-pool",
-			Location:        Location,
+			Location:        gcnvapi.Location,
 			ServiceLevel:    gcnvapi.ServiceLevelPremium,
-			State:           StateReady,
-			NetworkName:     NetworkName,
-			NetworkFullName: NetworkFullName,
+			State:           gcnvapi.StateReady,
+			NetworkName:     gcnvapi.NetworkName,
+			NetworkFullName: gcnvapi.NetworkFullName,
 		},
 		{
 			Name:            "CP3",
 			FullName:        "CP-premium-pool",
-			Location:        Location,
+			Location:        gcnvapi.Location,
 			ServiceLevel:    gcnvapi.ServiceLevelPremium,
-			State:           StateReady,
-			NetworkName:     NetworkName,
-			NetworkFullName: NetworkFullName,
+			State:           gcnvapi.StateReady,
+			NetworkName:     gcnvapi.NetworkName,
+			NetworkFullName: gcnvapi.NetworkFullName,
 		},
 	}
 }
@@ -1256,7 +1263,7 @@ func TestCreate_NFSVolume(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1295,7 +1302,7 @@ func TestCreate_NFSVolume_MultipleCapacityPools_FirstSucceeds(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1338,7 +1345,7 @@ func TestCreate_NFSVolume_MultipleCapacityPools_SecondSucceeds(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1389,7 +1396,7 @@ func TestCreate_NFSVolume_MultipleCapacityPools_NoneSucceeds(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1436,7 +1443,7 @@ func TestCreate_DiscoveryFailed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1461,7 +1468,7 @@ func TestGCNVCreate_InvalidVolumeName(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1487,7 +1494,7 @@ func TestCreate_InvalidCreationToken(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1513,7 +1520,7 @@ func TestCreate_NoStoragePool(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1538,7 +1545,7 @@ func TestCreate_NonexistentStoragePool(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 	driver.pools = nil
@@ -1564,7 +1571,7 @@ func TestCreate_VolumeExistsCheckFailed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1590,7 +1597,7 @@ func TestCreate_VolumeExistsCreating(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1618,7 +1625,7 @@ func TestCreate_VolumeExists(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1646,7 +1653,7 @@ func TestCreate_InvalidSize(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1673,7 +1680,7 @@ func TestCreate_NegativeSize(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1700,7 +1707,7 @@ func TestCreate_ZeroSize(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1738,7 +1745,7 @@ func TestCreate_ServiceLevelFlex(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1782,7 +1789,7 @@ func TestCreate_BelowAbsoluteMinimumSize(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1811,7 +1818,7 @@ func TestCreate_AboveMaximumSize(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1838,7 +1845,7 @@ func TestGCNVCreate_InvalidSnapshotDir(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1864,7 +1871,7 @@ func TestGCNVCreate_SnapshotReserve(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1890,7 +1897,7 @@ func TestGCNVCreate_InvalidSnapshotReserve(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1936,7 +1943,7 @@ func TestCreate_MountOptions(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -1974,7 +1981,7 @@ func TestCreate_MountOptions_NFSv4(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2021,7 +2028,7 @@ func TestCreate_MountOptions_BothEnabled(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2064,7 +2071,7 @@ func TestCreate_InvalidMountOptions(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2092,7 +2099,7 @@ func TestCreate_NFSVolume_DefaultMountOptions(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2129,7 +2136,7 @@ func TestCreate_NFSVolume_VolConfigMountOptions(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2170,7 +2177,7 @@ func TestCreate_NFSVolume_CreateFailed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2202,7 +2209,7 @@ func TestCreate_NFSVolume_BelowGCNVMinimumSize(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2241,10 +2248,10 @@ func TestCreate_NFSVolumeWithPoolLabels(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	driver.Config.Labels = map[string]string{
-		"backend_uuid":     BackendUUID,
+		"backend_uuid":     gcnvapi.BackendUUID,
 		"platform":         "",
 		"platform_version": "",
 		"plugin":           "google-cloud-netapp-volumes",
@@ -2351,7 +2358,7 @@ func TestCreate_NFSVolumeWithPoolLabels_NoMatchingCapacityPool(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2375,30 +2382,30 @@ func getStructsForCreateSMBVolume(ctx context.Context, driver *NASStorageDriver,
 		Version:      "1",
 		Name:         "testvol1",
 		InternalName: "trident-testvol1",
-		Size:         VolumeSizeStr,
+		Size:         gcnvapi.VolumeSizeStr,
 	}
 
 	capacityPool := &gcnvapi.CapacityPool{
 		Name:            "CP1",
 		FullName:        "CP-premium-pool",
-		Location:        Location,
+		Location:        gcnvapi.Location,
 		ServiceLevel:    gcnvapi.ServiceLevelPremium,
-		State:           StateReady,
-		NetworkName:     NetworkName,
-		NetworkFullName: NetworkFullName,
+		State:           gcnvapi.StateReady,
+		NetworkName:     gcnvapi.NetworkName,
+		NetworkFullName: gcnvapi.NetworkFullName,
 	}
 
 	volume := &gcnvapi.Volume{
 		Name:              "testvol1",
 		CreationToken:     "trident-testvol1",
-		FullName:          FullVolumeName + "testvol1",
-		Location:          Location,
-		State:             StateReady,
+		FullName:          gcnvapi.FullVolumeName + "testvol1",
+		Location:          gcnvapi.Location,
+		State:             gcnvapi.StateReady,
 		CapacityPool:      "CP1",
-		NetworkName:       NetworkName,
-		NetworkFullName:   NetworkFullName,
+		NetworkName:       gcnvapi.NetworkName,
+		NetworkFullName:   gcnvapi.NetworkFullName,
 		ServiceLevel:      gcnvapi.ServiceLevelPremium,
-		SizeBytes:         VolumeSizeI64,
+		SizeBytes:         gcnvapi.VolumeSizeI64,
 		ProtocolTypes:     []string{gcnvapi.ProtocolTypeSMB},
 		MountTargets:      nil,
 		Labels:            nil,
@@ -2410,10 +2417,10 @@ func getStructsForCreateSMBVolume(ctx context.Context, driver *NASStorageDriver,
 		Name:          "testvol1",
 		CreationToken: "trident-testvol1",
 		CapacityPool:  "CP1",
-		SizeBytes:     VolumeSizeI64,
+		SizeBytes:     gcnvapi.VolumeSizeI64,
 		ProtocolTypes: []string{gcnvapi.ProtocolTypeSMB},
 		Labels: map[string]string{
-			"backend_uuid":     BackendUUID,
+			"backend_uuid":     gcnvapi.BackendUUID,
 			"platform":         "",
 			"platform_version": "",
 			"plugin":           "google-cloud-netapp-volumes",
@@ -2437,7 +2444,7 @@ func TestCreate_SMBVolume(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2474,7 +2481,7 @@ func TestCreate_SMBVolume_CreateFailed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2503,7 +2510,7 @@ func TestCreate_SMBVolume_BelowGCNVMinimumSize(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2540,7 +2547,7 @@ func TestCreate_NFSVolumeOnSMBPool_CreateFailed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2571,7 +2578,7 @@ func TestCreate_SMBVolumeOnNFSPool_CreateFailed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2601,7 +2608,7 @@ func getStructsForCreateClone(ctx context.Context, driver *NASStorageDriver, sto
 		Version:      "1",
 		Name:         "testvol1",
 		InternalName: "trident-testvol1",
-		Size:         VolumeSizeStr,
+		Size:         gcnvapi.VolumeSizeStr,
 	}
 
 	cloneVolConfig := &storage.VolumeConfig{
@@ -2629,12 +2636,12 @@ func getStructsForCreateClone(ctx context.Context, driver *NASStorageDriver, sto
 		Name:            cloneVolConfig.Name,
 		CreationToken:   cloneVolConfig.InternalName,
 		CapacityPool:    "CP1",
-		SizeBytes:       VolumeSizeI64,
+		SizeBytes:       gcnvapi.VolumeSizeI64,
 		ExportPolicy:    exportPolicy,
 		ProtocolTypes:   []string{gcnvapi.ProtocolTypeNFSv3},
 		UnixPermissions: "0755",
 		Labels: map[string]string{
-			"backend_uuid":     BackendUUID,
+			"backend_uuid":     gcnvapi.BackendUUID,
 			"platform":         "",
 			"platform_version": "",
 			"plugin":           "google-cloud-netapp-volumes",
@@ -2648,14 +2655,14 @@ func getStructsForCreateClone(ctx context.Context, driver *NASStorageDriver, sto
 	sourceVolume := &gcnvapi.Volume{
 		Name:              "testvol1",
 		CreationToken:     "trident-testvol1",
-		FullName:          FullVolumeName + "testvol1",
-		Location:          Location,
-		State:             StateReady,
+		FullName:          gcnvapi.FullVolumeName + "testvol1",
+		Location:          gcnvapi.Location,
+		State:             gcnvapi.StateReady,
 		CapacityPool:      "CP1",
-		NetworkName:       NetworkName,
-		NetworkFullName:   NetworkFullName,
+		NetworkName:       gcnvapi.NetworkName,
+		NetworkFullName:   gcnvapi.NetworkFullName,
 		ServiceLevel:      gcnvapi.ServiceLevelPremium,
-		SizeBytes:         VolumeSizeI64,
+		SizeBytes:         gcnvapi.VolumeSizeI64,
 		ExportPolicy:      exportPolicy,
 		ProtocolTypes:     []string{gcnvapi.ProtocolTypeNFSv3},
 		MountTargets:      nil,
@@ -2669,14 +2676,14 @@ func getStructsForCreateClone(ctx context.Context, driver *NASStorageDriver, sto
 	cloneVolume := &gcnvapi.Volume{
 		Name:              "testvol2",
 		CreationToken:     "trident-testvol2",
-		FullName:          FullVolumeName + "testvol2",
-		Location:          Location,
-		State:             StateReady,
+		FullName:          gcnvapi.FullVolumeName + "testvol2",
+		Location:          gcnvapi.Location,
+		State:             gcnvapi.StateReady,
 		CapacityPool:      "CP1",
-		NetworkName:       NetworkName,
-		NetworkFullName:   NetworkFullName,
+		NetworkName:       gcnvapi.NetworkName,
+		NetworkFullName:   gcnvapi.NetworkFullName,
 		ServiceLevel:      gcnvapi.ServiceLevelPremium,
-		SizeBytes:         VolumeSizeI64,
+		SizeBytes:         gcnvapi.VolumeSizeI64,
 		ExportPolicy:      exportPolicy,
 		ProtocolTypes:     []string{gcnvapi.ProtocolTypeNFSv3},
 		MountTargets:      nil,
@@ -2690,11 +2697,11 @@ func getStructsForCreateClone(ctx context.Context, driver *NASStorageDriver, sto
 	snapshot := &gcnvapi.Snapshot{
 		Name:     "snap1",
 		Volume:   "testvol1",
-		Location: Location,
-		State:    StateReady,
+		Location: gcnvapi.Location,
+		State:    gcnvapi.StateReady,
 		Created:  time.Now(),
 		Labels: map[string]string{
-			"backend_uuid":     BackendUUID,
+			"backend_uuid":     gcnvapi.BackendUUID,
 			"platform":         "",
 			"platform_version": "",
 			"plugin":           "google-cloud-netapp-volumes",
@@ -2716,7 +2723,7 @@ func TestCreateClone_NoSnapshot(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 	sourceVolConfig, cloneVolConfig, createRequest, sourceVolume, cloneVolume, snapshot := getStructsForCreateClone(ctx, driver, storagePool)
@@ -2752,7 +2759,7 @@ func TestCreateClone_Snapshot(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2788,7 +2795,7 @@ func TestCreateClone_CreateSnapshot(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2832,7 +2839,7 @@ func TestCreateClone_ROClone(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2864,7 +2871,7 @@ func TestCreateClone_ROCloneFailed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2896,7 +2903,7 @@ func TestCreateClone_DiscoveryFailed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2921,7 +2928,7 @@ func TestCreateClone_InvalidVolumeName(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2947,7 +2954,7 @@ func TestCreateClone_InvalidCreationToken(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2973,7 +2980,7 @@ func TestCreateClone_NonexistentSourceVolume(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -2999,7 +3006,7 @@ func TestCreateClone_VolumeExistsCheckFailed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -3026,7 +3033,7 @@ func TestCreateClone_VolumeExistsCreating(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -3056,7 +3063,7 @@ func TestCreateClone_VolumeExists(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -3084,7 +3091,7 @@ func TestCreateClone_SnapshotNotFound(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -3113,7 +3120,7 @@ func TestCreateClone_SnapshotNotReady(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -3143,7 +3150,7 @@ func TestCreateClone_SnapshotCreateFailed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -3172,7 +3179,7 @@ func TestCreateClone_WaitForSnapshotStateFailed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -3204,7 +3211,7 @@ func TestCreateClone_SnapshotRefetchFailed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -3238,7 +3245,7 @@ func TestCreateClone_CreateFailed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -3334,7 +3341,7 @@ func TestCreateClone_AboveMaxLabelCount(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	storagePool := driver.pools["gcnv_pool"]
 
@@ -3380,7 +3387,7 @@ func getStructsForImport(ctx context.Context, driver *NASStorageDriver) (*storag
 		Version:      "1",
 		Name:         "testvol1",
 		InternalName: "trident-testvol1",
-		Size:         VolumeSizeStr,
+		Size:         gcnvapi.VolumeSizeStr,
 	}
 
 	Labels := driver.getTelemetryLabels(ctx)
@@ -3388,14 +3395,14 @@ func getStructsForImport(ctx context.Context, driver *NASStorageDriver) (*storag
 	OriginalVolume := &gcnvapi.Volume{
 		Name:              "testvol1",
 		CreationToken:     "trident-testvol1",
-		FullName:          FullVolumeName + "testvol1",
-		Location:          Location,
-		State:             StateReady,
+		FullName:          gcnvapi.FullVolumeName + "testvol1",
+		Location:          gcnvapi.Location,
+		State:             gcnvapi.StateReady,
 		CapacityPool:      "CP1",
-		NetworkName:       NetworkName,
-		NetworkFullName:   NetworkFullName,
+		NetworkName:       gcnvapi.NetworkName,
+		NetworkFullName:   gcnvapi.NetworkFullName,
 		ServiceLevel:      gcnvapi.ServiceLevelPremium,
-		SizeBytes:         VolumeSizeI64,
+		SizeBytes:         gcnvapi.VolumeSizeI64,
 		ExportPolicy:      exportPolicy,
 		ProtocolTypes:     []string{gcnvapi.ProtocolTypeNFSv3},
 		MountTargets:      nil,
@@ -3427,7 +3434,7 @@ func getStructsForNFSImport(ctx context.Context, driver *NASStorageDriver) (*sto
 		Version:      "1",
 		Name:         "testvol1",
 		InternalName: "trident-testvol1",
-		Size:         VolumeSizeStr,
+		Size:         gcnvapi.VolumeSizeStr,
 	}
 
 	Labels := driver.getTelemetryLabels(ctx)
@@ -3435,14 +3442,14 @@ func getStructsForNFSImport(ctx context.Context, driver *NASStorageDriver) (*sto
 	OriginalVolume := &gcnvapi.Volume{
 		Name:              "testvol1",
 		CreationToken:     "trident-testvol1",
-		FullName:          FullVolumeName + "testvol1",
-		Location:          Location,
-		State:             StateReady,
+		FullName:          gcnvapi.FullVolumeName + "testvol1",
+		Location:          gcnvapi.Location,
+		State:             gcnvapi.StateReady,
 		CapacityPool:      "CP1",
-		NetworkName:       NetworkName,
-		NetworkFullName:   NetworkFullName,
+		NetworkName:       gcnvapi.NetworkName,
+		NetworkFullName:   gcnvapi.NetworkFullName,
 		ServiceLevel:      gcnvapi.ServiceLevelPremium,
-		SizeBytes:         VolumeSizeI64,
+		SizeBytes:         gcnvapi.VolumeSizeI64,
 		ExportPolicy:      exportPolicy,
 		ProtocolTypes:     []string{gcnvapi.ProtocolTypeNFSv3},
 		MountTargets:      nil,
@@ -3461,7 +3468,7 @@ func getStructsForSMBImport(ctx context.Context, driver *NASStorageDriver) (*sto
 		Version:      "1",
 		Name:         "testvol1",
 		InternalName: "trident-testvol1",
-		Size:         VolumeSizeStr,
+		Size:         gcnvapi.VolumeSizeStr,
 	}
 
 	Labels := driver.getTelemetryLabels(ctx)
@@ -3469,14 +3476,14 @@ func getStructsForSMBImport(ctx context.Context, driver *NASStorageDriver) (*sto
 	OriginalVolume := &gcnvapi.Volume{
 		Name:              "testvol1",
 		CreationToken:     "trident-testvol1",
-		FullName:          FullVolumeName + "testvol1",
-		Location:          Location,
-		State:             StateReady,
+		FullName:          gcnvapi.FullVolumeName + "testvol1",
+		Location:          gcnvapi.Location,
+		State:             gcnvapi.StateReady,
 		CapacityPool:      "CP1",
-		NetworkName:       NetworkName,
-		NetworkFullName:   NetworkFullName,
+		NetworkName:       gcnvapi.NetworkName,
+		NetworkFullName:   gcnvapi.NetworkFullName,
 		ServiceLevel:      gcnvapi.ServiceLevelPremium,
-		SizeBytes:         VolumeSizeI64,
+		SizeBytes:         gcnvapi.VolumeSizeI64,
 		ProtocolTypes:     []string{gcnvapi.ProtocolTypeSMB},
 		MountTargets:      nil,
 		Labels:            Labels,
@@ -3499,7 +3506,7 @@ func TestImport_Managed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, originalVolume := getStructsForNFSImport(ctx, driver)
 
@@ -3536,7 +3543,7 @@ func TestImport_ManagedWithSnapshotDir(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, originalVolume := getStructsForNFSImport(ctx, driver)
 
@@ -3575,7 +3582,7 @@ func TestImport_ManagedWithSnapshotDirFalse(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, originalVolume := getStructsForNFSImport(ctx, driver)
 
@@ -3614,7 +3621,7 @@ func TestImport_ManagedWithInvalidSnapshotDirValue(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, originalVolume := getStructsForNFSImport(ctx, driver)
 
@@ -3642,7 +3649,7 @@ func TestImport_SMB_Managed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, originalVolume := getStructsForSMBImport(ctx, driver)
 
@@ -3677,7 +3684,7 @@ func TestImport_SMB_Failed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, originalVolume := getStructsForSMBImport(ctx, driver)
 
@@ -3707,7 +3714,7 @@ func TestImport_DualProtocolVolume(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, originalVolume := getStructsForSMBImport(ctx, driver)
 
@@ -3737,7 +3744,7 @@ func TestImport_CapacityPoolError(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, originalVolume := getStructsForNFSImport(ctx, driver)
 
@@ -3765,7 +3772,7 @@ func TestImport_NotManaged(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, originalVolume := getStructsForNFSImport(ctx, driver)
 
@@ -3795,7 +3802,7 @@ func TestImport_DiscoveryFailed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, _ := getStructsForNFSImport(ctx, driver)
 	volConfig.ImportNotManaged = true
@@ -3823,7 +3830,7 @@ func TestImport_NotFound(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, _ := getStructsForNFSImport(ctx, driver)
 
@@ -3851,7 +3858,7 @@ func TestImport_InvalidUnixPermissions(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, originalVolume := getStructsForNFSImport(ctx, driver)
 
@@ -3880,7 +3887,7 @@ func TestImport_ModifyVolumeFailed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, originalVolume := getStructsForNFSImport(ctx, driver)
 
@@ -3914,7 +3921,7 @@ func TestImport_VolumeWaitFailed(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, originalVolume := getStructsForNFSImport(ctx, driver)
 
@@ -3951,7 +3958,7 @@ func TestImport_BackendVolumeMismatch(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, originalVolume := getStructsForNFSImport(ctx, driver)
 
@@ -3979,23 +3986,23 @@ func TestGCNVRename(t *testing.T) {
 func TestGetTelemetryLabels(t *testing.T) {
 	_, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	result := driver.getTelemetryLabels(ctx)
 
 	assert.NotNil(t, result, "received nil")
-	assert.Equal(t, result["backend_uuid"], BackendUUID, "backend UUID mismatch")
+	assert.Equal(t, result["backend_uuid"], gcnvapi.BackendUUID, "backend UUID mismatch")
 }
 
 func TestUpdateTelemetryLabels(t *testing.T) {
 	_, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	result := driver.updateTelemetryLabels(ctx, &gcnvapi.Volume{})
 
 	assert.NotNil(t, result)
-	assert.Equal(t, result["backend_uuid"], BackendUUID, "backend UUID mismatch")
+	assert.Equal(t, result["backend_uuid"], gcnvapi.BackendUUID, "backend UUID mismatch")
 }
 
 func TestWaitForVolumeCreate_Ready(t *testing.T) {
@@ -4004,8 +4011,8 @@ func TestWaitForVolumeCreate_Ready(t *testing.T) {
 	volume := &gcnvapi.Volume{
 		Name:          "testvol1",
 		CreationToken: "trident-testvol1",
-		FullName:      FullVolumeName + "testvol1",
-		State:         StateReady,
+		FullName:      gcnvapi.FullVolumeName + "testvol1",
+		State:         gcnvapi.StateReady,
 	}
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, gcnvapi.VolumeStateReady, []string{gcnvapi.VolumeStateError},
@@ -4024,7 +4031,7 @@ func TestWaitForVolumeCreate_Creating(t *testing.T) {
 		volume := &gcnvapi.Volume{
 			Name:          "testvol1",
 			CreationToken: "trident-testvol1",
-			FullName:      FullVolumeName + "testvol1",
+			FullName:      gcnvapi.FullVolumeName + "testvol1",
 			State:         gcnvapi.VolumeStateCreating,
 		}
 
@@ -4044,7 +4051,7 @@ func TestWaitForVolumeCreate_DeletingSucceeded(t *testing.T) {
 	volume := &gcnvapi.Volume{
 		Name:          "testvol1",
 		CreationToken: "trident-testvol1",
-		FullName:      FullVolumeName + "testvol1",
+		FullName:      gcnvapi.FullVolumeName + "testvol1",
 		State:         gcnvapi.VolumeStateCreating,
 	}
 
@@ -4065,7 +4072,7 @@ func TestWaitForVolumeCreate_DeletingFailed(t *testing.T) {
 	volume := &gcnvapi.Volume{
 		Name:          "testvol1",
 		CreationToken: "trident-testvol1",
-		FullName:      FullVolumeName + "testvol1",
+		FullName:      gcnvapi.FullVolumeName + "testvol1",
 		State:         gcnvapi.VolumeStateCreating,
 	}
 
@@ -4086,7 +4093,7 @@ func TestWaitForVolumeCreate_ErrorDeleteSucceeded(t *testing.T) {
 	volume := &gcnvapi.Volume{
 		Name:          "testvol1",
 		CreationToken: "trident-testvol1",
-		FullName:      FullVolumeName + "testvol1",
+		FullName:      gcnvapi.FullVolumeName + "testvol1",
 		State:         gcnvapi.VolumeStateCreating,
 	}
 
@@ -4106,7 +4113,7 @@ func TestWaitForVolumeCreate_ErrorDeleteFailed(t *testing.T) {
 	volume := &gcnvapi.Volume{
 		Name:          "testvol1",
 		CreationToken: "trident-testvol1",
-		FullName:      FullVolumeName + "testvol1",
+		FullName:      gcnvapi.FullVolumeName + "testvol1",
 		State:         gcnvapi.VolumeStateCreating,
 	}
 
@@ -4128,7 +4135,7 @@ func TestWaitForVolumeCreate_OtherStates(t *testing.T) {
 		volume := &gcnvapi.Volume{
 			Name:          "testvol1",
 			CreationToken: "trident-testvol1",
-			FullName:      FullVolumeName + "testvol1",
+			FullName:      gcnvapi.FullVolumeName + "testvol1",
 			State:         gcnvapi.VolumeStateCreating,
 		}
 
@@ -4159,7 +4166,7 @@ func getStructsForDestroyNFSVolume(ctx context.Context, driver *NASStorageDriver
 		Version:      "1",
 		Name:         "testvol1",
 		InternalName: "trident-testvol1",
-		Size:         VolumeSizeStr,
+		Size:         gcnvapi.VolumeSizeStr,
 	}
 
 	Labels := driver.getTelemetryLabels(ctx)
@@ -4167,14 +4174,14 @@ func getStructsForDestroyNFSVolume(ctx context.Context, driver *NASStorageDriver
 	volume := &gcnvapi.Volume{
 		Name:              "testvol1",
 		CreationToken:     "trident-testvol1",
-		FullName:          FullVolumeName + "testvol1",
-		Location:          Location,
-		State:             StateReady,
+		FullName:          gcnvapi.FullVolumeName + "testvol1",
+		Location:          gcnvapi.Location,
+		State:             gcnvapi.StateReady,
 		CapacityPool:      "CP1",
-		NetworkName:       NetworkName,
-		NetworkFullName:   NetworkFullName,
+		NetworkName:       gcnvapi.NetworkName,
+		NetworkFullName:   gcnvapi.NetworkFullName,
 		ServiceLevel:      gcnvapi.ServiceLevelPremium,
-		SizeBytes:         VolumeSizeI64,
+		SizeBytes:         gcnvapi.VolumeSizeI64,
 		ExportPolicy:      exportPolicy,
 		ProtocolTypes:     []string{gcnvapi.ProtocolTypeNFSv3},
 		MountTargets:      nil,
@@ -4211,14 +4218,14 @@ func getStructsForDestroyDeleteSnapshot(ctx context.Context, driver *NASStorageD
 		Version:      "1",
 		Name:         "testvol1",
 		InternalName: "trident-testvol1",
-		Size:         VolumeSizeStr,
+		Size:         gcnvapi.VolumeSizeStr,
 	}
 
 	cloneVolumeConfig = &storage.VolumeConfig{
 		Version:                     "1",
 		Name:                        "clonetestvol",
 		InternalName:                "trident-clonetestvol",
-		Size:                        VolumeSizeStr,
+		Size:                        gcnvapi.VolumeSizeStr,
 		CloneSourceSnapshotInternal: "snap",
 		CloneSourceVolume:           volumeConfig.Name,
 		CloneSourceVolumeInternal:   volumeConfig.InternalName,
@@ -4227,14 +4234,14 @@ func getStructsForDestroyDeleteSnapshot(ctx context.Context, driver *NASStorageD
 	volume = &gcnvapi.Volume{
 		Name:              volumeConfig.Name,
 		CreationToken:     volumeConfig.InternalName,
-		FullName:          FullVolumeName + volumeConfig.Name,
-		Location:          Location,
-		State:             StateReady,
+		FullName:          gcnvapi.FullVolumeName + volumeConfig.Name,
+		Location:          gcnvapi.Location,
+		State:             gcnvapi.StateReady,
 		CapacityPool:      "CP1",
-		NetworkName:       NetworkName,
-		NetworkFullName:   NetworkFullName,
+		NetworkName:       gcnvapi.NetworkName,
+		NetworkFullName:   gcnvapi.NetworkFullName,
 		ServiceLevel:      gcnvapi.ServiceLevelPremium,
-		SizeBytes:         VolumeSizeI64,
+		SizeBytes:         gcnvapi.VolumeSizeI64,
 		ExportPolicy:      exportPolicy,
 		ProtocolTypes:     []string{gcnvapi.ProtocolTypeNFSv3},
 		MountTargets:      nil,
@@ -4248,14 +4255,14 @@ func getStructsForDestroyDeleteSnapshot(ctx context.Context, driver *NASStorageD
 	cloneVolume = &gcnvapi.Volume{
 		Name:              cloneVolumeConfig.Name,
 		CreationToken:     cloneVolumeConfig.InternalName,
-		FullName:          FullVolumeName + cloneVolumeConfig.Name,
-		Location:          Location,
-		State:             StateReady,
+		FullName:          gcnvapi.FullVolumeName + cloneVolumeConfig.Name,
+		Location:          gcnvapi.Location,
+		State:             gcnvapi.StateReady,
 		CapacityPool:      "CP1",
-		NetworkName:       NetworkName,
-		NetworkFullName:   NetworkFullName,
+		NetworkName:       gcnvapi.NetworkName,
+		NetworkFullName:   gcnvapi.NetworkFullName,
 		ServiceLevel:      gcnvapi.ServiceLevelPremium,
-		SizeBytes:         VolumeSizeI64,
+		SizeBytes:         gcnvapi.VolumeSizeI64,
 		ExportPolicy:      exportPolicy,
 		ProtocolTypes:     []string{gcnvapi.ProtocolTypeNFSv3},
 		MountTargets:      nil,
@@ -4269,11 +4276,11 @@ func getStructsForDestroyDeleteSnapshot(ctx context.Context, driver *NASStorageD
 	snapshot = &gcnvapi.Snapshot{
 		Name:     "snap1",
 		Volume:   volume.Name,
-		Location: Location,
-		State:    StateReady,
+		Location: gcnvapi.Location,
+		State:    gcnvapi.StateReady,
 		Created:  time.Now(),
 		Labels: map[string]string{
-			"backend_uuid":     BackendUUID,
+			"backend_uuid":     gcnvapi.BackendUUID,
 			"platform":         "",
 			"platform_version": "",
 			"plugin":           "google-cloud-netapp-volumes",
@@ -4289,20 +4296,20 @@ func getStructsForDestroySMBVolume(ctx context.Context, driver *NASStorageDriver
 		Version:      "1",
 		Name:         "testvol1",
 		InternalName: "trident-testvol1",
-		Size:         VolumeSizeStr,
+		Size:         gcnvapi.VolumeSizeStr,
 	}
 
 	volume := &gcnvapi.Volume{
 		Name:              "testvol1",
 		CreationToken:     "trident-testvol1",
-		FullName:          FullVolumeName + "testvol1",
-		Location:          Location,
-		State:             StateReady,
+		FullName:          gcnvapi.FullVolumeName + "testvol1",
+		Location:          gcnvapi.Location,
+		State:             gcnvapi.StateReady,
 		CapacityPool:      "CP1",
-		NetworkName:       NetworkName,
-		NetworkFullName:   NetworkFullName,
+		NetworkName:       gcnvapi.NetworkName,
+		NetworkFullName:   gcnvapi.NetworkFullName,
 		ServiceLevel:      gcnvapi.ServiceLevelPremium,
-		SizeBytes:         VolumeSizeI64,
+		SizeBytes:         gcnvapi.VolumeSizeI64,
 		ProtocolTypes:     []string{gcnvapi.ProtocolTypeSMB},
 		MountTargets:      nil,
 		Labels:            nil,
@@ -4320,7 +4327,7 @@ func TestDestroy_NFSVolume_Docker(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextDocker
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume := getStructsForDestroyNFSVolume(ctx, driver)
 
@@ -4342,7 +4349,7 @@ func TestDestroy_NFSVolume_CSI(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextCSI
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume := getStructsForDestroyNFSVolume(ctx, driver)
 
@@ -4364,7 +4371,7 @@ func TestDestroy_DeleteSnapshot(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextCSI
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	sourceVolumeConfig, sourceVolume, cloneVolConfig, cloneVolume, snapshot := getStructsForDestroyDeleteSnapshot(ctx, driver)
 
@@ -4389,7 +4396,7 @@ func TestDestroy_DeleteSnapshot_VolDeleteError(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextCSI
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	_, _, cloneVolConfig, _, _ := getStructsForDestroyDeleteSnapshot(ctx, driver)
 
@@ -4409,7 +4416,7 @@ func Test_AutomaticDeleteSnapshot(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextCSI
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	sourceVolumeConfig, sourceVolume, cloneVolConfig, _, snapshot := getStructsForDestroyDeleteSnapshot(ctx, driver)
 
@@ -4427,7 +4434,7 @@ func Test_AutomaticDeleteSnapshot_NoSnapshot(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextCSI
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	_, _, cloneVolConfig, _, _ := getStructsForDestroyDeleteSnapshot(ctx, driver)
 
@@ -4447,7 +4454,7 @@ func Test_AutomaticDeleteSnapshot_SelectedSnapshot(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextCSI
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	_, _, cloneVolConfig, _, _ := getStructsForDestroyDeleteSnapshot(ctx, driver)
 
@@ -4467,7 +4474,7 @@ func Test_AutomaticDeleteSnapshot_VolDeleteError(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextCSI
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	_, _, cloneVolConfig, _, _ := getStructsForDestroyDeleteSnapshot(ctx, driver)
 
@@ -4485,7 +4492,7 @@ func Test_AutomaticDeleteSnapshot_VolByNameError(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextCSI
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	sourceVolumeConfig, _, cloneVolConfig, _, _ := getStructsForDestroyDeleteSnapshot(ctx, driver)
 
@@ -4521,7 +4528,7 @@ func Test_AutomaticDeleteSnapshot_SnapshotForVolumeError(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextCSI
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	sourceVolumeConfig, sourceVolume, cloneVolConfig, _, _ := getStructsForDestroyDeleteSnapshot(ctx, driver)
 
@@ -4557,7 +4564,7 @@ func Test_AutomaticDeleteSnapshot_DeleteSnapshotError(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextCSI
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	sourceVolumeConfig, sourceVolume, cloneVolConfig, _, snapshot := getStructsForDestroyDeleteSnapshot(ctx, driver)
 
@@ -4575,7 +4582,7 @@ func TestDestroy_DiscoveryFailed(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextCSI
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, _ := getStructsForDestroyNFSVolume(ctx, driver)
 
@@ -4593,7 +4600,7 @@ func TestDestroy_VolumeExistsCheckFailed(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextCSI
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, _ := getStructsForDestroyNFSVolume(ctx, driver)
 
@@ -4612,7 +4619,7 @@ func TestDestroy_AlreadyDeleted(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextCSI
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, _ := getStructsForDestroyNFSVolume(ctx, driver)
 
@@ -4631,7 +4638,7 @@ func TestDestroy_StillDeletingDeleted_Docker(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextDocker
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume := getStructsForDestroyNFSVolume(ctx, driver)
 	volume.State = gcnvapi.VolumeStateDeleting
@@ -4653,7 +4660,7 @@ func TestDestroy_StillDeleting_Docker(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextDocker
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume := getStructsForDestroyNFSVolume(ctx, driver)
 	volume.State = gcnvapi.VolumeStateDeleting
@@ -4675,7 +4682,7 @@ func TestDestroy_StillDeleting_CSI(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextCSI
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume := getStructsForDestroyNFSVolume(ctx, driver)
 	volume.State = gcnvapi.VolumeStateDeleting
@@ -4697,7 +4704,7 @@ func TestDestroy_DeleteFailed(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextCSI
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume := getStructsForDestroyNFSVolume(ctx, driver)
 
@@ -4717,7 +4724,7 @@ func TestDestroy_VolumeWaitFailed_Docker(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextDocker
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume := getStructsForDestroyNFSVolume(ctx, driver)
 
@@ -4739,7 +4746,7 @@ func TestDestroy_SMBVolume(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.DriverContext = tridentconfig.ContextDocker
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume := getStructsForDestroySMBVolume(ctx, driver)
 
@@ -4772,7 +4779,7 @@ func getStructsForPublishNFSVolume(ctx context.Context, driver *NASStorageDriver
 		Version:      "1",
 		Name:         "testvol1",
 		InternalName: "trident-testvol1",
-		Size:         VolumeSizeStr,
+		Size:         gcnvapi.VolumeSizeStr,
 	}
 
 	Labels := driver.getTelemetryLabels(ctx)
@@ -4788,14 +4795,14 @@ func getStructsForPublishNFSVolume(ctx context.Context, driver *NASStorageDriver
 	volume := &gcnvapi.Volume{
 		Name:              "testvol1",
 		CreationToken:     "trident-testvol1",
-		FullName:          FullVolumeName + "testvol1",
-		Location:          Location,
-		State:             StateReady,
+		FullName:          gcnvapi.FullVolumeName + "testvol1",
+		Location:          gcnvapi.Location,
+		State:             gcnvapi.StateReady,
 		CapacityPool:      "CP1",
-		NetworkName:       NetworkName,
-		NetworkFullName:   NetworkFullName,
+		NetworkName:       gcnvapi.NetworkName,
+		NetworkFullName:   gcnvapi.NetworkFullName,
 		ServiceLevel:      gcnvapi.ServiceLevelPremium,
-		SizeBytes:         VolumeSizeI64,
+		SizeBytes:         gcnvapi.VolumeSizeI64,
 		ExportPolicy:      exportPolicy,
 		ProtocolTypes:     []string{gcnvapi.ProtocolTypeNFSv3},
 		MountTargets:      mountTargets,
@@ -4816,7 +4823,7 @@ func getStructsForPublishSMBVolume(ctx context.Context, driver *NASStorageDriver
 		Version:      "1",
 		Name:         "testvol1",
 		InternalName: "trident-testvol1",
-		Size:         VolumeSizeStr,
+		Size:         gcnvapi.VolumeSizeStr,
 	}
 
 	Labels := driver.getTelemetryLabels(ctx)
@@ -4832,14 +4839,14 @@ func getStructsForPublishSMBVolume(ctx context.Context, driver *NASStorageDriver
 	volume := &gcnvapi.Volume{
 		Name:              "testvol1",
 		CreationToken:     "trident-testvol1",
-		FullName:          FullVolumeName + "testvol1",
-		Location:          Location,
-		State:             StateReady,
+		FullName:          gcnvapi.FullVolumeName + "testvol1",
+		Location:          gcnvapi.Location,
+		State:             gcnvapi.StateReady,
 		CapacityPool:      "CP1",
-		NetworkName:       NetworkName,
-		NetworkFullName:   NetworkFullName,
+		NetworkName:       gcnvapi.NetworkName,
+		NetworkFullName:   gcnvapi.NetworkFullName,
 		ServiceLevel:      gcnvapi.ServiceLevelPremium,
-		SizeBytes:         VolumeSizeI64,
+		SizeBytes:         gcnvapi.VolumeSizeI64,
 		ProtocolTypes:     []string{gcnvapi.ProtocolTypeSMB},
 		MountTargets:      mountTargets,
 		Labels:            Labels,
@@ -4859,7 +4866,7 @@ func TestPublish_NFSVolume(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
 	publishInfo.NfsPath = volConfig.AccessInfo.NfsPath
@@ -4883,10 +4890,10 @@ func TestPublish_ROClone_NFSVolume(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
-	publishInfo.NfsPath = "/trident-testvol1/.snapshot/" + SnapshotUUID
+	publishInfo.NfsPath = "/trident-testvol1/.snapshot/" + gcnvapi.SnapshotUUID
 	volConfig.CloneSourceVolumeInternal = volConfig.Name
 	volConfig.ReadOnlyClone = true
 
@@ -4913,7 +4920,7 @@ func TestPublish_SMBVolume(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "smb"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, publishInfo := getStructsForPublishSMBVolume(ctx, driver)
 
@@ -4935,7 +4942,7 @@ func TestPublish_MountOptions(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
 	publishInfo.NfsPath = volConfig.AccessInfo.NfsPath
@@ -4960,7 +4967,7 @@ func TestPublish_MountOptions_Error(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
 	publishInfo.NfsPath = volConfig.AccessInfo.NfsPath
@@ -4985,7 +4992,7 @@ func TestPublish_MountOptions_ParseNFSExportPathError(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
 	volume.MountTargets[0].ExportPath = "1234:testvol1"
@@ -5009,7 +5016,7 @@ func TestPublish_MountOptions_ParseSMBExportPathError(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "smb"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
 	volume.MountTargets[0].ExportPath = "1234:testvol1"
@@ -5032,7 +5039,7 @@ func TestPublish_DiscoveryFailed(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, _, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
 
@@ -5054,7 +5061,7 @@ func TestPublish_NonexistentVolume(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, _, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
 
@@ -5077,10 +5084,10 @@ func TestPublish_ROClone_NonexistentVolume(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, _, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
-	publishInfo.NfsPath = "/trident-testvol1/.snapshot/" + SnapshotUUID
+	publishInfo.NfsPath = "/trident-testvol1/.snapshot/" + gcnvapi.SnapshotUUID
 	volConfig.CloneSourceVolumeInternal = volConfig.Name
 	volConfig.ReadOnlyClone = true
 
@@ -5104,7 +5111,7 @@ func TestPublish_NoMountTargets(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
 	volume.MountTargets = nil
@@ -5141,7 +5148,7 @@ func getStructsForCreateSnapshot(ctx context.Context, driver *NASStorageDriver, 
 		Version:      "1",
 		Name:         "testvol1",
 		InternalName: "trident-testvol1",
-		Size:         VolumeSizeStr,
+		Size:         gcnvapi.VolumeSizeStr,
 	}
 
 	Labels := driver.getTelemetryLabels(ctx)
@@ -5157,14 +5164,14 @@ func getStructsForCreateSnapshot(ctx context.Context, driver *NASStorageDriver, 
 	volume := &gcnvapi.Volume{
 		Name:              "testvol1",
 		CreationToken:     "trident-testvol1",
-		FullName:          FullVolumeName + "testvol1",
-		Location:          Location,
-		State:             StateReady,
+		FullName:          gcnvapi.FullVolumeName + "testvol1",
+		Location:          gcnvapi.Location,
+		State:             gcnvapi.StateReady,
 		CapacityPool:      "CP1",
-		NetworkName:       NetworkName,
-		NetworkFullName:   NetworkFullName,
+		NetworkName:       gcnvapi.NetworkName,
+		NetworkFullName:   gcnvapi.NetworkFullName,
 		ServiceLevel:      gcnvapi.ServiceLevelPremium,
-		SizeBytes:         VolumeSizeI64,
+		SizeBytes:         gcnvapi.VolumeSizeI64,
 		ExportPolicy:      exportPolicy,
 		ProtocolTypes:     []string{gcnvapi.ProtocolTypeNFSv3},
 		MountTargets:      mountTargets,
@@ -5186,11 +5193,11 @@ func getStructsForCreateSnapshot(ctx context.Context, driver *NASStorageDriver, 
 	snapshot := &gcnvapi.Snapshot{
 		Name:     "snap1",
 		Volume:   "testvol1",
-		Location: Location,
-		State:    StateReady,
+		Location: gcnvapi.Location,
+		State:    gcnvapi.StateReady,
 		Created:  time.Now(),
 		Labels: map[string]string{
-			"backend_uuid":     BackendUUID,
+			"backend_uuid":     gcnvapi.BackendUUID,
 			"platform":         "",
 			"platform_version": "",
 			"plugin":           "google-cloud-netapp-volumes",
@@ -5204,7 +5211,7 @@ func getStructsForCreateSnapshot(ctx context.Context, driver *NASStorageDriver, 
 func TestGCNVCanSnapshot(t *testing.T) {
 	_, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, _, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5217,7 +5224,7 @@ func TestGCNVCanSnapshot(t *testing.T) {
 func TestGetSnapshot(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5237,7 +5244,7 @@ func TestGetSnapshot(t *testing.T) {
 func TestGetSnapshot_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, _, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5253,7 +5260,7 @@ func TestGetSnapshot_DiscoveryFailed(t *testing.T) {
 func TestGetSnapshot_VolumeExistsCheckFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, _, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5270,7 +5277,7 @@ func TestGetSnapshot_VolumeExistsCheckFailed(t *testing.T) {
 func TestGetSnapshot_NonexistentVolume(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, _, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5287,7 +5294,7 @@ func TestGetSnapshot_NonexistentVolume(t *testing.T) {
 func TestGetSnapshot_NonexistentSnapshot(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5305,7 +5312,7 @@ func TestGetSnapshot_NonexistentSnapshot(t *testing.T) {
 func TestGetSnapshot_GetSnapshotFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5323,7 +5330,7 @@ func TestGetSnapshot_GetSnapshotFailed(t *testing.T) {
 func TestGetSnapshot_SnapshotNotReady(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5344,11 +5351,11 @@ func getSnapshotsForList(driver *NASStorageDriver, snapTime time.Time) *[]*gcnva
 		{
 			Name:     "snap1",
 			Volume:   "testvol1",
-			Location: Location,
-			State:    StateReady,
+			Location: gcnvapi.Location,
+			State:    gcnvapi.StateReady,
 			Created:  time.Now(),
 			Labels: map[string]string{
-				"backend_uuid":     BackendUUID,
+				"backend_uuid":     gcnvapi.BackendUUID,
 				"platform":         "",
 				"platform_version": "",
 				"plugin":           "google-cloud-netapp-volumes",
@@ -5358,11 +5365,11 @@ func getSnapshotsForList(driver *NASStorageDriver, snapTime time.Time) *[]*gcnva
 		{
 			Name:     "snap2",
 			Volume:   "testvol1",
-			Location: Location,
-			State:    StateReady,
+			Location: gcnvapi.Location,
+			State:    gcnvapi.StateReady,
 			Created:  time.Now(),
 			Labels: map[string]string{
-				"backend_uuid":     BackendUUID,
+				"backend_uuid":     gcnvapi.BackendUUID,
 				"platform":         "",
 				"platform_version": "",
 				"plugin":           "google-cloud-netapp-volumes",
@@ -5372,11 +5379,11 @@ func getSnapshotsForList(driver *NASStorageDriver, snapTime time.Time) *[]*gcnva
 		{
 			Name:     "snap3",
 			Volume:   "testvol1",
-			Location: Location,
+			Location: gcnvapi.Location,
 			State:    gcnvapi.SnapshotStateError,
 			Created:  time.Now(),
 			Labels: map[string]string{
-				"backend_uuid":     BackendUUID,
+				"backend_uuid":     gcnvapi.BackendUUID,
 				"platform":         "",
 				"platform_version": "",
 				"plugin":           "google-cloud-netapp-volumes",
@@ -5389,7 +5396,7 @@ func getSnapshotsForList(driver *NASStorageDriver, snapTime time.Time) *[]*gcnva
 func TestGCNVGetSnapshots(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, _, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5438,7 +5445,7 @@ func TestGCNVGetSnapshots(t *testing.T) {
 func TestGetSnapshots_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, _, _, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5454,7 +5461,7 @@ func TestGetSnapshots_DiscoveryFailed(t *testing.T) {
 func TestGetSnapshots_NonexistentVolume(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, _, _, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5471,7 +5478,7 @@ func TestGetSnapshots_NonexistentVolume(t *testing.T) {
 func TestGetSnapshots_GetSnapshotsFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, _, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5489,7 +5496,7 @@ func TestGetSnapshots_GetSnapshotsFailed(t *testing.T) {
 func TestGCNVCreateSnapshot(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5516,7 +5523,7 @@ func TestGCNVCreateSnapshot(t *testing.T) {
 func TestCreateSnapshot_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, _, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5532,7 +5539,7 @@ func TestCreateSnapshot_DiscoveryFailed(t *testing.T) {
 func TestCreateSnapshot_VolumeExistsCheckFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, _, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5549,7 +5556,7 @@ func TestCreateSnapshot_VolumeExistsCheckFailed(t *testing.T) {
 func TestCreateSnapshot_NonexistentVolume(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, _, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5566,7 +5573,7 @@ func TestCreateSnapshot_NonexistentVolume(t *testing.T) {
 func TestGCNVCreateSnapshot_SnapshotCreateFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5584,7 +5591,7 @@ func TestGCNVCreateSnapshot_SnapshotCreateFailed(t *testing.T) {
 func TestCreateSnapshot_SnapshotWaitFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5604,7 +5611,7 @@ func TestCreateSnapshot_SnapshotWaitFailed(t *testing.T) {
 func TestGCNVRestoreSnapshot(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5626,7 +5633,7 @@ func TestGCNVRestoreSnapshot(t *testing.T) {
 func TestRestoreSnapshot_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, _, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5641,7 +5648,7 @@ func TestRestoreSnapshot_DiscoveryFailed(t *testing.T) {
 func TestRestoreSnapshot_VolumeExistsCheckFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, _, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5657,7 +5664,7 @@ func TestRestoreSnapshot_VolumeExistsCheckFailed(t *testing.T) {
 func TestRestoreSnapshot_NonexistentVolume(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, _, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5673,7 +5680,7 @@ func TestRestoreSnapshot_NonexistentVolume(t *testing.T) {
 func TestRestoreSnapshot_GetSnapshotFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5690,7 +5697,7 @@ func TestRestoreSnapshot_GetSnapshotFailed(t *testing.T) {
 func TestRestoreSnapshot_SnapshotRestoreFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5708,7 +5715,7 @@ func TestRestoreSnapshot_SnapshotRestoreFailed(t *testing.T) {
 func TestRestoreSnapshot_VolumeWaitFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5731,7 +5738,7 @@ func TestDeleteSnapshot_Docker(t *testing.T) {
 
 	driver.Config.DriverContext = tridentconfig.ContextDocker
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5751,7 +5758,7 @@ func TestDeleteSnapshot_Docker(t *testing.T) {
 func TestDeleteSnapshot_CSI(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5771,7 +5778,7 @@ func TestDeleteSnapshot_CSI(t *testing.T) {
 func TestDeleteSnapshot_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, _, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5786,7 +5793,7 @@ func TestDeleteSnapshot_DiscoveryFailed(t *testing.T) {
 func TestDeleteSnapshot_VolumeExistsCheckFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, _, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5802,7 +5809,7 @@ func TestDeleteSnapshot_VolumeExistsCheckFailed(t *testing.T) {
 func TestDeleteSnapshot_NonexistentVolume(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, _, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5818,7 +5825,7 @@ func TestDeleteSnapshot_NonexistentVolume(t *testing.T) {
 func TestDeleteSnapshot_NonexistentSnapshot(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5835,7 +5842,7 @@ func TestDeleteSnapshot_NonexistentSnapshot(t *testing.T) {
 func TestDeleteSnapshot_GetSnapshotFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5852,7 +5859,7 @@ func TestDeleteSnapshot_GetSnapshotFailed(t *testing.T) {
 func TestDeleteSnapshot_SnapshotDeleteFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -5872,7 +5879,7 @@ func TestDeleteSnapshot_SnapshotWaitFailed_Docker(t *testing.T) {
 
 	driver.Config.DriverContext = tridentconfig.ContextDocker
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -6021,11 +6028,11 @@ func TestGet_NotFound(t *testing.T) {
 func TestResize(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume := getStructsForDestroyNFSVolume(ctx, driver)
 	volConfig.InternalID = ""
-	newSize := uint64(VolumeSizeI64 * 2)
+	newSize := uint64(gcnvapi.VolumeSizeI64 * 2)
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(volume, nil).Times(1)
@@ -6040,11 +6047,11 @@ func TestResize(t *testing.T) {
 func TestResize_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, _ := getStructsForDestroyNFSVolume(ctx, driver)
 
-	newSize := uint64(VolumeSizeI64 * 2)
+	newSize := uint64(gcnvapi.VolumeSizeI64 * 2)
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(errFailed).Times(1)
 
@@ -6056,11 +6063,11 @@ func TestResize_DiscoveryFailed(t *testing.T) {
 func TestResize_NonexistentVolume(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, _ := getStructsForDestroyNFSVolume(ctx, driver)
 
-	newSize := uint64(VolumeSizeI64 * 2)
+	newSize := uint64(gcnvapi.VolumeSizeI64 * 2)
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(nil, errFailed).Times(1)
@@ -6073,11 +6080,11 @@ func TestResize_NonexistentVolume(t *testing.T) {
 func TestResize_VolumeNotReady(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume := getStructsForDestroyNFSVolume(ctx, driver)
 	volume.State = gcnvapi.SnapshotStateError
-	newSize := uint64(VolumeSizeI64 * 2)
+	newSize := uint64(gcnvapi.VolumeSizeI64 * 2)
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(volume, nil).Times(1)
@@ -6090,10 +6097,10 @@ func TestResize_VolumeNotReady(t *testing.T) {
 func TestGCNVResize_NoSizeChange(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume := getStructsForDestroyNFSVolume(ctx, driver)
-	newSize := uint64(VolumeSizeI64)
+	newSize := uint64(gcnvapi.VolumeSizeI64)
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(volume, nil).Times(1)
@@ -6101,16 +6108,16 @@ func TestGCNVResize_NoSizeChange(t *testing.T) {
 	result := driver.Resize(ctx, volConfig, newSize)
 
 	assert.Nil(t, result, "not nil")
-	assert.Equal(t, VolumeSizeStr, volConfig.Size, "size mismatch")
+	assert.Equal(t, gcnvapi.VolumeSizeStr, volConfig.Size, "size mismatch")
 }
 
 func TestResize_ShrinkingVolume(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume := getStructsForDestroyNFSVolume(ctx, driver)
-	newSize := uint64(VolumeSizeI64 / 2)
+	newSize := uint64(gcnvapi.VolumeSizeI64 / 2)
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(volume, nil).Times(1)
@@ -6118,17 +6125,17 @@ func TestResize_ShrinkingVolume(t *testing.T) {
 	result := driver.Resize(ctx, volConfig, newSize)
 
 	assert.Error(t, result, "expected error")
-	assert.Equal(t, VolumeSizeStr, volConfig.Size, "size mismatch")
+	assert.Equal(t, gcnvapi.VolumeSizeStr, volConfig.Size, "size mismatch")
 }
 
 func TestResize_AboveMaximumSize(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
-	driver.Config.LimitVolumeSize = strconv.FormatInt(VolumeSizeI64+1, 10)
+	driver.Config.LimitVolumeSize = strconv.FormatInt(gcnvapi.VolumeSizeI64+1, 10)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume := getStructsForDestroyNFSVolume(ctx, driver)
-	newSize := uint64(VolumeSizeI64 * 2)
+	newSize := uint64(gcnvapi.VolumeSizeI64 * 2)
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(volume, nil).Times(1)
@@ -6136,16 +6143,16 @@ func TestResize_AboveMaximumSize(t *testing.T) {
 	result := driver.Resize(ctx, volConfig, newSize)
 
 	assert.Error(t, result, "expected error")
-	assert.Equal(t, VolumeSizeStr, volConfig.Size, "size mismatch")
+	assert.Equal(t, gcnvapi.VolumeSizeStr, volConfig.Size, "size mismatch")
 }
 
 func TestResize_VolumeResizeFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume := getStructsForDestroyNFSVolume(ctx, driver)
-	newSize := uint64(VolumeSizeI64 * 2)
+	newSize := uint64(gcnvapi.VolumeSizeI64 * 2)
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(volume, nil).Times(1)
@@ -6154,7 +6161,7 @@ func TestResize_VolumeResizeFailed(t *testing.T) {
 	result := driver.Resize(ctx, volConfig, newSize)
 
 	assert.Error(t, result, "expected error")
-	assert.Equal(t, VolumeSizeStr, volConfig.Size, "size mismatch")
+	assert.Equal(t, gcnvapi.VolumeSizeStr, volConfig.Size, "size mismatch")
 }
 
 func TestGCNVGetStorageBackendSpecs(t *testing.T) {
@@ -6164,7 +6171,7 @@ func TestGCNVGetStorageBackendSpecs(t *testing.T) {
 	assert.NoError(t, err, "error occurred")
 
 	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	backend := &storage.StorageBackend{}
 	backend.SetStorage(make(map[string]storage.Pool))
@@ -6255,7 +6262,7 @@ func TestCreateFollowup_NFSVolume(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, _ := getStructsForPublishNFSVolume(ctx, driver)
 
@@ -6277,11 +6284,11 @@ func TestCreateFollowup_ROClone_NFSVolume(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, _ := getStructsForPublishNFSVolume(ctx, driver)
 	volConfig.CloneSourceVolumeInternal = volConfig.Name
-	volConfig.CloneSourceSnapshot = SnapshotUUID
+	volConfig.CloneSourceSnapshot = gcnvapi.SnapshotUUID
 	volConfig.ReadOnlyClone = true
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
@@ -6305,7 +6312,7 @@ func TestCreateFollowup_SMBVolume(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "smb"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, _ := getStructsForPublishSMBVolume(ctx, driver)
 
@@ -6327,7 +6334,7 @@ func TestCreateFollowup_DiscoveryFailed(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, _, _ := getStructsForPublishNFSVolume(ctx, driver)
 
@@ -6348,7 +6355,7 @@ func TestCreateFollowup_NonexistentVolume(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, _, _ := getStructsForPublishNFSVolume(ctx, driver)
 
@@ -6370,11 +6377,11 @@ func TestCreateFollowup_ROClone_NonexistentVolume(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, _, _ := getStructsForPublishNFSVolume(ctx, driver)
 	volConfig.CloneSourceVolumeInternal = volConfig.Name
-	volConfig.CloneSourceSnapshot = SnapshotUUID
+	volConfig.CloneSourceSnapshot = gcnvapi.SnapshotUUID
 	volConfig.ReadOnlyClone = true
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
@@ -6401,7 +6408,7 @@ func TestCreateFollowup_VolumeNotAvailable(t *testing.T) {
 		driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 		driver.Config.NASType = "nfs"
 
-		driver.initializeTelemetry(ctx, BackendUUID)
+		driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 		volConfig, volume, _ := getStructsForPublishNFSVolume(ctx, driver)
 		volume.State = state
@@ -6425,7 +6432,7 @@ func TestCreateFollowup_NoMountTargets(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, _ := getStructsForPublishNFSVolume(ctx, driver)
 	volume.MountTargets = nil
@@ -6448,7 +6455,7 @@ func TestCreateFollowup_MountOptions_ParseNFSExportPathError(t *testing.T) {
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, _ := getStructsForPublishNFSVolume(ctx, driver)
 	volume.MountTargets[0].ExportPath = "1234:testvol1"
@@ -6502,8 +6509,8 @@ func TestGCNVGetVolumeForImport(t *testing.T) {
 	volume := &gcnvapi.Volume{
 		Name:          "testvol1",
 		CreationToken: "myPrefix-testvol1",
-		FullName:      FullVolumeName + "testvol1",
-		State:         StateReady,
+		FullName:      gcnvapi.FullVolumeName + "testvol1",
+		State:         gcnvapi.StateReady,
 	}
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
@@ -6527,8 +6534,8 @@ func TestGCNVGetVolumeForImport_VolumeNameWithPrefix(t *testing.T) {
 	volume := &gcnvapi.Volume{
 		Name:          "myPrefix-testvol1",
 		CreationToken: "myPrefix-testvol1",
-		FullName:      FullVolumeName + "testvol1",
-		State:         StateReady,
+		FullName:      gcnvapi.FullVolumeName + "testvol1",
+		State:         gcnvapi.StateReady,
 	}
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
@@ -6669,7 +6676,7 @@ func TestStringAndGoString(t *testing.T) {
 		assert.Contains(t, toString(driver), "ProjectNumber:<REDACTED>", "GCNV driver does not redact ProjectNumber")
 		assert.Contains(t, toString(driver), "APIKey:<REDACTED>", "GCNV driver does not redact APIKey")
 		assert.Contains(t, toString(driver), "Credentials:map[string]string{\"name\":\"<REDACTED>\", \"type\":\"<REDACTED>\"}", "GCNV driver does not redact Credentials")
-		assert.NotContains(t, toString(driver), ProjectNumber, "GCNV driver contains ProjectNumber")
+		assert.NotContains(t, toString(driver), gcnvapi.ProjectNumber, "GCNV driver contains ProjectNumber")
 		assert.NotContains(t, toString(driver), driver.Config.APIKey, "GCNV driver contains APIKey")
 		assert.NotContains(t, toString(driver), driver.Config.Credentials, "GCNV driver contains Credentials")
 	}
@@ -6847,7 +6854,7 @@ func TestGCNVValidateStoragePrefix(t *testing.T) {
 func TestConstructVolumeAccessPath(t *testing.T) {
 	_, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, _ := getStructsForPublishNFSVolume(ctx, driver)
 	tests := []struct {
@@ -6890,11 +6897,11 @@ func TestConstructVolumeAccessPath(t *testing.T) {
 func TestConstructVolumeAccessPath_NFSVolume_ROClone(t *testing.T) {
 	_, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, _ := getStructsForPublishNFSVolume(ctx, driver)
 	volConfig.CloneSourceVolumeInternal = volConfig.Name
-	volConfig.CloneSourceSnapshot = SnapshotUUID
+	volConfig.CloneSourceSnapshot = gcnvapi.SnapshotUUID
 	volConfig.ReadOnlyClone = true
 
 	result := constructVolumeAccessPath(volConfig, volume, "nfs")
@@ -6906,11 +6913,11 @@ func TestConstructVolumeAccessPath_NFSVolume_ROClone(t *testing.T) {
 func TestConstructVolumeAccessPath_SMBVolume_ROClone(t *testing.T) {
 	_, driver := newMockGCNVDriver(t)
 
-	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, _ := getStructsForPublishSMBVolume(ctx, driver)
 	volConfig.CloneSourceVolumeInternal = volConfig.Name
-	volConfig.CloneSourceSnapshot = SnapshotUUID
+	volConfig.CloneSourceSnapshot = gcnvapi.SnapshotUUID
 	volConfig.ReadOnlyClone = true
 
 	result := constructVolumeAccessPath(volConfig, volume, "smb")
@@ -6925,8 +6932,8 @@ func TestNFSExportComponentsForProtocol_ProtocolIsEmpty(t *testing.T) {
 	volume := &gcnvapi.Volume{
 		Name:          "testvol1",
 		CreationToken: "testvol1",
-		FullName:      FullVolumeName + "testvol1",
-		State:         StateReady,
+		FullName:      gcnvapi.FullVolumeName + "testvol1",
+		State:         gcnvapi.StateReady,
 	}
 
 	server, share, resultErr := driver.nfsExportComponentsForProtocol(volume, "")
@@ -6942,8 +6949,8 @@ func TestNFSExportComponentsForProtocol_IncorrectProtocol(t *testing.T) {
 	volume := &gcnvapi.Volume{
 		Name:          "testvol1",
 		CreationToken: "testvol1",
-		FullName:      FullVolumeName + "testvol1",
-		State:         StateReady,
+		FullName:      gcnvapi.FullVolumeName + "testvol1",
+		State:         gcnvapi.StateReady,
 	}
 
 	server, share, resultErr := driver.nfsExportComponentsForProtocol(volume, "SMB")
