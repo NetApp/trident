@@ -13,6 +13,7 @@ import (
 
 	"golang.org/x/net/context"
 
+	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils/errors"
@@ -22,7 +23,12 @@ import (
 const rawDevicePublishPath = "plugins/kubernetes.io/csi/volumeDevices/publish/pvc-"
 
 // Regex to identify published path for mounted devices
-var pvMountpointRegex = regexp.MustCompile(`^(.*pods)(.*volumes)(.*pvc-).*$`)
+var (
+	pvMountpointRegex = regexp.MustCompile(`^(.*pods)(.*volumes)(.*pvc-).*$`)
+
+	beforeMount   = fiji.Register("beforeMount", "mount_linux")
+	beforeUnmount = fiji.Register("beforeUnmount", "mount_linux")
+)
 
 // IsLikelyNotMountPoint uses heuristics to determine if a directory is not a mountpoint.
 // It should return ErrNotExist when the directory does not exist.
@@ -202,6 +208,10 @@ func mountNFSPath(ctx context.Context, exportPath, mountpoint, options string) (
 		Logc(ctx).WithField("error", err).Warning("Mkdir failed.")
 	}
 
+	if err = beforeMount.Inject(); err != nil {
+		return err
+	}
+
 	if out, err := command.Execute(ctx, mountCommand, args...); err != nil {
 		Logc(ctx).WithField("output", string(out)).Debug("Mount failed.")
 		return fmt.Errorf("error mounting NFS volume %v on mountpoint %v: %v", exportPath, mountpoint, err)
@@ -350,6 +360,10 @@ func RemountDevice(ctx context.Context, mountpoint, options string) (err error) 
 func Umount(ctx context.Context, mountpoint string) (err error) {
 	Logc(ctx).WithField("mountpoint", mountpoint).Debug(">>>> mount_linux.Umount")
 	defer Logc(ctx).Debug("<<<< mount_linux.Umount")
+
+	if err = beforeUnmount.Inject(); err != nil {
+		return err
+	}
 
 	var out []byte
 	if out, err = command.ExecuteWithTimeout(ctx, "umount", umountTimeout, true, mountpoint); err != nil {
