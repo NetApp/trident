@@ -5,6 +5,7 @@ package v1
 import (
 	"fmt"
 
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -38,44 +39,46 @@ type TridentOrchestratorList struct {
 
 // TridentOrchestratorSpec defines the desired state of TridentOrchestrator
 type TridentOrchestratorSpec struct {
-	EnableForceDetach            bool              `json:"enableForceDetach"`
-	DisableAuditLog              *bool             `json:"disableAuditLog"`
-	Namespace                    string            `json:"namespace"`
-	IPv6                         bool              `json:"IPv6,omitempty"`
-	K8sTimeout                   int               `json:"k8sTimeout,omitempty"`
-	HTTPRequestTimeout           string            `json:"httpRequestTimeout,omitempty"`
-	SilenceAutosupport           bool              `json:"silenceAutosupport,omitempty"`
-	AutosupportImage             string            `json:"autosupportImage,omitempty"`
-	AutosupportProxy             string            `json:"autosupportProxy,omitempty"`
-	AutosupportInsecure          bool              `json:"autosupportInsecure,omitempty"`
-	AutosupportSerialNumber      string            `json:"autosupportSerialNumber,omitempty"`
-	AutosupportHostname          string            `json:"autosupportHostname,omitempty"`
-	Uninstall                    bool              `json:"uninstall,omitempty"`
-	LogFormat                    string            `json:"logFormat,omitempty"`
-	LogLevel                     string            `json:"logLevel,omitempty"`
-	Debug                        bool              `json:"debug,omitempty"`
-	LogWorkflows                 string            `json:"logWorkflows,omitempty"`
-	LogLayers                    string            `json:"logLayers,omitempty"`
-	ProbePort                    *int64            `json:"probePort,omitempty"`
-	TridentImage                 string            `json:"tridentImage,omitempty"`
-	ImageRegistry                string            `json:"imageRegistry,omitempty"`
-	KubeletDir                   string            `json:"kubeletDir,omitempty"`
-	Wipeout                      []string          `json:"wipeout,omitempty"`
-	ImagePullSecrets             []string          `json:"imagePullSecrets,omitempty"`
-	ControllerPluginNodeSelector map[string]string `json:"controllerPluginNodeSelector,omitempty"`
-	ControllerPluginTolerations  []Toleration      `json:"controllerPluginTolerations,omitempty"`
-	NodePluginNodeSelector       map[string]string `json:"nodePluginNodeSelector,omitempty"`
-	NodePluginTolerations        []Toleration      `json:"nodePluginTolerations,omitempty"`
-	Windows                      bool              `json:"windows,omitempty"`
-	ImagePullPolicy              string            `json:"imagePullPolicy,omitempty"`
-	CloudProvider                string            `json:"cloudProvider,omitempty"`
-	CloudIdentity                string            `json:"cloudIdentity,omitempty"`
-	EnableACP                    bool              `json:"enableACP,omitempty"`
-	ACPImage                     string            `json:"acpImage,omitempty"`
-	ISCSISelfHealingInterval     string            `json:"iscsiSelfHealingInterval,omitempty"`
-	ISCSISelfHealingWaitTime     string            `json:"iscsiSelfHealingWaitTime,omitempty"`
-	K8sAPIQPS                    int               `json:"k8sAPIQPS,omitempty"`
-	NodePrep                     []string          `json:"nodePrep"`
+	EnableForceDetach            bool                     `json:"enableForceDetach"`
+	DisableAuditLog              *bool                    `json:"disableAuditLog"`
+	Namespace                    string                   `json:"namespace"`
+	IPv6                         bool                     `json:"IPv6,omitempty"`
+	K8sTimeout                   int                      `json:"k8sTimeout,omitempty"`
+	HTTPRequestTimeout           string                   `json:"httpRequestTimeout,omitempty"`
+	SilenceAutosupport           bool                     `json:"silenceAutosupport,omitempty"`
+	AutosupportImage             string                   `json:"autosupportImage,omitempty"`
+	AutosupportProxy             string                   `json:"autosupportProxy,omitempty"`
+	AutosupportInsecure          bool                     `json:"autosupportInsecure,omitempty"`
+	AutosupportSerialNumber      string                   `json:"autosupportSerialNumber,omitempty"`
+	AutosupportHostname          string                   `json:"autosupportHostname,omitempty"`
+	Uninstall                    bool                     `json:"uninstall,omitempty"`
+	LogFormat                    string                   `json:"logFormat,omitempty"`
+	LogLevel                     string                   `json:"logLevel,omitempty"`
+	Debug                        bool                     `json:"debug,omitempty"`
+	LogWorkflows                 string                   `json:"logWorkflows,omitempty"`
+	LogLayers                    string                   `json:"logLayers,omitempty"`
+	ProbePort                    *int64                   `json:"probePort,omitempty"`
+	TridentImage                 string                   `json:"tridentImage,omitempty"`
+	ImageRegistry                string                   `json:"imageRegistry,omitempty"`
+	KubeletDir                   string                   `json:"kubeletDir,omitempty"`
+	Wipeout                      []string                 `json:"wipeout,omitempty"`
+	ImagePullSecrets             []string                 `json:"imagePullSecrets,omitempty"`
+	ControllerPluginNodeSelector map[string]string        `json:"controllerPluginNodeSelector,omitempty"`
+	ControllerPluginTolerations  []Toleration             `json:"controllerPluginTolerations,omitempty"`
+	NodePluginNodeSelector       map[string]string        `json:"nodePluginNodeSelector,omitempty"`
+	NodePluginTolerations        []Toleration             `json:"nodePluginTolerations,omitempty"`
+	Windows                      bool                     `json:"windows,omitempty"`
+	ImagePullPolicy              string                   `json:"imagePullPolicy,omitempty"`
+	CloudProvider                string                   `json:"cloudProvider,omitempty"`
+	CloudIdentity                string                   `json:"cloudIdentity,omitempty"`
+	EnableACP                    bool                     `json:"enableACP,omitempty"`
+	ACPImage                     string                   `json:"acpImage,omitempty"`
+	ISCSISelfHealingInterval     string                   `json:"iscsiSelfHealingInterval,omitempty"`
+	ISCSISelfHealingWaitTime     string                   `json:"iscsiSelfHealingWaitTime,omitempty"`
+	K8sAPIQPS                    int                      `json:"k8sAPIQPS,omitempty"`
+	NodePrep                     []string                 `json:"nodePrep"`
+	DaemonsetResources           *v1.ResourceRequirements `json:"daemonsetResources,omitempty"`
+	DeploymentResources          *v1.ResourceRequirements `json:"deploymentResources,omitempty"`
 }
 
 // Toleration
@@ -124,35 +127,37 @@ type TridentOrchestratorStatus struct {
 }
 
 type TridentOrchestratorSpecValues struct {
-	EnableForceDetach        string            `json:"enableForceDetach"`
-	DisableAuditLog          string            `json:"disableAuditLog"`
-	IPv6                     string            `json:"IPv6"`
-	SilenceAutosupport       string            `json:"silenceAutosupport"`
-	AutosupportImage         string            `json:"autosupportImage"`
-	AutosupportProxy         string            `json:"autosupportProxy"`
-	AutosupportInsecure      bool              `json:"autosupportInsecure"`
-	AutosupportSerialNumber  string            `json:"autosupportSerialNumber"`
-	AutosupportHostname      string            `json:"autosupportHostname"`
-	K8sTimeout               string            `json:"k8sTimeout"`
-	HTTPRequestTimeout       string            `json:"httpRequestTimeout"`
-	LogFormat                string            `json:"logFormat"`
-	LogLevel                 string            `json:"logLevel"`
-	Debug                    string            `json:"debug"`
-	LogWorkflows             string            `json:"logWorkflows"`
-	LogLayers                string            `json:"logLayers"`
-	ProbePort                string            `json:"probePort"`
-	TridentImage             string            `json:"tridentImage"`
-	ImageRegistry            string            `json:"imageRegistry"`
-	KubeletDir               string            `json:"kubeletDir"`
-	ImagePullSecrets         []string          `json:"imagePullSecrets"`
-	NodePluginNodeSelector   map[string]string `json:"nodePluginNodeSelector,omitempty"`
-	NodePluginTolerations    []Toleration      `json:"nodePluginTolerations,omitempty"`
-	ImagePullPolicy          string            `json:"imagePullPolicy"`
-	EnableACP                string            `json:"enableACP"`
-	ACPImage                 string            `json:"acpImage"`
-	ISCSISelfHealingInterval string            `json:"iscsiSelfHealingInterval"`
-	ISCSISelfHealingWaitTime string            `json:"iscsiSelfHealingWaitTime"`
-	NodePrep                 []string          `json:"nodePrep"`
+	EnableForceDetach        string                   `json:"enableForceDetach"`
+	DisableAuditLog          string                   `json:"disableAuditLog"`
+	IPv6                     string                   `json:"IPv6"`
+	SilenceAutosupport       string                   `json:"silenceAutosupport"`
+	AutosupportImage         string                   `json:"autosupportImage"`
+	AutosupportProxy         string                   `json:"autosupportProxy"`
+	AutosupportInsecure      bool                     `json:"autosupportInsecure"`
+	AutosupportSerialNumber  string                   `json:"autosupportSerialNumber"`
+	AutosupportHostname      string                   `json:"autosupportHostname"`
+	K8sTimeout               string                   `json:"k8sTimeout"`
+	HTTPRequestTimeout       string                   `json:"httpRequestTimeout"`
+	LogFormat                string                   `json:"logFormat"`
+	LogLevel                 string                   `json:"logLevel"`
+	Debug                    string                   `json:"debug"`
+	LogWorkflows             string                   `json:"logWorkflows"`
+	LogLayers                string                   `json:"logLayers"`
+	ProbePort                string                   `json:"probePort"`
+	TridentImage             string                   `json:"tridentImage"`
+	ImageRegistry            string                   `json:"imageRegistry"`
+	KubeletDir               string                   `json:"kubeletDir"`
+	ImagePullSecrets         []string                 `json:"imagePullSecrets"`
+	NodePluginNodeSelector   map[string]string        `json:"nodePluginNodeSelector,omitempty"`
+	NodePluginTolerations    []Toleration             `json:"nodePluginTolerations,omitempty"`
+	ImagePullPolicy          string                   `json:"imagePullPolicy"`
+	EnableACP                string                   `json:"enableACP"`
+	ACPImage                 string                   `json:"acpImage"`
+	ISCSISelfHealingInterval string                   `json:"iscsiSelfHealingInterval"`
+	ISCSISelfHealingWaitTime string                   `json:"iscsiSelfHealingWaitTime"`
+	NodePrep                 []string                 `json:"nodePrep"`
+	DaemonsetResources       *v1.ResourceRequirements `json:"daemonsetResources,omitempty"`
+	DeploymentResources      *v1.ResourceRequirements `json:"deploymentResources,omitempty"`
 }
 
 /************************

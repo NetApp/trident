@@ -17,6 +17,10 @@ spec:
   {{- if .Values.tridentDebug }}
   debug: {{ .Values.tridentDebug }}
   {{- end }}
+  daemonsetResources:
+    {{- toYaml .Values.tridentDaemonsetResources | nindent 4 }}
+  deploymentResources:
+    {{- toYaml .Values.tridentDeploymentResources | nindent 4 }}
   {{- if .Values.tridentLogLevel }}
   logLevel: {{ .Values.tridentLogLevel }}
   {{- end }}
