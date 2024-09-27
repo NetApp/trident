@@ -124,21 +124,5 @@ func (c *client) GetVersionWithBackoff(ctx context.Context) (*version.Version, e
 }
 
 func (c *client) IsFeatureEnabled(ctx context.Context, feature string) error {
-	fields := LogFields{"feature": feature}
-	Logc(ctx).WithFields(fields).Debug("Checking if feature is enabled.")
-
-	if !c.Enabled() {
-		Logc(ctx).WithFields(fields).Warning("Feature requires Trident-ACP to be enabled.")
-		return errors.UnsupportedConfigError("acp is not enabled")
-	}
-
-	// Entitled will return different errors based on the response from the API call. Return the exact error
-	// so consumers of this client may act on certain error conditions.
-	if err := c.restClient.Entitled(ctx, feature); err != nil {
-		Logc(ctx).WithFields(fields).WithError(err).Error("Feature enablement failed.")
-		return err
-	}
-
-	Logc(ctx).WithFields(fields).Debug("Feature is enabled.")
 	return nil
 }

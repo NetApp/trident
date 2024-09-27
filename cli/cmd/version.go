@@ -226,21 +226,14 @@ func writeVersionTable(version *api.ClientVersionResponse) {
 
 func writeVersionsTable(versions *api.VersionResponse) {
 	table := tablewriter.NewWriter(os.Stdout)
-	if versions.ACPServer != nil {
-		table.SetHeader([]string{"Server Version", "Client Version", "ACP Version"})
-		table.Append([]string{
-			versions.Server.Version,
-			versions.Client.Version,
-			versions.ACPServer.Version,
-		})
-	} else {
-		table.SetHeader([]string{"Server Version", "Client Version"})
 
-		table.Append([]string{
-			versions.Server.Version,
-			versions.Client.Version,
-		})
-	}
+	table.SetHeader([]string{"Server Version", "Client Version"})
+
+	table.Append([]string{
+		versions.Server.Version,
+		versions.Client.Version,
+	})
+
 	table.Render()
 }
 

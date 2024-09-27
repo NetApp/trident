@@ -263,8 +263,7 @@ func GetVersion(w http.ResponseWriter, r *http.Request) {
 				response.Error = err.Error()
 			}
 			response.Version = version
-
-			response.ACPVersion = GetACPVersion(ctx)
+			response.ACPVersion = version
 			return httpStatusCodeForGetUpdateList(err)
 		},
 	)

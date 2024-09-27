@@ -8723,14 +8723,6 @@ func TestUpdateSnapshotDirectory_Failure(t *testing.T) {
 
 	volConfig, _, _, _, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
 
-	// CASE: ACP is not enabled
-	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(errors.New("mock error"))
-	result, err := driver.updateSnapshotDirectory(
-		ctx, volConfig.InternalName, filesystem, "TRUE", map[string]*storage.Volume{})
-
-	assert.Nil(t, result)
-	assert.NotNil(t, err)
-
 	// CASE: Error while modifying volume
 	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil).AnyTimes()
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
@@ -8749,7 +8741,7 @@ func TestUpdateSnapshotDirectory_Failure(t *testing.T) {
 		},
 	}
 
-	result, err = driver.updateSnapshotDirectory(
+	result, err := driver.updateSnapshotDirectory(
 		ctx, volConfig.InternalName, filesystem, "TRUE", allVolumes)
 
 	assert.Nil(t, result)

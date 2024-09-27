@@ -149,44 +149,6 @@ func TestDeleteSnapshot_NotManaged(t *testing.T) {
 	assert.Errorf(t, err, "expected err")
 }
 
-func TestCloneVolume_FeatureDisabled(t *testing.T) {
-	// Reset the package-level state after the test completes.
-	defer acp.SetAPI(acp.API())
-
-	mockCtrl := gomock.NewController(t)
-	mockACP := mockacp.NewMockTridentACP(mockCtrl)
-	acp.SetAPI(mockACP)
-
-	// Mock out any expected calls on the ACP API.
-	err := errors.UnsupportedError("unsupported")
-	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(err)
-
-	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
-	volumeInternalName := "trident_pvc_e9748b6b_8240_4fd8_97bc_868bf064ecd4"
-	volumeConfig := &VolumeConfig{
-		Version:      "",
-		Name:         volumeName,
-		InternalName: volumeInternalName,
-	}
-	volumeConfigDest := &VolumeConfig{
-		Version:       "",
-		Name:          "pvc-deadbeef-8240-4fd8-97bc-868bf064ecd4",
-		InternalName:  "trident_pvc_deadbeef_8240_4fd8_97bc_868bf064ecd4",
-		ReadOnlyClone: true,
-	}
-
-	backend := &StorageBackend{
-		state: Offline,
-	}
-	pool := NewStoragePool(nil, "test-pool1")
-
-	// Both volume and snapshot not managed
-	_, err = backend.CloneVolume(context.Background(), volumeConfig, volumeConfigDest, pool, false)
-
-	assert.Error(t, err, "expected err")
-	assert.True(t, errors.IsUnsupportedError(err))
-}
-
 func TestCloneVolume_BackendOffline(t *testing.T) {
 	// Reset the package-level state after the test completes.
 	defer acp.SetAPI(acp.API())

@@ -4506,35 +4506,6 @@ func TestCanSnapshot_InvalidSnapshotDir(t *testing.T) {
 	assert.NotNil(t, result, "result is nil")
 }
 
-func TestCreateSnapshot_Disabled(t *testing.T) {
-	// Reset the package-level state after the test completes.
-	defer acp.SetAPI(acp.API())
-
-	mockCtrl := gomock.NewController(t)
-	mockACP := mockacp.NewMockTridentACP(mockCtrl)
-	acp.SetAPI(mockACP)
-	// Mock out any expected calls on the ACP API.
-	err := errors.UnsupportedError("unsupported")
-	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(err)
-
-	_, driver := newMockOntapNasQtreeDriver(t)
-	volConfig := &storage.VolumeConfig{
-		Size:         "1g",
-		Encryption:   "false",
-		FileSystem:   "nfs",
-		InternalName: flexvol,
-		InternalID:   volInternalID,
-	}
-
-	snapConfig := &storage.SnapshotConfig{
-		InternalName:       "snap1",
-		VolumeInternalName: "vol1",
-	}
-	_, err = driver.CreateSnapshot(ctx, snapConfig, volConfig)
-
-	assert.Error(t, err, "no error occurred")
-}
-
 func TestCreateSnapshot_Success(t *testing.T) {
 	// Reset the package-level state after the test completes.
 	defer acp.SetAPI(acp.API())
@@ -5327,18 +5298,10 @@ func TestNASQtreeStorageDriver_UpdateSnapshotDirectory_Failure(t *testing.T) {
 		"pvc-99138d85-6259-4830-ada0-30e45e21f843": mockVol3,
 	}
 
-	// CASE: ACP is not enabled for this feature
-	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(errors.UnsupportedError("unsupported"))
-
-	result, resultErr := driver.updateSnapshotDirectory(ctx, mockVol1.Config, "invalid", true, "", allVolumes)
-
-	assert.Error(t, resultErr)
-	assert.Nil(t, result)
-
 	// CASE: Invalid snapshot dir value
 	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil).AnyTimes()
 
-	result, resultErr = driver.updateSnapshotDirectory(ctx, mockVol1.Config, "invalid", true, "", allVolumes)
+	result, resultErr := driver.updateSnapshotDirectory(ctx, mockVol1.Config, "invalid", true, "", allVolumes)
 
 	assert.Error(t, resultErr)
 	assert.True(t, errors.IsInvalidInputError(resultErr))
