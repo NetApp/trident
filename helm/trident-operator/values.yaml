@@ -74,6 +74,15 @@ operatorImage: ""
 # operatorImageTag allows overriding the tag of the trident-operator image.
 operatorImageTag: ""
 
+# operatorResources permits configuring the trident-operator resources.
+operatorResources:
+  requests:
+    cpu: "10m"
+    memory: "40Mi"
+  limits:
+    cpu: "20m"
+    memory: "80Mi"
+
 
 # tridentIPv6 allows enabling Trident to work in IPv6 clusters.
 tridentIPv6: false
