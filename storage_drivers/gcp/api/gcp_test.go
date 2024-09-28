@@ -255,7 +255,7 @@ func TestClient_GetVersion(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("GetVersion_invalidToken"), func(t *testing.T) {
+	t.Run("GetVersion_invalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		_, _, err := d.GetVersion(ctx)
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -304,7 +304,7 @@ func TestClient_GetServiceLevels(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("GetServiceLevels_InvalidToken"), func(t *testing.T) {
+	t.Run("GetServiceLevels_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		_, err := d.GetServiceLevels(ctx)
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -352,7 +352,7 @@ func TestClient_GetVolumes(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("GetVolumes_InvalidToken"), func(t *testing.T) {
+	t.Run("GetVolumes_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		_, err := d.GetVolumes(ctx)
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -409,7 +409,7 @@ func TestClient_GetVolumeByName(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("GetVolumeByName_InvalidToken"), func(t *testing.T) {
+	t.Run("GetVolumeByName_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		_, err := d.GetVolumeByName(ctx, "volumeName")
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -446,7 +446,7 @@ func TestClient_GetVolumeByCreationToken(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("GetVolumeByCreationToken_InvalidToken"), func(t *testing.T) {
+	t.Run("GetVolumeByCreationToken_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		_, err := d.GetVolumeByCreationToken(ctx, "CreationToken")
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -494,7 +494,7 @@ func TestClient_VolumeExistsByCreationToken(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("VolumeExistsByCreationToken_InvalidToken"), func(t *testing.T) {
+	t.Run("VolumeExistsByCreationToken_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		_, _, err := d.VolumeExistsByCreationToken(ctx, "CreationToken")
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -554,7 +554,7 @@ func TestClient_GetVolumeByID(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("GetVolumeByID_InvalidToekn"), func(t *testing.T) {
+	t.Run("GetVolumeByID_InvalidToekn", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		_, err := d.GetVolumeByID(ctx, "VolumeID")
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -634,7 +634,7 @@ func TestClient_CreateVolume(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("CreateVolume_InvalidToken"), func(t *testing.T) {
+	t.Run("CreateVolume_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		err := d.CreateVolume(ctx, &VolumeCreateRequest{Name: "valid Vol"})
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -667,7 +667,7 @@ func TestClient_RenameVolume(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("RenameVolume_InvalidToken"), func(t *testing.T) {
+	t.Run("RenameVolume_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		_, err := d.RenameVolume(ctx, &Volume{Name: "oldVolume"}, "newVolume")
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -709,7 +709,7 @@ func TestClient_ChangeVolumeUnixPermissions(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("ChangeVolumeUnixPermissions_InvalidToken"), func(t *testing.T) {
+	t.Run("ChangeVolumeUnixPermissions_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		_, err := d.ChangeVolumeUnixPermissions(ctx, &Volume{Name: "oldVolume"}, "ro")
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -751,7 +751,7 @@ func TestClient_RelabelVolume(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("RelabelVolume_InvalidToken"), func(t *testing.T) {
+	t.Run("RelabelVolume_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		_, err := d.RelabelVolume(ctx, &Volume{Name: "oldVolume"}, []string{"rw"})
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -793,7 +793,7 @@ func TestClient_RenameRelabelVolume(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("RenameRelabelVolume_InvalidToken"), func(t *testing.T) {
+	t.Run("RenameRelabelVolume_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		_, err := d.RenameRelabelVolume(ctx, &Volume{Name: "oldVolume"}, "newVolume", []string{"rw"})
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -835,7 +835,7 @@ func TestClient_ResizeVolume(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("ResizeVolume_InvalidToken"), func(t *testing.T) {
+	t.Run("ResizeVolume_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		_, err := d.ResizeVolume(ctx, &Volume{Name: "oldVolume"}, 1024)
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -872,7 +872,7 @@ func TestClient_DeleteVolume(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("DeleteVolume_InvalidToken"), func(t *testing.T) {
+	t.Run("DeleteVolume_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		err := d.DeleteVolume(ctx, &Volume{Name: "oldVolume"})
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -912,7 +912,7 @@ func TestClient_GetSnapshotsForVolume(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("GetSnapshotsForVolume_InvalidToken"), func(t *testing.T) {
+	t.Run("GetSnapshotsForVolume_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		_, err := d.GetSnapshotsForVolume(ctx, &Volume{Name: "oldVolume"})
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -951,7 +951,7 @@ func TestClient_GetSnapshotForVolume(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("GetSnapshotForVolume_InvalidToken"), func(t *testing.T) {
+	t.Run("GetSnapshotForVolume_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		_, err := d.GetSnapshotsForVolume(ctx, &Volume{Name: "oldVolume"})
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -999,7 +999,7 @@ func TestClient_GetSnapshotByID(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("GetSnapshotByID_InvalidToken"), func(t *testing.T) {
+	t.Run("GetSnapshotByID_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		_, err := d.GetSnapshotByID(ctx, "snapshotID")
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -1073,7 +1073,7 @@ func TestClient_CreateSnapshot(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("CreateSnapshot_InvalidToken"), func(t *testing.T) {
+	t.Run("CreateSnapshot_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		err := d.CreateSnapshot(ctx, &SnapshotCreateRequest{Name: "testSnapshot"})
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -1110,7 +1110,7 @@ func TestClient_RestoreSnapshot(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("RestoreSnapshot_InvalidToken"), func(t *testing.T) {
+	t.Run("RestoreSnapshot_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		err := d.RestoreSnapshot(ctx, &Volume{Name: "SnapshotVolume"}, &Snapshot{Name: "testSnapshot"})
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -1147,7 +1147,7 @@ func TestClient_DeleteSnapshot(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("DeleteSnapshot_InvalidToken"), func(t *testing.T) {
+	t.Run("DeleteSnapshot_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		err := d.DeleteSnapshot(ctx, &Volume{Name: "SnapshotVolume"}, &Snapshot{Name: "testSnapshot"})
 		assert.Error(t, err, "An error is expected when invalid token is used.")
@@ -1186,7 +1186,7 @@ func TestClient_GetPools(t *testing.T) {
 		})
 	}
 
-	t.Run(fmt.Sprintf("GetPools_InvalidToken"), func(t *testing.T) {
+	t.Run("GetPools_InvalidToken", func(t *testing.T) {
 		d := getGCPClientInvalidToken("srv.URL")
 		_, err := d.GetVolumes(ctx)
 		assert.Error(t, err, "An error is expected when invalid token is used.")
