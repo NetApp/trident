@@ -2,7 +2,7 @@
 
 package mpathconfig
 
-//go:generate mockgen -destination=../../../mocks/mock_nodeprep/mock_mpathconfig/mock_section.go  github.com/netapp/trident/internal/nodeprep/mpathconfig MpathConfigurationSection
+//go:generate mockgen -destination=../../../mocks/mock_internal/mock_nodeprep/mock_mpathconfig/mock_section.go  github.com/netapp/trident/internal/nodeprep/mpathconfig MpathConfigurationSection
 
 import (
 	"fmt"

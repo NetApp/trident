@@ -1,34 +1,64 @@
 // Copyright 2024 NetApp, Inc. All Rights Reserved.
 
-package stage_test
+package step_test
 
 import (
+	"context"
 	"os"
 	"testing"
 
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/nodeprep/mpathconfig"
 	"github.com/netapp/trident/internal/nodeprep/packagemanager"
-	"github.com/netapp/trident/internal/nodeprep/stage"
-	"github.com/netapp/trident/mocks/mock_nodeprep/mock_mpathconfig"
-	"github.com/netapp/trident/mocks/mock_nodeprep/mock_packagemanager"
+	"github.com/netapp/trident/internal/nodeprep/step"
+	"github.com/netapp/trident/mocks/mock_internal/mock_nodeprep/mock_mpathconfig"
+	"github.com/netapp/trident/mocks/mock_internal/mock_nodeprep/mock_packagemanager"
 	"github.com/netapp/trident/utils/errors"
 )
 
-func TestNewConfigurator(t *testing.T) {
-	assert.NotNil(t, stage.NewConfigurator())
+func TestNewMultipathConfigureStep(t *testing.T) {
+	assert.NotNil(t, step.NewMultipathConfigureStep(nil))
 }
 
-func TestNewConfiguratorDetailed(t *testing.T) {
-	assert.NotNil(t, stage.NewConfiguratorDetailed(mpathconfig.MultiPathConfigurationLocation, nil, nil, nil))
-}
-
-func TestConfigurator_AddConfiguration(t *testing.T) {
+func TestNewMultipathConfigureStepDetailed(t *testing.T) {
 	type parameters struct {
-		getConfiguration func() mpathconfig.MpathConfiguration
-		assertError      assert.ErrorAssertionFunc
+		getFileSystem func() afero.Fs
+	}
+
+	tests := map[string]parameters{
+		"running outside the container": {
+			getFileSystem: func() afero.Fs {
+				return afero.NewMemMapFs()
+			},
+		},
+		"running inside the container": {
+			getFileSystem: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				_, err := fs.Create(config.NamespaceFile)
+				assert.NoError(t, err)
+				return fs
+			},
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			mpathConfigStep := step.NewMultipathConfigureStepDetailed(mpathconfig.MultiPathConfigurationLocation, nil, nil,
+				nil, afero.Afero{Fs: params.getFileSystem()})
+			assert.NotNil(t, mpathConfigStep)
+		})
+	}
+}
+
+func TestMultipathConfigureStep_AddConfiguration(t *testing.T) {
+	type parameters struct {
+		getConfiguration  func() mpathconfig.MpathConfiguration
+		getPackageManager func() packagemanager.PackageManager
+		assertError       assert.ErrorAssertionFunc
 	}
 
 	tests := map[string]parameters{
@@ -55,6 +85,11 @@ func TestConfigurator_AddConfiguration(t *testing.T) {
 
 				return mpathConfig
 			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
+			},
 			assertError: assert.NoError,
 		},
 		"default section creation returns an error": {
@@ -68,6 +103,11 @@ func TestConfigurator_AddConfiguration(t *testing.T) {
 				mpathConfig.EXPECT().GetRootSection().Return(section).Times(1)
 
 				return mpathConfig
+			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
 			},
 			assertError: assert.Error,
 		},
@@ -83,6 +123,11 @@ func TestConfigurator_AddConfiguration(t *testing.T) {
 				mpathConfig.EXPECT().GetRootSection().Return(section).Times(1)
 
 				return mpathConfig
+			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
 			},
 			assertError: assert.Error,
 		},
@@ -101,6 +146,11 @@ func TestConfigurator_AddConfiguration(t *testing.T) {
 
 				return mpathConfig
 			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
+			},
 			assertError: assert.Error,
 		},
 		"adding device section to blacklist section returns an error": {
@@ -118,6 +168,11 @@ func TestConfigurator_AddConfiguration(t *testing.T) {
 				mpathConfig.EXPECT().GetRootSection().Return(section).Times(2)
 
 				return mpathConfig
+			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
 			},
 			assertError: assert.Error,
 		},
@@ -138,6 +193,11 @@ func TestConfigurator_AddConfiguration(t *testing.T) {
 
 				return mpathConfig
 			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
+			},
 			assertError: assert.Error,
 		},
 		"adding the product key to the device section in blacklist returns an error": {
@@ -157,6 +217,11 @@ func TestConfigurator_AddConfiguration(t *testing.T) {
 				mpathConfig.EXPECT().GetRootSection().Return(section).Times(2)
 
 				return mpathConfig
+			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
 			},
 			assertError: assert.Error,
 		},
@@ -179,6 +244,11 @@ func TestConfigurator_AddConfiguration(t *testing.T) {
 				mpathConfig.EXPECT().GetRootSection().Return(section).Times(3)
 
 				return mpathConfig
+			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
 			},
 			assertError: assert.Error,
 		},
@@ -203,6 +273,11 @@ func TestConfigurator_AddConfiguration(t *testing.T) {
 
 				return mpathConfig
 			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
+			},
 			assertError: assert.Error,
 		},
 		"adding the vendor key to the device section in the blacklist exception returns an error": {
@@ -226,6 +301,11 @@ func TestConfigurator_AddConfiguration(t *testing.T) {
 				mpathConfig.EXPECT().GetRootSection().Return(section).Times(3)
 
 				return mpathConfig
+			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
 			},
 			assertError: assert.Error,
 		},
@@ -252,13 +332,18 @@ func TestConfigurator_AddConfiguration(t *testing.T) {
 
 				return mpathConfig
 			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
+			},
 			assertError: assert.Error,
 		},
 	}
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
-			configurator := stage.NewConfigurator()
+			configurator := step.NewMultipathConfigureStep(params.getPackageManager())
 
 			err := configurator.AddConfiguration(params.getConfiguration())
 			if params.assertError != nil {
@@ -268,10 +353,11 @@ func TestConfigurator_AddConfiguration(t *testing.T) {
 	}
 }
 
-func TestConfigurator_UpdateConfiguration(t *testing.T) {
+func TestMultipathConfigureStep_UpdateConfiguration(t *testing.T) {
 	type parameters struct {
-		getConfiguration func() mpathconfig.MpathConfiguration
-		assertError      assert.ErrorAssertionFunc
+		getConfiguration  func() mpathconfig.MpathConfiguration
+		getPackageManager func() packagemanager.PackageManager
+		assertError       assert.ErrorAssertionFunc
 	}
 
 	tests := map[string]parameters{
@@ -290,9 +376,14 @@ func TestConfigurator_UpdateConfiguration(t *testing.T) {
 
 				return mpathConfig
 			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
+			},
 			assertError: assert.NoError,
 		},
-		"get property 'find_multipaths' from  the defaults section returns an error": {
+		"get property 'find_multipaths' from the defaults section returns an error": {
 			getConfiguration: func() mpathconfig.MpathConfiguration {
 				mockCtrl := gomock.NewController(t)
 				section := mock_mpathconfig.NewMockMpathConfigurationSection(mockCtrl)
@@ -303,6 +394,11 @@ func TestConfigurator_UpdateConfiguration(t *testing.T) {
 				mpathConfig.EXPECT().GetSection(mpathconfig.DefaultsSectionName).Return(section, nil)
 
 				return mpathConfig
+			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
 			},
 			assertError: assert.Error,
 		},
@@ -318,6 +414,11 @@ func TestConfigurator_UpdateConfiguration(t *testing.T) {
 
 				return mpathConfig
 			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
+			},
 			assertError: assert.Error,
 		},
 		"configuration has 'find_multipaths' set to 'yes' in the defaults section": {
@@ -332,6 +433,11 @@ func TestConfigurator_UpdateConfiguration(t *testing.T) {
 
 				return mpathConfig
 			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
+			},
 			assertError: assert.Error,
 		},
 		"configuration does not have property 'find_multipaths' in the defaults section": {
@@ -344,6 +450,11 @@ func TestConfigurator_UpdateConfiguration(t *testing.T) {
 				mpathConfig.EXPECT().GetSection(mpathconfig.DefaultsSectionName).Return(section, nil)
 
 				return mpathConfig
+			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
 			},
 			assertError: assert.Error,
 		},
@@ -366,7 +477,11 @@ func TestConfigurator_UpdateConfiguration(t *testing.T) {
 
 				return mpathConfig
 			},
-			assertError: assert.NoError,
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
+			},
 		},
 		"defaults section not present: adding defaults section returns an error": {
 			getConfiguration: func() mpathconfig.MpathConfiguration {
@@ -380,6 +495,11 @@ func TestConfigurator_UpdateConfiguration(t *testing.T) {
 				mpathConfig.EXPECT().GetRootSection().Return(section).Times(1)
 
 				return mpathConfig
+			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
 			},
 			assertError: assert.Error,
 		},
@@ -396,6 +516,11 @@ func TestConfigurator_UpdateConfiguration(t *testing.T) {
 				mpathConfig.EXPECT().GetRootSection().Return(section).Times(1)
 
 				return mpathConfig
+			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
 			},
 			assertError: assert.Error,
 		},
@@ -419,6 +544,11 @@ func TestConfigurator_UpdateConfiguration(t *testing.T) {
 
 				return mpathConfig
 			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
+			},
 			assertError: assert.NoError,
 		},
 		"blacklist exception section not present: add section error": {
@@ -436,6 +566,11 @@ func TestConfigurator_UpdateConfiguration(t *testing.T) {
 				mpathConfig.EXPECT().GetRootSection().Return(section).Times(1)
 
 				return mpathConfig
+			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
 			},
 			assertError: assert.Error,
 		},
@@ -457,6 +592,11 @@ func TestConfigurator_UpdateConfiguration(t *testing.T) {
 
 				return mpathConfig
 			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
+			},
 			assertError: assert.Error,
 		},
 		"blacklist exception section not present: error setting property vendor in device section": {
@@ -477,6 +617,11 @@ func TestConfigurator_UpdateConfiguration(t *testing.T) {
 				mpathConfig.EXPECT().GetRootSection().Return(section).Times(1)
 
 				return mpathConfig
+			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
 			},
 			assertError: assert.Error,
 		},
@@ -500,13 +645,18 @@ func TestConfigurator_UpdateConfiguration(t *testing.T) {
 
 				return mpathConfig
 			},
+			getPackageManager: func() packagemanager.PackageManager {
+				mockCtrl := gomock.NewController(t)
+				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
+				return packageManager
+			},
 			assertError: assert.Error,
 		},
 	}
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
-			configurator := stage.NewConfigurator()
+			configurator := step.NewMultipathConfigureStep(params.getPackageManager())
 
 			err := configurator.UpdateConfiguration(params.getConfiguration())
 			if params.assertError != nil {
@@ -516,7 +666,7 @@ func TestConfigurator_UpdateConfiguration(t *testing.T) {
 	}
 }
 
-func TestConfigurator_ConfigureMultipathDaemon(t *testing.T) {
+func TestMultipathConfigureStep_Apply(t *testing.T) {
 	type parameters struct {
 		mpathConfigLocation    string
 		getMpathConfiguration  func() mpathconfig.MpathConfiguration
@@ -524,6 +674,8 @@ func TestConfigurator_ConfigureMultipathDaemon(t *testing.T) {
 		configConstructorError error
 		assertError            assert.ErrorAssertionFunc
 	}
+
+	ctx := context.Background()
 
 	tests := map[string]parameters{
 		"multipath tools already installed and configuration file exists": {
@@ -536,7 +688,7 @@ func TestConfigurator_ConfigureMultipathDaemon(t *testing.T) {
 			getPackageManager: func() packagemanager.PackageManager {
 				mockCtrl := gomock.NewController(t)
 				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
-				packageManager.EXPECT().MultipathToolsInstalled().Return(true)
+				packageManager.EXPECT().MultipathToolsInstalled(ctx).Return(true)
 				return packageManager
 			},
 			assertError: assert.NoError,
@@ -551,7 +703,7 @@ func TestConfigurator_ConfigureMultipathDaemon(t *testing.T) {
 			getPackageManager: func() packagemanager.PackageManager {
 				mockCtrl := gomock.NewController(t)
 				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
-				packageManager.EXPECT().MultipathToolsInstalled().Return(true)
+				packageManager.EXPECT().MultipathToolsInstalled(ctx).Return(true)
 				return packageManager
 			},
 			configConstructorError: errors.New("some error"),
@@ -573,7 +725,7 @@ func TestConfigurator_ConfigureMultipathDaemon(t *testing.T) {
 			getPackageManager: func() packagemanager.PackageManager {
 				mockCtrl := gomock.NewController(t)
 				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
-				packageManager.EXPECT().MultipathToolsInstalled().Return(true)
+				packageManager.EXPECT().MultipathToolsInstalled(ctx).Return(true)
 				return packageManager
 			},
 			assertError: assert.Error,
@@ -588,7 +740,7 @@ func TestConfigurator_ConfigureMultipathDaemon(t *testing.T) {
 			getPackageManager: func() packagemanager.PackageManager {
 				mockCtrl := gomock.NewController(t)
 				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
-				packageManager.EXPECT().MultipathToolsInstalled().Return(true)
+				packageManager.EXPECT().MultipathToolsInstalled(ctx).Return(true)
 				return packageManager
 			},
 			assertError: assert.Error,
@@ -603,7 +755,7 @@ func TestConfigurator_ConfigureMultipathDaemon(t *testing.T) {
 			getPackageManager: func() packagemanager.PackageManager {
 				mockCtrl := gomock.NewController(t)
 				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
-				packageManager.EXPECT().MultipathToolsInstalled().Return(false)
+				packageManager.EXPECT().MultipathToolsInstalled(ctx).Return(false)
 				return packageManager
 			},
 			assertError: assert.NoError,
@@ -618,7 +770,7 @@ func TestConfigurator_ConfigureMultipathDaemon(t *testing.T) {
 			getPackageManager: func() packagemanager.PackageManager {
 				mockCtrl := gomock.NewController(t)
 				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
-				packageManager.EXPECT().MultipathToolsInstalled().Return(false)
+				packageManager.EXPECT().MultipathToolsInstalled(ctx).Return(false)
 				return packageManager
 			},
 			configConstructorError: errors.New("some error"),
@@ -639,7 +791,7 @@ func TestConfigurator_ConfigureMultipathDaemon(t *testing.T) {
 			getPackageManager: func() packagemanager.PackageManager {
 				mockCtrl := gomock.NewController(t)
 				packageManager := mock_packagemanager.NewMockPackageManager(mockCtrl)
-				packageManager.EXPECT().MultipathToolsInstalled().Return(false)
+				packageManager.EXPECT().MultipathToolsInstalled(ctx).Return(false)
 				return packageManager
 			},
 			assertError: assert.Error,
@@ -653,10 +805,14 @@ func TestConfigurator_ConfigureMultipathDaemon(t *testing.T) {
 				err:    params.configConstructorError,
 			}
 
-			configurator := stage.NewConfiguratorDetailed(params.mpathConfigLocation, configConstructors.NewFromFile,
-				configConstructors.New, params.getPackageManager())
+			fs := afero.NewMemMapFs()
+			_, err := fs.Create(os.DevNull)
+			assert.NoError(t, err)
+			configurator := step.NewMultipathConfigureStepDetailed(params.mpathConfigLocation,
+				configConstructors.NewFromFile, configConstructors.New, params.getPackageManager(),
+				afero.Afero{Fs: fs})
 
-			err := configurator.ConfigureMultipathDaemon()
+			err = configurator.Apply(ctx)
 			if params.assertError != nil {
 				params.assertError(t, err)
 			}

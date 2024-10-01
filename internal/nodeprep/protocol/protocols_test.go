@@ -1,13 +1,11 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
-
-package validation_test
+package protocol_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/netapp/trident/internal/nodeprep/validation"
+	"github.com/netapp/trident/internal/nodeprep/protocol"
 )
 
 func TestValidateProtocols(t *testing.T) {
@@ -56,7 +54,7 @@ func TestValidateProtocols(t *testing.T) {
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
-			err := validation.ValidateProtocols(params.protocols)
+			err := protocol.ValidateProtocols(params.protocols)
 			params.assertValid(t, err)
 		})
 	}
@@ -97,7 +95,7 @@ func TestFormatProtocols(t *testing.T) {
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
-			formattedProtocols := validation.FormatProtocols(params.protocols)
+			formattedProtocols := protocol.FormatProtocols(params.protocols)
 			assert.Len(t, formattedProtocols, len(params.expectedOutput))
 			assert.Equal(t, formattedProtocols, params.expectedOutput)
 		})

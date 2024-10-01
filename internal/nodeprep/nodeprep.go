@@ -3,31 +3,30 @@
 package nodeprep
 
 import (
-	"github.com/netapp/trident/internal/chwrap"
+	"context"
+
+	"github.com/netapp/trident/internal/nodeprep/execution"
+	"github.com/netapp/trident/internal/nodeprep/instruction"
+	"github.com/netapp/trident/internal/nodeprep/nodeinfo"
+	"github.com/netapp/trident/internal/nodeprep/protocol"
 	. "github.com/netapp/trident/logging"
-	utilserrors "github.com/netapp/trident/utils/errors"
-)
-
-type PkgMgr = string
-
-const (
-	PkgMgrYum PkgMgr = "yum"
-	PkgMgrApt PkgMgr = "apt"
 )
 
 type NodePrep struct {
-	findBinary func(string) (string, string)
+	node nodeinfo.Node
 }
 
-func NewNodePrep() *NodePrep {
-	return NewNodePrepDetailed(chwrap.FindBinary)
+func New() *NodePrep {
+	return NewDetailed(nodeinfo.New())
 }
 
-func NewNodePrepDetailed(findBinary func(string) (string, string)) *NodePrep {
-	return &NodePrep{findBinary: findBinary}
+func NewDetailed(node nodeinfo.Node) *NodePrep {
+	return &NodePrep{
+		node: node,
+	}
 }
 
-func (n *NodePrep) PrepareNode(requestedProtocols []string) (exitCode int) {
+func (n *NodePrep) Prepare(ctx context.Context, requestedProtocols []protocol.Protocol) (exitCode int) {
 	Log().WithField("requestedProtocols", requestedProtocols).Info("Preparing node")
 	defer func() {
 		Log().WithField("exitCode", exitCode).Info("Node preparation complete")
@@ -38,22 +37,22 @@ func (n *NodePrep) PrepareNode(requestedProtocols []string) (exitCode int) {
 		return 0
 	}
 
-	pkgMgr, err := n.getPkgMgr()
+	nodeInfo, err := n.node.GetInfo(ctx)
 	if err != nil {
-		Log().WithError(err).Error("Failed to determine package manager")
+		Log().WithError(err).Error("Failed to determine node information")
 		return 1
 	}
-	Log().Info("Package manager found: ", pkgMgr)
+
+	instructions, err := instruction.GetInstructions(nodeInfo, requestedProtocols)
+	if err != nil {
+		Log().WithError(err).Error("Failed to get instructions")
+		return 1
+	}
+
+	if err = execution.Execute(ctx, instructions); err != nil {
+		Log().WithError(err).Error("Failed to prepare node")
+		return 1
+	}
 
 	return 0
-}
-
-func (n *NodePrep) getPkgMgr() (PkgMgr, error) {
-	if _, pkgMgr := n.findBinary(string(PkgMgrYum)); pkgMgr != "" {
-		return PkgMgrYum, nil
-	}
-	if _, pkgMgr := n.findBinary(string(PkgMgrApt)); pkgMgr != "" {
-		return PkgMgrApt, nil
-	}
-	return "", utilserrors.UnsupportedError("a supported package manager was not found")
 }

@@ -2,14 +2,11 @@
 
 package packagemanager
 
-//go:generate mockgen -destination=../../../mocks/mock_nodeprep/mock_packagemanager/mock_packagemanager.go github.com/netapp/trident/internal/nodeprep/packagemanager PackageManager
+import "context"
 
-import "github.com/netapp/trident/internal/nodeprep/packagemanager/yum"
+//go:generate mockgen -destination=../../../mocks/mock_internal/mock_nodeprep/mock_packagemanager/mock_packagemanager.go github.com/netapp/trident/internal/nodeprep/packagemanager PackageManager
 
 type PackageManager interface {
-	MultipathToolsInstalled() bool
-}
-
-func Factory() PackageManager {
-	return yum.New()
+	MultipathToolsInstalled(context.Context) bool
+	InstallIscsiRequirements(ctx context.Context) error
 }

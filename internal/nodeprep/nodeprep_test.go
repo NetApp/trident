@@ -3,80 +3,152 @@
 package nodeprep_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/internal/nodeprep"
+	"github.com/netapp/trident/internal/nodeprep/instruction"
+	"github.com/netapp/trident/internal/nodeprep/nodeinfo"
+	"github.com/netapp/trident/internal/nodeprep/protocol"
+	"github.com/netapp/trident/mocks/mock_internal/mock_nodeprep/mock_instruction"
+	"github.com/netapp/trident/mocks/mock_internal/mock_nodeprep/mock_nodeinfo"
+	"github.com/netapp/trident/utils/errors"
 )
 
-func TestPrepareNodeProtocols(t *testing.T) {
+func TestNew(t *testing.T) {
+	nodePrep := nodeprep.New()
+	assert.NotNil(t, nodePrep)
+}
+
+func TestNewDetailed(t *testing.T) {
+	node := mock_nodeinfo.NewMockNode(gomock.NewController(t))
+	nodePrep := nodeprep.NewDetailed(node)
+	assert.NotNil(t, nodePrep)
+}
+
+func TestPrepareNode(t *testing.T) {
 	type parameters struct {
 		protocols        []string
+		getNode          func(controller *gomock.Controller) nodeinfo.Node
+		getInstructions  func(controller *gomock.Controller) map[instruction.Key]instruction.Instructions
 		expectedExitCode int
 	}
+
 	tests := map[string]parameters{
 		"no protocols": {
-			protocols:        nil,
+			protocols: nil,
+			getNode: func(controller *gomock.Controller) nodeinfo.Node {
+				mockNode := mock_nodeinfo.NewMockNode(controller)
+				return mockNode
+			},
+			getInstructions: func(controller *gomock.Controller) map[instruction.Key]instruction.Instructions {
+				return nil
+			},
 			expectedExitCode: 0,
+		},
+		"error getting node info": {
+			protocols: []string{protocol.ISCSI},
+			getNode: func(controller *gomock.Controller) nodeinfo.Node {
+				mockNode := mock_nodeinfo.NewMockNode(controller)
+				mockNode.EXPECT().GetInfo(gomock.Any()).
+					Return(nil, errors.New("mock error"))
+				return mockNode
+			},
+			getInstructions: func(controller *gomock.Controller) map[instruction.Key]instruction.Instructions {
+				return nil
+			},
+			expectedExitCode: 1,
+		},
+		"error getting instructions": {
+			protocols: []string{protocol.ISCSI},
+			getNode: func(controller *gomock.Controller) nodeinfo.Node {
+				mockNode := mock_nodeinfo.NewMockNode(controller)
+				mockNode.EXPECT().GetInfo(gomock.Any()).
+					Return(
+						&nodeinfo.NodeInfo{
+							PkgMgr: nodeinfo.PkgMgrNone,
+							Distro: nodeinfo.DistroUbuntu,
+						},
+						nil,
+					)
+				return mockNode
+			},
+			getInstructions: func(controller *gomock.Controller) map[instruction.Key]instruction.Instructions {
+				return nil
+			},
+			expectedExitCode: 1,
+		},
+		"error executing instructions": {
+			protocols: []string{protocol.ISCSI},
+			getNode: func(controller *gomock.Controller) nodeinfo.Node {
+				mockNode := mock_nodeinfo.NewMockNode(controller)
+				mockNode.EXPECT().GetInfo(gomock.Any()).
+					Return(
+						&nodeinfo.NodeInfo{
+							PkgMgr: nodeinfo.PkgMgrNone,
+							Distro: nodeinfo.DistroUbuntu,
+						},
+						nil,
+					)
+				return mockNode
+			},
+			getInstructions: func(controller *gomock.Controller) map[instruction.Key]instruction.Instructions {
+				key := instruction.Key{
+					Protocol: protocol.ISCSI,
+					Distro:   nodeinfo.DistroUbuntu,
+					PkgMgr:   nodeinfo.PkgMgrNone,
+				}
+				mockInstruction := mock_instruction.NewMockInstructions(controller)
+				mockInstruction.EXPECT().GetName().Return("mock instruction")
+				mockInstruction.EXPECT().PreCheck(gomock.Any()).Return(nil)
+				mockInstruction.EXPECT().Apply(gomock.Any()).Return(errors.New("some error"))
+				instructions := map[instruction.Key]instruction.Instructions{
+					key: mockInstruction,
+				}
+				return instructions
+			},
+			expectedExitCode: 1,
 		},
 		"happy path": {
-			protocols:        []string{"iscsi"},
+			protocols: []string{protocol.ISCSI},
+			getNode: func(controller *gomock.Controller) nodeinfo.Node {
+				mockNode := mock_nodeinfo.NewMockNode(controller)
+				mockNode.EXPECT().GetInfo(gomock.Any()).
+					Return(
+						&nodeinfo.NodeInfo{
+							PkgMgr: nodeinfo.PkgMgrNone,
+							Distro: nodeinfo.DistroUbuntu,
+						},
+						nil,
+					)
+				return mockNode
+			},
+			getInstructions: func(controller *gomock.Controller) map[instruction.Key]instruction.Instructions {
+				key := instruction.Key{
+					Protocol: protocol.ISCSI,
+					Distro:   nodeinfo.DistroUbuntu,
+					PkgMgr:   nodeinfo.PkgMgrNone,
+				}
+				return map[instruction.Key]instruction.Instructions{
+					key: &instruction.Default{},
+				}
+			},
 			expectedExitCode: 0,
 		},
 	}
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
-			exitCode := nodeprep.NewNodePrepDetailed(NewFindBinaryMock(nodeprep.PkgMgrYum).FindBinary).PrepareNode(params.protocols)
+			ctrl := gomock.NewController(t)
+
+			defer instruction.ScopedInstructions(params.getInstructions(ctrl))()
+			node := nodeprep.NewDetailed(params.getNode(ctrl))
+
+			exitCode := node.Prepare(context.TODO(), params.protocols)
 			assert.Equal(t, params.expectedExitCode, exitCode)
 		})
 	}
-}
-
-func TestPrepareNodePkgMgr(t *testing.T) {
-	type parameters struct {
-		findBinaryMock   *FindBinaryMock
-		expectedExitCode int
-	}
-	tests := map[string]parameters{
-		"supported yum": {
-			findBinaryMock:   NewFindBinaryMock(nodeprep.PkgMgrYum),
-			expectedExitCode: 0,
-		},
-		"supported apt": {
-			findBinaryMock:   NewFindBinaryMock(nodeprep.PkgMgrApt),
-			expectedExitCode: 0,
-		},
-		"not supported": {
-			findBinaryMock:   NewFindBinaryMock("other"),
-			expectedExitCode: 1,
-		},
-		"empty": {
-			findBinaryMock:   NewFindBinaryMock(""),
-			expectedExitCode: 1,
-		},
-	}
-
-	for name, params := range tests {
-		t.Run(name, func(t *testing.T) {
-			exitCode := nodeprep.NewNodePrepDetailed(params.findBinaryMock.FindBinary).PrepareNode([]string{"iscsi"})
-			assert.Equal(t, params.expectedExitCode, exitCode)
-		})
-	}
-}
-
-type FindBinaryMock struct {
-	binary string
-}
-
-func NewFindBinaryMock(binary nodeprep.PkgMgr) *FindBinaryMock {
-	return &FindBinaryMock{binary: string(binary)}
-}
-
-func (f *FindBinaryMock) FindBinary(binary string) (string, string) {
-	if binary == f.binary {
-		return "/host", "/bin/" + binary
-	}
-	return "", ""
 }

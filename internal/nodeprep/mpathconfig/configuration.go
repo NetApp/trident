@@ -2,7 +2,7 @@
 
 package mpathconfig
 
-//go:generate mockgen -destination=../../../mocks/mock_nodeprep/mock_mpathconfig/mock_config.go  github.com/netapp/trident/internal/nodeprep/mpathconfig MpathConfiguration
+//go:generate mockgen -destination=../../../mocks/mock_internal/mock_nodeprep/mock_mpathconfig/mock_config.go  github.com/netapp/trident/internal/nodeprep/mpathconfig MpathConfiguration
 
 import (
 	"bufio"

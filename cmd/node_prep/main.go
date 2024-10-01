@@ -3,6 +3,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -24,7 +25,15 @@ func main() {
 		"binary":     os.Args[0],
 	}).Info("Running Trident node preparation.")
 
-	nodeprep.NewNodePrep().PrepareNode(strings.Split(strings.ToLower(*flags.nodePrep), ","))
+	ctx := context.Background()
+
+	// This is a work-around for osutils because getting system information checks for this environment variable
+	// to decide if this is running inside a container.  osutils should be refactored to not rely on this.
+	if err := os.Setenv("CSI_ENDPOINT", "unix://run/csi/socket"); err != nil {
+		Log().Fatal("Failed to set environment variable.")
+	}
+
+	os.Exit(nodeprep.New().Prepare(ctx, strings.Split(strings.ToLower(*flags.nodePrep), ",")))
 }
 
 func initLogging(flags appFlags) {

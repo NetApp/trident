@@ -1,11 +1,14 @@
 // Copyright 2024 NetApp, Inc. All Rights Reserved.
 
-package stage
+package step
 
 import (
+	"context"
 	"fmt"
-	"os"
 
+	"github.com/spf13/afero"
+
+	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/nodeprep/mpathconfig"
 	"github.com/netapp/trident/internal/nodeprep/packagemanager"
 )
@@ -15,33 +18,43 @@ type (
 	NewConfigurationFromFile func(filename string) (mpathconfig.MpathConfiguration, error)
 )
 
-type Configurator struct {
+type MultipathConfigureStep struct {
+	DefaultStep
 	multipathConfigurationLocation string
 	newConfigurationFromFile       NewConfigurationFromFile
 	newConfiguration               NewConfiguration
 	packageManager                 packagemanager.PackageManager
+	os                             afero.Afero
 }
 
-func NewConfigurator() *Configurator {
-	return NewConfiguratorDetailed(mpathconfig.MultiPathConfigurationLocation, mpathconfig.NewFromFile,
-		mpathconfig.New, packagemanager.Factory())
+func NewMultipathConfigureStep(packageManager packagemanager.PackageManager) *MultipathConfigureStep {
+	return NewMultipathConfigureStepDetailed(mpathconfig.MultiPathConfigurationLocation, mpathconfig.NewFromFile,
+		mpathconfig.New, packageManager, afero.Afero{Fs: afero.NewOsFs()})
 }
 
-func NewConfiguratorDetailed(multipathConfigurationLocation string, newConfigurationFromFile NewConfigurationFromFile,
-	newConfiguration NewConfiguration, packageManager packagemanager.PackageManager,
-) *Configurator {
-	return &Configurator{
+func NewMultipathConfigureStepDetailed(multipathConfigurationLocation string, newConfigurationFromFile NewConfigurationFromFile,
+	newConfiguration NewConfiguration, packageManager packagemanager.PackageManager, os afero.Afero,
+) *MultipathConfigureStep {
+	multipathConfigurationStep := &MultipathConfigureStep{
+		DefaultStep:                    DefaultStep{Name: "multipath step", Required: true},
 		newConfigurationFromFile:       newConfigurationFromFile,
 		newConfiguration:               newConfiguration,
 		multipathConfigurationLocation: multipathConfigurationLocation,
 		packageManager:                 packageManager,
+		os:                             os,
 	}
+
+	if multipathConfigurationStep.fileExists(config.NamespaceFile) {
+		multipathConfigurationStep.multipathConfigurationLocation = fmt.Sprintf("/host%s", multipathConfigurationStep.multipathConfigurationLocation)
+	}
+
+	return multipathConfigurationStep
 }
 
-func (c *Configurator) ConfigureMultipathDaemon() error {
+func (c *MultipathConfigureStep) Apply(ctx context.Context) error {
 	var mpathCfg mpathconfig.MpathConfiguration
 	var err error
-	if c.packageManager.MultipathToolsInstalled() {
+	if c.packageManager.MultipathToolsInstalled(ctx) {
 
 		if !c.multipathConfigurationExists() {
 			return fmt.Errorf("found multipath tools already installed but no configuration file found; customer" +
@@ -71,7 +84,7 @@ func (c *Configurator) ConfigureMultipathDaemon() error {
 	return mpathCfg.SaveConfig(c.multipathConfigurationLocation)
 }
 
-func (c *Configurator) UpdateConfiguration(mpathCfg mpathconfig.MpathConfiguration) error {
+func (c *MultipathConfigureStep) UpdateConfiguration(mpathCfg mpathconfig.MpathConfiguration) error {
 	defaultsSection, err := mpathCfg.GetSection(mpathconfig.DefaultsSectionName)
 	if err != nil {
 		if defaultsSection, err = configureDefaultSection(mpathCfg); err != nil {
@@ -101,7 +114,7 @@ func (c *Configurator) UpdateConfiguration(mpathCfg mpathconfig.MpathConfigurati
 	return nil
 }
 
-func (c *Configurator) AddConfiguration(mpathCfg mpathconfig.MpathConfiguration) error {
+func (c *MultipathConfigureStep) AddConfiguration(mpathCfg mpathconfig.MpathConfiguration) error {
 	if _, err := configureDefaultSection(mpathCfg); err != nil {
 		return err
 	}
@@ -125,8 +138,12 @@ func (c *Configurator) AddConfiguration(mpathCfg mpathconfig.MpathConfiguration)
 	return nil
 }
 
-func (c *Configurator) multipathConfigurationExists() bool {
-	_, err := os.Stat(c.multipathConfigurationLocation)
+func (c *MultipathConfigureStep) multipathConfigurationExists() bool {
+	return c.fileExists(c.multipathConfigurationLocation)
+}
+
+func (c *MultipathConfigureStep) fileExists(filename string) bool {
+	_, err := c.os.Stat(filename)
 	return err == nil
 }
 

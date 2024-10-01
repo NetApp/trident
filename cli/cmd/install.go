@@ -24,7 +24,7 @@ import (
 	"github.com/netapp/trident/cli/api"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
-	"github.com/netapp/trident/internal/nodeprep/validation"
+	"github.com/netapp/trident/internal/nodeprep/protocol"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
@@ -425,7 +425,7 @@ func processInstallationArguments(_ *cobra.Command) {
 
 	persistentObjectLabelKey = TridentPersistentObjectLabelKey
 	persistentObjectLabelValue = TridentPersistentObjectLabelValue
-	nodePrep = validation.FormatProtocols(nodePrep)
+	nodePrep = protocol.FormatProtocols(nodePrep)
 }
 
 func validateInstallationArguments() error {
@@ -436,7 +436,7 @@ func validateInstallationArguments() error {
 		return fmt.Errorf("'%s' is not a valid namespace name; %s", TridentPodNamespace, labelFormat)
 	}
 
-	if err := validation.ValidateProtocols(nodePrep); err != nil {
+	if err := protocol.ValidateProtocols(nodePrep); err != nil {
 		return err
 	}
 

@@ -1,15 +1,17 @@
 // Copyright 2024 NetApp, Inc. All Rights Reserved.
 
-package validation
+package protocol
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/netapp/trident/utils/errors"
+	utilserrors "github.com/netapp/trident/utils/errors"
 )
 
-const iscsi = "iscsi"
+type Protocol = string
+
+const ISCSI Protocol = "iscsi"
 
 func FormatProtocols(requestedProtocols []string) (formattedProtocols []string) {
 	for _, protocol := range requestedProtocols {
@@ -23,10 +25,11 @@ func ValidateProtocols(requestedProtocols []string) error {
 		return nil
 	}
 	if len(requestedProtocols) > 1 {
-		return errors.UnsupportedError(fmt.Sprintf("only one protocl (iSCSI) is supported at this time but node prep protocol set to '%s'", requestedProtocols))
+		return utilserrors.UnsupportedError(fmt.Sprintf("only one protocol ("+
+			"iSCSI) is supported at this time but node prep protocol set to '%s'", requestedProtocols))
 	}
-	if requestedProtocols[0] != iscsi {
-		return errors.UnsupportedError(fmt.Sprintf("'%s' is not a valid node prep protocol", requestedProtocols))
+	if requestedProtocols[0] != string(ISCSI) {
+		return utilserrors.UnsupportedError(fmt.Sprintf("'%s' is not a valid node prep protocol", requestedProtocols))
 	}
 
 	return nil
