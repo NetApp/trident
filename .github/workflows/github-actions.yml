@@ -1,6 +1,6 @@
 name: checks
 env:
-  GO_VERSION: '1.22'
+  GO_VERSION: '1.23'
 on:
   pull_request:
     branches:
@@ -42,7 +42,7 @@ jobs:
       - name: golangci-lint
         # Switch back to the official action after this bug is fixed: https://github.com/golangci/golangci-lint/issues/3107
         run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.58.1
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.61.0
           $(go env GOPATH)/bin/golangci-lint run --out-format=github-actions --timeout=15m --verbose
   go-mod-tidy:
     name: go mod tidy

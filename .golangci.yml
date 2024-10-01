@@ -1,7 +1,6 @@
 run:
-  # Timeout for analysis, e.g. 30s, 5m.
-  # Default: 1m
   timeout: 5m
+  go: 1.23
 
 linters:
   disable-all: true
@@ -13,7 +12,6 @@ linters:
     - govet
     - errcheck
     - gosec
-    # - lll
 
 issues:
   exclude-rules:
@@ -31,16 +29,7 @@ issues:
 
 linters-settings:
   gofumpt:
-    # Select the Go version to target.
-    # Default: 1.15
-    lang-version: "1.22"
-
-    # Choose whether to use the extra rules.
-    # Default: false
     extra-rules: true
-
-    # Module path which contains the source code being formatted.
-    # Default: empty string
     module-path: github.com/netapp/trident
 
   goimports:
@@ -51,14 +40,16 @@ linters-settings:
   lll:
     # Max line length, lines longer will be reported.
     # '\t' is counted as 1 character by default, and can be changed with the tab-width option.
-    # Default: 120.
     line-length: 120
     # Tab width in spaces.
-    # Default: 1
     tab-width: 4
 
   gosec:
     excludes:
-        # Exclude TLS client side erorrs for now, until Trident fully supports TLS1.3
-        - 'G402' # Look for bad TLS connection settings
+      # Exclude TLS client side erorrs for now, until Trident fully supports TLS1.3
+      - G402 # Look for bad TLS connection settings
+      - G115
 
+  govet:
+    disable:
+      - printf

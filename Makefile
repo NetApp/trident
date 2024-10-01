@@ -14,7 +14,7 @@ REGISTRY ?= $(DEFAULT_REGISTRY)
 BUILDX_OUTPUT ?= load
 
 # GO_IMAGE golang image used in default GO_SHELL
-GO_IMAGE ?= golang:1.22
+GO_IMAGE ?= golang:1.23
 
 # GO_CMD go command used for go build
 GO_CMD ?= go
@@ -26,7 +26,7 @@ GOPROXY ?=
 GOFLAGS ?=
 
 # HELM_IMAGE helm image used in default HELM_CMD
-HELM_IMAGE ?= alpine/helm:3.6.1
+HELM_IMAGE ?= alpine/helm:3.16.1
 
 # HELM_CHART_VERSION overrides the default chart version
 HELM_CHART_VERSION ?=
