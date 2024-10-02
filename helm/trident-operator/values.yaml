@@ -112,6 +112,18 @@ tridentDisableAuditLog: true
 # tridentDebug allows the log level of Trident to be set to debug
 tridentDebug: false
 
+# tridentDaemonsetResources permits specifying the resources for all containers of the trident-node daemonset. example:
+# tridentDaemonsetResources:
+#   requests:
+#     cpu: 250m
+#   limits:
+#     cpu: 100m
+#     memory: 1Gi
+tridentDaemonsetResources: {}
+
+# tridentDeploymentResources permits specifying the resources for all containers of the trident-controller deployment.
+tridentDeploymentResources:
+
 # tridentLogWorkflows allows specific Trident workflows to be enabled for trace logging or log suppression.
 tridentLogWorkflows: ""
 

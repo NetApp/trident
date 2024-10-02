@@ -103,6 +103,9 @@ var (
 
 	nodePrep []string
 
+	daemonsetResources  *v1.ResourceRequirements
+	deploymentResources *v1.ResourceRequirements
+
 	CRDnames = []string{
 		ActionMirrorUpdateCRDName,
 		ActionSnapshotRestoreCRDName,
@@ -390,6 +393,14 @@ func (i *Installer) setInstallationParams(
 	logLayers = cr.Spec.LogLayers
 
 	nodePrep = protocol.FormatProtocols(cr.Spec.NodePrep)
+
+	if cr.Spec.DaemonsetResources != nil {
+		daemonsetResources = cr.Spec.DaemonsetResources
+	}
+
+	if cr.Spec.DeploymentResources != nil {
+		deploymentResources = cr.Spec.DeploymentResources
+	}
 
 	if cr.Spec.ProbePort != nil {
 		probePort = strconv.FormatInt(*cr.Spec.ProbePort, 10)
@@ -1526,6 +1537,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		EnableACP:               enableACP,
 		IdentityLabel:           identityLabel,
 		K8sAPIQPS:               k8sAPIQPS,
+		Resources:               deploymentResources,
 	}
 
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
@@ -1606,6 +1618,7 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 		ISCSISelfHealingInterval: iscsiSelfHealingInterval,
 		ISCSISelfHealingWaitTime: iscsiSelfHealingWaitTime,
 		NodePrep:                 nodePrep,
+		Resources:                daemonsetResources,
 	}
 
 	var newDaemonSetYAML string
