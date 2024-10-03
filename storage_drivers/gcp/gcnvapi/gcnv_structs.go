@@ -77,6 +77,7 @@ type CapacityPool struct {
 	State           string
 	NetworkName     string
 	NetworkFullName string
+	Zone            string
 }
 
 // Volume records details of a discovered GCNV volume.

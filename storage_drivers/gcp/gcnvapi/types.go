@@ -21,6 +21,7 @@ type GCNV interface {
 	CapacityPools() *[]*CapacityPool
 	CapacityPoolsForStoragePools(context.Context) []*CapacityPool
 	CapacityPoolsForStoragePool(context.Context, storage.Pool, string) []*CapacityPool
+	FilterCapacityPoolsOnTopology(context.Context, []*CapacityPool, []map[string]string, []map[string]string) []*CapacityPool
 	EnsureVolumeInValidCapacityPool(context.Context, *Volume) error
 
 	Volumes(context.Context) (*[]*Volume, error)

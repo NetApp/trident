@@ -17,6 +17,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
+	sc "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -275,6 +276,7 @@ func (c Client) discoverCapacityPools(ctx context.Context) (*[]*CapacityPool, er
 			State:           StoragePoolStateFromGCNVState(pool.State),
 			NetworkName:     network,
 			NetworkFullName: pool.Network,
+			Zone:            pool.Zone,
 		})
 	}
 
@@ -388,10 +390,82 @@ func (c Client) CapacityPoolsForStoragePool(
 		}
 	}
 
-	// Shuffle the pools
-	rand.Shuffle(len(cPools), func(i, j int) { cPools[i], cPools[j] = cPools[j], cPools[i] })
+	// Filter out Capacity pools with non-matching supported topology
+	cPools = c.FilterCapacityPoolsOnTopology(ctx, cPools, sPool.SupportedTopologies(), []map[string]string{})
 
 	return cPools
+}
+
+// FilterCapacityPoolsOnTopology returns all the discovered capacity pools that support any of the requisite
+// topologies. The discovered capacity pools are sorted based on the preferred topologies.
+func (c Client) FilterCapacityPoolsOnTopology(
+	ctx context.Context, cPools []*CapacityPool, requisiteTopologies, preferredTopologies []map[string]string,
+) []*CapacityPool {
+	Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef(
+		"Determining capacity pools for requisite topologies.")
+
+	if len(requisiteTopologies) == 0 {
+		return cPools
+	}
+
+	filteredCPools := make([]*CapacityPool, 0)
+	// Filtering pools on requisite topology
+	for _, cPool := range cPools {
+		if cPool.Zone != "" {
+			for _, topology := range requisiteTopologies {
+				// If region and zone are not specified in the topology, we assume that the capacity pool
+				// is a regional capacity pool and is always assumed to match the requisite topology.
+				region, zone := sc.GetRegionZoneForTopology(topology)
+				if (zone == "" || strings.EqualFold(cPool.Zone, zone)) && (region == "" ||
+					strings.EqualFold(cPool.Location, region)) {
+					filteredCPools = append(filteredCPools, cPool)
+				}
+			}
+		} else {
+			// A capacity pool without a zone is considered to be a regional capacity pool, and is always
+			// assumed to match the requisite topology.
+			filteredCPools = append(filteredCPools, cPool)
+		}
+	}
+
+	if len(preferredTopologies) > 0 {
+		filteredCPools = SortCPoolsByPreferredTopologies(ctx, filteredCPools, preferredTopologies)
+	}
+
+	return filteredCPools
+}
+
+// SortCPoolsByPreferredTopologies returns a list of capacity pools ordered by the provided list of preferred
+// topologies.
+func SortCPoolsByPreferredTopologies(
+	ctx context.Context, cPools []*CapacityPool, preferredTopologies []map[string]string,
+) []*CapacityPool {
+	orderedCPools := make([]*CapacityPool, 0)
+
+	rand.Shuffle(len(cPools), func(i, j int) {
+		cPools[i], cPools[j] = cPools[j], cPools[i]
+	})
+
+	for _, preferred := range preferredTopologies {
+
+		remainingCPools := make([]*CapacityPool, 0)
+
+		for _, cPool := range cPools {
+			// If it supports topology, pop it and add to orderedcpool. Otherwise, add it to remaining
+			// capacity pools to be addressed in future loop iterations.
+			_, zone := sc.GetRegionZoneForTopology(preferred)
+			if strings.EqualFold(cPool.Zone, zone) {
+				orderedCPools = append(orderedCPools, cPool)
+			} else {
+				remainingCPools = append(remainingCPools, cPool)
+			}
+		}
+
+		// make new list out of remaining capacity pools
+		cPools = remainingCPools
+	}
+
+	return append(orderedCPools, cPools...)
 }
 
 // EnsureVolumeInValidCapacityPool checks whether the specified volume exists in any capacity pool that is

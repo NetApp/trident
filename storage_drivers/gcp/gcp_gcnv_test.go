@@ -1252,6 +1252,21 @@ func getMultipleCapacityPoolsForCreateVolume() []*gcnvapi.CapacityPool {
 	}
 }
 
+func getFlexServiceCapacityPoolForCreateVolume() []*gcnvapi.CapacityPool {
+	return []*gcnvapi.CapacityPool{
+		{
+			Name:            "CP1",
+			FullName:        "CP-flex-pool",
+			Location:        gcnvapi.Location,
+			ServiceLevel:    gcnvapi.ServiceLevelFlex,
+			State:           gcnvapi.StateReady,
+			NetworkName:     gcnvapi.NetworkName,
+			NetworkFullName: gcnvapi.NetworkFullName,
+			Zone:            "asia-east1-c",
+		},
+	}
+}
+
 func TestCreate_NFSVolume(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
@@ -1270,11 +1285,11 @@ func TestCreate_NFSVolume(t *testing.T) {
 	volConfig, capacityPool, volume, createRequest := getStructsForCreateNFSVolume(ctx, driver, storagePool)
 	createRequest.UnixPermissions = "0777"
 	volume.UnixPermissions = "0777"
-
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, gcnvapi.VolumeStateReady, []string{gcnvapi.VolumeStateError},
@@ -1317,6 +1332,7 @@ func TestCreate_NFSVolume_MultipleCapacityPools_FirstSucceeds(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return(capacityPools).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, capacityPools, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return(capacityPools).Times(1)
 
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
@@ -1367,6 +1383,7 @@ func TestCreate_NFSVolume_MultipleCapacityPools_SecondSucceeds(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return(capacityPools).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, capacityPools, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return(capacityPools).Times(1)
 
 	mockAPI.EXPECT().CreateVolume(ctx, &createRequest1).Return(nil, errFailed).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, &createRequest2).Return(volume, nil).Times(1)
@@ -1421,7 +1438,7 @@ func TestCreate_NFSVolume_MultipleCapacityPools_NoneSucceeds(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return(capacityPools).Times(1)
-
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, capacityPools, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return(capacityPools).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, &createRequest1).Return(nil, errFailed).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, &createRequest2).Return(nil, errFailed).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, &createRequest3).Return(nil, errFailed).Times(1)
@@ -1720,7 +1737,7 @@ func TestCreate_ZeroSize(t *testing.T) {
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
-
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, gcnvapi.VolumeStateReady, []string{gcnvapi.VolumeStateError},
@@ -1764,7 +1781,7 @@ func TestCreate_ServiceLevelFlex(t *testing.T) {
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelFlex).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
-
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, gcnvapi.VolumeStateReady, []string{gcnvapi.VolumeStateError},
@@ -1917,6 +1934,7 @@ func TestGCNVCreate_InvalidSnapshotReserve(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, gcnvapi.VolumeStateReady, []string{gcnvapi.VolumeStateError},
@@ -1956,7 +1974,7 @@ func TestCreate_MountOptions(t *testing.T) {
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
-
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, gcnvapi.VolumeStateReady, []string{gcnvapi.VolumeStateError},
@@ -2003,7 +2021,7 @@ func TestCreate_MountOptions_NFSv4(t *testing.T) {
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
-
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, gcnvapi.VolumeStateReady, []string{gcnvapi.VolumeStateError},
@@ -2046,7 +2064,7 @@ func TestCreate_MountOptions_BothEnabled(t *testing.T) {
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
-
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, gcnvapi.VolumeStateReady, []string{gcnvapi.VolumeStateError},
@@ -2111,7 +2129,7 @@ func TestCreate_NFSVolume_DefaultMountOptions(t *testing.T) {
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
-
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, gcnvapi.VolumeStateReady, []string{gcnvapi.VolumeStateError},
@@ -2154,7 +2172,7 @@ func TestCreate_NFSVolume_VolConfigMountOptions(t *testing.T) {
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
-
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, gcnvapi.VolumeStateReady, []string{gcnvapi.VolumeStateError},
@@ -2189,7 +2207,7 @@ func TestCreate_NFSVolume_CreateFailed(t *testing.T) {
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
-
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
@@ -2223,7 +2241,7 @@ func TestCreate_NFSVolume_BelowGCNVMinimumSize(t *testing.T) {
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
-
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, gcnvapi.VolumeStateReady, []string{gcnvapi.VolumeStateError},
@@ -2268,6 +2286,7 @@ func TestCreate_NFSVolumeWithPoolLabels(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, gcnvapi.VolumeStateReady, []string{gcnvapi.VolumeStateError},
@@ -2369,6 +2388,116 @@ func TestCreate_NFSVolumeWithPoolLabels_NoMatchingCapacityPool(t *testing.T) {
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return([]*gcnvapi.CapacityPool{}).Times(1)
 
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{}).Times(1)
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.Error(t, result, "create did not fail")
+	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
+}
+
+func TestCreate_NFSVolume_ZoneSelectionSucceeds(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = gcnvapi.ServiceLevelFlex
+	driver.Config.NASType = "nfs"
+	driver.Config.SupportedTopologies = []map[string]string{
+		{"topology.kubernetes.io/region": "asia-east1", "topology.kubernetes.io/zone": "asia-east1-c"},
+	}
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err, "error occurred")
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool"]
+
+	volConfig, _, volume, createRequest := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	volConfig.RequisiteTopologies = []map[string]string{
+		{"topology.kubernetes.io/region": "asia-east1", "topology.kubernetes.io/zone": "asia-east1-a"},
+		{"topology.kubernetes.io/region": "asia-east1", "topology.kubernetes.io/zone": "asia-east1-c"},
+	}
+	volConfig.PreferredTopologies = []map[string]string{
+		{"topology.kubernetes.io/region": "asia-east1", "topology.kubernetes.io/zone": "asia-east1-c"},
+	}
+	createRequest.UnixPermissions = "0777"
+	volume.UnixPermissions = "0777"
+
+	capacityPools := getFlexServiceCapacityPoolForCreateVolume()
+	createRequest.CapacityPool = capacityPools[0].Name
+
+	volConfig.Size = "0"
+
+	createRequest.SizeBytes = int64(1073741824)
+	volume.SizeBytes = int64(1073741824)
+
+	volume.ServiceLevel = gcnvapi.ServiceLevelFlex
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		gcnvapi.ServiceLevelFlex).Return(capacityPools).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, capacityPools, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return(capacityPools).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
+
+	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, gcnvapi.VolumeStateReady, []string{gcnvapi.VolumeStateError},
+		driver.volumeCreateTimeout).Return(gcnvapi.VolumeStateReady, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.NoError(t, result, "create failed")
+	assert.Equal(t, createRequest.SizeBytes, int64(1073741824), "request size mismatch")
+	assert.Equal(t, volConfig.Size, "1073741824", "config size mismatch")
+	assert.Equal(t, volume.FullName, volConfig.InternalID, "internal ID not set on volConfig")
+}
+
+func TestCreate_NFSVolume_ZoneSelectionFails(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = gcnvapi.ServiceLevelFlex
+	driver.Config.NASType = "nfs"
+	driver.Config.SupportedTopologies = []map[string]string{
+		{"topology.kubernetes.io/region": "asia-east1", "topology.kubernetes.io/zone": "asia-east1-c"},
+	}
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err, "error occurred")
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool"]
+
+	volConfig, _, volume, createRequest := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	volConfig.RequisiteTopologies = []map[string]string{
+		{"topology.kubernetes.io/region": "asia-east1", "topology.kubernetes.io/zone": "asia-east1-a"},
+		{"topology.kubernetes.io/region": "asia-east1", "topology.kubernetes.io/zone": "asia-east1-b"},
+	}
+	volConfig.PreferredTopologies = []map[string]string{
+		{"topology.kubernetes.io/region": "asia-east1", "topology.kubernetes.io/zone": "asia-east1-a"},
+	}
+	createRequest.UnixPermissions = "0777"
+	volume.UnixPermissions = "0777"
+
+	capacityPools := getFlexServiceCapacityPoolForCreateVolume()
+	createRequest.CapacityPool = capacityPools[0].Name
+
+	volConfig.Size = "0"
+
+	createRequest.SizeBytes = int64(1073741824)
+	volume.SizeBytes = int64(1073741824)
+
+	volume.ServiceLevel = gcnvapi.ServiceLevelFlex
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		gcnvapi.ServiceLevelFlex).Return(capacityPools).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, capacityPools, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{}).Times(1)
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
 	assert.Error(t, result, "create did not fail")
@@ -2454,6 +2583,7 @@ func TestCreate_SMBVolume(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, gcnvapi.VolumeStateReady, []string{gcnvapi.VolumeStateError},
@@ -2491,6 +2621,7 @@ func TestCreate_SMBVolume_CreateFailed(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
@@ -2522,6 +2653,7 @@ func TestCreate_SMBVolume_BelowGCNVMinimumSize(t *testing.T) {
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
@@ -2558,6 +2690,7 @@ func TestCreate_NFSVolumeOnSMBPool_CreateFailed(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
@@ -2590,6 +2723,8 @@ func TestCreate_SMBVolumeOnNFSPool_CreateFailed(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
 		gcnvapi.ServiceLevelPremium).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
+
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*gcnvapi.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*gcnvapi.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)

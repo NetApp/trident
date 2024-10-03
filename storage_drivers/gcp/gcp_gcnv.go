@@ -815,6 +815,10 @@ func (d *NASStorageDriver) Create(
 
 	// Find matching capacity pools
 	cPools := d.API.CapacityPoolsForStoragePool(ctx, pool, serviceLevel)
+
+	// Filter capacity pools based on requisite topology
+	cPools = d.API.FilterCapacityPoolsOnTopology(ctx, cPools, volConfig.RequisiteTopologies, volConfig.PreferredTopologies)
+
 	if len(cPools) == 0 {
 		return fmt.Errorf("no GCNV storage pools found for Trident pool %s", pool.Name())
 	}

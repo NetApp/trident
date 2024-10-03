@@ -170,6 +170,20 @@ func (mr *MockGCNVMockRecorder) EnsureVolumeInValidCapacityPool(arg0, arg1 any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVolumeInValidCapacityPool", reflect.TypeOf((*MockGCNV)(nil).EnsureVolumeInValidCapacityPool), arg0, arg1)
 }
 
+// FilterCapacityPoolsOnTopology mocks base method.
+func (m *MockGCNV) FilterCapacityPoolsOnTopology(arg0 context.Context, arg1 []*gcnvapi.CapacityPool, arg2, arg3 []map[string]string) []*gcnvapi.CapacityPool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FilterCapacityPoolsOnTopology", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].([]*gcnvapi.CapacityPool)
+	return ret0
+}
+
+// FilterCapacityPoolsOnTopology indicates an expected call of FilterCapacityPoolsOnTopology.
+func (mr *MockGCNVMockRecorder) FilterCapacityPoolsOnTopology(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FilterCapacityPoolsOnTopology", reflect.TypeOf((*MockGCNV)(nil).FilterCapacityPoolsOnTopology), arg0, arg1, arg2, arg3)
+}
+
 // Init mocks base method.
 func (m *MockGCNV) Init(arg0 context.Context, arg1 map[string]storage.Pool) error {
 	m.ctrl.T.Helper()
