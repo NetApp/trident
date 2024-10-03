@@ -37,9 +37,9 @@ func (client *Client) ScanTargetLUN(ctx context.Context, lunID int, hosts []int)
 }
 
 func (client *Client) GetDeviceInfoForLUN(
-	ctx context.Context, lunID int, iSCSINodeName string, needFSType, isDetachCall bool,
+	ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string, needFSType bool,
 ) (*ScsiDeviceInfo, error) {
-	return client.getDeviceInfoForLUN(ctx, lunID, iSCSINodeName, needFSType, isDetachCall)
+	return client.getDeviceInfoForLUN(ctx, hostSessionMap, lunID, iSCSINodeName, needFSType)
 }
 
 func (client *Client) FindMultipathDeviceForDevice(ctx context.Context, device string) string {

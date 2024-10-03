@@ -153,7 +153,7 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
-					"iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.25").Return(map[int]int{0: 0}).Times(3)
+					"iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.25").Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(3)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
@@ -679,7 +679,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(2)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(2)
 				return mockReconcileUtils
@@ -755,7 +755,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(3)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(3)
 				return mockReconcileUtils
@@ -823,7 +823,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(4)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(4)
 				return mockReconcileUtils
@@ -891,7 +891,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(5)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(5)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return(nil, errors.New("some error"))
@@ -960,7 +960,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(6)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(6)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil)
@@ -1033,7 +1033,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(6)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(6)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
@@ -1108,7 +1108,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(6)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(6)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
@@ -1184,7 +1184,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(6)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(6)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
@@ -1260,7 +1260,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(6)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(6)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
@@ -1340,7 +1340,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(6)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(6)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
@@ -1424,7 +1424,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(6)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(6)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
@@ -1466,7 +1466,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			volumeAuthSecrets: make(map[string]string, 0),
 			assertError:       assert.NoError,
 		},
-		"failed to get file system type of  device": {
+		"failed to get file system type of device": {
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
@@ -1510,7 +1510,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(6)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(6)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
@@ -1596,7 +1596,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(6)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(6)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
@@ -1675,7 +1675,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(6)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(6)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
@@ -1753,7 +1753,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(6)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(6)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
@@ -1832,7 +1832,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(6)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(6)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
@@ -1909,7 +1909,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(6)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(6)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
@@ -1987,7 +1987,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(6)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(6)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
@@ -2066,7 +2066,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(6)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(6)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
@@ -2147,7 +2147,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(6)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(6)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
@@ -2228,7 +2228,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
 				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0}).Times(6)
+					Return(map[int]int{0: 0})
 				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
 					Times(6)
 				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
@@ -2988,10 +2988,10 @@ func TestClient_IsAlreadyAttached(t *testing.T) {
 
 func TestClient_getDeviceInfoForLUN(t *testing.T) {
 	type parameters struct {
-		lunID         int
-		iSCSINodeName string
-		needFS        bool
-		isDetachCall  bool
+		hostSessionMap map[int]int
+		lunID          int
+		iSCSINodeName  string
+		needFS         bool
 
 		getIscsiUtils      func(controller *gomock.Controller) IscsiReconcileUtils
 		getDevicesClient   func(controller *gomock.Controller) Devices
@@ -3011,10 +3011,10 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 		"no host session information present": {
 			lunID:         0,
 			iSCSINodeName: iscisNodeName,
-			isDetachCall:  false,
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), iscisNodeName).Return(nil)
+				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return(make([]string, 0))
+				mockIscsiUtils.EXPECT().GetDevicesForLUN(gomock.Any()).Return(make([]string, 0), nil)
 				return mockIscsiUtils
 			},
 			getDevicesClient: func(controller *gomock.Controller) Devices {
@@ -3027,32 +3027,11 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 			assertError:        assert.Error,
 			expectedDeviceInfo: nil,
 		},
-		"no host session information present for detach call": {
-			lunID:         0,
-			iSCSINodeName: iscisNodeName,
-			isDetachCall:  true,
-			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), iscisNodeName).Return(nil)
-				return mockIscsiUtils
-			},
-			getDevicesClient: func(controller *gomock.Controller) Devices {
-				mockDeviceClient := mock_iscsi.NewMockDevices(controller)
-				return mockDeviceClient
-			},
-			getFileSystemUtils: func() afero.Fs {
-				return afero.NewMemMapFs()
-			},
-			assertError:        assert.NoError,
-			expectedDeviceInfo: nil,
-		},
 		"error getting devices for LUN": {
 			lunID:         0,
 			iSCSINodeName: iscisNodeName,
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
-					iscisNodeName).Return(map[int]int{0: 0})
 				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
 				mockIscsiUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return(nil, errors.New("some error"))
 				return mockIscsiUtils
@@ -3072,8 +3051,6 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 			iSCSINodeName: iscisNodeName,
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
-					iscisNodeName).Return(map[int]int{0: 0})
 				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
 				mockIscsiUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return(nil, nil)
 				return mockIscsiUtils
@@ -3093,8 +3070,6 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 			iSCSINodeName: iscisNodeName,
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
-					iscisNodeName).Return(map[int]int{0: 0})
 				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
 				mockIscsiUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return([]string{deviceName}, nil)
 				return mockIscsiUtils
@@ -3108,11 +3083,10 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 			},
 			assertError: assert.NoError,
 			expectedDeviceInfo: &ScsiDeviceInfo{
-				LUN:            "0",
-				Devices:        []string{deviceName},
-				DevicePaths:    []string{devicePath},
-				IQN:            iscisNodeName,
-				HostSessionMap: map[int]int{0: 0},
+				LUN:         "0",
+				Devices:     []string{deviceName},
+				DevicePaths: []string{devicePath},
+				IQN:         iscisNodeName,
 			},
 		},
 		"error ensuring multipath device is readable": {
@@ -3121,7 +3095,6 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 			needFS:        true,
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), iscisNodeName).Return(map[int]int{0: 0})
 				mockIscsiReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
 				mockIscsiReconcileUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return([]string{deviceName}, nil)
 				return mockIscsiReconcileUtils
@@ -3146,7 +3119,6 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 			needFS:        true,
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), iscisNodeName).Return(map[int]int{0: 0})
 				mockIscsiReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
 				mockIscsiReconcileUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return([]string{deviceName}, nil)
 				return mockIscsiReconcileUtils
@@ -3167,13 +3139,12 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 			expectedDeviceInfo: nil,
 		},
 		"happy path": {
-			lunID:         0,
-			needFS:        true,
-			iSCSINodeName: iscisNodeName,
+			hostSessionMap: map[int]int{0: 0},
+			lunID:          0,
+			needFS:         true,
+			iSCSINodeName:  iscisNodeName,
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
-					iscisNodeName).Return(map[int]int{0: 0})
 				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
 				mockIscsiUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return([]string{deviceName}, nil)
 				return mockIscsiUtils
@@ -3197,7 +3168,6 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 				DevicePaths:     []string{devicePath},
 				MultipathDevice: multipathDeviceName,
 				IQN:             iscisNodeName,
-				HostSessionMap:  map[int]int{0: 0},
 				Filesystem:      config.FsExt4,
 			},
 		},
@@ -3211,10 +3181,8 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 				afero.Afero{
 					Fs: params.getFileSystemUtils(),
 				})
-			deviceInfo, err := client.getDeviceInfoForLUN(context.TODO(), params.lunID, params.iSCSINodeName,
-				params.needFS,
-				params.isDetachCall,
-			)
+			deviceInfo, err := client.getDeviceInfoForLUN(context.TODO(), params.hostSessionMap, params.lunID,
+				params.iSCSINodeName, params.needFS)
 			if params.assertError != nil {
 				params.assertError(t, err)
 			}
@@ -3376,6 +3344,7 @@ func TestClient_rescanOneLun(t *testing.T) {
 
 func TestClient_waitForMultipathDeviceForLUN(t *testing.T) {
 	type parameters struct {
+		hostSessionMap     map[int]int
 		getIscsiUtils      func(controller *gomock.Controller) IscsiReconcileUtils
 		getFileSystemUtils func() afero.Fs
 		assertError        assert.ErrorAssertionFunc
@@ -3392,7 +3361,8 @@ func TestClient_waitForMultipathDeviceForLUN(t *testing.T) {
 		"no host session mappings present": {
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), iscsiNodeName).Return(nil)
+				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return(make([]string, 0))
+				mockIscsiUtils.EXPECT().GetDevicesForLUN(gomock.Any()).Return(make([]string, 0), nil)
 				return mockIscsiUtils
 			},
 			getFileSystemUtils: func() afero.Fs {
@@ -3403,7 +3373,6 @@ func TestClient_waitForMultipathDeviceForLUN(t *testing.T) {
 		"error getting devices for LUN": {
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), iscsiNodeName).Return(map[int]int{0: 0})
 				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
 				mockIscsiUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return(nil, errors.New("some error"))
 				return mockIscsiUtils
@@ -3416,7 +3385,6 @@ func TestClient_waitForMultipathDeviceForLUN(t *testing.T) {
 		"error getting multipath device": {
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), iscsiNodeName).Return(map[int]int{0: 0})
 				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
 				mockIscsiUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return([]string{deviceName}, nil)
 				return mockIscsiUtils
@@ -3429,7 +3397,6 @@ func TestClient_waitForMultipathDeviceForLUN(t *testing.T) {
 		"happy path": {
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), iscsiNodeName).Return(map[int]int{0: 0})
 				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
 				mockIscsiUtils.EXPECT().GetDevicesForLUN([]string{devicePath}).Return([]string{deviceName}, nil)
 				return mockIscsiUtils
@@ -3449,7 +3416,7 @@ func TestClient_waitForMultipathDeviceForLUN(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			client := NewDetailed("", nil, nil, nil, nil, nil, nil, params.getIscsiUtils(ctrl), afero.Afero{Fs: params.getFileSystemUtils()})
 
-			err := client.waitForMultipathDeviceForLUN(context.TODO(), lunID, iscsiNodeName)
+			err := client.waitForMultipathDeviceForLUN(context.TODO(), params.hostSessionMap, lunID, iscsiNodeName)
 			if params.assertError != nil {
 				params.assertError(t, err)
 			}
@@ -3459,6 +3426,7 @@ func TestClient_waitForMultipathDeviceForLUN(t *testing.T) {
 
 func TestClient_waitForDeviceScan(t *testing.T) {
 	type parameters struct {
+		hostSessionMap     map[int]int
 		getIscsiUtils      func(controller *gomock.Controller) IscsiReconcileUtils
 		getCommandClient   func(controller *gomock.Controller) tridentexec.Command
 		getOsClient        func(controller *gomock.Controller) OS
@@ -3476,11 +3444,12 @@ func TestClient_waitForDeviceScan(t *testing.T) {
 		"no host session mappings present": {
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), iscsiNodeName).Return(nil)
+				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return(make([]string, 0))
 				return mockIscsiUtils
 			},
 			getCommandClient: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
+				mockCommand.EXPECT().Execute(context.TODO(), gomock.Any(), gomock.Any()).Times(6).Return(nil, nil)
 				return mockCommand
 			},
 			getOsClient: func(controller *gomock.Controller) OS {
@@ -3493,9 +3462,9 @@ func TestClient_waitForDeviceScan(t *testing.T) {
 			assertError: assert.Error,
 		},
 		"some devices present": {
+			hostSessionMap: map[int]int{0: 0},
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), iscsiNodeName).Return(map[int]int{0: 0})
 				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath1, devicePath2, devicePath3})
 				return mockIscsiUtils
 			},
@@ -3516,9 +3485,9 @@ func TestClient_waitForDeviceScan(t *testing.T) {
 			assertError: assert.NoError,
 		},
 		"all devices present": {
+			hostSessionMap: map[int]int{0: 0},
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), iscsiNodeName).Return(map[int]int{0: 0})
 				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath1, devicePath2})
 				return mockIscsiUtils
 			},
@@ -3538,9 +3507,9 @@ func TestClient_waitForDeviceScan(t *testing.T) {
 			assertError: assert.NoError,
 		},
 		"no devices present": {
+			hostSessionMap: map[int]int{0: 0},
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), iscsiNodeName).Return(map[int]int{0: 0})
 				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return(nil)
 				return mockIscsiUtils
 			},
@@ -3571,7 +3540,7 @@ func TestClient_waitForDeviceScan(t *testing.T) {
 				params.getIscsiUtils(ctrl),
 				afero.Afero{Fs: params.getFileSystemUtils()})
 
-			err := client.waitForDeviceScan(context.TODO(), lunID, iscsiNodeName)
+			err := client.waitForDeviceScan(context.TODO(), params.hostSessionMap, lunID, iscsiNodeName)
 			if params.assertError != nil {
 				params.assertError(t, err)
 			}
@@ -3669,6 +3638,7 @@ func TestClient_scanTargetLUN(t *testing.T) {
 
 func TestClient_handleInvalidSerials(t *testing.T) {
 	type parameters struct {
+		hostSessionMap map[int]int
 		expectedSerial string
 		handlerError   error
 
@@ -3697,10 +3667,10 @@ func TestClient_handleInvalidSerials(t *testing.T) {
 			assertError: assert.NoError,
 		},
 		"serial files do not exist": {
+			hostSessionMap: map[int]int{0: 0},
 			expectedSerial: vpdpg80Serial,
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).Return(map[int]int{0: 0})
 				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
 				return mockIscsiUtils
 			},
@@ -3710,10 +3680,10 @@ func TestClient_handleInvalidSerials(t *testing.T) {
 			assertError: assert.NoError,
 		},
 		"error reading serial files": {
+			hostSessionMap: map[int]int{0: 0},
 			expectedSerial: vpdpg80Serial,
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).Return(map[int]int{0: 0})
 				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
 				return mockIscsiUtils
 			},
@@ -3727,10 +3697,10 @@ func TestClient_handleInvalidSerials(t *testing.T) {
 			assertError: assert.Error,
 		},
 		"lun serial does not match expected serial": {
+			hostSessionMap: map[int]int{0: 0},
 			expectedSerial: "SYA5GZFJ8G1M905GVH7I",
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).Return(map[int]int{0: 0})
 				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
 				return mockIscsiUtils
 			},
@@ -3747,10 +3717,10 @@ func TestClient_handleInvalidSerials(t *testing.T) {
 			assertError:         assert.Error,
 		},
 		"happy path": {
+			hostSessionMap: map[int]int{0: 0},
 			expectedSerial: vpdpg80Serial,
 			getIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockIscsiUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockIscsiUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).Return(map[int]int{0: 0})
 				mockIscsiUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
 				return mockIscsiUtils
 			},
@@ -3777,7 +3747,7 @@ func TestClient_handleInvalidSerials(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			client := NewDetailed("", nil, nil, nil, nil, nil, nil, params.getIscsiUtils(ctrl), afero.Afero{Fs: params.getFileSystemUtils()})
 
-			err := client.handleInvalidSerials(context.TODO(), lunID, targetIQN, params.expectedSerial, mockHandler)
+			err := client.handleInvalidSerials(context.TODO(), params.hostSessionMap, lunID, targetIQN, params.expectedSerial, mockHandler)
 			if params.assertError != nil {
 				params.assertError(t, err)
 			}

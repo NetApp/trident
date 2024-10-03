@@ -1156,11 +1156,7 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 				},
 			},
 		}
-
-		// Inform the host about the device removal
-		if _, err = utils.PrepareDeviceForRemoval(ctx, &publishInfo, nil, true, false); err != nil {
-			Logc(ctx).Warningf("Unable to prepare device for removal, attempting to detach anyway: %v", err)
-		}
+		drivers.RemoveSCSIDeviceByPublishInfo(ctx, &publishInfo)
 
 		// Logout from the session
 		if err = d.Client.DetachVolume(ctx, v); err != nil {

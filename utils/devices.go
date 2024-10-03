@@ -387,7 +387,6 @@ func GetMountedISCSIDevices(ctx context.Context) ([]*iscsi.ScsiDeviceInfo, error
 			"devices":         md.Devices,
 			"multipathDevice": md.MultipathDevice,
 			"iqn":             md.IQN,
-			"hostSessionMap":  md.HostSessionMap,
 		}).Debug("Found mounted iSCSI device.")
 	}
 
@@ -595,7 +594,6 @@ func GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*iscsi.ScsiDev
 					IQN:             targetIQN,
 					SessionNumber:   sessionNumber,
 					CHAPInfo:        iscsiChapInfo,
-					HostSessionMap:  hostSessionMap,
 				}
 
 				devices = append(devices, device)
@@ -839,7 +837,7 @@ func verifyMultipathDevice(
 // device serial number (if present) or comparing all publications (allPublishInfos) for
 // LUN number uniqueness.
 func PrepareDeviceForRemoval(
-	ctx context.Context, publishInfo *models.VolumePublishInfo,
+	ctx context.Context, deviceInfo *iscsi.ScsiDeviceInfo, publishInfo *models.VolumePublishInfo,
 	allPublishInfos []models.VolumePublishInfo, ignoreErrors, force bool,
 ) (string, error) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
@@ -855,24 +853,9 @@ func PrepareDeviceForRemoval(
 	Logc(ctx).WithFields(fields).Debug(">>>> devices.PrepareDeviceForRemoval")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.PrepareDeviceForRemoval")
 
-	deviceInfo, err := getDeviceInfoForLUN(ctx, lunID, iSCSINodeName, false, true)
-	if err != nil {
-		Logc(ctx).WithField(
-			"lunID", lunID,
-		).WithError(err).Warn("Could not get device info for removal, skipping host removal steps.")
-		return "", err
-	}
-
-	if deviceInfo == nil {
-		Logc(ctx).WithField(
-			"lunID", lunID,
-		).Debug("No device found for removal, skipping host removal steps.")
-		return "", nil
-	}
-
 	// CSI Case
 	if publishInfo.IscsiTargetPortal != "" {
-		_, err = verifyMultipathDevice(ctx, publishInfo, allPublishInfos, deviceInfo)
+		_, err := verifyMultipathDevice(ctx, publishInfo, allPublishInfos, deviceInfo)
 		if err != nil {
 			return "", err
 		}
@@ -1180,12 +1163,40 @@ func ResizeLUKSDevice(ctx context.Context, luksDevicePath, luksPassphrase string
 	return luksDevice.Resize(ctx, luksPassphrase)
 }
 
+func GetLUKSDeviceForMultipathDevice(multipathDevice string) (string, error) {
+	const luksDeviceUUIDPrefix = "CRYPT-LUKS2"
+	const luksDeviceUUIDNameOffset = 45
+
+	dmDevice := strings.TrimSuffix(strings.TrimPrefix(multipathDevice, "/dev/"), "/")
+
+	// Get holder of mpath device
+	dirents, err := os.ReadDir(fmt.Sprintf("/sys/block/%s/holders/", dmDevice))
+	if err != nil {
+		return "", err
+	}
+	if len(dirents) != 1 {
+		return "", fmt.Errorf("%s has unexpected number of holders, expected 1", dmDevice)
+	}
+	holder := dirents[0].Name()
+
+	// Verify holder is LUKS device
+	b, err := os.ReadFile(fmt.Sprintf("/sys/block/%s/dm/uuid", holder))
+	if err != nil {
+		return "", err
+	}
+	if !strings.HasPrefix(string(b), luksDeviceUUIDPrefix) {
+		return "", fmt.Errorf("%s is not a LUKS device", holder)
+	}
+
+	return iscsi.DevMapperRoot + strings.TrimRight(string(b[luksDeviceUUIDNameOffset:]), "\n"), nil
+}
+
 // ------ TODO remove:  temporary functions to bridge the gap while we transition to the new iscsi client ------
 
-func getDeviceInfoForLUN(
-	ctx context.Context, lunID int, iSCSINodeName string, needFSType, isDetachCall bool,
+func GetDeviceInfoForLUN(
+	ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string, isDetachCall bool,
 ) (*iscsi.ScsiDeviceInfo, error) {
-	return iscsiClient.GetDeviceInfoForLUN(ctx, lunID, iSCSINodeName, needFSType, isDetachCall)
+	return iscsiClient.GetDeviceInfoForLUN(ctx, hostSessionMap, lunID, iSCSINodeName, isDetachCall)
 }
 
 func findMultipathDeviceForDevice(ctx context.Context, device string) string {

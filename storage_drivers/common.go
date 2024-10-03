@@ -16,6 +16,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	tridentmodels "github.com/netapp/trident/utils/models"
 )
 
 var ontapConfigRedactList = [...]string{
@@ -346,4 +347,25 @@ func DecodeStorageBackendPools[P StorageBackendPool](
 		backendPools = append(backendPools, backendPool)
 	}
 	return backendPools, nil
+}
+
+func RemoveSCSIDeviceByPublishInfo(ctx context.Context, publishInfo *tridentmodels.VolumePublishInfo) {
+	hostSessionMap := utils.IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, publishInfo.IscsiTargetIQN)
+	fields := LogFields{"targetIQN": publishInfo.IscsiTargetIQN}
+	if len(hostSessionMap) == 0 {
+		Logc(ctx).WithFields(fields).Error("Could not find host session for target IQN.")
+		return
+	}
+
+	deviceInfo, err := utils.GetDeviceInfoForLUN(ctx, hostSessionMap, int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN, false)
+	if err != nil {
+		Logc(ctx).WithError(err).WithFields(fields).Error("Error getting device info.")
+	} else if deviceInfo == nil {
+		Logc(ctx).WithFields(fields).Error("No device info found.")
+	} else {
+		// Inform the host about the device removal
+		if _, err := utils.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, true, false); err != nil {
+			Logc(ctx).WithError(err).WithFields(fields).Error("Error removing device.")
+		}
+	}
 }

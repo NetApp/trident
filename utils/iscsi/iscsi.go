@@ -243,8 +243,13 @@ func (client *Client) AttachVolume(
 		return mpathSize, err
 	}
 
+	hostSessionMap := client.iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, publishInfo.IscsiTargetIQN)
+	if len(hostSessionMap) == 0 {
+		return mpathSize, fmt.Errorf("no iSCSI hosts found for target %s", publishInfo.IscsiTargetIQN)
+	}
+
 	// First attempt to fix invalid serials by rescanning them
-	err = client.handleInvalidSerials(ctx, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial,
+	err = client.handleInvalidSerials(ctx, hostSessionMap, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial,
 		client.rescanOneLun)
 	if err != nil {
 		return mpathSize, err
@@ -252,14 +257,14 @@ func (client *Client) AttachVolume(
 
 	// Then attempt to fix invalid serials by purging them (to be scanned
 	// again later)
-	err = client.handleInvalidSerials(ctx, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial,
+	err = client.handleInvalidSerials(ctx, hostSessionMap, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial,
 		client.purgeOneLun)
 	if err != nil {
 		return mpathSize, err
 	}
 
 	// Scan the target and wait for the device(s) to appear
-	err = client.waitForDeviceScan(ctx, lunID, publishInfo.IscsiTargetIQN)
+	err = client.waitForDeviceScan(ctx, hostSessionMap, lunID, publishInfo.IscsiTargetIQN)
 	if err != nil {
 		Logc(ctx).Errorf("Could not find iSCSI device: %+v", err)
 		return mpathSize, err
@@ -272,21 +277,23 @@ func (client *Client) AttachVolume(
 		Logc(ctx).Error("Detected LUN serial number mismatch, attaching volume would risk data corruption, giving up")
 		return fmt.Errorf("LUN serial number mismatch, kernel has stale cached data")
 	}
-	err = client.handleInvalidSerials(ctx, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial, failHandler)
+	err = client.handleInvalidSerials(ctx, hostSessionMap, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial, failHandler)
 	if err != nil {
 		return mpathSize, err
 	}
 
 	// Wait for multipath device i.e. /dev/dm-* for the given LUN
-	err = client.waitForMultipathDeviceForLUN(ctx, lunID, publishInfo.IscsiTargetIQN)
+	err = client.waitForMultipathDeviceForLUN(ctx, hostSessionMap, lunID, publishInfo.IscsiTargetIQN)
 	if err != nil {
 		return mpathSize, err
 	}
 
 	// Lookup all the SCSI device information
-	deviceInfo, err := client.getDeviceInfoForLUN(ctx, lunID, publishInfo.IscsiTargetIQN, false, false)
+	deviceInfo, err := client.getDeviceInfoForLUN(ctx, hostSessionMap, lunID, publishInfo.IscsiTargetIQN, false)
 	if err != nil {
 		return mpathSize, fmt.Errorf("error getting iSCSI device information: %v", err)
+	} else if deviceInfo == nil {
+		return mpathSize, fmt.Errorf("could not get iSCSI device information for LUN %d", lunID)
 	}
 
 	Logc(ctx).WithFields(LogFields{
@@ -358,6 +365,9 @@ func (client *Client) AttachVolume(
 		}
 	}
 
+	// Return the device in the publish info in case the mount will be done later
+	publishInfo.DevicePath = devicePath
+
 	if isLUKSDevice {
 		luksDevice, _ := client.deviceClient.NewLUKSDevice(devicePath, name)
 		luksFormatted, err = client.deviceClient.EnsureLUKSDeviceMappedOnHost(ctx, luksDevice, name, secrets)
@@ -366,9 +376,6 @@ func (client *Client) AttachVolume(
 		}
 		devicePath = luksDevice.MappedDevicePath()
 	}
-
-	// Return the device in the publish info in case the mount will be done later
-	publishInfo.DevicePath = devicePath
 
 	if publishInfo.FilesystemType == config.FsRaw {
 		return mpathSize, nil
@@ -382,23 +389,24 @@ func (client *Client) AttachVolume(
 		if !isLUKSDevice {
 			if unformatted, err := client.deviceClient.IsDeviceUnformatted(ctx, devicePath); err != nil {
 				Logc(ctx).WithField("device",
-					devicePath).Errorf("Unable to identify if the device is formatted; err: %v", err)
+					devicePath).Errorf("Unable to identify if the device is unformatted; err: %v", err)
 				return mpathSize, err
 			} else if !unformatted {
-				Logc(ctx).WithField("device", devicePath).Errorf("Device is already formatted; err: %v", err)
-				return mpathSize, fmt.Errorf("device %v is already formatted", devicePath)
+				Logc(ctx).WithField("device", devicePath).Errorf("Device is not unformatted; err: %v", err)
+				return mpathSize, fmt.Errorf("device %v is not unformatted", devicePath)
 			}
 		} else {
 			// We can safely assume if we just luksFormatted the device, we can also add a filesystem without dataloss
 			if !luksFormatted {
 				Logc(ctx).WithField("device",
 					devicePath).Errorf("Unable to identify if the luks device is empty; err: %v", err)
-				return mpathSize, nil
+				return mpathSize, err
 			}
 		}
 
 		Logc(ctx).WithFields(LogFields{"volume": name, "fstype": publishInfo.FilesystemType}).Debug("Formatting LUN.")
-		if err = client.fileSystemClient.FormatVolume(ctx, devicePath, publishInfo.FilesystemType); err != nil {
+		err := client.fileSystemClient.FormatVolume(ctx, devicePath, publishInfo.FilesystemType)
+		if err != nil {
 			return mpathSize, fmt.Errorf("error formatting LUN %s, device %s: %v", name, deviceToUse, err)
 		}
 	} else if existingFstype != unknownFstype && existingFstype != publishInfo.FilesystemType {
@@ -532,7 +540,11 @@ func (client *Client) RescanDevices(ctx context.Context, targetIQN string, lunID
 	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.RescanDevices")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.RescanDevices")
 
-	deviceInfo, err := client.getDeviceInfoForLUN(ctx, int(lunID), targetIQN, false, false)
+	hostSessionMap := client.iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIQN)
+	if len(hostSessionMap) == 0 {
+		return fmt.Errorf("error getting iSCSI device information: no host session found")
+	}
+	deviceInfo, err := client.getDeviceInfoForLUN(ctx, hostSessionMap, int(lunID), targetIQN, false)
 	if err != nil {
 		return fmt.Errorf("error getting iSCSI device information: %s", err)
 	}
@@ -691,14 +703,13 @@ type ScsiDeviceInfo struct {
 	Filesystem      string
 	IQN             string
 	SessionNumber   int
-	HostSessionMap  map[int]int
 	CHAPInfo        models.IscsiChapInfo
 }
 
 // getDeviceInfoForLUN finds iSCSI devices using /dev/disk/by-path values.  This method should be
 // called after calling waitForDeviceScan so that the device paths are known to exist.
 func (client *Client) getDeviceInfoForLUN(
-	ctx context.Context, lunID int, iSCSINodeName string, needFSType, isDetachCall bool,
+	ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string, needFSType bool,
 ) (*ScsiDeviceInfo, error) {
 	fields := LogFields{
 		"lunID":         lunID,
@@ -707,18 +718,6 @@ func (client *Client) getDeviceInfoForLUN(
 	}
 	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.getDeviceInfoForLUN")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.getDeviceInfoForLUN")
-
-	hostSessionMap := client.iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
-
-	// During detach if hostSessionMap count is zero, we should be fine
-	if len(hostSessionMap) == 0 {
-		if isDetachCall {
-			Logc(ctx).WithFields(fields).Debug("No iSCSI hosts found for target.")
-			return nil, nil
-		} else {
-			return nil, fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
-		}
-	}
 
 	paths := client.iscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
 
@@ -771,7 +770,6 @@ func (client *Client) getDeviceInfoForLUN(
 		DevicePaths:     paths,
 		Filesystem:      fsType,
 		IQN:             iSCSINodeName,
-		HostSessionMap:  hostSessionMap,
 	}
 
 	return info, nil
@@ -836,18 +834,13 @@ func (client *Client) rescanOneLun(ctx context.Context, path string) error {
 // for the given LUN, this function waits for the associated multipath device to be present
 // first find the /dev/sd* devices assocaited with the LUN
 // Wait for the maultipath device dm-* for the /dev/sd* devices.
-func (client *Client) waitForMultipathDeviceForLUN(ctx context.Context, lunID int, iSCSINodeName string) error {
+func (client *Client) waitForMultipathDeviceForLUN(ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string) error {
 	fields := LogFields{
 		"lunID":         lunID,
 		"iSCSINodeName": iSCSINodeName,
 	}
 	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.waitForMultipathDeviceForLUN")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.waitForMultipathDeviceForLUN")
-
-	hostSessionMap := client.iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
-	if len(hostSessionMap) == 0 {
-		return fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
-	}
 
 	paths := client.iscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
 
@@ -911,7 +904,7 @@ func (client *Client) findMultipathDeviceForDevice(ctx context.Context, device s
 
 // waitForDeviceScan scans all paths to a specific LUN and waits until all
 // SCSI disk-by-path devices for that LUN are present on the host.
-func (client *Client) waitForDeviceScan(ctx context.Context, lunID int, iSCSINodeName string) error {
+func (client *Client) waitForDeviceScan(ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string) error {
 	fields := LogFields{
 		"lunID":         lunID,
 		"iSCSINodeName": iSCSINodeName,
@@ -919,12 +912,6 @@ func (client *Client) waitForDeviceScan(ctx context.Context, lunID int, iSCSINod
 	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.waitForDeviceScan")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.waitForDeviceScan")
 
-	hostSessionMap := client.iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
-	if len(hostSessionMap) == 0 {
-		return fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
-	}
-
-	Logc(ctx).WithField("hostSessionMap", hostSessionMap).Debug("Built iSCSI host/session map.")
 	hosts := make([]int, 0)
 	for hostNumber := range hostSessionMap {
 		hosts = append(hosts, hostNumber)
@@ -1048,15 +1035,14 @@ func (client *Client) scanTargetLUN(ctx context.Context, lunID int, hosts []int)
 // handleInvalidSerials checks the LUN serial number for each path of a given LUN, and
 // if it doesn't match the expected value, runs a handler function.
 func (client *Client) handleInvalidSerials(
-	ctx context.Context, lunID int, targetIqn, expectedSerial string,
-	handler func(ctx context.Context, path string) error,
+	ctx context.Context, hostSessionMap map[int]int, lunID int, targetIqn,
+	expectedSerial string, handler func(ctx context.Context, path string) error,
 ) error {
 	if "" == expectedSerial {
 		// Empty string means don't care
 		return nil
 	}
 
-	hostSessionMap := client.iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIqn)
 	paths := client.iscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
 	for _, path := range paths {
 		serial, err := client.getLunSerial(ctx, path)

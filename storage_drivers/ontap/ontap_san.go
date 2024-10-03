@@ -834,11 +834,7 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 					},
 				},
 			}
-
-			// Inform the host about the device removal
-			if _, err := utils.PrepareDeviceForRemoval(ctx, &publishInfo, nil, true, false); err != nil {
-				Logc(ctx).Error(err)
-			}
+			drivers.RemoveSCSIDeviceByPublishInfo(ctx, &publishInfo)
 		}
 	}
 

@@ -56,7 +56,7 @@ func TestNodeStageVolume(t *testing.T) {
 
 			getNodeHelper: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
-				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
 			},
 			nodeStageVolumeRequest:  request,
@@ -222,7 +222,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 
 			getNodeHelper: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
-				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
 			},
 			nodeStageVolumeRequest: badLuksEncryptionRequest,
@@ -251,7 +251,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			},
 			getNodeHelper: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
-				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
 			},
 			nodeStageVolumeRequest: chapEncryptedISCSIUserNameRequest,
@@ -269,7 +269,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			},
 			getNodeHelper: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
-				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
 			},
 			getRestClient: func() controllerAPI.TridentController {
@@ -293,7 +293,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			},
 			getNodeHelper: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
-				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
 			},
 			nodeStageVolumeRequest: chapEncryptedIscsiInitiatorSecretRequest,
@@ -311,7 +311,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			},
 			getNodeHelper: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
-				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
 			},
 			getRestClient: func() controllerAPI.TridentController {
@@ -335,7 +335,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			},
 			getNodeHelper: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
-				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
 			},
 			nodeStageVolumeRequest: chapEncryptedIscsiTargetUsernameRequest,
@@ -353,7 +353,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			},
 			getNodeHelper: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
-				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
 			},
 			getRestClient: func() controllerAPI.TridentController {
@@ -377,7 +377,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			},
 			getNodeHelper: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
-				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
 			},
 			nodeStageVolumeRequest: chapEncryptedIscsiTargetSecretRequest,
@@ -395,7 +395,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			},
 			getNodeHelper: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
-				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
 			},
 			getRestClient: func() controllerAPI.TridentController {
@@ -430,7 +430,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			},
 			getNodeHelper: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
-				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
 			},
 			getRestClient: func() controllerAPI.TridentController {
@@ -470,7 +470,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			},
 			getNodeHelper: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
-				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
 			},
 			nodeStageVolumeRequest: request,
@@ -488,7 +488,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			},
 			getNodeHelper: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
-				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
 			},
 			nodeStageVolumeRequest: request,
@@ -508,7 +508,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			},
 			getNodeHelper: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
-				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
 			},
 			nodeStageVolumeRequest: request,
@@ -528,6 +528,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 
 			getNodeHelper: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("some error"))
 				return mockNodeHelper
 			},
@@ -545,6 +546,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 
 			getNodeHelper: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("some error"))
 				return mockNodeHelper
 			},

@@ -55,6 +55,7 @@ var (
 
 	betweenAttachAndLUKSPassphrase = fiji.Register("betweenAttachAndLUKSPassphrase", "node_server")
 	duringIscsiLogout              = fiji.Register("duringIscsiLogout", "node_server")
+	afterInitialTrackingInfoWrite  = fiji.Register("afterInitialTrackingInfoWrite", "node_server")
 )
 
 func attemptLock(ctx context.Context, lockContext string, lockTimeout time.Duration) bool {
@@ -1113,6 +1114,23 @@ func (p *Plugin) nodeStageISCSIVolume(
 		return err
 	}
 
+	volTrackingInfo := &models.VolumeTrackingInfo{
+		VolumePublishInfo: *publishInfo,
+		StagingTargetPath: stagingTargetPath,
+		PublishedPaths:    map[string]struct{}{},
+	}
+	if err := p.nodeHelper.WriteTrackingInfo(ctx, volumeId, volTrackingInfo); err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"volumeID":          volumeId,
+			"stagingTargetPath": stagingTargetPath,
+		}).WithError(err).Error("Could not write tracking file.")
+		return err
+	}
+
+	if err := afterInitialTrackingInfoWrite.Inject(); err != nil {
+		return err
+	}
+
 	// In the case of a failed CSI NodeStageVolume call, CSI node clients may call NodeStageVolume or NodeUnstageVolume.
 	// To ensure Trident can handle a subsequent CSI NodeUnstageVolume call, Trident always writes a tracking file.
 	// This should result in Trident having all it needs to for CSI NodeUnstageVolume should an attachment fail.
@@ -1150,10 +1168,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 		}
 
 		var luksDevice models.LUKSDeviceInterface
-		luksDevice, err = utils.NewLUKSDeviceFromMappingPath(
-			ctx, publishInfo.DevicePath,
-			req.VolumeContext["internalName"],
-		)
+		luksDevice, err = utils.NewLUKSDevice(publishInfo.DevicePath, req.VolumeContext["internalName"])
 		if err != nil {
 			return err
 		}
@@ -1198,8 +1213,7 @@ func (p *Plugin) ensureAttachISCSIVolume(
 
 	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
 	if mpathSize, err = p.iscsi.AttachVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint,
-		publishInfo,
-		req.GetSecrets(), attachTimeout); err != nil {
+		publishInfo, req.GetSecrets(), attachTimeout); err != nil {
 		// Did we fail to log in?
 		if errors.IsAuthError(err) {
 			// Update CHAP info from the controller and try one more time.
@@ -1241,6 +1255,21 @@ func (p *Plugin) updateChapInfoFromController(
 func (p *Plugin) nodeUnstageISCSIVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *models.VolumePublishInfo, force bool,
 ) error {
+	hostSessionMap := iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, publishInfo.IscsiTargetIQN)
+	if len(hostSessionMap) == 0 {
+		Logc(ctx).Debug("No host sessions found, nothing to do.")
+		return nil
+	}
+	deviceInfo, err := utils.GetDeviceInfoForLUN(ctx, hostSessionMap, int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN, false)
+	if err != nil {
+		return fmt.Errorf("could not get device info: %v", err)
+	}
+
+	if deviceInfo == nil {
+		Logc(ctx).Debug("Could not find devices, nothing to do.")
+		return nil
+	}
+
 	// Remove Portal/LUN entries in self-healing map.
 	utils.RemoveLUNFromSessions(ctx, publishInfo, &publishedISCSISessions)
 
@@ -1248,56 +1277,40 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	if utils.ParseBool(publishInfo.LUKSEncryption) {
 		fields := LogFields{"luksDevicePath": publishInfo.DevicePath, "lunID": publishInfo.IscsiLunNumber}
 
-		// Before closing the LUKS device, get the underlying mapper device from cryptsetup.
-		mapperPath, err := utils.GetUnderlyingDevicePathForLUKSDevice(ctx, publishInfo.DevicePath)
+		luksMapperPath, err = utils.GetLUKSDeviceForMultipathDevice(deviceInfo.MultipathDevice)
 		if err != nil {
-			// No need to return an error
-			Logc(ctx).WithFields(fields).WithError(err).Error("Could not determine underlying device for LUKS.")
+			return err
 		}
-		fields["mapperPath"] = mapperPath
 
-		err = utils.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, publishInfo.DevicePath)
+		err = utils.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath)
 		if err != nil {
 			if errors.IsMaxWaitExceededError(err) {
-				Logc(ctx).WithFields(LogFields{
-					"devicePath": publishInfo.DevicePath,
-					"lun":        publishInfo.IscsiLunNumber,
-					"err":        err,
-				}).Debug("LUKS close wait time exceeded, continuing with device removal.")
+				Logc(ctx).WithFields(fields).WithError(err).
+					Debug("LUKS close wait time exceeded, continuing with device removal.")
 			} else {
+				Logc(ctx).WithFields(fields).WithError(err).Error("Failed to close LUKS device.")
 				return err
 			}
 		}
 
-		// Get the underlying device mapper device for the block device used by LUKS.
-		dmDevicePath, err := utils.GetDMDeviceForMapperPath(ctx, mapperPath)
-		if err != nil {
-			Logc(ctx).WithFields(fields).WithError(err).Error("Failed to determine dm device from device mapper.")
+		// Set device path to dm device to correctly verify legacy volumes
+		if strings.Contains(publishInfo.DevicePath, "luks") {
+			publishInfo.DevicePath = deviceInfo.MultipathDevice
 		}
-
-		luksMapperPath = publishInfo.DevicePath
-		// Save device mapper path to publishInfo for the subsequent removal steps.
-		publishInfo.DevicePath = dmDevicePath
 	}
 
 	// Delete the device from the host.
-	unmappedMpathDevice, err := utils.PrepareDeviceForRemoval(ctx, publishInfo, nil, p.unsafeDetach, force)
+	unmappedMpathDevice, err := utils.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, p.unsafeDetach, force)
 	if err != nil {
 		if errors.IsISCSISameLunNumberError(err) {
 			// There is a need to pass all the publish infos this time
-			unmappedMpathDevice, err = utils.PrepareDeviceForRemoval(ctx, publishInfo, p.readAllTrackingFiles(ctx),
+			unmappedMpathDevice, err = utils.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, p.readAllTrackingFiles(ctx),
 				p.unsafeDetach, force)
 		}
 
 		if err != nil && !p.unsafeDetach {
 			return status.Error(codes.Internal, err.Error())
 		}
-	}
-
-	// Get map of hosts and sessions for given Target IQN.
-	hostSessionMap := iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, publishInfo.IscsiTargetIQN)
-	if len(hostSessionMap) == 0 {
-		Logc(ctx).Warnf("no iSCSI hosts found for target %s", publishInfo.IscsiTargetIQN)
 	}
 
 	// Logout of the iSCSI session if appropriate for each applicable host
@@ -1322,7 +1335,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	if logout {
-		Logc(ctx).Debug("Safe to log out")
+		Logc(ctx).Debug("Safe to log out.")
 
 		// Remove portal entries from the self-healing map.
 		utils.RemovePortalsFromSession(ctx, publishInfo, &publishedISCSISessions)
@@ -1433,10 +1446,17 @@ func (p *Plugin) nodePublishISCSIVolume(
 		publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "ro", ",")
 	}
 
+	devicePath := publishInfo.DevicePath
 	if utils.ParseBool(publishInfo.LUKSEncryption) {
 		// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
-		luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
-			req.VolumeContext["internalName"])
+		var luksDevice *utils.LUKSDevice
+		var err error
+		if strings.Contains(devicePath, "luks") {
+			// Supports legacy volumes that store the LUKS device path
+			luksDevice, err = utils.NewLUKSDeviceFromMappingPath(ctx, devicePath, req.VolumeContext["internalName"])
+		} else {
+			luksDevice, err = utils.NewLUKSDevice(publishInfo.DevicePath, req.VolumeContext["internalName"])
+		}
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -1444,8 +1464,10 @@ func (p *Plugin) nodePublishISCSIVolume(
 		if err != nil {
 			Logc(ctx).WithError(err).Error("Failed to ensure current LUKS passphrase.")
 		}
-	}
 
+		// Mount LUKS device instead of mpath.
+		devicePath = luksDevice.MappedDevicePath()
+	}
 	isRawBlock := publishInfo.FilesystemType == tridentconfig.FsRaw
 	if isRawBlock {
 
@@ -1456,13 +1478,13 @@ func (p *Plugin) nodePublishISCSIVolume(
 		}
 
 		// Place the block device at the target path for the raw-block.
-		err = utils.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, true)
+		err = utils.MountDevice(ctx, devicePath, req.TargetPath, publishInfo.MountOptions, true)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "unable to bind mount raw device; %s", err)
 		}
 	} else {
 		// Mount the device.
-		err = utils.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, false)
+		err = utils.MountDevice(ctx, devicePath, req.TargetPath, publishInfo.MountOptions, false)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "unable to mount device; %s", err)
 		}
