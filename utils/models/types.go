@@ -14,6 +14,7 @@ import (
 	"github.com/mitchellh/copystructure"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -456,7 +457,7 @@ func (l *LUNs) IdentifyMissingLUNs(m LUNs) []int32 {
 	return luns
 }
 
-// VolumeID returns volume ID associated with LUN
+// VolumeID returns volume ID associated with a LUN.
 func (l *LUNs) VolumeID(x int32) (string, error) {
 	if volId, ok := l.Info[x]; ok {
 		return volId, nil
@@ -781,6 +782,30 @@ func (p *ISCSISessions) VolumeIDForPortal(portal string) (string, error) {
 	return "", fmt.Errorf("no volume ID found for the portal: %v", portal)
 }
 
+// VolumeIDForPortalAndLUN to get any valid volume ID behind a given portal.
+func (p *ISCSISessions) VolumeIDForPortalAndLUN(portal string, lunID int32) (string, error) {
+	if portal == "" {
+		return "", fmt.Errorf("empty portal '%s' specified", portal)
+	} else if lunID < 0 {
+		return "", fmt.Errorf("invalid lunID '%v' specified", lunID)
+	}
+
+	iSCSISessionData, err := p.ISCSISessionData(portal)
+	if err != nil {
+		return "", fmt.Errorf("unable to get volume ID for portal '%s' in mapping; %v", portal, err)
+	} else if iSCSISessionData == nil {
+		return "", fmt.Errorf("failed to get volume ID; portal & LUN info not set for portal '%s'", portal)
+	}
+
+	volumeID, err := iSCSISessionData.LUNs.VolumeID(lunID)
+	if err != nil {
+		// Published sessions should always have a Volume ID.
+		return "", fmt.Errorf("no volume ID for lun ID: %v; %w", lunID, err)
+	}
+
+	return volumeID, nil
+}
+
 // ResetPortalRemediationValue resets remediation information associated with the portal
 func (p *ISCSISessions) ResetPortalRemediationValue(portal string) error {
 	iSCSISessionData, err := p.ISCSISessionData(portal)
@@ -816,33 +841,36 @@ func (p *ISCSISessions) ResetAllRemediationValues() error {
 	return nil
 }
 
-func (p *ISCSISessions) GeneratePublishInfo(portal string) (VolumePublishInfo, error) {
-	var publishInfo VolumePublishInfo
-
+func (p *ISCSISessions) GeneratePublishInfo(portal string) (*VolumePublishInfo, error) {
 	iSCSISessionData, err := p.ISCSISessionData(portal)
 	if err != nil {
-		return publishInfo, fmt.Errorf("unable to generate publish info for portal '%v' in mapping; %v", portal, err)
+		return nil, fmt.Errorf("unable to generate publish info for portal '%v' in mapping; %v", portal, err)
 	} else if iSCSISessionData == nil {
-		return publishInfo, fmt.Errorf("failed to generate publish info; portal & LUN info not set for portal '%v'",
+		return nil, fmt.Errorf("failed to generate publish info; portal & LUN info not set for portal '%v'",
 			portal)
 	}
 
 	// Ensure current portal information has target IQN
 	if !iSCSISessionData.PortalInfo.HasTargetIQN() {
-		return publishInfo, fmt.Errorf("cannot generate publish info; portal '%v' is missing target IQN", portal)
+		return nil, fmt.Errorf("cannot generate publish info; portal '%v' is missing target IQN", portal)
 	}
 
-	publishInfo = VolumePublishInfo{
+	var lunID int32
+	sessionLUNs := iSCSISessionData.LUNs.AllLUNs()
+	if len(sessionLUNs) > 0 {
+		lunID = sessionLUNs[crypto.GetRandomNumber(len(sessionLUNs))]
+	}
+
+	return &VolumePublishInfo{
 		VolumeAccessInfo: VolumeAccessInfo{
 			IscsiAccessInfo: IscsiAccessInfo{
+				IscsiLunNumber:    lunID,
 				IscsiTargetIQN:    iSCSISessionData.PortalInfo.ISCSITargetIQN,
 				IscsiChapInfo:     iSCSISessionData.PortalInfo.Credentials,
 				IscsiTargetPortal: portal,
 			},
 		},
-	}
-
-	return publishInfo, nil
+	}, nil
 }
 
 // String prints values of the map

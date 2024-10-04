@@ -570,10 +570,12 @@ func TestISCSISessions_RemoveLUNFromPortal(t *testing.T) {
 
 	iSCSISessionNotEmpty.Info[portal] = &ISCSISessionData{
 		PortalInfo: portalInfo,
-		LUNs: LUNs{Info: map[int32]string{
-			1: "volID-1",
-			2: "volID-2",
-		}},
+		LUNs: LUNs{
+			Info: map[int32]string{
+				1: "volID-1",
+				2: "volID-2",
+			},
+		},
 	}
 
 	// Remove LUN from empty Sessions
@@ -760,73 +762,47 @@ func TestISCSISessions_LUNsForPortal(t *testing.T) {
 	assert.True(t, containsAll, "expected LUNs to be equal")
 }
 
-func TestISCSISessions_VolumeIDForPortal(t *testing.T) {
-	var iSCSISessionsEmpty, iSCSISessionsWithJustPortal ISCSISessions
-	iSCSISessionNotEmpty, _, _, _, portal := helperISCSISessionsCreateInputs()
+func TestISCSISessions_VolumeIDForPortalAndLUN(t *testing.T) {
+	t.Run("with empty portal specified", func(t *testing.T) {
+		sessions := ISCSISessions{}
+		id, err := sessions.VolumeIDForPortalAndLUN("", 0)
+		assert.Error(t, err)
+		assert.Empty(t, id)
+	})
 
-	iSCSISessionsWithJustPortal = ISCSISessions{
-		Info: map[string]*ISCSISessionData{
-			"5.6.7.8":    nil,
-			"9.10.11.12": {},
-		},
-	}
+	t.Run("with negative LUN ID specified", func(t *testing.T) {
+		sessions := ISCSISessions{}
+		id, err := sessions.VolumeIDForPortalAndLUN("non-empty", -1)
+		assert.Error(t, err)
+		assert.Empty(t, id)
+	})
 
-	iSCSISessionsWithStrangeLUNs := ISCSISessions{
-		Info: map[string]*ISCSISessionData{
-			"1.2.3.4": {
-				LUNs: LUNs{
-					Info: nil,
-				},
-			},
-			"5.6.7.8": {
-				LUNs: LUNs{
-					Info: map[int32]string{},
-				},
-			},
-			"9.10.11.12": {
-				LUNs: LUNs{
-					Info: map[int32]string{
-						1: "",
-						2: "",
-						3: "",
-					},
-				},
-			},
-		},
-	}
+	t.Run("with non-empty iSCSI sessions but invalid portal", func(t *testing.T) {
+		iscsiSession, _, _, _, _ := helperISCSISessionsCreateInputs()
+		id, err := iscsiSession.VolumeIDForPortalAndLUN("-.-.-.-", 0)
+		assert.Error(t, err)
+		assert.Empty(t, id)
+	})
 
-	// Get VolumeIDForPortal from empty Sessions
-	volID, err := iSCSISessionsEmpty.VolumeIDForPortal(portal)
-	assert.NotNil(t, err, "expected error when getting VolumeIDForPortal")
+	t.Run("with non-empty iSCSI sessions but no volume ID found for lun ID", func(t *testing.T) {
+		iscsiSession, _, _, _, portal := helperISCSISessionsCreateInputs()
+		// lun ID "100" is not present in iscsiSession.
+		id, err := iscsiSession.VolumeIDForPortalAndLUN(portal, 100)
+		assert.Error(t, err)
+		assert.Empty(t, id)
+	})
 
-	// Get VolumeIDForPortal for Portal with nil SessionData
-	volID, err = iSCSISessionsWithJustPortal.VolumeIDForPortal("5.6.7.8")
-	assert.NotNil(t, err, "expected error when getting VolumeIDForPortal")
+	t.Run("with non-empty iSCSI sessions and volume ID found lun ID", func(t *testing.T) {
+		iscsiSession, _, _, luns, portal := helperISCSISessionsCreateInputs()
+		// lun ID "0" is present in iscsiSession.
+		id, err := iscsiSession.VolumeIDForPortalAndLUN(portal, 0)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, id)
 
-	// Get VolumeIDForPortal for Portal with empty SessionData
-	volID, err = iSCSISessionsWithJustPortal.VolumeIDForPortal("9.10.11.12")
-	assert.NotNil(t, err, "expected error when getting VolumeIDForPortal")
-
-	// Get VolumeIDForPortal for non existent portal
-	volID, err = iSCSISessionsWithJustPortal.VolumeIDForPortal("9.10.11.12")
-	assert.NotNil(t, err, "expected error when getting VolumeIDForPortal")
-
-	// Get VolumeIDForPortal for portal with nil LUNInfo
-	volID, err = iSCSISessionsWithStrangeLUNs.VolumeIDForPortal("1.2.3.4")
-	assert.NotNil(t, err, "expected error when getting VolumeIDForPortal")
-
-	// Get VolumeIDForPortal for portal with empty LUNInfo
-	volID, err = iSCSISessionsWithStrangeLUNs.VolumeIDForPortal("5.6.7.8")
-	assert.NotNil(t, err, "expected error when getting VolumeIDForPortal")
-
-	// Get VolumeIDForPortal for portal with empty Volume ID
-	volID, err = iSCSISessionsWithStrangeLUNs.VolumeIDForPortal("9.10.11.12")
-	assert.NotNil(t, err, "expected error when getting VolumeIDForPortal")
-
-	// Get VolumeIDForPortal for existing portal with a valid SessionData
-	volID, err = iSCSISessionNotEmpty.VolumeIDForPortal(portal)
-	assert.Nil(t, err, "expected no error when getting VolumeIDForPortal")
-	assert.NotEmpty(t, volID, "expected volID to be NOT empty")
+		expectedID, err := luns.VolumeID(int32(0))
+		assert.NoError(t, err)
+		assert.Equal(t, expectedID, id)
+	})
 }
 
 func TestISCSISessions_ResetPortalRemediationValue(t *testing.T) {
@@ -924,7 +900,7 @@ func TestISCSISessions_GeneratePublishInfo(t *testing.T) {
 	// GeneratePublishInfo for existing portal with a valid SessionData
 	publishInfo, err = iSCSISessionNotEmpty.GeneratePublishInfo(portal)
 	assert.Nil(t, err, "expected no error when generating PublishInfo")
-	assert.NotEmpty(t, publishInfo, "expected PublishInfo to be NOT empty")
+	assert.NotNil(t, publishInfo, "expected PublishInfo to be NOT empty")
 }
 
 func TestISCSISessions_StringAndGoString(t *testing.T) {

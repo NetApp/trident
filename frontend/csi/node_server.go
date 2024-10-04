@@ -35,6 +35,7 @@ const (
 	lockID                          = "csi_node_server"
 	AttachISCSIVolumeTimeoutShort   = 20 * time.Second
 	iSCSINodeUnstageMaxDuration     = 15 * time.Second
+	iSCSILoginTimeout               = 10 * time.Second
 	iSCSISelfHealingLockContext     = "ISCSISelfHealingThread"
 	nvmeSelfHealingLockContext      = "NVMeSelfHealingThread"
 	defaultNodeReconciliationPeriod = 1 * time.Minute
@@ -1776,21 +1777,14 @@ func (p *Plugin) updateNodePublicationState(ctx context.Context, nodeState model
 // selfHealingRectifySession rectifies a session which has been identified as ghost session.
 // If it is determined that re-login is required, perform re login to the sessions and then scan for all the LUNs.
 func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, action models.ISCSIAction) error {
-	var err error
-	var volumeID string
-	var publishInfo models.VolumePublishInfo
-	iSCSILoginTimeout := 10 * time.Second
-
-	if portal == "" {
-		return fmt.Errorf("portal value is empty")
-	}
 	Logc(ctx).WithFields(LogFields{
 		"portal": portal,
 		"action": action,
 	}).Debug("ISCSI self-healing rectify session is invoked.")
 
-	if publishInfo, err = publishedISCSISessions.GeneratePublishInfo(portal); err != nil {
-		return err
+	publishInfo, err := publishedISCSISessions.GeneratePublishInfo(portal)
+	if err != nil {
+		return fmt.Errorf("failed to get publish info for session on portal '%s'; %v", portal, err)
 	}
 	lunID, targetIQN := publishInfo.IscsiLunNumber, publishInfo.IscsiTargetIQN
 
@@ -1808,20 +1802,19 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 		// filesystem related operations.
 		publishInfo.FilesystemType = tridentconfig.FsRaw
 
-		if volumeID, err = publishedISCSISessions.VolumeIDForPortal(portal); err != nil {
-			return err
+		volumeID, err := publishedISCSISessions.VolumeIDForPortalAndLUN(portal, lunID)
+		if err != nil {
+			return fmt.Errorf("failed to get volume ID for lun ID; %v", err)
 		}
-		volContext := map[string]string{"internalName": volumeID}
 
 		req := &csi.NodeStageVolumeRequest{
 			VolumeId:      volumeID,
-			VolumeContext: volContext,
+			VolumeContext: map[string]string{"internalName": volumeID},
 			Secrets:       map[string]string{},
 		}
 
 		publishedCHAPCredentials := publishInfo.IscsiChapInfo
-
-		if _, err = p.ensureAttachISCSIVolume(ctx, req, "", &publishInfo, iSCSILoginTimeout); err != nil {
+		if _, err = p.ensureAttachISCSIVolume(ctx, req, "", publishInfo, iSCSILoginTimeout); err != nil {
 			return fmt.Errorf("failed to login to the target")
 		}
 
