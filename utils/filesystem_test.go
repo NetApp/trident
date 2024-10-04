@@ -3,12 +3,16 @@ package utils
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
+	"github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	"github.com/netapp/trident/utils/errors"
+	execCmd "github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -179,4 +183,155 @@ func TestDeleteFile_FailsOnReadOnlyFilesystem(t *testing.T) {
 
 	_, err = DeleteFile(context.Background(), "foo.json", "")
 	assert.Error(t, err, "expected an error deleting a file on a read-only filesystem")
+}
+
+func TestFormatVolume(t *testing.T) {
+	ctx := ctx()
+	mockCtrl := gomock.NewController(t)
+	mockexec := mock_exec.NewMockCommand(mockCtrl)
+
+	tempDevicePath := "/dev/dm-7"
+	tempFormatOptions := fmt.Sprintf("-F%s-b 4096%s-T stride=16", FormatOptionsSeparator, FormatOptionsSeparator)
+	tempFailureError := "failed"
+
+	ext4Cmd := "mkfs.ext4"
+	ext3Cmd := "mkfs.ext3"
+	xfsCmd := "mkfs.xfs"
+
+	defer func(previousCommand execCmd.Command) {
+		command = previousCommand
+	}(command)
+
+	command = mockexec
+
+	tests := []struct {
+		message       string
+		device        string
+		fstype        string
+		formatOptions string
+		mockSetup     func()
+		isError       bool
+		stdErrOutput  []byte
+	}{
+		{
+			"ext4 / no error / no format options",
+			tempDevicePath,
+			fsExt4,
+			"",
+			func() {
+				mockexec.EXPECT().Execute(gomock.Any(), ext4Cmd, gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+			},
+			false,
+			[]byte(nil),
+		},
+		{
+			"ext4 / no error / format options",
+			tempDevicePath,
+			fsExt4,
+			tempFormatOptions,
+			func() {
+				mockexec.EXPECT().Execute(gomock.Any(), ext4Cmd, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+			},
+			false,
+			[]byte(nil),
+		},
+		{
+			"ext4 / error",
+			tempDevicePath,
+			fsExt4,
+			"",
+			func() {
+				mockexec.EXPECT().Execute(gomock.Any(), ext4Cmd, gomock.Any(), gomock.Any()).Return([]byte(tempFailureError), fmt.Errorf("exit status: 1")).Times(1)
+			},
+			true,
+			[]byte(fmt.Sprintf("error formatting device %v: %v", tempDevicePath, tempFailureError)),
+		},
+		{
+			"ext3 / no error / no format options",
+			tempDevicePath,
+			fsExt3,
+			"",
+			func() {
+				mockexec.EXPECT().Execute(gomock.Any(), ext3Cmd, gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+			},
+			false,
+			[]byte(nil),
+		},
+		{
+			"ext3 / no error / format options",
+			tempDevicePath,
+			fsExt3,
+			tempFormatOptions,
+			func() {
+				mockexec.EXPECT().Execute(gomock.Any(), ext3Cmd, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+			},
+			false,
+			[]byte(nil),
+		},
+		{
+			"ext3 / error",
+			tempDevicePath,
+			fsExt3,
+			"",
+			func() {
+				mockexec.EXPECT().Execute(gomock.Any(), ext3Cmd, gomock.Any(), gomock.Any()).Return([]byte(tempFailureError), fmt.Errorf("exit status: 1")).Times(1)
+			},
+			true,
+			[]byte(fmt.Sprintf("error formatting device %v: %v", tempDevicePath, tempFailureError)),
+		},
+		{
+			"xfs / no error / no format options",
+			tempDevicePath,
+			fsXfs,
+			"",
+			func() {
+				mockexec.EXPECT().Execute(gomock.Any(), xfsCmd, gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+			},
+			false,
+			[]byte(nil),
+		},
+		{
+			"xfs / no error / format options",
+			tempDevicePath,
+			fsXfs,
+			tempFormatOptions,
+			func() {
+				mockexec.EXPECT().Execute(gomock.Any(), xfsCmd, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+			},
+			false,
+			[]byte(nil),
+		},
+		{
+			"xfs / error",
+			tempDevicePath,
+			fsXfs,
+			"",
+			func() {
+				mockexec.EXPECT().Execute(gomock.Any(), xfsCmd, gomock.Any(), gomock.Any()).Return([]byte(tempFailureError), fmt.Errorf("exit status: 1")).Times(1)
+			},
+			true,
+			[]byte(fmt.Sprintf("error formatting device %v: %v", tempDevicePath, tempFailureError)),
+		},
+		{
+			"unsupported fs / error",
+			tempDevicePath,
+			"unsupported",
+			"",
+			func() {},
+			true,
+			[]byte(fmt.Sprintf("unsupported file system type: %s", "unsupported")),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.message, func(t *testing.T) {
+			tt.mockSetup()
+			err := formatVolume(ctx, tt.device, tt.fstype, tt.formatOptions)
+			if !tt.isError {
+				assert.NoError(t, err)
+			} else {
+				assert.Error(t, err)
+			}
+		})
+	}
 }

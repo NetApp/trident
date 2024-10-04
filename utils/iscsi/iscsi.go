@@ -99,7 +99,7 @@ type Devices interface {
 }
 
 type FileSystem interface {
-	FormatVolume(ctx context.Context, device, fstype string) error
+	FormatVolume(ctx context.Context, device, fstype, formatOptions string) error
 	RepairVolume(ctx context.Context, device, fstype string)
 }
 
@@ -405,8 +405,7 @@ func (client *Client) AttachVolume(
 		}
 
 		Logc(ctx).WithFields(LogFields{"volume": name, "fstype": publishInfo.FilesystemType}).Debug("Formatting LUN.")
-		err := client.fileSystemClient.FormatVolume(ctx, devicePath, publishInfo.FilesystemType)
-		if err != nil {
+		if err = client.fileSystemClient.FormatVolume(ctx, devicePath, publishInfo.FilesystemType, publishInfo.FormatOptions); err != nil {
 			return mpathSize, fmt.Errorf("error formatting LUN %s, device %s: %v", name, deviceToUse, err)
 		}
 	} else if existingFstype != unknownFstype && existingFstype != publishInfo.FilesystemType {

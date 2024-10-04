@@ -387,6 +387,7 @@ func (p *Plugin) ControllerPublishVolume(
 	}
 
 	publishInfo["mountOptions"] = volumePublishInfo.MountOptions
+	publishInfo["formatOptions"] = volumePublishInfo.FormatOptions
 	publishInfo["filesystemType"] = volumePublishInfo.FilesystemType
 	switch volume.Config.Protocol {
 	case tridentconfig.File:

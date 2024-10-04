@@ -208,6 +208,7 @@ type OntapStorageDriverConfigDefaults struct {
 	TieringPolicy     string `json:"tieringPolicy"`
 	QosPolicy         string `json:"qosPolicy"`
 	AdaptiveQosPolicy string `json:"adaptiveQosPolicy"`
+	FormatOptions     string `json:"formatOptions"`
 	CommonStorageDriverConfigDefaults
 }
 

@@ -327,6 +327,7 @@ func (d *SANStorageDriver) Create(
 		securityStyle     = utils.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
 		encryption        = utils.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
 		tieringPolicy     = utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+		formatOptions     = utils.GetV(opts, "formatOptions", storagePool.InternalAttributes()[FormatOptions])
 		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
 		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
 		luksEncryption    = storagePool.InternalAttributes()[LUKSEncryption]
@@ -400,6 +401,7 @@ func (d *SANStorageDriver) Create(
 	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
 	volConfig.LUKSEncryption = luksEncryption
 	volConfig.FileSystem = fstype
+	volConfig.FormatOptions = formatOptions
 
 	Logc(ctx).WithFields(LogFields{
 		"name":              name,
@@ -416,6 +418,7 @@ func (d *SANStorageDriver) Create(
 		"encryption":        utils.GetPrintableBoolPtrValue(enableEncryption),
 		"qosPolicy":         qosPolicy,
 		"adaptiveQosPolicy": adaptiveQosPolicy,
+		"formatOptions":     formatOptions,
 	}).Debug("Creating Flexvol.")
 
 	createErrors := make([]error, 0)
@@ -521,7 +524,7 @@ func (d *SANStorageDriver) Create(
 			// move on to the next pool.
 			// Save the context, fstype, and LUKS value in LUN comment
 			err = d.API.LunSetAttribute(ctx, lunPath, LUNAttributeFSType, fstype, string(d.Config.DriverContext),
-				luksEncryption)
+				luksEncryption, formatOptions)
 			if err != nil {
 
 				errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error saving file system type for LUN %s: %v",

@@ -24,6 +24,7 @@ type VolumeAccessInfo struct {
 	NfsAccessInfo
 	SMBAccessInfo
 	MountOptions       string `json:"mountOptions,omitempty"`
+	FormatOptions      string `json:"formatOptions,omitempty"`
 	PublishEnforcement bool   `json:"publishEnforcement,omitempty"`
 	ReadOnly           bool   `json:"readOnly,omitempty"`
 	// The access mode values are defined by CSI

@@ -322,7 +322,7 @@ func NVMeMountVolume(ctx context.Context, name, mountpoint string, publishInfo *
 			return fmt.Errorf("device %v is not unformatted", devicePath)
 		}
 		Logc(ctx).WithFields(LogFields{"volume": name, "fstype": publishInfo.FilesystemType}).Debug("Formatting LUN.")
-		err := formatVolume(ctx, devicePath, publishInfo.FilesystemType)
+		err := formatVolume(ctx, devicePath, publishInfo.FilesystemType, publishInfo.FormatOptions)
 		if err != nil {
 			return fmt.Errorf("error formatting Namespace %s, device %s: %v", name, devicePath, err)
 		}

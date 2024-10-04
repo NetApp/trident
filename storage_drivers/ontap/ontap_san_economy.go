@@ -474,6 +474,7 @@ func (d *SANEconomyStorageDriver) Create(
 		securityStyle     = utils.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
 		encryption        = utils.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
 		tieringPolicy     = utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+		formatOptions     = utils.GetV(opts, "formatOptions", storagePool.InternalAttributes()[FormatOptions])
 		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
 		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
 		luksEncryption    = storagePool.InternalAttributes()[LUKSEncryption]
@@ -531,6 +532,7 @@ func (d *SANEconomyStorageDriver) Create(
 	volConfig.QosPolicy = qosPolicy
 	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
 	volConfig.LUKSEncryption = luksEncryption
+	volConfig.FormatOptions = formatOptions
 
 	createErrors := make([]error, 0)
 	physicalPoolNames := make([]string, 0)
@@ -662,7 +664,7 @@ func (d *SANEconomyStorageDriver) Create(
 
 		// Save the fstype in a LUN attribute so we know what to do in Attach
 		err = d.API.LunSetAttribute(ctx, lunPathEco, LUNAttributeFSType, fstype, string(d.Config.DriverContext),
-			luksEncryption)
+			luksEncryption, formatOptions)
 		if err != nil {
 
 			errMessage := fmt.Sprintf(

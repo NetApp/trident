@@ -62,8 +62,8 @@ func NewFilesystemClient() FilesystemClient {
 	return FilesystemClient{}
 }
 
-func (c FilesystemClient) FormatVolume(ctx context.Context, device, fstype string) error {
-	return formatVolume(ctx, device, fstype)
+func (c FilesystemClient) FormatVolume(ctx context.Context, device, fstype, options string) error {
+	return formatVolume(ctx, device, fstype, options)
 }
 
 func (c FilesystemClient) RepairVolume(ctx context.Context, device, fstype string) {

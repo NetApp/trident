@@ -33,6 +33,7 @@ type VolumeConfig struct {
 	AccessInfo                  models.VolumeAccessInfo `json:"accessInformation"`
 	BlockSize                   string                  `json:"blockSize"`
 	FileSystem                  string                  `json:"fileSystem"`
+	FormatOptions               string                  `json:"formatOptions,omitempty"`
 	Encryption                  string                  `json:"encryption"`
 	LUKSEncryption              string                  `json:"LUKSEncryption,omitempty"`
 	CloneSourceVolume           string                  `json:"cloneSourceVolume"`

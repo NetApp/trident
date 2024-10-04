@@ -598,10 +598,6 @@ func getVolumeConfig(
 		Logc(ctx).WithError(err).Warning("Unable to parse readOnlyClone annotation into bool.")
 	}
 
-	if getAnnotation(annotations, AnnFileSystem) == "" {
-		annotations[AnnFileSystem] = "ext4"
-	}
-
 	if getAnnotation(annotations, AnnNotManaged) == "" {
 		annotations[AnnNotManaged] = "false"
 	}

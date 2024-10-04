@@ -125,6 +125,7 @@ func TestControllerPublishVolume(t *testing.T) {
 	publishContext := publishResponse.PublishContext
 	expectedPublishContext := map[string]string{
 		"filesystemType": "",
+		"formatOptions":  "",
 		"mountOptions":   "",
 		"protocol":       "",
 	}
@@ -163,6 +164,7 @@ func TestControllerPublishVolume_iSCSIProtocol(t *testing.T) {
 		"iscsiTargetPortalCount": "1",
 		"LUKSEncryption":         "",
 		"mountOptions":           "",
+		"formatOptions":          "",
 		"p1":                     "",
 		"protocol":               "block",
 		"SANType":                sa.ISCSI,
@@ -202,6 +204,7 @@ func TestControllerPublishVolume_NVMeProtocol(t *testing.T) {
 		"filesystemType":    "",
 		"LUKSEncryption":    "",
 		"mountOptions":      "",
+		"formatOptions":     "",
 		"nvmeNamespaceUUID": "",
 		"nvmeSubsystemNqn":  "",
 		"protocol":          "block",

@@ -40,17 +40,17 @@ func (m *MockFileSystem) EXPECT() *MockFileSystemMockRecorder {
 }
 
 // FormatVolume mocks base method.
-func (m *MockFileSystem) FormatVolume(arg0 context.Context, arg1, arg2 string) error {
+func (m *MockFileSystem) FormatVolume(arg0 context.Context, arg1, arg2, arg3 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FormatVolume", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "FormatVolume", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // FormatVolume indicates an expected call of FormatVolume.
-func (mr *MockFileSystemMockRecorder) FormatVolume(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockFileSystemMockRecorder) FormatVolume(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FormatVolume", reflect.TypeOf((*MockFileSystem)(nil).FormatVolume), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FormatVolume", reflect.TypeOf((*MockFileSystem)(nil).FormatVolume), arg0, arg1, arg2, arg3)
 }
 
 // RepairVolume mocks base method.

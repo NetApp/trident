@@ -1822,7 +1822,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			},
 			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
-				mockFileSystem.EXPECT().FormatVolume(context.TODO(), "/dev/dm-0", config.FsExt4).Return(errors.New("some error"))
+				mockFileSystem.EXPECT().FormatVolume(context.TODO(), "/dev/dm-0", config.FsExt4, "").Return(errors.New("some error"))
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) Mount {

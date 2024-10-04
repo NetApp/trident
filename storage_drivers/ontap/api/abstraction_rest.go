@@ -2107,7 +2107,9 @@ func (d OntapAPIREST) LunGetGeometry(ctx context.Context, lunPath string) (uint6
 	return uint64(lunOptionsResult.RecordSchema.Space.Size.Range.Max), nil
 }
 
-func (d OntapAPIREST) LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context, luks string) error {
+func (d OntapAPIREST) LunSetAttribute(
+	ctx context.Context, lunPath, attribute, fstype, context, luks, formatOptions string,
+) error {
 	if strings.Contains(lunPath, failureLUNSetAttr) {
 		return errors.New("injected error")
 	}
@@ -2126,6 +2128,15 @@ func (d OntapAPIREST) LunSetAttribute(ctx context.Context, lunPath, attribute, f
 	if luks != "" {
 		if err := d.api.LunSetAttribute(ctx, lunPath, "LUKS", luks); err != nil {
 			Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the LUKS attribute for new LUN.")
+		}
+	}
+
+	// An example of how formatOption may look like:
+	// "-E stride=256,stripe_width=16 -F -b 2435965"
+	if formatOptions != "" {
+		if err := d.api.LunSetAttribute(ctx, lunPath, "formatOptions", formatOptions); err != nil {
+			Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the format options attribute for new LUN.")
+			return fmt.Errorf("failed to save the formatOptions attribute for new LUN: %w", err)
 		}
 	}
 
@@ -2159,6 +2170,20 @@ func (d OntapAPIREST) LunGetFSType(ctx context.Context, lunPath string) (string,
 
 	Logc(ctx).WithFields(LogFields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
 	return fstype, nil
+}
+
+func (d OntapAPIREST) LunGetAttribute(ctx context.Context, lunPath, attributeName string) (string, error) {
+	attributeValue, err := d.api.LunGetAttribute(ctx, lunPath, attributeName)
+	if err != nil {
+		return "", fmt.Errorf("LUN attribute %s not found: %v", attributeName, err)
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"LUN":         lunPath,
+		attributeName: attributeValue,
+	}).Debug("Found LUN attribute.")
+
+	return attributeValue, nil
 }
 
 func (d OntapAPIREST) LunCloneCreate(

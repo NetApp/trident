@@ -4198,6 +4198,7 @@ func TestPublishLun(t *testing.T) {
 	}
 	// Test1 - Positive flow
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
 	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
 	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
@@ -4221,6 +4222,7 @@ func TestPublishLun(t *testing.T) {
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	publishInfo.HostIQN = []string{"host_iqn"}
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("", fmt.Errorf("LunGetFSType returned error"))
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
 	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
 	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
@@ -4231,18 +4233,34 @@ func TestPublishLun(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	// Test 4 - No target node found
+	// Test 4 - LunGetFSType returns error
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	publishInfo.HostIQN = []string{"host_iqn"}
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fsType", nil)
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("", fmt.Errorf("LunGetAttribute returned error"))
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
+	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
+
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+
+	assert.NoError(t, err)
+
+	// Test 5 - No target node found
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	publishInfo.HostIQN = []string{"host_iqn"}
 	publishInfo.HostName = "fakeHostName"
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("", fmt.Errorf("LunGetFSType returned error"))
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
 	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
 
 	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
 
 	assert.Error(t, err)
 
-	// Test 5 - EnsureIgroupAdded returns error
+	// Test 6 - EnsureIgroupAdded returns error
 	publishInfo = &tridentmodels.VolumePublishInfo{
 		BackendUUID: "fakeBackendUUID",
 		Localhost:   false,
@@ -4251,6 +4269,7 @@ func TestPublishLun(t *testing.T) {
 		HostIQN:     []string{"host_iqn"},
 	}
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
 	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName,
 		gomock.Any()).Return(fmt.Errorf("EnsureIgroupAdded returned error"))
@@ -4259,8 +4278,9 @@ func TestPublishLun(t *testing.T) {
 
 	assert.Error(t, err)
 
-	// Test 6 - EnsureLunMapped returns error
+	// Test 7 - EnsureLunMapped returns error
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
 	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111,
 		fmt.Errorf("EnsureLunMapped returned error"))
@@ -4270,21 +4290,44 @@ func TestPublishLun(t *testing.T) {
 
 	assert.Error(t, err)
 
-	// Test 7 - LunGetByName returns error
+	// Test 8 - LunGetByName returns error
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
 	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, fmt.Errorf("LunGetByName returned error"))
 
 	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
 
 	assert.Error(t, err)
 
-	// Test 8 - LunGetByName returns nil but Serial Number is empty
+	// Test 9 - LunGetByName returns nil but Serial Number is empty
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
 	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLunNoSerial, nil)
 
 	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
 
 	assert.Error(t, err)
+
+	// Test 10 - Checking whether the correct value of formatOptions is updated or not
+	publishInfo = &tridentmodels.VolumePublishInfo{
+		BackendUUID: "fakeBackendUUID",
+		Localhost:   false,
+		Unmanaged:   true,
+		Nodes:       nodeList,
+		HostIQN:     []string{"host_iqn"},
+	}
+	tempFormatOptions := "-b 4096 -T stride=256"
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return(tempFormatOptions, nil)
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
+	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
+
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+	assert.NoError(t, err)
+	assert.Equal(t, tempFormatOptions, publishInfo.FormatOptions)
 }
 
 func TestValidateSANDriver(t *testing.T) {
@@ -5343,6 +5386,58 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	assert.Nil(t, physicalPool, "Physical Pool not expected but found")
 	assert.Nil(t, virtualPool, "Virtual pool not exepcted but found")
 	assert.Error(t, err)
+
+	// Test 4 - Checking whether the formatOptions are correctly updated or not.
+	expectedVirtualPoolFormatOptions := "-b 4096 -E stride=256,stripe_width=16"
+	expectedPhysicalPoolFormatOptions := "-F -K"
+	storageDriver.Config.OntapStorageDriverPool.FormatOptions = expectedPhysicalPoolFormatOptions
+	defaults = &drivers.OntapStorageDriverConfigDefaults{
+		SpaceAllocation:                   "fake",
+		SpaceReserve:                      "fakeSpaceReserve",
+		SnapshotPolicy:                    "fakeSnapshotPolicy",
+		SnapshotReserve:                   "fakeSnapshotReserve",
+		SplitOnClone:                      "false",
+		UnixPermissions:                   "777",
+		SnapshotDir:                       "TRUE",
+		ExportPolicy:                      "fakeExportPolicy",
+		SecurityStyle:                     "fakeSecurityStyle",
+		FileSystemType:                    "fakeFileSystem",
+		Encryption:                        "true",
+		LUKSEncryption:                    "false",
+		TieringPolicy:                     "fakeTieringPolicy",
+		QosPolicy:                         "fakeQosPolicy",
+		AdaptiveQosPolicy:                 "fakeAdaptiveQosPolicy",
+		FormatOptions:                     expectedVirtualPoolFormatOptions,
+		CommonStorageDriverConfigDefaults: *CommonConfigDefault,
+	}
+	storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
+		{
+			Region: "fakeRegion",
+			Zone:   "fakeZone",
+			SupportedTopologies: []map[string]string{
+				{
+					"topology.kubernetes.io/region": "us_east_1",
+					"topology.kubernetes.io/zone":   "us_east_1a",
+				},
+			},
+			OntapStorageDriverConfigDefaults: *defaults,
+			NASType:                          sa.NFS,
+		},
+	}
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"dummyPool1"}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(map[string]string{"dummyPool1": "hdd"}, nil)
+
+	physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
+
+	assert.NotNil(t, physicalPool, "Physical Pool not found when expected")
+	assert.NotNil(t, virtualPool, "Virtual Pool not found when expected")
+	assert.NoError(t, err)
+	for _, phyPool := range physicalPool {
+		assert.Equal(t, expectedPhysicalPoolFormatOptions, phyPool.InternalAttributes()[FormatOptions])
+	}
+	for _, vPool := range virtualPool {
+		assert.Equal(t, expectedVirtualPoolFormatOptions, vPool.InternalAttributes()[FormatOptions])
+	}
 }
 
 func TestValidateDataLIF(t *testing.T) {
@@ -5499,6 +5594,28 @@ func TestPopulateConfigurationDefaults(t *testing.T) {
 	config.CloneSplitDelay = "-123"
 	err = PopulateConfigurationDefaults(ctx, config)
 	assert.Error(t, err)
+
+	config.SplitOnClone = ""
+	config.CloneSplitDelay = ""
+
+	// Test 9a - ext3 / verifying that the correct formatOptions are applied or not
+	config.FileSystemType = "ext3"
+	err = PopulateConfigurationDefaults(ctx, config)
+	assert.NoError(t, err)
+	assert.Equal(t, DefaultExt3FormatOptions, config.FormatOptions)
+
+	// Test 9b - ext4 / verifying that the correct formatOptions are applied or not
+
+	config.FileSystemType = "ext4"
+	err = PopulateConfigurationDefaults(ctx, config)
+	assert.NoError(t, err)
+	assert.Equal(t, DefaultExt4FormatOptions, config.FormatOptions)
+
+	// Test 9c - xfs / verifying that the correct formatOptions are applied or not
+	config.FileSystemType = "xfs"
+	err = PopulateConfigurationDefaults(ctx, config)
+	assert.NoError(t, err)
+	assert.Equal(t, DefaultXfsFormatOptions, config.FormatOptions)
 }
 
 func TestNewOntapTelemetry(t *testing.T) {

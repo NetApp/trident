@@ -407,26 +407,54 @@ func (d OntapAPIZAPI) LunGetFSType(ctx context.Context, lunPath string) (string,
 	return fstype, nil
 }
 
-func (d OntapAPIZAPI) LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context, luks string) error {
+func (d OntapAPIZAPI) LunGetAttribute(ctx context.Context, lunPath, attributeName string) (string, error) {
+	attributeValue, err := d.api.LunGetAttribute(ctx, lunPath, attributeName)
+	if err != nil {
+		return "", fmt.Errorf("LUN attribute %s not found: %v", attributeName, err)
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"LUN":         lunPath,
+		attributeName: attributeValue,
+	}).Debug("Found LUN attribute.")
+
+	return attributeValue, nil
+}
+
+func (d OntapAPIZAPI) LunSetAttribute(
+	ctx context.Context, lunPath, attribute, fstype, context, luks, formatOptions string,
+) error {
 	var attrResponse interface{}
 	var err error
+
 	if fstype != "" {
 		attrResponse, err = d.api.LunSetAttribute(lunPath, attribute, fstype)
-	}
-	if err = azgo.GetError(ctx, attrResponse, err); err != nil {
-		return err
+		if err = azgo.GetError(ctx, attrResponse, err); err != nil {
+			return err
+		}
 	}
 
 	if context != "" {
 		attrResponse, err = d.api.LunSetAttribute(lunPath, "context", context)
+		if err = azgo.GetError(ctx, attrResponse, err); err != nil {
+			Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the driver context attribute for new LUN.")
+		}
 	}
-	if err = azgo.GetError(ctx, attrResponse, err); err != nil {
-		Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the driver context attribute for new LUN.")
-	}
+
 	if luks != "" {
 		attrResponse, err = d.api.LunSetAttribute(lunPath, "LUKS", luks)
 		if err = azgo.GetError(ctx, attrResponse, err); err != nil {
 			Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the LUKS attribute for new LUN.")
+		}
+	}
+
+	// An example of how formatOption may look like:
+	// "-E stride=256,stripe_width=16 -F -b 2435965"
+	if formatOptions != "" {
+		attrResponse, err = d.api.LunSetAttribute(lunPath, "formatOptions", formatOptions)
+		if err = azgo.GetError(ctx, attrResponse, err); err != nil {
+			Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the format options attribute for new LUN.")
+			return fmt.Errorf("failed to save the formatOptions attribute for new LUN: %w", err)
 		}
 	}
 

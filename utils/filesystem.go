@@ -42,6 +42,8 @@ const (
 	fsckSharedLibError          = 128
 )
 
+const FormatOptionsSeparator = " "
+
 var (
 	osFs             = afero.NewOsFs()
 	JsonReaderWriter = NewJSONReaderWriter()
@@ -99,32 +101,50 @@ func GetDFOutput(ctx context.Context) ([]DFInfo, error) {
 }
 
 // formatVolume creates a filesystem for the supplied device of the supplied type.
-func formatVolume(ctx context.Context, device, fstype string) error {
+func formatVolume(ctx context.Context, device, fstype, options string) error {
 	logFields := LogFields{"device": device, "fsType": fstype}
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.formatVolume")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.formatVolume")
 
-	if err := duringFormatVolume.Inject(); err != nil {
+	var err error
+	var out []byte
+
+	if err = duringFormatVolume.Inject(); err != nil {
 		return err
 	}
 
-	var err error
+	var optionList []string
+	if options != "" {
+		optionList = strings.Split(options, FormatOptionsSeparator)
+	}
+
 	switch fstype {
 	case fsXfs:
-		_, err = command.Execute(ctx, "mkfs.xfs", "-f", device)
+		optionList = append(optionList, "-f", device)
+		out, err = command.Execute(ctx, "mkfs.xfs", optionList...)
 	case fsExt3:
-		_, err = command.Execute(ctx, "mkfs.ext3", "-F", device)
+		optionList = append(optionList, "-F", device)
+		out, err = command.Execute(ctx, "mkfs.ext3", optionList...)
 	case fsExt4:
-		_, err = command.Execute(ctx, "mkfs.ext4", "-F", device)
+		optionList = append(optionList, "-F", device)
+		out, err = command.Execute(ctx, "mkfs.ext4", optionList...)
 	default:
 		return fmt.Errorf("unsupported file system type: %s", fstype)
 	}
 
-	return err
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"output": string(out),
+			"device": device,
+		}).Error("Formatting Failed.")
+		return fmt.Errorf("error formatting device %v: %v", device, string(out))
+	}
+
+	return nil
 }
 
 // formatVolume creates a filesystem for the supplied device of the supplied type.
-func formatVolumeRetry(ctx context.Context, device, fstype string) error {
+func formatVolumeRetry(ctx context.Context, device, fstype, options string) error {
 	logFields := LogFields{"device": device, "fsType": fstype}
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.formatVolumeRetry")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.formatVolumeRetry")
@@ -132,7 +152,7 @@ func formatVolumeRetry(ctx context.Context, device, fstype string) error {
 	maxDuration := 30 * time.Second
 
 	formatVolume := func() error {
-		return formatVolume(ctx, device, fstype)
+		return formatVolume(ctx, device, fstype, options)
 	}
 
 	formatNotify := func(err error, duration time.Duration) {
@@ -161,12 +181,8 @@ func repairVolume(ctx context.Context, device, fstype string) {
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.repairVolume")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.repairVolume")
 
-	// Note: FIJI error injection will have no effect due to no error return. Panic injection is still valid.
-	if err := duringRepairVolume.Inject(); err != nil {
-		Logc(ctx).WithError(err).Debug("FIJI error in repairVolume has no effect, no error return.")
-	}
-
 	var err error
+
 	switch fstype {
 	case "xfs":
 		break // fsck.xfs does nothing

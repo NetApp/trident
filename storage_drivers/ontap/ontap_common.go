@@ -84,6 +84,7 @@ const (
 	Encryption            = "encryption"
 	LUKSEncryption        = "LUKSEncryption"
 	FileSystemType        = "fileSystemType"
+	FormatOptions         = "formatOptions"
 	ProvisioningType      = "provisioningType"
 	SplitOnClone          = "splitOnClone"
 	TieringPolicy         = "tieringPolicy"
@@ -746,6 +747,14 @@ func PublishLUN(
 		fstype = lunFSType
 	}
 
+	// Get the format options
+	// An example of how formatOption may look like:
+	// "-E stride=256,stripe_width=16 -F -b 2435965"
+	formatOptions, err := clientAPI.LunGetAttribute(ctx, lunPath, "formatOptions")
+	if err != nil {
+		Logc(ctx).Warnf("Failed to get format options for LUN: %v", err)
+	}
+
 	// Get LUN Serial Number
 	lunResponse, err := clientAPI.LunGetByName(ctx, lunPath)
 	if err != nil || lunResponse == nil {
@@ -816,6 +825,7 @@ func PublishLUN(
 	}
 
 	publishInfo.FilesystemType = fstype
+	publishInfo.FormatOptions = formatOptions
 	publishInfo.UseCHAP = config.UseCHAP
 
 	if publishInfo.UseCHAP {
@@ -1417,6 +1427,9 @@ const (
 	DefaultLimitVolumeSize           = ""
 	DefaultLimitVolumePoolSize       = ""
 	DefaultTieringPolicy             = ""
+	DefaultExt3FormatOptions         = ""
+	DefaultExt4FormatOptions         = ""
+	DefaultXfsFormatOptions          = ""
 )
 
 // PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
@@ -1510,6 +1523,17 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 
 	if config.FileSystemType == "" {
 		config.FileSystemType = drivers.DefaultFileSystemType
+	}
+
+	if config.FormatOptions == "" {
+		switch config.FileSystemType {
+		case "ext3":
+			config.FormatOptions = DefaultExt3FormatOptions
+		case "ext4":
+			config.FormatOptions = DefaultExt4FormatOptions
+		case "xfs":
+			config.FormatOptions = DefaultXfsFormatOptions
+		}
 	}
 
 	if config.LUKSEncryption == "" {
@@ -2113,6 +2137,16 @@ func ensureUniquenessInNameTemplate(nameTemplate string) string {
 	}
 }
 
+// validateFormatOptions validates the formatOptions provided by the user.
+// Currently, it returns an error if the formatOption is empty.
+func validateFormatOptions(formatOptions string) error {
+	formatOptions = strings.TrimSpace(formatOptions)
+	if formatOptions == "" {
+		return fmt.Errorf("empty formatOptions is provided")
+	}
+	return nil
+}
+
 func InitializeStoragePoolsCommon(
 	ctx context.Context, d StorageDriver, poolAttributes map[string]sa.Offer, backendName string,
 ) (map[string]storage.Pool, map[string]storage.Pool, error) {
@@ -2215,6 +2249,12 @@ func InitializeStoragePoolsCommon(
 		if d.Name() == tridentconfig.OntapSANStorageDriverName || d.Name() == tridentconfig.OntapSANEconomyStorageDriverName {
 			pool.InternalAttributes()[SpaceAllocation] = config.SpaceAllocation
 			pool.InternalAttributes()[FileSystemType] = config.FileSystemType
+			if config.FormatOptions != "" {
+				if err = validateFormatOptions(config.FormatOptions); err != nil {
+					return nil, nil, err
+				}
+			}
+			pool.InternalAttributes()[FormatOptions] = strings.TrimSpace(config.FormatOptions)
 		}
 
 		physicalPools[pool.Name()] = pool
@@ -2347,6 +2387,14 @@ func InitializeStoragePoolsCommon(
 			sanType = vpool.SANType
 		}
 
+		formatOptions := config.FormatOptions
+		if vpool.FormatOptions != "" {
+			if err = validateFormatOptions(vpool.FormatOptions); err != nil {
+				return nil, nil, fmt.Errorf("invalid formatOptions: %w, in pool: %v", err, pool.Name())
+			}
+			formatOptions = strings.TrimSpace(vpool.FormatOptions)
+		}
+
 		pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels, vpool.Labels)
 		pool.Attributes()[sa.NASType] = sa.NewStringOffer(nasType)
 		pool.Attributes()[sa.SANType] = sa.NewStringOffer(sanType)
@@ -2392,6 +2440,7 @@ func InitializeStoragePoolsCommon(
 		if d.Name() == tridentconfig.OntapSANStorageDriverName || d.Name() == tridentconfig.OntapSANEconomyStorageDriverName {
 			pool.InternalAttributes()[SpaceAllocation] = spaceAllocation
 			pool.InternalAttributes()[FileSystemType] = fileSystemType
+			pool.InternalAttributes()[FormatOptions] = formatOptions
 		}
 
 		virtualPools[pool.Name()] = pool

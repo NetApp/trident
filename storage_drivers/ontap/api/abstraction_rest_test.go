@@ -3589,17 +3589,39 @@ func TestLunSetAttribute(t *testing.T) {
 
 	// case 1: Positive test, update LUN attribute. context is empty.
 	rsi.EXPECT().LunSetAttribute(ctx, "/", "filesystem", "fake-FStype").Return(nil)
-	err := oapi.LunSetAttribute(ctx, "/", "filesystem", "fake-FStype", "", "")
+	err := oapi.LunSetAttribute(ctx, "/", "filesystem", "fake-FStype", "", "", "")
 	assert.NoError(t, err, "error returned while modifying a LUN attribute")
 
 	// case 2: Positive test, update LUN attribute. pass the value in context..
 	rsi.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-	err = oapi.LunSetAttribute(ctx, "/", "filesystem", "fake-FStype", "context", "LUKS")
+	err = oapi.LunSetAttribute(ctx, "/", "filesystem", "fake-FStype",
+		"context", "LUKS", "formatOptions")
 	assert.NoError(t, err, "error returned while modifying a LUN attribute")
 
 	// case 3 Negative test, update LUN attribute returned error..
-	err = oapi.LunSetAttribute(ctx, "failure_7c3a89e2_7d83_457b_9e29_bfdb082c1d8b", "filesystem", "fake-FStype", "context", "LUKS")
+	err = oapi.LunSetAttribute(ctx, "failure_7c3a89e2_7d83_457b_9e29_bfdb082c1d8b",
+		"filesystem", "fake-FStype", "context", "LUKS", "formatOptions")
 	assert.Error(t, err, "no error returned while modifying a LUN attribute")
+}
+
+func TestLunGetAttribute(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	tempLunPath := "/vol/vol1/lun0"
+	tempAttributeName := "fsType"
+
+	// 1 - Negative test, d.api.LunGetAttribute returns error
+	rsi.EXPECT().LunGetAttribute(gomock.Any(), tempLunPath, tempAttributeName).Return("", fmt.Errorf("error")).Times(1)
+	attributeValue, err := oapi.LunGetAttribute(ctx, tempLunPath, tempAttributeName)
+	assert.Error(t, err)
+	assert.Equal(t, "", attributeValue)
+
+	tempAttributeVale := "ext4"
+	// 2 - Positive test, d.api.LunGetAttribute do not return error
+	rsi.EXPECT().LunGetAttribute(gomock.Any(), tempLunPath, tempAttributeName).Return(tempAttributeVale, nil).Times(1)
+	attributeValue, err = oapi.LunGetAttribute(ctx, tempLunPath, tempAttributeName)
+	assert.NoError(t, err)
+	assert.Equal(t, tempAttributeVale, attributeValue)
 }
 
 func TestLunCloneCreate(t *testing.T) {

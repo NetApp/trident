@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -22,6 +23,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
+	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -291,8 +293,8 @@ func expectLunAndVolumeCreateSequence(ctx context.Context, mockAPI *mockapi.Mock
 		},
 	).MaxTimes(1)
 
-	mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), fsType, gomock.Any(), luks).DoAndReturn(
-		func(ctx context.Context, lunPath, attribute, fstype, context, luks string) error {
+	mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), fsType, gomock.Any(), luks, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, lunPath, attribute, fstype, context, luks, formatOptions string) error {
 			return nil
 		},
 	).MaxTimes(1)
@@ -617,6 +619,7 @@ func TestOntapSanVolumePublishManaged(t *testing.T) {
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
 	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/lunName/lun0")
+	mockAPI.EXPECT().LunGetAttribute(ctx, "/vol/lunName/lun0", "formatOptions")
 	mockAPI.EXPECT().LunGetByName(ctx, "/vol/lunName/lun0").Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
 	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
@@ -659,6 +662,7 @@ func TestOntapSanVolumePublishUnmanaged(t *testing.T) {
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
 	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/lunName/lun0")
+	mockAPI.EXPECT().LunGetAttribute(ctx, "/vol/lunName/lun0", "formatOptions")
 	mockAPI.EXPECT().LunGetByName(ctx, "/vol/lunName/lun0").Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
 	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
@@ -701,6 +705,7 @@ func TestOntapSanVolumePublishSLMError(t *testing.T) {
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
 	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/lunName/lun0")
+	mockAPI.EXPECT().LunGetAttribute(ctx, "/vol/lunName/lun0", "formatOptions")
 	mockAPI.EXPECT().LunGetByName(ctx, "/vol/lunName/lun0").Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
 	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
@@ -1181,7 +1186,7 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any()).Return(fmt.Errorf("failed to set LUN attribute"))
+					gomock.Any(), gomock.Any()).Return(fmt.Errorf("failed to set LUN attribute"))
 				mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any()).Return(nil)
 			},
@@ -1196,7 +1201,7 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any()).Return(fmt.Errorf("failed to set LUN attribute"))
+					gomock.Any(), gomock.Any()).Return(fmt.Errorf("failed to set LUN attribute"))
 				mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(fmt.Errorf("LUN destroy failed"))
 				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any()).Return(nil)
 			},
@@ -1211,7 +1216,7 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any()).Return(fmt.Errorf("failed to set LUN attribute"))
+					gomock.Any(), gomock.Any()).Return(fmt.Errorf("failed to set LUN attribute"))
 				mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(),
 					gomock.Any()).Return(fmt.Errorf("volume destroy failed"))
@@ -1231,6 +1236,51 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestOntapSanVolumeCreate_FormatOptions(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, d := newMockOntapSANDriver(t)
+
+	luks := "true"
+	fsType := "xfs"
+
+	// Setting up what formatOptions could look like.
+	tempFormatOptions := strings.Join([]string{"-b 4096", "-T stirde=2056, stripe=16"}, utils.FormatOptionsSeparator)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		SpaceReserve:      "none",
+		SnapshotPolicy:    "fake-snap-policy",
+		SnapshotReserve:   "10",
+		UnixPermissions:   "0755",
+		ExportPolicy:      "fake-export-policy",
+		SecurityStyle:     "mixed",
+		Encryption:        "false",
+		TieringPolicy:     "none",
+		QosPolicy:         "fake-qos-policy",
+		AdaptiveQosPolicy: "",
+		LUKSEncryption:    luks,
+		FormatOptions:     tempFormatOptions,
+	})
+	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+	// Setting up expected calls.
+	mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(false, nil).MaxTimes(1)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil).MaxTimes(1)
+	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(nil).MaxTimes(1)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	// This is the assertion of this unit test,
+	// checking whether the argument FormatOptions matches with what we pass in the internal attributes.
+	mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), fsType, gomock.Any(), luks, tempFormatOptions).Return(nil).MaxTimes(1)
+
+	volConfig := getVolumeConfig()
+	volAttrs := map[string]sa.Request{}
+
+	err := d.Create(ctx, &volConfig, pool1, volAttrs)
+
+	assert.Nil(t, err, "Error is not nil")
 }
 
 func TestOntapSanVolumeCreate_InvalidVolumeSize(t *testing.T) {
@@ -3443,6 +3493,7 @@ func TestOntapSanVolumePublishisFlexvolRW(t *testing.T) {
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
 	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/lunName/lun0")
+	mockAPI.EXPECT().LunGetAttribute(ctx, "/vol/lunName/lun0", "formatOptions")
 	mockAPI.EXPECT().LunGetByName(ctx, "/vol/lunName/lun0").Return(dummyLun, nil)
 
 	err := driver.Publish(ctx, &volConfig, publishInfo)

@@ -1078,6 +1078,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 	}
 
 	publishInfo.MountOptions = req.PublishContext["mountOptions"]
+	publishInfo.FormatOptions = req.PublishContext["formatOptions"]
 	publishInfo.IscsiTargetIQN = req.PublishContext["iscsiTargetIqn"]
 	publishInfo.IscsiLunNumber = int32(lunID)
 	publishInfo.IscsiLunSerial = req.PublishContext["iscsiLunSerial"]
