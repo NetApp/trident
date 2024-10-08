@@ -60,6 +60,7 @@ type NASQtreeStorageDriver struct {
 	emptyFlexvolMap                  map[string]time.Time
 	emptyFlexvolDeferredDeletePeriod time.Duration
 	qtreesPerFlexvol                 int
+	denyNewFlexvols                  bool
 
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
@@ -166,6 +167,7 @@ func (d *NASQtreeStorageDriver) Initialize(
 	}
 	d.sharedLockID = d.API.GetSVMUUID() + "-" + *d.Config.StoragePrefix
 	d.emptyFlexvolMap = make(map[string]time.Time)
+	d.denyNewFlexvols, _ = strconv.ParseBool(d.Config.DenyNewVolumePools)
 
 	// Ensure the qtree cap is valid
 	if config.QtreesPerFlexvol == "" {
@@ -436,18 +438,18 @@ func (d *NASQtreeStorageDriver) Create(
 		}
 
 		// Make sure we have a Flexvol for the new qtree
-		flexvol, err := d.ensureFlexvolForQtree(
+		flexvol, flexvolErr := d.ensureFlexvolForQtree(
 			ctx, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, enableSnapshotDir, enableEncryption, sizeBytes,
 			&d.Config, snapshotReserve, exportPolicy)
-		if err != nil {
+		if flexvolErr != nil {
 			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; Flexvol location/creation failed %s: %v",
-				storagePool.Name(), aggregate, name, err)
+				storagePool.Name(), aggregate, name, flexvolErr)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
 			continue
 		}
 		volConfig.InternalID = d.CreateQtreeInternalID(d.Config.SVM, flexvol, name)
-		Logc(ctx).WithFields(LogFields{"InternalID": volConfig.InternalID}).Debug("Created new qtree, setting InternalID")
+		Logc(ctx).WithFields(LogFields{"InternalID": volConfig.InternalID}).Debug("Created new qtree.")
 
 		// Grow or shrink the Flexvol as needed
 		err = d.resizeFlexvol(ctx, flexvol, sizeBytes)
@@ -1065,6 +1067,11 @@ func (d *NASQtreeStorageDriver) ensureFlexvolForQtree(
 	// Found one!
 	if flexvol != "" {
 		return flexvol, nil
+	}
+
+	// If we can't create a new Flexvol, fail
+	if d.denyNewFlexvols {
+		return "", errors.New("new Flexvol creation not permitted")
 	}
 
 	// Nothing found, so create a suitable Flexvol

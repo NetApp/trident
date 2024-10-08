@@ -5616,6 +5616,13 @@ func TestPopulateConfigurationDefaults(t *testing.T) {
 	err = PopulateConfigurationDefaults(ctx, config)
 	assert.NoError(t, err)
 	assert.Equal(t, DefaultXfsFormatOptions, config.FormatOptions)
+
+	// test 10 - Invalid value for denyNewVolumePools
+	config.SplitOnClone = "false"
+	config.CloneSplitDelay = "123"
+	config.DenyNewVolumePools = "asdf"
+	err = PopulateConfigurationDefaults(ctx, config)
+	assert.Error(t, err)
 }
 
 func TestNewOntapTelemetry(t *testing.T) {

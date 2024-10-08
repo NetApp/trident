@@ -3753,6 +3753,81 @@ func TestOntapSanEconomyEnsureFlexvolForLUN_FlexvolNotFound(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestOntapSanEconomyEnsureFlexvolForLUN_NewFlexvolNotPermitted(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "ontap-san-economy",
+		BackendName:       "myOntapSanEcoBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+	configJSON := fmt.Sprintf(`
+	{
+	    "managementLIF":       "10.0.207.8",
+	    "dataLIF":             "10.0.207.7",
+	    "svm":                 "SVM1",
+	    "aggregate":           "data",
+	    "username":            "admin",
+	    "password":            "password",
+	    "storageDriverName":   "ontap-san-economy",
+	    "storagePrefix":       "san-eco",
+	    "version":             1,
+        "denyNewVolumePools":  "true"
+	}`)
+	secrets := map[string]string{
+		"clientcertificate": "dummy-certificate",
+	}
+	authResponse := api.IscsiInitiatorAuth{
+		SVMName:  "SVM1",
+		AuthType: "None",
+	}
+	d.telemetry = &Telemetry{
+		Plugin: d.Name(),
+		SVM:    "SVM1",
+		Driver: d,
+		done:   make(chan struct{}),
+	}
+	d.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
+	d.telemetry.TridentBackendUUID = BackendUUID
+	d.telemetry.StoragePrefix = "trident_"
+	hostname, _ := os.Hostname()
+	message, _ := json.Marshal(d.GetTelemetry())
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"10.0.207.7"}, nil)
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
+	)
+	mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(authResponse, nil)
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san-economy", "1", false, "heartbeat", hostname, string(message), 1,
+		"trident", 5).AnyTimes()
+	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
+
+	err := d.Initialize(ctx, "csi", configJSON, commonConfig, secrets, BackendUUID)
+
+	opts := make(map[string]string)
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
+	d.lunsPerFlexvol = 100
+	vol := &api.Volume{
+		Name:       "",
+		Aggregates: []string{"data"},
+	}
+
+	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Return(api.Volumes{}, nil)
+
+	flexVol, newly, err := d.ensureFlexvolForLUN(ctx, vol, uint64(1073741824), opts, &d.Config, pool1,
+		make(map[string]struct{}))
+
+	// Expect error as no new flexvol may be created
+	assert.Equal(t, "", flexVol, "Expected no Flexvol, got %s", flexVol)
+	assert.False(t, newly)
+	assert.Error(t, err, "Expected error when needing to create new Flexvol, got nil")
+}
+
 func TestOntapSanEconomyGetStorageBackendSpecs(t *testing.T) {
 	_, d := newMockOntapSanEcoDriver(t)
 	d.ips = []string{"127.0.0.1"}

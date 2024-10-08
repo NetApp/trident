@@ -1324,6 +1324,42 @@ func TestEnsureFlexvolForQtree_Success_NoEligibleFlexvol(t *testing.T) {
 	assert.NotNil(t, resultFlexvol, "Expected non nil flexvol, got nil")
 }
 
+func TestEnsureFlexvolForQtree_Success_NewFlexvolNotPermitted(t *testing.T) {
+	// Get structs needed for initializing driver
+	commonConfig, _, secrets := getStructsForInitializeDriver()
+
+	// Create mock driver and api
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	addCommonExpectToMockApiForInitialize(mockAPI)
+
+	// Provide a configJSON which has aggregate different than that returned by API
+	configJSON := `
+	{
+		"version":             1,
+		"storageDriverName":   "ontap-nas-economy",
+		"managementLIF":       "127.0.0.1:0",
+		"svm":                 "SVM1",
+		"aggregate":           "data",
+		"username":            "dummyuser",
+		"password":            "dummypassword",
+        "denyNewVolumePools":  "true"
+	}`
+
+	// Initialize
+	_ = driver.Initialize(ctx, driverContextCSI, configJSON, commonConfig, secrets, BackendUUID)
+
+	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).AnyTimes().Return(api.Volumes{}, nil)
+
+	resultFlexvol, result := driver.ensureFlexvolForQtree(
+		ctx, "", "", "",
+		"", false, utils.Ptr(false), 0,
+		&driver.Config, "", "")
+
+	// Expect error as no new flexvol may be created
+	assert.Equal(t, "", resultFlexvol, "Expected no Flexvol, got %s", resultFlexvol)
+	assert.Error(t, result, "Expected error when needing to create new Flexvol, got nil")
+}
+
 func TestEnsureFlexvolForQtree_WithInvalidConfig(t *testing.T) {
 	driverConfig := &drivers.OntapStorageDriverConfig{
 		LimitVolumePoolSize: "invalid",

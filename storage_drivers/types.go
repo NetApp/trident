@@ -126,6 +126,7 @@ type OntapStorageDriverConfig struct {
 	NfsMountOptions                  string     `json:"nfsMountOptions"`
 	LimitAggregateUsage              string     `json:"limitAggregateUsage"`
 	LimitVolumePoolSize              string     `json:"limitVolumePoolSize"`
+	DenyNewVolumePools               string     `json:"denyNewVolumePools"`
 	AutoExportPolicy                 bool       `json:"autoExportPolicy"`
 	AutoExportCIDRs                  []string   `json:"autoExportCIDRs"`
 	OntapStorageDriverPool

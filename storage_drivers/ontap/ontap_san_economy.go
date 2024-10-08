@@ -189,6 +189,7 @@ type SANEconomyStorageDriver struct {
 	flexvolNamePrefix string
 	helper            *LUNHelper
 	lunsPerFlexvol    int
+	denyNewFlexvols   bool
 
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
@@ -299,6 +300,7 @@ func (d *SANEconomyStorageDriver) Initialize(
 	// Set up internal driver state
 	d.flexvolNamePrefix = fmt.Sprintf("%s_lun_pool_%s_", artifactPrefix, *d.Config.StoragePrefix)
 	d.flexvolNamePrefix = strings.Replace(d.flexvolNamePrefix, "__", "_", -1)
+	d.denyNewFlexvols, _ = strconv.ParseBool(d.Config.DenyNewVolumePools)
 
 	// ensure lun cap is valid
 	if config.LUNsPerFlexvol == "" {
@@ -1663,6 +1665,11 @@ func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
 	// Found one
 	if flexvol != "" {
 		return flexvol, false, nil
+	}
+
+	// If we can't create a new Flexvol, fail
+	if d.denyNewFlexvols {
+		return "", false, errors.New("new Flexvol creation not permitted")
 	}
 
 	// Nothing found, so create a suitable Flexvol

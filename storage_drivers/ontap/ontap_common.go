@@ -1426,6 +1426,7 @@ const (
 	DefaultLimitAggregateUsage       = ""
 	DefaultLimitVolumeSize           = ""
 	DefaultLimitVolumePoolSize       = ""
+	DefaultDenyNewVolumePools        = "false"
 	DefaultTieringPolicy             = ""
 	DefaultExt3FormatOptions         = ""
 	DefaultExt4FormatOptions         = ""
@@ -1439,6 +1440,8 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> PopulateConfigurationDefaults")
 	defer Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< PopulateConfigurationDefaults")
+
+	var err error
 
 	// Ensure the default volume size is valid, using a "default default" of 1G if not set
 	if config.Size == "" {
@@ -1478,14 +1481,20 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 	// If snapshotDir is provided, ensure it is lower case
 	snapDir := DefaultSnapshotDir
 	if config.SnapshotDir != "" {
-		snapDirFormatted, err := utils.GetFormattedBool(config.SnapshotDir)
-		if err != nil {
+		if snapDir, err = utils.GetFormattedBool(config.SnapshotDir); err != nil {
 			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", config.SnapshotDir)
 			return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
 		}
-		snapDir = snapDirFormatted
 	}
 	config.SnapshotDir = snapDir
+
+	if config.DenyNewVolumePools == "" {
+		config.DenyNewVolumePools = DefaultDenyNewVolumePools
+	} else {
+		if _, err = strconv.ParseBool(config.DenyNewVolumePools); err != nil {
+			return fmt.Errorf("invalid boolean value for denyNewVolumePools: %v", err)
+		}
+	}
 
 	if config.DriverContext != tridentconfig.ContextCSI {
 		config.AutoExportPolicy = false
@@ -1612,6 +1621,7 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		"LimitAggregateUsage":    config.LimitAggregateUsage,
 		"LimitVolumeSize":        config.LimitVolumeSize,
 		"LimitVolumePoolSize":    config.LimitVolumePoolSize,
+		"DenyNewVolumePools":     config.DenyNewVolumePools,
 		"Size":                   config.Size,
 		"TieringPolicy":          config.TieringPolicy,
 		"AutoExportPolicy":       config.AutoExportPolicy,
