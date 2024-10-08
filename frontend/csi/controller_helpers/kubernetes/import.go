@@ -112,7 +112,8 @@ func (h *helper) ImportVolume(
 
 	dataSize := h.getDataSizeFromTotalSize(ctx, totalSize, snapshotReserve)
 
-	if luksAnnotation, ok := claim.GetObjectMeta().GetAnnotations()[AnnLUKSEncryption]; ok {
+	// LUKS annotation should be accepted as either "LUKSEncryption" or "luksEncryption" to match storage pools.
+	if luksAnnotation := getCaseFoldedAnnotation(claim.GetObjectMeta().GetAnnotations(), AnnLUKSEncryption); luksAnnotation != "" {
 		if utils.ParseBool(luksAnnotation) {
 			dataSize -= utils.LUKSMetadataSize
 		}

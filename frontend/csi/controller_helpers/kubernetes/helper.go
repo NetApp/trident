@@ -653,6 +653,16 @@ func getAnnotation(annotations map[string]string, key string) string {
 	return ""
 }
 
+// getCaseFoldedAnnotation returns an annotation from a map, or an empty string if not found. Ignores annotation case, so luksEncryption == LUKSEncryption.
+func getCaseFoldedAnnotation(annotations map[string]string, key string) string {
+	for k, v := range annotations {
+		if strings.EqualFold(k, key) {
+			return v
+		}
+	}
+	return ""
+}
+
 // processPVCAnnotations returns the annotations from a PVC (ensuring a valid map even
 // if empty). It also mixes in a Trident-standard fsType annotation using the value supplied
 // *if* one isn't already set in the PVC annotation map.

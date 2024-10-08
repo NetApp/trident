@@ -171,7 +171,7 @@ binary_path = bin/$(call os,$2)/$(call arch,$2)/$(1)$(if $(findstring windows,$(
 
 # go_env sets environment variables for go commands
 # usage: $(call go_env,$(platform))
-go_env = CGO_ENABLED=0 GOOS=$(call os,$1) GOARCH=$(call arch,$1)$(if $(GOPROXY), GOPROXY=$(GOPROXY))$(if $(GOFLAGS), GOFLAGS='$(GOFLAGS)')
+go_env = CGO_ENABLED=0 GOOS=$(call os,$1) GOARCH=$(call arch,$1)$(if $(GOPROXY), GOPROXY=$(GOPROXY))$(if $(GOFLAGS), GOFLAGS="$(GOFLAGS)")
 
 # go_build returns the go build command for the named binary, platform, and source
 # usage: $(call go_build,$(binary_name),$(source_path),$(platform),$(linker_flags))
