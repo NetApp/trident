@@ -56,21 +56,18 @@ const (
 	ControllerClusterRoleFilename        = "trident-controller-clusterrole.yaml"
 	ControllerRoleBindingFilename        = "trident-controller-rolebinding.yaml"
 	ControllerServiceAccountFilename     = "trident-controller-serviceaccount.yaml"
-	ControllerPodSecurityPolicyFilename  = "trident-controller-podsecuritypolicy.yaml"
 	ControllerClusterRoleBindingFilename = "trident-controller-clusterrolebinding.yaml"
 	ControllerSCCFilename                = "trident-controller-scc.yaml"
 
-	NodeLinuxRoleFilename              = "trident-node-linux-role.yaml"
-	NodeLinuxRoleBindingFilename       = "trident-node-linux-rolebinding.yaml"
-	NodeLinuxServiceAccountFilename    = "trident-node-linux-serviceaccount.yaml"
-	NodeLinuxPodSecurityPolicyFilename = "trident-node-linux-podsecuritypolicy.yaml"
-	NodeLinuxSCCFilename               = "trident-node-linux-scc.yaml"
+	NodeLinuxRoleFilename           = "trident-node-linux-role.yaml"
+	NodeLinuxRoleBindingFilename    = "trident-node-linux-rolebinding.yaml"
+	NodeLinuxServiceAccountFilename = "trident-node-linux-serviceaccount.yaml"
+	NodeLinuxSCCFilename            = "trident-node-linux-scc.yaml"
 
-	NodeWindowsRoleFilename              = "trident-node-windows-role.yaml"
-	NodeWindowsRoleBindingFilename       = "trident-node-windows-rolebinding.yaml"
-	NodeWindowsServiceAccountFilename    = "trident-node-windows-serviceaccount.yaml"
-	NodeWindowsPodSecurityPolicyFilename = "trident-node-windows-podsecuritypolicy.yaml"
-	NodeWindowsSCCFilename               = "trident-node-windows-scc.yaml"
+	NodeWindowsRoleFilename           = "trident-node-windows-role.yaml"
+	NodeWindowsRoleBindingFilename    = "trident-node-windows-rolebinding.yaml"
+	NodeWindowsServiceAccountFilename = "trident-node-windows-serviceaccount.yaml"
+	NodeWindowsSCCFilename            = "trident-node-windows-scc.yaml"
 
 	CRDsFilename             = "trident-crds.yaml"
 	DaemonSetFilename        = "trident-daemonset.yaml"
@@ -89,8 +86,7 @@ const (
 	TridentNodeLinuxResourceName   = "trident-node-linux"
 	TridentNodeWindowsResourceName = "trident-node-windows"
 
-	CSIDriver  = "csi.trident.netapp.io"
-	TridentPSP = "tridentpods"
+	CSIDriver = "csi.trident.netapp.io"
 )
 
 var (
@@ -152,9 +148,6 @@ var (
 	servicePath                      string
 	daemonsetPath                    string
 	windowsDaemonSetPath             string
-	controllerPodSecurityPolicyPath  string
-	nodeLinuxPodSecurityPolicyPath   string
-	nodeWindowsPodSecurityPolicyPath string
 	resourceQuotaPath                string
 	controllerSCCPath                string
 	nodeLinuxSCCPath                 string
@@ -546,15 +539,6 @@ func prepareYAMLFilePaths() error {
 		resourceQuotaPath,
 	}
 
-	if isPSPSupported() {
-		controllerPodSecurityPolicyPath = path.Join(setupPath, ControllerPodSecurityPolicyFilename)
-		nodeLinuxPodSecurityPolicyPath = path.Join(setupPath, NodeLinuxPodSecurityPolicyFilename)
-		nodeWindowsPodSecurityPolicyPath = path.Join(setupPath, NodeWindowsPodSecurityPolicyFilename)
-
-		setupYAMLPaths = append(setupYAMLPaths, controllerPodSecurityPolicyPath, nodeLinuxPodSecurityPolicyPath,
-			nodeWindowsPodSecurityPolicyPath)
-	}
-
 	if client.Flavor() == k8sclient.FlavorOpenShift {
 		controllerSCCPath = path.Join(setupPath, ControllerSCCFilename)
 		nodeLinuxSCCPath = path.Join(setupPath, NodeLinuxSCCFilename)
@@ -711,38 +695,6 @@ func prepareYAMLFiles() error {
 		return fmt.Errorf("could not write DaemonSet YAML file; %v", err)
 	}
 
-	if isPSPSupported() {
-		// Creating controller PodSecurityPolicy
-		controllerPodSecurityPolicyYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(
-			getControllerRBACResourceName(), labels, nil)
-		if err = writeFile(controllerPodSecurityPolicyPath, controllerPodSecurityPolicyYAML); err != nil {
-			return fmt.Errorf("could not write controller pod security policy YAML file; %v", err)
-		}
-
-		// Create node role & rolebinding only if PSP is supported instead of creating an empty resource
-		// This way it is made more clear that the service account isn't supposed to have access to anything
-		// Creating role (trident-namespaced) for node linux service account
-		nodeRoleYAML := k8sclient.GetRoleYAML(TridentPodNamespace, getNodeRBACResourceName(false),
-			daemonSetlabels, nil)
-		if err = writeFile(nodeLinuxRolePath, nodeRoleYAML); err != nil {
-			return fmt.Errorf("could not write node linux role YAML file; %v", err)
-		}
-
-		// Creating role-binding (trident-namespaced) for node linux service account
-		nodeRoleBindingYAML := k8sclient.GetRoleBindingYAML(TridentPodNamespace,
-			getNodeRBACResourceName(false), daemonSetlabels, nil)
-		if err = writeFile(nodeLinuxRoleBindingPath, nodeRoleBindingYAML); err != nil {
-			return fmt.Errorf("could not write node linux role binding YAML file; %v", err)
-		}
-
-		// Creating node linux PodSecurityPolicy
-		nodeLinuxPodSecurityPolicyYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(false),
-			daemonSetlabels, nil)
-		if err = writeFile(nodeLinuxPodSecurityPolicyPath, nodeLinuxPodSecurityPolicyYAML); err != nil {
-			return fmt.Errorf("could not write node linux pod security policy YAML file; %v", err)
-		}
-	}
-
 	// If OpenShift, generate corresponding SCCs
 	if client.Flavor() == k8sclient.FlavorOpenShift {
 		// Creating trident controller security context constraint (SCC)
@@ -792,28 +744,6 @@ func prepareYAMLFiles() error {
 			daemonSetlabels, nil, "")
 		if err = writeFile(nodeWindowsServiceAccountPath, nodeWindowsServiceAccountYAML); err != nil {
 			return fmt.Errorf("could not write node windows service account YAML file; %v", err)
-		}
-		if isPSPSupported() {
-			// Create node role & rolebinding only if PSP is supported instead of creating an empty resource
-			// This way it is made more clear that the service account isn't supposed to have access to anything
-			// Creating role (trident-namespaced) for node windows service account
-			nodeWindowsRoleYAML := k8sclient.GetRoleYAML(TridentPodNamespace,
-				getNodeRBACResourceName(true), daemonSetlabels, nil)
-			if err = writeFile(nodeWindowsRolePath, nodeWindowsRoleYAML); err != nil {
-				return fmt.Errorf("could not write node windows role YAML file; %v", err)
-			}
-			// Creating role-binding (trident-namespaced) for node windows service account
-			nodeWindowsRoleBindingYAML := k8sclient.GetRoleBindingYAML(TridentPodNamespace,
-				getNodeRBACResourceName(true), daemonSetlabels, nil)
-			if err = writeFile(nodeWindowsRoleBindingPath, nodeWindowsRoleBindingYAML); err != nil {
-				return fmt.Errorf("could not write node windows role binding YAML file; %v", err)
-			}
-			// Creating node windows PodSecurityPolicy
-			nodeWindowsPodSecurityPolicyYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(true),
-				daemonSetlabels, nil)
-			if err = writeFile(nodeWindowsPodSecurityPolicyPath, nodeWindowsPodSecurityPolicyYAML); err != nil {
-				return fmt.Errorf("could not write node windows pod security policy YAML file; %v", err)
-			}
 		}
 
 		if client.Flavor() == k8sclient.FlavorOpenShift {
@@ -929,54 +859,6 @@ func installTrident() (returnError error) {
 	if returnError = createAndEnsureCRDs(); returnError != nil {
 		Log().Errorf("could not create or update the Trident CRDs; %v", returnError)
 		return
-	}
-
-	if isPSPSupported() {
-		// Create pod security policy for controller & node pods
-		// Creating a closure to perform the repeated set of actions to check for a previously existing YAML file, so
-		// that it can be deleted and new YAML can be deployed
-		installPSP := func(filePath, fileContentsYAML string) error {
-			if useYAML && fileExists(filePath) {
-				logFields = LogFields{"path": filePath}
-				// Delete the object in case it already exists and we need to update it
-				if err := client.DeleteObjectByFile(filePath, true); err != nil {
-					return err
-				}
-				returnError = client.CreateObjectByFile(filePath)
-			} else {
-				logFields = LogFields{}
-				// Delete the object in case it already exists and we need to update it
-				if err := client.DeleteObjectByYAML(fileContentsYAML, true); err != nil {
-					return err
-				}
-				return client.CreateObjectByYAML(fileContentsYAML)
-			}
-			return nil
-		}
-		// Check and install controller PSP
-		pspYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getControllerRBACResourceName(), labels, nil)
-		if err := installPSP(controllerPodSecurityPolicyPath, pspYAML); err != nil {
-			returnError = fmt.Errorf("could not create Trident controller pod security policy; %v", err)
-			return
-		}
-		Log().WithFields(logFields).Info("Created Trident controller pod security policy.")
-
-		// Check and install node linux PSP
-		pspYAML = k8sclient.GetPrivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(false), nodeLabels, nil)
-		if err := installPSP(nodeLinuxPodSecurityPolicyPath, pspYAML); err != nil {
-			returnError = fmt.Errorf("could not create Trident node linux pod security policy; %v", err)
-			return
-		}
-		Log().WithFields(logFields).Info("Created Trident node linux pod security policy.")
-
-		if windows {
-			pspYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(true), nodeLabels, nil)
-			if err := installPSP(nodeWindowsPodSecurityPolicyPath, pspYAML); err != nil {
-				returnError = fmt.Errorf("could not create Trident node windows pod security policy; %v", err)
-				return
-			}
-			Log().WithFields(logFields).Info("Created Trident node windows pod security policy.")
-		}
 	}
 
 	// Patch the CRD definitions with finalizers to protect them
@@ -1609,28 +1491,6 @@ func createRBACObjects() (returnError error) {
 	}
 	Log().WithFields(logFields).Info("Created node linux service account.")
 
-	// Create node role & rolebinding only if PSP is supported instead of creating an empty resource
-	// This way it is made more clear that the service account isn't supposed to have access to anything
-	if isPSPSupported() {
-		// Create role (trident-namespaced) for node linux
-		if createObjectFunc(nodeLinuxRolePath,
-			k8sclient.GetRoleYAML(TridentPodNamespace, getNodeRBACResourceName(false),
-				daemonSetlabels, nil)) != nil {
-			returnError = fmt.Errorf("could not create node linux role; %v", returnError)
-			return
-		}
-		Log().WithFields(logFields).Info("Created node linux role.")
-
-		// Create role binding (trident-namespaced) for node linux
-		if createObjectFunc(nodeLinuxRoleBindingPath,
-			k8sclient.GetRoleBindingYAML(TridentPodNamespace, getNodeRBACResourceName(false),
-				daemonSetlabels, nil)) != nil {
-			returnError = fmt.Errorf("could not create node linux role binding; %v", returnError)
-			return
-		}
-		Log().WithFields(logFields).Info("Created node linux role binding.")
-	}
-
 	// Creating node windows RBAC Objects
 	if windows {
 		if createObjectFunc(nodeWindowsServiceAccountPath,
@@ -1639,28 +1499,6 @@ func createRBACObjects() (returnError error) {
 			return
 		}
 		Log().WithFields(logFields).Info("Created node windows service account.")
-
-		// Create node role & rolebinding only if PSP is supported instead of creating an empty resource
-		// This way it is made more clear that the service account isn't supposed to have access to anything
-		if isPSPSupported() {
-			// Create role (trident-namespaced) for node windows
-			if createObjectFunc(nodeWindowsRolePath,
-				k8sclient.GetRoleYAML(TridentPodNamespace, getNodeRBACResourceName(true),
-					daemonSetlabels, nil)) != nil {
-				returnError = fmt.Errorf("could not create node windows role; %v", returnError)
-				return
-			}
-			Log().WithFields(logFields).Info("Created node windows role.")
-
-			// Create role binding (trident-namespaced) for node windows
-			if createObjectFunc(nodeWindowsRoleBindingPath,
-				k8sclient.GetRoleBindingYAML(TridentPodNamespace, getNodeRBACResourceName(true),
-					daemonSetlabels, nil)) != nil {
-				returnError = fmt.Errorf("could not create node windows role binding; %v", returnError)
-				return
-			}
-			Log().WithFields(logFields).Info("Created node windows role binding.")
-		}
 	}
 
 	// If OpenShift, add Trident to security context constraint(s)
@@ -2206,10 +2044,6 @@ func getClusterRoleBindingName() string {
 	return TridentCSI
 }
 
-func getPSPName() string {
-	return TridentPSP
-}
-
 func getServiceName() string {
 	return TridentCSI
 }
@@ -2254,11 +2088,6 @@ func getAppLabelForResource(resourceName string) (map[string]string, string) {
 		label = TridentNodeLabel
 	}
 	return labelMap, label
-}
-
-func isPSPSupported() bool {
-	pspRemovedVersion := versionutils.MustParseMajorMinorVersion(tridentconfig.PodSecurityPoliciesRemovedKubernetesVersion)
-	return client.ServerVersion().LessThan(pspRemovedVersion)
 }
 
 func isLinuxNodeSCCUser(user string) bool {

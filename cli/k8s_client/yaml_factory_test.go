@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	pspv1beta1 "k8s.io/api/policy/v1beta1"
 	csiv1 "k8s.io/api/storage/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -3659,87 +3658,6 @@ func TestGetCSIDriverYAML(t *testing.T) {
 	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
 	assert.Equal(t, "csi.trident.netapp.io", actual.Name)
-}
-
-func TestGetPrivilegedPodSecurityPolicyYAML(t *testing.T) {
-	name := "tridentpods"
-	allow := true
-
-	expected := pspv1beta1.PodSecurityPolicy{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "PodSecurityPolicy",
-			APIVersion: "policy/v1beta1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "tridentpods",
-		},
-		Spec: pspv1beta1.PodSecurityPolicySpec{
-			Privileged:               true,
-			AllowPrivilegeEscalation: &allow,
-			HostIPC:                  true,
-			HostPID:                  true,
-			HostNetwork:              true,
-			SELinux: pspv1beta1.SELinuxStrategyOptions{
-				Rule: "RunAsAny",
-			},
-			SupplementalGroups: pspv1beta1.SupplementalGroupsStrategyOptions{
-				Rule: "RunAsAny",
-			},
-			RunAsUser: pspv1beta1.RunAsUserStrategyOptions{
-				Rule: "RunAsAny",
-			},
-			FSGroup: pspv1beta1.FSGroupStrategyOptions{
-				Rule: "RunAsAny",
-			},
-			Volumes: []pspv1beta1.FSType{"hostPath", " projected", "emptyDir"},
-		},
-	}
-
-	var actual pspv1beta1.PodSecurityPolicy
-	actualYAML := GetPrivilegedPodSecurityPolicyYAML(name, nil, nil)
-
-	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
-	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
-	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
-	assert.Equal(t, "tridentpods", actual.Name)
-}
-
-func TestGetUnprivilegedPodSecurityPolicyYAML(t *testing.T) {
-	name := "psp.flannel.unprivileged"
-
-	expected := pspv1beta1.PodSecurityPolicy{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "PodSecurityPolicy",
-			APIVersion: "policy/v1beta1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "psp.flannel.unprivileged",
-		},
-		Spec: pspv1beta1.PodSecurityPolicySpec{
-			Privileged: false,
-			SELinux: pspv1beta1.SELinuxStrategyOptions{
-				Rule: "RunAsAny",
-			},
-			SupplementalGroups: pspv1beta1.SupplementalGroupsStrategyOptions{
-				Rule: "RunAsAny",
-			},
-			RunAsUser: pspv1beta1.RunAsUserStrategyOptions{
-				Rule: "RunAsAny",
-			},
-			FSGroup: pspv1beta1.FSGroupStrategyOptions{
-				Rule: "RunAsAny",
-			},
-			Volumes: []pspv1beta1.FSType{"hostPath", " projected", "emptyDir"},
-		},
-	}
-
-	var actual pspv1beta1.PodSecurityPolicy
-	actualYAML := GetUnprivilegedPodSecurityPolicyYAML(name, nil, nil)
-
-	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
-	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
-	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
-	assert.Equal(t, "psp.flannel.unprivileged", actual.Name)
 }
 
 func TestGetResourceQuotaYAML(t *testing.T) {

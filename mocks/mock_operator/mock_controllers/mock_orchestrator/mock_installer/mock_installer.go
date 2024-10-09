@@ -20,7 +20,6 @@ import (
 	gomock "go.uber.org/mock/gomock"
 	v11 "k8s.io/api/apps/v1"
 	v12 "k8s.io/api/core/v1"
-	v1beta1 "k8s.io/api/policy/v1beta1"
 	v13 "k8s.io/api/rbac/v1"
 	v14 "k8s.io/api/storage/v1"
 	v15 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -377,22 +376,6 @@ func (m *MockExtendedK8sClient) CheckPodExistsByLabel(arg0 string, arg1 bool) (b
 func (mr *MockExtendedK8sClientMockRecorder) CheckPodExistsByLabel(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPodExistsByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).CheckPodExistsByLabel), arg0, arg1)
-}
-
-// CheckPodSecurityPolicyExistsByLabel mocks base method.
-func (m *MockExtendedK8sClient) CheckPodSecurityPolicyExistsByLabel(arg0 string) (bool, string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckPodSecurityPolicyExistsByLabel", arg0)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// CheckPodSecurityPolicyExistsByLabel indicates an expected call of CheckPodSecurityPolicyExistsByLabel.
-func (mr *MockExtendedK8sClientMockRecorder) CheckPodSecurityPolicyExistsByLabel(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPodSecurityPolicyExistsByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).CheckPodSecurityPolicyExistsByLabel), arg0)
 }
 
 // CheckSecretExists mocks base method.
@@ -807,34 +790,6 @@ func (mr *MockExtendedK8sClientMockRecorder) DeletePodByLabel(arg0 any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePodByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeletePodByLabel), arg0)
 }
 
-// DeletePodSecurityPolicy mocks base method.
-func (m *MockExtendedK8sClient) DeletePodSecurityPolicy(arg0 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeletePodSecurityPolicy", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeletePodSecurityPolicy indicates an expected call of DeletePodSecurityPolicy.
-func (mr *MockExtendedK8sClientMockRecorder) DeletePodSecurityPolicy(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePodSecurityPolicy", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeletePodSecurityPolicy), arg0)
-}
-
-// DeletePodSecurityPolicyByLabel mocks base method.
-func (m *MockExtendedK8sClient) DeletePodSecurityPolicyByLabel(arg0 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeletePodSecurityPolicyByLabel", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeletePodSecurityPolicyByLabel indicates an expected call of DeletePodSecurityPolicyByLabel.
-func (mr *MockExtendedK8sClientMockRecorder) DeletePodSecurityPolicyByLabel(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePodSecurityPolicyByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeletePodSecurityPolicyByLabel), arg0)
-}
-
 // DeleteResourceQuota mocks base method.
 func (m *MockExtendedK8sClient) DeleteResourceQuota(arg0 string) error {
 	m.ctrl.T.Helper()
@@ -1057,20 +1012,6 @@ func (m *MockExtendedK8sClient) DeleteTridentDeployment(arg0 string) error {
 func (mr *MockExtendedK8sClientMockRecorder) DeleteTridentDeployment(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTridentDeployment", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteTridentDeployment), arg0)
-}
-
-// DeleteTridentPodSecurityPolicy mocks base method.
-func (m *MockExtendedK8sClient) DeleteTridentPodSecurityPolicy(arg0, arg1 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteTridentPodSecurityPolicy", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteTridentPodSecurityPolicy indicates an expected call of DeleteTridentPodSecurityPolicy.
-func (mr *MockExtendedK8sClientMockRecorder) DeleteTridentPodSecurityPolicy(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTridentPodSecurityPolicy", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteTridentPodSecurityPolicy), arg0, arg1)
 }
 
 // DeleteTridentResourceQuota mocks base method.
@@ -1454,23 +1395,6 @@ func (mr *MockExtendedK8sClientMockRecorder) GetDeploymentsByLabel(arg0, arg1 an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeploymentsByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetDeploymentsByLabel), arg0, arg1)
 }
 
-// GetMultiplePodSecurityPolicyInformation mocks base method.
-func (m *MockExtendedK8sClient) GetMultiplePodSecurityPolicyInformation(arg0 []string, arg1 string, arg2 bool) (map[string]*v1beta1.PodSecurityPolicy, []v1beta1.PodSecurityPolicy, map[string]bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMultiplePodSecurityPolicyInformation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(map[string]*v1beta1.PodSecurityPolicy)
-	ret1, _ := ret[1].([]v1beta1.PodSecurityPolicy)
-	ret2, _ := ret[2].(map[string]bool)
-	ret3, _ := ret[3].(error)
-	return ret0, ret1, ret2, ret3
-}
-
-// GetMultiplePodSecurityPolicyInformation indicates an expected call of GetMultiplePodSecurityPolicyInformation.
-func (mr *MockExtendedK8sClientMockRecorder) GetMultiplePodSecurityPolicyInformation(arg0, arg1, arg2 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultiplePodSecurityPolicyInformation", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetMultiplePodSecurityPolicyInformation), arg0, arg1, arg2)
-}
-
 // GetMultipleRoleBindingInformation mocks base method.
 func (m *MockExtendedK8sClient) GetMultipleRoleBindingInformation(arg0 []string, arg1 string, arg2 bool) (map[string]*v13.RoleBinding, []v13.RoleBinding, map[string]bool, error) {
 	m.ctrl.T.Helper()
@@ -1615,36 +1539,6 @@ func (m *MockExtendedK8sClient) GetPodByLabel(arg0 string, arg1 bool) (*v12.Pod,
 func (mr *MockExtendedK8sClientMockRecorder) GetPodByLabel(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPodByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetPodByLabel), arg0, arg1)
-}
-
-// GetPodSecurityPoliciesByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetPodSecurityPoliciesByLabel(arg0 string) ([]v1beta1.PodSecurityPolicy, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPodSecurityPoliciesByLabel", arg0)
-	ret0, _ := ret[0].([]v1beta1.PodSecurityPolicy)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPodSecurityPoliciesByLabel indicates an expected call of GetPodSecurityPoliciesByLabel.
-func (mr *MockExtendedK8sClientMockRecorder) GetPodSecurityPoliciesByLabel(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPodSecurityPoliciesByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetPodSecurityPoliciesByLabel), arg0)
-}
-
-// GetPodSecurityPolicyByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetPodSecurityPolicyByLabel(arg0 string) (*v1beta1.PodSecurityPolicy, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPodSecurityPolicyByLabel", arg0)
-	ret0, _ := ret[0].(*v1beta1.PodSecurityPolicy)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPodSecurityPolicyByLabel indicates an expected call of GetPodSecurityPolicyByLabel.
-func (mr *MockExtendedK8sClientMockRecorder) GetPodSecurityPolicyByLabel(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPodSecurityPolicyByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetPodSecurityPolicyByLabel), arg0)
 }
 
 // GetPodsByLabel mocks base method.
@@ -2150,34 +2044,6 @@ func (mr *MockExtendedK8sClientMockRecorder) PatchOpenShiftSCC(arg0 any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchOpenShiftSCC", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchOpenShiftSCC), arg0)
 }
 
-// PatchPodSecurityPolicyByLabel mocks base method.
-func (m *MockExtendedK8sClient) PatchPodSecurityPolicyByLabel(arg0 string, arg1 []byte, arg2 types.PatchType) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PatchPodSecurityPolicyByLabel", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PatchPodSecurityPolicyByLabel indicates an expected call of PatchPodSecurityPolicyByLabel.
-func (mr *MockExtendedK8sClientMockRecorder) PatchPodSecurityPolicyByLabel(arg0, arg1, arg2 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodSecurityPolicyByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchPodSecurityPolicyByLabel), arg0, arg1, arg2)
-}
-
-// PatchPodSecurityPolicyByLabelAndName mocks base method.
-func (m *MockExtendedK8sClient) PatchPodSecurityPolicyByLabelAndName(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PatchPodSecurityPolicyByLabelAndName", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PatchPodSecurityPolicyByLabelAndName indicates an expected call of PatchPodSecurityPolicyByLabelAndName.
-func (mr *MockExtendedK8sClientMockRecorder) PatchPodSecurityPolicyByLabelAndName(arg0, arg1, arg2, arg3 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodSecurityPolicyByLabelAndName", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchPodSecurityPolicyByLabelAndName), arg0, arg1, arg2, arg3)
-}
-
 // PatchResourceQuotaByLabel mocks base method.
 func (m *MockExtendedK8sClient) PatchResourceQuotaByLabel(arg0 string, arg1 []byte, arg2 types.PatchType) error {
 	m.ctrl.T.Helper()
@@ -2374,20 +2240,6 @@ func (mr *MockExtendedK8sClientMockRecorder) PutOpenShiftSCC(arg0, arg1, arg2 an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutOpenShiftSCC", reflect.TypeOf((*MockExtendedK8sClient)(nil).PutOpenShiftSCC), arg0, arg1, arg2)
 }
 
-// PutPodSecurityPolicy mocks base method.
-func (m *MockExtendedK8sClient) PutPodSecurityPolicy(arg0 *v1beta1.PodSecurityPolicy, arg1 bool, arg2, arg3 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PutPodSecurityPolicy", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PutPodSecurityPolicy indicates an expected call of PutPodSecurityPolicy.
-func (mr *MockExtendedK8sClientMockRecorder) PutPodSecurityPolicy(arg0, arg1, arg2, arg3 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutPodSecurityPolicy", reflect.TypeOf((*MockExtendedK8sClient)(nil).PutPodSecurityPolicy), arg0, arg1, arg2, arg3)
-}
-
 // PutResourceQuota mocks base method.
 func (m *MockExtendedK8sClient) PutResourceQuota(arg0 *v12.ResourceQuota, arg1 bool, arg2, arg3 string) error {
 	m.ctrl.T.Helper()
@@ -2555,20 +2407,6 @@ func (m *MockExtendedK8sClient) RemoveMultipleDeployments(arg0 []v11.Deployment)
 func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleDeployments(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMultipleDeployments", reflect.TypeOf((*MockExtendedK8sClient)(nil).RemoveMultipleDeployments), arg0)
-}
-
-// RemoveMultiplePodSecurityPolicies mocks base method.
-func (m *MockExtendedK8sClient) RemoveMultiplePodSecurityPolicies(arg0 []v1beta1.PodSecurityPolicy) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveMultiplePodSecurityPolicies", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RemoveMultiplePodSecurityPolicies indicates an expected call of RemoveMultiplePodSecurityPolicies.
-func (mr *MockExtendedK8sClientMockRecorder) RemoveMultiplePodSecurityPolicies(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMultiplePodSecurityPolicies", reflect.TypeOf((*MockExtendedK8sClient)(nil).RemoveMultiplePodSecurityPolicies), arg0)
 }
 
 // RemoveMultiplePods mocks base method.

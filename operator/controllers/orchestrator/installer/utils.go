@@ -28,10 +28,6 @@ func getNodeResourceNames() []string {
 	return resourceNames
 }
 
-func getPSPName() string {
-	return TridentPSP
-}
-
 func getServiceName() string {
 	return TridentCSI
 }

@@ -286,50 +286,6 @@ func uninstallTrident() error {
 
 	anyErrors = removeRBACObjects(log.InfoLevel) || anyErrors
 
-	// Delete pod security policy
-	if isPSPSupported() {
-		podSecurityPolicyYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
-
-		if err = client.DeleteObjectByYAML(podSecurityPolicyYAML, true); err != nil {
-			Log().WithField("error", err).Warning("Could not delete pod security policy.")
-			anyErrors = true
-		} else {
-			Log().WithField("podSecurityPolicy", "tridentpods").Info("Deleted pod security policy.")
-		}
-
-		labels := map[string]string{TridentCSILabelKey: TridentCSILabelValue}
-		daemonSetlabels := map[string]string{TridentNodeLabelKey: TridentNodeLabelValue}
-
-		// Delete PodSecurityPolicy for controller, linux & windows nodes
-		pspYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getControllerRBACResourceName(), labels, nil)
-		if err := client.DeleteObjectByYAML(pspYAML, true); err != nil {
-			Log().WithField("error", err).Warning("Could not delete controller pod security policy.")
-			anyErrors = true
-		} else {
-			Log().WithField("podSecurityPolicy",
-				getControllerRBACResourceName()).Info("Deleted controller pod security policy.")
-		}
-		// Deletion of Linux node PSP
-		pspYAML = k8sclient.GetPrivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(false), daemonSetlabels, nil)
-		if err := client.DeleteObjectByYAML(pspYAML, true); err != nil {
-			Log().WithField("error", err).Warning("Could not delete linux node pod security policy.")
-			anyErrors = true
-		} else {
-			Log().WithField("podSecurityPolicy",
-				getNodeRBACResourceName(false)).Info("Deleted linux node pod security policy.")
-		}
-
-		// Deletion of Windows node PSP
-		pspYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(true), daemonSetlabels, nil)
-		if err := client.DeleteObjectByYAML(pspYAML, true); err != nil {
-			Log().WithField("error", err).Warning("Could not delete windows node pod security policy.")
-			anyErrors = true
-		} else {
-			Log().WithField("podSecurityPolicy",
-				getNodeRBACResourceName(true)).Info("Deleted windows node pod security policy.")
-		}
-	}
-
 	CSIDriverYAML := k8sclient.GetCSIDriverYAML(getCSIDriverName(), nil, nil)
 
 	if err = client.DeleteObjectByYAML(CSIDriverYAML, true); err != nil {

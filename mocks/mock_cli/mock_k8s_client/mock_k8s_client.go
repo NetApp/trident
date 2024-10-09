@@ -19,7 +19,6 @@ import (
 	gomock "go.uber.org/mock/gomock"
 	v10 "k8s.io/api/apps/v1"
 	v11 "k8s.io/api/core/v1"
-	v1beta1 "k8s.io/api/policy/v1beta1"
 	v12 "k8s.io/api/rbac/v1"
 	v13 "k8s.io/api/storage/v1"
 	v14 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -246,22 +245,6 @@ func (m *MockKubernetesClient) CheckPodExistsByLabel(arg0 string, arg1 bool) (bo
 func (mr *MockKubernetesClientMockRecorder) CheckPodExistsByLabel(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPodExistsByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).CheckPodExistsByLabel), arg0, arg1)
-}
-
-// CheckPodSecurityPolicyExistsByLabel mocks base method.
-func (m *MockKubernetesClient) CheckPodSecurityPolicyExistsByLabel(arg0 string) (bool, string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckPodSecurityPolicyExistsByLabel", arg0)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// CheckPodSecurityPolicyExistsByLabel indicates an expected call of CheckPodSecurityPolicyExistsByLabel.
-func (mr *MockKubernetesClientMockRecorder) CheckPodSecurityPolicyExistsByLabel(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPodSecurityPolicyExistsByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).CheckPodSecurityPolicyExistsByLabel), arg0)
 }
 
 // CheckSecretExists mocks base method.
@@ -576,34 +559,6 @@ func (m *MockKubernetesClient) DeletePodByLabel(arg0 string) error {
 func (mr *MockKubernetesClientMockRecorder) DeletePodByLabel(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePodByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).DeletePodByLabel), arg0)
-}
-
-// DeletePodSecurityPolicy mocks base method.
-func (m *MockKubernetesClient) DeletePodSecurityPolicy(arg0 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeletePodSecurityPolicy", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeletePodSecurityPolicy indicates an expected call of DeletePodSecurityPolicy.
-func (mr *MockKubernetesClientMockRecorder) DeletePodSecurityPolicy(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePodSecurityPolicy", reflect.TypeOf((*MockKubernetesClient)(nil).DeletePodSecurityPolicy), arg0)
-}
-
-// DeletePodSecurityPolicyByLabel mocks base method.
-func (m *MockKubernetesClient) DeletePodSecurityPolicyByLabel(arg0 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeletePodSecurityPolicyByLabel", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeletePodSecurityPolicyByLabel indicates an expected call of DeletePodSecurityPolicyByLabel.
-func (mr *MockKubernetesClientMockRecorder) DeletePodSecurityPolicyByLabel(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePodSecurityPolicyByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).DeletePodSecurityPolicyByLabel), arg0)
 }
 
 // DeleteResourceQuota mocks base method.
@@ -1076,36 +1031,6 @@ func (mr *MockKubernetesClientMockRecorder) GetPodByLabel(arg0, arg1 any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPodByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetPodByLabel), arg0, arg1)
 }
 
-// GetPodSecurityPoliciesByLabel mocks base method.
-func (m *MockKubernetesClient) GetPodSecurityPoliciesByLabel(arg0 string) ([]v1beta1.PodSecurityPolicy, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPodSecurityPoliciesByLabel", arg0)
-	ret0, _ := ret[0].([]v1beta1.PodSecurityPolicy)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPodSecurityPoliciesByLabel indicates an expected call of GetPodSecurityPoliciesByLabel.
-func (mr *MockKubernetesClientMockRecorder) GetPodSecurityPoliciesByLabel(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPodSecurityPoliciesByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetPodSecurityPoliciesByLabel), arg0)
-}
-
-// GetPodSecurityPolicyByLabel mocks base method.
-func (m *MockKubernetesClient) GetPodSecurityPolicyByLabel(arg0 string) (*v1beta1.PodSecurityPolicy, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPodSecurityPolicyByLabel", arg0)
-	ret0, _ := ret[0].(*v1beta1.PodSecurityPolicy)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPodSecurityPolicyByLabel indicates an expected call of GetPodSecurityPolicyByLabel.
-func (mr *MockKubernetesClientMockRecorder) GetPodSecurityPolicyByLabel(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPodSecurityPolicyByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetPodSecurityPolicyByLabel), arg0)
-}
-
 // GetPodsByLabel mocks base method.
 func (m *MockKubernetesClient) GetPodsByLabel(arg0 string, arg1 bool) ([]v11.Pod, error) {
 	m.ctrl.T.Helper()
@@ -1556,34 +1481,6 @@ func (m *MockKubernetesClient) PatchOpenShiftSCC(arg0 []byte) error {
 func (mr *MockKubernetesClientMockRecorder) PatchOpenShiftSCC(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchOpenShiftSCC", reflect.TypeOf((*MockKubernetesClient)(nil).PatchOpenShiftSCC), arg0)
-}
-
-// PatchPodSecurityPolicyByLabel mocks base method.
-func (m *MockKubernetesClient) PatchPodSecurityPolicyByLabel(arg0 string, arg1 []byte, arg2 types.PatchType) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PatchPodSecurityPolicyByLabel", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PatchPodSecurityPolicyByLabel indicates an expected call of PatchPodSecurityPolicyByLabel.
-func (mr *MockKubernetesClientMockRecorder) PatchPodSecurityPolicyByLabel(arg0, arg1, arg2 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodSecurityPolicyByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).PatchPodSecurityPolicyByLabel), arg0, arg1, arg2)
-}
-
-// PatchPodSecurityPolicyByLabelAndName mocks base method.
-func (m *MockKubernetesClient) PatchPodSecurityPolicyByLabelAndName(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PatchPodSecurityPolicyByLabelAndName", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PatchPodSecurityPolicyByLabelAndName indicates an expected call of PatchPodSecurityPolicyByLabelAndName.
-func (mr *MockKubernetesClientMockRecorder) PatchPodSecurityPolicyByLabelAndName(arg0, arg1, arg2, arg3 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodSecurityPolicyByLabelAndName", reflect.TypeOf((*MockKubernetesClient)(nil).PatchPodSecurityPolicyByLabelAndName), arg0, arg1, arg2, arg3)
 }
 
 // PatchResourceQuotaByLabel mocks base method.

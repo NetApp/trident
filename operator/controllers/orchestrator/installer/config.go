@@ -46,8 +46,7 @@ const (
 
 	TridentEncryptionKeys = "trident-encryption-keys"
 
-	CSIDriver  = "csi.trident.netapp.io"
-	TridentPSP = "tridentpods"
+	CSIDriver = "csi.trident.netapp.io"
 
 	TridentNodeLabelKey   = TridentAppLabelKey
 	TridentNodeLabelValue = "node.csi.trident.netapp.io"

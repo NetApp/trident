@@ -9,7 +9,6 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -108,13 +107,6 @@ type ExtendedK8sClient interface {
 	PutDeployment(currentDeployment *appsv1.Deployment, createDeployment bool, newDeploymentYAML, appLabel string) error
 	DeleteTridentDeployment(appLabel string) error
 	RemoveMultipleDeployments(unwantedDeployments []appsv1.Deployment) error
-
-	GetMultiplePodSecurityPolicyInformation(
-		pspNames []string, appLabel string, shouldUpdate bool,
-	) (map[string]*policyv1beta1.PodSecurityPolicy, []policyv1beta1.PodSecurityPolicy, map[string]bool, error)
-	PutPodSecurityPolicy(currentPSP *policyv1beta1.PodSecurityPolicy, reusePSP bool, newPSPYAML, appLabel string) error
-	DeleteTridentPodSecurityPolicy(pspName, appLabel string) error
-	RemoveMultiplePodSecurityPolicies(unwantedPSPs []policyv1beta1.PodSecurityPolicy) error
 
 	GetSecretInformation(
 		secretName, appLabel, namespace string, shouldUpdate bool,

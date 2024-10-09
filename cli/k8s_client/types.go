@@ -10,7 +10,6 @@ import (
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/api/policy/v1beta1"
 	v13 "k8s.io/api/rbac/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -61,13 +60,6 @@ type KubernetesClient interface {
 	CheckCRDExists(crdName string) (bool, error)
 	PatchCRD(crdName string, patchBytes []byte, patchType types.PatchType) error
 	DeleteCRD(crdName string) error
-	GetPodSecurityPolicyByLabel(label string) (*v1beta1.PodSecurityPolicy, error)
-	GetPodSecurityPoliciesByLabel(label string) ([]v1beta1.PodSecurityPolicy, error)
-	CheckPodSecurityPolicyExistsByLabel(label string) (bool, string, error)
-	DeletePodSecurityPolicyByLabel(label string) error
-	DeletePodSecurityPolicy(pspName string) error
-	PatchPodSecurityPolicyByLabel(label string, patchBytes []byte, patchType types.PatchType) error
-	PatchPodSecurityPolicyByLabelAndName(label, pspName string, patchBytes []byte, patchType types.PatchType) error
 	GetServiceAccountByLabel(label string, allNamespaces bool) (*v1.ServiceAccount, error)
 	GetServiceAccountByLabelAndName(label, serviceAccountName string, allNamespaces bool) (*v1.ServiceAccount, error)
 	GetServiceAccountsByLabel(label string, allNamespaces bool) ([]v1.ServiceAccount, error)

@@ -7,9 +7,7 @@ import (
 
 	"github.com/netapp/trident/cli/cmd"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
-	versionutils "github.com/netapp/trident/utils/version"
 )
 
 func (i *Installer) UninstallTrident() error {
@@ -51,13 +49,6 @@ func (i *Installer) UninstallTrident() error {
 	// Delete Trident RBAC objects
 	if err := i.removeRBACObjects(); err != nil {
 		return fmt.Errorf("could not delete all Trident's RBAC objects; %v", err)
-	}
-
-	pspRemovedVersion := versionutils.MustParseMajorMinorVersion(config.PodSecurityPoliciesRemovedKubernetesVersion)
-	if i.client.ServerVersion().LessThan(pspRemovedVersion) {
-		if err := i.client.DeleteTridentPodSecurityPolicy(getPSPName(), appLabel); err != nil {
-			return err
-		}
 	}
 
 	Log().Info("The uninstaller did not delete Trident's namespace in case it is going to be reused.")

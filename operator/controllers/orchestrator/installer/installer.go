@@ -612,15 +612,6 @@ func (i *Installer) InstallOrPatchTrident(
 		return nil, "", "", fmt.Errorf("failed to add finalizers for Trident CRDs %v; err: %v", CRDnames, returnError)
 	}
 
-	// Create or patch or update the RBAC PSPs
-	if i.isPSPSupported() {
-		returnError = i.createOrPatchTridentPodSecurityPolicy(controllingCRDetails, labels, shouldUpdate)
-		if returnError != nil {
-			returnError = fmt.Errorf("failed to create the Trident pod security policy; %v", returnError)
-			return nil, "", "", returnError
-		}
-	}
-
 	// Create or update the CSI Driver object if necessary
 	returnError = i.createOrPatchK8sCSIDriver(controllingCRDetails, labels, shouldUpdate)
 	if returnError != nil {
@@ -1042,9 +1033,6 @@ func (i *Installer) createOrPatchTridentRoles(
 ) error {
 	// Operator should create Role and RoleBinding for node resources only if PSP is supported
 	roleNames := []string{getControllerRBACResourceName()}
-	if i.isPSPSupported() {
-		roleNames = append(roleNames, getNodeResourceNames()...)
-	}
 
 	// Retrieve roles with controller label
 	currentRoleMap, unwantedRoles, reuseRoleMap, err := i.client.GetMultipleRoleInformation(
@@ -1054,25 +1042,6 @@ func (i *Installer) createOrPatchTridentRoles(
 	}
 
 	combinedUnwantedRoles := unwantedRoles
-
-	if i.isPSPSupported() {
-		// Retrieve roles with node label
-		nodeRoleMap, unwantedNodeRoles, reuseNodeRoleMap, err := i.client.GetMultipleRoleInformation(
-			roleNames, TridentNodeLabel, shouldUpdate)
-		if err != nil {
-			return fmt.Errorf("failed to get Trident roles with node label; %v", err)
-		}
-
-		// Merging the maps together
-		for key, value := range nodeRoleMap {
-			currentRoleMap[key] = value
-		}
-
-		for key, value := range reuseNodeRoleMap {
-			reuseRoleMap[key] = value
-		}
-		combinedUnwantedRoles = append(combinedUnwantedRoles, unwantedNodeRoles...)
-	}
 
 	if err = i.client.RemoveMultipleRoles(combinedUnwantedRoles); err != nil {
 		return fmt.Errorf("failed to remove unwanted Trident roles; %v", err)
@@ -1097,9 +1066,6 @@ func (i *Installer) createOrPatchTridentRoleBindings(
 ) error {
 	// Operator should create Role and RoleBinding for node resources only if PSP is supported
 	roleBindingNames := []string{getControllerRBACResourceName()}
-	if i.isPSPSupported() {
-		roleBindingNames = append(roleBindingNames, getNodeResourceNames()...)
-	}
 
 	currentRoleBindingMap, unwantedRoleBindings, reuseRoleBindingMap,
 		err := i.client.GetMultipleRoleBindingInformation(roleBindingNames, appLabel, shouldUpdate)
@@ -1108,25 +1074,6 @@ func (i *Installer) createOrPatchTridentRoleBindings(
 	}
 
 	combinedUnwantedRoleBindings := unwantedRoleBindings
-
-	if i.isPSPSupported() {
-		// Retrieve role bindings with node label
-		nodeRoleBindingMap, unwantedNodeRoleBindings, reuseNodeRoleBindingMap,
-			err := i.client.GetMultipleRoleBindingInformation(roleBindingNames, TridentNodeLabel, shouldUpdate)
-		if err != nil {
-			return fmt.Errorf("failed to get Trident role bindings with node label; %v", err)
-		}
-
-		// Merging the maps together
-		for key, value := range nodeRoleBindingMap {
-			currentRoleBindingMap[key] = value
-		}
-		for key, value := range reuseNodeRoleBindingMap {
-			reuseRoleBindingMap[key] = value
-		}
-
-		combinedUnwantedRoleBindings = append(combinedUnwantedRoleBindings, unwantedNodeRoleBindings...)
-	}
 
 	if err = i.client.RemoveMultipleRoleBindings(combinedUnwantedRoleBindings); err != nil {
 		return fmt.Errorf("failed to remove unwanted Trident role bindings; %v", err)
@@ -1242,67 +1189,6 @@ func (i *Installer) createAndEnsureCRDs(performOperationOnce bool) (returnError 
 		returnError = fmt.Errorf("failed to create the Trident CRDs; %v", returnError)
 	}
 	return
-}
-
-func (i *Installer) createOrPatchTridentPodSecurityPolicy(
-	controllingCRDetails, labels map[string]string, shouldUpdate bool,
-) error {
-	// Creating PodSecurityPolicy for controller
-	currentPSPMap, unwantedPSPs, reusePSPMap, err := i.client.GetMultiplePodSecurityPolicyInformation(
-		[]string{getControllerRBACResourceName()}, appLabel, shouldUpdate)
-	if err != nil {
-		return fmt.Errorf("failed to get Trident controller pod security policies; %v", err)
-	}
-
-	if err = i.client.RemoveMultiplePodSecurityPolicies(unwantedPSPs); err != nil {
-		return fmt.Errorf("failed to remove unwanted Trident controller pod security policies; %v", err)
-	}
-
-	newPSPYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getControllerRBACResourceName(), labels,
-		controllingCRDetails)
-	if err = i.client.PutPodSecurityPolicy(
-		currentPSPMap[getControllerRBACResourceName()],
-		reusePSPMap[getControllerRBACResourceName()],
-		newPSPYAML,
-		appLabel); err != nil {
-		return fmt.Errorf("failed to create or patch Trident controller pod security policy; %v", err)
-	}
-
-	nodeLabels, _ := getAppLabelForResource(getNodeRBACResourceName(false))
-	// Creating PodSecurityPolicy for node
-	nodePSPMap, unwantedNodePSPs, reuseNodePSP, err := i.client.GetMultiplePodSecurityPolicyInformation(
-		[]string{getNodeRBACResourceName(false), getNodeRBACResourceName(true)}, TridentNodeLabel, shouldUpdate)
-	if err != nil {
-		return fmt.Errorf("failed to get Trident node pod security policies; %v", err)
-	}
-
-	if err = i.client.RemoveMultiplePodSecurityPolicies(unwantedNodePSPs); err != nil {
-		return fmt.Errorf("failed to remove unwanted Trident node pod security policies; %v", err)
-	}
-
-	newPSPYAML = k8sclient.GetPrivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(false), nodeLabels,
-		controllingCRDetails)
-	if err = i.client.PutPodSecurityPolicy(
-		nodePSPMap[getNodeRBACResourceName(false)],
-		reuseNodePSP[getNodeRBACResourceName(false)],
-		newPSPYAML,
-		TridentNodeLabel); err != nil {
-		return fmt.Errorf("failed to create or patch Trident linux pod security policy; %v", err)
-	}
-
-	// Creating PodSecurityPolicy for windows node
-	if windows {
-		newPSPYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(true), nodeLabels,
-			controllingCRDetails)
-		if err = i.client.PutPodSecurityPolicy(
-			nodePSPMap[getNodeRBACResourceName(true)],
-			reuseNodePSP[getNodeRBACResourceName(true)],
-			newPSPYAML,
-			TridentNodeLabel); err != nil {
-			return fmt.Errorf("failed to create or patch windows node pod security policy; %v", err)
-		}
-	}
-	return nil
 }
 
 func (i *Installer) createOrPatchTridentService(
@@ -2004,11 +1890,6 @@ func getAppLabelForResource(resourceName string) (map[string]string, string) {
 		label = TridentCSILabel
 	}
 	return labelMap, label
-}
-
-func (i *Installer) isPSPSupported() bool {
-	pspRemovedVersion := versionutils.MustParseMajorMinorVersion(commonconfig.PodSecurityPoliciesRemovedKubernetesVersion)
-	return i.client.ServerVersion().LessThan(pspRemovedVersion)
 }
 
 func isLinuxNodeSCCUser(user string) bool {
