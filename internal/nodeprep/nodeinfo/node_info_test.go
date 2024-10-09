@@ -49,7 +49,7 @@ func TestNode_GetInfo(t *testing.T) {
 
 	fooHostSystemResponse := models.HostSystem{
 		OS: models.SystemOS{
-			Distro: "foo",
+			Distro: "",
 		},
 	}
 
@@ -75,10 +75,15 @@ func TestNode_GetInfo(t *testing.T) {
 			},
 			getBinaryClient: func(controller *gomock.Controller) nodeinfo.Binary {
 				binary := mock_nodeinfo.NewMockBinary(controller)
+				binary.EXPECT().FindPath(nodeinfo.PkgMgrYum).Return("some path")
 				return binary
 			},
-			expectedNodeInfo: nil,
-			assertError:      assert.Error,
+			expectedNodeInfo: &nodeinfo.NodeInfo{
+				PkgMgr:     nodeinfo.PkgMgrYum,
+				HostSystem: fooHostSystemResponse,
+				Distro:     nodeinfo.DistroUnknown,
+			},
+			assertError: assert.NoError,
 		},
 		"node info returns supported distro ubuntu": {
 			getOSClient: func(controller *gomock.Controller) nodeinfo.OS {

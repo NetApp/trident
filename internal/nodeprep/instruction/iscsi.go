@@ -24,6 +24,14 @@ func newAmznYumISCSI() (instruction Instructions) {
 	return newISCSI(yum.New(), amzn.New())
 }
 
+func newYumISCSI() (instruction Instructions) {
+	return newISCSI(yum.New(), amzn.New())
+}
+
+func newAptISCSI() (instruction Instructions) {
+	return newISCSI(apt.New(), debian.New())
+}
+
 func newISCSI(packageManager packagemanager.PackageManager, systemManager systemmanager.SystemManager) (instruction *ISCSI) {
 	instruction = &ISCSI{}
 	instruction.name = "iscsi instructions"

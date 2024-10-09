@@ -6,11 +6,10 @@ package nodeinfo
 
 import (
 	"context"
-	"fmt"
+	"strings"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
-	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -26,8 +25,9 @@ type (
 )
 
 const (
-	DistroUbuntu Distro = utils.Ubuntu
-	DistroAmzn   Distro = "amzn"
+	DistroUbuntu  Distro = utils.Ubuntu
+	DistroAmzn    Distro = "amzn"
+	DistroUnknown        = "unknown"
 
 	PkgMgrYum  PkgMgr = "yum"
 	PkgMgrApt  PkgMgr = "apt"
@@ -66,10 +66,7 @@ func (n *NodeClient) GetInfo(ctx context.Context) (*NodeInfo, error) {
 		"distro":     hostSystem.OS.Distro,
 	}).Info("Host system information")
 
-	distro, err := supportedDistro(hostSystem.OS.Distro)
-	if err != nil {
-		return nil, err
-	}
+	distro := checkDistro(hostSystem.OS.Distro)
 
 	nodeType := &NodeInfo{
 		PkgMgr:     n.getPkgMgr(),
@@ -90,10 +87,9 @@ func (n *NodeClient) getPkgMgr() PkgMgr {
 	return PkgMgrNone
 }
 
-func supportedDistro(distro string) (Distro, error) {
-	switch distro {
-	case DistroUbuntu, DistroAmzn:
-		return distro, nil
+func checkDistro(distro string) Distro {
+	if strings.TrimSpace(distro) == "" {
+		return DistroUnknown
 	}
-	return "", errors.UnsupportedError(fmt.Sprintf("%s is not a supported host distribution", distro))
+	return distro
 }
