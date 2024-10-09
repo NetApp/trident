@@ -119,3 +119,9 @@ func EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx context.Context, luksDevicePath 
 	defer Logc(ctx).Debug("<<<< devices_windows.EnsureLUKSDeviceClosedWithMaxWaitLimit")
 	return errors.UnsupportedError("EnsureLUKSDeviceClosedWithMaxWaitLimit is not supported for windows")
 }
+
+func closeLUKSDevice(ctx context.Context, devicePath string) error {
+	Logc(ctx).Debug(">>>> devices_windows.closeLUKSDevice")
+	defer Logc(ctx).Debug("<<<< devices_windows.closeLUKSDevice")
+	return errors.UnsupportedError("closeLUKSDevice is not supported for windows")
+}

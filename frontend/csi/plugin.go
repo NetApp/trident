@@ -79,7 +79,9 @@ type Plugin struct {
 	nvmeSelfHealingChannel  chan struct{}
 	nvmeSelfHealingInterval time.Duration
 
-	iscsi iscsi.ISCSI
+	iscsi        iscsi.ISCSI
+	deviceClient iscsi.Devices // TODO: this interface will be replaced once the device package is created
+	mountClient  iscsi.Mount   // TODO: this interface will be replaced once the mount pacakge is created
 }
 
 func NewControllerPlugin(
@@ -171,6 +173,8 @@ func NewNodePlugin(
 		// NewClient() must plugin default implementation of the various package clients.
 		iscsi: iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
 			utils.NewMountClient()),
+		deviceClient: utils.NewDevicesClient(),
+		mountClient:  utils.NewMountClient(),
 	}
 
 	if runtime.GOOS == "windows" {
@@ -259,6 +263,8 @@ func NewAllInOnePlugin(
 		// NewClient() must plugin default implementation of the various package clients.
 		iscsi: iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
 			utils.NewMountClient()),
+		deviceClient: utils.NewDevicesClient(),
+		mountClient:  utils.NewMountClient(),
 	}
 
 	// Define controller capabilities

@@ -210,8 +210,8 @@ func TestRemoveMultipathDeviceMapping(t *testing.T) {
 	// Reset 'command' at the end of the test
 	defer func() { command = originalCmd }()
 
-	client := mockexec.NewMockCommand(gomock.NewController(t))
-	command = client // Set package var to mock
+	mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
+	command = mockCommand // Set package var to mock
 
 	tests := []struct {
 		name        string
@@ -253,9 +253,10 @@ func TestRemoveMultipathDeviceMapping(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.devicePath != "" {
-				client.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 10*time.Second, false, "-f", tt.devicePath).
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 10*time.Second, false, "-f", tt.devicePath).
 					Return(tt.mockReturn, tt.mockError)
 			}
+
 			err := RemoveMultipathDeviceMapping(context.TODO(), tt.devicePath)
 			if tt.expectError {
 				assert.Error(t, err)

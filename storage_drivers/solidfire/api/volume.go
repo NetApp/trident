@@ -12,7 +12,6 @@ import (
 	"github.com/cenkalti/backoff/v4"
 
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -202,15 +201,6 @@ func (c *Client) DeleteVolume(ctx context.Context, volumeID int64) (err error) {
 	}
 	_, err = c.Request(ctx, "PurgeDeletedVolume", req, NewReqID())
 	return
-}
-
-// DetachVolume tbd
-func (c *Client) DetachVolume(ctx context.Context, v Volume) error {
-	if c.SVIP == "" {
-		Logc(ctx).Errorf("Cannot detach volume, SVIP is not set.")
-		return errors.New("detach volume error")
-	}
-	return utils.ISCSILogout(ctx, v.Iqn, c.SVIP)
 }
 
 func (c *Client) ModifyVolume(ctx context.Context, req *ModifyVolumeRequest) (err error) {

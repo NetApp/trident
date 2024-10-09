@@ -67,3 +67,17 @@ func (mr *MockMountMockRecorder) MountDevice(arg0, arg1, arg2, arg3, arg4 any) *
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MountDevice", reflect.TypeOf((*MockMount)(nil).MountDevice), arg0, arg1, arg2, arg3, arg4)
 }
+
+// UmountAndRemoveTemporaryMountPoint mocks base method.
+func (m *MockMount) UmountAndRemoveTemporaryMountPoint(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UmountAndRemoveTemporaryMountPoint", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UmountAndRemoveTemporaryMountPoint indicates an expected call of UmountAndRemoveTemporaryMountPoint.
+func (mr *MockMountMockRecorder) UmountAndRemoveTemporaryMountPoint(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UmountAndRemoveTemporaryMountPoint", reflect.TypeOf((*MockMount)(nil).UmountAndRemoveTemporaryMountPoint), arg0, arg1)
+}

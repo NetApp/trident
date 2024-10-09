@@ -38,10 +38,49 @@ func (c DevicesClient) NewLUKSDevice(rawDevicePath, volumeId string) (models.LUK
 	return NewLUKSDevice(rawDevicePath, volumeId)
 }
 
+func (c DevicesClient) MultipathFlushDevice(ctx context.Context, deviceInfo *models.ScsiDeviceInfo) error {
+	return multipathFlushDevice(ctx, deviceInfo)
+}
+
+func (c DevicesClient) CompareWithPublishedDevicePath(
+	ctx context.Context, publishInfo *models.VolumePublishInfo, deviceInfo *models.ScsiDeviceInfo,
+) (bool, error) {
+	return compareWithPublishedDevicePath(ctx, publishInfo, deviceInfo)
+}
+
+func (c DevicesClient) CompareWithPublishedSerialNumber(
+	ctx context.Context, publishInfo *models.VolumePublishInfo, deviceInfo *models.ScsiDeviceInfo,
+) (bool, error) {
+	return compareWithPublishedSerialNumber(ctx, publishInfo, deviceInfo)
+}
+
+func (c DevicesClient) CompareWithAllPublishInfos(
+	ctx context.Context, publishInfo *models.VolumePublishInfo,
+	allPublishInfos []models.VolumePublishInfo, deviceInfo *models.ScsiDeviceInfo,
+) error {
+	return compareWithAllPublishInfos(ctx, publishInfo, allPublishInfos, deviceInfo)
+}
+
+func (c DevicesClient) RemoveSCSIDevice(ctx context.Context, deviceInfo *models.ScsiDeviceInfo, ignoreErrors,
+	skipFlush bool,
+) (bool, error) {
+	return removeSCSIDevice(ctx, deviceInfo, ignoreErrors, skipFlush)
+}
+
+func (c DevicesClient) GetDeviceInfoForLUN(
+	ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string, isDetachCall bool,
+) (*models.ScsiDeviceInfo, error) {
+	return GetDeviceInfoForLUN(ctx, hostSessionMap, lunID, iSCSINodeName, isDetachCall)
+}
+
 func (c DevicesClient) EnsureLUKSDeviceMappedOnHost(ctx context.Context, luksDevice models.LUKSDeviceInterface,
 	name string, secrets map[string]string,
 ) (bool, error) {
 	return EnsureLUKSDeviceMappedOnHost(ctx, luksDevice, name, secrets)
+}
+
+func (c DevicesClient) CloseLUKSDevice(ctx context.Context, devicePath string) error {
+	return closeLUKSDevice(ctx, devicePath)
 }
 
 func (c DevicesClient) IsDeviceUnformatted(ctx context.Context, device string) (bool, error) {
@@ -54,6 +93,46 @@ func (c DevicesClient) EnsureDeviceReadable(ctx context.Context, device string) 
 
 func (c DevicesClient) GetISCSIDiskSize(ctx context.Context, devicePath string) (int64, error) {
 	return getISCSIDiskSize(ctx, devicePath)
+}
+
+func (c DevicesClient) GetMountedISCSIDevices(ctx context.Context) ([]*models.ScsiDeviceInfo, error) {
+	return GetMountedISCSIDevices(ctx)
+}
+
+func (c DevicesClient) GetUnderlyingDevicePathForLUKSDevice(ctx context.Context, luksDevicePath string) (string, error) {
+	return GetUnderlyingDevicePathForLUKSDevice(ctx, luksDevicePath)
+}
+
+func (c DevicesClient) RemoveMultipathDeviceMapping(ctx context.Context, devicePath string) error {
+	return RemoveMultipathDeviceMapping(ctx, devicePath)
+}
+
+func (c DevicesClient) GetDMDeviceForMapperPath(ctx context.Context, mapperPath string) (string, error) {
+	return GetDMDeviceForMapperPath(ctx, mapperPath)
+}
+
+func (c DevicesClient) EnsureLUKSDeviceClosed(ctx context.Context, devicePath string) error {
+	return EnsureLUKSDeviceClosed(ctx, devicePath)
+}
+
+func (c DevicesClient) EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx context.Context, luksDevicePath string) error {
+	return EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksDevicePath)
+}
+
+func (c DevicesClient) PrepareDeviceForRemoval(ctx context.Context, deviceInfo *models.ScsiDeviceInfo, publishInfo *models.VolumePublishInfo,
+	allPublishInfos []models.VolumePublishInfo, ignoreErrors, force bool,
+) (string, error) {
+	return PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, allPublishInfos, ignoreErrors, force)
+}
+
+func (c DevicesClient) GetLUKSDeviceForMultipathDevice(multipathDevice string) (string, error) {
+	return GetLUKSDeviceForMultipathDevice(multipathDevice)
+}
+
+func (c DevicesClient) NewLUKSDeviceFromMappingPath(ctx context.Context, mappingPath,
+	volumeId string,
+) (models.LUKSDeviceInterface, error) {
+	return NewLUKSDeviceFromMappingPath(ctx, mappingPath, volumeId)
 }
 
 type FilesystemClient struct{}
@@ -82,4 +161,12 @@ func (c MountClient) IsMounted(ctx context.Context, sourceDevice, mountpoint, mo
 
 func (c MountClient) MountDevice(ctx context.Context, device, mountpoint, options string, isMountPointFile bool) (err error) {
 	return MountDevice(ctx, device, mountpoint, options, isMountPointFile)
+}
+
+func (c MountClient) UmountAndRemoveMountPoint(ctx context.Context, mountPoint string) error {
+	return UmountAndRemoveMountPoint(ctx, mountPoint)
+}
+
+func (c MountClient) UmountAndRemoveTemporaryMountPoint(ctx context.Context, mountPath string) error {
+	return UmountAndRemoveTemporaryMountPoint(ctx, mountPath)
 }

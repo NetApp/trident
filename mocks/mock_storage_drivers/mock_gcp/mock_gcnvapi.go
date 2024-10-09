@@ -179,7 +179,7 @@ func (m *MockGCNV) FilterCapacityPoolsOnTopology(arg0 context.Context, arg1 []*g
 }
 
 // FilterCapacityPoolsOnTopology indicates an expected call of FilterCapacityPoolsOnTopology.
-func (mr *MockGCNVMockRecorder) FilterCapacityPoolsOnTopology(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockGCNVMockRecorder) FilterCapacityPoolsOnTopology(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FilterCapacityPoolsOnTopology", reflect.TypeOf((*MockGCNV)(nil).FilterCapacityPoolsOnTopology), arg0, arg1, arg2, arg3)
 }

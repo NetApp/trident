@@ -345,10 +345,11 @@ func EnsureLUKSDeviceClosed(ctx context.Context, devicePath string) error {
 
 func EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx context.Context, luksDevicePath string) error {
 	if err := EnsureLUKSDeviceClosed(ctx, luksDevicePath); err != nil {
-		if LuksCloseDurations[luksDevicePath].IsZero() {
-			LuksCloseDurations[luksDevicePath] = time.Now()
+		LuksCloseDurations.InitStartTime(luksDevicePath)
+		elapsed, durationErr := LuksCloseDurations.GetCurrentDuration(luksDevicePath)
+		if durationErr != nil {
+			return durationErr
 		}
-		elapsed := time.Since(LuksCloseDurations[luksDevicePath])
 		if elapsed > luksCloseMaxWaitDuration {
 			Logc(ctx).WithFields(
 				LogFields{

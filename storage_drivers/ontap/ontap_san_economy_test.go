@@ -27,6 +27,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	utilserrors "github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -194,7 +195,10 @@ func newTestOntapSanEcoDriver(
 		config.AWSConfig.FSxFilesystemID = *fsxId
 	}
 
-	sanEcoDriver := &SANEconomyStorageDriver{}
+	sanEcoDriver := &SANEconomyStorageDriver{
+		iscsi: iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
+			utils.NewMountClient()),
+	}
 	sanEcoDriver.Config = *config
 
 	numRecords := api.DefaultZapiRecords

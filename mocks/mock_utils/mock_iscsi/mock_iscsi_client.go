@@ -82,6 +82,20 @@ func (mr *MockISCSIMockRecorder) IsAlreadyAttached(arg0, arg1, arg2 any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAlreadyAttached", reflect.TypeOf((*MockISCSI)(nil).IsAlreadyAttached), arg0, arg1, arg2)
 }
 
+// Logout mocks base method.
+func (m *MockISCSI) Logout(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Logout", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Logout indicates an expected call of Logout.
+func (mr *MockISCSIMockRecorder) Logout(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockISCSI)(nil).Logout), arg0, arg1, arg2)
+}
+
 // PreChecks mocks base method.
 func (m *MockISCSI) PreChecks(arg0 context.Context) error {
 	m.ctrl.T.Helper()
@@ -96,6 +110,30 @@ func (mr *MockISCSIMockRecorder) PreChecks(arg0 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PreChecks", reflect.TypeOf((*MockISCSI)(nil).PreChecks), arg0)
 }
 
+// RemoveLUNFromSessions mocks base method.
+func (m *MockISCSI) RemoveLUNFromSessions(arg0 context.Context, arg1 *models.VolumePublishInfo, arg2 *models.ISCSISessions) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "RemoveLUNFromSessions", arg0, arg1, arg2)
+}
+
+// RemoveLUNFromSessions indicates an expected call of RemoveLUNFromSessions.
+func (mr *MockISCSIMockRecorder) RemoveLUNFromSessions(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveLUNFromSessions", reflect.TypeOf((*MockISCSI)(nil).RemoveLUNFromSessions), arg0, arg1, arg2)
+}
+
+// RemovePortalsFromSession mocks base method.
+func (m *MockISCSI) RemovePortalsFromSession(arg0 context.Context, arg1 *models.VolumePublishInfo, arg2 *models.ISCSISessions) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "RemovePortalsFromSession", arg0, arg1, arg2)
+}
+
+// RemovePortalsFromSession indicates an expected call of RemovePortalsFromSession.
+func (mr *MockISCSIMockRecorder) RemovePortalsFromSession(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemovePortalsFromSession", reflect.TypeOf((*MockISCSI)(nil).RemovePortalsFromSession), arg0, arg1, arg2)
+}
+
 // RescanDevices mocks base method.
 func (m *MockISCSI) RescanDevices(arg0 context.Context, arg1 string, arg2 int32, arg3 int64) error {
 	m.ctrl.T.Helper()
@@ -108,4 +146,33 @@ func (m *MockISCSI) RescanDevices(arg0 context.Context, arg1 string, arg2 int32,
 func (mr *MockISCSIMockRecorder) RescanDevices(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RescanDevices", reflect.TypeOf((*MockISCSI)(nil).RescanDevices), arg0, arg1, arg2, arg3)
+}
+
+// SafeToLogOut mocks base method.
+func (m *MockISCSI) SafeToLogOut(arg0 context.Context, arg1, arg2 int) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SafeToLogOut", arg0, arg1, arg2)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// SafeToLogOut indicates an expected call of SafeToLogOut.
+func (mr *MockISCSIMockRecorder) SafeToLogOut(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SafeToLogOut", reflect.TypeOf((*MockISCSI)(nil).SafeToLogOut), arg0, arg1, arg2)
+}
+
+// TargetHasMountedDevice mocks base method.
+func (m *MockISCSI) TargetHasMountedDevice(arg0 context.Context, arg1 string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TargetHasMountedDevice", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TargetHasMountedDevice indicates an expected call of TargetHasMountedDevice.
+func (mr *MockISCSIMockRecorder) TargetHasMountedDevice(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TargetHasMountedDevice", reflect.TypeOf((*MockISCSI)(nil).TargetHasMountedDevice), arg0, arg1)
 }

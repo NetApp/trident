@@ -58,6 +58,21 @@ type IscsiAccessInfo struct {
 	IscsiChapInfo
 }
 
+// ScsiDeviceInfo contains information about SCSI devices
+type ScsiDeviceInfo struct {
+	Host            string
+	Channel         string
+	Target          string
+	LUN             string
+	Devices         []string
+	DevicePaths     []string
+	MultipathDevice string
+	Filesystem      string
+	IQN             string
+	SessionNumber   int
+	CHAPInfo        IscsiChapInfo
+}
+
 type NfsAccessInfo struct {
 	NfsServerIP string `json:"nfsServerIp,omitempty"`
 	NfsPath     string `json:"nfsPath,omitempty"`

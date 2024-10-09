@@ -1921,6 +1921,537 @@ func TestNodeRegisterWithController_Failure(t *testing.T) {
 	assert.True(t, nodeServer.nodeIsRegistered, "expected node to be registered, but it is not")
 }
 
+func TestNodeUnstageISCSIVolume(t *testing.T) {
+	defer func(previousIscsiUtils iscsi.IscsiReconcileUtils) {
+		iscsiUtils = previousIscsiUtils
+	}(iscsiUtils)
+
+	type parameters struct {
+		getISCSIClient               func() iscsi.ISCSI
+		getIscsiReconcileUtilsClient func() iscsi.IscsiReconcileUtils
+		getDeviceClient              func() iscsi.Devices
+		getMountClient               func() iscsi.Mount
+		getNodeHelper                func() nodehelpers.NodeHelper
+		publishInfo                  models.VolumePublishInfo
+		force                        bool
+		request                      csi.NodeUnstageVolumeRequest
+		assertError                  assert.ErrorAssertionFunc
+	}
+
+	mockDevicePath := "/dev/mapper/mock-device"
+
+	tests := map[string]parameters{
+		"SAN: iSCSI unstage: happy path": {
+			assertError: assert.NoError,
+			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
+			publishInfo: NewVolumePublishInfoBuilder().Build(),
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(false, nil)
+				mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+				mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getDeviceClient: func() iscsi.Devices {
+				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(&models.ScsiDeviceInfo{}, nil)
+				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", nil)
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
+				return mockDeviceClient
+			},
+			getMountClient: func() iscsi.Mount {
+				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+				return mockMountClient
+			},
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{6: 3})
+				return mockIscsiReconcileUtilsClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+		},
+		"SAN: iSCSI unstage: happy path LUKS": {
+			assertError: assert.NoError,
+			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
+			publishInfo: NewVolumePublishInfoBuilder().WithLUKSEncryption("true").Build(),
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(false, nil)
+				mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+				mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getDeviceClient: func() iscsi.Devices {
+				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(&models.ScsiDeviceInfo{}, nil)
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return(mockDevicePath, nil)
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), mockDevicePath).Return(nil)
+				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					false, false).Return("", nil)
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosed(gomock.Any(), mockDevicePath).Return(nil)
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
+				return mockDeviceClient
+			},
+			getMountClient: func() iscsi.Mount {
+				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+				return mockMountClient
+			},
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{6: 3})
+				return mockIscsiReconcileUtilsClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+		},
+		"SAN: iSCSI unstage: GetUnderlyingDevicePathForLUKSDevice error": {
+			assertError: assert.NoError,
+			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
+			publishInfo: NewVolumePublishInfoBuilder().WithLUKSEncryption("true").Build(),
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+
+				mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(false, nil)
+				mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+
+				mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+
+				return mockISCSIClient
+			},
+			getDeviceClient: func() iscsi.Devices {
+				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(&models.ScsiDeviceInfo{}, nil)
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return(mockDevicePath, nil)
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), mockDevicePath).
+					Return(nil)
+				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", nil)
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosed(gomock.Any(), mockDevicePath).Return(nil)
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
+				return mockDeviceClient
+			},
+			getMountClient: func() iscsi.Mount {
+				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+				return mockMountClient
+			},
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{6: 3})
+				return mockIscsiReconcileUtilsClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+		},
+		"SAN: iSCSI unstage: LuksClose error": {
+			assertError: assert.Error,
+			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
+			publishInfo: NewVolumePublishInfoBuilder().WithLUKSEncryption("true").Build(),
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{6: 3})
+				return mockIscsiReconcileUtilsClient
+			},
+			getDeviceClient: func() iscsi.Devices {
+				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(&models.ScsiDeviceInfo{}, nil)
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return(mockDevicePath, nil)
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), mockDevicePath).
+					Return(fmt.Errorf("mock error"))
+				return mockDeviceClient
+			},
+		},
+		"SAN: iSCSI unstage: GetISCSIHostSessionMapForTarget no sessions": {
+			assertError: assert.NoError,
+			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
+			publishInfo: NewVolumePublishInfoBuilder().WithLUKSEncryption("true").Build(),
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{})
+				return mockIscsiReconcileUtilsClient
+			},
+		},
+		"SAN: iSCSI unstage: GetDeviceInfoForLUN no devices": {
+			assertError: assert.NoError,
+			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
+			publishInfo: NewVolumePublishInfoBuilder().WithLUKSEncryption("true").Build(),
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{6: 3})
+				return mockIscsiReconcileUtilsClient
+			},
+			getDeviceClient: func() iscsi.Devices {
+				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(nil, nil)
+				return mockDeviceClient
+			},
+		},
+		"SAN: iSCSI unstage: GetDeviceInfoForLUN error": {
+			assertError: assert.Error,
+			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
+			publishInfo: NewVolumePublishInfoBuilder().WithLUKSEncryption("true").Build(),
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{6: 3})
+				return mockIscsiReconcileUtilsClient
+			},
+			getDeviceClient: func() iscsi.Devices {
+				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(nil, fmt.Errorf("mock error"))
+				return mockDeviceClient
+			},
+		},
+		"SAN: iSCSI unstage: GetLUKSDeviceForMultipathDevice error": {
+			assertError: assert.Error,
+			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
+			publishInfo: NewVolumePublishInfoBuilder().WithLUKSEncryption("true").Build(),
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{6: 3})
+				return mockIscsiReconcileUtilsClient
+			},
+			getDeviceClient: func() iscsi.Devices {
+				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(&models.ScsiDeviceInfo{}, nil)
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("", fmt.Errorf(
+					"mock error"))
+				return mockDeviceClient
+			},
+		},
+		"SAN: iSCSI unstage: PrepareDeviceForRemoval error": {
+			assertError: assert.Error,
+			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
+			publishInfo: NewVolumePublishInfoBuilder().WithLUKSEncryption("true").Build(),
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getDeviceClient: func() iscsi.Devices {
+				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(&models.ScsiDeviceInfo{}, nil)
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return(mockDevicePath, nil)
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), mockDevicePath).
+					Return(nil)
+				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", fmt.Errorf("mock error"))
+				return mockDeviceClient
+			},
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{6: 3})
+				return mockIscsiReconcileUtilsClient
+			},
+		},
+		"SAN: iSCSI unstage: PrepareDeviceForRemoval same LUN error": {
+			assertError: assert.NoError,
+			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
+			publishInfo: NewVolumePublishInfoBuilder().WithLUKSEncryption("true").Build(),
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(false, nil)
+				mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+				mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getDeviceClient: func() iscsi.Devices {
+				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(&models.ScsiDeviceInfo{}, nil)
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return(mockDevicePath, nil)
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), mockDevicePath).
+					Return(nil)
+				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", errors.ISCSISameLunNumberError("mock error"))
+				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", nil)
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosed(gomock.Any(), mockDevicePath).Return(nil)
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
+				return mockDeviceClient
+			},
+			getMountClient: func() iscsi.Mount {
+				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+				return mockMountClient
+			},
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{6: 3})
+				return mockIscsiReconcileUtilsClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+		},
+		"SAN: iSCSI unstage: Unsafe to logout, mounts exist": {
+			assertError: assert.NoError,
+			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
+			publishInfo: NewVolumePublishInfoBuilder().Build(),
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(true, nil)
+				return mockISCSIClient
+			},
+			getDeviceClient: func() iscsi.Devices {
+				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(&models.ScsiDeviceInfo{}, nil)
+				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", nil)
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
+				return mockDeviceClient
+			},
+			getMountClient: func() iscsi.Mount {
+				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+				return mockMountClient
+			},
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{6: 3})
+				return mockIscsiReconcileUtilsClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+		},
+		"SAN: iSCSI unstage: Unsafe to logout, iSCSI sessions exist": {
+			assertError: assert.NoError,
+			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
+			publishInfo: NewVolumePublishInfoBuilder().Build(),
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(false, nil)
+				mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+				return mockISCSIClient
+			},
+			getDeviceClient: func() iscsi.Devices {
+				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(&models.ScsiDeviceInfo{}, nil)
+				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", nil)
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
+				return mockDeviceClient
+			},
+			getMountClient: func() iscsi.Mount {
+				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+				return mockMountClient
+			},
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{6: 3, 7: 4})
+				return mockIscsiReconcileUtilsClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
+		},
+		"SAN: iSCSI unstage: temp mount point removal failure": {
+			assertError: assert.Error,
+			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
+			publishInfo: NewVolumePublishInfoBuilder().Build(),
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(false, nil)
+				mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+				mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getDeviceClient: func() iscsi.Devices {
+				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(&models.ScsiDeviceInfo{}, nil)
+				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", nil)
+				return mockDeviceClient
+			},
+			getMountClient: func() iscsi.Mount {
+				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).
+					Return(fmt.Errorf("mock error"))
+				return mockMountClient
+			},
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{6: 3})
+				return mockIscsiReconcileUtilsClient
+			},
+		},
+		"SAN: iSCSI unstage: RemoveMultipathDeviceMapping failure": {
+			assertError: assert.Error,
+			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
+			publishInfo: NewVolumePublishInfoBuilder().Build(),
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(false, nil)
+				mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+				mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getDeviceClient: func() iscsi.Devices {
+				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(&models.ScsiDeviceInfo{}, nil)
+				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", nil)
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).
+					Return(fmt.Errorf("mock error"))
+				return mockDeviceClient
+			},
+			getMountClient: func() iscsi.Mount {
+				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+				return mockMountClient
+			},
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{6: 3})
+				return mockIscsiReconcileUtilsClient
+			},
+		},
+		"SAN: iSCSI unstage: DeleteTrackingInfo failure": {
+			assertError: assert.Error,
+			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
+			publishInfo: NewVolumePublishInfoBuilder().Build(),
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(false, nil)
+				mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+				mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+				return mockISCSIClient
+			},
+			getDeviceClient: func() iscsi.Devices {
+				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(&models.ScsiDeviceInfo{}, nil)
+				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", nil)
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
+				return mockDeviceClient
+			},
+			getMountClient: func() iscsi.Mount {
+				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).
+					Return(nil)
+				return mockMountClient
+			},
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{6: 3})
+				return mockIscsiReconcileUtilsClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).
+					Return(fmt.Errorf("mock error"))
+				return mockNodeHelper
+			},
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			plugin := &Plugin{
+				role: CSINode,
+			}
+
+			if params.getISCSIClient != nil {
+				plugin.iscsi = params.getISCSIClient()
+			}
+
+			if params.getNodeHelper != nil {
+				plugin.nodeHelper = params.getNodeHelper()
+			}
+
+			if params.getIscsiReconcileUtilsClient != nil {
+				iscsiUtils = params.getIscsiReconcileUtilsClient()
+			}
+
+			if params.getDeviceClient != nil {
+				plugin.deviceClient = params.getDeviceClient()
+			}
+
+			if params.getMountClient != nil {
+				plugin.mountClient = params.getMountClient()
+			}
+
+			err := plugin.nodeUnstageISCSIVolume(context.Background(), &params.request, &params.publishInfo,
+				params.force)
+			params.assertError(t, err)
+		})
+	}
+}
+
 // ----- helpers ----
 type NodeStageVolumeRequestBuilder struct {
 	request csi.NodeStageVolumeRequest
@@ -1981,8 +2512,8 @@ func (builder *NodeStageVolumeRequestBuilder) WithIscsiLunNumber(lunNumber strin
 	return builder
 }
 
-func (builder *NodeStageVolumeRequestBuilder) WithLUKSEncryption(lukeEncryption string) *NodeStageVolumeRequestBuilder {
-	builder.request.PublishContext["LUKSEncryption"] = lukeEncryption
+func (builder *NodeStageVolumeRequestBuilder) WithLUKSEncryption(luksEncryption string) *NodeStageVolumeRequestBuilder {
+	builder.request.PublishContext["LUKSEncryption"] = luksEncryption
 	return builder
 }
 
@@ -2033,4 +2564,92 @@ func (builder *NodeStageVolumeRequestBuilder) WithStagingTargetPath(stagingTarge
 
 func (builder *NodeStageVolumeRequestBuilder) Build() csi.NodeStageVolumeRequest {
 	return builder.request
+}
+
+type NodeUnstageVolumeRequestBuilder struct {
+	request csi.NodeUnstageVolumeRequest
+}
+
+func NewNodeUnstageVolumeRequestBuilder() *NodeUnstageVolumeRequestBuilder {
+	return &NodeUnstageVolumeRequestBuilder{
+		request: csi.NodeUnstageVolumeRequest{
+			VolumeId:          "pvc-bfddbd25-ceb5-4495-8f43-8e92c76f5f2c",
+			StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/ad11511101c7a61d1711e2fe9e2a3ebc14590502e3ba15d949e4813dba68e3c2/globalmount",
+		},
+	}
+}
+
+func (builder *NodeUnstageVolumeRequestBuilder) WithVolumeID(volumeID string) *NodeUnstageVolumeRequestBuilder {
+	builder.request.VolumeId = volumeID
+	return builder
+}
+
+func (builder *NodeUnstageVolumeRequestBuilder) WithStagingTargetPath(stagingTargetPath string) *NodeUnstageVolumeRequestBuilder {
+	builder.request.StagingTargetPath = stagingTargetPath
+	return builder
+}
+
+func (builder *NodeUnstageVolumeRequestBuilder) Build() csi.NodeUnstageVolumeRequest {
+	return builder.request
+}
+
+type VolumePublishInfoBuilder struct {
+	publishInfo models.VolumePublishInfo
+}
+
+func NewVolumePublishInfoBuilder() *VolumePublishInfoBuilder {
+	return &VolumePublishInfoBuilder{
+		publishInfo: models.VolumePublishInfo{
+			Localhost:      true,
+			FilesystemType: "ext4",
+			SharedTarget:   true,
+			DevicePath:     "/dev/mapper/mock-device",
+			LUKSEncryption: "false",
+			VolumeAccessInfo: models.VolumeAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
+					IscsiTargetPortal: "10.10.10.10",
+					IscsiTargetIQN:    "iqn.1992-08.com.netapp:sn.a0e6b50f49e611efa8b5005056b33c0d:vs.2",
+					IscsiLunNumber:    0,
+					IscsiInterface:    "default",
+					IscsiIgroup:       "ubuntu-linux-22-04-02-desktop-13064d2e-2415-452e-870b-2c08c94f9447",
+					IscsiLunSerial:    "yocwC+Ws3R1K",
+					IscsiChapInfo:     models.IscsiChapInfo{},
+				},
+			},
+		},
+	}
+}
+
+func (b *VolumePublishInfoBuilder) WithLocalhost(localhost bool) *VolumePublishInfoBuilder {
+	b.publishInfo.Localhost = localhost
+	return b
+}
+
+func (b *VolumePublishInfoBuilder) WithFilesystemType(fsType string) *VolumePublishInfoBuilder {
+	b.publishInfo.FilesystemType = fsType
+	return b
+}
+
+func (b *VolumePublishInfoBuilder) WithSharedTarget(sharedTarget bool) *VolumePublishInfoBuilder {
+	b.publishInfo.SharedTarget = sharedTarget
+	return b
+}
+
+func (b *VolumePublishInfoBuilder) WithDevicePath(devicePath string) *VolumePublishInfoBuilder {
+	b.publishInfo.DevicePath = devicePath
+	return b
+}
+
+func (b *VolumePublishInfoBuilder) WithLUKSEncryption(luksEncryption string) *VolumePublishInfoBuilder {
+	b.publishInfo.LUKSEncryption = luksEncryption
+	return b
+}
+
+func (b *VolumePublishInfoBuilder) WithVolumeAccessInfo(accessInfo models.VolumeAccessInfo) *VolumePublishInfoBuilder {
+	b.publishInfo.VolumeAccessInfo = accessInfo
+	return b
+}
+
+func (b *VolumePublishInfoBuilder) Build() models.VolumePublishInfo {
+	return b.publishInfo
 }

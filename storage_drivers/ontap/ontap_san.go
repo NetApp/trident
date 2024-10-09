@@ -21,6 +21,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -36,6 +37,7 @@ type SANStorageDriver struct {
 	API         api.OntapAPI
 	AWSAPI      awsapi.AWSAPI
 	telemetry   *Telemetry
+	iscsi       iscsi.ISCSI
 
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
@@ -88,6 +90,10 @@ func (d *SANStorageDriver) Initialize(
 		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
 	defer Logd(ctx, commonConfig.StorageDriverName,
 		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
+
+	// Initialize the iSCSI client
+	d.iscsi = iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
+		utils.NewMountClient())
 
 	// Initialize the driver's CommonStorageDriverConfig
 	d.Config.CommonStorageDriverConfig = commonConfig

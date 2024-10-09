@@ -51,6 +51,8 @@ const (
 	// REDACTED is a copy of what is in utils package.
 	// we can reference that once we do not have any references into the utils package
 	REDACTED = "<REDACTED>"
+
+	temporaryMountDir = "/tmp_mnt"
 )
 
 var (
@@ -61,6 +63,7 @@ var (
 	duringScanTargetLunAfterFileOpen          = fiji.Register("duringISCSIScanTargetLunAfterFileOpen", "iscsi")
 	duringConfigureTargetBeforeISCSIAdmUpdate = fiji.Register("duringConfigureISCSITargetBeforeISCSIAdmUpdate", "iscsi")
 	duringPurgeOneLunBeforeFileWrite          = fiji.Register("duringPurgeOneLunBeforeFileWrite", "iscsi")
+	beforeIscsiLogout                         = fiji.Register("beforeIscsiLogout", "iscsi")
 )
 
 type ISCSI interface {
@@ -73,6 +76,11 @@ type ISCSI interface {
 	PreChecks(ctx context.Context) error
 	RescanDevices(ctx context.Context, targetIQN string, lunID int32, minSize int64) error
 	IsAlreadyAttached(ctx context.Context, lunID int, targetIqn string) bool
+	RemoveLUNFromSessions(ctx context.Context, publishInfo *models.VolumePublishInfo, sessions *models.ISCSISessions)
+	RemovePortalsFromSession(ctx context.Context, publishInfo *models.VolumePublishInfo, sessions *models.ISCSISessions)
+	TargetHasMountedDevice(ctx context.Context, targetIQN string) (bool, error)
+	SafeToLogOut(ctx context.Context, hostNumber, sessionNumber int) bool
+	Logout(ctx context.Context, targetIQN, targetPortal string) error
 }
 
 // Exclusion list contains keywords if found in any Target IQN should not be considered for
@@ -96,6 +104,32 @@ type Devices interface {
 	IsDeviceUnformatted(ctx context.Context, device string) (bool, error)
 	EnsureDeviceReadable(ctx context.Context, device string) error
 	GetISCSIDiskSize(ctx context.Context, devicePath string) (int64, error)
+	GetMountedISCSIDevices(ctx context.Context) ([]*models.ScsiDeviceInfo, error)
+	MultipathFlushDevice(ctx context.Context, deviceInfo *models.ScsiDeviceInfo) error
+	CompareWithPublishedDevicePath(
+		ctx context.Context, publishInfo *models.VolumePublishInfo,
+		deviceInfo *models.ScsiDeviceInfo) (bool, error)
+	CompareWithPublishedSerialNumber(
+		ctx context.Context, publishInfo *models.VolumePublishInfo, deviceInfo *models.ScsiDeviceInfo,
+	) (bool, error)
+	CompareWithAllPublishInfos(
+		ctx context.Context, publishInfo *models.VolumePublishInfo,
+		allPublishInfos []models.VolumePublishInfo, deviceInfo *models.ScsiDeviceInfo,
+	) error
+	RemoveSCSIDevice(ctx context.Context, deviceInfo *models.ScsiDeviceInfo, ignoreErrors, skipFlush bool) (bool, error)
+	GetLUKSDeviceForMultipathDevice(multipathDevice string) (string, error)
+	CloseLUKSDevice(ctx context.Context, devicePath string) error
+	RemoveMultipathDeviceMapping(ctx context.Context, devicePath string) error
+	GetUnderlyingDevicePathForLUKSDevice(ctx context.Context, luksDevicePath string) (string, error)
+	GetDMDeviceForMapperPath(ctx context.Context, mapperPath string) (string, error)
+	GetDeviceInfoForLUN(
+		ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string, isDetachCall bool,
+	) (*models.ScsiDeviceInfo, error)
+	EnsureLUKSDeviceClosed(ctx context.Context, devicePath string) error
+	EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx context.Context, luksDevicePath string) error
+	PrepareDeviceForRemoval(ctx context.Context, deviceInfo *models.ScsiDeviceInfo, publishInfo *models.VolumePublishInfo,
+		allPublishInfos []models.VolumePublishInfo, ignoreErrors, force bool) (string, error)
+	NewLUKSDeviceFromMappingPath(ctx context.Context, mappingPath, volumeId string) (models.LUKSDeviceInterface, error)
 }
 
 type FileSystem interface {
@@ -106,6 +140,7 @@ type FileSystem interface {
 type Mount interface {
 	IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions string) (bool, error)
 	MountDevice(ctx context.Context, device, mountpoint, options string, isMountPointFile bool) (err error)
+	UmountAndRemoveTemporaryMountPoint(ctx context.Context, mountPath string) error
 }
 
 type Client struct {
@@ -690,26 +725,11 @@ func (client *Client) IsAlreadyAttached(ctx context.Context, lunID int, targetIq
 	return 0 < len(devices)
 }
 
-// ScsiDeviceInfo contains information about SCSI devices
-type ScsiDeviceInfo struct {
-	Host            string
-	Channel         string
-	Target          string
-	LUN             string
-	Devices         []string
-	DevicePaths     []string
-	MultipathDevice string
-	Filesystem      string
-	IQN             string
-	SessionNumber   int
-	CHAPInfo        models.IscsiChapInfo
-}
-
 // getDeviceInfoForLUN finds iSCSI devices using /dev/disk/by-path values.  This method should be
 // called after calling waitForDeviceScan so that the device paths are known to exist.
 func (client *Client) getDeviceInfoForLUN(
 	ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string, needFSType bool,
-) (*ScsiDeviceInfo, error) {
+) (*models.ScsiDeviceInfo, error) {
 	fields := LogFields{
 		"lunID":         lunID,
 		"iSCSINodeName": iSCSINodeName,
@@ -762,7 +782,7 @@ func (client *Client) getDeviceInfoForLUN(
 		"hostSessionMap":  hostSessionMap,
 	}).Debug("Found SCSI device.")
 
-	info := &ScsiDeviceInfo{
+	info := &models.ScsiDeviceInfo{
 		LUN:             strconv.Itoa(lunID),
 		MultipathDevice: multipathDevice,
 		Devices:         devices,
@@ -1998,4 +2018,117 @@ func (client *Client) execIscsiadmCommandRedacted(ctx context.Context, args []st
 	error,
 ) {
 	return client.command.ExecuteRedacted(ctx, "iscsiadm", args, secretsToRedact)
+}
+
+// RemoveLUNFromSessions removes portal LUN mappings
+func (client *Client) RemoveLUNFromSessions(ctx context.Context, publishInfo *models.VolumePublishInfo,
+	sessions *models.ISCSISessions,
+) {
+	if sessions == nil || len(sessions.Info) == 0 {
+		Logc(ctx).Debug("No sessions found, nothing to remove.")
+		return
+	}
+
+	lunNumber := publishInfo.IscsiLunNumber
+	allPortals := append(publishInfo.IscsiPortals, publishInfo.IscsiTargetPortal)
+	for _, portal := range allPortals {
+		sessions.RemoveLUNFromPortal(portal, lunNumber)
+	}
+}
+
+// TargetHasMountedDevice returns true if this host has any mounted devices on the specified target.
+func (client *Client) TargetHasMountedDevice(ctx context.Context, targetIQN string) (bool, error) {
+	mountedISCSIDevices, err := client.deviceClient.GetMountedISCSIDevices(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	for _, device := range mountedISCSIDevices {
+		if device.IQN == targetIQN {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+// SafeToLogOut looks for remaining block devices on a given iSCSI host, and returns
+// true if there are none, indicating that logging out would be safe.
+func (client *Client) SafeToLogOut(ctx context.Context, hostNumber, sessionNumber int) bool {
+	Logc(ctx).Debug(">>>> iscsi.SafeToLogOut")
+	defer Logc(ctx).Debug("<<<< iscsi.SafeToLogOut")
+
+	devicePath := fmt.Sprintf("/sys/class/iscsi_host/host%d/device", hostNumber)
+
+	// The list of block devices on the scsi bus will be in a
+	// directory called "target%d:%d:%d".
+	// See drivers/scsi/scsi_scan.c in Linux
+	// We assume the channel/bus and device/controller are always zero for iSCSI
+	targetPath := devicePath + fmt.Sprintf("/session%d/target%d:0:0", sessionNumber, hostNumber)
+	dirs, err := os.ReadDir(targetPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return true
+		}
+		Logc(ctx).WithFields(LogFields{
+			"path":  targetPath,
+			"error": err,
+		}).Warn("Failed to read dir")
+		return true
+	}
+
+	// The existence of any directories here indicate devices that
+	// still exist, so report unsafe
+	if 0 < len(dirs) {
+		return false
+	}
+
+	return true
+}
+
+// RemovePortalsFromSession removes portals from portal LUN mapping
+func (client *Client) RemovePortalsFromSession(
+	ctx context.Context, publishInfo *models.VolumePublishInfo, sessions *models.ISCSISessions,
+) {
+	if sessions == nil || len(sessions.Info) == 0 {
+		Logc(ctx).Debug("No sessions found, nothing to remove.")
+		return
+	}
+
+	allPortals := append(publishInfo.IscsiPortals, publishInfo.IscsiTargetPortal)
+	for _, portal := range allPortals {
+		sessions.RemovePortal(portal)
+	}
+}
+
+// Logout logs out from the supplied target
+func (client *Client) Logout(ctx context.Context, targetIQN, targetPortal string) error {
+	logFields := LogFields{
+		"targetIQN":    targetIQN,
+		"targetPortal": targetPortal,
+	}
+	Logc(ctx).WithFields(logFields).Debug(">>>> iscsi.Logout")
+	defer Logc(ctx).WithFields(logFields).Debug("<<<< iscsi.Logout")
+
+	defer client.listAllDevices(ctx)
+	if err := beforeIscsiLogout.Inject(); err != nil {
+		return err
+	}
+	if _, err := client.ExecIscsiadmCommand(ctx, "-m", "node", "-T", targetIQN, "--portal", targetPortal,
+		"-u"); err != nil {
+		Logc(ctx).WithField("error", err).Debug("Error during iSCSI logout.")
+	}
+
+	// We used to delete the iscsi "node" at this point but that could interfere with
+	// another iSCSI client (such as kubelet with and "iscsi" PV) attempting to use
+	// the same node.
+
+	client.listAllDevices(ctx)
+	return nil
+}
+
+type LuksCloseTimeDurations interface {
+	InitLuksCloseStartTime(device string)
+	GetLuksCloseDuration(device string) (time.Duration, error)
+	RemoveLuksCloseDurationTracking(device string)
 }

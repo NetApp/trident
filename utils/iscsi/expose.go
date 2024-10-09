@@ -2,7 +2,11 @@
 
 package iscsi
 
-import "context"
+import (
+	"context"
+
+	"github.com/netapp/trident/utils/models"
+)
 
 // this is a temporary file that will be used to expose the internal functions of the iscsi package till we move
 // all the iscsi ui related functions to the iscsi package
@@ -38,7 +42,7 @@ func (client *Client) ScanTargetLUN(ctx context.Context, lunID int, hosts []int)
 
 func (client *Client) GetDeviceInfoForLUN(
 	ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string, needFSType bool,
-) (*ScsiDeviceInfo, error) {
+) (*models.ScsiDeviceInfo, error) {
 	return client.getDeviceInfoForLUN(ctx, hostSessionMap, lunID, iSCSINodeName, needFSType)
 }
 

@@ -1262,7 +1262,8 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		Logc(ctx).Debug("No host sessions found, nothing to do.")
 		return nil
 	}
-	deviceInfo, err := utils.GetDeviceInfoForLUN(ctx, hostSessionMap, int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN, false)
+	deviceInfo, err := p.deviceClient.GetDeviceInfoForLUN(ctx, hostSessionMap, int(publishInfo.IscsiLunNumber),
+		publishInfo.IscsiTargetIQN, false)
 	if err != nil {
 		return fmt.Errorf("could not get device info: %v", err)
 	}
@@ -1273,18 +1274,18 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	// Remove Portal/LUN entries in self-healing map.
-	utils.RemoveLUNFromSessions(ctx, publishInfo, &publishedISCSISessions)
+	p.iscsi.RemoveLUNFromSessions(ctx, publishInfo, &publishedISCSISessions)
 
 	var luksMapperPath string
 	if utils.ParseBool(publishInfo.LUKSEncryption) {
 		fields := LogFields{"luksDevicePath": publishInfo.DevicePath, "lunID": publishInfo.IscsiLunNumber}
 
-		luksMapperPath, err = utils.GetLUKSDeviceForMultipathDevice(deviceInfo.MultipathDevice)
+		luksMapperPath, err = p.deviceClient.GetLUKSDeviceForMultipathDevice(deviceInfo.MultipathDevice)
 		if err != nil {
 			return err
 		}
 
-		err = utils.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath)
+		err = p.deviceClient.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath)
 		if err != nil {
 			if errors.IsMaxWaitExceededError(err) {
 				Logc(ctx).WithFields(fields).WithError(err).
@@ -1302,11 +1303,13 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	// Delete the device from the host.
-	unmappedMpathDevice, err := utils.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, p.unsafeDetach, force)
+	unmappedMpathDevice, err := p.deviceClient.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, p.unsafeDetach,
+		force)
 	if err != nil {
 		if errors.IsISCSISameLunNumberError(err) {
 			// There is a need to pass all the publish infos this time
-			unmappedMpathDevice, err = utils.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, p.readAllTrackingFiles(ctx),
+			unmappedMpathDevice, err = p.deviceClient.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo,
+				p.readAllTrackingFiles(ctx),
 				p.unsafeDetach, force)
 		}
 
@@ -1319,30 +1322,29 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	logout := true
 	if publishInfo.SharedTarget {
 		// Check for any remaining mounts for this ISCSI target.
-		anyMounts, err := utils.ISCSITargetHasMountedDevice(ctx, publishInfo.IscsiTargetIQN)
+		anyMounts, err := p.iscsi.TargetHasMountedDevice(ctx, publishInfo.IscsiTargetIQN)
 		// It's only safe to logout if there are no mounts and no error occurred when checking.
-		safeToLogout := !anyMounts && err == nil
+		logout = !anyMounts && err == nil
 
 		// Since there are no mounts and no error occurred, we should check the hosts for any remaining devices.
-		if safeToLogout {
+		if logout {
 			for hostNumber, sessionNumber := range hostSessionMap {
-				if !utils.SafeToLogOut(ctx, hostNumber, sessionNumber) {
+				if !p.iscsi.SafeToLogOut(ctx, hostNumber, sessionNumber) {
 					// If even one host session is in use, we can't logout of the iSCSI sessions.
-					safeToLogout = false
+					logout = false
 					break
 				}
 			}
 		}
-		logout = safeToLogout
 	}
 
 	if logout {
 		Logc(ctx).Debug("Safe to log out.")
 
 		// Remove portal entries from the self-healing map.
-		utils.RemovePortalsFromSession(ctx, publishInfo, &publishedISCSISessions)
+		p.iscsi.RemovePortalsFromSession(ctx, publishInfo, &publishedISCSISessions)
 
-		if err := utils.ISCSILogout(ctx, publishInfo.IscsiTargetIQN, publishInfo.IscsiTargetPortal); err != nil {
+		if err := p.iscsi.Logout(ctx, publishInfo.IscsiTargetIQN, publishInfo.IscsiTargetPortal); err != nil {
 			Logc(ctx).Error(err)
 		}
 
@@ -1352,7 +1354,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 				return err
 			}
 
-			if err := utils.ISCSILogout(ctx, publishInfo.IscsiTargetIQN, portal); err != nil {
+			if err := p.iscsi.Logout(ctx, publishInfo.IscsiTargetIQN, portal); err != nil {
 				Logc(ctx).Error(err)
 			}
 		}
@@ -1364,7 +1366,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	// Ensure that the temporary mount point created during a filesystem expand operation is removed.
-	if err := utils.UmountAndRemoveTemporaryMountPoint(ctx, stagingTargetPath); err != nil {
+	if err := p.mountClient.UmountAndRemoveTemporaryMountPoint(ctx, stagingTargetPath); err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"volumeId":          volumeId,
 			"stagingTargetPath": stagingTargetPath,
@@ -1379,17 +1381,17 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	// It needs to be removed prior to removing the 'unmappedMpathDevice' device below.
 	if luksMapperPath != "" {
 		// EnsureLUKSDeviceClosed will not return an error if the device is already closed or removed.
-		if err = utils.EnsureLUKSDeviceClosed(ctx, luksMapperPath); err != nil {
+		if err = p.deviceClient.EnsureLUKSDeviceClosed(ctx, luksMapperPath); err != nil {
 			Logc(ctx).WithFields(LogFields{
 				"devicePath": luksMapperPath,
 			}).WithError(err).Warning("Unable to remove LUKS mapper device.")
 		}
 		// Clear the time duration for the LUKS device.
-		delete(utils.LuksCloseDurations, luksMapperPath)
+		utils.LuksCloseDurations.RemoveDurationTracking(luksMapperPath)
 	}
 
 	// If there is multipath device, flush(remove) mappings
-	if err := utils.RemoveMultipathDeviceMapping(ctx, unmappedMpathDevice); err != nil {
+	if err := p.deviceClient.RemoveMultipathDeviceMapping(ctx, unmappedMpathDevice); err != nil {
 		return err
 	}
 
@@ -1451,11 +1453,12 @@ func (p *Plugin) nodePublishISCSIVolume(
 	devicePath := publishInfo.DevicePath
 	if utils.ParseBool(publishInfo.LUKSEncryption) {
 		// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
-		var luksDevice *utils.LUKSDevice
+		var luksDevice models.LUKSDeviceInterface
 		var err error
 		if strings.Contains(devicePath, "luks") {
 			// Supports legacy volumes that store the LUKS device path
-			luksDevice, err = utils.NewLUKSDeviceFromMappingPath(ctx, devicePath, req.VolumeContext["internalName"])
+			luksDevice, err = p.deviceClient.NewLUKSDeviceFromMappingPath(ctx, devicePath,
+				req.VolumeContext["internalName"])
 		} else {
 			luksDevice, err = utils.NewLUKSDevice(publishInfo.DevicePath, req.VolumeContext["internalName"])
 		}
@@ -1791,7 +1794,7 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 
 	switch action {
 	case models.LogoutLoginScan:
-		if err = utils.ISCSILogout(ctx, targetIQN, portal); err != nil {
+		if err = p.iscsi.Logout(ctx, targetIQN, portal); err != nil {
 			return fmt.Errorf("error while logging out of target %s", targetIQN)
 		} else {
 			Logc(ctx).Debug("Logout is successful.")
@@ -2081,7 +2084,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 	}
 
 	if isLUKS {
-		luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
+		luksDevice, err := p.deviceClient.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
 			req.VolumeContext["internalName"])
 		if err != nil {
 			return err
@@ -2193,7 +2196,7 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 	}
 
 	// Ensure that the temporary mount point created during a filesystem expand operation is removed.
-	if err := utils.UmountAndRemoveTemporaryMountPoint(ctx, stagingTargetPath); err != nil {
+	if err := p.mountClient.UmountAndRemoveTemporaryMountPoint(ctx, stagingTargetPath); err != nil {
 		Logc(ctx).WithField("stagingTargetPath", stagingTargetPath).Errorf(
 			"Failed to remove directory in staging target path; %s", err)
 		errStr := fmt.Sprintf("failed to remove temporary directory in staging target path %s; %s",
@@ -2231,7 +2234,7 @@ func (p *Plugin) nodePublishNVMeVolume(
 
 	if utils.ParseBool(publishInfo.LUKSEncryption) {
 		// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
-		luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
+		luksDevice, err := p.deviceClient.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
 			req.VolumeContext["internalName"])
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())

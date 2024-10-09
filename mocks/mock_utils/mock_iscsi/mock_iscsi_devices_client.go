@@ -40,6 +40,64 @@ func (m *MockDevices) EXPECT() *MockDevicesMockRecorder {
 	return m.recorder
 }
 
+// CloseLUKSDevice mocks base method.
+func (m *MockDevices) CloseLUKSDevice(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CloseLUKSDevice", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CloseLUKSDevice indicates an expected call of CloseLUKSDevice.
+func (mr *MockDevicesMockRecorder) CloseLUKSDevice(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseLUKSDevice", reflect.TypeOf((*MockDevices)(nil).CloseLUKSDevice), arg0, arg1)
+}
+
+// CompareWithAllPublishInfos mocks base method.
+func (m *MockDevices) CompareWithAllPublishInfos(arg0 context.Context, arg1 *models.VolumePublishInfo, arg2 []models.VolumePublishInfo, arg3 *models.ScsiDeviceInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CompareWithAllPublishInfos", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CompareWithAllPublishInfos indicates an expected call of CompareWithAllPublishInfos.
+func (mr *MockDevicesMockRecorder) CompareWithAllPublishInfos(arg0, arg1, arg2, arg3 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompareWithAllPublishInfos", reflect.TypeOf((*MockDevices)(nil).CompareWithAllPublishInfos), arg0, arg1, arg2, arg3)
+}
+
+// CompareWithPublishedDevicePath mocks base method.
+func (m *MockDevices) CompareWithPublishedDevicePath(arg0 context.Context, arg1 *models.VolumePublishInfo, arg2 *models.ScsiDeviceInfo) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CompareWithPublishedDevicePath", arg0, arg1, arg2)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CompareWithPublishedDevicePath indicates an expected call of CompareWithPublishedDevicePath.
+func (mr *MockDevicesMockRecorder) CompareWithPublishedDevicePath(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompareWithPublishedDevicePath", reflect.TypeOf((*MockDevices)(nil).CompareWithPublishedDevicePath), arg0, arg1, arg2)
+}
+
+// CompareWithPublishedSerialNumber mocks base method.
+func (m *MockDevices) CompareWithPublishedSerialNumber(arg0 context.Context, arg1 *models.VolumePublishInfo, arg2 *models.ScsiDeviceInfo) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CompareWithPublishedSerialNumber", arg0, arg1, arg2)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CompareWithPublishedSerialNumber indicates an expected call of CompareWithPublishedSerialNumber.
+func (mr *MockDevicesMockRecorder) CompareWithPublishedSerialNumber(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompareWithPublishedSerialNumber", reflect.TypeOf((*MockDevices)(nil).CompareWithPublishedSerialNumber), arg0, arg1, arg2)
+}
+
 // EnsureDeviceReadable mocks base method.
 func (m *MockDevices) EnsureDeviceReadable(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
@@ -52,6 +110,34 @@ func (m *MockDevices) EnsureDeviceReadable(arg0 context.Context, arg1 string) er
 func (mr *MockDevicesMockRecorder) EnsureDeviceReadable(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureDeviceReadable", reflect.TypeOf((*MockDevices)(nil).EnsureDeviceReadable), arg0, arg1)
+}
+
+// EnsureLUKSDeviceClosed mocks base method.
+func (m *MockDevices) EnsureLUKSDeviceClosed(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureLUKSDeviceClosed", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnsureLUKSDeviceClosed indicates an expected call of EnsureLUKSDeviceClosed.
+func (mr *MockDevicesMockRecorder) EnsureLUKSDeviceClosed(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureLUKSDeviceClosed", reflect.TypeOf((*MockDevices)(nil).EnsureLUKSDeviceClosed), arg0, arg1)
+}
+
+// EnsureLUKSDeviceClosedWithMaxWaitLimit mocks base method.
+func (m *MockDevices) EnsureLUKSDeviceClosedWithMaxWaitLimit(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureLUKSDeviceClosedWithMaxWaitLimit", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnsureLUKSDeviceClosedWithMaxWaitLimit indicates an expected call of EnsureLUKSDeviceClosedWithMaxWaitLimit.
+func (mr *MockDevicesMockRecorder) EnsureLUKSDeviceClosedWithMaxWaitLimit(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureLUKSDeviceClosedWithMaxWaitLimit", reflect.TypeOf((*MockDevices)(nil).EnsureLUKSDeviceClosedWithMaxWaitLimit), arg0, arg1)
 }
 
 // EnsureLUKSDeviceMappedOnHost mocks base method.
@@ -69,6 +155,21 @@ func (mr *MockDevicesMockRecorder) EnsureLUKSDeviceMappedOnHost(arg0, arg1, arg2
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureLUKSDeviceMappedOnHost", reflect.TypeOf((*MockDevices)(nil).EnsureLUKSDeviceMappedOnHost), arg0, arg1, arg2, arg3)
 }
 
+// GetDMDeviceForMapperPath mocks base method.
+func (m *MockDevices) GetDMDeviceForMapperPath(arg0 context.Context, arg1 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDMDeviceForMapperPath", arg0, arg1)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDMDeviceForMapperPath indicates an expected call of GetDMDeviceForMapperPath.
+func (mr *MockDevicesMockRecorder) GetDMDeviceForMapperPath(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDMDeviceForMapperPath", reflect.TypeOf((*MockDevices)(nil).GetDMDeviceForMapperPath), arg0, arg1)
+}
+
 // GetDeviceFSType mocks base method.
 func (m *MockDevices) GetDeviceFSType(arg0 context.Context, arg1 string) (string, error) {
 	m.ctrl.T.Helper()
@@ -82,6 +183,21 @@ func (m *MockDevices) GetDeviceFSType(arg0 context.Context, arg1 string) (string
 func (mr *MockDevicesMockRecorder) GetDeviceFSType(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeviceFSType", reflect.TypeOf((*MockDevices)(nil).GetDeviceFSType), arg0, arg1)
+}
+
+// GetDeviceInfoForLUN mocks base method.
+func (m *MockDevices) GetDeviceInfoForLUN(arg0 context.Context, arg1 map[int]int, arg2 int, arg3 string, arg4 bool) (*models.ScsiDeviceInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDeviceInfoForLUN", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(*models.ScsiDeviceInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDeviceInfoForLUN indicates an expected call of GetDeviceInfoForLUN.
+func (mr *MockDevicesMockRecorder) GetDeviceInfoForLUN(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeviceInfoForLUN", reflect.TypeOf((*MockDevices)(nil).GetDeviceInfoForLUN), arg0, arg1, arg2, arg3, arg4)
 }
 
 // GetISCSIDiskSize mocks base method.
@@ -99,6 +215,51 @@ func (mr *MockDevicesMockRecorder) GetISCSIDiskSize(arg0, arg1 any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetISCSIDiskSize", reflect.TypeOf((*MockDevices)(nil).GetISCSIDiskSize), arg0, arg1)
 }
 
+// GetLUKSDeviceForMultipathDevice mocks base method.
+func (m *MockDevices) GetLUKSDeviceForMultipathDevice(arg0 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLUKSDeviceForMultipathDevice", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLUKSDeviceForMultipathDevice indicates an expected call of GetLUKSDeviceForMultipathDevice.
+func (mr *MockDevicesMockRecorder) GetLUKSDeviceForMultipathDevice(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLUKSDeviceForMultipathDevice", reflect.TypeOf((*MockDevices)(nil).GetLUKSDeviceForMultipathDevice), arg0)
+}
+
+// GetMountedISCSIDevices mocks base method.
+func (m *MockDevices) GetMountedISCSIDevices(arg0 context.Context) ([]*models.ScsiDeviceInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMountedISCSIDevices", arg0)
+	ret0, _ := ret[0].([]*models.ScsiDeviceInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMountedISCSIDevices indicates an expected call of GetMountedISCSIDevices.
+func (mr *MockDevicesMockRecorder) GetMountedISCSIDevices(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMountedISCSIDevices", reflect.TypeOf((*MockDevices)(nil).GetMountedISCSIDevices), arg0)
+}
+
+// GetUnderlyingDevicePathForLUKSDevice mocks base method.
+func (m *MockDevices) GetUnderlyingDevicePathForLUKSDevice(arg0 context.Context, arg1 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUnderlyingDevicePathForLUKSDevice", arg0, arg1)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUnderlyingDevicePathForLUKSDevice indicates an expected call of GetUnderlyingDevicePathForLUKSDevice.
+func (mr *MockDevicesMockRecorder) GetUnderlyingDevicePathForLUKSDevice(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUnderlyingDevicePathForLUKSDevice", reflect.TypeOf((*MockDevices)(nil).GetUnderlyingDevicePathForLUKSDevice), arg0, arg1)
+}
+
 // IsDeviceUnformatted mocks base method.
 func (m *MockDevices) IsDeviceUnformatted(arg0 context.Context, arg1 string) (bool, error) {
 	m.ctrl.T.Helper()
@@ -114,6 +275,20 @@ func (mr *MockDevicesMockRecorder) IsDeviceUnformatted(arg0, arg1 any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsDeviceUnformatted", reflect.TypeOf((*MockDevices)(nil).IsDeviceUnformatted), arg0, arg1)
 }
 
+// MultipathFlushDevice mocks base method.
+func (m *MockDevices) MultipathFlushDevice(arg0 context.Context, arg1 *models.ScsiDeviceInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MultipathFlushDevice", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MultipathFlushDevice indicates an expected call of MultipathFlushDevice.
+func (mr *MockDevicesMockRecorder) MultipathFlushDevice(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MultipathFlushDevice", reflect.TypeOf((*MockDevices)(nil).MultipathFlushDevice), arg0, arg1)
+}
+
 // NewLUKSDevice mocks base method.
 func (m *MockDevices) NewLUKSDevice(arg0, arg1 string) (models.LUKSDeviceInterface, error) {
 	m.ctrl.T.Helper()
@@ -127,6 +302,65 @@ func (m *MockDevices) NewLUKSDevice(arg0, arg1 string) (models.LUKSDeviceInterfa
 func (mr *MockDevicesMockRecorder) NewLUKSDevice(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewLUKSDevice", reflect.TypeOf((*MockDevices)(nil).NewLUKSDevice), arg0, arg1)
+}
+
+// NewLUKSDeviceFromMappingPath mocks base method.
+func (m *MockDevices) NewLUKSDeviceFromMappingPath(arg0 context.Context, arg1, arg2 string) (models.LUKSDeviceInterface, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewLUKSDeviceFromMappingPath", arg0, arg1, arg2)
+	ret0, _ := ret[0].(models.LUKSDeviceInterface)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NewLUKSDeviceFromMappingPath indicates an expected call of NewLUKSDeviceFromMappingPath.
+func (mr *MockDevicesMockRecorder) NewLUKSDeviceFromMappingPath(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewLUKSDeviceFromMappingPath", reflect.TypeOf((*MockDevices)(nil).NewLUKSDeviceFromMappingPath), arg0, arg1, arg2)
+}
+
+// PrepareDeviceForRemoval mocks base method.
+func (m *MockDevices) PrepareDeviceForRemoval(arg0 context.Context, arg1 *models.ScsiDeviceInfo, arg2 *models.VolumePublishInfo, arg3 []models.VolumePublishInfo, arg4, arg5 bool) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PrepareDeviceForRemoval", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PrepareDeviceForRemoval indicates an expected call of PrepareDeviceForRemoval.
+func (mr *MockDevicesMockRecorder) PrepareDeviceForRemoval(arg0, arg1, arg2, arg3, arg4, arg5 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareDeviceForRemoval", reflect.TypeOf((*MockDevices)(nil).PrepareDeviceForRemoval), arg0, arg1, arg2, arg3, arg4, arg5)
+}
+
+// RemoveMultipathDeviceMapping mocks base method.
+func (m *MockDevices) RemoveMultipathDeviceMapping(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveMultipathDeviceMapping", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveMultipathDeviceMapping indicates an expected call of RemoveMultipathDeviceMapping.
+func (mr *MockDevicesMockRecorder) RemoveMultipathDeviceMapping(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMultipathDeviceMapping", reflect.TypeOf((*MockDevices)(nil).RemoveMultipathDeviceMapping), arg0, arg1)
+}
+
+// RemoveSCSIDevice mocks base method.
+func (m *MockDevices) RemoveSCSIDevice(arg0 context.Context, arg1 *models.ScsiDeviceInfo, arg2, arg3 bool) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveSCSIDevice", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RemoveSCSIDevice indicates an expected call of RemoveSCSIDevice.
+func (mr *MockDevicesMockRecorder) RemoveSCSIDevice(arg0, arg1, arg2, arg3 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveSCSIDevice", reflect.TypeOf((*MockDevices)(nil).RemoveSCSIDevice), arg0, arg1, arg2, arg3)
 }
 
 // WaitForDevice mocks base method.

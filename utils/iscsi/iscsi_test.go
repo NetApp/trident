@@ -2998,7 +2998,7 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 		getFileSystemUtils func() afero.Fs
 
 		assertError        assert.ErrorAssertionFunc
-		expectedDeviceInfo *ScsiDeviceInfo
+		expectedDeviceInfo *models.ScsiDeviceInfo
 	}
 
 	const iscisNodeName = "iqn.2010-01.com.netapp:target-1"
@@ -3082,7 +3082,7 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 				return afero.NewMemMapFs()
 			},
 			assertError: assert.NoError,
-			expectedDeviceInfo: &ScsiDeviceInfo{
+			expectedDeviceInfo: &models.ScsiDeviceInfo{
 				LUN:         "0",
 				Devices:     []string{deviceName},
 				DevicePaths: []string{devicePath},
@@ -3162,7 +3162,7 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 				return fs
 			},
 			assertError: assert.NoError,
-			expectedDeviceInfo: &ScsiDeviceInfo{
+			expectedDeviceInfo: &models.ScsiDeviceInfo{
 				LUN:             "0",
 				Devices:         []string{deviceName},
 				DevicePaths:     []string{devicePath},

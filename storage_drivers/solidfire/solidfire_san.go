@@ -24,6 +24,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/solidfire/api"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -57,6 +58,7 @@ type SANStorageDriver struct {
 	InitiatorIFace   string
 	DefaultMinIOPS   int64
 	DefaultMaxIOPS   int64
+	iscsi            iscsi.ISCSI
 
 	virtualPools map[string]storage.Pool
 }
@@ -138,6 +140,10 @@ func (d *SANStorageDriver) Initialize(
 
 	config := &drivers.SolidfireStorageDriverConfig{}
 	config.CommonStorageDriverConfig = commonConfig
+
+	// Initialize the iSCSI client
+	d.iscsi = iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
+		utils.NewMountClient())
 
 	// Initialize the driver's CommonStorageDriverConfig
 	d.Config.CommonStorageDriverConfig = commonConfig
@@ -1124,6 +1130,14 @@ func (d *SANStorageDriver) Rename(context.Context, string, string) error {
 	return nil
 }
 
+func (d *SANStorageDriver) detachVolume(ctx context.Context, v api.Volume) error {
+	if d.Client.SVIP == "" {
+		Logc(ctx).Errorf("Cannot detach volume, SVIP is not set.")
+		return errors.New("detach volume error")
+	}
+	return d.iscsi.Logout(ctx, v.Iqn, d.Client.SVIP)
+}
+
 // Destroy the requested docker volume
 func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
 	name := volConfig.InternalName
@@ -1159,7 +1173,7 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 		drivers.RemoveSCSIDeviceByPublishInfo(ctx, &publishInfo)
 
 		// Logout from the session
-		if err = d.Client.DetachVolume(ctx, v); err != nil {
+		if err = d.detachVolume(ctx, v); err != nil {
 			Logc(ctx).Warningf("Unable to detach volume, deleting anyway: %v", err)
 		}
 	}

@@ -43,15 +43,11 @@ var (
 	// Non-persistent map to maintain flush delays/errors if any, for device path(s).
 	iSCSIVolumeFlushExceptions = make(map[string]time.Time)
 
-	// Non-persistent map to maintain LUKS close durations.
-	LuksCloseDurations = make(map[string]time.Time)
-
 	// perNodeIgroupRegex is used to ensure an igroup meets the following format:
 	// <up to and including 59 characters of a container orchestrator node name>-<36 characters of trident version uuid>
 	// ex: Kubernetes-NodeA-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z
 	perNodeIgroupRegex = regexp.MustCompile(`^[0-9A-z\-.]{1,59}-[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}`)
 
-	beforeIscsiLogout                 = fiji.Register("beforeIscsiLogout", "iscsi")
 	duringRescanOneLunBeforeFileWrite = fiji.Register("duringRescanOneLunBeforeFileWrite", "iscsi")
 )
 
@@ -165,31 +161,6 @@ func iSCSIDiscovery(ctx context.Context, portal string) ([]ISCSIDiscoveryInfo, e
 		}
 	}
 	return discoveryInfo, nil
-}
-
-// ISCSILogout logs out from the supplied target
-func ISCSILogout(ctx context.Context, targetIQN, targetPortal string) error {
-	logFields := LogFields{
-		"targetIQN":    targetIQN,
-		"targetPortal": targetPortal,
-	}
-	Logc(ctx).WithFields(logFields).Debug(">>>> iscsi.ISCSILogout")
-	defer Logc(ctx).WithFields(logFields).Debug("<<<< iscsi.ISCSILogout")
-
-	defer listAllISCSIDevices(ctx)
-	if err := beforeIscsiLogout.Inject(); err != nil {
-		return err
-	}
-	if _, err := execIscsiadmCommand(ctx, "-m", "node", "-T", targetIQN, "--portal", targetPortal, "-u"); err != nil {
-		Logc(ctx).WithField("error", err).Debug("Error during iSCSI logout.")
-	}
-
-	// We used to delete the iscsi "node" at this point but that could interfere with
-	// another iSCSI client (such as kubelet with and "iscsi" PV) attempting to use
-	// the same node.
-
-	listAllISCSIDevices(ctx)
-	return nil
 }
 
 // iSCSISessionExistsToTargetIQN checks to see if a session exists to the specified target.
@@ -378,22 +349,6 @@ func verifyMultipathDeviceSize(
 	return 0, true, nil
 }
 
-// ISCSITargetHasMountedDevice returns true if this host has any mounted devices on the specified target.
-func ISCSITargetHasMountedDevice(ctx context.Context, targetIQN string) (bool, error) {
-	mountedISCSIDevices, err := GetMountedISCSIDevices(ctx)
-	if err != nil {
-		return false, err
-	}
-
-	for _, device := range mountedISCSIDevices {
-		if device.IQN == targetIQN {
-			return true, nil
-		}
-	}
-
-	return false, nil
-}
-
 // filterTargets parses the output of iscsiadm -m node or -m discoverydb -t st -D
 // and returns the target IQNs for a given portal
 func filterTargets(output, tp string) []string {
@@ -539,40 +494,6 @@ func EnsureISCSISessionWithPortalDiscovery(ctx context.Context, hostDataIP strin
 	return nil
 }
 
-// SafeToLogOut looks for remaining block devices on a given iSCSI host, and returns
-// true if there are none, indicating that logging out would be safe.
-func SafeToLogOut(ctx context.Context, hostNumber, sessionNumber int) bool {
-	Logc(ctx).Debug(">>>> iscsi.SafeToLogOut")
-	defer Logc(ctx).Debug("<<<< iscsi.SafeToLogOut")
-
-	devicePath := fmt.Sprintf("/sys/class/iscsi_host/host%d/device", hostNumber)
-
-	// The list of block devices on the scsi bus will be in a
-	// directory called "target%d:%d:%d".
-	// See drivers/scsi/scsi_scan.c in Linux
-	// We assume the channel/bus and device/controller are always zero for iSCSI
-	targetPath := devicePath + fmt.Sprintf("/session%d/target%d:0:0", sessionNumber, hostNumber)
-	dirs, err := os.ReadDir(targetPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return true
-		}
-		Logc(ctx).WithFields(LogFields{
-			"path":  targetPath,
-			"error": err,
-		}).Warn("Failed to read dir")
-		return true
-	}
-
-	// The existence of any directories here indicate devices that
-	// still exist, so report unsafe
-	if 0 < len(dirs) {
-		return false
-	}
-
-	return true
-}
-
 // InitiateScanForLun scans all paths on a host to a single LUN.
 func InitiateScanForLun(ctx context.Context, lunID int, iSCSINodeName string) error {
 	fields := LogFields{
@@ -626,35 +547,6 @@ func InitiateScanForAllLUNs(ctx context.Context, iSCSINodeName string) error {
 	}
 
 	return nil
-}
-
-// RemoveLUNFromSessions removes portal LUN mappings
-func RemoveLUNFromSessions(ctx context.Context, publishInfo *models.VolumePublishInfo, sessions *models.ISCSISessions) {
-	if sessions == nil || len(sessions.Info) == 0 {
-		Logc(ctx).Debug("No sessions found, nothing to remove.")
-		return
-	}
-
-	lunNumber := publishInfo.IscsiLunNumber
-	allPortals := append(publishInfo.IscsiPortals, publishInfo.IscsiTargetPortal)
-	for _, portal := range allPortals {
-		sessions.RemoveLUNFromPortal(portal, lunNumber)
-	}
-}
-
-// RemovePortalsFromSession removes portals from portal LUN mapping
-func RemovePortalsFromSession(
-	ctx context.Context, publishInfo *models.VolumePublishInfo, sessions *models.ISCSISessions,
-) {
-	if sessions == nil || len(sessions.Info) == 0 {
-		Logc(ctx).Debug("No sessions found, nothing to remove.")
-		return
-	}
-
-	allPortals := append(publishInfo.IscsiPortals, publishInfo.IscsiTargetPortal)
-	for _, portal := range allPortals {
-		sessions.RemovePortal(portal)
-	}
 }
 
 func PopulateCurrentSessions(ctx context.Context, currentMapping *models.ISCSISessions) error {

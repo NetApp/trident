@@ -22,6 +22,7 @@ import (
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -190,6 +191,7 @@ type SANEconomyStorageDriver struct {
 	helper            *LUNHelper
 	lunsPerFlexvol    int
 	denyNewFlexvols   bool
+	iscsi             iscsi.ISCSI
 
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
@@ -247,6 +249,10 @@ func (d *SANEconomyStorageDriver) Initialize(
 
 	// Initialize the driver's CommonStorageDriverConfig
 	d.Config.CommonStorageDriverConfig = commonConfig
+
+	// Initialize the iSCSI client
+	d.iscsi = iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
+		utils.NewMountClient())
 
 	// Parse the config
 	config, err := InitializeOntapConfig(ctx, driverContext, configJSON, commonConfig, backendSecret)
