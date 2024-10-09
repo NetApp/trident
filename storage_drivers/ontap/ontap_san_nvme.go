@@ -617,6 +617,12 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 	// Set the volume to LUKS if backend has LUKS true as default
 	volConfig.LUKSEncryption = d.Config.LUKSEncryption
 
+	// Set the filesystem type to backend's, if it hasn't been set via annotation
+	// in the provided pvc during import.
+	if volConfig.FileSystem == "" {
+		volConfig.FileSystem = d.Config.FileSystemType
+	}
+
 	// Get the namespace info from the volume
 	nsInfo, err := d.API.NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*")
 	if err != nil {
