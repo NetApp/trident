@@ -34,8 +34,8 @@ import (
 )
 
 const (
-	MinimumVolumeSizeBytes    = uint64(1000000000)   // 1 GB
-	MinimumANFVolumeSizeBytes = uint64(107374182400) // 100 GiB
+	MinimumVolumeSizeBytes    = uint64(1000000000)  // 1 GB
+	MinimumANFVolumeSizeBytes = uint64(53687091200) // 50 GiB
 
 	defaultUnixPermissions         = "" // TODO (cknight): change to "0777" when whitelisted permissions feature reaches GA
 	defaultNfsMountOptions         = "nfsvers=3"
@@ -43,7 +43,7 @@ const (
 	defaultSnapshotDir             = ""
 	defaultLimitVolumeSize         = ""
 	defaultExportRule              = "0.0.0.0/0"
-	defaultVolumeSizeStr           = "107374182400"
+	defaultVolumeSizeStr           = "53687091200"
 	defaultNetworkFeatures         = "" // Leave empty, some regions may never support this
 
 	// Constants for internal pool attributes
@@ -817,7 +817,7 @@ func (d *NASStorageDriver) Create(
 		Logc(ctx).WithFields(LogFields{
 			"name": name,
 			"size": sizeBytes,
-		}).Warningf("Requested size is too small. Setting volume size to the minimum allowable (100 GB).")
+		}).Warningf("Requested size is too small. Setting volume size to the minimum allowable (50 GiB).")
 
 		sizeBytes = MinimumANFVolumeSizeBytes
 	}
