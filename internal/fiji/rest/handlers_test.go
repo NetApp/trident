@@ -293,7 +293,7 @@ func TestHandlers_makeSetFaultConfigHandler(t *testing.T) {
 		defer server.Close()
 
 		// Simulate a PATCH request with a payload.
-		configRequest := `{"name": "pause", "duration": "400ms"}`
+		configRequest := `{"name": "pause-n-times", "duration": "400ms", "failCount": 1}`
 		body, err := json.Marshal(configRequest)
 		if err != nil {
 			t.Fatalf("Failed to marshal JSON: %v", err)
@@ -348,7 +348,7 @@ func TestHandlers_makeSetFaultConfigHandler(t *testing.T) {
 		defer server.Close()
 
 		// Simulate a PATCH request with a payload.
-		configRequest := `{"name": "pause", "duration": "400ms"}`
+		configRequest := `{"name": "pause-n-times", "duration": "400ms", "failCount": 1}`
 		body, err := json.Marshal(configRequest)
 		if err != nil {
 			t.Fatalf("Failed to marshal JSON: %v", err)

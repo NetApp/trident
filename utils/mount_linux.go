@@ -208,10 +208,6 @@ func mountNFSPath(ctx context.Context, exportPath, mountpoint, options string) (
 		Logc(ctx).WithField("error", err).Warning("Mkdir failed.")
 	}
 
-	if err = beforeMount.Inject(); err != nil {
-		return err
-	}
-
 	if out, err := command.Execute(ctx, mountCommand, args...); err != nil {
 		Logc(ctx).WithField("output", string(out)).Debug("Mount failed.")
 		return fmt.Errorf("error mounting NFS volume %v on mountpoint %v: %v", exportPath, mountpoint, err)
@@ -322,6 +318,10 @@ func MountDevice(ctx context.Context, device, mountpoint, options string, isMoun
 				Logc(ctx).WithField("error", err).Warning("Mkdir failed.")
 			}
 		}
+	}
+
+	if err = beforeMount.Inject(); err != nil {
+		return err
 	}
 
 	if !mounted {

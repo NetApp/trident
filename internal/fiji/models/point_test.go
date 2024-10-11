@@ -55,11 +55,11 @@ func TestFaultPoint_SetHandler(t *testing.T) {
 	point := NewFaultPoint("name", "unit_test")
 	assert.Error(t, point.SetHandler(nil))
 
-	model := `{"name":"pause", "duration": 300}`
+	model := `{"name":"pause-n-times", "duration": 300, "failCount": 1}`
 	err := point.SetHandler([]byte(model))
 	assert.Error(t, err)
 
-	model = `{"name":"pause","duration":"300ms"}`
+	model = `{"name":"pause-n-times", "duration":"300ms", "failCount": 1}`
 	err = point.SetHandler([]byte(model))
 	assert.NoError(t, err)
 }
@@ -74,7 +74,7 @@ func TestFaultPoint_SetHandler_Async(t *testing.T) {
 	store := newFakeStore(point)
 	start := time.Now()
 	duration := 100 * time.Millisecond
-	modelStr := fmt.Sprintf(`{"name": "pause", "duration": "%s"}`, duration.String())
+	modelStr := fmt.Sprintf(`{"name": "pause-n-times", "duration": "%s", "failCount": 1}`, duration.String())
 	err := point.SetHandler([]byte(modelStr))
 	assert.NoError(t, err)
 

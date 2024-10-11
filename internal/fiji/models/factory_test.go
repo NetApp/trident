@@ -29,8 +29,8 @@ func TestFaultHandlerFactory(t *testing.T) {
 			assertNil:   assert.NotNil,
 			assertError: assert.NoError,
 		},
-		Pause: {
-			model:       fmt.Sprintf(`{"name": "pause", "duration": "%s"}`, "500ms"),
+		PauseNTimes: {
+			model:       fmt.Sprintf(`{"name": "pause-n-times", "duration": "%s", "failCount": %v}`, "500ms", 1),
 			assertNil:   assert.NotNil,
 			assertError: assert.NoError,
 		},

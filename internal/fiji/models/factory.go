@@ -18,7 +18,7 @@ const (
 	// Never tells the fault to never fail.
 	Never HandlerType = "never"
 	// Pause tells the fault to pause for 'n' time then resets pause to 0.
-	Pause HandlerType = "pause"
+	PauseNTimes HandlerType = "pause-n-times"
 	// Panic tells the fault to start panicking.
 	// This does not kill the process immediately and any deferred functions execute.
 	Panic HandlerType = "panic"
@@ -46,8 +46,8 @@ func NewFaultHandlerFromModel(model []byte) (FaultHandler, error) {
 	switch HandlerType(name) {
 	case Never:
 		return handlers.NewNeverErrorHandler(model)
-	case Pause:
-		return handlers.NewPauseHandler(model)
+	case PauseNTimes:
+		return handlers.NewPauseNTimesHandler(model)
 	case Panic:
 		return handlers.NewPanicHandler(model)
 	case Exit:
