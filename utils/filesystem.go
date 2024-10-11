@@ -217,12 +217,11 @@ func repairVolume(ctx context.Context, device, fstype string) {
 
 // ExpandFilesystemOnNode will expand the filesystem of an already expanded volume.
 func ExpandFilesystemOnNode(
-	ctx context.Context, publishInfo *models.VolumePublishInfo, stagedTargetPath, fsType, mountOptions string,
+	ctx context.Context, publishInfo *models.VolumePublishInfo, devicePath, stagedTargetPath, fsType, mountOptions string,
 ) (int64, error) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
 	var err error
-	devicePath := publishInfo.DevicePath
 	expansionMountPoint := publishInfo.StagingMountpoint
 
 	logFields := LogFields{

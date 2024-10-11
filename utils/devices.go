@@ -1166,6 +1166,11 @@ func ResizeLUKSDevice(ctx context.Context, luksDevicePath, luksPassphrase string
 	return luksDevice.Resize(ctx, luksPassphrase)
 }
 
+// IsLegacyLUKSDevicePath returns true if the device path points to mapped LUKS device instead of mpath device.
+func IsLegacyLUKSDevicePath(devicePath string) bool {
+	return strings.Contains(devicePath, "luks")
+}
+
 func GetLUKSDeviceForMultipathDevice(multipathDevice string) (string, error) {
 	const luksDeviceUUIDPrefix = "CRYPT-LUKS2"
 	const luksDeviceUUIDNameOffset = 45

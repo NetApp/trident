@@ -487,7 +487,14 @@ func (p *Plugin) nodeExpandVolume(
 		return err
 	}
 
+	devicePath := publishInfo.DevicePath
 	if utils.ParseBool(publishInfo.LUKSEncryption) {
+		if !utils.IsLegacyLUKSDevicePath(devicePath) {
+			devicePath, err = utils.GetLUKSDeviceForMultipathDevice(devicePath)
+			if err != nil {
+				return status.Error(codes.Internal, err.Error())
+			}
+		}
 		Logc(ctx).WithField("volumeId", volumeId).Info("Resizing the LUKS mapping.")
 		// Refresh the luks device
 		// cryptsetup resize <luks-device-path> << <passphrase>
@@ -497,7 +504,7 @@ func (p *Plugin) nodeExpandVolume(
 		} else if passphrase == "" {
 			return status.Error(codes.InvalidArgument, "cannot expand LUKS encrypted volume; empty passphrase provided")
 		}
-		err := utils.ResizeLUKSDevice(ctx, publishInfo.DevicePath, passphrase)
+		err := utils.ResizeLUKSDevice(ctx, devicePath, passphrase)
 		if err != nil {
 			if errors.IsIncorrectLUKSPassphraseError(err) {
 				return status.Error(codes.InvalidArgument, err.Error())
@@ -508,7 +515,7 @@ func (p *Plugin) nodeExpandVolume(
 
 	// Expand filesystem.
 	if fsType != tridentconfig.FsRaw {
-		filesystemSize, err := utils.ExpandFilesystemOnNode(ctx, publishInfo, stagingTargetPath, fsType,
+		filesystemSize, err := utils.ExpandFilesystemOnNode(ctx, publishInfo, devicePath, stagingTargetPath, fsType,
 			mountOptions)
 		if err != nil {
 			Logc(ctx).WithFields(LogFields{
@@ -1297,7 +1304,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		}
 
 		// Set device path to dm device to correctly verify legacy volumes
-		if strings.Contains(publishInfo.DevicePath, "luks") {
+		if utils.IsLegacyLUKSDevicePath(publishInfo.DevicePath) {
 			publishInfo.DevicePath = deviceInfo.MultipathDevice
 		}
 	}
@@ -1455,7 +1462,7 @@ func (p *Plugin) nodePublishISCSIVolume(
 		// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
 		var luksDevice models.LUKSDeviceInterface
 		var err error
-		if strings.Contains(devicePath, "luks") {
+		if utils.IsLegacyLUKSDevicePath(devicePath) {
 			// Supports legacy volumes that store the LUKS device path
 			luksDevice, err = p.deviceClient.NewLUKSDeviceFromMappingPath(ctx, devicePath,
 				req.VolumeContext["internalName"])
