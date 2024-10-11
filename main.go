@@ -79,8 +79,9 @@ var (
 	nodePrep            = flag.Bool("node_prep", true, "Attempt to install required packages on nodes.")
 
 	// Trident-ACP
-	enableACP  = flag.Bool("enable_acp", false, "Enable ACP premium features.")
-	acpAddress = flag.String("acp_address", acp.DefaultBaseURL, "Specify the Trident-ACP REST API address.")
+	// TODO: Remove after 26.04.
+	enableACP  = flag.Bool("enable_acp", false, "Enable ACP premium features (obsolete).")
+	acpAddress = flag.String("acp_address", acp.DefaultBaseURL, "Specify the Trident-ACP REST API address (obsolete).")
 
 	// Persistence
 	useInMemory = flag.Bool("no_persistence", false, "Does not persist "+
@@ -541,20 +542,9 @@ func main() {
 	// Set configuration values used for ACP for the lifecycle of Trident.
 	// This always needs to happen regardless of if ACP is enabled or not and must happen before bootstrapping.
 	acp.Initialize(*acpAddress, *enableACP, config.HTTPTimeout)
-	Log().Info("Created Trident-ACP REST API Client.")
-
 	if *enableACP {
-		// Asynchronously check if the Trident-ACP API is available.
-		go func() {
-			version, err := acp.API().GetVersionWithBackoff(ctx)
-			if err != nil || version == nil {
-				if !errors.IsUnsupportedError(err) {
-					Log().Warning("Failed to get version from Trident-ACP REST API; premium workflows may fail.")
-				}
-			} else {
-				Log().WithField("version", version.String()).Info("Discovered Trident-ACP Version.")
-			}
-		}()
+		// TODO: Remove this field after 26.10.
+		Log().Info("ACP is now obsolete; All workflows are now enabled by default.")
 	}
 
 	// Bootstrap the orchestrator and start its frontends.  Some frontends, notably REST and Docker, must

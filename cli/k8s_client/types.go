@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package k8sclient
 
@@ -162,8 +162,8 @@ type DeploymentYAMLArguments struct {
 	ServiceAccountName      string                `json:"serviceAccountName"`
 	ImagePullPolicy         string                `json:"imagePullPolicy"`
 	EnableForceDetach       bool                  `json:"enableForceDetach"`
-	ACPImage                string                `json:"acpImage"`
-	EnableACP               bool                  `json:"enableACP"`
+	ACPImage                string                `json:"acpImage"`  // TODO: Remove after 26.04.
+	EnableACP               bool                  `json:"enableACP"` // TODO: Remove after 26.04.
 	CloudProvider           string                `json:"cloudProvider"`
 	IdentityLabel           bool                  `json:"identityLabel"`
 	K8sAPIQPS               int                   `json:"k8sAPIQPS"`

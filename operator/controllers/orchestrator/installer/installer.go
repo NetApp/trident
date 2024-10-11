@@ -342,7 +342,6 @@ func (i *Installer) setInstallationParams(
 	iscsiSelfHealingInterval = commonconfig.IscsiSelfHealingIntervalString
 	iscsiSelfHealingWaitTime = commonconfig.ISCSISelfHealingWaitTimeString
 	imagePullPolicy = DefaultImagePullPolicy
-	acpImage = commonconfig.DefaultACPImage
 
 	imagePullSecrets = []string{}
 
@@ -354,9 +353,13 @@ func (i *Installer) setInstallationParams(
 		disableAuditLog = *cr.Spec.DisableAuditLog
 	}
 
+	// ACP is obsolete now, so log a message and move on.
 	enableACP = cr.Spec.EnableACP
-	if cr.Spec.ACPImage != "" {
-		acpImage = cr.Spec.ACPImage
+	if cr.Spec.ACPImage != "" || enableACP {
+		Log().WithFields(LogFields{
+			"acpImage":  acpImage,
+			"enableACP": enableACP,
+		}).Info("ACP is now obsolete; All workflows are now enabled by default.")
 	}
 
 	useIPv6 = cr.Spec.IPv6

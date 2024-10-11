@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package k8sclient
 
@@ -370,24 +370,6 @@ spec:
       values: ["system-node-critical"]
 `
 
-const acpContainerYAMLTemplate = `
-      - name: trident-acp
-        image: {ACP_IMAGE}
-        imagePullPolicy: {IMAGE_PULL_POLICY}
-        securityContext:
-          runAsNonRoot: false
-          capabilities:
-            drop:
-            - all
-        command:
-        - /bin/trident-acp
-        args:
-        - "--k8s_pod"
-        - "--log_format={LOG_FORMAT}"
-        - "--log_level={LOG_LEVEL}"
-        {DEBUG}
-`
-
 func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	var debugLine, sideCarLogLevel, ipLocalhost, enableACP, K8sAPISidecarThrottle, K8sAPITridentThrottle string
 	Log().WithFields(LogFields{
@@ -472,10 +454,6 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 
 	if args.EnableACP {
 		enableACP = "- \"-enable_acp\""
-		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ACP_YAML}", acpContainerYAMLTemplate)
-		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ACP_IMAGE}", args.ACPImage)
-	} else {
-		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ACP_YAML}", "")
 	}
 
 	if strings.EqualFold(args.CloudProvider, CloudProviderAzure) {
@@ -724,7 +702,6 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
-      {ACP_YAML}
       {IMAGE_PULL_SECRETS}
       affinity:
         nodeAffinity:

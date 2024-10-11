@@ -117,8 +117,8 @@ var (
 	probePort                int64
 	k8sTimeout               time.Duration
 	httpRequestTimeout       time.Duration
-	acpImage                 string
-	enableACP                bool
+	acpImage                 string // TODO: Remove after 26.04.
+	enableACP                bool   // TODO: Remove after 26.04.
 	cloudProvider            string
 	cloudIdentity            string
 	iscsiSelfHealingInterval time.Duration
@@ -236,9 +236,9 @@ func init() {
 	installCmd.Flags().DurationVar(&iscsiSelfHealingWaitTime, "iscsi-self-healing-wait-time", tridentconfig.ISCSISelfHealingWaitTime,
 		"Override the default iSCSI self-healing wait time after which unhealthy sessions are logged out.")
 
-	installCmd.Flags().BoolVar(&enableACP, "enable-acp", false, "Enable the Trident-ACP premium features.")
-	installCmd.Flags().StringVar(&acpImage, "acp-image", tridentconfig.DefaultACPImage,
-		"Override the default trident-acp container image.")
+	installCmd.Flags().BoolVar(&enableACP, "enable-acp", false, "Enable the Trident-ACP premium features (obsolete).")
+	installCmd.Flags().StringVar(&acpImage, "acp-image", "",
+		"Override the default trident-acp container image (obsolete).")
 
 	installCmd.Flags().StringVar(&cloudProvider, "cloud-provider", "", "Name of the cloud provider")
 	installCmd.Flags().StringVar(&cloudIdentity, "cloud-identity", "", "Cloud identity to be set on service account")
@@ -963,6 +963,14 @@ func installTrident() (returnError error) {
 			returnError = fmt.Errorf("could not delete previous Trident deployment; %v", err)
 			return
 		}
+	}
+
+	// ACP is obsolete now, so log a message and move on.
+	if acpImage != "" || enableACP {
+		Log().WithFields(LogFields{
+			"acpImage":  acpImage,
+			"enableACP": enableACP,
+		}).Info("ACP is now obsolete; All workflows are now enabled by default.")
 	}
 
 	// Create the deployment
