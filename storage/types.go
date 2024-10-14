@@ -8,7 +8,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/RoaringBitmap/roaring"
+	roaring "github.com/RoaringBitmap/roaring/v2"
 
 	"github.com/netapp/trident/config"
 	storageattribute "github.com/netapp/trident/storage_attribute"

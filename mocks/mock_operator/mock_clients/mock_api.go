@@ -12,7 +12,7 @@ package mock_clients
 import (
 	reflect "reflect"
 
-	v1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
+	v1 "github.com/kubernetes-csi/external-snapshotter/client/v8/apis/volumesnapshot/v1"
 	v10 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
 	v11 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	gomock "go.uber.org/mock/gomock"

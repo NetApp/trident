@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/RoaringBitmap/roaring"
+	roaring "github.com/RoaringBitmap/roaring/v2"
 	"github.com/google/uuid"
 	"k8s.io/apimachinery/pkg/util/version"
 

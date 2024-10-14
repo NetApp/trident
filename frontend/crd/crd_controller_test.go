@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	fakesnapshots "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned/fake"
+	fakesnapshots "github.com/kubernetes-csi/external-snapshotter/client/v8/clientset/versioned/fake"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"

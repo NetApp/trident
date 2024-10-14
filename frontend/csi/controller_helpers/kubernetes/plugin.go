@@ -13,7 +13,7 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	csiaccessmodes "github.com/kubernetes-csi/csi-lib-utils/accessmodes"
-	k8ssnapshot "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned"
+	k8ssnapshot "github.com/kubernetes-csi/external-snapshotter/client/v8/clientset/versioned"
 	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"

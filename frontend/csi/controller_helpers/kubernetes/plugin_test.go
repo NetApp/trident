@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	vsv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
-	k8sfakesnapshotter "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned/fake"
+	vsv1 "github.com/kubernetes-csi/external-snapshotter/client/v8/apis/volumesnapshot/v1"
+	k8sfakesnapshotter "github.com/kubernetes-csi/external-snapshotter/client/v8/clientset/versioned/fake"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"

@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	roaring "github.com/RoaringBitmap/roaring"
+	roaring "github.com/RoaringBitmap/roaring/v2"
 	config "github.com/netapp/trident/config"
 	storage "github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"

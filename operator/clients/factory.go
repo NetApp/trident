@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	snapshotClient "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned"
+	snapshotClient "github.com/kubernetes-csi/external-snapshotter/client/v8/clientset/versioned"
 	k8sversion "k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"

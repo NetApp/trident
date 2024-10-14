@@ -15,7 +15,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/RoaringBitmap/roaring"
+	roaring "github.com/RoaringBitmap/roaring/v2"
 	"github.com/google/uuid"
 	"go.uber.org/multierr"
 

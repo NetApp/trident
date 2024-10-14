@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/RoaringBitmap/roaring"
+	roaring "github.com/RoaringBitmap/roaring/v2"
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"

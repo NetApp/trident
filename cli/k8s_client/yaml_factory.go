@@ -652,7 +652,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v4.6.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v4.7.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         securityContext:
           capabilities:
@@ -671,7 +671,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.11.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.12.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
@@ -685,7 +685,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v7.0.2
+        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v8.1.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         securityContext:
           capabilities:
@@ -1068,7 +1068,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.10.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.12.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - "--v={SIDECAR_LOG_LEVEL}"

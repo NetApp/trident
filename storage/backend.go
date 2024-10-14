@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/RoaringBitmap/roaring"
+	roaring "github.com/RoaringBitmap/roaring/v2"
 	"github.com/cenkalti/backoff/v4"
 	"github.com/mitchellh/copystructure"
 

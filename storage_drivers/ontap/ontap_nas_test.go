@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RoaringBitmap/roaring"
+	roaring "github.com/RoaringBitmap/roaring/v2"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 

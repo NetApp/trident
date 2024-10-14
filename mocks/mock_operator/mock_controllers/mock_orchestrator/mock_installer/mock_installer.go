@@ -13,7 +13,7 @@ import (
 	reflect "reflect"
 	time "time"
 
-	v1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
+	v1 "github.com/kubernetes-csi/external-snapshotter/client/v8/apis/volumesnapshot/v1"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	v10 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
 	version "github.com/netapp/trident/utils/version"
