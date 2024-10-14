@@ -99,6 +99,13 @@ func TestBackendName_UseDefault(t *testing.T) {
 	assert.Equal(t, "googlecloudnetappvolumes_12345", result, "backend name mismatch")
 }
 
+func TestDefaultBackendName_WorkloadIdentity(t *testing.T) {
+	_, driver := newMockGCNVDriver(t)
+	driver.Config.APIKey = drivers.GCPPrivateKey{}
+	result := driver.BackendName()
+	assert.NotNil(t, result, "received nil for the backend name")
+}
+
 func TestPoolName(t *testing.T) {
 	_, driver := newMockGCNVDriver(t)
 

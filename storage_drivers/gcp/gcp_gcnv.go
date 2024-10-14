@@ -78,7 +78,11 @@ func (d *NASStorageDriver) GetConfig() drivers.DriverConfig {
 
 // defaultBackendName returns the default name of the backend managed by this driver instance.
 func (d *NASStorageDriver) defaultBackendName() string {
-	return fmt.Sprintf("%s_%s", strings.Replace(d.Name(), "-", "", -1), d.Config.APIKey.PrivateKeyID[0:5])
+	id := utils.RandomString(5)
+	if len(d.Config.APIKey.PrivateKeyID) > 5 {
+		id = d.Config.APIKey.PrivateKeyID[0:5]
+	}
+	return fmt.Sprintf("%s_%s", strings.Replace(d.Name(), "-", "", -1), id)
 }
 
 // BackendName returns the name of the backend managed by this driver instance.
