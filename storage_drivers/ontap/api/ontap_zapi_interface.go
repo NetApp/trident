@@ -286,6 +286,10 @@ type ZapiClientInterface interface {
 	IscsiNodeGetNameRequest() (*azgo.IscsiNodeGetNameResponse, error)
 	// IscsiInterfaceGetIterRequest returns information about the vserver's iSCSI interfaces
 	IscsiInterfaceGetIterRequest() (*azgo.IscsiInterfaceGetIterResponse, error)
+
+	FcpNodeGetNameRequest() (*azgo.FcpNodeGetNameResponse, error)
+	// FcpInterfaceGetIterRequest returns information about the vserver's FCP interfaces
+	FcpInterfaceGetIterRequest() (*azgo.FcpInterfaceGetIterResponse, error)
 	// VserverGetIterRequest returns the vservers on the system
 	// equivalent to filer::> vserver show
 	VserverGetIterRequest() (*azgo.VserverGetIterResponse, error)

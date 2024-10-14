@@ -254,6 +254,33 @@ type OntapAPIZAPI struct {
 	driverName string
 }
 
+func (d OntapAPIZAPI) FcpInterfaceGet(ctx context.Context, svm string) ([]string, error) {
+	var fcpInterfaces []string
+	interfaceResponse, err := d.api.FcpInterfaceGetIterRequest()
+	if err = azgo.GetError(ctx, interfaceResponse, err); err != nil {
+		Logc(ctx).Debugf("could not get SVM FCP interfaces: %v", err)
+		return nil, err
+	}
+	if interfaceResponse.Result.AttributesListPtr != nil {
+		for _, fcpAttrs := range interfaceResponse.Result.AttributesListPtr.FcpInterfaceInfoPtr {
+			fcpInterface := fmt.Sprintf("%s:%s", fcpAttrs.NodeName(), fcpAttrs.PortName())
+			fcpInterfaces = append(fcpInterfaces, fcpInterface)
+		}
+	}
+	if len(fcpInterfaces) == 0 {
+		return nil, fmt.Errorf("SVM %s has no active FCP interfaces", svm)
+	}
+	return fcpInterfaces, nil
+}
+
+func (d OntapAPIZAPI) FcpNodeGetNameRequest(ctx context.Context) (string, error) {
+	nodeNameResponse, err := d.api.FcpNodeGetNameRequest()
+	if err != nil {
+		return "", err
+	}
+	return nodeNameResponse.Result.NodeName(), nil
+}
+
 func (d OntapAPIZAPI) LunGetGeometry(ctx context.Context, lunPath string) (uint64, error) {
 	// Check LUN geometry and verify LUN max size.
 	var lunMaxSize uint64 = 0
@@ -2544,7 +2571,8 @@ func (d OntapAPIZAPI) NVMeNamespaceGetSize(ctx context.Context, subsystemName st
 	return 0, errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
-func (d OntapAPIZAPI) VolumeWaitForStates(ctx context.Context, volumeName string, desiredStates,
+func (d OntapAPIZAPI) VolumeWaitForStates(
+	ctx context.Context, volumeName string, desiredStates,
 	abortStates []string, maxElapsedTime time.Duration,
 ) (string, error) {
 	fields := LogFields{

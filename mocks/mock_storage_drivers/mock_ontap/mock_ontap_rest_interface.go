@@ -227,6 +227,36 @@ func (mr *MockRestClientInterfaceMockRecorder) ExportRuleList(arg0, arg1 any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportRuleList", reflect.TypeOf((*MockRestClientInterface)(nil).ExportRuleList), arg0, arg1)
 }
 
+// FcpInterfaceGet mocks base method.
+func (m *MockRestClientInterface) FcpInterfaceGet(arg0 context.Context, arg1 []string) (*s_a_n.FcpServiceCollectionGetOK, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FcpInterfaceGet", arg0, arg1)
+	ret0, _ := ret[0].(*s_a_n.FcpServiceCollectionGetOK)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FcpInterfaceGet indicates an expected call of FcpInterfaceGet.
+func (mr *MockRestClientInterfaceMockRecorder) FcpInterfaceGet(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FcpInterfaceGet", reflect.TypeOf((*MockRestClientInterface)(nil).FcpInterfaceGet), arg0, arg1)
+}
+
+// FcpNodeGetName mocks base method.
+func (m *MockRestClientInterface) FcpNodeGetName(arg0 context.Context, arg1 []string) (*s_a_n.FcpServiceGetOK, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FcpNodeGetName", arg0, arg1)
+	ret0, _ := ret[0].(*s_a_n.FcpServiceGetOK)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FcpNodeGetName indicates an expected call of FcpNodeGetName.
+func (mr *MockRestClientInterfaceMockRecorder) FcpNodeGetName(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FcpNodeGetName", reflect.TypeOf((*MockRestClientInterface)(nil).FcpNodeGetName), arg0, arg1)
+}
+
 // FlexGroupCreate mocks base method.
 func (m *MockRestClientInterface) FlexGroupCreate(arg0 context.Context, arg1 string, arg2 int, arg3 []string, arg4, arg5, arg6, arg7, arg8, arg9, arg10 string, arg11 api.QosPolicyGroup, arg12 *bool, arg13 int) error {
 	m.ctrl.T.Helper()

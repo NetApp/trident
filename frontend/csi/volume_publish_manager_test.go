@@ -17,6 +17,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	"github.com/netapp/trident/mocks/mock_utils/mock_models"
+	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
@@ -600,6 +601,7 @@ func TestValidateTrackingFile(t *testing.T) {
 	trackInfo.StagingTargetPath = stagePath
 	trackInfo.FilesystemType = fsType
 	trackInfo.IscsiTargetIQN = "iqn"
+	trackInfo.SANType = sa.ISCSI
 
 	emptyTrackInfo := &models.VolumeTrackingInfo{}
 

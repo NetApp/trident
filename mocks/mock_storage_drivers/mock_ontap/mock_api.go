@@ -183,6 +183,36 @@ func (mr *MockOntapAPIMockRecorder) ExportRuleList(arg0, arg1 any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportRuleList", reflect.TypeOf((*MockOntapAPI)(nil).ExportRuleList), arg0, arg1)
 }
 
+// FcpInterfaceGet mocks base method.
+func (m *MockOntapAPI) FcpInterfaceGet(arg0 context.Context, arg1 string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FcpInterfaceGet", arg0, arg1)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FcpInterfaceGet indicates an expected call of FcpInterfaceGet.
+func (mr *MockOntapAPIMockRecorder) FcpInterfaceGet(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FcpInterfaceGet", reflect.TypeOf((*MockOntapAPI)(nil).FcpInterfaceGet), arg0, arg1)
+}
+
+// FcpNodeGetNameRequest mocks base method.
+func (m *MockOntapAPI) FcpNodeGetNameRequest(arg0 context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FcpNodeGetNameRequest", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FcpNodeGetNameRequest indicates an expected call of FcpNodeGetNameRequest.
+func (mr *MockOntapAPIMockRecorder) FcpNodeGetNameRequest(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FcpNodeGetNameRequest", reflect.TypeOf((*MockOntapAPI)(nil).FcpNodeGetNameRequest), arg0)
+}
+
 // FlexgroupCloneSplitStart mocks base method.
 func (m *MockOntapAPI) FlexgroupCloneSplitStart(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()

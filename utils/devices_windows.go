@@ -125,3 +125,9 @@ func closeLUKSDevice(ctx context.Context, devicePath string) error {
 	defer Logc(ctx).Debug("<<<< devices_windows.closeLUKSDevice")
 	return errors.UnsupportedError("closeLUKSDevice is not supported for windows")
 }
+
+func getFCPDiskSize(ctx context.Context, devicePath string) (int64, error) {
+	Logc(ctx).Debug(">>>> devices_windows.getFCPDiskSize")
+	defer Logc(ctx).Debug("<<<< devices_windows.getFCPDiskSize")
+	return 0, errors.UnsupportedError("getFCPDiskSize is not supported for windows")
+}

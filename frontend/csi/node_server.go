@@ -26,6 +26,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/fcp"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
@@ -34,9 +35,11 @@ const (
 	tridentDeviceInfoPath           = "/var/lib/trident/tracking"
 	lockID                          = "csi_node_server"
 	AttachISCSIVolumeTimeoutShort   = 20 * time.Second
+	AttachFCPVolumeTimeoutShort     = 20 * time.Second
 	iSCSINodeUnstageMaxDuration     = 15 * time.Second
 	iSCSILoginTimeout               = 10 * time.Second
 	iSCSISelfHealingLockContext     = "ISCSISelfHealingThread"
+	fcpNodeUnstageMaxDuration       = 15 * time.Second
 	nvmeSelfHealingLockContext      = "NVMeSelfHealingThread"
 	defaultNodeReconciliationPeriod = 1 * time.Minute
 	maximumNodeReconciliationJitter = 5000 * time.Millisecond
@@ -47,6 +50,7 @@ const (
 var (
 	topologyLabels = make(map[string]string)
 	iscsiUtils     = utils.IscsiUtils
+	fcpUtils       = utils.FcpUtils
 
 	publishedISCSISessions, currentISCSISessions models.ISCSISessions
 	publishedNVMeSessions, currentNVMeSessions   utils.NVMeSessions
@@ -176,6 +180,8 @@ func (p *Plugin) nodeUnstageVolume(
 	case tridentconfig.Block:
 		if publishInfo.SANType == sa.NVMe {
 			return p.nodeUnstageNVMeVolume(ctx, req, publishInfo, force)
+		} else if publishInfo.SANType == sa.FCP {
+			return p.nodeUnstageFCPVolumeRetry(ctx, req, publishInfo, force)
 		}
 		return p.nodeUnstageISCSIVolumeRetry(ctx, req, publishInfo, force)
 	default:
@@ -217,6 +223,8 @@ func (p *Plugin) NodePublishVolume(
 	case string(tridentconfig.Block):
 		if req.PublishContext["SANType"] == sa.NVMe {
 			return p.nodePublishNVMeVolume(ctx, req)
+		} else if req.PublishContext["SANType"] == sa.FCP {
+			return p.nodePublishFCPVolume(ctx, req)
 		}
 		return p.nodePublishISCSIVolume(ctx, req)
 	default:
@@ -468,9 +476,15 @@ func (p *Plugin) nodeExpandVolume(
 		// We don't need to rescan mount devices for NVMe protocol backend. Automatic namespace rescanning happens
 		// everytime the NVMe controller is reset, or if the controller posts an asynchronous event indicating
 		// namespace attributes have changed.
-		if publishInfo.SANType != sa.NVMe {
+		switch publishInfo.SANType {
+		case sa.NVMe:
+			Logc(ctx).WithField("volumeId", volumeId).Info("NVMe volume expansion check is not required.")
+		case sa.FCP:
+			err = p.nodePrepareFCPVolumeForExpansion(ctx, publishInfo, requiredBytes)
+		default:
 			err = p.nodePrepareISCSIVolumeForExpansion(ctx, publishInfo, requiredBytes)
 		}
+
 		mountOptions = publishInfo.MountOptions
 	default:
 		return status.Error(codes.InvalidArgument, "unknown protocol")
@@ -527,6 +541,40 @@ func (p *Plugin) nodeExpandVolume(
 
 	Logc(ctx).WithField("volumeId", volumeId).Info("Filesystem expansion completed.")
 	return nil
+}
+
+// nodePrepareFCPVolumeForExpansion readies volume expansion for FCP volumes
+func (p *Plugin) nodePrepareFCPVolumeForExpansion(
+	ctx context.Context, publishInfo *models.VolumePublishInfo, requiredBytes int64,
+) error {
+	lunID := int(publishInfo.FCPLunNumber)
+
+	Logc(ctx).WithFields(LogFields{
+		"targetWWNN":     publishInfo.FCTargetWWNN,
+		"lunID":          lunID,
+		"devicePath":     publishInfo.DevicePath,
+		"mountOptions":   publishInfo.MountOptions,
+		"filesystemType": publishInfo.FilesystemType,
+	}).Debug("PublishInfo for block device to expand.")
+
+	var err error
+
+	// Make sure device is ready.
+	if p.fcp.IsAlreadyAttached(ctx, lunID, publishInfo.FCTargetWWNN) {
+		// Rescan device to detect increased size.
+		if err = p.fcp.RescanDevices(
+			ctx, publishInfo.FCTargetWWNN, publishInfo.FCPLunNumber, requiredBytes); err != nil {
+			Logc(ctx).WithField("device", publishInfo.DevicePath).WithError(err).
+				Error("Unable to scan device.")
+			err = status.Error(codes.Internal, err.Error())
+		}
+	} else {
+		err = fmt.Errorf("device %s to expand is not attached", publishInfo.DevicePath)
+		Logc(ctx).WithField("devicePath", publishInfo.DevicePath).WithError(err).Error(
+			"Unable to expand volume.")
+		return status.Error(codes.Internal, err.Error())
+	}
+	return err
 }
 
 // nodePrepareISCSIVolumeForExpansion readies volume expansion for Block (i.e. iSCSI) volumes
@@ -631,6 +679,11 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *models.Node {
 		Logc(ctx).WithField("IP Addresses", ips).Info("Discovered IP addresses.")
 	}
 
+	var fcWWPNs []string
+	if fcWWPNs, err = fcp.GetFCPHostPortNames(ctx); err != nil {
+		Logc(ctx).WithError(err).Warn("Problem getting FCP host node port name association.")
+	}
+
 	// Discover active protocol services on the host.
 	var services []string
 	nfsActive, err := utils.NFSActiveOnHost(ctx)
@@ -682,6 +735,7 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *models.Node {
 		Name:     p.nodeName,
 		IQN:      iscsiWWN,
 		NQN:      nvmeNQN,
+		WWPNs:    fcWWPNs,
 		IPs:      ips,
 		NodePrep: nil,
 		HostInfo: p.hostInfo,
@@ -1055,6 +1109,315 @@ func (p *Plugin) readAllTrackingFiles(ctx context.Context) []models.VolumePublis
 	return publishInfos
 }
 
+func (p *Plugin) nodeStageFCPVolume(
+	ctx context.Context, req *csi.NodeStageVolumeRequest, publishInfo *models.VolumePublishInfo,
+) (err error) {
+	Logc(ctx).Debug(">>>> nodeStageFCPVolume")
+	defer Logc(ctx).Debug("<<<< nodeStageFCPVolume")
+
+	var lunID int64
+	lunID, err = strconv.ParseInt(req.PublishContext["fcpLunNumber"], 10, 0)
+	if err != nil {
+		return err
+	}
+
+	isLUKS := utils.ParseBool(req.PublishContext["LUKSEncryption"])
+	publishInfo.LUKSEncryption = strconv.FormatBool(isLUKS)
+
+	publishInfo.MountOptions = req.PublishContext["mountOptions"]
+	publishInfo.FCTargetWWNN = req.PublishContext["fcTargetWWNN"]
+	publishInfo.FCPLunNumber = int32(lunID)
+	publishInfo.FCPLunSerial = req.PublishContext["fcpLunSerial"]
+	publishInfo.FCPIgroup = req.PublishContext["fcpIgroup"]
+	publishInfo.SANType = req.PublishContext["SANType"]
+
+	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
+	if err != nil {
+		return err
+	}
+
+	// In the case of a failed CSI NodeStageVolume call, CSI node clients may call NodeStageVolume or NodeUnstageVolume.
+	// To ensure Trident can handle a subsequent CSI NodeUnstageVolume call, Trident always writes a tracking file.
+	// This should result in Trident having all it needs to for CSI NodeUnstageVolume should an attachment fail.
+	defer func() {
+		// Always write a volume tracking info for use in node publish & unstage calls.
+		volTrackingInfo := &models.VolumeTrackingInfo{
+			VolumePublishInfo: *publishInfo,
+			StagingTargetPath: stagingTargetPath,
+			PublishedPaths:    map[string]struct{}{},
+		}
+		if fileErr := p.nodeHelper.WriteTrackingInfo(ctx, volumeId, volTrackingInfo); fileErr != nil {
+			Logc(ctx).WithFields(LogFields{
+				"volumeID":          volumeId,
+				"stagingTargetPath": stagingTargetPath,
+			}).WithError(fileErr).Error("Could not write tracking file.")
+
+			// If an attachment error exists, then we should capture that failure along with a write file error.
+			if err != nil {
+				err = fmt.Errorf("attachment failed: %v; could not write tracking file: %v", err, fileErr)
+			} else {
+				err = fmt.Errorf("could not write tracking file: %v", fileErr)
+			}
+		}
+	}()
+
+	var mpathSize int64
+	mpathSize, err = p.ensureAttachFCPVolume(ctx, req, "", publishInfo, AttachFCPVolumeTimeoutShort)
+	if err != nil {
+		return err
+	}
+
+	if isLUKS {
+		var luksDevice models.LUKSDeviceInterface
+		luksDevice, err = utils.NewLUKSDeviceFromMappingPath(
+			ctx, publishInfo.DevicePath,
+			req.VolumeContext["internalName"],
+		)
+		if err != nil {
+			return err
+		}
+
+		// Ensure we update the passphrase in case it has never been set before
+		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
+		if err != nil {
+			return fmt.Errorf("could not set LUKS volume passphrase")
+		}
+	}
+
+	if mpathSize > 0 {
+		Logc(ctx).Warn("Multipath device size may not be correct, performing gratuitous resize.")
+
+		err = p.nodeExpandVolume(ctx, publishInfo, mpathSize, stagingTargetPath, volumeId, req.GetSecrets())
+		if err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"multipathDevice": publishInfo.DevicePath,
+				"volumeID":        volumeId,
+				"size":            mpathSize,
+				"err":             err,
+			}).Warn("Attempt to perform gratuitous resize failed.")
+		}
+	}
+
+	return nil
+}
+
+// ensureAttachFCPVolume attempts to attach the volume to the local host
+// with a retry logic based on the publish information passed in.
+func (p *Plugin) ensureAttachFCPVolume(
+	ctx context.Context, req *csi.NodeStageVolumeRequest, mountpoint string,
+	publishInfo *models.VolumePublishInfo, attachTimeout time.Duration,
+) (int64, error) {
+	var err error
+	var mpathSize int64
+
+	Logc(ctx).Debug(">>>> ensureAttachFCPVolume")
+	defer Logc(ctx).Debug("<<<< ensureAttachFCPVolume")
+
+	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
+	if mpathSize, err = p.fcp.AttachVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint,
+		publishInfo, req.GetSecrets(), attachTimeout); err != nil {
+		return mpathSize, status.Error(codes.Internal, fmt.Sprintf("failed to stage volume: %v", err))
+	}
+
+	return mpathSize, nil
+}
+
+func (p *Plugin) nodeUnstageFCPVolume(
+	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *models.VolumePublishInfo, force bool,
+) error {
+	deviceInfo, err := utils.GetDeviceInfoForFCPLUN(ctx, nil, int(publishInfo.FCPLunNumber), publishInfo.FCTargetWWNN, false)
+	if err != nil {
+		return fmt.Errorf("could not get device info: %v", err)
+	}
+
+	if deviceInfo == nil {
+		Logc(ctx).Debug("Could not find devices, nothing to do.")
+		return nil
+	}
+
+	var luksMapperPath string
+	if utils.ParseBool(publishInfo.LUKSEncryption) {
+		fields := LogFields{"luksDevicePath": publishInfo.DevicePath, "lunID": publishInfo.FCPLunNumber}
+
+		// Before closing the LUKS device, get the underlying mapper device from cryptsetup.
+		mapperPath, err := utils.GetUnderlyingDevicePathForLUKSDevice(ctx, publishInfo.DevicePath)
+		if err != nil {
+			// No need to return an error
+			Logc(ctx).WithFields(fields).WithError(err).Error("Could not determine underlying device for LUKS.")
+		}
+		fields["mapperPath"] = mapperPath
+
+		err = utils.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, publishInfo.DevicePath)
+		if err != nil {
+			if errors.IsMaxWaitExceededError(err) {
+				Logc(ctx).WithFields(LogFields{
+					"devicePath": publishInfo.DevicePath,
+					"lun":        publishInfo.FCPLunNumber,
+					"err":        err,
+				}).Debug("LUKS close wait time exceeded, continuing with device removal.")
+			} else {
+				return err
+			}
+		}
+
+		// Get the underlying device mapper device for the block device used by LUKS.
+		dmDevicePath, err := utils.GetDMDeviceForMapperPath(ctx, mapperPath)
+		if err != nil {
+			Logc(ctx).WithFields(fields).WithError(err).Error("Failed to determine dm device from device mapper.")
+		}
+
+		luksMapperPath = publishInfo.DevicePath
+		// Save device mapper path to publishInfo for the subsequent removal steps.
+		publishInfo.DevicePath = dmDevicePath
+	}
+
+	// Delete the device from the host.
+	unmappedMpathDevice, err := utils.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, p.unsafeDetach, force)
+	if err != nil {
+		if errors.IsFCPSameLunNumberError(err) {
+			// There is a need to pass all the publish infos this time
+			unmappedMpathDevice, err = utils.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, p.readAllTrackingFiles(ctx),
+				p.unsafeDetach, force)
+		}
+
+		if err != nil && !p.unsafeDetach {
+			return status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
+	if err != nil {
+		return err
+	}
+
+	// Ensure that the temporary mount point created during a filesystem expand operation is removed.
+	if err := utils.UmountAndRemoveTemporaryMountPoint(ctx, stagingTargetPath); err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"volumeId":          volumeId,
+			"stagingTargetPath": stagingTargetPath,
+		}).WithError(err).Errorf("Failed to remove directory in staging target path.")
+		errStr := fmt.Sprintf("failed to remove temporary directory in staging target path %s; %s",
+			stagingTargetPath, err.Error())
+		return status.Error(codes.Internal, errStr)
+	}
+
+	// If the luks device still exists, it means the device was unable to be closed prior to removing the block
+	// device. This can happen if the LUN was deleted or offline. It should be removable by this point.
+	// It needs to be removed prior to removing the 'unmappedMpathDevice' device below.
+	if luksMapperPath != "" {
+		// EnsureLUKSDeviceClosed will not return an error if the device is already closed or removed.
+		if err = utils.EnsureLUKSDeviceClosed(ctx, luksMapperPath); err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"devicePath": luksMapperPath,
+			}).WithError(err).Warning("Unable to remove LUKS mapper device.")
+		}
+		// Clear the time duration for the LUKS device.
+		delete(utils.LuksCloseDurations, luksMapperPath)
+	}
+
+	// If there is multipath device, flush(remove) mappings
+	if err := utils.RemoveMultipathDeviceMapping(ctx, unmappedMpathDevice); err != nil {
+		return err
+	}
+
+	// Delete the device info we saved to the volume tracking info path so unstage can succeed.
+	if err := p.nodeHelper.DeleteTrackingInfo(ctx, volumeId); err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
+
+	return nil
+}
+
+func (p *Plugin) nodeUnstageFCPVolumeRetry(
+	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *models.VolumePublishInfo, force bool,
+) (*csi.NodeUnstageVolumeResponse, error) {
+	nodeUnstageFCPVolumeNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("Failed to unstage the volume, retrying.")
+	}
+
+	nodeUnstageFCPVolumeAttempt := func() error {
+		return p.
+			nodeUnstageFCPVolume(ctx, req, publishInfo, force)
+	}
+
+	nodeUnstageFCPVolumeBackoff := backoff.NewExponentialBackOff()
+	nodeUnstageFCPVolumeBackoff.InitialInterval = 1 * time.Second
+	nodeUnstageFCPVolumeBackoff.Multiplier = 1.414 // approx sqrt(2)
+	nodeUnstageFCPVolumeBackoff.RandomizationFactor = 0.1
+	nodeUnstageFCPVolumeBackoff.MaxElapsedTime = fcpNodeUnstageMaxDuration
+
+	// Run the un-staging using an exponential backoff
+	if err := backoff.RetryNotify(nodeUnstageFCPVolumeAttempt, nodeUnstageFCPVolumeBackoff,
+		nodeUnstageFCPVolumeNotify); err != nil {
+		Logc(ctx).Error("failed to unstage volume")
+		return nil, err
+	}
+
+	return &csi.NodeUnstageVolumeResponse{}, nil
+}
+
+func (p *Plugin) nodePublishFCPVolume(
+	ctx context.Context, req *csi.NodePublishVolumeRequest,
+) (*csi.NodePublishVolumeResponse, error) {
+	var err error
+
+	// Read the device info from the volume tracking info path, or if that doesn't exist yet, the staging path.
+	trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeId)
+	if err != nil {
+		if errors.IsNotFoundError(err) {
+			return nil, status.Error(codes.FailedPrecondition, err.Error())
+		} else {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+	publishInfo := &trackingInfo.VolumePublishInfo
+
+	if req.GetReadonly() {
+		publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "ro", ",")
+	}
+
+	if utils.ParseBool(publishInfo.LUKSEncryption) {
+		// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
+		luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
+			req.VolumeContext["internalName"])
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, req.GetVolumeId(), req.GetSecrets(), false)
+		if err != nil {
+			Logc(ctx).WithError(err).Error("Failed to ensure current LUKS passphrase.")
+		}
+	}
+
+	if publishInfo.FilesystemType == tridentconfig.FsRaw {
+
+		if len(publishInfo.MountOptions) > 0 {
+			publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "bind", ",")
+		} else {
+			publishInfo.MountOptions = "bind"
+		}
+
+		// Place the block device at the target path for the raw-block.
+		err = utils.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, true)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "unable to bind mount raw device; %s", err)
+		}
+	} else {
+		// Mount the device.
+		err = utils.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, false)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "unable to mount device; %s", err)
+		}
+	}
+
+	err = p.nodeHelper.AddPublishedPath(ctx, req.VolumeId, req.TargetPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return &csi.NodePublishVolumeResponse{}, nil
+}
+
 func (p *Plugin) nodeStageISCSIVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest, publishInfo *models.VolumePublishInfo,
 ) (err error) {
@@ -1264,6 +1627,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		Logc(ctx).Debug("No host sessions found, nothing to do.")
 		return nil
 	}
+
 	deviceInfo, err := p.deviceClient.GetDeviceInfoForLUN(ctx, hostSessionMap, int(publishInfo.IscsiLunNumber),
 		publishInfo.IscsiTargetIQN, false)
 	if err != nil {
@@ -2313,14 +2677,21 @@ func (p *Plugin) nodeStageSANVolume(
 		SharedTarget:   sharedTarget,
 	}
 
-	if req.PublishContext["SANType"] == sa.NVMe {
-		if err := p.nodeStageNVMeVolume(ctx, req, publishInfo); err != nil {
-			return nil, status.Error(codes.Internal, fmt.Sprintf("failed to stage volume: %s", err.Error()))
-		}
-	} else {
+	switch req.PublishContext["SANType"] {
+	case sa.ISCSI:
 		if err = p.nodeStageISCSIVolume(ctx, req, publishInfo); err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
+	case sa.FCP:
+		if err = p.nodeStageFCPVolume(ctx, req, publishInfo); err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	case sa.NVMe:
+		if err = p.nodeStageNVMeVolume(ctx, req, publishInfo); err != nil {
+			return nil, status.Error(codes.Internal, fmt.Sprintf("failed to stage volume: %s", err.Error()))
+		}
+	default:
+		return nil, status.Error(codes.InvalidArgument, "invalid SANType")
 	}
 
 	return &csi.NodeStageVolumeResponse{}, nil

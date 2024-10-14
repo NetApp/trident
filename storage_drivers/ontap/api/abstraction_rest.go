@@ -2845,6 +2845,54 @@ func (d OntapAPIREST) IgroupGetByName(ctx context.Context, initiatorGroupName st
 	return mappedIQNs, nil
 }
 
+func (d OntapAPIREST) FcpInterfaceGet(ctx context.Context, svm string) ([]string, error) {
+	var FCPNodeNames []string
+	fields := []string{"target.name", "enabled"}
+	interfaceResponse, err := d.api.FcpInterfaceGet(ctx, fields)
+	if err != nil {
+		return nil, fmt.Errorf("could not get SVM FCP node name; %v", err)
+	}
+	if interfaceResponse == nil || interfaceResponse.Payload == nil {
+		return nil, nil
+	}
+
+	for _, record := range interfaceResponse.Payload.FcpServiceResponseInlineRecords {
+		if record.Enabled != nil && *record.Enabled {
+			if record.Target != nil && record.Target.Name != nil {
+				FCPNodeNames = append(FCPNodeNames, *record.Target.Name)
+			}
+		}
+	}
+
+	if len(FCPNodeNames) == 0 {
+		return nil, fmt.Errorf("SVM %s has no active FCP interfaces", svm)
+	}
+
+	return FCPNodeNames, nil
+}
+
+func (d OntapAPIREST) FcpNodeGetNameRequest(ctx context.Context) (string, error) {
+	fields := []string{"target.name"}
+	result, err := d.api.FcpNodeGetName(ctx, fields)
+	if err != nil {
+		return "", err
+	}
+	if result == nil {
+		return "", fmt.Errorf("FCP node name response is empty")
+	}
+	if result.Payload == nil {
+		return "", fmt.Errorf("FCP node name payload is empty")
+	}
+
+	if result.Payload.Target == nil {
+		return "", fmt.Errorf("could not get FCP node name target")
+	}
+	if result.Payload.Target.Name == nil {
+		return "", fmt.Errorf("could not get FCP node name target")
+	}
+	return *result.Payload.Target.Name, nil
+}
+
 // GetSLMDataLifs returns IP addresses whose node name matches reporting node names
 func (d OntapAPIREST) GetSLMDataLifs(ctx context.Context, ips, reportingNodeNames []string) ([]string, error) {
 	var reportedDataLIFs []string
@@ -3066,7 +3114,8 @@ func (d OntapAPIREST) NVMeSubsystemGetNamespaceCount(ctx context.Context, subsys
 	return count, nil
 }
 
-func (d OntapAPIREST) NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, namespaceUUID string,
+func (d OntapAPIREST) NVMeIsNamespaceMapped(
+	ctx context.Context, subsysUUID, namespaceUUID string,
 ) (bool, error) {
 	fields := LogFields{
 		"Method":         "NVMeIsNamespaceMapped",

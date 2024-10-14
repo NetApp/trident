@@ -1173,7 +1173,7 @@ func (d *SANEconomyStorageDriver) Publish(
 	// Use the node specific igroup if publish enforcement is enabled and this is for CSI.
 	if tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
 		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
-		err = ensureIGroupExists(ctx, d.GetAPI(), igroupName)
+		err = ensureIGroupExists(ctx, d.GetAPI(), igroupName, d.Config.SANType)
 	}
 
 	// Get target info.

@@ -23,6 +23,7 @@ import (
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
 	mockUtils "github.com/netapp/trident/mocks/mock_utils"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
+	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/errors"
@@ -2470,6 +2471,7 @@ func NewNodeStageVolumeRequestBuilder() *NodeStageVolumeRequestBuilder {
 				"iscsiTargetPortalCount": "2",
 				"p1":                     "127.0.0.1:4321",
 				"p2":                     "127.0.0.1:4322",
+				"SANType":                sa.ISCSI,
 			},
 			VolumeCapability: &csi.VolumeCapability{
 				AccessType: &csi.VolumeCapability_Mount{

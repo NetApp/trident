@@ -24,7 +24,6 @@ var (
 	deviceRegex       = regexp.MustCompile(`/dev/(?P<device>[\w-]+)`)
 
 	chrootPathPrefix string
-
 	// FIXME: Instead of a package-level variable, pass command into other utils once their interfaces are defined.
 	command = exec.NewCommand()
 )

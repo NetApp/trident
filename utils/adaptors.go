@@ -95,6 +95,10 @@ func (c DevicesClient) GetISCSIDiskSize(ctx context.Context, devicePath string) 
 	return getISCSIDiskSize(ctx, devicePath)
 }
 
+func (c DevicesClient) GetFCPDiskSize(ctx context.Context, devicePath string) (int64, error) {
+	return getFCPDiskSize(ctx, devicePath)
+}
+
 func (c DevicesClient) GetMountedISCSIDevices(ctx context.Context) ([]*models.ScsiDeviceInfo, error) {
 	return GetMountedISCSIDevices(ctx)
 }

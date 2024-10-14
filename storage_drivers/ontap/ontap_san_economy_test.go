@@ -2347,6 +2347,8 @@ func TestOntapSanEconomyVolumePublish(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
 	d.ips = []string{"127.0.0.1"}
+	d.Config.SANType = sa.ISCSI
+
 	volConfig := &storage.VolumeConfig{
 		InternalName:     "lunName",
 		Size:             "1g",
@@ -2388,6 +2390,8 @@ func TestOntapSanEconomyVolumePublishSLMError(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
 	d.ips = []string{"127.0.0.1"}
+	d.Config.SANType = sa.ISCSI
+
 	volConfig := &storage.VolumeConfig{
 		InternalName: "lunName",
 		Size:         "1g",
@@ -5243,27 +5247,6 @@ func TestOntapSanEconomyInitialize_CreateFlexvolForLUN_Failed(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "", volName)
 }
-
-//func TestOntapSanEconomyInitialize_CreateFlexvolForLUN_VolumeModifySnapshotDirectoryAccessFailed(t *testing.T) {
-//	mockAPI, d := newMockOntapSanEcoDriver(t)
-//	vol := &api.Volume{
-//		Name:       "storagePrefix_vol1",
-//		Aggregates: []string{"data"},
-//	}
-//	opts := make(map[string]string)
-//	pool1 := storage.NewStoragePool(nil, "pool1")
-//	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
-//
-//	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
-//	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx,
-//		gomock.Any(), false).Return(fmt.Errorf("failed to disable snapshot directory access"))
-//	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(fmt.Errorf("failed to destroy volume"))
-//
-//	volName, err := d.createFlexvolForLUN(ctx, vol, opts, pool1)
-//
-//	assert.Error(t, err)
-//	assert.Equal(t, "", volName)
-//}
 
 func TestOntapSanEconomyGetSnapshotEconomy_LUNDoesNotExist(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)

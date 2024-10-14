@@ -23,6 +23,7 @@ type VolumeAccessInfo struct {
 	NVMeAccessInfo
 	NfsAccessInfo
 	SMBAccessInfo
+	FCPAccessInfo
 	MountOptions       string `json:"mountOptions,omitempty"`
 	FormatOptions      string `json:"formatOptions,omitempty"`
 	PublishEnforcement bool   `json:"publishEnforcement,omitempty"`
@@ -44,6 +45,16 @@ type IscsiChapInfo struct {
 func (i IscsiChapInfo) String() string {
 	return ToStringRedacted(&i,
 		[]string{"IscsiUsername", "IscsiInitiatorSecret", "IscsiTargetUsername", "IscsiTargetSecret"}, nil)
+}
+
+type FibreChannelAccessInfo struct {
+	FCTargetWWNN string `json:"fcTargetWWNN,omitempty"`
+}
+type FCPAccessInfo struct {
+	FibreChannelAccessInfo
+	FCPLunNumber int32  `json:"fcpLunNumber,omitempty"`
+	FCPIgroup    string `json:"fcpIgroup,omitempty"`
+	FCPLunSerial string `json:"fcpLunSerial,omitempty"`
 }
 
 type IscsiAccessInfo struct {
@@ -69,6 +80,7 @@ type ScsiDeviceInfo struct {
 	MultipathDevice string
 	Filesystem      string
 	IQN             string
+	WWNN            string
 	SessionNumber   int
 	CHAPInfo        IscsiChapInfo
 }
@@ -95,6 +107,7 @@ type VolumePublishInfo struct {
 	Localhost         bool     `json:"localhost,omitempty"`
 	HostIQN           []string `json:"hostIQN,omitempty"`
 	HostNQN           string   `json:"hostNQN,omitempty"`
+	HostWWPN          []string `json:"hostWWPN,omitempty"`
 	HostIP            []string `json:"hostIP,omitempty"`
 	BackendUUID       string   `json:"backendUUID,omitempty"`
 	Nodes             []*Node  `json:"nodes,omitempty"`
@@ -173,6 +186,7 @@ type Node struct {
 	Name             string               `json:"name"`
 	IQN              string               `json:"iqn,omitempty"`
 	NQN              string               `json:"nqn,omitempty"`
+	WWPNs            []string             `json:"wwpns,omitempty"`
 	IPs              []string             `json:"ips,omitempty"`
 	TopologyLabels   map[string]string    `json:"topologyLabels,omitempty"`
 	NodePrep         *NodePrep            `json:"nodePrep,omitempty"`
@@ -188,6 +202,7 @@ type NodeExternal struct {
 	Name             string               `json:"name"`
 	IQN              string               `json:"iqn,omitempty"`
 	NQN              string               `json:"nqn,omitempty"`
+	WWPNs            []string             `json:"wwpns,omitempty"`
 	IPs              []string             `json:"ips,omitempty"`
 	TopologyLabels   map[string]string    `json:"topologyLabels,omitempty"`
 	NodePrep         *NodePrep            `json:"nodePrep,omitempty"`
@@ -220,6 +235,7 @@ func (n *Node) ConstructExternal() *NodeExternal {
 		Name:             node.Name,
 		IQN:              node.IQN,
 		NQN:              node.NQN,
+		WWPNs:            node.WWPNs,
 		IPs:              node.IPs,
 		TopologyLabels:   node.TopologyLabels,
 		NodePrep:         node.NodePrep,

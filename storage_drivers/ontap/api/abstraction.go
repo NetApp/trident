@@ -149,6 +149,9 @@ type OntapAPI interface {
 	SnapshotRestoreVolume(ctx context.Context, snapshotName, sourceVolume string) error
 	SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, sourceVolume string) error
 
+	FcpInterfaceGet(ctx context.Context, svm string) ([]string, error)
+	FcpNodeGetNameRequest(ctx context.Context) (string, error)
+
 	SnapmirrorCreate(
 		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
 		replicationPolicy, replicationSchedule string,
@@ -213,8 +216,10 @@ type OntapAPI interface {
 	VolumeSnapshotInfo(ctx context.Context, snapshotName, sourceVolume string) (Snapshot, error)
 	VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error)
 	VolumeSnapshotDelete(ctx context.Context, snapshotName, sourceVolume string) error
-	VolumeWaitForStates(ctx context.Context, volumeName string, desiredStates, abortStates []string,
-		maxElapsedTime time.Duration) (string, error)
+	VolumeWaitForStates(
+		ctx context.Context, volumeName string, desiredStates, abortStates []string,
+		maxElapsedTime time.Duration,
+	) (string, error)
 	SMBShareCreate(ctx context.Context, shareName, path string) error
 	SMBShareExists(ctx context.Context, shareName string) (bool, error)
 	SMBShareDestroy(ctx context.Context, shareName string) error

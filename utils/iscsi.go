@@ -39,7 +39,6 @@ var (
 	IscsiUtils  = iscsi.NewReconcileUtils(chrootPathPrefix, NewOSClient())
 	iscsiClient = iscsi.NewDetailed(chrootPathPrefix, command, iscsi.DefaultSelfHealingExclusion, NewOSClient(),
 		NewDevicesClient(), NewFilesystemClient(), NewMountClient(), IscsiUtils, afero.Afero{Fs: afero.NewOsFs()})
-
 	// Non-persistent map to maintain flush delays/errors if any, for device path(s).
 	iSCSIVolumeFlushExceptions = make(map[string]time.Time)
 

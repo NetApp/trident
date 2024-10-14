@@ -31,6 +31,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/fcp"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
@@ -99,6 +100,7 @@ type TridentOrchestrator struct {
 	stopReconcileBackendLoop chan bool
 	uuid                     string
 	iscsi                    iscsi.ISCSI
+	fcp                      fcp.FCP
 }
 
 // NewTridentOrchestrator returns a storage orchestrator instance
@@ -119,6 +121,8 @@ func NewTridentOrchestrator(client persistentstore.Client) *TridentOrchestrator 
 		// TODO (vivintw) the adaptors are being plugged in here as a temporary measure to prevent cyclic dependencies.
 		// NewClient() must plugin default implementation of the various package clients.
 		iscsi: iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
+			utils.NewMountClient()),
+		fcp: fcp.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
 			utils.NewMountClient()),
 	}
 }
@@ -1512,7 +1516,8 @@ func (o *TridentOrchestrator) updateUserBackendState(ctx context.Context, sb *st
 	if newUserBackendState.IsSuspended() {
 		// Backend is only suspended when its current state is either online, offline or failed.
 		if !backend.State().IsOnline() && !backend.State().IsOffline() && !backend.State().IsFailed() {
-			return fmt.Errorf("the backend '%s' is currently not in any of the expected states: offline, online, or failed. Its current state is '%s'", backend.Name(), backend.State())
+			return fmt.Errorf("the backend '%s' is currently not in any of the expected states: offline, online, or failed. Its current state is '%s'", backend.Name(),
+				backend.State())
 		}
 	}
 

@@ -1204,7 +1204,29 @@ func GetLUKSDeviceForMultipathDevice(multipathDevice string) (string, error) {
 func GetDeviceInfoForLUN(
 	ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string, isDetachCall bool,
 ) (*models.ScsiDeviceInfo, error) {
+	// TODO: check if we require both isDetachCall and needFSType
 	return iscsiClient.GetDeviceInfoForLUN(ctx, hostSessionMap, lunID, iSCSINodeName, isDetachCall)
+}
+
+func GetDeviceInfoForFCPLUN(
+	ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string, isDetachCall bool,
+) (*models.ScsiDeviceInfo, error) {
+	// TODO: check if we require both isDetachCall and needFSType
+	deviceInfo, err := fcpClient.GetDeviceInfoForLUN(ctx, lunID, iSCSINodeName, false, isDetachCall)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.ScsiDeviceInfo{
+		Host:            deviceInfo.Host,
+		Channel:         deviceInfo.Channel,
+		Target:          deviceInfo.Target,
+		LUN:             deviceInfo.LUN,
+		Devices:         deviceInfo.Devices,
+		MultipathDevice: deviceInfo.MultipathDevice,
+		WWNN:            deviceInfo.WWNN,
+		SessionNumber:   deviceInfo.SessionNumber,
+	}, nil
 }
 
 func findMultipathDeviceForDevice(ctx context.Context, device string) string {

@@ -47,6 +47,7 @@ const (
 	// Values for SAN protocol
 	ISCSI = "iscsi"
 	NVMe  = "nvme"
+	FCP   = "fcp"
 
 	// NVMeTransport is used to get NVMe TCP dataLIFs.
 	NVMeTransport = "nvme_tcp"

@@ -14,7 +14,6 @@ import (
 	"unsafe"
 
 	log "github.com/sirupsen/logrus"
-
 	"golang.org/x/net/context"
 	"golang.org/x/sys/unix"
 
@@ -93,6 +92,31 @@ func getISCSIDiskSize(ctx context.Context, devicePath string) (int64, error) {
 	if errno != 0 {
 		err := os.NewSyscallError("ioctl", errno)
 		Logc(ctx).Error("BLKGETSIZE64 ioctl failed")
+		return 0, fmt.Errorf("BLKGETSIZE64 ioctl failed %s: %s", devicePath, err)
+	}
+
+	return size, nil
+}
+
+// getISCSIDiskSize queries the current block size in bytes
+func getFCPDiskSize(ctx context.Context, devicePath string) (int64, error) {
+	fields := LogFields{"rawDevicePath": devicePath}
+	Logc(ctx).WithFields(fields).Debug(">>>> devices_linux.getFCPDiskSize")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< devices_linux.getFCPDiskSize")
+
+	disk, err := os.Open(devicePath)
+	if err != nil {
+		Logc(ctx).Error("Failed to open disk.")
+		return 0, fmt.Errorf("failed to open disk %s: %s", devicePath, err)
+	}
+	defer disk.Close()
+
+	var size int64
+	// TODO (vhs): Check if syscall can be avoided.
+	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, disk.Fd(), unix.BLKGETSIZE64, uintptr(unsafe.Pointer(&size)))
+	if errno != 0 {
+		err := os.NewSyscallError("ioctl", errno)
+		Logc(ctx).Error("BLKGETSIZE64 ioctl failed: ", err)
 		return 0, fmt.Errorf("BLKGETSIZE64 ioctl failed %s: %s", devicePath, err)
 	}
 

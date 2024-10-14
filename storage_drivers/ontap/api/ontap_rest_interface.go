@@ -36,7 +36,11 @@ type RestClientInterface interface {
 	// equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW
 	// -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
 	// -encrypt false
-	VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool) error
+	VolumeCreate(
+		ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
+		exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
+		snapshotReserve int, dpVolume bool,
+	) error
 	// VolumeExists tests for the existence of a flexvol
 	VolumeExists(ctx context.Context, volumeName string) (bool, error)
 	// VolumeGetByName gets the flexvol with the specified name
@@ -191,7 +195,9 @@ type RestClientInterface interface {
 	NodeList(ctx context.Context, pattern string) (*cluster.NodesGetOK, error)
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)
 	// EmsAutosupportLog generates an auto support message with the supplied parameters
-	EmsAutosupportLog(ctx context.Context, appVersion string, autoSupport bool, category, computerName, eventDescription string, eventID int, eventSource string, logLevel int) error
+	EmsAutosupportLog(
+		ctx context.Context, appVersion string, autoSupport bool, category, computerName, eventDescription string, eventID int, eventSource string, logLevel int,
+	) error
 	TieringPolicyValue(ctx context.Context) string
 	// ExportPolicyCreate creates an export policy
 	// equivalent to filer::> vserver export-policy create
@@ -215,7 +221,10 @@ type RestClientInterface interface {
 	// equivalent to filer::> volume create -vserver svm_name -volume fg_vol_name –auto-provision-as flexgroup -size fg_size
 	// -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none
 	// -security-style unix -encrypt false
-	FlexGroupCreate(ctx context.Context, name string, size int, aggrs []string, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int) error
+	FlexGroupCreate(
+		ctx context.Context, name string, size int, aggrs []string, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
+		qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int,
+	) error
 	// FlexgroupCloneSplitStart starts splitting the flexgroup clone
 	FlexgroupCloneSplitStart(ctx context.Context, volumeName string) error
 	// FlexGroupDestroy destroys a FlexGroup
@@ -299,6 +308,8 @@ type RestClientInterface interface {
 	IsVserverDRSource(ctx context.Context) (bool, error)
 	// IsVserverInSVMDR identifies if the Vserver is in Snapmirror relationship (SVM-DR) or not
 	IsVserverInSVMDR(ctx context.Context) bool
+	FcpNodeGetName(ctx context.Context, fields []string) (*san.FcpServiceGetOK, error)
+	FcpInterfaceGet(ctx context.Context, fields []string) (*san.FcpServiceCollectionGetOK, error)
 	SnapmirrorGet(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string, fields []string) (*models.SnapmirrorRelationship, error)
 	SnapmirrorListDestinations(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*models.SnapmirrorRelationship, error)
 	SnapmirrorCreate(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) error

@@ -1936,9 +1936,11 @@ func (d *NASQtreeStorageDriver) GetInternalVolumeName(
 		}
 		// With an external store, any transformation of the name is fine
 		internal := drivers.GetCommonInternalVolumeName(d.Config.CommonStorageDriverConfig, name)
-		internal = strings.Replace(internal, "-", "_", -1)  // ONTAP disallows hyphens
-		internal = strings.Replace(internal, ".", "_", -1)  // ONTAP disallows periods
-		internal = strings.Replace(internal, "__", "_", -1) // Remove any double underscores
+		internal = strings.Replace(internal, "-", "_", -1) // ONTAP disallows hyphens
+		internal = strings.Replace(internal, ".", "_", -1) // ONTAP disallows periods
+		for strings.Contains(internal, "__") {
+			internal = strings.Replace(internal, "__", "_", -1)
+		}
 
 		if len(internal) > 64 {
 			// ONTAP imposes a 64-character limit on qtree names.  We are unlikely to exceed

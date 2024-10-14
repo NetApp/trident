@@ -23,6 +23,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/fcp"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
@@ -82,6 +83,7 @@ type Plugin struct {
 	iscsi        iscsi.ISCSI
 	deviceClient iscsi.Devices // TODO: this interface will be replaced once the device package is created
 	mountClient  iscsi.Mount   // TODO: this interface will be replaced once the mount pacakge is created
+	fcp          fcp.FCP
 }
 
 func NewControllerPlugin(
@@ -173,6 +175,9 @@ func NewNodePlugin(
 		// NewClient() must plugin default implementation of the various package clients.
 		iscsi: iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
 			utils.NewMountClient()),
+		// NewClient() must plugin default implementation of the various package clients.
+		fcp: fcp.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
+			utils.NewMountClient()),
 		deviceClient: utils.NewDevicesClient(),
 		mountClient:  utils.NewMountClient(),
 	}
@@ -262,6 +267,8 @@ func NewAllInOnePlugin(
 		// TODO (vivintw) the adaptors are being plugged in here as a temporary measure to prevent cyclic dependencies.
 		// NewClient() must plugin default implementation of the various package clients.
 		iscsi: iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
+			utils.NewMountClient()),
+		fcp: fcp.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
 			utils.NewMountClient()),
 		deviceClient: utils.NewDevicesClient(),
 		mountClient:  utils.NewMountClient(),

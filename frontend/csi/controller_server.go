@@ -359,6 +359,7 @@ func (p *Plugin) ControllerPublishVolume(
 		Localhost:      false,
 		HostIQN:        []string{nodeInfo.IQN},
 		HostNQN:        nodeInfo.NQN,
+		HostWWPN:       nodeInfo.WWPNs,
 		HostIP:         nodeInfo.IPs,
 		HostName:       nodeInfo.Name,
 		Unmanaged:      volume.Config.ImportNotManaged,
@@ -408,8 +409,16 @@ func (p *Plugin) ControllerPublishVolume(
 			publishInfo["nvmeNamespaceUUID"] = volumePublishInfo.NVMeNamespaceUUID
 			publishInfo["nvmeTargetIPs"] = strings.Join(volumePublishInfo.NVMeTargetIPs, ",")
 			publishInfo["SANType"] = sa.NVMe
+		} else if volumePublishInfo.SANType == sa.FCP {
+			// Fill in only FCP specific fields in publishInfo
+			publishInfo["fcTargetWWNN"] = volumePublishInfo.FCTargetWWNN
+			publishInfo["fcpLunNumber"] = strconv.Itoa(int(volumePublishInfo.FCPLunNumber))
+			publishInfo["fcpLunSerial"] = volumePublishInfo.FCPLunSerial
+			publishInfo["fcpIgroup"] = volumePublishInfo.FCPIgroup
+			publishInfo["useCHAP"] = "false"
+			publishInfo["SANType"] = sa.FCP
 		} else {
-			// fill in only iSCSI specific fields in publishInfo
+			// Fill in only iSCSI specific fields in publishInfo
 			stashIscsiTargetPortals(publishInfo, volumePublishInfo)
 			publishInfo["iscsiTargetIqn"] = volumePublishInfo.IscsiTargetIQN
 			publishInfo["iscsiLunNumber"] = strconv.Itoa(int(volumePublishInfo.IscsiLunNumber))
@@ -418,18 +427,17 @@ func (p *Plugin) ControllerPublishVolume(
 			publishInfo["iscsiIgroup"] = volumePublishInfo.IscsiIgroup
 			publishInfo["useCHAP"] = strconv.FormatBool(volumePublishInfo.UseCHAP)
 			publishInfo["SANType"] = sa.ISCSI
-
-			// Encrypt and add CHAP credentials if they're needed
-			if volumePublishInfo.UseCHAP {
-				if p.aesKey != nil {
-					if err := encryptCHAPPublishInfo(ctx, publishInfo, volumePublishInfo, p.aesKey); err != nil {
-						return nil, status.Error(codes.Internal, err.Error())
-					}
-				} else {
-					msg := "encryption key not set; cannot encrypt CHAP credentials for transit"
-					Logc(ctx).Error(msg)
-					return nil, status.Error(codes.Internal, msg)
+		}
+		// Encrypt and add CHAP credentials if they're needed
+		if volumePublishInfo.UseCHAP {
+			if p.aesKey != nil {
+				if err := encryptCHAPPublishInfo(ctx, publishInfo, volumePublishInfo, p.aesKey); err != nil {
+					return nil, status.Error(codes.Internal, err.Error())
 				}
+			} else {
+				msg := "encryption key not set; cannot encrypt CHAP credentials for transit"
+				Logc(ctx).Error(msg)
+				return nil, status.Error(codes.Internal, msg)
 			}
 		}
 	}

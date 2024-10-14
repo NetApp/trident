@@ -191,6 +191,36 @@ func (mr *MockZapiClientInterfaceMockRecorder) ExportRuleGetIterRequest(arg0 any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportRuleGetIterRequest", reflect.TypeOf((*MockZapiClientInterface)(nil).ExportRuleGetIterRequest), arg0)
 }
 
+// FcpInterfaceGetIterRequest mocks base method.
+func (m *MockZapiClientInterface) FcpInterfaceGetIterRequest() (*azgo.FcpInterfaceGetIterResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FcpInterfaceGetIterRequest")
+	ret0, _ := ret[0].(*azgo.FcpInterfaceGetIterResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FcpInterfaceGetIterRequest indicates an expected call of FcpInterfaceGetIterRequest.
+func (mr *MockZapiClientInterfaceMockRecorder) FcpInterfaceGetIterRequest() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FcpInterfaceGetIterRequest", reflect.TypeOf((*MockZapiClientInterface)(nil).FcpInterfaceGetIterRequest))
+}
+
+// FcpNodeGetNameRequest mocks base method.
+func (m *MockZapiClientInterface) FcpNodeGetNameRequest() (*azgo.FcpNodeGetNameResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FcpNodeGetNameRequest")
+	ret0, _ := ret[0].(*azgo.FcpNodeGetNameResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FcpNodeGetNameRequest indicates an expected call of FcpNodeGetNameRequest.
+func (mr *MockZapiClientInterfaceMockRecorder) FcpNodeGetNameRequest() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FcpNodeGetNameRequest", reflect.TypeOf((*MockZapiClientInterface)(nil).FcpNodeGetNameRequest))
+}
+
 // FlexGroupCreate mocks base method.
 func (m *MockZapiClientInterface) FlexGroupCreate(arg0 context.Context, arg1 string, arg2 int, arg3 []string, arg4, arg5, arg6, arg7, arg8, arg9, arg10 string, arg11 api.QosPolicyGroup, arg12 *bool, arg13 int) (*azgo.VolumeCreateAsyncResponse, error) {
 	m.ctrl.T.Helper()

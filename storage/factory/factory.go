@@ -130,7 +130,7 @@ func GetStorageDriver(driverName, driverProtocol string) (storage.Driver, error)
 	case config.OntapNASQtreeStorageDriverName:
 		storageDriver = &ontap.NASQtreeStorageDriver{}
 	case config.OntapSANStorageDriverName:
-		if driverProtocol == sa.ISCSI {
+		if driverProtocol == sa.ISCSI || driverProtocol == sa.FCP {
 			storageDriver = &ontap.SANStorageDriver{}
 		} else {
 			storageDriver = &ontap.NVMeStorageDriver{}
@@ -180,7 +180,7 @@ func GetDriverProtocol(driverName, configJSON string) (string, error) {
 	if driverName == config.OntapSANStorageDriverName {
 		SANType := strings.ToLower(pool.SANType)
 		switch SANType {
-		case sa.ISCSI, sa.NVMe:
+		case sa.ISCSI, sa.NVMe, sa.FCP:
 			return SANType, nil
 		case "":
 			// Old iSCSI backends will have no value for SANType

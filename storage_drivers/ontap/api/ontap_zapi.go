@@ -2247,6 +2247,25 @@ func (c Client) IscsiInterfaceGetIterRequest() (*azgo.IscsiInterfaceGetIterRespo
 // ISCSI operations END
 // ///////////////////////////////////////////////////////////////////////////
 
+// FCP operations BEGIN
+// ///////////////////////////////////////////////////////////////////////////
+
+func (c Client) FcpNodeGetNameRequest() (*azgo.FcpNodeGetNameResponse, error) {
+	response, err := azgo.NewFcpNodeGetNameRequest().ExecuteUsing(c.zr)
+	return response, err
+}
+
+// FcpInterfaceGetIterRequest returns information about the vserver's FCP interfaces
+func (c Client) FcpInterfaceGetIterRequest() (*azgo.FcpInterfaceGetIterResponse, error) {
+	response, err := azgo.NewFcpInterfaceGetIterRequest().
+		SetMaxRecords(DefaultZapiRecords).
+		ExecuteUsing(c.zr)
+	return response, err
+}
+
+// FCP operations END
+// ///////////////////////////////////////////////////////////////////////////
+
 // ///////////////////////////////////////////////////////////////////////////
 // VSERVER operations BEGIN
 

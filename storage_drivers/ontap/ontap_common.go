@@ -34,6 +34,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/fcp"
 	tridentmodels "github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/version"
 )
@@ -483,15 +484,16 @@ func getSVMState(
 		}
 	}
 
-	// Get data LIFs.
-	upDataLIFs, err := client.NetInterfaceGetDataLIFs(ctx, protocol)
-	if err != nil || len(upDataLIFs) == 0 {
-		if err != nil {
-			// Log error and keep going.
-			Logc(ctx).WithField("error", err).Debug("Error getting list of data LIFs from backend.")
+	if protocol == sa.ISCSI {
+		upDataLIFs, err := client.NetInterfaceGetDataLIFs(ctx, protocol)
+		if err != nil || len(upDataLIFs) == 0 {
+			if err != nil {
+				// Log error and keep going.
+				Logc(ctx).WithField("error", err).Warn("Error getting list of data LIFs from backend.")
+			}
+			// No data LIFs with state 'up' found.
+			return StateReasonDataLIFsDown, changeMap
 		}
-		// No data LIFs with state 'up' found.
-		return StateReasonDataLIFsDown, changeMap
 	}
 
 	// Get ONTAP version
@@ -693,6 +695,31 @@ func GetISCSITargetInfo(
 	return
 }
 
+func GetFCPTargetInfo(
+	ctx context.Context, clientAPI api.OntapAPI, config *drivers.OntapStorageDriverConfig,
+) (FCPNodeName string, FCPInterfaces []string, returnError error) {
+	// Get the SVM FCP WWPN
+	FCPNodeName, err := clientAPI.FcpNodeGetNameRequest(ctx)
+	if err != nil {
+		returnError = fmt.Errorf("could not get SVM FCP node name: %v", err)
+		return
+	}
+
+	// Get the SVM FCP interface with enabled WWPNs
+	FCPInterfaces, err = clientAPI.FcpInterfaceGet(ctx, config.SVM)
+	if err != nil {
+		returnError = fmt.Errorf("could not get SVM FCP node name: %v", err)
+		return
+	}
+	// Get the WWPN
+	if FCPInterfaces == nil {
+		returnError = fmt.Errorf("SVM %s has no active FCP interfaces", config.SVM)
+		return
+	}
+
+	return
+}
+
 var ontapDriverRedactList = [...]string{"API"}
 
 func GetOntapDriverRedactList() []string {
@@ -713,6 +740,19 @@ func getNodeSpecificIgroupName(nodeName, tridentUUID string) string {
 	return igroupName
 }
 
+// getNodeSpecificFCPIgroupName generates a distinct igroup name for node name.
+// Igroup names may collide if node names are over 59 characters.
+func getNodeSpecificFCPIgroupName(nodeName, tridentUUID string) string {
+	igroupName := fmt.Sprintf("%s-fcp-%s", nodeName, tridentUUID)
+
+	if len(igroupName) > MaximumIgroupNameLength {
+		// If the new igroup name is over the igroup character limit, it means the host name is too long.
+		igroupPrefixLength := MaximumIgroupNameLength - len(tridentUUID) - 5
+		igroupName = fmt.Sprintf("%s-fcp-%s", nodeName[:igroupPrefixLength], tridentUUID)
+	}
+	return igroupName
+}
+
 // PublishLUN publishes the volume to the host specified in publishInfo from ontap-san or
 // ontap-san-economy. This method may or may not be running on the host where the volume will be
 // mounted, so it should limit itself to updating access rules, initiator groups, etc. that require
@@ -721,15 +761,15 @@ func getNodeSpecificIgroupName(nodeName, tridentUUID string) string {
 // and publish
 func PublishLUN(
 	ctx context.Context, clientAPI api.OntapAPI, config *drivers.OntapStorageDriverConfig, ips []string,
-	publishInfo *tridentmodels.VolumePublishInfo, lunPath, igroupName, iSCSINodeName string,
+	publishInfo *tridentmodels.VolumePublishInfo, lunPath, igroupName, nodeName string,
 ) error {
 	fields := LogFields{
-		"Method":        "PublishLUN",
-		"Type":          "ontap_common",
-		"lunPath":       lunPath,
-		"igroup":        igroupName,
-		"iSCSINodeName": iSCSINodeName,
-		"publishInfo":   publishInfo,
+		"Method":      "PublishLUN",
+		"Type":        "ontap_common",
+		"lunPath":     lunPath,
+		"igroup":      igroupName,
+		"nodeName":    nodeName,
+		"publishInfo": publishInfo,
 	}
 	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> PublishLUN")
 	defer Logd(ctx, config.StorageDriverName,
@@ -738,24 +778,26 @@ func PublishLUN(
 	var iqn string
 	var err error
 
-	if publishInfo.Localhost {
+	if config.SANType == sa.ISCSI {
+		if publishInfo.Localhost {
 
-		// Lookup local host IQNs
-		iqns, err := utils.GetInitiatorIqns(ctx)
-		if err != nil {
-			return fmt.Errorf("error determining host initiator IQN: %v", err)
-		} else if len(iqns) == 0 {
-			return errors.New("could not determine host initiator IQN")
+			// Lookup local host IQNs
+			iqns, err := utils.GetInitiatorIqns(ctx)
+			if err != nil {
+				return fmt.Errorf("error determining host initiator IQN: %v", err)
+			} else if len(iqns) == 0 {
+				return errors.New("could not determine host initiator IQN")
+			}
+			iqn = iqns[0]
+
+		} else {
+
+			// Host IQN must have been passed in
+			if len(publishInfo.HostIQN) == 0 {
+				return errors.New("host initiator IQN not specified")
+			}
+			iqn = publishInfo.HostIQN[0]
 		}
-		iqn = iqns[0]
-
-	} else {
-
-		// Host IQN must have been passed in
-		if len(publishInfo.HostIQN) == 0 {
-			return errors.New("host initiator IQN not specified")
-		}
-		iqn = publishInfo.HostIQN[0]
 	}
 
 	// Get the fstype
@@ -808,11 +850,24 @@ func PublishLUN(
 		}
 	}
 
-	if iqn != "" {
-		// Add IQN to igroup
-		err = clientAPI.EnsureIgroupAdded(ctx, igroupName, iqn)
-		if err != nil {
-			return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
+	if config.SANType == sa.ISCSI {
+		if iqn != "" {
+			// Add IQN to igroup
+			err = clientAPI.EnsureIgroupAdded(ctx, igroupName, iqn)
+			if err != nil {
+				return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
+			}
+		}
+	} else if config.SANType == sa.FCP {
+		// Add wwpns to igroup
+		for _, hostWWPN := range publishInfo.HostWWPN {
+			portName := strings.TrimPrefix(hostWWPN, "0x")
+			wwpn := fcp.ConvertStrToWWNFormat(portName)
+
+			err = clientAPI.EnsureIgroupAdded(ctx, igroupName, wwpn)
+			if err != nil {
+				return fmt.Errorf("error adding WWPN %v to igroup %v: %v", portName, igroupName, err)
+			}
 		}
 	}
 
@@ -822,15 +877,18 @@ func PublishLUN(
 		return err
 	}
 
-	filteredIPs, err := getISCSIDataLIFsForReportingNodes(ctx, clientAPI, ips, lunPath, igroupName,
-		publishInfo.Unmanaged)
-	if err != nil {
-		return err
-	}
+	var filteredIPs []string
+	if config.SANType == sa.ISCSI {
+		filteredIPs, err = getISCSIDataLIFsForReportingNodes(ctx, clientAPI, ips, lunPath, igroupName,
+			publishInfo.Unmanaged)
+		if err != nil {
+			return err
+		}
 
-	if len(filteredIPs) == 0 {
-		Logc(ctx).Warn("Unable to find reporting ONTAP nodes for discovered dataLIFs.")
-		filteredIPs = ips
+		if len(filteredIPs) == 0 {
+			Logc(ctx).Warn("Unable to find reporting ONTAP nodes for discovered dataLIFs.")
+			filteredIPs = ips
+		}
 	}
 
 	// xfs volumes are always mounted with '-o nouuid' to allow clones to be mounted to the same node as the source
@@ -838,30 +896,48 @@ func PublishLUN(
 		publishInfo.MountOptions = drivers.EnsureMountOption(publishInfo.MountOptions, drivers.MountOptionNoUUID)
 	}
 
-	// Add fields needed by Attach
-	publishInfo.IscsiLunNumber = int32(lunID)
-	publishInfo.IscsiLunSerial = serial
-	publishInfo.IscsiTargetPortal = filteredIPs[0]
-	publishInfo.IscsiPortals = filteredIPs[1:]
-	publishInfo.IscsiTargetIQN = iSCSINodeName
-	publishInfo.SANType = sa.ISCSI
+	if config.SANType == sa.ISCSI {
+		// Add fields needed by Attach
+		publishInfo.IscsiLunNumber = int32(lunID)
+		publishInfo.IscsiLunSerial = serial
+		if config.SANType == sa.ISCSI {
+			publishInfo.IscsiTargetPortal = filteredIPs[0]
+			publishInfo.IscsiPortals = filteredIPs[1:]
+		}
+		publishInfo.IscsiTargetIQN = nodeName
+		publishInfo.SANType = config.SANType
 
-	if igroupName != "" {
-		addUniqueIscsiIGroupName(publishInfo, igroupName)
+		if igroupName != "" {
+			addUniqueIscsiIGroupName(publishInfo, igroupName)
+		}
+
+		publishInfo.FilesystemType = fstype
+		publishInfo.FormatOptions = formatOptions
+		publishInfo.UseCHAP = config.UseCHAP
+
+		if publishInfo.UseCHAP {
+			publishInfo.IscsiUsername = config.ChapUsername
+			publishInfo.IscsiInitiatorSecret = config.ChapInitiatorSecret
+			publishInfo.IscsiTargetUsername = config.ChapTargetUsername
+			publishInfo.IscsiTargetSecret = config.ChapTargetInitiatorSecret
+			publishInfo.IscsiInterface = "default"
+		}
+		publishInfo.SharedTarget = true
+	} else if config.SANType == sa.FCP {
+		// Add fields needed by Attach
+		publishInfo.FCPLunNumber = int32(lunID)
+		publishInfo.FCPLunSerial = serial
+		publishInfo.FCTargetWWNN = nodeName
+		publishInfo.SANType = config.SANType
+
+		if igroupName != "" {
+			addUniqueFCPIGroupName(publishInfo, igroupName)
+		}
+
+		publishInfo.FilesystemType = fstype
+		publishInfo.FormatOptions = formatOptions
+		publishInfo.SharedTarget = true
 	}
-
-	publishInfo.FilesystemType = fstype
-	publishInfo.FormatOptions = formatOptions
-	publishInfo.UseCHAP = config.UseCHAP
-
-	if publishInfo.UseCHAP {
-		publishInfo.IscsiUsername = config.ChapUsername
-		publishInfo.IscsiInitiatorSecret = config.ChapInitiatorSecret
-		publishInfo.IscsiTargetUsername = config.ChapTargetUsername
-		publishInfo.IscsiTargetSecret = config.ChapTargetInitiatorSecret
-		publishInfo.IscsiInterface = "default"
-	}
-	publishInfo.SharedTarget = true
 
 	return nil
 }
@@ -874,6 +950,18 @@ func addUniqueIscsiIGroupName(publishInfo *tridentmodels.VolumePublishInfo, igro
 		// Validate the iscsiGroupName present in the volume publish info. If not present, add in a string.
 		if !strings.Contains(publishInfo.IscsiIgroup, igroupName) {
 			publishInfo.IscsiIgroup += "," + igroupName
+		}
+	}
+}
+
+// addUniqueFCPGroupName added FCPIgroup name in the FCPIgroup name string if it is not present.
+func addUniqueFCPIGroupName(publishInfo *tridentmodels.VolumePublishInfo, igroupName string) {
+	if publishInfo.FCPIgroup == "" {
+		publishInfo.FCPIgroup = igroupName
+	} else {
+		// Validate the FCPGroupName present in the volume publish info. If not present, add in a string.
+		if !strings.Contains(publishInfo.FCPIgroup, igroupName) {
+			publishInfo.FCPIgroup += "," + igroupName
 		}
 	}
 }
@@ -893,6 +981,23 @@ func removeIgroupFromIscsiIgroupList(iscsiIgroupList, igroup string) string {
 	}
 
 	return iscsiIgroupList
+}
+
+// removeIgroupFromFCPIgroupList removes FCPIgroup name in the FCPIgroup list
+func removeIgroupFromFCPIgroupList(fcpIgroupList, igroup string) string {
+	if fcpIgroupList != "" {
+		newIgroupList := make([]string, 0)
+		igroups := strings.Split(fcpIgroupList, ",")
+
+		for _, value := range igroups {
+			if value != igroup {
+				newIgroupList = append(newIgroupList, value)
+			}
+		}
+		return strings.Join(newIgroupList, ",")
+	}
+
+	return fcpIgroupList
 }
 
 // getISCSIDataLIFsForReportingNodes finds the data LIFs for the reporting nodes for the LUN.
@@ -1038,63 +1143,62 @@ func InitializeSANDriver(
 		if config.IgroupName == "" {
 			config.IgroupName = getDefaultIgroupName(driverContext, backendUUID)
 		}
-		err := ensureIGroupExists(ctx, clientAPI, config.IgroupName)
+		err := ensureIGroupExists(ctx, clientAPI, config.IgroupName, config.SANType)
 		if err != nil {
 			return err
 		}
 	}
 
-	getDefaultAuthResponse, err := clientAPI.IscsiInitiatorGetDefaultAuth(ctx)
-	Logc(ctx).WithFields(LogFields{
-		"getDefaultAuthResponse": getDefaultAuthResponse,
-		"err":                    err,
-	}).Debug("IscsiInitiatorGetDefaultAuth result")
-
-	if err != nil {
-		return fmt.Errorf("error checking default initiator's auth type: %v", err)
-	}
-
-	isDefaultAuthTypeNone := IsDefaultAuthTypeNone(getDefaultAuthResponse)
-
-	if config.UseCHAP {
-
-		authType := "CHAP"
-		chapCredentials, err := ValidateBidirectionalChapCredentials(getDefaultAuthResponse, config)
+	if config.SANType == sa.ISCSI {
+		getDefaultAuthResponse, err := clientAPI.IscsiInitiatorGetDefaultAuth(ctx)
+		Logc(ctx).WithFields(LogFields{
+			"getDefaultAuthResponse": getDefaultAuthResponse,
+		}).WithError(err).Debug("IscsiInitiatorGetDefaultAuth result")
 		if err != nil {
-			return fmt.Errorf("error with CHAP credentials: %v", err)
+			return fmt.Errorf("error checking default initiator's auth type: %v", err)
 		}
-		Logc(ctx).Debug("Using CHAP credentials")
 
-		if isDefaultAuthTypeNone {
-			lunsResponse, lunsResponseErr := clientAPI.LunList(ctx, "*")
-			if lunsResponseErr != nil {
-				return fmt.Errorf("error enumerating LUNs for SVM %v: %v", config.SVM, lunsResponseErr)
+		isDefaultAuthTypeNone := IsDefaultAuthTypeNone(getDefaultAuthResponse)
+
+		if config.UseCHAP {
+
+			authType := "CHAP"
+			chapCredentials, err := ValidateBidirectionalChapCredentials(getDefaultAuthResponse, config)
+			if err != nil {
+				return fmt.Errorf("error with CHAP credentials: %v", err)
+			}
+			Logc(ctx).Debug("Using CHAP credentials")
+
+			if isDefaultAuthTypeNone {
+				lunsResponse, lunsResponseErr := clientAPI.LunList(ctx, "*")
+				if lunsResponseErr != nil {
+					return fmt.Errorf("error enumerating LUNs for SVM %v: %v", config.SVM, lunsResponseErr)
+				}
+
+				if len(lunsResponse) > 0 {
+					return fmt.Errorf(
+						"will not enable CHAP for SVM %v; %v existing LUNs would lose access",
+						config.SVM, len(lunsResponse))
+				}
 			}
 
-			if len(lunsResponse) > 0 {
-				return fmt.Errorf(
-					"will not enable CHAP for SVM %v; %v existing LUNs would lose access",
-					config.SVM, len(lunsResponse))
+			err = clientAPI.IscsiInitiatorSetDefaultAuth(ctx, authType, chapCredentials.ChapUsername,
+				chapCredentials.ChapInitiatorSecret, chapCredentials.ChapTargetUsername,
+				chapCredentials.ChapTargetInitiatorSecret)
+			if err != nil {
+				return fmt.Errorf("error setting CHAP credentials: %v", err)
+			}
+			config.ChapUsername = chapCredentials.ChapUsername
+			config.ChapInitiatorSecret = chapCredentials.ChapInitiatorSecret
+			config.ChapTargetUsername = chapCredentials.ChapTargetUsername
+			config.ChapTargetInitiatorSecret = chapCredentials.ChapTargetInitiatorSecret
+
+		} else {
+			if !isDefaultAuthTypeNone {
+				return fmt.Errorf("default initiator's auth type is not 'none'")
 			}
 		}
-
-		err = clientAPI.IscsiInitiatorSetDefaultAuth(ctx, authType, chapCredentials.ChapUsername,
-			chapCredentials.ChapInitiatorSecret, chapCredentials.ChapTargetUsername,
-			chapCredentials.ChapTargetInitiatorSecret)
-		if err != nil {
-			return fmt.Errorf("error setting CHAP credentials: %v", err)
-		}
-		config.ChapUsername = chapCredentials.ChapUsername
-		config.ChapInitiatorSecret = chapCredentials.ChapInitiatorSecret
-		config.ChapTargetUsername = chapCredentials.ChapTargetUsername
-		config.ChapTargetInitiatorSecret = chapCredentials.ChapTargetInitiatorSecret
-
-	} else {
-		if !isDefaultAuthTypeNone {
-			return fmt.Errorf("default initiator's auth type is not 'none'")
-		}
 	}
-
 	return nil
 }
 
@@ -1106,8 +1210,8 @@ func getDefaultIgroupName(driverContext tridentconfig.DriverContext, backendUUID
 	}
 }
 
-func ensureIGroupExists(ctx context.Context, clientAPI api.OntapAPI, igroupName string) error {
-	err := clientAPI.IgroupCreate(ctx, igroupName, "iscsi", "linux")
+func ensureIGroupExists(ctx context.Context, clientAPI api.OntapAPI, igroupName, sanType string) error {
+	err := clientAPI.IgroupCreate(ctx, igroupName, sanType, "linux")
 	if err != nil {
 		return fmt.Errorf("error creating igroup: %v", err)
 	}
@@ -1338,9 +1442,13 @@ func ValidateSANDriver(
 	switch config.DriverContext {
 	case tridentconfig.ContextDocker:
 		// Make sure this host is logged into the ONTAP iSCSI target
-		err := utils.EnsureISCSISessionsWithPortalDiscovery(ctx, ips)
-		if err != nil {
-			return fmt.Errorf("error establishing iSCSI session: %v", err)
+		if config.SANType == sa.ISCSI {
+			err := utils.EnsureISCSISessionsWithPortalDiscovery(ctx, ips)
+			if err != nil {
+				return fmt.Errorf("error establishing iSCSI session: %v", err)
+			}
+		} else if config.SANType == sa.FCP {
+			return fmt.Errorf("trident does not support FCP in Docker plugin mode")
 		}
 	case tridentconfig.ContextCSI:
 		// ontap-san-* drivers should all support publish enforcement with CSI; if the igroup is set
@@ -1349,6 +1457,10 @@ func ValidateSANDriver(
 			Logc(ctx).WithField("igroup", config.IgroupName).
 				Warning("Specifying an igroup is no longer supported for SAN backends in a CSI environment.")
 		}
+	}
+
+	if config.SANType == sa.FCP && config.UseCHAP == true {
+		return fmt.Errorf("CHAP is not supported with FCP protocol")
 	}
 
 	return nil
@@ -2419,6 +2531,11 @@ func InitializeStoragePoolsCommon(
 		}
 
 		sanType := config.SANType
+		if vpool.SANType != "" && sanType != vpool.SANType {
+			return nil, nil, fmt.Errorf("trident does not support mixing of %s and %s SAN types", sanType,
+				vpool.SANType)
+		}
+
 		if vpool.SANType != "" {
 			sanType = vpool.SANType
 		}
@@ -2885,9 +3002,11 @@ func getInternalVolumeNameCommon(
 	}
 	// With an external store, any transformation of the name is fine
 	internal := drivers.GetCommonInternalVolumeName(config.CommonStorageDriverConfig, volConfig.Name)
-	internal = strings.Replace(internal, "-", "_", -1)  // ONTAP disallows hyphens
-	internal = strings.Replace(internal, ".", "_", -1)  // ONTAP disallows periods
-	internal = strings.Replace(internal, "__", "_", -1) // Remove any double underscores
+	internal = strings.Replace(internal, "-", "_", -1) // ONTAP disallows hyphens
+	internal = strings.Replace(internal, ".", "_", -1) // ONTAP disallows periods
+	for strings.Contains(internal, "__") {
+		internal = strings.Replace(internal, "__", "_", -1)
+	}
 	return internal
 }
 
@@ -3385,9 +3504,12 @@ func EnableSANPublishEnforcement(
 		return fmt.Errorf(msg)
 	}
 
+	// TODO: Check if it needs to handled for FCP
+
 	volumeConfig.AccessInfo.IscsiLunNumber = -1
 	volumeConfig.AccessInfo.PublishEnforcement = true
 	volumeConfig.AccessInfo.IscsiIgroup = ""
+
 	return nil
 }
 

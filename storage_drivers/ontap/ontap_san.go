@@ -124,16 +124,20 @@ func (d *SANStorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	d.ips, err = d.API.NetInterfaceGetDataLIFs(ctx, "iscsi")
-	if err != nil {
-		return err
+	if d.Config.SANType == sa.ISCSI {
+		d.ips, err = d.API.NetInterfaceGetDataLIFs(ctx, "iscsi")
+		if err != nil {
+			return err
+		}
+
+		if len(d.ips) == 0 {
+			return fmt.Errorf("no iSCSI data LIFs found on SVM %s", d.API.SVMName())
+		} else {
+			Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
+		}
 	}
 
-	if len(d.ips) == 0 {
-		return fmt.Errorf("no iSCSI data LIFs found on SVM %s", d.API.SVMName())
-	} else {
-		Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
-	}
+	// TODO (vhs): Check if there is a need to validate if FCP interfaces are present.
 
 	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d,
 		d.getStoragePoolAttributes(ctx), d.BackendName())
@@ -800,8 +804,8 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 
 	var (
 		err           error
-		iSCSINodeName string
 		lunID         int
+		iSCSINodeName string
 	)
 
 	// Validate Flexvol exists before trying to destroy
@@ -819,31 +823,33 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	}()
 
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
-
-		// Get target info
-		iSCSINodeName, _, err = GetISCSITargetInfo(ctx, d.API, &d.Config)
-		if err != nil {
-			Logc(ctx).WithField("error", err).Error("Could not get target info.")
-			return err
-		}
-
-		// Get the LUN ID
-		lunPath := lunPath(name)
-		lunID, err = d.API.LunMapInfo(ctx, d.Config.IgroupName, lunPath)
-		if err != nil {
-			return fmt.Errorf("error reading LUN maps for volume %s: %v", name, err)
-		}
-		if lunID >= 0 {
-			publishInfo := models.VolumePublishInfo{
-				DevicePath: "",
-				VolumeAccessInfo: models.VolumeAccessInfo{
-					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiTargetIQN: iSCSINodeName,
-						IscsiLunNumber: int32(lunID),
-					},
-				},
+		if d.Config.SANType == sa.ISCSI {
+			// Get target info
+			iSCSINodeName, _, err = GetISCSITargetInfo(ctx, d.API, &d.Config)
+			if err != nil {
+				Logc(ctx).WithField("error", err).Error("Could not get target info.")
+				return err
 			}
-			drivers.RemoveSCSIDeviceByPublishInfo(ctx, &publishInfo)
+
+			// Get the LUN ID
+			lunPath := lunPath(name)
+			lunID, err = d.API.LunMapInfo(ctx, d.Config.IgroupName, lunPath)
+			if err != nil {
+				return fmt.Errorf("error reading LUN maps for volume %s: %v", name, err)
+			}
+			if lunID >= 0 {
+				publishInfo := models.VolumePublishInfo{
+					DevicePath: "",
+					VolumeAccessInfo: models.VolumeAccessInfo{
+						IscsiAccessInfo: models.IscsiAccessInfo{
+							IscsiTargetIQN: iSCSINodeName,
+							IscsiLunNumber: int32(lunID),
+						},
+					},
+				}
+				drivers.RemoveSCSIDeviceByPublishInfo(ctx, &publishInfo)
+
+			}
 		}
 	}
 
@@ -886,6 +892,7 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 func (d *SANStorageDriver) Publish(
 	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
+	var nodeName string
 	name := volConfig.InternalName
 
 	fields := LogFields{
@@ -910,17 +917,34 @@ func (d *SANStorageDriver) Publish(
 
 	// Use the node specific igroup if publish enforcement is enabled and this is for CSI.
 	if tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
-		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
-		err = ensureIGroupExists(ctx, d.GetAPI(), igroupName)
+		if d.Config.SANType == sa.FCP {
+			igroupName = getNodeSpecificFCPIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+		} else {
+			igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+		}
+		err = ensureIGroupExists(ctx, d.GetAPI(), igroupName, d.Config.SANType)
 	}
 
-	// Get target info.
-	iSCSINodeName, _, err := GetISCSITargetInfo(ctx, d.API, &d.Config)
-	if err != nil {
-		return err
+	if d.Config.SANType == sa.FCP {
+		// Get FCP target info.
+		FCPNodeName, _, err := GetFCPTargetInfo(ctx, d.API, &d.Config)
+		if err != nil {
+			return err
+		}
+
+		nodeName = FCPNodeName
+
+	} else {
+		// Get iSCSI target info.
+		iSCSINodeName, _, err := GetISCSITargetInfo(ctx, d.API, &d.Config)
+		if err != nil {
+			return err
+		}
+
+		nodeName = iSCSINodeName
 	}
 
-	err = PublishLUN(ctx, d.API, &d.Config, d.ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+	err = PublishLUN(ctx, d.API, &d.Config, d.ips, publishInfo, lunPath, igroupName, nodeName)
 	if err != nil {
 		return fmt.Errorf("error publishing %s driver: %v", d.Name(), err)
 	}
@@ -951,14 +975,27 @@ func (d *SANStorageDriver) Unpublish(
 	}
 
 	// Attempt to unmap the LUN from the per-node igroup.
-	igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
-	lunPath := lunPath(name)
-	if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath); err != nil {
-		return fmt.Errorf("error unmapping LUN %s from igroup %s; %v", lunPath, igroupName, err)
-	}
+	var igroupName string
+	if d.Config.SANType == sa.FCP {
+		igroupName = getNodeSpecificFCPIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+		lunPath := lunPath(name)
+		if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath); err != nil {
+			return fmt.Errorf("error unmapping LUN %s from igroup %s; %v", lunPath, igroupName, err)
+		}
 
-	// Remove igroup from volume config's iscsi access Info
-	volConfig.AccessInfo.IscsiIgroup = removeIgroupFromIscsiIgroupList(volConfig.AccessInfo.IscsiIgroup, igroupName)
+		// Remove igroup from volume config's FCP access Info
+		volConfig.AccessInfo.FCPIgroup = removeIgroupFromFCPIgroupList(volConfig.AccessInfo.FCPIgroup,
+			igroupName)
+	} else {
+		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+		lunPath := lunPath(name)
+		if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath); err != nil {
+			return fmt.Errorf("error unmapping LUN %s from igroup %s; %v", lunPath, igroupName, err)
+		}
+
+		// Remove igroup from volume config's iscsi access Info
+		volConfig.AccessInfo.IscsiIgroup = removeIgroupFromIscsiIgroupList(volConfig.AccessInfo.IscsiIgroup, igroupName)
+	}
 
 	// Remove igroup if no LUNs are mapped.
 	if err := DestroyUnmappedIgroup(ctx, d.API, igroupName); err != nil {
@@ -1481,7 +1518,7 @@ func (d *SANStorageDriver) GetBackendState(ctx context.Context) (string, *roarin
 	Logc(ctx).Debug(">>>> GetBackendState")
 	defer Logc(ctx).Debug("<<<< GetBackendState")
 
-	return getSVMState(ctx, d.API, "iscsi", d.GetStorageBackendPhysicalPoolNames(ctx), d.Config.Aggregate)
+	return getSVMState(ctx, d.API, d.Config.SANType, d.GetStorageBackendPhysicalPoolNames(ctx), d.Config.Aggregate)
 }
 
 // String makes SANStorageDriver satisfy the Stringer interface.

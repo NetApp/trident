@@ -712,6 +712,28 @@ func IsISCSISameLunNumberError(err error) bool {
 }
 
 // ///////////////////////////////////////////////////////////////////////////
+// fcpSameLunNumberError
+// ///////////////////////////////////////////////////////////////////////////
+
+type fcpSameLunNumberError struct {
+	message string
+}
+
+func (e *fcpSameLunNumberError) Error() string { return e.message }
+
+func FCPSameLunNumberError(message string) error {
+	return &fcpSameLunNumberError{message}
+}
+
+func IsFCPSameLunNumberError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*fcpSameLunNumberError)
+	return ok
+}
+
+// ///////////////////////////////////////////////////////////////////////////
 // tooManyRequestsError (HTTP 429)
 // ///////////////////////////////////////////////////////////////////////////
 

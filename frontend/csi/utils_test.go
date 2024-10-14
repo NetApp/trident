@@ -14,6 +14,7 @@ import (
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	"github.com/netapp/trident/mocks/mock_utils/mock_models/mock_luks"
+	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
@@ -74,6 +75,7 @@ func TestPerformProtocolSpecificReconciliation_ISCSI(t *testing.T) {
 
 	trackInfo := &models.VolumeTrackingInfo{}
 	trackInfo.VolumePublishInfo.IscsiTargetIQN = iqn
+	trackInfo.SANType = sa.ISCSI
 	mockIscsiUtils.EXPECT().ReconcileISCSIVolumeInfo(context.Background(), trackInfo).Return(false, nil)
 	res, err := performProtocolSpecificReconciliation(context.Background(), trackInfo)
 	assert.False(t, res)
@@ -81,6 +83,7 @@ func TestPerformProtocolSpecificReconciliation_ISCSI(t *testing.T) {
 
 	trackInfo = &models.VolumeTrackingInfo{}
 	trackInfo.VolumePublishInfo.IscsiTargetIQN = iqn
+	trackInfo.SANType = sa.ISCSI
 	mockIscsiUtils.EXPECT().ReconcileISCSIVolumeInfo(context.Background(), trackInfo).Return(true, nil)
 	res, err = performProtocolSpecificReconciliation(context.Background(), trackInfo)
 	assert.True(t, res)
@@ -88,6 +91,7 @@ func TestPerformProtocolSpecificReconciliation_ISCSI(t *testing.T) {
 
 	trackInfo = &models.VolumeTrackingInfo{}
 	trackInfo.VolumePublishInfo.IscsiTargetIQN = iqn
+	trackInfo.SANType = sa.ISCSI
 	mockIscsiUtils.EXPECT().ReconcileISCSIVolumeInfo(context.Background(), trackInfo).Return(true, errors.New("error"))
 	res, err = performProtocolSpecificReconciliation(context.Background(), trackInfo)
 	assert.False(t, res)

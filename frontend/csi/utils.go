@@ -15,6 +15,7 @@ import (
 	"github.com/netapp/trident/config"
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	. "github.com/netapp/trident/logging"
+	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/errors"
@@ -169,22 +170,24 @@ func getVolumeProtocolFromPublishInfo(publishInfo *models.VolumePublishInfo) (co
 	iqn := publishInfo.VolumeAccessInfo.IscsiTargetIQN
 	smbPath := publishInfo.SMBPath
 	nqn := publishInfo.VolumeAccessInfo.NVMeSubsystemNQN
+	fcp := publishInfo.VolumeAccessInfo.FCTargetWWNN
 
 	nfsSet := nfsIP != ""
 	iqnSet := iqn != ""
 	smbSet := smbPath != ""
 	nqnSet := nqn != ""
+	fcpSet := fcp != ""
 
 	isSmb := smbSet && !nfsSet && !iqnSet
 	isNfs := nfsSet && !iqnSet && !smbSet
 	isIscsi := iqnSet && !nfsSet && !smbSet
 	isNVMe := nqnSet && !nfsSet && !smbSet && !iqnSet
+	isFCP := fcpSet && !nfsSet && !smbSet
 
-	if isSmb || isNfs {
+	switch {
+	case isSmb, isNfs:
 		return config.File, nil
-	} else if isIscsi {
-		return config.Block, nil
-	} else if isNVMe {
+	case isIscsi, isNVMe, isFCP:
 		return config.Block, nil
 	}
 
@@ -193,6 +196,7 @@ func getVolumeProtocolFromPublishInfo(publishInfo *models.VolumePublishInfo) (co
 		"IscsiTargetIQN":   iqn,
 		"NfsServerIP":      nfsIP,
 		"NVMeSubsystemNQN": nqn,
+		"FCTargetWWNN":     fcp,
 	}
 
 	errMsg := "unable to infer volume protocol"
@@ -220,11 +224,19 @@ func performProtocolSpecificReconciliation(ctx context.Context, trackingInfo *mo
 	// Nothing more than checking the staging path needs to be done for NFS, so ignore that case.
 	switch protocol {
 	case config.Block:
-		atLeastOneConditionMet, err = iscsiUtils.ReconcileISCSIVolumeInfo(ctx, trackingInfo)
-		if err != nil {
-			return false, fmt.Errorf("unable to reconcile ISCSI volume info: %v", err)
+		if trackingInfo.SANType == sa.ISCSI {
+			atLeastOneConditionMet, err = iscsiUtils.ReconcileISCSIVolumeInfo(ctx, trackingInfo)
+			if err != nil {
+				return false, fmt.Errorf("unable to reconcile ISCSI volume info: %v", err)
+			}
+			return atLeastOneConditionMet, nil
+		} else if trackingInfo.SANType == sa.FCP {
+			atLeastOneConditionMet, err = fcpUtils.ReconcileFCPVolumeInfo(ctx, trackingInfo)
+			if err != nil {
+				return false, fmt.Errorf("unable to reconcile FCP volume info: %v", err)
+			}
+			return atLeastOneConditionMet, nil
 		}
-		return atLeastOneConditionMet, nil
 	}
 
 	return false, nil

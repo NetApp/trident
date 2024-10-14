@@ -601,6 +601,7 @@ func TestOntapSanVolumePublishManaged(t *testing.T) {
 	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.API = mockAPI
 	d.ips = []string{"127.0.0.1"}
+	d.Config.SANType = sa.ISCSI
 
 	volConfig := getVolumeConfig()
 	volConfig.InternalName = "lunName"
@@ -644,6 +645,7 @@ func TestOntapSanVolumePublishUnmanaged(t *testing.T) {
 	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.API = mockAPI
 	d.ips = []string{"127.0.0.1"}
+	d.Config.SANType = sa.ISCSI
 
 	volConfig := getVolumeConfig()
 	volConfig.InternalName = "lunName"
@@ -687,6 +689,7 @@ func TestOntapSanVolumePublishSLMError(t *testing.T) {
 	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.API = mockAPI
 	d.ips = []string{"127.0.0.1"}
+	d.Config.SANType = sa.ISCSI
 
 	volConfig := getVolumeConfig()
 	volConfig.InternalName = "lunName"
@@ -2319,6 +2322,7 @@ func TestOntapSanVolumeDestroy(t *testing.T) {
 			}
 
 			driver.Config.DriverContext = tridentconfig.ContextDocker
+			driver.Config.SANType = sa.ISCSI
 
 			err := driver.Destroy(ctx, &params.volumeConfig)
 			assert.NoError(t, err, "Volume destroy failed")
@@ -2466,6 +2470,7 @@ func TestOntapSanVolumeDestroy_fail(t *testing.T) {
 			mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return(nodeName, nil)
 
 			driver.Config.DriverContext = tridentconfig.ContextDocker
+			driver.Config.SANType = sa.ISCSI
 
 			if params.configureOntapAPI != nil {
 				params.configureOntapAPI(mockAPI)
@@ -3427,6 +3432,7 @@ func TestOntapSanVolumePublishisFlexvolRW(t *testing.T) {
 
 	driver.ips = []string{"127.0.0.1"}
 	driver.Config.DriverContext = tridentconfig.ContextCSI
+	driver.Config.SANType = sa.ISCSI
 
 	volConfig := getVolumeConfig()
 	volConfig.InternalName = "lunName"

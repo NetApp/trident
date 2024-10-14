@@ -1921,6 +1921,63 @@ func (c RestClient) IscsiNodeGetName(ctx context.Context, fields []string) (*san
 	return result, nil
 }
 
+// FcpNodeGetName returns information about the vserver's FCP target name
+//
+//	Equivalent to filer::> vserver fcp show -vserver svm1
+func (c RestClient) FcpNodeGetName(ctx context.Context, fields []string) (*san.FcpServiceGetOK,
+	error,
+) {
+	svmResult, err := c.SvmGet(ctx, c.svmUUID)
+	if err != nil {
+		return nil, err
+	}
+	if svmResult == nil || svmResult.Payload == nil || svmResult.Payload.UUID == nil {
+		return nil, fmt.Errorf("could not find SVM %s (%s)", c.svmName, c.svmUUID)
+	}
+
+	svmInfo := svmResult.Payload
+
+	params := san.NewFcpServiceGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.SvmUUID = *svmInfo.UUID
+
+	params.SetFields(fields)
+
+	result, err := c.api.San.FcpServiceGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	return result, nil
+}
+
+// FcpInterfaceGet returns information about the vserver's  FCP interfaces
+func (c RestClient) FcpInterfaceGet(ctx context.Context, fields []string) (*san.FcpServiceCollectionGetOK,
+	error,
+) {
+	params := san.NewFcpServiceCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.ReturnRecords = utils.Ptr(true)
+	params.SvmUUID = utils.Ptr(c.svmUUID)
+
+	params.SetFields(fields)
+
+	result, err := c.api.San.FcpServiceCollectionGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	return result, nil
+}
+
 // ///////////////////////////////////////////////////////////////////////////
 // IGROUP operations
 // ///////////////////////////////////////////////////////////////////////////

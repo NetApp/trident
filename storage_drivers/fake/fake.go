@@ -1109,7 +1109,10 @@ func (d *StorageDriver) GetInternalVolumeName(
 		// With an external store, any transformation of the name is fine
 		internal := drivers.GetCommonInternalVolumeName(d.Config.CommonStorageDriverConfig, name)
 		internal = strings.Replace(internal, "--", "-", -1) // Remove any double hyphens
-		internal = strings.Replace(internal, "__", "_", -1) // Remove any double underscores
+		// Remove any double underscores
+		for strings.Contains(internal, "__") {
+			internal = strings.Replace(internal, "__", "_", -1)
+		}
 		internal = strings.Replace(internal, "_-", "-", -1) // Remove any strange delimiter
 		return internal
 	}
