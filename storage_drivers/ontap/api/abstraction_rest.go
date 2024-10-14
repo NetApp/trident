@@ -1117,6 +1117,23 @@ func (d OntapAPIREST) ExportRuleCreate(ctx context.Context, policyName, desiredP
 		ruleResponse, err = d.api.ExportRuleCreate(ctx, policyName, desiredPolicyRule, protocol, []string{"any"},
 			[]string{"any"}, []string{"any"})
 		if err != nil {
+
+			// use reflection to access any underlying REST error response and check the code
+			errorResponse, extractErr := ExtractErrorResponse(ctx, err)
+			if extractErr != nil {
+				return err
+			}
+			if errorResponse != nil && errorResponse.Error != nil {
+				errorCode := errorResponse.Error.Code
+				if errorCode != nil && *errorCode == EXPORT_POLICY_RULE_EXISTS {
+					msg := "export rule already exists"
+					if errorResponse.Error.Message != nil {
+						msg = *errorResponse.Error.Message
+					}
+					return errors.AlreadyExistsError(msg)
+				}
+			}
+
 			err = fmt.Errorf("error creating export rule; %v", err)
 			Logc(ctx).WithFields(LogFields{
 				"ExportPolicy": policyName,
@@ -1229,7 +1246,7 @@ func (d OntapAPIREST) QtreeCount(ctx context.Context, volumeName string) (int, e
 }
 
 func (d OntapAPIREST) QtreeListByPrefix(ctx context.Context, prefix, volumePrefix string) (Qtrees, error) {
-	fields := []string{"name", "volume"}
+	fields := []string{"name", "volume", "export-policy.name"}
 	qtreeList, err := d.api.QtreeList(ctx, prefix, volumePrefix, fields)
 	if err != nil {
 		msg := fmt.Sprintf("Error listing qtrees; %v", err)

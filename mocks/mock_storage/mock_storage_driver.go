@@ -437,6 +437,20 @@ func (mr *MockDriverMockRecorder) ReconcileNodeAccess(arg0, arg1, arg2, arg3 any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileNodeAccess", reflect.TypeOf((*MockDriver)(nil).ReconcileNodeAccess), arg0, arg1, arg2, arg3)
 }
 
+// ReconcileVolumeNodeAccess mocks base method.
+func (m *MockDriver) ReconcileVolumeNodeAccess(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 []*models.Node) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileVolumeNodeAccess", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileVolumeNodeAccess indicates an expected call of ReconcileVolumeNodeAccess.
+func (mr *MockDriverMockRecorder) ReconcileVolumeNodeAccess(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVolumeNodeAccess", reflect.TypeOf((*MockDriver)(nil).ReconcileVolumeNodeAccess), arg0, arg1, arg2)
+}
+
 // Rename mocks base method.
 func (m *MockDriver) Rename(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()

@@ -2225,13 +2225,26 @@ func (d *NASStorageDriver) GetUpdateType(_ context.Context, driverOrig storage.D
 
 // ReconcileNodeAccess updates a per-backend export policy to match the set of Kubernetes cluster
 // nodes.  Not supported by this driver.
-func (d *NASStorageDriver) ReconcileNodeAccess(ctx context.Context, _ []*models.Node, _, _ string) error {
+func (d *NASStorageDriver) ReconcileNodeAccess(
+	ctx context.Context, _ []*models.Node, _, _ string,
+) error {
 	fields := LogFields{
 		"Method": "ReconcileNodeAccess",
 		"Type":   "NASStorageDriver",
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileNodeAccess")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileNodeAccess")
+
+	return nil
+}
+
+func (d *NASStorageDriver) ReconcileVolumeNodeAccess(ctx context.Context, _ *storage.VolumeConfig, _ []*models.Node) error {
+	fields := LogFields{
+		"Method": "ReconcileVolumeNodeAccess",
+		"Type":   "NASStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileVolumeNodeAccess")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileVolumeNodeAccess")
 
 	return nil
 }

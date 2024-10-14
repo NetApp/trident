@@ -3398,9 +3398,9 @@ func TestOntapSANStorageDriverReconcileNodeAccess(t *testing.T) {
 	mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName)
 	mockAPI.EXPECT().IgroupDestroy(ctx, igroupName)
 
-	result := driver.ReconcileNodeAccess(ctx, nodes, "1234", "")
+	err := driver.ReconcileNodeAccess(ctx, nodes, "1234", "")
 
-	assert.NoError(t, result, "Node reconcile failed")
+	assert.NoError(t, err, "Node reconcile failed")
 }
 
 func TestOntapSANStorageDriverReconcileNodeAccess_fail(t *testing.T) {
@@ -3414,9 +3414,9 @@ func TestOntapSANStorageDriverReconcileNodeAccess_fail(t *testing.T) {
 	mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName)
 	mockAPI.EXPECT().IgroupDestroy(ctx, igroupName).Return(fmt.Errorf("failed to delete Igroup"))
 
-	result := driver.ReconcileNodeAccess(ctx, nodes, "1234", "")
+	err := driver.ReconcileNodeAccess(ctx, nodes, "1234", "")
 
-	assert.Error(t, result, "Node reconciled")
+	assert.Error(t, err, "Node reconciled")
 }
 
 func TestOntapSanVolumePublishisFlexvolRW(t *testing.T) {

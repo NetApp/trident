@@ -1299,6 +1299,17 @@ func (d *NASStorageDriver) ReconcileNodeAccess(
 	return reconcileNASNodeAccess(ctx, nodes, &d.Config, d.API, policyName)
 }
 
+func (d *NASStorageDriver) ReconcileVolumeNodeAccess(ctx context.Context, _ *storage.VolumeConfig, _ []*models.Node) error {
+	fields := LogFields{
+		"Method": "ReconcileVolumeNodeAccess",
+		"Type":   "NASStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileVolumeNodeAccess")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileVolumeNodeAccess")
+
+	return nil
+}
+
 // GetBackendState returns the reason if SVM is offline, and a flag to indicate if there is change
 // in physical pools list.
 func (d *NASStorageDriver) GetBackendState(ctx context.Context) (string, *roaring.Bitmap) {

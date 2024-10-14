@@ -6879,9 +6879,9 @@ func TestGetUpdateType_OtherChanges(t *testing.T) {
 func TestGCNVReconcileNodeAccess(t *testing.T) {
 	_, driver := newMockGCNVDriver(t)
 
-	result := driver.ReconcileNodeAccess(ctx, nil, "", "")
+	err := driver.ReconcileNodeAccess(ctx, nil, "", "")
 
-	assert.Nil(t, result, "not nil")
+	assert.Nil(t, err, "not nil")
 }
 
 func TestGCNVGetCommonConfig(t *testing.T) {

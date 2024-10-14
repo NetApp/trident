@@ -557,6 +557,20 @@ func (mr *MockBackendMockRecorder) ReconcileNodeAccess(arg0, arg1, arg2 any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileNodeAccess", reflect.TypeOf((*MockBackend)(nil).ReconcileNodeAccess), arg0, arg1, arg2)
 }
 
+// ReconcileVolumeNodeAccess mocks base method.
+func (m *MockBackend) ReconcileVolumeNodeAccess(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 []*models.Node) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileVolumeNodeAccess", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileVolumeNodeAccess indicates an expected call of ReconcileVolumeNodeAccess.
+func (mr *MockBackendMockRecorder) ReconcileVolumeNodeAccess(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVolumeNodeAccess", reflect.TypeOf((*MockBackend)(nil).ReconcileVolumeNodeAccess), arg0, arg1, arg2)
+}
+
 // RemoveCachedVolume mocks base method.
 func (m *MockBackend) RemoveCachedVolume(arg0 string) {
 	m.ctrl.T.Helper()
@@ -671,6 +685,18 @@ func (m *MockBackend) SetName(arg0 string) {
 func (mr *MockBackendMockRecorder) SetName(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetName", reflect.TypeOf((*MockBackend)(nil).SetName), arg0)
+}
+
+// SetNodeAccessUpToDate mocks base method.
+func (m *MockBackend) SetNodeAccessUpToDate() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetNodeAccessUpToDate")
+}
+
+// SetNodeAccessUpToDate indicates an expected call of SetNodeAccessUpToDate.
+func (mr *MockBackendMockRecorder) SetNodeAccessUpToDate() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetNodeAccessUpToDate", reflect.TypeOf((*MockBackend)(nil).SetNodeAccessUpToDate))
 }
 
 // SetOnline mocks base method.

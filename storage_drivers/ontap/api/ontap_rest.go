@@ -1,3 +1,5 @@
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
+
 package api
 
 import (
@@ -4740,7 +4742,15 @@ func (c RestClient) QtreeModifyExportPolicy(ctx context.Context, name, volumeNam
 	}
 
 	jobLink := getGenericJobLinkFromQtreeJobLink(modifyAccepted.Payload)
-	return c.PollJobStatus(ctx, jobLink)
+	if pollErr := c.PollJobStatus(ctx, jobLink); pollErr != nil {
+		apiError, message, code := ExtractError(pollErr)
+		if apiError == "failure" && code == EXPORT_POLICY_NOT_FOUND {
+			return errors.NotFoundError(message)
+		}
+		return pollErr
+	}
+
+	return nil
 }
 
 // QuotaOn enables quotas on a Flexvol

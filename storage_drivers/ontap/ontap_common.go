@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"maps"
 	"math/rand"
 	"net"
 	"os"
@@ -313,6 +314,10 @@ func getExportPolicyName(backendUUID string) string {
 	return fmt.Sprintf("trident-%s", backendUUID)
 }
 
+func getEmptyExportPolicyName(storagePrefix string) string {
+	return fmt.Sprintf("%sempty", storagePrefix)
+}
+
 // ensureNodeAccess check to see if the export policy exists and if not it will create it and force a reconcile.
 // This should be used during publish to make sure access is available if the policy has somehow been deleted.
 // Otherwise we should not need to reconcile, which could be expensive.
@@ -368,7 +373,7 @@ func getDesiredExportPolicyRules(
 			return nil, err
 		}
 		if len(filteredIPs) > 0 {
-			rules = append(rules, strings.Join(filteredIPs, ","))
+			rules = append(rules, filteredIPs...)
 		}
 	}
 	return rules, nil
@@ -388,25 +393,46 @@ func reconcileExportPolicyRules(
 	defer Logc(ctx).WithFields(fields).Debug("<<<< reconcileExportPolicyRules")
 
 	// first grab all existing rules
-	rules, err := clientAPI.ExportRuleList(ctx, policyName)
+	existingRules, err := clientAPI.ExportRuleList(ctx, policyName)
 	if err != nil {
 		// Could not extract rules, just log it, no action required.
 		Logc(ctx).WithField("error", err).Debug("Export policy rules could not be extracted.")
 	}
 
-	for _, rule := range desiredPolicyRules {
-		if _, ok := rules[rule]; ok {
+	undesiredRules := maps.Clone(existingRules)
+
+	for _, desiredRule := range desiredPolicyRules {
+
+		// Loop through the existing rules one by one and compare to make sure we cover the scenario where the
+		// existing rule is of format "1.1.1.1, 2.2.2.2" and the desired rule is format "1.1.1.1".
+		// This can happen because of the difference in how ONTAP ZAPI and ONTAP REST creates export rule.
+
+		foundExistingRule := ""
+		for existingRule := range existingRules {
+			if strings.Contains(existingRule, desiredRule) {
+				foundExistingRule = existingRule
+				break
+			}
+		}
+
+		if foundExistingRule != "" {
 			// Rule already exists and we want it, so don't create it or delete it
-			delete(rules, rule)
+			delete(undesiredRules, foundExistingRule)
 		} else {
 			// Rule does not exist, so create it
-			if err = clientAPI.ExportRuleCreate(ctx, policyName, rule, config.NASType); err != nil {
+			if err = clientAPI.ExportRuleCreate(ctx, policyName, desiredRule, config.NASType); err != nil {
+				// Check if error is that the export policy rule already exist error
+				if errors.IsAlreadyExistsError(err) {
+					Logc(ctx).WithField("desiredRule", desiredRule).WithError(err).Debug(
+						"Export policy rule already exists")
+					continue
+				}
 				return err
 			}
 		}
 	}
 	// Now that the desired rules exists, delete the undesired rules
-	for _, ruleIndex := range rules {
+	for _, ruleIndex := range undesiredRules {
 		if err = clientAPI.ExportRuleDestroy(ctx, policyName, ruleIndex); err != nil {
 			return err
 		}

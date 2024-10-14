@@ -171,13 +171,8 @@ func (p *Plugin) nodeUnstageVolume(
 					Warning("forced unstage not supported for this protocol")
 			}
 			return p.nodeUnstageSMBVolume(ctx, req)
-		} else {
-			if force {
-				Logc(ctx).WithFields(fields).WithField("protocol", tridentconfig.File).
-					Warning("forced unstage not supported for this protocol")
-			}
-			return p.nodeUnstageNFSVolume(ctx, req)
 		}
+		return p.nodeUnstageNFSVolume(ctx, req)
 	case tridentconfig.Block:
 		if publishInfo.SANType == sa.NVMe {
 			return p.nodeUnstageNVMeVolume(ctx, req, publishInfo, force)

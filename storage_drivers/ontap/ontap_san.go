@@ -1443,8 +1443,8 @@ func (d *SANStorageDriver) Resize(
 	return nil
 }
 
-func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*models.Node,
-	backendUUID, tridentUUID string,
+func (d *SANStorageDriver) ReconcileNodeAccess(
+	ctx context.Context, nodes []*models.Node, backendUUID, tridentUUID string,
 ) error {
 	nodeNames := make([]string, len(nodes))
 	for _, n := range nodes {
@@ -1462,6 +1462,17 @@ func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*mod
 		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileNodeAccess")
 
 	return reconcileSANNodeAccess(ctx, d.API, nodeNames, backendUUID, tridentUUID)
+}
+
+func (d *SANStorageDriver) ReconcileVolumeNodeAccess(ctx context.Context, _ *storage.VolumeConfig, _ []*models.Node) error {
+	fields := LogFields{
+		"Method": "ReconcileVolumeNodeAccess",
+		"Type":   "SANStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileVolumeNodeAccess")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileVolumeNodeAccess")
+
+	return nil
 }
 
 // GetBackendState returns the reason if SVM is offline, and a flag to indicate if there is change

@@ -1375,11 +1375,24 @@ func (d *NVMeStorageDriver) Resize(
 }
 
 // ReconcileNodeAccess manages the k8s node access related changes for the driver.
-func (d *NVMeStorageDriver) ReconcileNodeAccess(_ context.Context, _ []*models.Node, _, _ string) error {
+func (d *NVMeStorageDriver) ReconcileNodeAccess(
+	_ context.Context, _ []*models.Node, _, _ string,
+) error {
 	// Note(sphadnis):
 	// 1. NAS drivers takes care export policy rules.
 	// 2. SAN iSCSI driver needs to take care of per backend IGroup in reconcile node access.
 	// 3. Couldn't find anything to be taken care of for this driver in reconcile node yet!
+	return nil
+}
+
+func (d *NVMeStorageDriver) ReconcileVolumeNodeAccess(ctx context.Context, _ *storage.VolumeConfig, _ []*models.Node) error {
+	fields := LogFields{
+		"Method": "ReconcileVolumeNodeAccess",
+		"Type":   "NVMeStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileVolumeNodeAccess")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileVolumeNodeAccess")
+
 	return nil
 }
 

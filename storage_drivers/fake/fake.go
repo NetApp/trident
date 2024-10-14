@@ -1303,7 +1303,9 @@ func (d StorageDriver) generateCreatingVolumes() map[string]fake.CreatingVolume 
 	return creatingVolumes
 }
 
-func (d *StorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*models.Node, _, _ string) error {
+func (d *StorageDriver) ReconcileNodeAccess(
+	ctx context.Context, nodes []*models.Node, _, _ string,
+) error {
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)
@@ -1316,6 +1318,17 @@ func (d *StorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*models
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileNodeAccess")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileNodeAccess")
+
+	return nil
+}
+
+func (d *StorageDriver) ReconcileVolumeNodeAccess(ctx context.Context, _ *storage.VolumeConfig, _ []*models.Node) error {
+	fields := LogFields{
+		"Method": "ReconcileVolumeNodeAccess",
+		"Type":   "StorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileVolumeNodeAccess")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileVolumeNodeAccess")
 
 	return nil
 }

@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -13,6 +13,8 @@ const (
 	SNAPMIRROR_MODIFICATION_IN_PROGRESS        = "13303822"
 	LUN_MAP_EXIST_ERROR                        = "5374922"
 	FLEXGROUP_VOLUME_SIZE_ERROR_REST           = "917534"
+	EXPORT_POLICY_NOT_FOUND                    = "1703954"
+	EXPORT_POLICY_RULE_EXISTS                  = "1704070"
 )
 
 // ///////////////////////////////////////////////////////////////////////////

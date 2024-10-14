@@ -70,7 +70,9 @@ type Backend interface {
 	HasVolumes() bool
 	Terminate(ctx context.Context)
 	InvalidateNodeAccess()
+	SetNodeAccessUpToDate()
 	ReconcileNodeAccess(ctx context.Context, nodes []*models.Node, tridentUUID string) error
+	ReconcileVolumeNodeAccess(ctx context.Context, volConfig *VolumeConfig, nodes []*models.Node) error
 	CanGetState() bool
 	GetBackendState(ctx context.Context) (string, *roaring.Bitmap)
 	ConstructExternal(ctx context.Context) *BackendExternal

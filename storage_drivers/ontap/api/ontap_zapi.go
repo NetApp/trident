@@ -1806,9 +1806,9 @@ func (c Client) QtreeList(prefix, volumePrefix string) (*azgo.QtreeListIterRespo
 	queryInfo := azgo.NewQtreeInfoType().SetVolume(volumePrefix + "*").SetQtree(prefix + "*")
 	query.SetQtreeInfo(*queryInfo)
 
-	// Limit the returned data to only the Flexvol and Qtree names
+	// Limit the returned data to only the Flexvol, Qtree name and ExportPolicy
 	desiredAttributes := &azgo.QtreeListIterRequestDesiredAttributes{}
-	desiredInfo := azgo.NewQtreeInfoType().SetVolume("").SetQtree("")
+	desiredInfo := azgo.NewQtreeInfoType().SetVolume("").SetQtree("").SetExportPolicy("")
 	desiredAttributes.SetQtreeInfo(*desiredInfo)
 
 	response, err := azgo.NewQtreeListIterRequest().

@@ -3470,6 +3470,7 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 		HostName:    nodeName,
 		TridentUUID: o.uuid,
 		HostNQN:     nodeInfo.NQN,
+		HostIP:      nodeInfo.IPs,
 	}
 
 	volume, ok := o.subordinateVolumes[volumeName]
@@ -5015,12 +5016,50 @@ func (o *TridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, 
 	}
 
 	var nodes []*models.Node
+
 	if b.CanEnablePublishEnforcement() {
+
 		nodes = o.publishedNodesForBackend(b)
+		volToNodePublications := o.volumePublicationsForBackend(b)
+
+		nodeMap := make(map[string]*models.Node)
+		for _, n := range nodes {
+			nodeMap[n.Name] = n
+		}
+
+		// reconcile every volume if publish enforcement is enabled for the backend
+		for volName, volPublications := range volToNodePublications {
+			volume, ok := o.volumes[volName]
+			if !ok {
+				continue
+			}
+
+			volNodes := make([]*models.Node, 0)
+			for _, pub := range volPublications {
+				if node, found := nodeMap[pub.NodeName]; found {
+					volNodes = append(volNodes, node)
+				}
+			}
+
+			if err := b.ReconcileVolumeNodeAccess(ctx, volume.Config, volNodes); err != nil {
+				Logc(ctx).WithError(err).WithFields(LogFields{
+					"volume": volume.Config.Name,
+					"nodes":  volNodes,
+				}).Error("Unable to reconcile node access for volume.")
+				return err
+			}
+		}
+
 	} else {
 		nodes = o.nodes.List()
 	}
-	return b.ReconcileNodeAccess(ctx, nodes, o.uuid)
+
+	if err := b.ReconcileNodeAccess(ctx, nodes, o.uuid); err != nil {
+		return err
+	}
+
+	b.SetNodeAccessUpToDate()
+	return nil
 }
 
 // publishedNodesForBackend returns the nodes that a backend has published volumes to
@@ -5043,6 +5082,16 @@ func (o *TridentOrchestrator) publishedNodesForBackend(b storage.Backend) []*mod
 	}
 
 	return nodes
+}
+
+func (o *TridentOrchestrator) volumePublicationsForBackend(b storage.Backend) map[string][]*models.VolumePublication {
+	volumes := b.Volumes()
+	volumeToNodePublications := make(map[string][]*models.VolumePublication)
+
+	for _, volume := range volumes {
+		volumeToNodePublications[volume.Config.Name] = o.volumePublications.ListPublicationsForVolume(volume.Config.Name)
+	}
+	return volumeToNodePublications
 }
 
 func (o *TridentOrchestrator) reconcileBackendState(ctx context.Context, b storage.Backend) error {

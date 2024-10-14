@@ -2580,58 +2580,98 @@ func TestEnsureExportPolicyExists(t *testing.T) {
 }
 
 func TestReconcileExportPolicyRules(t *testing.T) {
-	// Test-1: Positive flow
-
 	ctx := context.Background()
-	mockCtrl := gomock.NewController(t)
-	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	commonConfig := &drivers.CommonStorageDriverConfig{
-		DebugTraceFlags: map[string]bool{"method": true},
+
+	tt := []struct {
+		name    string
+		mocks   func(mockAPI *mockapi.MockOntapAPI, policyName, nasType string, desiredRules []string)
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "PositiveFlow",
+			mocks: func(mockAPI *mockapi.MockOntapAPI, policyName, nasType string, desiredRules []string) {
+				ruleList := make(map[string]int)
+				ruleList["0.0.0.1/0"] = 0
+				ruleList["::/0"] = 1
+				mockAPI.EXPECT().ExportRuleList(ctx, policyName).
+					Return(ruleList, fmt.Errorf("fake error extracting rules"))
+				mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, desiredRules[0], nasType).Return(nil)
+				mockAPI.EXPECT().ExportRuleDestroy(ctx, policyName, ruleList["0.0.0.1/0"]).Return(nil)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "ErrorCreatingExportRule",
+			mocks: func(mockAPI *mockapi.MockOntapAPI, policyName, nasType string, desiredRules []string) {
+				ruleList := make(map[string]int)
+				ruleList["0.0.0.1/0"] = 0
+				ruleList["::/0"] = 1
+				mockAPI.EXPECT().ExportRuleList(ctx, policyName).Return(ruleList, nil)
+				mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, desiredRules[0],
+					nasType).Return(fmt.Errorf("Error creating export rule"))
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name: "ErrorDestroyingExportRule",
+			mocks: func(mockAPI *mockapi.MockOntapAPI, policyName, nasType string, desiredRules []string) {
+				ruleList := make(map[string]int)
+				ruleList["0.0.0.1/0"] = 0
+				ruleList["::/0"] = 1
+				mockAPI.EXPECT().ExportRuleList(ctx, policyName).Return(ruleList, nil)
+				mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, desiredRules[0], nasType).Return(nil)
+				mockAPI.EXPECT().ExportRuleDestroy(ctx, policyName, ruleList["0.0.0.1/0"]).Return(fmt.Errorf(
+					"Error destroying export rule"))
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name: "RuleAlreadyExistError",
+			mocks: func(mockAPI *mockapi.MockOntapAPI, policyName, nasType string, desiredRules []string) {
+				ruleList := make(map[string]int)
+				ruleList["0.0.0.1/0"] = 0
+				ruleList["::/0"] = 1
+				mockAPI.EXPECT().ExportRuleList(ctx, policyName).Return(ruleList, nil)
+				mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, desiredRules[0], nasType).
+					Return(errors.AlreadyExistsError("Rule already exists"))
+				mockAPI.EXPECT().ExportRuleDestroy(ctx, policyName, ruleList["0.0.0.1/0"]).Return(nil)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "MatchZAPIRuleFormat",
+			mocks: func(mockAPI *mockapi.MockOntapAPI, policyName, nasType string, desiredRules []string) {
+				ruleList := make(map[string]int)
+				ruleList["0.0.0.1/0,0.0.0.0/0"] = 0
+				ruleList["::/0"] = 1
+				ruleList["1.1.1.1/0"] = 2
+				mockAPI.EXPECT().ExportRuleList(ctx, policyName).Return(ruleList, nil)
+				mockAPI.EXPECT().ExportRuleDestroy(ctx, policyName, ruleList["1.1.1.1/0"]).Return(nil)
+			},
+			wantErr: assert.NoError,
+		},
 	}
-	config := &drivers.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: commonConfig,
+
+	for _, tr := range tt {
+		t.Run(tr.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+			commonConfig := &drivers.CommonStorageDriverConfig{
+				DebugTraceFlags: map[string]bool{"method": true},
+			}
+			config := &drivers.OntapStorageDriverConfig{
+				CommonStorageDriverConfig: commonConfig,
+			}
+			config.NASType = sa.SMB
+			desiredRules := []string{"0.0.0.0/0", "::/0"}
+			tr.mocks(mockAPI, "dummyPolicy", config.NASType, desiredRules)
+
+			err := reconcileExportPolicyRules(ctx, "dummyPolicy", desiredRules, mockAPI, config)
+			if !tr.wantErr(t, err, "Unexpected Result") {
+				return
+			}
+		})
 	}
-	config.NASType = sa.SMB
-	desiredRules := []string{"0.0.0.0/0", "::/0"}
-	ruleList := make(map[string]int)
-	ruleList["0.0.0.1/0"] = 0
-	ruleList["::/0"] = 1
-	fakeError := fmt.Errorf("fake error extracting rules")
-	mockAPI.EXPECT().ExportRuleList(ctx, "dummyPolicy").Return(ruleList, fakeError)
-	mockAPI.EXPECT().ExportRuleCreate(ctx, "dummyPolicy", desiredRules[0], config.NASType).Return(nil)
-	mockAPI.EXPECT().ExportRuleDestroy(ctx, "dummyPolicy", ruleList["0.0.0.1/0"]).Return(nil)
-
-	err := reconcileExportPolicyRules(ctx, "dummyPolicy", desiredRules, mockAPI, config)
-
-	assert.NoError(t, err)
-
-	// Test-2: Error Creating export rule
-
-	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().ExportRuleList(ctx, "dummyPolicy").Return(ruleList, nil)
-	mockAPI.EXPECT().ExportRuleCreate(ctx, "dummyPolicy", desiredRules[0],
-		config.NASType).Return(fmt.Errorf("Error Creating export rule"))
-
-	err = reconcileExportPolicyRules(ctx, "dummyPolicy", desiredRules, mockAPI, config)
-
-	assert.Error(t, err)
-
-	// Test-3: Error destroying the export rule
-
-	mockCtrl = gomock.NewController(t)
-	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	desiredRules = []string{"0.0.0.0/0", "::/0"}
-	ruleList = make(map[string]int)
-	ruleList["0.0.0.1/0"] = 0
-	ruleList["::/0"] = 1
-	mockAPI.EXPECT().ExportRuleList(ctx, "dummyPolicy").Return(ruleList, nil)
-	mockAPI.EXPECT().ExportRuleCreate(ctx, "dummyPolicy", desiredRules[0], config.NASType).Return(nil)
-	mockAPI.EXPECT().ExportRuleDestroy(ctx, "dummyPolicy",
-		ruleList["0.0.0.1/0"]).Return(fmt.Errorf("Error destroying export rule"))
-
-	err = reconcileExportPolicyRules(ctx, "dummyPolicy", desiredRules, mockAPI, config)
-
-	assert.Error(t, err)
 }
 
 func TestIsDefaultAuthTypeOfType(t *testing.T) {

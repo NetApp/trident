@@ -139,6 +139,45 @@ func IsNotFoundError(err error) bool {
 }
 
 // ///////////////////////////////////////////////////////////////////////////
+// alreadyExistsError
+// ///////////////////////////////////////////////////////////////////////////
+
+type alreadyExistsError struct {
+	inner   error
+	message string
+}
+
+func (e *alreadyExistsError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
+
+func (e *alreadyExistsError) Unwrap() error { return e.inner }
+
+func AlreadyExistsError(message string, a ...any) error {
+	return &alreadyExistsError{message: fmt.Sprintf(message, a...)}
+}
+
+func WrapWithAlreadyExistsError(err error, message string, a ...any) error {
+	return &alreadyExistsError{
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
+	}
+}
+
+func IsAlreadyExistsError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *alreadyExistsError
+	return errors.As(err, &errPtr)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
 // resourceNotFoundError - To identify external not found errors
 // ///////////////////////////////////////////////////////////////////////////
 

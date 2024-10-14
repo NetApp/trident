@@ -3149,9 +3149,9 @@ func TestOntapNasStorageDriverReconcileNodeAccess(t *testing.T) {
 	nodes := make([]*models.Node, 0)
 	nodes = append(nodes, &models.Node{Name: "node1"})
 
-	result := driver.ReconcileNodeAccess(ctx, nodes, "1234", "")
+	err := driver.ReconcileNodeAccess(ctx, nodes, "1234", "")
 
-	assert.NoError(t, result)
+	assert.NoError(t, err)
 }
 
 func TestNASStorageDriverGetBackendState(t *testing.T) {

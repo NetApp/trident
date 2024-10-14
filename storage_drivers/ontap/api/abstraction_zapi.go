@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -1614,12 +1614,18 @@ func (d OntapAPIZAPI) ExportRuleCreate(ctx context.Context, policyName, desiredP
 		ruleResponse, err = d.api.ExportRuleCreate(policyName, desiredPolicyRule,
 			[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
 	}
-	if err = azgo.GetError(ctx, ruleResponse, err); err != nil {
-		err = fmt.Errorf("error creating export rule: %v", err)
+	if zerr := azgo.GetError(ctx, ruleResponse, err); zerr != nil {
+		apiStatus, message, code := ExtractError(zerr)
+		if apiStatus == "failed" && code == azgo.EAPIERROR && strings.Contains(message, "policy already contains a rule") {
+			return errors.AlreadyExistsError(message)
+		}
+
+		err = fmt.Errorf("error creating export rule: %v", zerr)
 		Logc(ctx).WithFields(LogFields{
 			"ExportPolicy": policyName,
 			"ClientMatch":  desiredPolicyRule,
 		}).Error(err)
+		return err
 	}
 
 	if ruleResponse == nil {
@@ -1722,7 +1728,15 @@ func (d OntapAPIZAPI) QtreeRename(ctx context.Context, path, newPath string) err
 
 func (d OntapAPIZAPI) QtreeModifyExportPolicy(ctx context.Context, name, volumeName, newExportPolicyName string) error {
 	response, err := d.api.QtreeModifyExportPolicy(name, volumeName, newExportPolicyName)
-	return azgo.GetError(ctx, response, err)
+	if zerr := azgo.GetError(ctx, *response, err); zerr != nil {
+		apiError, message, code := ExtractError(zerr)
+		if apiError == "failed" && code == azgo.EAPIERROR {
+			return errors.NotFoundError(message)
+		}
+
+		return zerr
+	}
+	return nil
 }
 
 func (d OntapAPIZAPI) QtreeCount(ctx context.Context, volumeName string) (int, error) {

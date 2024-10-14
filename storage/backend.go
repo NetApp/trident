@@ -72,6 +72,7 @@ type Driver interface {
 	GetVolumeExternalWrappers(context.Context, chan *VolumeExternalWrapper)
 	GetUpdateType(ctx context.Context, driver Driver) *roaring.Bitmap
 	ReconcileNodeAccess(ctx context.Context, nodes []*models.Node, backendUUID, tridentUUID string) error
+	ReconcileVolumeNodeAccess(ctx context.Context, volConfig *VolumeConfig, nodes []*models.Node) error
 	GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig
 }
 
@@ -1025,10 +1026,17 @@ func (b *StorageBackend) InvalidateNodeAccess() {
 	b.nodeAccessUpToDate = false
 }
 
+// InvalidateNodeAccess marks the backend as node access up to date
+func (b *StorageBackend) SetNodeAccessUpToDate() {
+	b.nodeAccessUpToDate = true
+}
+
 // ReconcileNodeAccess will ensure that the driver only has allowed access
 // to its volumes from active nodes in the k8s cluster. This is usually
 // handled via export policies or initiators
-func (b *StorageBackend) ReconcileNodeAccess(ctx context.Context, nodes []*models.Node, tridentUUID string) error {
+func (b *StorageBackend) ReconcileNodeAccess(
+	ctx context.Context, nodes []*models.Node, tridentUUID string,
+) error {
 	if err := b.ensureOnlineOrDeleting(ctx); err == nil {
 		// Only reconcile backends that need it
 		if b.nodeAccessUpToDate {
@@ -1037,10 +1045,27 @@ func (b *StorageBackend) ReconcileNodeAccess(ctx context.Context, nodes []*model
 		}
 		Logc(ctx).WithField("backend", b.name).Trace("Backend node access rules are out-of-date, updating.")
 		err = b.driver.ReconcileNodeAccess(ctx, nodes, b.backendUUID, tridentUUID)
-		if err == nil {
-			b.nodeAccessUpToDate = true
+		if err != nil {
+			return err
 		}
-		return err
+	}
+	return nil
+}
+
+func (b *StorageBackend) ReconcileVolumeNodeAccess(
+	ctx context.Context, volConfig *VolumeConfig, nodes []*models.Node,
+) error {
+	if err := b.ensureOnlineOrDeleting(ctx); err == nil {
+		// Only reconcile backends that need it
+		if b.nodeAccessUpToDate {
+			Logc(ctx).WithField("backend", b.name).Trace("Backend volume node access rules are already up-to-date, skipping.")
+			return nil
+		}
+		Logc(ctx).WithField("backend", b.name).Trace("Backend volume node access rules are out-of-date, updating.")
+		err = b.driver.ReconcileVolumeNodeAccess(ctx, volConfig, nodes)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
