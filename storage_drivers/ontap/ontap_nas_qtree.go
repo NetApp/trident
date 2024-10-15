@@ -2499,15 +2499,13 @@ func (d *NASQtreeStorageDriver) ReconcileNodeAccess(
 }
 
 func (d *NASQtreeStorageDriver) ReconcileVolumeNodeAccess(ctx context.Context, volConfig *storage.VolumeConfig, nodes []*models.Node) error {
-	qtreeName := volConfig.InternalName
-
-	// If the export policy name is same as the qtree name, then it is a qtree policy.
-	// Reconcile qtree policy to make sure it has the correct ip addresses.
-	if volConfig.ExportPolicy == qtreeName {
-		if err := reconcileNASNodeAccess(ctx, nodes, &d.Config, d.API, volConfig.ExportPolicy); err != nil {
-			return err
-		}
+	fields := LogFields{
+		"Method": "ReconcileVolumeNodeAccess",
+		"Type":   "NASQtreeStorageDriver",
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileVolumeNodeAccess")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileVolumeNodeAccess")
+
 	return nil
 }
 
