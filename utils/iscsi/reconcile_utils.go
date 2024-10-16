@@ -67,8 +67,8 @@ func (h *IscsiReconcileHelper) GetMultipathDeviceDisks(
 	diskPath := h.chrootPathPrefix + fmt.Sprintf("/sys/block/%s/slaves/", multipathDevice)
 	diskDirs, err := os.ReadDir(diskPath)
 	if err != nil {
-		Logc(ctx).WithError(err).Errorf("Could not read %s", diskDirs)
-		return nil, fmt.Errorf("failed to identify multipath device disks; unable to read '%s'", diskDirs)
+		Logc(ctx).WithError(err).Errorf("Could not read %s", diskPath)
+		return nil, fmt.Errorf("failed to identify multipath device disks; unable to read '%s'", diskPath)
 	}
 
 	for _, diskDir := range diskDirs {

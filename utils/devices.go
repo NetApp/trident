@@ -651,7 +651,7 @@ func compareWithPublishedDevicePath(
 			"lun":                       publishInfo.IscsiLunNumber,
 			"discoveredMultipathDevice": discoverMpath,
 			"publishedMultipathDevice":  publishedMpath,
-		}).Debug("Discovered multipath device may not be correct,")
+		}).Debug("Discovered multipath device may not be correct.")
 
 		deviceInfo.MultipathDevice = strings.TrimPrefix(publishedMpath, iscsi.DevPrefix)
 		deviceInfo.Devices = []string{}
@@ -857,7 +857,8 @@ func PrepareDeviceForRemoval(
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.PrepareDeviceForRemoval")
 
 	// CSI Case
-	if publishInfo.IscsiTargetPortal != "" {
+	// We can't verify a multipath device if we couldn't find it in sysfs.
+	if publishInfo.IscsiTargetPortal != "" && deviceInfo.MultipathDevice != "" {
 		_, err := verifyMultipathDevice(ctx, publishInfo, allPublishInfos, deviceInfo)
 		if err != nil {
 			return "", err
@@ -1182,8 +1183,11 @@ func GetLUKSDeviceForMultipathDevice(multipathDevice string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if len(dirents) != 1 {
-		return "", fmt.Errorf("%s has unexpected number of holders, expected 1", dmDevice)
+
+	if len(dirents) == 0 {
+		return "", errors.NotFoundError("no holders found for %s", dmDevice)
+	} else if len(dirents) > 1 {
+		return "", fmt.Errorf("%s has %v holders; expected 1", dmDevice, len(dirents))
 	}
 	holder := dirents[0].Name()
 
