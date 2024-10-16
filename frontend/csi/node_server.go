@@ -1631,10 +1631,9 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	deviceInfo, err := p.deviceClient.GetDeviceInfoForLUN(ctx, hostSessionMap, int(publishInfo.IscsiLunNumber),
 		publishInfo.IscsiTargetIQN, false)
 	if err != nil {
+		Logc(ctx).WithError(err).Debug("Could not find devices.")
 		return fmt.Errorf("could not get device info: %v", err)
-	}
-
-	if deviceInfo == nil {
+	} else if deviceInfo == nil {
 		Logc(ctx).Debug("Could not find devices, nothing to do.")
 		return nil
 	}
@@ -1643,34 +1642,44 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	p.iscsi.RemoveLUNFromSessions(ctx, publishInfo, &publishedISCSISessions)
 
 	var luksMapperPath string
-	if utils.ParseBool(publishInfo.LUKSEncryption) {
-		fields := LogFields{"luksDevicePath": publishInfo.DevicePath, "lunID": publishInfo.IscsiLunNumber}
+	// If the multipath device is not present, the LUKS device should not exist.
+	if utils.ParseBool(publishInfo.LUKSEncryption) && deviceInfo.MultipathDevice != "" {
+		fields := LogFields{
+			"lunID":           publishInfo.IscsiLunNumber,
+			"publishedDevice": publishInfo.DevicePath,
+			"multipathDevice": deviceInfo.MultipathDevice,
+		}
 
 		luksMapperPath, err = p.deviceClient.GetLUKSDeviceForMultipathDevice(deviceInfo.MultipathDevice)
 		if err != nil {
-			return err
+			if !errors.IsNotFoundError(err) {
+				Logc(ctx).WithFields(fields).WithError(err).Error("Failed to get LUKS device path from multipath device.")
+				return err
+			}
+			Logc(ctx).WithFields(fields).Info("No LUKS device path found from multipath device.")
 		}
 
-		err = p.deviceClient.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath)
-		if err != nil {
-			if errors.IsMaxWaitExceededError(err) {
-				Logc(ctx).WithFields(fields).WithError(err).
-					Debug("LUKS close wait time exceeded, continuing with device removal.")
-			} else {
-				Logc(ctx).WithFields(fields).WithError(err).Error("Failed to close LUKS device.")
-				return err
+		// Ensure the LUKS device is closed if the luksMapperPath is set.
+		if luksMapperPath != "" {
+			fields["luksDevice"] = luksMapperPath
+			err = p.deviceClient.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath)
+			if err != nil {
+				if !errors.IsMaxWaitExceededError(err) {
+					Logc(ctx).WithFields(fields).WithError(err).Error("Failed to close LUKS device.")
+					return err
+				}
+				Logc(ctx).WithFields(fields).WithError(err).Debug("LUKS close wait time exceeded, continuing with device removal.")
 			}
 		}
 
-		// Set device path to dm device to correctly verify legacy volumes
+		// Set device path to dm device to correctly verify legacy volumes.
 		if utils.IsLegacyLUKSDevicePath(publishInfo.DevicePath) {
 			publishInfo.DevicePath = deviceInfo.MultipathDevice
 		}
 	}
 
 	// Delete the device from the host.
-	unmappedMpathDevice, err := p.deviceClient.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, p.unsafeDetach,
-		force)
+	unmappedMpathDevice, err := p.deviceClient.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, p.unsafeDetach, force)
 	if err != nil {
 		if errors.IsISCSISameLunNumberError(err) {
 			// There is a need to pass all the publish infos this time

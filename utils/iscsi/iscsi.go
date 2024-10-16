@@ -60,10 +60,10 @@ var (
 	pidRegex              = regexp.MustCompile(`^\d+$`)
 	pidRunningOrIdleRegex = regexp.MustCompile(`pid \d+ (running|idle)`)
 
-	duringScanTargetLunAfterFileOpen          = fiji.Register("duringISCSIScanTargetLunAfterFileOpen", "iscsi")
-	duringConfigureTargetBeforeISCSIAdmUpdate = fiji.Register("duringConfigureISCSITargetBeforeISCSIAdmUpdate", "iscsi")
-	duringPurgeOneLunBeforeFileWrite          = fiji.Register("duringPurgeOneLunBeforeFileWrite", "iscsi")
-	beforeIscsiLogout                         = fiji.Register("beforeIscsiLogout", "iscsi")
+	duringScanTargetLunAfterFileOpen               = fiji.Register("duringISCSIScanTargetLunAfterFileOpen", "iscsi")
+	duringConfigureISCSITargetBeforeISCSIAdmUpdate = fiji.Register("duringConfigureISCSITargetBeforeISCSIAdmUpdate", "iscsi")
+	duringPurgeOneLunBeforeFileWrite               = fiji.Register("duringPurgeOneLunBeforeFileWrite", "iscsi")
+	beforeIscsiLogout                              = fiji.Register("beforeIscsiLogout", "iscsi")
 )
 
 type ISCSI interface {
@@ -1648,7 +1648,7 @@ func (client *Client) configureTarget(ctx context.Context, iqn, portal, name, va
 	}).Debug(">>>> iscsi.configureTarget")
 	defer Logc(ctx).Debug("<<<< iscsi.configureTarget")
 
-	if err := duringConfigureTargetBeforeISCSIAdmUpdate.Inject(); err != nil {
+	if err := duringConfigureISCSITargetBeforeISCSIAdmUpdate.Inject(); err != nil {
 		return err
 	}
 
