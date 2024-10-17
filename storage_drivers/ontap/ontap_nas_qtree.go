@@ -215,8 +215,8 @@ func (d *NASQtreeStorageDriver) Initialize(
 	// Start periodic housekeeping tasks like cleaning up unused Flexvols
 	d.housekeepingWaitGroup = &sync.WaitGroup{}
 	d.housekeepingTasks = make(map[string]*HousekeepingTask, 2)
-	// pruneTasks := []func(){d.pruneUnusedFlexvols, d.reapDeletedQtrees}
-	// d.housekeepingTasks[pruneTask] = NewPruneTask(d, pruneTasks)
+	pruneTasks := []func(context.Context){d.pruneUnusedFlexvols, d.reapDeletedQtrees}
+	d.housekeepingTasks[pruneTask] = NewPruneTask(ctx, d, pruneTasks)
 	resizeTasks := []func(context.Context){d.resizeQuotas}
 	d.housekeepingTasks[resizeTask] = NewResizeTask(ctx, d, resizeTasks)
 	for _, task := range d.housekeepingTasks {
