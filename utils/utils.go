@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net"
 	"net/http"
 	"net/url"
@@ -1069,4 +1070,32 @@ func ShortenString(s string, maxLength int) string {
 		return s[:maxLength]
 	}
 	return s
+}
+
+// ParsePositiveInt32 parses s into an int32 and returns an error if it is negative
+func ParsePositiveInt32(s string) (int32, error) {
+	i, err := parseIntInRange(s, 0, math.MaxInt32)
+	return int32(i), err
+}
+
+// ParsePositiveInt64 parses s into an int64 and returns an error if it is negative
+func ParsePositiveInt64(s string) (int64, error) {
+	return parseIntInRange(s, 0, math.MaxInt64)
+}
+
+// ParsePositiveInt parses s into a platform-dependent int and returns an error if it is negative
+func ParsePositiveInt(s string) (int, error) {
+	i, err := parseIntInRange(s, 0, math.MaxInt)
+	return int(i), err
+}
+
+func parseIntInRange(s string, min, max int64) (int64, error) {
+	i, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	if i < min || i > max {
+		return 0, fmt.Errorf("value %s is out of range [%d, %d]", s, min, max)
+	}
+	return i, nil
 }

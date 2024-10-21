@@ -1115,8 +1115,8 @@ func (p *Plugin) nodeStageFCPVolume(
 	Logc(ctx).Debug(">>>> nodeStageFCPVolume")
 	defer Logc(ctx).Debug("<<<< nodeStageFCPVolume")
 
-	var lunID int64
-	lunID, err = strconv.ParseInt(req.PublishContext["fcpLunNumber"], 10, 0)
+	var lunID int32
+	lunID, err = utils.ParsePositiveInt32(req.PublishContext["fcpLunNumber"])
 	if err != nil {
 		return err
 	}
@@ -1126,7 +1126,7 @@ func (p *Plugin) nodeStageFCPVolume(
 
 	publishInfo.MountOptions = req.PublishContext["mountOptions"]
 	publishInfo.FCTargetWWNN = req.PublishContext["fcTargetWWNN"]
-	publishInfo.FCPLunNumber = int32(lunID)
+	publishInfo.FCPLunNumber = lunID
 	publishInfo.FCPLunSerial = req.PublishContext["fcpLunSerial"]
 	publishInfo.FCPIgroup = req.PublishContext["fcpIgroup"]
 	publishInfo.SANType = req.PublishContext["SANType"]
@@ -1428,8 +1428,8 @@ func (p *Plugin) nodeStageISCSIVolume(
 	}
 	publishInfo.UseCHAP = useCHAP
 
-	var lunID int64
-	lunID, err = strconv.ParseInt(req.PublishContext["iscsiLunNumber"], 10, 0)
+	var lunID int32
+	lunID, err = utils.ParsePositiveInt32(req.PublishContext["iscsiLunNumber"])
 	if err != nil {
 		return err
 	}
@@ -1445,7 +1445,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 	publishInfo.MountOptions = req.PublishContext["mountOptions"]
 	publishInfo.FormatOptions = req.PublishContext["formatOptions"]
 	publishInfo.IscsiTargetIQN = req.PublishContext["iscsiTargetIqn"]
-	publishInfo.IscsiLunNumber = int32(lunID)
+	publishInfo.IscsiLunNumber = lunID
 	publishInfo.IscsiLunSerial = req.PublishContext["iscsiLunSerial"]
 	publishInfo.IscsiInterface = req.PublishContext["iscsiInterface"]
 	publishInfo.IscsiIgroup = req.PublishContext["iscsiIgroup"]

@@ -359,9 +359,12 @@ func (d OntapAPIZAPI) LunCreate(ctx context.Context, lun Lun) error {
 		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunCreate")
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(lun.Size)
-	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
+	sizeBytes, err := utils.ParsePositiveInt(sizeBytesStr)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid volume size: %v", sizeBytes, err)
+	}
 
-	lunCreateResponse, err := d.api.LunCreate(lun.Name, int(sizeBytes), lun.OsType, lun.Qos, *lun.SpaceReserved,
+	lunCreateResponse, err := d.api.LunCreate(lun.Name, sizeBytes, lun.OsType, lun.Qos, *lun.SpaceReserved,
 		*lun.SpaceAllocated)
 	if err != nil {
 		return fmt.Errorf("error creating LUN: %v", err)
@@ -645,11 +648,11 @@ func (d OntapAPIZAPI) LunSetSize(ctx context.Context, lunPath, newSize string) (
 	if err != nil {
 		return 0, err
 	}
-	sizeBytes, err := strconv.ParseUint(sizeBytesStr, 10, 64)
+	sizeBytes, err := utils.ParsePositiveInt(sizeBytesStr)
 	if err != nil {
 		return 0, err
 	}
-	return d.api.LunResize(lunPath, int(sizeBytes))
+	return d.api.LunResize(lunPath, sizeBytes)
 }
 
 // LunListIgroupsMapped returns a list of igroups the LUN is currently mapped to.
@@ -1138,15 +1141,14 @@ func (d OntapAPIZAPI) FlexgroupCreate(ctx context.Context, volume Volume) error 
 	defer Logd(ctx, d.driverName,
 		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< FlexgroupCreate")
 
-	sizeBytes, err := strconv.ParseUint(volume.Size, 10, 64)
+	sizeBytes, err := utils.ParsePositiveInt(volume.Size)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volume.Size, err)
 	}
 
-	flexgroupCreateResponse, err := d.api.FlexGroupCreate(ctx, volume.Name, int(sizeBytes), volume.Aggregates,
-		volume.SpaceReserve,
-		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle, volume.TieringPolicy,
-		volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
+	flexgroupCreateResponse, err := d.api.FlexGroupCreate(ctx, volume.Name, sizeBytes, volume.Aggregates,
+		volume.SpaceReserve, volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
 	if err != nil {
 		return fmt.Errorf("error creating volume: %v", err)
 	}
