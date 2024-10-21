@@ -572,9 +572,12 @@ func (d OntapAPIREST) FlexgroupCreate(ctx context.Context, volume Volume) error 
 	defer Logd(ctx, d.driverName,
 		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< FlexgroupCreate")
 
-	volumeSize, _ := strconv.ParseUint(volume.Size, 10, 64)
+	volumeSize, err := utils.ParsePositiveInt(volume.Size)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid volume size: %v", volume.Size, err)
+	}
 
-	creationErr := d.api.FlexGroupCreate(ctx, volume.Name, int(volumeSize), volume.Aggregates, volume.SpaceReserve,
+	creationErr := d.api.FlexGroupCreate(ctx, volume.Name, volumeSize, volume.Aggregates, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle, volume.TieringPolicy,
 		volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
 	if creationErr != nil {
@@ -2075,8 +2078,13 @@ func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
 		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunCreate")
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(lun.Size)
-	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
-	creationErr := d.api.LunCreate(ctx, lun.Name, int64(sizeBytes), lun.OsType, lun.Qos, *lun.SpaceReserved,
+	sizeBytes, err := utils.ParsePositiveInt64(sizeBytesStr)
+	if err != nil {
+		Logc(ctx).WithField("lunSize", lun.Size).WithError(err).Error("Invalid volume size.")
+		return err
+	}
+
+	creationErr := d.api.LunCreate(ctx, lun.Name, sizeBytes, lun.OsType, lun.Qos, *lun.SpaceReserved,
 		*lun.SpaceAllocated)
 	if creationErr != nil {
 		return fmt.Errorf("error creating LUN %v: %v", lun.Name, creationErr)

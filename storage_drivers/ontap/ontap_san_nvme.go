@@ -7,13 +7,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
@@ -1271,6 +1272,11 @@ func (d *NVMeStorageDriver) Resize(
 	defer Logd(ctx, d.Config.StorageDriverName,
 		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
 
+	if requestedSizeBytes > math.MaxInt64 {
+		Logc(ctx).WithFields(fields).Error("Invalid volume size.")
+		return fmt.Errorf("invalid volume size")
+	}
+
 	volExists, err := d.API.VolumeExists(ctx, name)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
@@ -1298,12 +1304,12 @@ func (d *NVMeStorageDriver) Resize(
 		return fmt.Errorf("error while checking namespace size, %v", err)
 	}
 
-	nsSizeBytes, err := strconv.ParseUint(ns.Size, 10, 64)
+	nsSizeBytes, err := utils.ParsePositiveInt64(ns.Size)
 	if err != nil {
 		return fmt.Errorf("error while parsing namespace size, %v", err)
 	}
 
-	if requestedSizeBytes < nsSizeBytes {
+	if int64(requestedSizeBytes) < nsSizeBytes {
 		return fmt.Errorf("requested size %d is less than existing volume size %d", requestedSizeBytes, nsSizeBytes)
 	}
 
@@ -1315,7 +1321,7 @@ func (d *NVMeStorageDriver) Resize(
 	newFlexVolSize := drivers.CalculateVolumeSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
 	newFlexVolSize = uint64(LUNMetadataBufferMultiplier * float64(newFlexVolSize))
 
-	sameNamespaceSize := utils.VolumeSizeWithinTolerance(int64(requestedSizeBytes), int64(nsSizeBytes),
+	sameNamespaceSize := utils.VolumeSizeWithinTolerance(int64(requestedSizeBytes), nsSizeBytes,
 		tridentconfig.SANResizeDelta)
 
 	sameFlexVolSize := utils.VolumeSizeWithinTolerance(int64(newFlexVolSize), int64(currentFlexVolSize),
@@ -1329,7 +1335,7 @@ func (d *NVMeStorageDriver) Resize(
 			"delta":         tridentconfig.SANResizeDelta,
 		}).Info("Requested size and current namespace size are within the delta and therefore considered" +
 			" the same size for SAN resize operations.")
-		volConfig.Size = strconv.FormatUint(nsSizeBytes, 10)
+		volConfig.Size = strconv.FormatInt(nsSizeBytes, 10)
 		return nil
 	}
 

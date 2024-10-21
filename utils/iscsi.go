@@ -591,10 +591,9 @@ func PopulateCurrentSessions(ctx context.Context, currentMapping *models.ISCSISe
 			"targetIQN":       iscsiDevice.IQN,
 		}
 
-		lunNumber, err := strconv.ParseInt(iscsiDevice.LUN, 10, 0)
+		lunNumber, err := strconv.ParseInt(iscsiDevice.LUN, 10, 32)
 		if err != nil {
-			logFields["error"] = err
-			Logc(ctx).WithFields(logFields).Error("Unable to convert LUN to int value.")
+			Logc(ctx).WithFields(logFields).WithError(err).Error("Unable to convert LUN to int value.")
 			continue
 		}
 

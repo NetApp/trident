@@ -642,10 +642,14 @@ func (c RestClient) setVolumeSizeByNameAndStyle(ctx context.Context, volumeName,
 	params.UUID = uuid
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(newSize)
-	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
+	sizeBytes, err := utils.ParsePositiveInt64(sizeBytesStr)
+	if err != nil {
+		Logc(ctx).WithField("sizeInBytes", sizeBytes).WithError(err).Error("Invalid volume size.")
+		return fmt.Errorf("invalid volume size: %v", err)
+	}
 
 	volumeInfo := &models.Volume{
-		Size: utils.Ptr(int64(sizeBytes)),
+		Size: utils.Ptr(sizeBytes),
 	}
 
 	params.SetInfo(volumeInfo)
@@ -3012,9 +3016,14 @@ func (c RestClient) LunSetSize(
 	params.UUID = uuid
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(newSize)
-	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
+	sizeBytes, err := utils.ParsePositiveInt64(sizeBytesStr)
+	if err != nil {
+		Logc(ctx).WithField("sizeInBytes", sizeBytes).WithError(err).Error("Invalid volume size.")
+		return 0, fmt.Errorf("invalid volume size: %v", err)
+	}
+
 	spaceInfo := &models.LunInlineSpace{
-		Size: utils.Ptr(int64(sizeBytes)),
+		Size: utils.Ptr(sizeBytes),
 	}
 	lunInfo := &models.Lun{
 		Space: spaceInfo,
@@ -3030,7 +3039,7 @@ func (c RestClient) LunSetSize(
 		return 0, fmt.Errorf("unexpected response from LUN modify")
 	}
 
-	return sizeBytes, nil
+	return uint64(sizeBytes), nil
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -5914,13 +5923,17 @@ func (c RestClient) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (
 	params.ReturnRecords = utils.Ptr(true)
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(ns.Size)
-	sizeInBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
+	sizeInBytes, err := utils.ParsePositiveInt64(sizeBytesStr)
+	if err != nil {
+		Logc(ctx).WithField("sizeInBytes", sizeInBytes).WithError(err).Error("Invalid volume size.")
+		return "", fmt.Errorf("invalid volume size: %v", err)
+	}
 
 	nsInfo := &models.NvmeNamespace{
 		Name:   &ns.Name,
 		OsType: &ns.OsType,
 		Space: &models.NvmeNamespaceInlineSpace{
-			Size:      utils.Ptr(int64(sizeInBytes)),
+			Size:      utils.Ptr(sizeInBytes),
 			BlockSize: utils.Ptr(int64(ns.BlockSize)),
 		},
 		Comment: &ns.Comment,

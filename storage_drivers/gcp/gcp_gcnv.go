@@ -15,7 +15,7 @@ import (
 	"time"
 	"unicode"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/google/uuid"
 	"go.uber.org/multierr"
 
@@ -683,10 +683,10 @@ func (d *NASStorageDriver) Create(
 	var snapshotReserveInt int
 	if snapshotReserve != "" {
 		snapshotReserveInt64, err := strconv.ParseInt(snapshotReserve, 10, 0)
-		snapshotReserveInt = int(snapshotReserveInt64)
 		if err != nil {
 			return fmt.Errorf("invalid value for snapshotReserve: %v", err)
 		}
+		snapshotReserveInt = int(snapshotReserveInt64)
 		snapshotReservePtr = &snapshotReserveInt64
 	}
 

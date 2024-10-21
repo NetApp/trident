@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
@@ -1304,7 +1304,7 @@ func (d *SANEconomyStorageDriver) getSnapshotEconomy(
 		return nil, err
 	}
 
-	sizeBytes, err := strconv.ParseUint(lunInfo.Size, 10, 64)
+	sizeBytes, err := utils.ParsePositiveInt64(lunInfo.Size)
 	if err != nil {
 		return nil, fmt.Errorf("%v is an invalid volume size: %v", lunInfo.Size, err)
 	}
@@ -1312,7 +1312,7 @@ func (d *SANEconomyStorageDriver) getSnapshotEconomy(
 	return &storage.Snapshot{
 		Config:    snapConfig,
 		Created:   lunInfo.CreateTime,
-		SizeBytes: int64(sizeBytes),
+		SizeBytes: sizeBytes,
 		State:     storage.SnapshotStateOnline,
 	}, nil
 }
@@ -1366,7 +1366,7 @@ func (d *SANEconomyStorageDriver) getSnapshotsEconomy(
 	for _, snap := range snapList {
 		snapLunPath := snap.Name
 
-		sizeBytes, err := strconv.ParseUint(snap.Size, 10, 64)
+		sizeBytes, err := utils.ParsePositiveInt64(snap.Size)
 		if err != nil {
 			return nil, fmt.Errorf("error %v is an invalid volume size: %v", snap.Size, err)
 		}
@@ -1382,7 +1382,7 @@ func (d *SANEconomyStorageDriver) getSnapshotsEconomy(
 					VolumeInternalName: internalVolumeName,
 				},
 				Created:   snap.CreateTime,
-				SizeBytes: int64(sizeBytes),
+				SizeBytes: sizeBytes,
 				State:     storage.SnapshotStateOnline,
 			}
 			snapshots = append(snapshots, snapshot)
@@ -1452,7 +1452,7 @@ func (d *SANEconomyStorageDriver) CreateSnapshot(
 			"volumeName":   snapConfig.VolumeInternalName,
 		}).Info("Snapshot created.")
 
-		sizeBytes, err := strconv.ParseUint(size, 10, 64)
+		sizeBytes, err := utils.ParsePositiveInt64(size)
 		if err != nil {
 			return nil, fmt.Errorf("error %v is an invalid volume size: %v", size, err)
 		}
@@ -1460,7 +1460,7 @@ func (d *SANEconomyStorageDriver) CreateSnapshot(
 		return &storage.Snapshot{
 			Config:    snapConfig,
 			Created:   snap.Created,
-			SizeBytes: int64(sizeBytes),
+			SizeBytes: sizeBytes,
 			State:     storage.SnapshotStateOnline,
 		}, nil
 	}

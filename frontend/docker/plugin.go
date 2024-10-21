@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -290,6 +291,9 @@ func (p *Plugin) Create(request *volume.CreateRequest) error {
 	sizeBytes, err := utils.GetVolumeSizeBytes(ctx, request.Options, "0")
 	if err != nil {
 		return fmt.Errorf("error creating volume: %v", err)
+	} else if sizeBytes > math.MaxInt64 {
+		Logc(ctx).WithFields(fields).Error("Invalid volume size")
+		return errors.New("invalid volume size")
 	}
 	delete(request.Options, "size")
 

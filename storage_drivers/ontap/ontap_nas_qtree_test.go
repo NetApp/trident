@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -3226,12 +3226,12 @@ func TestNewPruneTask_WithDefaultValues(t *testing.T) {
 	var tasks []func(context.Context)
 	result := *NewPruneTask(ctx, driver, tasks)
 	assert.Equal(t, pruneTask, result.Name)
-	assert.Equal(t, HousekeepingStartupDelaySecs*time.Second, result.InitialDelay)
+	assert.Equal(t, HousekeepingStartupDelay, result.InitialDelay)
 	assert.Equal(t, len(make(chan struct{})), len(result.Done))
 	assert.Equal(t, tasks, result.Tasks)
 	assert.Equal(t, driver, result.Driver)
 
-	expectedEmptyFlexvolDeferredDeletePeriod := time.Duration(defaultEmptyFlexvolDeferredDeletePeriodSecs) * time.Second
+	expectedEmptyFlexvolDeferredDeletePeriod := defaultEmptyFlexvolDeferredDeletePeriod
 	assert.Equal(t, expectedEmptyFlexvolDeferredDeletePeriod, driver.emptyFlexvolDeferredDeletePeriod,
 		"emptyFlexvolDeferredDeletePeriod does not match")
 }
@@ -3241,17 +3241,17 @@ func TestNewPruneTask_WithValidConfigValues(t *testing.T) {
 	driver.Config.QtreePruneFlexvolsPeriod = "100"
 	driver.Config.EmptyFlexvolDeferredDeletePeriod = "100"
 
-	expectedDeferredDeletePeriod, _ := strconv.ParseUint(driver.Config.EmptyFlexvolDeferredDeletePeriod, 10, 64)
+	expectedSeconds, _ := strconv.ParseInt(driver.Config.EmptyFlexvolDeferredDeletePeriod, 10, 64)
+	expectedFlexvolDeferredDeletePeriod := time.Duration(expectedSeconds) * time.Second
 
 	var tasks []func(context.Context)
 	result := *NewPruneTask(ctx, driver, tasks)
 	assert.Equal(t, pruneTask, result.Name)
-	assert.Equal(t, HousekeepingStartupDelaySecs*time.Second, result.InitialDelay)
+	assert.Equal(t, HousekeepingStartupDelay, result.InitialDelay)
 	assert.Equal(t, len(make(chan struct{})), len(result.Done))
 	assert.Equal(t, tasks, result.Tasks)
 	assert.Equal(t, driver, result.Driver)
 
-	expectedFlexvolDeferredDeletePeriod := time.Duration(expectedDeferredDeletePeriod) * time.Second
 	assert.Equal(t, expectedFlexvolDeferredDeletePeriod, driver.emptyFlexvolDeferredDeletePeriod,
 		"emptyFlexvolDeferredDeletePeriod does not match")
 }
@@ -3266,12 +3266,12 @@ func TestNewPruneTask_WithInValidConfigValues(t *testing.T) {
 
 	// Invalid config values are merely logged. A default Housekeeping Task should be returned
 	assert.Equal(t, pruneTask, result.Name)
-	assert.Equal(t, HousekeepingStartupDelaySecs*time.Second, result.InitialDelay)
+	assert.Equal(t, HousekeepingStartupDelay, result.InitialDelay)
 	assert.Equal(t, len(make(chan struct{})), len(result.Done))
 	assert.Equal(t, tasks, result.Tasks)
 	assert.Equal(t, driver, result.Driver)
 
-	expectedFlexvolDeferredDeletePeriod := time.Duration(defaultEmptyFlexvolDeferredDeletePeriodSecs) * time.Second
+	expectedFlexvolDeferredDeletePeriod := defaultEmptyFlexvolDeferredDeletePeriod
 	assert.Equal(t, expectedFlexvolDeferredDeletePeriod, driver.emptyFlexvolDeferredDeletePeriod,
 		"emptyFlexvolDeferredDeletePeriod does not match")
 }
@@ -3283,7 +3283,7 @@ func TestNewResizeTask_WithDefaultValues(t *testing.T) {
 	var tasks []func(context.Context)
 	result := *NewResizeTask(ctx, driver, tasks)
 	assert.Equal(t, resizeTask, result.Name)
-	assert.Equal(t, HousekeepingStartupDelaySecs*time.Second, result.InitialDelay)
+	assert.Equal(t, HousekeepingStartupDelay, result.InitialDelay)
 	assert.Equal(t, len(make(chan struct{})), len(result.Done))
 	assert.Equal(t, tasks, result.Tasks)
 	assert.Equal(t, driver, result.Driver)
@@ -3296,7 +3296,7 @@ func TestNewResizeTask_WithValidConfigValues(t *testing.T) {
 	var tasks []func(context.Context)
 	result := *NewResizeTask(ctx, driver, tasks)
 	assert.Equal(t, resizeTask, result.Name)
-	assert.Equal(t, HousekeepingStartupDelaySecs*time.Second, result.InitialDelay)
+	assert.Equal(t, HousekeepingStartupDelay, result.InitialDelay)
 	assert.Equal(t, len(make(chan struct{})), len(result.Done))
 	assert.Equal(t, tasks, result.Tasks)
 	assert.Equal(t, driver, result.Driver)
@@ -3311,7 +3311,7 @@ func TestNewResizeTask_WithInValidConfigValues(t *testing.T) {
 
 	// Invalid config values are only logged. A default Housekeeping Task is returned
 	assert.Equal(t, resizeTask, result.Name)
-	assert.Equal(t, HousekeepingStartupDelaySecs*time.Second, result.InitialDelay)
+	assert.Equal(t, HousekeepingStartupDelay, result.InitialDelay)
 	assert.Equal(t, len(make(chan struct{})), len(result.Done))
 	assert.Equal(t, tasks, result.Tasks)
 	assert.Equal(t, driver, result.Driver)

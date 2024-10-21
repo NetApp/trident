@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/google/uuid"
 	"go.uber.org/multierr"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient"
@@ -208,7 +208,8 @@ func (d *NASStorageDriver) Initialize(
 
 	volumeCreateTimeout := d.defaultCreateTimeout()
 	if config.VolumeCreateTimeout != "" {
-		if i, parseErr := strconv.ParseUint(d.Config.VolumeCreateTimeout, 10, 64); parseErr != nil {
+		i, parseErr := utils.ParsePositiveInt64(d.Config.VolumeCreateTimeout)
+		if parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.VolumeCreateTimeout).WithError(parseErr).Error(
 				"Invalid volume create timeout period.")
 			return parseErr
@@ -552,7 +553,8 @@ func (d *NASStorageDriver) initializeAzureSDKClient(
 
 	sdkTimeout := api.DefaultSDKTimeout
 	if config.SDKTimeout != "" {
-		if i, parseErr := strconv.ParseUint(d.Config.SDKTimeout, 10, 64); parseErr != nil {
+		i, parseErr := utils.ParsePositiveInt64(d.Config.SDKTimeout)
+		if parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.SDKTimeout).WithError(parseErr).Error(
 				"Invalid value for SDK timeout.")
 			return parseErr
@@ -563,7 +565,8 @@ func (d *NASStorageDriver) initializeAzureSDKClient(
 
 	maxCacheAge := api.DefaultMaxCacheAge
 	if config.MaxCacheAge != "" {
-		if i, parseErr := strconv.ParseUint(d.Config.MaxCacheAge, 10, 64); parseErr != nil {
+		i, parseErr := utils.ParsePositiveInt64(d.Config.MaxCacheAge)
+		if parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.MaxCacheAge).WithError(parseErr).Error(
 				"Invalid value for max cache age.")
 			return parseErr
@@ -2097,6 +2100,11 @@ func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
+
+	if sizeBytes > math.MaxInt64 {
+		Logc(ctx).WithFields(fields).Error("Invalid volume size.")
+		return errors.New("invalid volume size")
+	}
 
 	// Update resource cache as needed
 	if err := d.SDK.RefreshAzureResources(ctx); err != nil {

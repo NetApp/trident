@@ -896,7 +896,7 @@ func TestInitialize_InvalidVolumeCreateTimeout(t *testing.T) {
 	d := newTestGCPDriver(nil)
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, "abcd")
-	assert.ErrorContains(t, err, "strconv.ParseUint", "Valid volume create timeout")
+	assert.ErrorContains(t, err, "strconv.ParseInt", "Valid volume create timeout")
 	assert.False(t, d.initialized, "Driver initialized")
 }
 

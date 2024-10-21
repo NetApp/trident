@@ -1592,3 +1592,56 @@ func TestShortenString(t *testing.T) {
 		assert.Equal(t, d.Output, result)
 	}
 }
+
+func TestParseIntInRange(t *testing.T) {
+	tests := []struct {
+		name               string
+		val                string
+		min, max, expected int64
+		errContains        string
+	}{
+		{
+			name:     "positive in range",
+			val:      "5",
+			min:      0,
+			max:      10,
+			expected: 5,
+		},
+		{
+			name:     "negative in range",
+			val:      "-5",
+			min:      -10,
+			max:      0,
+			expected: -5,
+		},
+		{
+			name:        "beyond range",
+			val:         "11",
+			min:         0,
+			max:         10,
+			expected:    0,
+			errContains: "is out of range",
+		},
+		{
+			name:        "below range",
+			val:         "-11",
+			min:         -10,
+			max:         0,
+			expected:    0,
+			errContains: "is out of range",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			i, err := parseIntInRange(test.val, test.min, test.max)
+			assert.Equal(t, test.expected, i)
+			if test.errContains == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), test.errContains)
+			}
+		})
+	}
+}

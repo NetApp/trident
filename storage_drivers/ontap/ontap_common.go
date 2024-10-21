@@ -20,7 +20,7 @@ import (
 	"strings"
 	"time"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/google/go-cmp/cmp"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -60,10 +60,10 @@ import (
 // //////////////////////////////////////////////////////////////////////////////////////////
 
 const (
-	MinimumVolumeSizeBytes       = 20971520 // 20 MiB
-	HousekeepingStartupDelaySecs = 10
-	LUNMetadataBufferMultiplier  = 1.1 // 10%
-	MaximumIgroupNameLength      = 96  // 96 characters is the maximum character count for ONTAP igroups.
+	MinimumVolumeSizeBytes      = 20971520 // 20 MiB
+	HousekeepingStartupDelay    = 10 * time.Second
+	LUNMetadataBufferMultiplier = 1.1 // 10%
+	MaximumIgroupNameLength     = 96  // 96 characters is the maximum character count for ONTAP igroups.
 
 	// Constants for internal pool attributes
 	Size                  = "size"
@@ -165,7 +165,7 @@ func NewOntapTelemetry(ctx context.Context, d StorageDriver) *Telemetry {
 // These messages can be viewed via filer::> event log show -severity NOTICE.
 func (t *Telemetry) Start(ctx context.Context) {
 	go func() {
-		time.Sleep(HousekeepingStartupDelaySecs * time.Second)
+		time.Sleep(HousekeepingStartupDelay)
 		EMSHeartbeat(ctx, t.Driver)
 		for {
 			select {
@@ -1927,22 +1927,22 @@ func GetSnapshotReserve(snapshotPolicy, snapshotReserve string) (int, error) {
 	if snapshotReserve != "" {
 		// snapshotReserve defaults to "", so if it is explicitly set
 		// (either in config or create options), honor the value.
-		snapshotReserveInt64, err := strconv.ParseInt(snapshotReserve, 10, 64)
+		snapshotReserve, err := utils.ParsePositiveInt(snapshotReserve)
 		if err != nil {
 			return api.NumericalValueNotSet, err
 		}
-		return int(snapshotReserveInt64), nil
+		return snapshotReserve, nil
 	} else {
 		// If snapshotReserve isn't set, then look at snapshotPolicy.  If the policy is "none",
 		// return 0.  Otherwise return -1, indicating that ONTAP should use its own default value.
 		if snapshotPolicy == "none" || snapshotPolicy == "" {
 			return 0, nil
 		} else {
-			snapshotReserveInt64, err := strconv.ParseInt(DefaultSnapshotReserve, 10, 64)
+			snapshotReserve, err := utils.ParsePositiveInt(DefaultSnapshotReserve)
 			if err != nil {
 				return api.NumericalValueNotSet, err
 			}
-			return int(snapshotReserveInt64), nil
+			return snapshotReserve, nil
 		}
 	}
 }

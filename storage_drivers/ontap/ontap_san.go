@@ -5,12 +5,13 @@ package ontap
 import (
 	"context"
 	"fmt"
+	"math"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
@@ -1371,6 +1372,11 @@ func (d *SANStorageDriver) Resize(
 	Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
 	defer Logd(ctx, d.Config.StorageDriverName,
 		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
+
+	if requestedSizeBytes > math.MaxInt64 {
+		Logc(ctx).WithFields(fields).Error("Invalid volume size.")
+		return fmt.Errorf("invalid volume size")
+	}
 
 	// Validation checks
 	volExists, err := d.API.VolumeExists(ctx, name)

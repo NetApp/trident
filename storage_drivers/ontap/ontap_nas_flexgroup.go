@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/cenkalti/backoff/v4"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -586,7 +586,6 @@ func (d *NASFlexGroupStorageDriver) Create(
 	if sizeBytes > math.MaxInt64 {
 		return errors.UnsupportedCapacityRangeError(errors.New("invalid size requested"))
 	}
-	size := int(sizeBytes)
 
 	if tieringPolicy == "" {
 		tieringPolicy = "none"
@@ -616,7 +615,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 
 	Logc(ctx).WithFields(LogFields{
 		"name":            name,
-		"size":            size,
+		"size":            sizeBytes,
 		"spaceReserve":    spaceReserve,
 		"snapshotPolicy":  snapshotPolicy,
 		"snapshotReserve": snapshotReserveInt,
