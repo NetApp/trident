@@ -1,0 +1,113 @@
+security login role create -role "trident" -cmddirname "job" -access readonly
+security login role create -role "trident" -cmddirname "job schedule" -access readonly
+security login role create -role "trident" -cmddirname "lun" -access all
+security login role create -role "trident" -cmddirname "lun igroup" -access readonly
+security login role create -role "trident" -cmddirname "lun mapping" -access readonly
+security login role create -role "trident" -cmddirname "network interface" -access readonly
+security login role create -role "trident" -cmddirname "snapmirror" -access readonly
+security login role create -role "trident" -cmddirname "snapmirror policy" -access readonly
+security login role create -role "trident" -cmddirname "snapshot" -access readonly
+security login role create -role "trident" -cmddirname "system node" -access readonly
+security login role create -role "trident" -cmddirname "volume" -access readonly
+security login role create -role "trident" -cmddirname "volume quota policy rule" -access readonly
+security login role create -role "trident" -cmddirname "volume snapshot" -access readonly
+security login role create -role "trident" -cmddirname "vserver" -access readonly
+security login role create -role "trident" -cmddirname "vserver export-policy rule" -access readonly
+security login role create -role "trident" -cmddirname "vserver iscsi security" -access readonly
+security login role create -role "trident" -cmddirname "vserver peer" -access readonly
+security login role create -role "trident" -cmddirname "lun resize" -access all
+security login role create -role "trident" -cmddirname "volume destroy" -access all
+security login role create -role "trident" -cmddirname "volume quota policy rule modify" -access all
+security login role create -role "trident" -cmddirname "volume snapshot" -access readonly
+security login role create -role "trident" -cmddirname "vserver iscsi security modify" -access all
+security login role create -role "trident" -cmddirname "volume" -access readonly
+security login role create -role "trident" -cmddirname "vserver export-policy delete" -access all
+security login role create -role "trident" -cmddirname "snapmirror release" -access all
+security login role create -role "trident" -cmddirname "job schedule" -access readonly
+security login role create -role "trident" -cmddirname "vserver cifs share" -access readonly
+security login role create -role "trident" -cmddirname "snapmirror" -access readonly
+security login role create -role "trident" -cmddirname "snapmirror initialize" -access all
+security login role create -role "trident" -cmddirname "lun igroup add" -access all
+security login role create -role "trident" -cmddirname "lun igroup remove" -access all
+security login role create -role "trident" -cmddirname "lun offline" -access all
+security login role create -role "trident" -cmddirname "volume modify" -access all
+security login role create -role "trident" -cmddirname "snapmirror list-destinations" -access all
+security login role create -role "trident" -cmddirname "snapmirror create" -access all
+security login role create -role "trident" -cmddirname "network interface" -access readonly
+security login role create -role "trident" -cmddirname "storage aggregate show-space" -access readonly
+security login role create -role "trident" -cmddirname "lun modify" -access all
+security login role create -role "trident" -cmddirname "lun" -access readonly
+security login role create -role "trident" -cmddirname "volume mount" -access all
+security login role create -role "trident" -cmddirname "volume snapshot restore" -access all
+security login role create -role "trident" -cmddirname "volume snapshot delete" -access all
+security login role create -role "trident" -cmddirname "volume qtree modify" -access all
+security login role create -role "trident" -cmddirname "lun create" -access all
+security login role create -role "trident" -cmddirname "volume offline" -access all
+security login role create -role "trident" -cmddirname "version" -access all
+security login role create -role "trident" -cmddirname "vserver iscsi security delete" -access all
+security login role create -role "trident" -cmddirname "lun" -access readonly
+security login role create -role "trident" -cmddirname "volume qtree" -access readonly
+security login role create -role "trident" -cmddirname "volume snapshot create" -access all
+security login role create -role "trident" -cmddirname "snapmirror" -access readonly
+security login role create -role "trident" -cmddirname "vserver iscsi security" -access readonly
+security login role create -role "trident" -cmddirname "lun delete" -access all
+security login role create -role "trident" -cmddirname "volume size" -access all
+security login role create -role "trident" -cmddirname "vserver export-policy rule delete" -access all
+security login role create -role "trident" -cmddirname "vserver export-policy" -access readonly
+security login role create -role "trident" -cmddirname "vserver iscsi security create" -access all
+security login role create -role "trident" -cmddirname "vserver iscsi security" -access readonly
+security login role create -role "trident" -cmddirname "snapmirror resync" -access all
+security login role create -role "trident" -cmddirname "snapmirror break" -access all
+security login role create -role "trident" -cmddirname "lun igroup" -access readonly
+security login role create -role "trident" -cmddirname "lun mapping delete" -access all
+security login role create -role "trident" -cmddirname "volume modify" -access all
+security login role create -role "trident" -cmddirname "volume unmount" -access all
+security login role create -role "trident" -cmddirname "vserver iscsi" -access readonly
+security login role create -role "trident" -cmddirname "snapmirror quiesce" -access all
+security login role create -role "trident" -cmddirname "snapmirror release" -access all
+security login role create -role "trident" -cmddirname "volume file clone create" -access all
+security login role create -role "trident" -cmddirname "snapmirror policy" -access readonly
+security login role create -role "trident" -cmddirname "vserver iscsi initiator" -access readonly
+security login role create -role "trident" -cmddirname "vserver cifs share create" -access all
+security login role create -role "trident" -cmddirname "lun move-in-volume" -access all
+security login role create -role "trident" -cmddirname "volume quota" -access readonly
+security login role create -role "trident" -cmddirname "volume rename" -access all
+security login role create -role "trident" -cmddirname "snapmirror update" -access all
+security login role create -role "trident" -cmddirname "vserver iscsi" -access readonly
+security login role create -role "trident" -cmddirname "volume create" -access all
+security login role create -role "trident" -cmddirname "volume quota off" -access all
+security login role create -role "trident" -cmddirname "vserver cifs share delete" -access all
+security login role create -role "trident" -cmddirname "event generate-autosupport-log" -access all
+security login role create -role "trident" -cmddirname "lun mapping" -access readonly
+security login role create -role "trident" -cmddirname "lun modify" -access all
+security login role create -role "trident" -cmddirname "volume clone split start" -access all
+security login role create -role "trident" -cmddirname "volume clone create" -access all
+security login role create -role "trident" -cmddirname "volume qtree rename" -access all
+security login role create -role "trident" -cmddirname "snapmirror delete" -access all
+security login role create -role "trident" -cmddirname "volume quota policy rule" -access readonly
+security login role create -role "trident" -cmddirname "vserver iscsi nodename" -access all
+security login role create -role "trident" -cmddirname "lun online" -access all
+security login role create -role "trident" -cmddirname "job" -access readonly
+security login role create -role "trident" -cmddirname "volume qtree create" -access all
+security login role create -role "trident" -cmddirname "vserver export-policy rule create" -access all
+security login role create -role "trident" -cmddirname "snapmirror abort" -access all
+security login role create -role "trident" -cmddirname "volume quota on" -access all
+security login role create -role "trident" -cmddirname "vserver export-policy rule" -access readonly
+security login role create -role "trident" -cmddirname "lun igroup create" -access all
+security login role create -role "trident" -cmddirname "lun igroup delete" -access all
+security login role create -role "trident" -cmddirname "volume size" -access all
+security login role create -role "trident" -cmddirname "volume qtree delete" -access all
+security login role create -role "trident" -cmddirname "vserver iscsi interface" -access readonly
+security login role create -role "trident" -cmddirname "vserver peer" -access readonly
+security login role create -role "trident" -cmddirname "lun serial" -access all
+security login role create -role "trident" -cmddirname "lun mapping create" -access all
+security login role create -role "trident" -cmddirname "volume destroy" -access all
+security login role create -role "trident" -cmddirname "volume create" -access all
+security login role create -role "trident" -cmddirname "volume clone create" -access all
+security login role create -role "trident" -cmddirname "volume quota resize" -access all
+security login role create -role "trident" -cmddirname "vserver iscsi security default" -access all
+security login role create -role "trident" -cmddirname "lun mapping" -access readonly
+security login role create -role "trident" -cmddirname "vserver export-policy create" -access all
+security login role create -role "trident" -cmddirname "vserver" -access readonly
+security login role create -role "trident" -cmddirname "vserver show-aggregates" -access all
+security login role create -role "trident" -cmddirname "version" -access all
