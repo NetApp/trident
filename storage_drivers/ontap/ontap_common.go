@@ -484,7 +484,8 @@ func getSVMState(
 		}
 	}
 
-	if protocol == sa.ISCSI {
+	// Check dataLIF for iSCSI and NVMe protocols
+	if protocol != sa.FCP {
 		upDataLIFs, err := client.NetInterfaceGetDataLIFs(ctx, protocol)
 		if err != nil || len(upDataLIFs) == 0 {
 			if err != nil {
@@ -900,10 +901,8 @@ func PublishLUN(
 		// Add fields needed by Attach
 		publishInfo.IscsiLunNumber = int32(lunID)
 		publishInfo.IscsiLunSerial = serial
-		if config.SANType == sa.ISCSI {
-			publishInfo.IscsiTargetPortal = filteredIPs[0]
-			publishInfo.IscsiPortals = filteredIPs[1:]
-		}
+		publishInfo.IscsiTargetPortal = filteredIPs[0]
+		publishInfo.IscsiPortals = filteredIPs[1:]
 		publishInfo.IscsiTargetIQN = nodeName
 		publishInfo.SANType = config.SANType
 
@@ -1705,6 +1704,8 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 
 	if config.SANType == "" {
 		config.SANType = sa.ISCSI
+	} else {
+		config.SANType = strings.ToLower(config.SANType)
 	}
 
 	// If NASType is not provided in the backend config, default to NFS
@@ -2531,13 +2532,11 @@ func InitializeStoragePoolsCommon(
 		}
 
 		sanType := config.SANType
-		if vpool.SANType != "" && sanType != vpool.SANType {
-			return nil, nil, fmt.Errorf("trident does not support mixing of %s and %s SAN types", sanType,
-				vpool.SANType)
-		}
-
 		if vpool.SANType != "" {
-			sanType = vpool.SANType
+			sanType = strings.ToLower(vpool.SANType)
+			if config.SANType != sanType {
+				return nil, nil, fmt.Errorf("trident does not support mixing of %s and %s SAN types", sanType, config.SANType)
+			}
 		}
 
 		formatOptions := config.FormatOptions
