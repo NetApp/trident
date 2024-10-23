@@ -32,6 +32,11 @@ func NewSystemctlDetailed(command exec.Command, commandTimeout time.Duration, lo
 func (s *Systemctl) EnableServiceWithValidation(ctx context.Context, serviceName string) error {
 	output, err := s.enableService(ctx, serviceName)
 	if err != nil {
+		Log().WithFields(LogFields{
+			"service": serviceName,
+			"output":  output,
+		}).Info("Output from enabling service.")
+
 		return errors.New(fmt.Sprintf("failed to enable %s: %v", serviceName, err))
 	}
 

@@ -12,7 +12,7 @@ import (
 
 const (
 	ServiceIscsid         = "iscsid"
-	ServiceMultipathtools = "multipath-tools.service"
+	ServiceMultipathtools = "multipathd"
 )
 
 const (

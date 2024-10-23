@@ -20,7 +20,7 @@ const (
 )
 
 const (
-	defaultCommandTimeout   = 10 * time.Second
+	defaultCommandTimeout   = time.Minute
 	defaultLogCommandOutput = true
 )
 
@@ -95,6 +95,13 @@ func (a *Apt) validatePackageInstall(ctx context.Context, packageName string) er
 func (a *Apt) installPackage(ctx context.Context, packageName string) (string, error) {
 	output, err := a.command.ExecuteWithTimeout(ctx, "apt",
 		a.commandTimeout, a.logCommandOutput, "install", "-y", packageName)
+	if err != nil && (errors.IsTimeoutError(err) || err.Error() == "exit status 100") {
+		// attempt fix and let k8s handle the retry
+		out, fixErr := a.command.ExecuteWithTimeout(ctx, "dpkg", a.commandTimeout, a.logCommandOutput, "--configure", "--pending")
+		if fixErr != nil {
+			Log().WithError(fixErr).WithField("output", string(out)).Error("Failed fix using dpkg")
+		}
+	}
 	return string(output), err
 }
 
