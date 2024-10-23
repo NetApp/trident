@@ -23,12 +23,14 @@ import (
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
 	mockUtils "github.com/netapp/trident/mocks/mock_utils"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
+	"github.com/netapp/trident/mocks/mock_utils/mock_mount"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/mount"
 )
 
 func TestNodeStageVolume(t *testing.T) {
@@ -1015,11 +1017,13 @@ func TestFixISCSISessions(t *testing.T) {
 		},
 	}
 
+	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	assert.NoError(t, err)
+
 	nodeServer := &Plugin{
 		nodeName: "someNode",
 		role:     CSINode,
-		iscsi: iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
-			utils.NewMountClient()),
+		iscsi:    iscsiClient,
 	}
 
 	for _, input := range inputs {
@@ -1931,7 +1935,7 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 		getISCSIClient               func() iscsi.ISCSI
 		getIscsiReconcileUtilsClient func() iscsi.IscsiReconcileUtils
 		getDeviceClient              func() iscsi.Devices
-		getMountClient               func() iscsi.Mount
+		getMountClient               func() mount.Mount
 		getNodeHelper                func() nodehelpers.NodeHelper
 		publishInfo                  models.VolumePublishInfo
 		force                        bool
@@ -1965,8 +1969,8 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
 				return mockDeviceClient
 			},
-			getMountClient: func() iscsi.Mount {
-				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+			getMountClient: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
 				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
 				return mockMountClient
 			},
@@ -2007,8 +2011,8 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
 				return mockDeviceClient
 			},
-			getMountClient: func() iscsi.Mount {
-				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+			getMountClient: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
 				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
 				return mockMountClient
 			},
@@ -2053,8 +2057,8 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
 				return mockDeviceClient
 			},
-			getMountClient: func() iscsi.Mount {
-				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+			getMountClient: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
 				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
 				return mockMountClient
 			},
@@ -2219,8 +2223,8 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
 				return mockDeviceClient
 			},
-			getMountClient: func() iscsi.Mount {
-				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+			getMountClient: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
 				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
 				return mockMountClient
 			},
@@ -2255,8 +2259,8 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
 				return mockDeviceClient
 			},
-			getMountClient: func() iscsi.Mount {
-				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+			getMountClient: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
 				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
 				return mockMountClient
 			},
@@ -2292,8 +2296,8 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
 				return mockDeviceClient
 			},
-			getMountClient: func() iscsi.Mount {
-				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+			getMountClient: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
 				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
 				return mockMountClient
 			},
@@ -2330,8 +2334,8 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 					gomock.Any(), false, false).Return("", nil)
 				return mockDeviceClient
 			},
-			getMountClient: func() iscsi.Mount {
-				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+			getMountClient: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
 				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).
 					Return(fmt.Errorf("mock error"))
 				return mockMountClient
@@ -2366,8 +2370,8 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 					Return(fmt.Errorf("mock error"))
 				return mockDeviceClient
 			},
-			getMountClient: func() iscsi.Mount {
-				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+			getMountClient: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
 				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
 				return mockMountClient
 			},
@@ -2400,8 +2404,8 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
 				return mockDeviceClient
 			},
-			getMountClient: func() iscsi.Mount {
-				mockMountClient := mock_iscsi.NewMockMount(gomock.NewController(t))
+			getMountClient: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
 				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).
 					Return(nil)
 				return mockMountClient
@@ -2444,7 +2448,7 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 			}
 
 			if params.getMountClient != nil {
-				plugin.mountClient = params.getMountClient()
+				plugin.mount = params.getMountClient()
 			}
 
 			err := plugin.nodeUnstageISCSIVolume(context.Background(), &params.request, &params.publishInfo,

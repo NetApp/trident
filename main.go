@@ -361,7 +361,11 @@ func main() {
 
 	processCmdLineArgs(ctx)
 
-	orchestrator := core.NewTridentOrchestrator(storeClient)
+	orchestrator, err := core.NewTridentOrchestrator(storeClient)
+	if err != nil {
+		_, _ = fmt.Fprint(os.Stderr, err)
+		os.Exit(1)
+	}
 
 	// Create HTTP metrics frontend
 	if *enableMetrics {

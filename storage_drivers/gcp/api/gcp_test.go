@@ -19,7 +19,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 func TestMain(m *testing.M) {
@@ -135,7 +135,7 @@ func createResponseNonMarshall(w http.ResponseWriter, msg []byte, sc int) {
 
 func TestNewDriver(t *testing.T) {
 	config := ClientConfig{
-		MountPoint:      utils.MountPoint{},
+		MountPoint:      models.MountPoint{},
 		ProjectNumber:   "",
 		APIKey:          drivers.GCPPrivateKey{},
 		APIRegion:       "",

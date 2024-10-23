@@ -26,6 +26,7 @@ import (
 	"github.com/netapp/trident/utils/fcp"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/mount"
 )
 
 const (
@@ -82,7 +83,7 @@ type Plugin struct {
 
 	iscsi        iscsi.ISCSI
 	deviceClient iscsi.Devices // TODO: this interface will be replaced once the device package is created
-	mountClient  iscsi.Mount   // TODO: this interface will be replaced once the mount pacakge is created
+	mount        mount.Mount
 	fcp          fcp.FCP
 }
 
@@ -156,6 +157,23 @@ func NewNodePlugin(
 	}
 	Logc(ctx).Info(msg)
 
+	// TODO (vivintw) the adaptors are being plugged in here as a temporary measure to prevent cyclic dependencies.
+	// NewClient() must plugin default implementation of the various package clients.
+	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	if err != nil {
+		return nil, err
+	}
+
+	mountClient, err := mount.New()
+	if err != nil {
+		return nil, err
+	}
+
+	fcpClient, err := fcp.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	if err != nil {
+		return nil, err
+	}
+
 	p := &Plugin{
 		orchestrator:             orchestrator,
 		name:                     Provisioner,
@@ -171,15 +189,11 @@ func NewNodePlugin(
 		iSCSISelfHealingWaitTime: iSCSIStaleSessionWaitTime,
 		nvmeHandler:              utils.NewNVMeHandler(),
 		nvmeSelfHealingInterval:  nvmeSelfHealingInterval,
-		// TODO (vivintw) the adaptors are being plugged in here as a temporary measure to prevent cyclic dependencies.
+		iscsi:                    iscsiClient,
 		// NewClient() must plugin default implementation of the various package clients.
-		iscsi: iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
-			utils.NewMountClient()),
-		// NewClient() must plugin default implementation of the various package clients.
-		fcp: fcp.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
-			utils.NewMountClient()),
+		fcp:          fcpClient,
 		deviceClient: utils.NewDevicesClient(),
-		mountClient:  utils.NewMountClient(),
+		mount:        mountClient,
 	}
 
 	if runtime.GOOS == "windows" {
@@ -211,7 +225,6 @@ func NewNodePlugin(
 	}
 
 	restURL := "https://" + hostname + ":" + port
-	var err error
 	p.restClient, err = controllerAPI.CreateTLSRestClient(restURL, caCert, clientCert, clientKey)
 	if err != nil {
 		return nil, err
@@ -249,6 +262,23 @@ func NewAllInOnePlugin(
 
 	Logc(ctx).Info("Initializing CSI all-in-one frontend.")
 
+	// TODO (vivintw) the adaptors are being plugged in here as a temporary measure to prevent cyclic dependencies.
+	// NewClient() must plugin default implementation of the various package clients.
+	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	if err != nil {
+		return nil, err
+	}
+
+	mountClient, err := mount.New()
+	if err != nil {
+		return nil, err
+	}
+
+	fcpClient, err := fcp.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	if err != nil {
+		return nil, err
+	}
+
 	p := &Plugin{
 		orchestrator:             orchestrator,
 		name:                     Provisioner,
@@ -264,14 +294,10 @@ func NewAllInOnePlugin(
 		iSCSISelfHealingWaitTime: iSCSIStaleSessionWaitTime,
 		nvmeHandler:              utils.NewNVMeHandler(),
 		nvmeSelfHealingInterval:  nvmeSelfHealingInterval,
-		// TODO (vivintw) the adaptors are being plugged in here as a temporary measure to prevent cyclic dependencies.
-		// NewClient() must plugin default implementation of the various package clients.
-		iscsi: iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
-			utils.NewMountClient()),
-		fcp: fcp.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
-			utils.NewMountClient()),
-		deviceClient: utils.NewDevicesClient(),
-		mountClient:  utils.NewMountClient(),
+		iscsi:                    iscsiClient,
+		fcp:                      fcpClient,
+		deviceClient:             utils.NewDevicesClient(),
+		mount:                    mountClient,
 	}
 
 	// Define controller capabilities
@@ -302,7 +328,6 @@ func NewAllInOnePlugin(
 		}
 	}
 	restURL := "https://" + tridentconfig.ServerCertName + ":" + port
-	var err error
 	p.restClient, err = controllerAPI.CreateTLSRestClient(restURL, caCert, clientCert, clientKey)
 	if err != nil {
 		return nil, err

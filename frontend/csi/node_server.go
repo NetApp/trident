@@ -272,10 +272,10 @@ func (p *Plugin) NodeUnpublishVolume(
 
 	var notMountPoint bool
 	if isDir {
-		notMountPoint, err = utils.IsLikelyNotMountPoint(ctx, targetPath)
+		notMountPoint, err = p.mount.IsLikelyNotMountPoint(ctx, targetPath)
 	} else {
 		var mounted bool
-		mounted, err = utils.IsMounted(ctx, "", targetPath, "")
+		mounted, err = p.mount.IsMounted(ctx, "", targetPath, "")
 		notMountPoint = !mounted
 	}
 
@@ -291,7 +291,7 @@ func (p *Plugin) NodeUnpublishVolume(
 	if notMountPoint {
 		Logc(ctx).Debug("Volume not mounted, proceeding to unpublish volume")
 	} else {
-		if err = utils.Umount(ctx, targetPath); err != nil {
+		if err = p.mount.Umount(ctx, targetPath); err != nil {
 			Logc(ctx).WithFields(LogFields{"path": targetPath, "error": err}).Error("unable to unmount volume.")
 			return nil, status.Errorf(codes.InvalidArgument, "unable to unmount volume; %s", err)
 		}
@@ -820,7 +820,7 @@ func (p *Plugin) nodeStageNFSVolume(
 		FilesystemType: "nfs",
 	}
 
-	if err := utils.IsCompatible(ctx, publishInfo.FilesystemType); err != nil {
+	if err := p.mount.IsCompatible(ctx, publishInfo.FilesystemType); err != nil {
 		return nil, err
 	}
 
@@ -867,7 +867,7 @@ func (p *Plugin) nodePublishNFSVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
 	targetPath := req.GetTargetPath()
-	notMnt, err := utils.IsLikelyNotMountPoint(ctx, targetPath)
+	notMnt, err := p.mount.IsLikelyNotMountPoint(ctx, targetPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			if err := os.MkdirAll(targetPath, 0o750); err != nil {
@@ -897,7 +897,7 @@ func (p *Plugin) nodePublishNFSVolume(
 		publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "ro", ",")
 	}
 
-	err = utils.AttachNFSVolume(ctx, req.VolumeContext["internalName"], req.TargetPath, publishInfo)
+	err = p.mount.AttachNFSVolume(ctx, req.VolumeContext["internalName"], req.TargetPath, publishInfo)
 	if err != nil {
 		if os.IsPermission(err) {
 			return nil, status.Error(codes.PermissionDenied, err.Error())
@@ -924,7 +924,7 @@ func (p *Plugin) nodeStageSMBVolume(
 		FilesystemType: utils.SMB,
 	}
 
-	if err := utils.IsCompatible(ctx, publishInfo.FilesystemType); err != nil {
+	if err := p.mount.IsCompatible(ctx, publishInfo.FilesystemType); err != nil {
 		return nil, err
 	}
 
@@ -954,7 +954,7 @@ func (p *Plugin) nodeStageSMBVolume(
 	password := secrets["password"]
 
 	// Remote map the SMB share to the staging path
-	err = utils.AttachSMBVolume(ctx, volumeId, stagingTargetPath, username, password, publishInfo)
+	err = p.mount.AttachSMBVolume(ctx, volumeId, stagingTargetPath, username, password, publishInfo)
 	if err != nil {
 		if os.IsPermission(err) {
 			return nil, status.Error(codes.PermissionDenied, err.Error())
@@ -988,7 +988,7 @@ func (p *Plugin) nodeUnstageSMBVolume(
 		return nil, err
 	}
 
-	err = utils.UmountSMBPath(ctx, mappingPath, stagingTargetPath)
+	err = p.mount.UmountSMBPath(ctx, mappingPath, stagingTargetPath)
 
 	// Delete the device info we saved to the volume tracking info path so unstage can succeed.
 	if err := p.nodeHelper.DeleteTrackingInfo(ctx, volumeId); err != nil {
@@ -1010,7 +1010,7 @@ func (p *Plugin) nodePublishSMBVolume(
 	if len(source) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "Staging target not provided")
 	}
-	notMnt, err := utils.IsLikelyNotMountPoint(ctx, targetPath)
+	notMnt, err := p.mount.IsLikelyNotMountPoint(ctx, targetPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			if err := os.MkdirAll(targetPath, 0o750); err != nil {
@@ -1029,7 +1029,7 @@ func (p *Plugin) nodePublishSMBVolume(
 	if req.GetReadonly() {
 		mountOptions = append(mountOptions, "ro")
 	}
-	err = utils.WindowsBindMount(ctx, source, targetPath, mountOptions)
+	err = p.mount.WindowsBindMount(ctx, source, targetPath, mountOptions)
 	if err != nil {
 		if os.IsPermission(err) {
 			return nil, status.Error(codes.PermissionDenied, err.Error())
@@ -1291,7 +1291,7 @@ func (p *Plugin) nodeUnstageFCPVolume(
 	}
 
 	// Ensure that the temporary mount point created during a filesystem expand operation is removed.
-	if err := utils.UmountAndRemoveTemporaryMountPoint(ctx, stagingTargetPath); err != nil {
+	if err := p.mount.UmountAndRemoveTemporaryMountPoint(ctx, stagingTargetPath); err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"volumeId":          volumeId,
 			"stagingTargetPath": stagingTargetPath,
@@ -1398,13 +1398,13 @@ func (p *Plugin) nodePublishFCPVolume(
 		}
 
 		// Place the block device at the target path for the raw-block.
-		err = utils.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, true)
+		err = p.mount.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, true)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "unable to bind mount raw device; %s", err)
 		}
 	} else {
 		// Mount the device.
-		err = utils.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, false)
+		err = p.mount.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, false)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "unable to mount device; %s", err)
 		}
@@ -1741,7 +1741,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	// Ensure that the temporary mount point created during a filesystem expand operation is removed.
-	if err := p.mountClient.UmountAndRemoveTemporaryMountPoint(ctx, stagingTargetPath); err != nil {
+	if err := p.mount.UmountAndRemoveTemporaryMountPoint(ctx, stagingTargetPath); err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"volumeId":          volumeId,
 			"stagingTargetPath": stagingTargetPath,
@@ -1858,13 +1858,13 @@ func (p *Plugin) nodePublishISCSIVolume(
 		}
 
 		// Place the block device at the target path for the raw-block.
-		err = utils.MountDevice(ctx, devicePath, req.TargetPath, publishInfo.MountOptions, true)
+		err = p.mount.MountDevice(ctx, devicePath, req.TargetPath, publishInfo.MountOptions, true)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "unable to bind mount raw device; %s", err)
 		}
 	} else {
 		// Mount the device.
-		err = utils.MountDevice(ctx, devicePath, req.TargetPath, publishInfo.MountOptions, false)
+		err = p.mount.MountDevice(ctx, devicePath, req.TargetPath, publishInfo.MountOptions, false)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "unable to mount device; %s", err)
 		}
@@ -2571,7 +2571,7 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 	}
 
 	// Ensure that the temporary mount point created during a filesystem expand operation is removed.
-	if err := p.mountClient.UmountAndRemoveTemporaryMountPoint(ctx, stagingTargetPath); err != nil {
+	if err := p.mount.UmountAndRemoveTemporaryMountPoint(ctx, stagingTargetPath); err != nil {
 		Logc(ctx).WithField("stagingTargetPath", stagingTargetPath).Errorf(
 			"Failed to remove directory in staging target path; %s", err)
 		errStr := fmt.Sprintf("failed to remove temporary directory in staging target path %s; %s",
@@ -2630,13 +2630,13 @@ func (p *Plugin) nodePublishNVMeVolume(
 		}
 
 		// Place the block device at the target path for the raw-block.
-		err = utils.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, true)
+		err = p.mount.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, true)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "unable to bind mount raw device; %s", err)
 		}
 	} else {
 		// Mount the device.
-		err = utils.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, false)
+		err = p.mount.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, false)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "unable to mount device; %s", err)
 		}

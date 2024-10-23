@@ -20,6 +20,7 @@ import (
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/mount"
 )
 
 var (
@@ -50,7 +51,7 @@ func TestActivate(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockOrchestrator.NewMockOrchestrator(mockCtrl)
 	mockVolPubMgr := mockNodeHelpers.NewMockVolumePublishManager(mockCtrl)
-	h := newValidHelper(orchestrator, "pvc-123", mockVolPubMgr)
+	h := newValidHelper(t, orchestrator, "pvc-123", mockVolPubMgr)
 
 	mockVolPubMgr.EXPECT().GetVolumeTrackingFiles().Return([]os.FileInfo{}, errors.New("foo"))
 	err := h.Activate()
@@ -85,7 +86,7 @@ func TestReconcileVolumeTrackingInfo(t *testing.T) {
 	mockVolumePublishManager := mockNodeHelpers.NewMockVolumePublishManager(mockCtrl)
 	ctx := context.Background()
 	volId := "pvc-123"
-	h := newValidHelper(orchestrator, volId, mockVolumePublishManager)
+	h := newValidHelper(t, orchestrator, volId, mockVolumePublishManager)
 
 	defer func() { osFs = afero.NewOsFs() }()
 	osFs = afero.NewMemMapFs()
@@ -125,7 +126,8 @@ func TestReconcileVolumeTrackingInfoFile(t *testing.T) {
 	defer func() { osFs = afero.NewOsFs() }()
 	osFs = afero.NewMemMapFs()
 
-	validH := newValidHelper(orchestrator, volId, mockVolumePublishManager)
+	validH := newValidHelper(t,
+		orchestrator, volId, mockVolumePublishManager)
 
 	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, paths,
 		nil).Return(false, nil)
@@ -470,8 +472,12 @@ func TestDiscoverPVCsToPublishedPathsRawDevices_EmptyMap(t *testing.T) {
 }
 
 func newValidHelper(
-	orchestrator *mockOrchestrator.MockOrchestrator, volId string, mockPubMgr *mockNodeHelpers.MockVolumePublishManager,
+	t *testing.T, orchestrator *mockOrchestrator.MockOrchestrator, volId string,
+	mockPubMgr *mockNodeHelpers.MockVolumePublishManager,
 ) *helper {
+	mountClient, err := mount.New()
+	assert.NoError(t, err)
+
 	return &helper{
 		orchestrator: orchestrator,
 		podsPath:     "/pods",
@@ -479,5 +485,6 @@ func newValidHelper(
 			volId: {},
 		},
 		VolumePublishManager: mockPubMgr,
+		mount:                mountClient,
 	}
 }

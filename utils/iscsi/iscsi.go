@@ -6,7 +6,6 @@ package iscsi
 //go:generate mockgen -destination=../../mocks/mock_utils/mock_iscsi/mock_iscsi_os_client.go github.com/netapp/trident/utils/iscsi OS
 //go:generate mockgen -destination=../../mocks/mock_utils/mock_iscsi/mock_iscsi_devices_client.go github.com/netapp/trident/utils/iscsi Devices
 //go:generate mockgen -destination=../../mocks/mock_utils/mock_iscsi/mock_iscsi_filesystem_client.go github.com/netapp/trident/utils/iscsi FileSystem
-//go:generate mockgen -destination=../../mocks/mock_utils/mock_iscsi/mock_iscsi_mount_client.go github.com/netapp/trident/utils/iscsi Mount
 
 import (
 	"context"
@@ -30,6 +29,7 @@ import (
 	"github.com/netapp/trident/utils/errors"
 	tridentexec "github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/mount"
 )
 
 const (
@@ -137,12 +137,6 @@ type FileSystem interface {
 	RepairVolume(ctx context.Context, device, fstype string)
 }
 
-type Mount interface {
-	IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions string) (bool, error)
-	MountDevice(ctx context.Context, device, mountpoint, options string, isMountPointFile bool) (err error)
-	UmountAndRemoveTemporaryMountPoint(ctx context.Context, mountPath string) error
-}
-
 type Client struct {
 	chrootPathPrefix     string
 	command              tridentexec.Command
@@ -150,12 +144,12 @@ type Client struct {
 	osClient             OS
 	deviceClient         Devices
 	fileSystemClient     FileSystem
-	mountClient          Mount
+	mountClient          mount.Mount
 	iscsiUtils           IscsiReconcileUtils
 	os                   afero.Afero
 }
 
-func New(osClient OS, deviceClient Devices, fileSystemClient FileSystem, mountClient Mount) *Client {
+func New(osClient OS, deviceClient Devices, fileSystemClient FileSystem) (*Client, error) {
 	chrootPathPrefix := ""
 	if os.Getenv("DOCKER_PLUGIN_MODE") != "" {
 		chrootPathPrefix = "/host"
@@ -163,13 +157,17 @@ func New(osClient OS, deviceClient Devices, fileSystemClient FileSystem, mountCl
 
 	reconcileutils := NewReconcileUtils(chrootPathPrefix, osClient)
 	osUtils := afero.Afero{Fs: afero.NewOsFs()}
+	mountClient, err := mount.New()
+	if err != nil {
+		return nil, fmt.Errorf("error creating mount client: %v", err)
+	}
 
 	return NewDetailed(chrootPathPrefix, tridentexec.NewCommand(), DefaultSelfHealingExclusion, osClient,
-		deviceClient, fileSystemClient, mountClient, reconcileutils, osUtils)
+		deviceClient, fileSystemClient, mountClient, reconcileutils, osUtils), nil
 }
 
 func NewDetailed(chrootPathPrefix string, command tridentexec.Command, selfHealingExclusion []string, osClient OS,
-	deviceClient Devices, fileSystemClient FileSystem, mountClient Mount, iscsiUtils IscsiReconcileUtils,
+	deviceClient Devices, fileSystemClient FileSystem, mountClient mount.Mount, iscsiUtils IscsiReconcileUtils,
 	os afero.Afero,
 ) *Client {
 	return &Client{

@@ -22,10 +22,10 @@ import (
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/mount"
 )
 
 const (
-	temporaryMountDir          = "/tmp_mnt"
 	iSCSIMaxFlushWaitDuration  = 6 * time.Minute
 	luksCloseMaxWaitDuration   = 2 * time.Minute
 	SessionSourceNodeStage     = "nodeStage"
@@ -36,9 +36,11 @@ const (
 )
 
 var (
-	IscsiUtils  = iscsi.NewReconcileUtils(chrootPathPrefix, NewOSClient())
-	iscsiClient = iscsi.NewDetailed(chrootPathPrefix, command, iscsi.DefaultSelfHealingExclusion, NewOSClient(),
-		NewDevicesClient(), NewFilesystemClient(), NewMountClient(), IscsiUtils, afero.Afero{Fs: afero.NewOsFs()})
+	mountClient, _ = mount.New()
+	IscsiUtils     = iscsi.NewReconcileUtils(chrootPathPrefix, NewOSClient())
+	iscsiClient    = iscsi.NewDetailed(chrootPathPrefix, command, iscsi.DefaultSelfHealingExclusion, NewOSClient(),
+		NewDevicesClient(), NewFilesystemClient(), mountClient, IscsiUtils, afero.Afero{Fs: afero.NewOsFs()})
+
 	// Non-persistent map to maintain flush delays/errors if any, for device path(s).
 	iSCSIVolumeFlushExceptions = make(map[string]time.Time)
 

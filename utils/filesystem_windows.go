@@ -19,6 +19,22 @@ func getFilesystemSize(ctx context.Context, _ string) (int64, error) {
 	return 0, errors.UnsupportedError("getFilesystemSize is not supported for windows")
 }
 
+func GetFilesystemStats(ctx context.Context, path string) (int64, int64, int64, int64, int64, int64, error) {
+	Logc(ctx).Debug(">>>> mount_windows.GetFilesystemStats")
+	defer Logc(ctx).Debug("<<<< mount_windows.GetFilesystemStats")
+
+	csiproxy, err := NewCSIProxyUtils()
+	if err != nil {
+		Logc(ctx).Errorf("Failed to instantiate CSI proxy clients. Error: %v", err)
+	}
+	total, used, err := csiproxy.GetFilesystemUsage(ctx, path)
+	if err != nil {
+		Logc(ctx).Errorf("Failed to instantiate CSI proxy clients. Error: %v", err)
+	}
+	Logc(ctx).Debugf("Total fs capacity: %d used: %d", total, used)
+	return total - used, total, used, 0, 0, 0, nil
+}
+
 // GetDeviceFilePath returns the staging path for volume.
 func GetDeviceFilePath(ctx context.Context, _, volumeId string) (string, error) {
 	Logc(ctx).Debug(">>>> filesystem_windows.GetDeviceFilePath")

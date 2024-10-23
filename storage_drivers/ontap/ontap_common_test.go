@@ -1339,7 +1339,7 @@ func TestValidateStoragePools_LUKS(t *testing.T) {
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	sanEcoStorageDriver := newTestOntapSanEcoDriver(vserverAdminHost, "443", vserverAggrName, false, nil, mockAPI)
+	sanEcoStorageDriver := newTestOntapSanEcoDriver(t, vserverAdminHost, "443", vserverAggrName, false, nil, mockAPI)
 	pool = getValidOntapSANPool()
 	pool.InternalAttributes()[LUKSEncryption] = "true"
 	physicalPools = map[string]storage.Pool{}

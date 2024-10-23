@@ -125,50 +125,6 @@ func isDeviceUnformatted(ctx context.Context, device string) (bool, error) {
 	return true, nil
 }
 
-func GetDeviceNameFromMount(ctx context.Context, mountpath string) (string, int, error) {
-	GenerateRequestContextForLayer(ctx, LogLayerUtils)
-
-	fields := LogFields{"mountpath": mountpath}
-	Logc(ctx).WithFields(fields).Debug(">>>> devices.GetDeviceNameFromMount")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.GetDeviceNameFromMount")
-
-	mps, err := listProcMounts(procMountsPath)
-	if err != nil {
-		return "", 0, err
-	}
-
-	// Find the device name.
-	// FIXME if multiple devices mounted on the same mount path, only the first one is returned
-	device := ""
-	// If mountPath is symlink, need get its target path.
-	slTarget, err := filepath.EvalSymlinks(mountpath)
-	if err != nil {
-		slTarget = mountpath
-	}
-	for i := range mps {
-		if mps[i].Path == slTarget {
-			device = mps[i].Device
-			break
-		}
-	}
-
-	// Find all references to the device.
-	refCount := 0
-	for i := range mps {
-		if mps[i].Device == device {
-			refCount++
-		}
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"mountpath": mountpath,
-		"device":    device,
-		"refCount":  refCount,
-	}).Debug("Found device from mountpath.")
-
-	return device, refCount, nil
-}
-
 // removeDevice tells Linux that a device will be removed.
 func removeDevice(ctx context.Context, deviceInfo *models.ScsiDeviceInfo, ignoreErrors bool) error {
 	Logc(ctx).Debug(">>>> devices.removeDevice")
@@ -322,7 +278,7 @@ func GetMountedISCSIDevices(ctx context.Context) ([]*models.ScsiDeviceInfo, erro
 	Logc(ctx).Debug(">>>> devices.GetMountedISCSIDevices")
 	defer Logc(ctx).Debug("<<<< devices.GetMountedISCSIDevices")
 
-	procSelfMountinfo, err := listProcMountinfo(procSelfMountinfoPath)
+	procSelfMountinfo, err := mountClient.ListProcMountinfo()
 	if err != nil {
 		return nil, err
 	}
@@ -878,31 +834,6 @@ func PrepareDeviceForRemoval(
 	return multipathDevice, err
 }
 
-// PrepareDeviceAtMountPathForRemoval informs Linux that a device will be removed.
-// Unused stub.
-func PrepareDeviceAtMountPathForRemoval(ctx context.Context, mountpoint string, unmount, unsafe, force bool) error {
-	GenerateRequestContextForLayer(ctx, LogLayerUtils)
-
-	fields := LogFields{"mountpoint": mountpoint}
-	Logc(ctx).WithFields(fields).Debug(">>>> devices.PrepareDeviceAtMountPathForRemoval")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.PrepareDeviceAtMountPathForRemoval")
-
-	deviceInfo, err := getDeviceInfoForMountPath(ctx, mountpoint)
-	if err != nil {
-		return err
-	}
-
-	if unmount {
-		if err := Umount(ctx, mountpoint); err != nil {
-			return err
-		}
-	}
-
-	_, err = removeSCSIDevice(ctx, deviceInfo, unsafe, force)
-
-	return err
-}
-
 // RemoveMultipathDeviceMapping uses "multipath -f <devicePath>" to flush(remove) unused map.
 // Unused maps can happen when Unstage is called on offline/deleted LUN.
 func RemoveMultipathDeviceMapping(ctx context.Context, devicePath string) error {
@@ -993,47 +924,6 @@ func removeSCSIDevice(ctx context.Context, deviceInfo *models.ScsiDeviceInfo, ig
 	// one may need to revisit the below bool ignoreErrors being set on timeout error
 	// resulting from multipathFlushDevice() call at the start of this function.
 	return ignoreErrors || skipFlush, nil
-}
-
-// getDeviceInfoForMountPath discovers the device that is currently mounted at the specified mount path.  It
-// uses the ScsiDeviceInfo struct so that it may return a multipath device (if any) plus one or more underlying
-// physical devices.
-func getDeviceInfoForMountPath(ctx context.Context, mountpath string) (*models.ScsiDeviceInfo, error) {
-	fields := LogFields{"mountpath": mountpath}
-	Logc(ctx).WithFields(fields).Debug(">>>> devices.getDeviceInfoForMountPath")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.getDeviceInfoForMountPath")
-
-	device, _, err := GetDeviceNameFromMount(ctx, mountpath)
-	if err != nil {
-		return nil, err
-	}
-
-	device, err = filepath.EvalSymlinks(device)
-	if err != nil {
-		return nil, err
-	}
-
-	device = strings.TrimPrefix(device, iscsi.DevPrefix)
-
-	var deviceInfo *models.ScsiDeviceInfo
-
-	if !strings.HasPrefix(device, "dm-") {
-		deviceInfo = &models.ScsiDeviceInfo{
-			Devices: []string{device},
-		}
-	} else {
-		deviceInfo = &models.ScsiDeviceInfo{
-			Devices:         findDevicesForMultipathDevice(ctx, device),
-			MultipathDevice: device,
-		}
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"multipathDevice": deviceInfo.MultipathDevice,
-		"devices":         deviceInfo.Devices,
-	}).Debug("Found SCSI device.")
-
-	return deviceInfo, nil
 }
 
 type LUKSDevice struct {

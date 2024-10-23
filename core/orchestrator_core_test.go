@@ -282,7 +282,11 @@ func getOrchestrator(t *testing.T, monitorTransactions bool) *TridentOrchestrato
 	// bootstrapping need to have their data persist.
 	storeClient = inMemoryClient
 
-	o := NewTridentOrchestrator(storeClient)
+	o, err := NewTridentOrchestrator(storeClient)
+	if err != nil {
+		t.Fatal("Unable to create orchestrator: ", err)
+	}
+
 	if err = o.Bootstrap(monitorTransactions); err != nil {
 		t.Fatal("Failure occurred during bootstrapping: ", err)
 	}

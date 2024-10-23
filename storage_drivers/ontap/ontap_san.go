@@ -93,8 +93,11 @@ func (d *SANStorageDriver) Initialize(
 		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
 	// Initialize the iSCSI client
-	d.iscsi = iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
-		utils.NewMountClient())
+	var err error
+	d.iscsi, err = iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	if err != nil {
+		return fmt.Errorf("could not initialize iSCSI client; %v", err)
+	}
 
 	// Initialize the driver's CommonStorageDriverConfig
 	d.Config.CommonStorageDriverConfig = commonConfig

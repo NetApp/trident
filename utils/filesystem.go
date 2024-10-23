@@ -235,12 +235,12 @@ func ExpandFilesystemOnNode(
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.ExpandFilesystemOnNode")
 
 	if expansionMountPoint == "" {
-		expansionMountPoint, err = mountFilesystemForResize(ctx, devicePath, stagedTargetPath, mountOptions)
+		expansionMountPoint, err = mountClient.MountFilesystemForResize(ctx, devicePath, stagedTargetPath, mountOptions)
 		if err != nil {
 			return 0, err
 		}
 		defer func() {
-			err = multierr.Append(err, RemoveMountPoint(ctx, expansionMountPoint))
+			err = multierr.Append(err, mountClient.RemoveMountPoint(ctx, expansionMountPoint))
 		}()
 	}
 

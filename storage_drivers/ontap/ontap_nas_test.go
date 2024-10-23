@@ -2866,7 +2866,7 @@ func TestOntapNasStorageDriverGetUpdateType_Failure(t *testing.T) {
 	mockAPI, _ := newMockOntapNASDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
-	oldDriver := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, false, nil, mockAPI)
+	oldDriver := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, false, nil, mockAPI)
 	oldDriver.API = mockAPI
 	prefix1 := "test_"
 	oldDriver.Config.StoragePrefix = &prefix1

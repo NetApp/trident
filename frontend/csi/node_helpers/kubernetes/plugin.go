@@ -17,7 +17,7 @@ import (
 	"github.com/netapp/trident/frontend/csi"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/mount"
 )
 
 var osFs = afero.NewOsFs()
@@ -34,6 +34,7 @@ type helper struct {
 	kubeConfigPath                   string
 	publishedPaths                   map[string]map[string]struct{}
 	enableForceDetach                bool
+	mount                            mount.Mount
 	nodehelpers.VolumePublishManager // Embedded/extended interface
 }
 
@@ -47,12 +48,18 @@ func NewHelper(orchestrator core.Orchestrator, kubeConfigPath string, enableForc
 		kubeConfigPath = os.Getenv(kubeDirEnvVar)
 	}
 
+	mountClient, err := mount.New()
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize mount client; %v", err)
+	}
+
 	h := &helper{
 		orchestrator:         orchestrator,
 		podsPath:             kubeConfigPath + "/pods",
 		kubeConfigPath:       kubeConfigPath,
 		publishedPaths:       make(map[string]map[string]struct{}),
 		enableForceDetach:    enableForceDetach,
+		mount:                mountClient,
 		VolumePublishManager: csi.NewVolumePublishManager(config.VolumeTrackingInfoPath),
 	}
 
@@ -119,7 +126,7 @@ func (h *helper) reconcileVolumePublishInfo(ctx context.Context) error {
 		h.publishedPaths = publishedPaths
 	}
 
-	pvToDeviceMappings, err := utils.PVMountpointMappings(ctx)
+	pvToDeviceMappings, err := h.mount.PVMountpointMappings(ctx)
 	if err != nil {
 		Logc(ctx).Errorf("Unable to get devices for mounted PVs.")
 	}

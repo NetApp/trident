@@ -19,9 +19,11 @@ import (
 	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	"github.com/netapp/trident/mocks/mock_utils/mock_models/mock_luks"
+	"github.com/netapp/trident/mocks/mock_utils/mock_mount"
 	"github.com/netapp/trident/utils/errors"
 	tridentexec "github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/mount"
 )
 
 func TestNew(t *testing.T) {
@@ -29,7 +31,6 @@ func TestNew(t *testing.T) {
 	osClient := mock_iscsi.NewMockOS(ctrl)
 	devicesClient := mock_iscsi.NewMockDevices(ctrl)
 	FileSystemClient := mock_iscsi.NewMockFileSystem(ctrl)
-	mountClient := mock_iscsi.NewMockMount(ctrl)
 
 	type parameters struct {
 		setUpEnvironment func()
@@ -49,7 +50,8 @@ func TestNew(t *testing.T) {
 				params.setUpEnvironment()
 			}
 
-			iscsiClient := New(osClient, devicesClient, FileSystemClient, mountClient)
+			iscsiClient, err := New(osClient, devicesClient, FileSystemClient)
+			assert.NoError(t, err)
 			assert.NotNil(t, iscsiClient)
 		})
 	}
@@ -61,7 +63,7 @@ func TestNewDetailed(t *testing.T) {
 	osClient := mock_iscsi.NewMockOS(ctrl)
 	devicesClient := mock_iscsi.NewMockDevices(ctrl)
 	FileSystemClient := mock_iscsi.NewMockFileSystem(ctrl)
-	mountClient := mock_iscsi.NewMockMount(ctrl)
+	mountClient := mock_mount.NewMockMount(ctrl)
 	command := mockexec.NewMockCommand(ctrl)
 	iscsiClient := NewDetailed(chrootPathPrefix, command, DefaultSelfHealingExclusion, osClient, devicesClient, FileSystemClient,
 		mountClient, nil, afero.Afero{Fs: afero.NewMemMapFs()})
@@ -75,7 +77,7 @@ func TestClient_AttachVolumeRetry(t *testing.T) {
 		getOSClient         func(controller *gomock.Controller) OS
 		getDeviceClient     func(controller *gomock.Controller) Devices
 		getFileSystemClient func(controller *gomock.Controller) FileSystem
-		getMountClient      func(controller *gomock.Controller) Mount
+		getMountClient      func(controller *gomock.Controller) mount.Mount
 		getReconcileUtils   func(controller *gomock.Controller) IscsiReconcileUtils
 		getFileSystemUtils  func() afero.Fs
 
@@ -145,8 +147,8 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				mockMount.EXPECT().IsMounted(context.TODO(), "/dev/dm-0", "", "").Return(true, nil)
 				return mockMount
 			},
@@ -198,8 +200,8 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -236,8 +238,8 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -277,7 +279,7 @@ func TestClient_AttachVolume(t *testing.T) {
 		getOSClient         func(controller *gomock.Controller) OS
 		getDeviceClient     func(controller *gomock.Controller) Devices
 		getFileSystemClient func(controller *gomock.Controller) FileSystem
-		getMountClient      func(controller *gomock.Controller) Mount
+		getMountClient      func(controller *gomock.Controller) mount.Mount
 		getReconcileUtils   func(controller *gomock.Controller) IscsiReconcileUtils
 		getFileSystemUtils  func() afero.Fs
 
@@ -324,8 +326,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -366,8 +368,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -410,8 +412,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -454,8 +456,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -499,8 +501,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -550,8 +552,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -612,8 +614,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -672,8 +674,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -748,8 +750,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -816,8 +818,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -884,8 +886,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -953,8 +955,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -1026,8 +1028,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -1101,8 +1103,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -1177,8 +1179,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -1253,8 +1255,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -1333,8 +1335,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -1417,8 +1419,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -1503,8 +1505,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -1589,8 +1591,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -1668,8 +1670,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -1746,8 +1748,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -1825,8 +1827,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem.EXPECT().FormatVolume(context.TODO(), "/dev/dm-0", config.FsExt4, "").Return(errors.New("some error"))
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -1902,8 +1904,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -1979,8 +1981,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				mockMount.EXPECT().IsMounted(context.TODO(), "/dev/dm-0", "", "").Return(false, errors.New("some error"))
 				return mockMount
 			},
@@ -2058,8 +2060,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem.EXPECT().RepairVolume(context.TODO(), "/dev/dm-0", config.FsExt4)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				mockMount.EXPECT().IsMounted(context.TODO(), "/dev/dm-0", "", "").Return(false, nil)
 				return mockMount
 			},
@@ -2137,8 +2139,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem.EXPECT().RepairVolume(context.TODO(), "/dev/dm-0", config.FsExt4)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				mockMount.EXPECT().IsMounted(context.TODO(), "/dev/dm-0", "", "").Return(false, nil)
 				mockMount.EXPECT().MountDevice(context.TODO(), "/dev/dm-0", "/mnt/test-volume", "",
 					false).Return(errors.New("some error"))
@@ -2218,8 +2220,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockFileSystem.EXPECT().RepairVolume(context.TODO(), "/dev/dm-0", config.FsExt4)
 				return mockFileSystem
 			},
-			getMountClient: func(controller *gomock.Controller) Mount {
-				mockMount := mock_iscsi.NewMockMount(controller)
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
 				mockMount.EXPECT().IsMounted(context.TODO(), "/dev/dm-0", "", "").Return(false, nil)
 				mockMount.EXPECT().MountDevice(context.TODO(), "/dev/dm-0", "/mnt/test-volume", "",
 					false).Return(nil)
@@ -2349,7 +2351,8 @@ func TestClient_AddSession(t *testing.T) {
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
-			client := New(nil, nil, nil, nil)
+			client, err := New(nil, nil, nil)
+			assert.NoError(t, err)
 			ctx := context.WithValue(context.TODO(), SessionInfoSource, "test")
 			client.AddSession(ctx, params.sessions, &params.publishInfo, params.volID,
 				params.sessionNumber, params.reasonInvalid)

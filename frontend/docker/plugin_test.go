@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 func TestMain(m *testing.M) {
@@ -24,26 +24,26 @@ func TestMain(m *testing.M) {
 func TestDeriveHostVolumePath_negative(t *testing.T) {
 	ctx := context.TODO()
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// //////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// negative case:  missing both mountinfos
-	hostMountInfo := []utils.MountInfo{}
-	selfMountInfo := []utils.MountInfo{}
+	hostMountInfo := []models.MountInfo{}
+	selfMountInfo := []models.MountInfo{}
 	_, err := deriveHostVolumePath(ctx, hostMountInfo, selfMountInfo)
 	assert.Error(t, err, "no error")
 	assert.Equal(t, "cannot derive host volume path, missing /proc/1/mountinfo data", err.Error())
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// //////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// negative case: no data in selfMountInfo
-	hostMountInfo = append(hostMountInfo, utils.MountInfo{
+	hostMountInfo = append(hostMountInfo, models.MountInfo{
 		Root:       "/lib/docker/plugins/9722f031f38b0188233463043f8a76b09d6c8b1d194ef46c0b16191f84ccf8e9/propagated-mount",
 		MountPoint: "/dev/lib/docker/plugins/9722f031f38b0188233463043f8a76b09d6c8b1d194ef46c0b16191f84ccf8e9/propagated-mount",
 	})
 	_, err = deriveHostVolumePath(ctx, hostMountInfo, selfMountInfo)
 	assert.Equal(t, "cannot derive host volume path, missing /proc/self/mountinfo data", err.Error())
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// //////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// negative case: missing /var/lib/docker-volumes in selfMountInfo
-	selfMountInfo = append(selfMountInfo, utils.MountInfo{
+	selfMountInfo = append(selfMountInfo, models.MountInfo{
 		Root:       "/",
 		MountPoint: "/dev/shm",
 	})
@@ -54,16 +54,16 @@ func TestDeriveHostVolumePath_negative(t *testing.T) {
 func TestDeriveHostVolumePath_positive(t *testing.T) {
 	ctx := context.TODO()
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// //////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// positive case: have all the data we need
-	hostMountInfo := []utils.MountInfo{
+	hostMountInfo := []models.MountInfo{
 		{Root: "/", MountPoint: "/dev/shm"},
 		{
 			Root:       "/lib/docker/plugins/9722f031f38b0188233463043f8a76b09d6c8b1d194ef46c0b16191f84ccf8e9/propagated-mount",
 			MountPoint: "/dev/lib/docker/plugins/9722f031f38b0188233463043f8a76b09d6c8b1d194ef46c0b16191f84ccf8e9/propagated-mount",
 		},
 	}
-	selfMountInfo := []utils.MountInfo{
+	selfMountInfo := []models.MountInfo{
 		{Root: "/", MountPoint: "/dev/shm"},
 		{
 			Root:       "/lib/docker/plugins/9722f031f38b0188233463043f8a76b09d6c8b1d194ef46c0b16191f84ccf8e9/propagated-mount",

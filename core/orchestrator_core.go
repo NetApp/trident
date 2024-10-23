@@ -34,6 +34,7 @@ import (
 	"github.com/netapp/trident/utils/fcp"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/mount"
 )
 
 const (
@@ -101,10 +102,28 @@ type TridentOrchestrator struct {
 	uuid                     string
 	iscsi                    iscsi.ISCSI
 	fcp                      fcp.FCP
+	mount                    mount.Mount
 }
 
 // NewTridentOrchestrator returns a storage orchestrator instance
-func NewTridentOrchestrator(client persistentstore.Client) *TridentOrchestrator {
+func NewTridentOrchestrator(client persistentstore.Client) (*TridentOrchestrator, error) {
+	// TODO (vivintw) the adaptors are being plugged in here as a temporary measure to prevent cyclic dependencies.
+	// NewClient() must plugin default implementation of the various package clients.
+	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	if err != nil {
+		return nil, err
+	}
+
+	mountClient, err := mount.New()
+	if err != nil {
+		return nil, err
+	}
+
+	fcpClent, err := fcp.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	if err != nil {
+		return nil, err
+	}
+
 	return &TridentOrchestrator{
 		backends:           make(map[string]storage.Backend), // key is UUID, not name
 		volumes:            make(map[string]*storage.Volume),
@@ -118,13 +137,10 @@ func NewTridentOrchestrator(client persistentstore.Client) *TridentOrchestrator 
 		storeClient:        client,
 		bootstrapped:       false,
 		bootstrapError:     errors.NotReadyError(),
-		// TODO (vivintw) the adaptors are being plugged in here as a temporary measure to prevent cyclic dependencies.
-		// NewClient() must plugin default implementation of the various package clients.
-		iscsi: iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
-			utils.NewMountClient()),
-		fcp: fcp.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
-			utils.NewMountClient()),
-	}
+		iscsi:              iscsiClient,
+		fcp:                fcpClent,
+		mount:              mountClient,
+	}, nil
 }
 
 func (o *TridentOrchestrator) transformPersistentState(ctx context.Context) error {
@@ -3618,7 +3634,7 @@ func (o *TridentOrchestrator) AttachVolume(
 	}
 
 	if publishInfo.FilesystemType == "nfs" {
-		return utils.AttachNFSVolume(ctx, volumeName, mountpoint, publishInfo)
+		return o.mount.AttachNFSVolume(ctx, volumeName, mountpoint, publishInfo)
 	} else {
 		var err error
 		if publishInfo.SANType == sa.NVMe {
@@ -3676,7 +3692,7 @@ func (o *TridentOrchestrator) DetachVolume(ctx context.Context, volumeName, moun
 	}
 
 	// Unmount the volume
-	if err := utils.Umount(ctx, mountpoint); err != nil {
+	if err := o.mount.Umount(ctx, mountpoint); err != nil {
 		// utils.Unmount is chrooted, therefore it does NOT need the /host
 		return err
 	}

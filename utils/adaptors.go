@@ -152,25 +152,3 @@ func (c FilesystemClient) FormatVolume(ctx context.Context, device, fstype, opti
 func (c FilesystemClient) RepairVolume(ctx context.Context, device, fstype string) {
 	repairVolume(ctx, device, fstype)
 }
-
-type MountClient struct{}
-
-func NewMountClient() MountClient {
-	return MountClient{}
-}
-
-func (c MountClient) IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions string) (bool, error) {
-	return IsMounted(ctx, sourceDevice, mountpoint, mountOptions)
-}
-
-func (c MountClient) MountDevice(ctx context.Context, device, mountpoint, options string, isMountPointFile bool) (err error) {
-	return MountDevice(ctx, device, mountpoint, options, isMountPointFile)
-}
-
-func (c MountClient) UmountAndRemoveMountPoint(ctx context.Context, mountPoint string) error {
-	return UmountAndRemoveMountPoint(ctx, mountPoint)
-}
-
-func (c MountClient) UmountAndRemoveTemporaryMountPoint(ctx context.Context, mountPath string) error {
-	return UmountAndRemoveTemporaryMountPoint(ctx, mountPath)
-}

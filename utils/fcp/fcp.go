@@ -18,6 +18,8 @@ import (
 	"github.com/cenkalti/backoff/v4"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/utils/mount"
+
 	// "github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
@@ -98,7 +100,7 @@ type Client struct {
 	fcpUtils             FcpReconcileUtils
 }
 
-func New(osClient OS, deviceClient Devices, fileSystemClient FileSystem, mountClient Mount) *Client {
+func New(osClient OS, deviceClient Devices, fileSystemClient FileSystem) (*Client, error) {
 	chrootPathPrefix := ""
 	if os.Getenv("DOCKER_PLUGIN_MODE") != "" {
 		chrootPathPrefix = "/host"
@@ -106,8 +108,13 @@ func New(osClient OS, deviceClient Devices, fileSystemClient FileSystem, mountCl
 
 	reconcileutils := NewReconcileUtils(chrootPathPrefix, osClient)
 
+	mountClient, err := mount.New()
+	if err != nil {
+		return nil, err
+	}
+
 	return NewDetailed(chrootPathPrefix, tridentexec.NewCommand(), DefaultSelfHealingExclusion, osClient,
-		deviceClient, fileSystemClient, mountClient, reconcileutils)
+		deviceClient, fileSystemClient, mountClient, reconcileutils), nil
 }
 
 func NewDetailed(

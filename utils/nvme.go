@@ -345,7 +345,7 @@ func NVMeMountVolume(ctx context.Context, name, mountpoint string, publishInfo *
 	// in-use volumes, or creating volumes from snapshots taken from in-use volumes.  This is only safe to do
 	// if a device is not mounted.  The fsck command returns a non-zero exit code if filesystem errors are found,
 	// even if they are completely and automatically fixed, so we don't return any error here.
-	mounted, err := IsMounted(ctx, devicePath, "", "")
+	mounted, err := mountClient.IsMounted(ctx, devicePath, "", "")
 	if err != nil {
 		return err
 	}
@@ -355,7 +355,7 @@ func NVMeMountVolume(ctx context.Context, name, mountpoint string, publishInfo *
 
 	// Optionally mount the device
 	if mountpoint != "" {
-		if err := MountDevice(ctx, devicePath, mountpoint, publishInfo.MountOptions, false); err != nil {
+		if err := mountClient.MountDevice(ctx, devicePath, mountpoint, publishInfo.MountOptions, false); err != nil {
 			return fmt.Errorf("error mounting Namespace %v, device %v, mountpoint %v; %s",
 				name, devicePath, mountpoint, err)
 		}

@@ -64,3 +64,8 @@ func GetTargetFilePath(ctx context.Context, resourcePath, arg string) string {
 	filePath := path.Join(resourcePath, arg)
 	return strings.Replace(filePath, "/", "\\", -1)
 }
+
+// IsLikelyDir determines if mountpoint is a directory
+func IsLikelyDir(mountpoint string) (bool, error) {
+	return PathExists(mountpoint)
+}

@@ -143,14 +143,17 @@ func (d *SANStorageDriver) Initialize(
 	config.CommonStorageDriverConfig = commonConfig
 
 	// Initialize the iSCSI client
-	d.iscsi = iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
-		utils.NewMountClient())
+	var err error
+	d.iscsi, err = iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	if err != nil {
+		return fmt.Errorf("could not initialize iSCSI client: %v", err)
+	}
 
 	// Initialize the driver's CommonStorageDriverConfig
 	d.Config.CommonStorageDriverConfig = commonConfig
 
 	// Decode supplied configJSON string into SolidfireStorageDriverConfig object
-	err := json.Unmarshal([]byte(configJSON), &config)
+	err = json.Unmarshal([]byte(configJSON), &config)
 	if err != nil {
 		return fmt.Errorf("could not decode JSON configuration: %v", err)
 	}

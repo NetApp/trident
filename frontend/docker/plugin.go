@@ -26,6 +26,7 @@ import (
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/mount"
 )
 
 const (
@@ -55,6 +56,11 @@ func NewPlugin(driverName, driverPort string, orchestrator core.Orchestrator) (*
 		isDockerPluginMode = true
 	}
 
+	mountClient, err := mount.New()
+	if err != nil {
+		return nil, err
+	}
+
 	// Create the plugin object
 	plugin := &Plugin{
 		orchestrator:       orchestrator,
@@ -67,12 +73,12 @@ func NewPlugin(driverName, driverPort string, orchestrator core.Orchestrator) (*
 	}
 
 	if plugin.isDockerPluginMode {
-		hostMountInfo, err := utils.GetHostMountInfo(ctx)
+		hostMountInfo, err := mountClient.GetHostMountInfo(ctx)
 		if err != nil {
 			return nil, err
 		}
 
-		selfMountInfo, err := utils.GetSelfMountInfo(ctx)
+		selfMountInfo, err := mountClient.GetSelfMountInfo(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -113,7 +119,7 @@ func NewPlugin(driverName, driverPort string, orchestrator core.Orchestrator) (*
 }
 
 // deriveHostVolumePath uses /proc/1/mountinfo and /proc/self/mountinfo to determine the host's path for mounting
-func deriveHostVolumePath(ctx context.Context, hostMountInfo, selfMountInfo []utils.MountInfo) (string, error) {
+func deriveHostVolumePath(ctx context.Context, hostMountInfo, selfMountInfo []models.MountInfo) (string, error) {
 	/*
 		Given the location /var/lib/docker-volumes/netapp within the docker plugin container, we must determine
 		where this location exists on the host.

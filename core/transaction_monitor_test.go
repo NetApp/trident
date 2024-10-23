@@ -41,7 +41,10 @@ func waitForTransactionMontitorToStart(o *TridentOrchestrator) {
 
 func TestStartStop(t *testing.T) {
 	storeClient := persistentstore.NewInMemoryClient()
-	o := NewTridentOrchestrator(storeClient)
+	o, err := NewTridentOrchestrator(storeClient)
+	if err != nil {
+		Log().Fatal("Unable to create orchestrator: ", err)
+	}
 	if err := o.Bootstrap(true); err != nil {
 		Log().Fatal("Failure occurred during bootstrapping: ", err)
 	}
@@ -265,7 +268,10 @@ func TestVolumeCreatingTwoTransactions(t *testing.T) {
 
 func setupOrchestratorAndBackend(t *testing.T, monitorTransactions bool) (*TridentOrchestrator, *persistentstore.InMemoryClient) {
 	storeClient := persistentstore.NewInMemoryClient()
-	o := NewTridentOrchestrator(storeClient)
+	o, err := NewTridentOrchestrator(storeClient)
+	if err != nil {
+		t.Fatalf("Unable to create orchestrator: %v", err)
+	}
 	if err := o.Bootstrap(monitorTransactions); err != nil {
 		t.Errorf("Failure occurred during bootstrapping %v", err)
 	}

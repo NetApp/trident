@@ -973,3 +973,26 @@ func ParseHostportIP(hostport string) string {
 func IPv6Check(ip string) bool {
 	return strings.Count(ip, ":") >= 2
 }
+
+// MountPoint represents a single line in /proc/mounts or /etc/fstab.
+type MountPoint struct {
+	Device string
+	Path   string
+	Type   string
+	Opts   []string
+	Freq   int
+	Pass   int
+}
+
+// MountInfo represents a single line in /proc/self/mountinfo.
+type MountInfo struct {
+	MountId      int
+	ParentId     int
+	DeviceId     string
+	Root         string
+	MountPoint   string
+	MountOptions []string
+	FsType       string
+	MountSource  string
+	SuperOptions []string
+}

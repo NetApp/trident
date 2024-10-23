@@ -24,6 +24,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -44,7 +45,7 @@ const (
 
 // ClientConfig holds configuration data for the API driver object.
 type ClientConfig struct {
-	utils.MountPoint
+	models.MountPoint
 	// GCP project number
 	ProjectNumber string
 

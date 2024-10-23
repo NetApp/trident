@@ -251,8 +251,11 @@ func (d *SANEconomyStorageDriver) Initialize(
 	d.Config.CommonStorageDriverConfig = commonConfig
 
 	// Initialize the iSCSI client
-	d.iscsi = iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient(),
-		utils.NewMountClient())
+	var err error
+	d.iscsi, err = iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	if err != nil {
+		return fmt.Errorf("error initializing iSCSI client: %v", err)
+	}
 
 	// Parse the config
 	config, err := InitializeOntapConfig(ctx, driverContext, configJSON, commonConfig, backendSecret)
