@@ -53,15 +53,6 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: true
-      # This takes a little extra time on the first run but ensures later runs for new commits are fast.
-      - uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
       - name: Run go mod tidy
         run: |
           go mod tidy -compat=$GO_VERSION
