@@ -5483,6 +5483,22 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	for _, vPool := range virtualPool {
 		assert.Equal(t, expectedVirtualPoolFormatOptions, vPool.InternalAttributes()[FormatOptions])
 	}
+
+	// Test 5 - Check for SANType
+	storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
+		{
+			SANType: sa.ISCSI,
+		},
+	}
+
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"dummyPool1"}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(map[string]string{"dummyPool1": "hdd"}, nil)
+
+	physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
+
+	assert.Nil(t, physicalPool, "Physical Pool not expected but found")
+	assert.Nil(t, virtualPool, "Virtual pool not exepcted but found")
+	assert.Error(t, err)
 }
 
 func TestValidateDataLIF(t *testing.T) {
@@ -5572,11 +5588,16 @@ func TestPopulateConfigurationDefaults(t *testing.T) {
 		CommonStorageDriverConfig: commonConfig,
 	}
 
+	// Test : Check for SANType case
+	config.SANType = "ISCSI"
+	err := PopulateConfigurationDefaults(ctx, config)
+	assert.NoError(t, err)
+
 	// Test1 - Positive flow with NASType SMB
 	config.NASType = sa.SMB
 	config.Size = "10000"
 
-	err := PopulateConfigurationDefaults(ctx, config)
+	err = PopulateConfigurationDefaults(ctx, config)
 
 	assert.NoError(t, err)
 
