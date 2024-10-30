@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -17,6 +16,25 @@ const (
 	pluginPathEnvVar = "TRIDENTCTL_PLUGIN_PATH"
 )
 
+var (
+	pluginsFound       = make(map[string]struct{})
+	invalidPluginNames = map[string]struct{}{
+		"completion": {},
+		"create":     {},
+		"delete":     {},
+		"get":        {},
+		"help":       {},
+		"images":     {},
+		"import":     {},
+		"install":    {},
+		"logs":       {},
+		"send":       {},
+		"uninstall":  {},
+		"update":     {},
+		"version":    {},
+	}
+)
+
 func init() {
 	// search PATH for all binaries starting with "tridentctl-"
 	binaries := findBinaries(tridentctlPrefix)
@@ -24,6 +42,14 @@ func init() {
 	plugins := make([]*cobra.Command, 0, len(binaries))
 	for _, binary := range binaries {
 		pluginName := strings.TrimPrefix(filepath.Base(binary), tridentctlPrefix)
+		if _, ok := invalidPluginNames[pluginName]; ok {
+			continue
+		}
+		if _, ok := pluginsFound[pluginName]; ok {
+			// Skip duplicates
+			continue
+		}
+
 		pluginCmd := &cobra.Command{
 			Use:                pluginName,
 			Short:              "Run the " + pluginName + " plugin",
@@ -46,7 +72,7 @@ func init() {
 			},
 		}
 		plugins = append(plugins, pluginCmd)
-
+		pluginsFound[pluginName] = struct{}{}
 	}
 
 	if len(plugins) == 0 {
@@ -74,7 +100,7 @@ func findBinaries(prefix string) []string {
 	for _, dir := range strings.Split(path, ":") {
 		files, err := filepath.Glob(filepath.Join(dir, prefix+"*"))
 		if err != nil {
-			log.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			continue
 		}
 		for _, file := range files {
