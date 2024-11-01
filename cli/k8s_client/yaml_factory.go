@@ -1399,7 +1399,7 @@ spec:
 func GetTridentVersionPodYAML(args *TridentVersionPodYAMLArguments) string {
 	Log().WithFields(LogFields{
 		"Name":                 args.TridentVersionPodName,
-		"TridentImae":          args.TridentImage,
+		"TridentImage":         args.TridentImage,
 		"ServiceAccountName":   args.ServiceAccountName,
 		"Labels":               args.Labels,
 		"ControllingCRDetails": args.ControllingCRDetails,

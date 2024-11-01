@@ -112,6 +112,7 @@ var (
 	imageRegistry            string
 	logFormat                string
 	imagePullPolicy          string
+	imagePullSecrets         []string
 	logWorkflows             string
 	logLayers                string
 	probePort                int64
@@ -226,7 +227,8 @@ func init() {
 		"The value to set for the hostname field in Autosupport payloads")
 	installCmd.Flags().StringVar(&imagePullPolicy, "image-pull-policy", "IfNotPresent",
 		"The image pull policy for the Trident.")
-
+	installCmd.Flags().StringSliceVar(&imagePullSecrets, "image-pull-secrets", []string{},
+		"Comma separated list of image pull secrets.")
 	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second,
 		"The timeout for all Kubernetes operations.")
 	installCmd.Flags().DurationVar(&httpRequestTimeout, "http-request-timeout", tridentconfig.HTTPTimeout,
@@ -645,7 +647,7 @@ func prepareYAMLFiles() error {
 		LogLevel:                LogLevel,
 		LogLayers:               logLayers,
 		LogWorkflows:            logWorkflows,
-		ImagePullSecrets:        []string{},
+		ImagePullSecrets:        imagePullSecrets,
 		Labels:                  labels,
 		ControllingCRDetails:    nil,
 		UseIPv6:                 useIPv6,
@@ -678,7 +680,7 @@ func prepareYAMLFiles() error {
 		LogWorkflows:             logWorkflows,
 		LogLayers:                logLayers,
 		ProbePort:                strconv.FormatInt(probePort, 10),
-		ImagePullSecrets:         []string{},
+		ImagePullSecrets:         imagePullSecrets,
 		Labels:                   daemonSetlabels,
 		ControllingCRDetails:     nil,
 		EnableForceDetach:        enableForceDetach,
@@ -725,7 +727,7 @@ func prepareYAMLFiles() error {
 			LogWorkflows:         logWorkflows,
 			LogLayers:            logLayers,
 			ProbePort:            strconv.FormatInt(probePort, 10),
-			ImagePullSecrets:     []string{},
+			ImagePullSecrets:     imagePullSecrets,
 			Labels:               daemonSetlabels,
 			ControllingCRDetails: nil,
 			Version:              client.ServerVersion(),
@@ -999,7 +1001,7 @@ func installTrident() (returnError error) {
 			LogLevel:                LogLevel,
 			LogWorkflows:            logWorkflows,
 			LogLayers:               logLayers,
-			ImagePullSecrets:        []string{},
+			ImagePullSecrets:        imagePullSecrets,
 			Labels:                  labels,
 			ControllingCRDetails:    nil,
 			UseIPv6:                 useIPv6,
@@ -1055,7 +1057,7 @@ func installTrident() (returnError error) {
 				LogWorkflows:         logWorkflows,
 				LogLayers:            logLayers,
 				ProbePort:            strconv.FormatInt(probePort, 10),
-				ImagePullSecrets:     []string{},
+				ImagePullSecrets:     imagePullSecrets,
 				Labels:               nodeLabels,
 				ControllingCRDetails: nil,
 				Version:              client.ServerVersion(),
@@ -1107,7 +1109,7 @@ func installTrident() (returnError error) {
 			LogWorkflows:             logWorkflows,
 			LogLayers:                logLayers,
 			ProbePort:                strconv.FormatInt(probePort, 10),
-			ImagePullSecrets:         []string{},
+			ImagePullSecrets:         imagePullSecrets,
 			Labels:                   daemonSetlabels,
 			ControllingCRDetails:     nil,
 			EnableForceDetach:        enableForceDetach,
