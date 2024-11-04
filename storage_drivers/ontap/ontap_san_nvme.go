@@ -25,6 +25,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -818,7 +819,7 @@ func (d *NVMeStorageDriver) Publish(
 	// When FS type is RAW, we create a new subsystem per namespace,
 	// else we use the subsystem created for that particular node
 	var ssName string
-	if volConfig.FileSystem == tridentconfig.FsRaw {
+	if volConfig.FileSystem == filesystem.Raw {
 		ssName = getNamespaceSpecificSubsystemName(name, pvName)
 	} else {
 		ssName = getNodeSpecificSubsystemName(publishInfo.HostName, publishInfo.TridentUUID)

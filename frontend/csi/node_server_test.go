@@ -15,7 +15,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	tridentconfig "github.com/netapp/trident/config"
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
@@ -28,6 +27,7 @@ import (
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
@@ -68,10 +68,13 @@ func TestNodeStageVolume(t *testing.T) {
 		},
 	}
 
+	mountClient, _ := mount.New()
+
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			plugin := &Plugin{
 				role: CSINode,
+				fs:   filesystem.New(mountClient),
 			}
 
 			if params.getISCSIClient != nil {
@@ -102,7 +105,7 @@ func TestNodeStageSANVolume(t *testing.T) {
 	}
 
 	noCapabilitiesRequest := NewNodeStageVolumeRequestBuilder().WithVolumeCapability(&csi.VolumeCapability{}).Build()
-	fileSystemRawMountCapabilityRequest := NewNodeStageVolumeRequestBuilder().WithFileSystemType(tridentconfig.FsRaw).Build()
+	fileSystemRawMountCapabilityRequest := NewNodeStageVolumeRequestBuilder().WithFileSystemType(filesystem.Raw).Build()
 	fileSystemExt4BlockCapabilityRequest := NewNodeStageVolumeRequestBuilder().WithVolumeCapability(
 		&csi.VolumeCapability{
 			AccessType: &csi.VolumeCapability_Block{
@@ -558,11 +561,14 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 		},
 	}
 
+	mountClient, _ := mount.New()
+
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			plugin := &Plugin{
 				role:   CSINode,
 				aesKey: params.aesKey,
+				fs:     filesystem.New(mountClient),
 			}
 
 			if params.getISCSIClient != nil {
@@ -1017,7 +1023,7 @@ func TestFixISCSISessions(t *testing.T) {
 		},
 	}
 
-	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient())
 	assert.NoError(t, err)
 
 	nodeServer := &Plugin{
@@ -2444,7 +2450,7 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 			}
 
 			if params.getDeviceClient != nil {
-				plugin.deviceClient = params.getDeviceClient()
+				plugin.devices = params.getDeviceClient()
 			}
 
 			if params.getMountClient != nil {
@@ -2469,7 +2475,7 @@ func NewNodeStageVolumeRequestBuilder() *NodeStageVolumeRequestBuilder {
 			PublishContext: map[string]string{
 				"protocol":               "block",
 				"sharedTarget":           "false",
-				"filesystemType":         tridentconfig.FsExt4,
+				"filesystemType":         filesystem.Ext4,
 				"useCHAP":                "false",
 				"iscsiLunNumber":         "0",
 				"iscsiTargetIqn":         "iqn.2016-04.com.mock-iscsi:8a1e4b296331",

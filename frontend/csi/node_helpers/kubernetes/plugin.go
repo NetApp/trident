@@ -53,6 +53,11 @@ func NewHelper(orchestrator core.Orchestrator, kubeConfigPath string, enableForc
 		return nil, fmt.Errorf("could not initialize mount client; %v", err)
 	}
 
+	publishManager, err := csi.NewVolumePublishManager()
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize VolumePublishManager; %v", err)
+	}
+
 	h := &helper{
 		orchestrator:         orchestrator,
 		podsPath:             kubeConfigPath + "/pods",
@@ -60,7 +65,7 @@ func NewHelper(orchestrator core.Orchestrator, kubeConfigPath string, enableForc
 		publishedPaths:       make(map[string]map[string]struct{}),
 		enableForceDetach:    enableForceDetach,
 		mount:                mountClient,
-		VolumePublishManager: csi.NewVolumePublishManager(config.VolumeTrackingInfoPath),
+		VolumePublishManager: publishManager,
 	}
 
 	return h, nil

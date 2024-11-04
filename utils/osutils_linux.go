@@ -14,17 +14,11 @@ import (
 
 	"github.com/vishvananda/netlink"
 	"github.com/zcalusic/sysinfo"
-	"golang.org/x/sys/unix"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
-
-type statFSResult struct {
-	Output unix.Statfs_t
-	Error  error
-}
 
 // NFSActiveOnHost will return if the rpc-statd daemon is active on the given host
 func NFSActiveOnHost(ctx context.Context) (bool, error) {

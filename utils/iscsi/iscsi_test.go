@@ -15,13 +15,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/netapp/trident/config"
 	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
+	"github.com/netapp/trident/mocks/mock_utils/mock_filesystem"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	"github.com/netapp/trident/mocks/mock_utils/mock_models/mock_luks"
 	"github.com/netapp/trident/mocks/mock_utils/mock_mount"
 	"github.com/netapp/trident/utils/errors"
 	tridentexec "github.com/netapp/trident/utils/exec"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
 )
@@ -30,7 +31,6 @@ func TestNew(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	osClient := mock_iscsi.NewMockOS(ctrl)
 	devicesClient := mock_iscsi.NewMockDevices(ctrl)
-	FileSystemClient := mock_iscsi.NewMockFileSystem(ctrl)
 
 	type parameters struct {
 		setUpEnvironment func()
@@ -50,7 +50,7 @@ func TestNew(t *testing.T) {
 				params.setUpEnvironment()
 			}
 
-			iscsiClient, err := New(osClient, devicesClient, FileSystemClient)
+			iscsiClient, err := New(osClient, devicesClient)
 			assert.NoError(t, err)
 			assert.NotNil(t, iscsiClient)
 		})
@@ -62,7 +62,7 @@ func TestNewDetailed(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	osClient := mock_iscsi.NewMockOS(ctrl)
 	devicesClient := mock_iscsi.NewMockDevices(ctrl)
-	FileSystemClient := mock_iscsi.NewMockFileSystem(ctrl)
+	FileSystemClient := mock_filesystem.NewMockFilesystem(ctrl)
 	mountClient := mock_mount.NewMockMount(ctrl)
 	command := mockexec.NewMockCommand(ctrl)
 	iscsiClient := NewDetailed(chrootPathPrefix, command, DefaultSelfHealingExclusion, osClient, devicesClient, FileSystemClient,
@@ -76,7 +76,7 @@ func TestClient_AttachVolumeRetry(t *testing.T) {
 		getCommand          func(controller *gomock.Controller) tridentexec.Command
 		getOSClient         func(controller *gomock.Controller) OS
 		getDeviceClient     func(controller *gomock.Controller) Devices
-		getFileSystemClient func(controller *gomock.Controller) FileSystem
+		getFileSystemClient func(controller *gomock.Controller) filesystem.Filesystem
 		getMountClient      func(controller *gomock.Controller) mount.Mount
 		getReconcileUtils   func(controller *gomock.Controller) IscsiReconcileUtils
 		getFileSystemUtils  func() afero.Fs
@@ -140,11 +140,11 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 				mockDevices.EXPECT().GetISCSIDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil)
 				mockDevices.EXPECT().GetISCSIDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), nil)
 				mockDevices.EXPECT().WaitForDevice(context.TODO(), "/dev/dm-0").Return(nil)
-				mockDevices.EXPECT().GetDeviceFSType(context.TODO(), "/dev/dm-0").Return(config.FsExt4, nil)
+				mockDevices.EXPECT().GetDeviceFSType(context.TODO(), "/dev/dm-0").Return(filesystem.Ext4, nil)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -169,7 +169,7 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -196,8 +196,8 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 				mockDevices := mock_iscsi.NewMockDevices(controller)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -234,8 +234,8 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 				mockDevices := mock_iscsi.NewMockDevices(controller)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -278,7 +278,7 @@ func TestClient_AttachVolume(t *testing.T) {
 		getCommand          func(controller *gomock.Controller) tridentexec.Command
 		getOSClient         func(controller *gomock.Controller) OS
 		getDeviceClient     func(controller *gomock.Controller) Devices
-		getFileSystemClient func(controller *gomock.Controller) FileSystem
+		getFileSystemClient func(controller *gomock.Controller) filesystem.Filesystem
 		getMountClient      func(controller *gomock.Controller) mount.Mount
 		getReconcileUtils   func(controller *gomock.Controller) IscsiReconcileUtils
 		getFileSystemUtils  func() afero.Fs
@@ -322,8 +322,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices := mock_iscsi.NewMockDevices(controller)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -338,7 +338,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return afero.NewMemMapFs()
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 			},
 			volumeName:        "test-volume",
 			volumeMountPoint:  "/mnt/test-volume",
@@ -364,8 +364,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices := mock_iscsi.NewMockDevices(controller)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -380,7 +380,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return afero.NewMemMapFs()
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 			},
 			volumeName:        "test-volume",
 			volumeMountPoint:  "/mnt/test-volume",
@@ -408,8 +408,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices := mock_iscsi.NewMockDevices(controller)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -424,7 +424,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return afero.NewMemMapFs()
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 			},
 			volumeName:        "test-volume",
 			volumeMountPoint:  "/mnt/test-volume",
@@ -452,8 +452,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices := mock_iscsi.NewMockDevices(controller)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -468,7 +468,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return afero.NewMemMapFs()
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 			},
 			volumeName:        "test-volume",
 			volumeMountPoint:  "/mnt/test-volume",
@@ -497,8 +497,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices := mock_iscsi.NewMockDevices(controller)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -513,7 +513,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return afero.NewMemMapFs()
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 			},
 			volumeName:        "test-volume",
 			volumeMountPoint:  "/mnt/test-volume",
@@ -548,8 +548,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices := mock_iscsi.NewMockDevices(controller)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -576,7 +576,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetIQN:    targetIQN,
@@ -610,8 +610,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices := mock_iscsi.NewMockDevices(controller)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -635,7 +635,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -670,8 +670,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices := mock_iscsi.NewMockDevices(controller)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -699,7 +699,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -746,8 +746,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices := mock_iscsi.NewMockDevices(controller)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -778,7 +778,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -814,8 +814,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices := mock_iscsi.NewMockDevices(controller)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -846,7 +846,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -882,8 +882,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices := mock_iscsi.NewMockDevices(controller)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -915,7 +915,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -951,8 +951,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices := mock_iscsi.NewMockDevices(controller)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -988,7 +988,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -1024,8 +1024,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices := mock_iscsi.NewMockDevices(controller)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -1061,7 +1061,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -1099,8 +1099,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 					errors.New("some error"))
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -1136,7 +1136,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -1175,8 +1175,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().WaitForDevice(context.TODO(), "/dev/dm-0").Return(errors.New("some error"))
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -1212,7 +1212,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -1251,8 +1251,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().WaitForDevice(context.TODO(), "/dev/dm-0").Return(nil)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -1289,7 +1289,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			},
 			publishInfo: models.VolumePublishInfo{
 				LUKSEncryption: "foo",
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -1331,8 +1331,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 					map[string]string{}).Return(false, errors.New("some error"))
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -1369,7 +1369,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			},
 			publishInfo: models.VolumePublishInfo{
 				LUKSEncryption: "true",
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -1415,8 +1415,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -1453,7 +1453,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			},
 			publishInfo: models.VolumePublishInfo{
 				LUKSEncryption: "true",
-				FilesystemType: config.FsRaw,
+				FilesystemType: filesystem.Raw,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -1501,8 +1501,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -1539,7 +1539,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			},
 			publishInfo: models.VolumePublishInfo{
 				LUKSEncryption: "true",
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -1587,8 +1587,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -1625,7 +1625,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			},
 			publishInfo: models.VolumePublishInfo{
 				LUKSEncryption: "true",
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -1666,8 +1666,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().IsDeviceUnformatted(context.TODO(), "/dev/dm-0").Return(false, errors.New("some error"))
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -1703,7 +1703,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -1744,8 +1744,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().IsDeviceUnformatted(context.TODO(), "/dev/dm-0").Return(false, nil)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -1781,7 +1781,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -1822,9 +1822,9 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().IsDeviceUnformatted(context.TODO(), "/dev/dm-0").Return(true, nil)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
-				mockFileSystem.EXPECT().FormatVolume(context.TODO(), "/dev/dm-0", config.FsExt4, "").Return(errors.New("some error"))
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
+				mockFileSystem.EXPECT().FormatVolume(context.TODO(), "/dev/dm-0", filesystem.Ext4, "").Return(errors.New("some error"))
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -1860,7 +1860,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -1897,11 +1897,11 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().GetISCSIDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil)
 				mockDevices.EXPECT().GetISCSIDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), nil)
 				mockDevices.EXPECT().WaitForDevice(context.TODO(), "/dev/dm-0").Return(nil)
-				mockDevices.EXPECT().GetDeviceFSType(context.TODO(), "/dev/dm-0").Return(config.FsExt3, nil)
+				mockDevices.EXPECT().GetDeviceFSType(context.TODO(), "/dev/dm-0").Return(filesystem.Ext3, nil)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -1937,7 +1937,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -1977,8 +1977,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().GetDeviceFSType(context.TODO(), "/dev/dm-0").Return(unknownFstype, nil)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -2015,7 +2015,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -2055,9 +2055,9 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().GetDeviceFSType(context.TODO(), "/dev/dm-0").Return(unknownFstype, nil)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
-				mockFileSystem.EXPECT().RepairVolume(context.TODO(), "/dev/dm-0", config.FsExt4)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
+				mockFileSystem.EXPECT().RepairVolume(context.TODO(), "/dev/dm-0", filesystem.Ext4)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -2094,7 +2094,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -2134,9 +2134,9 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().GetDeviceFSType(context.TODO(), "/dev/dm-0").Return(unknownFstype, nil)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
-				mockFileSystem.EXPECT().RepairVolume(context.TODO(), "/dev/dm-0", config.FsExt4)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
+				mockFileSystem.EXPECT().RepairVolume(context.TODO(), "/dev/dm-0", filesystem.Ext4)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -2175,7 +2175,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -2215,9 +2215,9 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().GetDeviceFSType(context.TODO(), "/dev/dm-0").Return(unknownFstype, nil)
 				return mockDevices
 			},
-			getFileSystemClient: func(controller *gomock.Controller) FileSystem {
-				mockFileSystem := mock_iscsi.NewMockFileSystem(controller)
-				mockFileSystem.EXPECT().RepairVolume(context.TODO(), "/dev/dm-0", config.FsExt4)
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
+				mockFileSystem.EXPECT().RepairVolume(context.TODO(), "/dev/dm-0", filesystem.Ext4)
 				return mockFileSystem
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
@@ -2256,7 +2256,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				return fs
 			},
 			publishInfo: models.VolumePublishInfo{
-				FilesystemType: config.FsExt4,
+				FilesystemType: filesystem.Ext4,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "127.0.0.1",
@@ -2351,7 +2351,7 @@ func TestClient_AddSession(t *testing.T) {
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
-			client, err := New(nil, nil, nil)
+			client, err := New(nil, nil)
 			assert.NoError(t, err)
 			ctx := context.WithValue(context.TODO(), SessionInfoSource, "test")
 			client.AddSession(ctx, params.sessions, &params.publishInfo, params.volID,
@@ -3155,7 +3155,7 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 			getDevicesClient: func(controller *gomock.Controller) Devices {
 				mockDeviceClient := mock_iscsi.NewMockDevices(controller)
 				mockDeviceClient.EXPECT().EnsureDeviceReadable(context.TODO(), multipathDevicePath).Return(nil)
-				mockDeviceClient.EXPECT().GetDeviceFSType(context.TODO(), multipathDevicePath).Return(config.FsExt4, nil)
+				mockDeviceClient.EXPECT().GetDeviceFSType(context.TODO(), multipathDevicePath).Return(filesystem.Ext4, nil)
 				return mockDeviceClient
 			},
 			getFileSystemUtils: func() afero.Fs {
@@ -3171,7 +3171,7 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 				DevicePaths:     []string{devicePath},
 				MultipathDevice: multipathDeviceName,
 				IQN:             iscisNodeName,
-				Filesystem:      config.FsExt4,
+				Filesystem:      filesystem.Ext4,
 			},
 		},
 	}

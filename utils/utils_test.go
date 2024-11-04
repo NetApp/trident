@@ -6,30 +6,19 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/fs"
 	"math/rand"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
 	versionutils "github.com/netapp/trident/utils/version"
 )
-
-// MockFs is a struct that embeds the afero in-memory filesystem, so that we can
-// implement a version of Open that can return a permissions error.
-type MockFs struct {
-	afero.MemMapFs
-}
-
-func (m *MockFs) Open(name string) (afero.File, error) {
-	return nil, fs.ErrPermission
-}
 
 var testStringSlice = []string{
 	"foo",
@@ -1030,7 +1019,7 @@ func TestVerifyFilesystemSupport(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		fsType, err := VerifyFilesystemSupport(test.fsType)
+		fsType, err := filesystem.VerifyFilesystemSupport(test.fsType)
 
 		assert.Equal(t, test.outputFsType, fsType)
 		assert.Equal(t, test.errNotNil, err != nil)

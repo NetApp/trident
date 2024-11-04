@@ -24,6 +24,7 @@ import (
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/fcp"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
@@ -81,10 +82,11 @@ type Plugin struct {
 	nvmeSelfHealingChannel  chan struct{}
 	nvmeSelfHealingInterval time.Duration
 
-	iscsi        iscsi.ISCSI
-	deviceClient iscsi.Devices // TODO: this interface will be replaced once the device package is created
-	mount        mount.Mount
-	fcp          fcp.FCP
+	iscsi   iscsi.ISCSI
+	devices iscsi.Devices // TODO: this interface will be replaced once the device package is created
+	mount   mount.Mount
+	fs      filesystem.Filesystem
+	fcp     fcp.FCP
 }
 
 func NewControllerPlugin(
@@ -159,7 +161,7 @@ func NewNodePlugin(
 
 	// TODO (vivintw) the adaptors are being plugged in here as a temporary measure to prevent cyclic dependencies.
 	// NewClient() must plugin default implementation of the various package clients.
-	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient())
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +171,9 @@ func NewNodePlugin(
 		return nil, err
 	}
 
-	fcpClient, err := fcp.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	fs := filesystem.New(mountClient)
+
+	fcpClient, err := fcp.New(utils.NewOSClient(), utils.NewDevicesClient(), fs)
 	if err != nil {
 		return nil, err
 	}
@@ -191,9 +195,10 @@ func NewNodePlugin(
 		nvmeSelfHealingInterval:  nvmeSelfHealingInterval,
 		iscsi:                    iscsiClient,
 		// NewClient() must plugin default implementation of the various package clients.
-		fcp:          fcpClient,
-		deviceClient: utils.NewDevicesClient(),
-		mount:        mountClient,
+		fcp:     fcpClient,
+		devices: utils.NewDevicesClient(),
+		mount:   mountClient,
+		fs:      fs,
 	}
 
 	if runtime.GOOS == "windows" {
@@ -264,7 +269,7 @@ func NewAllInOnePlugin(
 
 	// TODO (vivintw) the adaptors are being plugged in here as a temporary measure to prevent cyclic dependencies.
 	// NewClient() must plugin default implementation of the various package clients.
-	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient())
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +279,9 @@ func NewAllInOnePlugin(
 		return nil, err
 	}
 
-	fcpClient, err := fcp.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	fs := filesystem.New(mountClient)
+
+	fcpClient, err := fcp.New(utils.NewOSClient(), utils.NewDevicesClient(), fs)
 	if err != nil {
 		return nil, err
 	}
@@ -296,8 +303,9 @@ func NewAllInOnePlugin(
 		nvmeSelfHealingInterval:  nvmeSelfHealingInterval,
 		iscsi:                    iscsiClient,
 		fcp:                      fcpClient,
-		deviceClient:             utils.NewDevicesClient(),
+		devices:                  utils.NewDevicesClient(),
 		mount:                    mountClient,
+		fs:                       fs,
 	}
 
 	// Define controller capabilities

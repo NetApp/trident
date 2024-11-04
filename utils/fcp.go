@@ -1,9 +1,12 @@
 package utils
 
-import "github.com/netapp/trident/utils/fcp"
+import (
+	"github.com/netapp/trident/utils/fcp"
+	"github.com/netapp/trident/utils/filesystem"
+)
 
 var (
 	FcpUtils  = fcp.NewReconcileUtils(chrootPathPrefix, NewOSClient())
 	fcpClient = fcp.NewDetailed(chrootPathPrefix, command, fcp.DefaultSelfHealingExclusion, NewOSClient(),
-		NewDevicesClient(), NewFilesystemClient(), mountClient, FcpUtils)
+		NewDevicesClient(), filesystem.New(mountClient), mountClient, FcpUtils)
 )

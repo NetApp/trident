@@ -18,14 +18,15 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/mount"
 )
 
 const volumePublishInfoFilename = "volumePublishInfo.json"
 
 var (
-	osFs        = afero.NewOsFs()
-	fileDeleter = utils.DeleteFile
+	jsonRW = filesystem.NewJSONReaderWriter(afero.NewOsFs())
 
 	beforeUpdateTrackingFile          = fiji.Register("beforeUpdateTrackingFile", "volume_publish_manager")
 	beforeTrackingInfoFound           = fiji.Register("beforeTrackingInfoFound", "volume_publish_manager")
@@ -35,22 +36,37 @@ var (
 
 type VolumePublishManager struct {
 	volumeTrackingInfoPath string
+	fs                     filesystem.Filesystem
+	osFs                   afero.Fs
 }
 
-type fileDeleterType func(context.Context, string, string) (string, error)
+func NewVolumePublishManager() (*VolumePublishManager, error) {
+	infoPath := config.VolumeTrackingInfoPath
+	mountClient, err := mount.New()
+	if err != nil {
+		return nil, err
+	}
+	fsClient := filesystem.New(mountClient)
+	osFs := afero.NewOsFs()
+	return NewVolumePublishManagerDetailed(infoPath, fsClient, osFs), nil
+}
 
-func NewVolumePublishManager(
+func NewVolumePublishManagerDetailed(
 	volumeTrackingInfoPath string,
+	fs filesystem.Filesystem,
+	osFs afero.Fs,
 ) *VolumePublishManager {
 	volManager := &VolumePublishManager{
 		volumeTrackingInfoPath: volumeTrackingInfoPath,
+		fs:                     fs,
+		osFs:                   osFs,
 	}
 	return volManager
 }
 
 // GetVolumeTrackingFiles returns all the tracking files in the tracking directory.
 func (v *VolumePublishManager) GetVolumeTrackingFiles() ([]os.FileInfo, error) {
-	return afero.ReadDir(osFs, v.volumeTrackingInfoPath)
+	return afero.ReadDir(v.osFs, v.volumeTrackingInfoPath)
 }
 
 // WriteTrackingInfo writes the serialized staging target path, publish info and publish paths for a volume to
@@ -79,7 +95,7 @@ func (v *VolumePublishManager) WriteTrackingInfo(
 		return err
 	}
 
-	err := utils.JsonReaderWriter.WriteJSONFile(ctx, trackingInfo, tmpFile, "volume tracking info")
+	err := jsonRW.WriteJSONFile(ctx, trackingInfo, tmpFile, "volume tracking info")
 	if err != nil {
 		return err
 	}
@@ -92,7 +108,7 @@ func (v *VolumePublishManager) WriteTrackingInfo(
 		return err
 	}
 
-	return osFs.Rename(tmpFile, trackingFile)
+	return v.osFs.Rename(tmpFile, trackingFile)
 }
 
 // ReadTrackingInfo reads from Trident's own volume tracking location (/var/lib/trident/tracking)
@@ -117,7 +133,7 @@ func (v *VolumePublishManager) readTrackingInfo(
 		return nil, err
 	}
 
-	err := utils.JsonReaderWriter.ReadJSONFile(ctx, &volumeTrackingInfo, path.Join(v.volumeTrackingInfoPath, filename),
+	err := jsonRW.ReadJSONFile(ctx, &volumeTrackingInfo, path.Join(v.volumeTrackingInfoPath, filename),
 		"volume tracking info")
 	if err != nil {
 		return nil, err
@@ -175,7 +191,7 @@ func (v *VolumePublishManager) DeleteTrackingInfo(ctx context.Context, volumeID 
 	Logc(ctx).WithFields(fields).Trace(">>>> DeleteTrackingInfo")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< DeleteTrackingInfo")
 
-	filename, err := fileDeleter(ctx, path.Join(v.volumeTrackingInfoPath, volumeID+".json"), "tracking")
+	filename, err := v.fs.DeleteFile(ctx, path.Join(v.volumeTrackingInfoPath, volumeID+".json"), "tracking")
 	if err != nil {
 		return err
 	}
@@ -201,7 +217,7 @@ func (v *VolumePublishManager) ensureTrackingFileCorrect(
 	// In 23.01 and 23.04, the upgrade logic did not consider Raw devices when
 	// populating published paths, thus there is a need to verify if the correct
 	// published paths are present or not.
-	if volumeTrackingInfo.VolumePublishInfo.FilesystemType == config.FsRaw {
+	if volumeTrackingInfo.VolumePublishInfo.FilesystemType == filesystem.Raw {
 		Logc(ctx).Debug("Ensuring raw device have published paths.")
 
 		if len(volumeTrackingInfo.PublishedPaths) == 0 && len(publishedPaths) != 0 {
@@ -309,7 +325,7 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 	errorTemplate := "error upgrading the volume tracking file for volume: %s :%v"
 
 	file := path.Join(v.volumeTrackingInfoPath, volumeId+".json")
-	err = utils.JsonReaderWriter.ReadJSONFile(ctx, volumeTrackingInfo, file, "volume tracking info")
+	err = jsonRW.ReadJSONFile(ctx, volumeTrackingInfo, file, "volume tracking info")
 	if err != nil {
 		if !isFileValidJSON(err) {
 			return true, nil
@@ -332,11 +348,11 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 	}
 
 	file = path.Join(volumeTrackingInfo.StagingTargetPath, volumePublishInfoFilename)
-	err = utils.JsonReaderWriter.ReadJSONFile(ctx, publishInfo, file, "publish info")
+	err = jsonRW.ReadJSONFile(ctx, publishInfo, file, "publish info")
 	if err != nil {
 		if !isFileValidJSON(err) {
 			// If the staged device info file is not valid, it will never be useful again, regardless of retries.
-			deleteStagedDeviceInfo(ctx, volumeTrackingInfo.StagingTargetPath, volumeId)
+			v.deleteStagedDeviceInfo(ctx, volumeTrackingInfo.StagingTargetPath, volumeId)
 			return true, nil
 		}
 		return false, TerminalReconciliationError(fmt.Sprintf(errorTemplate, volumeId, err))
@@ -346,7 +362,7 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 	if err != nil {
 		// If we cannot determine the volume protocol from the staged device info, then there is no reason to keep
 		// it around.
-		deleteStagedDeviceInfo(ctx, volumeTrackingInfo.StagingTargetPath, volumeId)
+		v.deleteStagedDeviceInfo(ctx, volumeTrackingInfo.StagingTargetPath, volumeId)
 		return true, nil
 	}
 
@@ -366,7 +382,7 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 	}
 
 	// Remove the old file in the staging path now that its contents have been moved to the new tracking file.
-	_ = clearStagedDeviceInfo(ctx, volumeTrackingInfo.StagingTargetPath, volumeId)
+	_ = v.clearStagedDeviceInfo(ctx, volumeTrackingInfo.StagingTargetPath, volumeId)
 
 	Logc(ctx).Debug("Volume tracking method upgraded.")
 
@@ -381,7 +397,7 @@ func (v *VolumePublishManager) ValidateTrackingFile(ctx context.Context, volumeI
 	defer Logc(ctx).WithFields(fields).Trace("<<<< ValidateTrackingFile")
 	filename := path.Join(v.volumeTrackingInfoPath, volumeId+".json")
 
-	err := utils.JsonReaderWriter.ReadJSONFile(ctx, &trackingInfo, filename, "volume tracking")
+	err := jsonRW.ReadJSONFile(ctx, &trackingInfo, filename, "volume tracking")
 	if err != nil {
 		if !isFileValidJSON(err) {
 			return true, nil
@@ -399,7 +415,7 @@ func (v *VolumePublishManager) ValidateTrackingFile(ctx context.Context, volumeI
 		return false, nil
 	}
 
-	_, err = osFs.Stat(stagePath)
+	_, err = v.osFs.Stat(stagePath)
 	if err != nil {
 		// If the stat failed for any reason other than it not existing, we need to return a failed validation error so
 		// that the node plugin will be restarted, and validation can be retried.
@@ -432,7 +448,7 @@ func (v *VolumePublishManager) DeleteFailedUpgradeTrackingFile(ctx context.Conte
 	filename := path.Join(config.VolumeTrackingInfoPath, file.Name())
 
 	if strings.Contains(file.Name(), "tmp") {
-		_, err := fileDeleter(ctx, filename, "tmp volume tracking file")
+		_, err := v.fs.DeleteFile(ctx, filename, "tmp volume tracking file")
 		if err != nil {
 			Logc(ctx).WithField("filename", filename).Warn("Could not delete temporary volume tracking file.")
 		}
@@ -441,14 +457,14 @@ func (v *VolumePublishManager) DeleteFailedUpgradeTrackingFile(ctx context.Conte
 
 // clearStagedDeviceInfo removes the volume info at the staging target path.  This method is idempotent,
 // in that if the file doesn't exist, no error is generated.
-func clearStagedDeviceInfo(ctx context.Context, stagingTargetPath, volumeId string) error {
+func (v *VolumePublishManager) clearStagedDeviceInfo(ctx context.Context, stagingTargetPath, volumeId string) error {
 	fields := LogFields{"stagingTargetPath": stagingTargetPath, "volumeId": volumeId}
 	Logc(ctx).WithFields(fields).Trace(">>>> clearStagedDeviceInfo")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< clearStagedDeviceInfo")
 
 	stagingFilename := path.Join(stagingTargetPath, volumePublishInfoFilename)
 
-	if err := osFs.Remove(stagingFilename); err != nil {
+	if err := v.osFs.Remove(stagingFilename); err != nil {
 		if os.IsNotExist(err) {
 			Logc(ctx).WithFields(fields).Warning("Staging file does not exist.")
 			return nil
@@ -470,8 +486,8 @@ func isFileValidJSON(err error) bool {
 	return true
 }
 
-func deleteStagedDeviceInfo(ctx context.Context, stagingPath, volumeId string) {
-	err := clearStagedDeviceInfo(ctx, stagingPath, volumeId)
+func (v *VolumePublishManager) deleteStagedDeviceInfo(ctx context.Context, stagingPath, volumeId string) {
+	err := v.clearStagedDeviceInfo(ctx, stagingPath, volumeId)
 	if err != nil {
 		fields := LogFields{"volumeId": volumeId, "stagingPath": stagingPath}
 		Logc(ctx).WithFields(fields).Warning(fmt.Sprintf("Error deleting staged device info: %v", err))

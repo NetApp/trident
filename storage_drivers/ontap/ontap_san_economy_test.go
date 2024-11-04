@@ -27,6 +27,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	utilserrors "github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
@@ -195,7 +196,7 @@ func newTestOntapSanEcoDriver(t *testing.T, vserverAdminHost, vserverAdminPort, 
 		config.AWSConfig.FSxFilesystemID = *fsxId
 	}
 
-	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient())
 	assert.NoError(t, err)
 
 	sanEcoDriver := &SANEconomyStorageDriver{
@@ -1532,7 +1533,8 @@ func TestOntapSanEconomyVolumeCreate_ResizeVolumeSizeFailed2(t *testing.T) {
 
 func TestOntapSanEconomyVolumeCreate_FormatOptions(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
-	tempFormatOptions := strings.Join([]string{"-b 4096", "-T stride=256, stripe=16"}, utils.FormatOptionsSeparator)
+	tempFormatOptions := strings.Join([]string{"-b 4096", "-T stride=256, stripe=16"},
+		filesystem.FormatOptionsSeparator)
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
 		SpaceReserve:      "none",

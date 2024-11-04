@@ -25,6 +25,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/solidfire/api"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
@@ -144,7 +145,7 @@ func (d *SANStorageDriver) Initialize(
 
 	// Initialize the iSCSI client
 	var err error
-	d.iscsi, err = iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	d.iscsi, err = iscsi.New(utils.NewOSClient(), utils.NewDevicesClient())
 	if err != nil {
 		return fmt.Errorf("could not initialize iSCSI client: %v", err)
 	}
@@ -1230,7 +1231,7 @@ func (d *SANStorageDriver) Publish(
 	}
 
 	// xfs volumes are always mounted with '-o nouuid' to allow clones to be mounted to the same node as the source
-	if fstype == tridentconfig.FsXfs {
+	if fstype == filesystem.Xfs {
 		publishInfo.MountOptions = drivers.EnsureMountOption(publishInfo.MountOptions, drivers.MountOptionNoUUID)
 	}
 

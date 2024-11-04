@@ -14,6 +14,7 @@ import (
 	"unsafe"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 	"golang.org/x/net/context"
 	"golang.org/x/sys/unix"
 
@@ -46,6 +47,8 @@ var (
 	beforeCryptSetupFormat                    = fiji.Register("beforeCryptSetupFormat", "node_server")
 	duringOpenBeforeCryptSetupOpen            = fiji.Register("duringOpenBeforeCryptSetupOpen", "devices_linux")
 	duringRotatePassphraseBeforeLuksKeyChange = fiji.Register("duringRotatePassphraseBeforeLuksKeyChange", "devices_linux")
+
+	osFs = afero.NewOsFs()
 )
 
 // flushOneDevice flushes any outstanding I/O to a disk
@@ -476,7 +479,7 @@ func (d *LUKSDevice) RotatePassphrase(
 
 	// Write the old passphrase to an anonymous file in memory because we can't provide it on stdin
 	tempFileName := fmt.Sprintf("luks_key_%s", volumeId)
-	fd, err := generateAnonymousMemFile(tempFileName, previousLUKSPassphrase)
+	fd, err := fsClient.GenerateAnonymousMemFile(tempFileName, previousLUKSPassphrase)
 	if err != nil {
 		Log().WithFields(LogFields{
 			"error": err,

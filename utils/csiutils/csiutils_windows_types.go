@@ -1,6 +1,6 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
 
-package utils
+package csiutils
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"k8s.io/mount-utils"
 )
 
-//go:generate mockgen -destination=../mocks/mock_utils/mock_csiutils.go github.com/netapp/trident/utils CSIProxyUtils
+//go:generate mockgen -destination=../mocks/mock_csiutils/mock_csiutils.go github.com/netapp/trident/csiutils CSIProxyUtils
 
 type CSIProxyUtils interface {
 	SMBMount(context.Context, string, string, string, string, string) error

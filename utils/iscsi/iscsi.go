@@ -5,7 +5,6 @@ package iscsi
 //go:generate mockgen -destination=../../mocks/mock_utils/mock_iscsi/mock_iscsi_client.go github.com/netapp/trident/utils/iscsi ISCSI
 //go:generate mockgen -destination=../../mocks/mock_utils/mock_iscsi/mock_iscsi_os_client.go github.com/netapp/trident/utils/iscsi OS
 //go:generate mockgen -destination=../../mocks/mock_utils/mock_iscsi/mock_iscsi_devices_client.go github.com/netapp/trident/utils/iscsi Devices
-//go:generate mockgen -destination=../../mocks/mock_utils/mock_iscsi/mock_iscsi_filesystem_client.go github.com/netapp/trident/utils/iscsi FileSystem
 
 import (
 	"context"
@@ -23,11 +22,11 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/spf13/afero"
 
-	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
 	tridentexec "github.com/netapp/trident/utils/exec"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
 )
@@ -132,24 +131,19 @@ type Devices interface {
 	NewLUKSDeviceFromMappingPath(ctx context.Context, mappingPath, volumeId string) (models.LUKSDeviceInterface, error)
 }
 
-type FileSystem interface {
-	FormatVolume(ctx context.Context, device, fstype, formatOptions string) error
-	RepairVolume(ctx context.Context, device, fstype string)
-}
-
 type Client struct {
 	chrootPathPrefix     string
 	command              tridentexec.Command
 	selfHealingExclusion []string
 	osClient             OS
 	deviceClient         Devices
-	fileSystemClient     FileSystem
+	fileSystemClient     filesystem.Filesystem
 	mountClient          mount.Mount
 	iscsiUtils           IscsiReconcileUtils
 	os                   afero.Afero
 }
 
-func New(osClient OS, deviceClient Devices, fileSystemClient FileSystem) (*Client, error) {
+func New(osClient OS, deviceClient Devices) (*Client, error) {
 	chrootPathPrefix := ""
 	if os.Getenv("DOCKER_PLUGIN_MODE") != "" {
 		chrootPathPrefix = "/host"
@@ -162,12 +156,15 @@ func New(osClient OS, deviceClient Devices, fileSystemClient FileSystem) (*Clien
 		return nil, fmt.Errorf("error creating mount client: %v", err)
 	}
 
+	fsClient := filesystem.New(mountClient)
+
 	return NewDetailed(chrootPathPrefix, tridentexec.NewCommand(), DefaultSelfHealingExclusion, osClient,
-		deviceClient, fileSystemClient, mountClient, reconcileutils, osUtils), nil
+		deviceClient, fsClient, mountClient, reconcileutils, osUtils), nil
 }
 
 func NewDetailed(chrootPathPrefix string, command tridentexec.Command, selfHealingExclusion []string, osClient OS,
-	deviceClient Devices, fileSystemClient FileSystem, mountClient mount.Mount, iscsiUtils IscsiReconcileUtils,
+	deviceClient Devices, fileSystemClient filesystem.Filesystem, mountClient mount.Mount,
+	iscsiUtils IscsiReconcileUtils,
 	os afero.Afero,
 ) *Client {
 	return &Client{
@@ -410,7 +407,7 @@ func (client *Client) AttachVolume(
 		devicePath = luksDevice.MappedDevicePath()
 	}
 
-	if publishInfo.FilesystemType == config.FsRaw {
+	if publishInfo.FilesystemType == filesystem.Raw {
 		return mpathSize, nil
 	}
 

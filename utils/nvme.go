@@ -14,10 +14,13 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
 )
 
 const NVMeAttachTimeout = 20 * time.Second
+
+var fsClient = filesystem.New(mountClient)
 
 // getNVMeSubsystem returns the NVMe subsystem details.
 func getNVMeSubsystem(ctx context.Context, subsysNqn string) (*NVMeSubsystem, error) {
@@ -303,7 +306,7 @@ func AttachNVMeVolume(
 }
 
 func NVMeMountVolume(ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo) error {
-	if publishInfo.FilesystemType == fsRaw {
+	if publishInfo.FilesystemType == filesystem.Raw {
 		return nil
 	}
 	devicePath := publishInfo.DevicePath
@@ -322,7 +325,7 @@ func NVMeMountVolume(ctx context.Context, name, mountpoint string, publishInfo *
 			return fmt.Errorf("device %v is not unformatted", devicePath)
 		}
 		Logc(ctx).WithFields(LogFields{"volume": name, "fstype": publishInfo.FilesystemType}).Debug("Formatting LUN.")
-		err := formatVolume(ctx, devicePath, publishInfo.FilesystemType, publishInfo.FormatOptions)
+		err := fsClient.FormatVolume(ctx, devicePath, publishInfo.FilesystemType, publishInfo.FormatOptions)
 		if err != nil {
 			return fmt.Errorf("error formatting Namespace %s, device %s: %v", name, devicePath, err)
 		}
@@ -350,7 +353,7 @@ func NVMeMountVolume(ctx context.Context, name, mountpoint string, publishInfo *
 		return err
 	}
 	if !mounted {
-		repairVolume(ctx, devicePath, publishInfo.FilesystemType)
+		fsClient.RepairVolume(ctx, devicePath, publishInfo.FilesystemType)
 	}
 
 	// Optionally mount the device

@@ -96,12 +96,6 @@ const (
 	RawBlock   VolumeMode = "Block"
 	Filesystem VolumeMode = "Filesystem"
 
-	// Filesystem types
-	FsXfs  = "xfs"
-	FsExt3 = "ext3"
-	FsExt4 = "ext4"
-	FsRaw  = "raw"
-
 	/* Volume type constants */
 	OntapNFS          VolumeType = "ONTAP_NFS"
 	OntapISCSI        VolumeType = "ONTAP_iSCSI"

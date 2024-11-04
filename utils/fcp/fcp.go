@@ -17,13 +17,12 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 
-	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/utils/mount"
-
 	// "github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
 	tridentexec "github.com/netapp/trident/utils/exec"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -95,8 +94,8 @@ type Client struct {
 	selfHealingExclusion []string
 	osClient             OS
 	deviceClient         Devices
-	fileSystemClient     FileSystem
-	mountClient          Mount
+	fs                   FileSystem
+	mount                Mount
 	fcpUtils             FcpReconcileUtils
 }
 
@@ -119,7 +118,7 @@ func New(osClient OS, deviceClient Devices, fileSystemClient FileSystem) (*Clien
 
 func NewDetailed(
 	chrootPathPrefix string, command tridentexec.Command, selfHealingExclusion []string,
-	osClient OS, deviceClient Devices, fileSystemClient FileSystem, mountClient Mount,
+	osClient OS, deviceClient Devices, fs FileSystem, mount Mount,
 	fcpUtils FcpReconcileUtils,
 ) *Client {
 	return &Client{
@@ -127,8 +126,8 @@ func NewDetailed(
 		command:              command,
 		osClient:             osClient,
 		deviceClient:         deviceClient,
-		fileSystemClient:     fileSystemClient,
-		mountClient:          mountClient,
+		fs:                   fs,
+		mount:                mount,
 		fcpUtils:             fcpUtils,
 		selfHealingExclusion: selfHealingExclusion,
 	}
@@ -488,7 +487,7 @@ func (client *Client) AttachVolume(
 	// Return the device in the publish info in case the mount will be done later
 	publishInfo.DevicePath = devicePath
 
-	if publishInfo.FilesystemType == config.FsRaw {
+	if publishInfo.FilesystemType == filesystem.Raw {
 		return mpathSize, nil
 	}
 
@@ -516,7 +515,7 @@ func (client *Client) AttachVolume(
 		}
 
 		Logc(ctx).WithFields(LogFields{"volume": name, "fstype": publishInfo.FilesystemType}).Debug("Formatting LUN.")
-		err := client.fileSystemClient.FormatVolume(ctx, devicePath, publishInfo.FilesystemType, publishInfo.FormatOptions)
+		err := client.fs.FormatVolume(ctx, devicePath, publishInfo.FilesystemType, publishInfo.FormatOptions)
 		if err != nil {
 			return mpathSize, fmt.Errorf("error formatting LUN %s, device %s: %v", name, deviceToUse, err)
 		}
@@ -539,17 +538,17 @@ func (client *Client) AttachVolume(
 	// in-use volumes, or creating volumes from snapshots taken from in-use volumes.  This is only safe to do
 	// if a device is not mounted.  The fsck command returns a non-zero exit code if filesystem errors are found,
 	// even if they are completely and automatically fixed, so we don't return any error here.
-	mounted, err := client.mountClient.IsMounted(ctx, devicePath, "", "")
+	mounted, err := client.mount.IsMounted(ctx, devicePath, "", "")
 	if err != nil {
 		return mpathSize, err
 	}
 	if !mounted {
-		client.fileSystemClient.RepairVolume(ctx, devicePath, publishInfo.FilesystemType)
+		client.fs.RepairVolume(ctx, devicePath, publishInfo.FilesystemType)
 	}
 
 	// Optionally mount the device
 	if mountPoint != "" {
-		if err := client.mountClient.MountDevice(ctx, devicePath, mountPoint, publishInfo.MountOptions,
+		if err := client.mount.MountDevice(ctx, devicePath, mountPoint, publishInfo.MountOptions,
 			false); err != nil {
 			return mpathSize, fmt.Errorf("error mounting LUN %v, device %v, mountpoint %v; %s",
 				name, deviceToUse, mountPoint, err)

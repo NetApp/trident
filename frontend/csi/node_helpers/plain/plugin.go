@@ -4,6 +4,7 @@ package plain
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
@@ -19,17 +20,20 @@ type helper struct {
 }
 
 // NewHelper instantiates this plugin.
-func NewHelper(orchestrator core.Orchestrator) frontend.Plugin {
+func NewHelper(orchestrator core.Orchestrator) (frontend.Plugin, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate, LogLayerCSIFrontend)
 
 	Logc(ctx).Info("Initializing plain CSI helper frontend.")
 
-	volPubManager := csi.NewVolumePublishManager("")
+	publishManager, err := csi.NewVolumePublishManager()
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize VolumePublishManager; %v", err)
+	}
 
 	return &helper{
 		orchestrator:         orchestrator,
-		VolumePublishManager: volPubManager,
-	}
+		VolumePublishManager: publishManager,
+	}, nil
 }
 
 // Activate starts this Trident frontend.

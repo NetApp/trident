@@ -19,6 +19,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -54,7 +55,7 @@ func newNVMeDriver(apiOverride api.OntapAPI, awsApiOverride awsapi.AWSAPI, fsxId
 	}
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
-	pool1.InternalAttributes()[FileSystemType] = tridentconfig.FsExt4
+	pool1.InternalAttributes()[FileSystemType] = filesystem.Ext4
 	driver.virtualPools = map[string]storage.Pool{"pool1": pool1}
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
@@ -1862,21 +1863,21 @@ func TestCreateClone(t *testing.T) {
 	}
 
 	pool := storage.NewStoragePool(nil, "fakepool")
-	pool.InternalAttributes()[FileSystemType] = tridentconfig.FsExt4
+	pool.InternalAttributes()[FileSystemType] = filesystem.Ext4
 	pool.InternalAttributes()[SplitOnClone] = "true"
 	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
 		"type": "clone",
 	})
 
 	poolWithBadName := storage.NewStoragePool(nil, "")
-	poolWithBadName.InternalAttributes()[FileSystemType] = tridentconfig.FsExt4
+	poolWithBadName.InternalAttributes()[FileSystemType] = filesystem.Ext4
 	poolWithBadName.InternalAttributes()[SplitOnClone] = "true"
 	poolWithBadName.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
 		"type": "clone",
 	})
 
 	poolWithNameTemplate := storage.NewStoragePool(nil, "fakepool")
-	poolWithNameTemplate.InternalAttributes()[FileSystemType] = tridentconfig.FsExt4
+	poolWithNameTemplate.InternalAttributes()[FileSystemType] = filesystem.Ext4
 	poolWithNameTemplate.InternalAttributes()[SplitOnClone] = "true"
 	poolWithNameTemplate.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
 		"type": "clone",
@@ -1900,7 +1901,7 @@ func TestCreateClone(t *testing.T) {
 		"lthQFQfHVgPpUZdzZMjXry"
 
 	poolWithLongLabelVal := storage.NewStoragePool(nil, "fakepool")
-	poolWithLongLabelVal.InternalAttributes()[FileSystemType] = tridentconfig.FsExt4
+	poolWithLongLabelVal.InternalAttributes()[FileSystemType] = filesystem.Ext4
 	poolWithLongLabelVal.InternalAttributes()[SplitOnClone] = "true"
 	poolWithLongLabelVal.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
 		"type": "clone",
@@ -2256,7 +2257,7 @@ func TestImport_NameTemplate(t *testing.T) {
 	ns.State = "online"
 
 	pool := storage.NewStoragePool(nil, "fakepool")
-	pool.InternalAttributes()[FileSystemType] = tridentconfig.FsExt4
+	pool.InternalAttributes()[FileSystemType] = filesystem.Ext4
 	pool.InternalAttributes()[SplitOnClone] = "true"
 	pool.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." + "RequestName}}"
 
@@ -2301,7 +2302,7 @@ func TestImport_LongLabelError(t *testing.T) {
 	labelMap := map[string]string{"key": longLabelVal}
 
 	pool := storage.NewStoragePool(nil, "fakepool")
-	pool.InternalAttributes()[FileSystemType] = tridentconfig.FsExt4
+	pool.InternalAttributes()[FileSystemType] = filesystem.Ext4
 	pool.InternalAttributes()[SplitOnClone] = "true"
 	pool.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." + "RequestName}}"
 

@@ -1,6 +1,6 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
 
-package utils
+package filesystem
 
 import (
 	"os"
@@ -9,21 +9,23 @@ import (
 	"golang.org/x/net/context"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/csiutils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
 
-func getFilesystemSize(ctx context.Context, _ string) (int64, error) {
+func (f *FSClient) getFilesystemSize(ctx context.Context, _ string) (int64, error) {
 	Logc(ctx).Debug(">>>> filesystem_windows.getFilesystemSize")
 	defer Logc(ctx).Debug("<<<< filesystem_windows.getFilesystemSize")
 	return 0, errors.UnsupportedError("getFilesystemSize is not supported for windows")
 }
 
-func GetFilesystemStats(ctx context.Context, path string) (int64, int64, int64, int64, int64, int64, error) {
-	Logc(ctx).Debug(">>>> mount_windows.GetFilesystemStats")
-	defer Logc(ctx).Debug("<<<< mount_windows.GetFilesystemStats")
+func (f *FSClient) GetFilesystemStats(ctx context.Context, path string) (int64, int64, int64, int64, int64, int64,
+	error) {
+	Logc(ctx).Debug(">>>> filesystem_windows.GetFilesystemStats")
+	defer Logc(ctx).Debug("<<<< filesystem_windows.GetFilesystemStats")
 
-	csiproxy, err := NewCSIProxyUtils()
+	csiproxy, err := csiutils.NewCSIProxyUtils()
 	if err != nil {
 		Logc(ctx).Errorf("Failed to instantiate CSI proxy clients. Error: %v", err)
 	}
@@ -53,10 +55,18 @@ func GetDeviceFilePath(ctx context.Context, _, volumeId string) (string, error) 
 }
 
 // GetUnmountPath returns unmount path for volume
-func GetUnmountPath(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (string, error) {
-	Logc(ctx).Debug(">>>> osutils_windows.GetUnmountPath")
-	defer Logc(ctx).Debug("<<<< osutils_windows.GetUnmountPath")
+func (f *FSClient) GetUnmountPath(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (string, error) {
+	Logc(ctx).Debug(">>>> filesystem_windows.GetUnmountPath")
+	defer Logc(ctx).Debug("<<<< filesystem_windows.GetUnmountPath")
 
 	path := "\\" + trackingInfo.SMBServer + trackingInfo.SMBPath
 	return strings.Replace(path, "/", "\\", -1), nil
+}
+
+func (f *FSClient) GenerateAnonymousMemFile(tempFileName, content string) (int, error) {
+	ctx := context.Background()
+	Logc(ctx).Debug(">>>> filesystem_windows.generateAnonymousMemFile")
+	defer Logc(ctx).Debug("<<<< filesystem_windows.generateAnonymousMemFile")
+
+	return 0, errors.UnsupportedError("generateAnonymousMemFile is not supported for windows")
 }

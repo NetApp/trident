@@ -1,6 +1,6 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
 
-package utils
+package filesystem
 
 import (
 	"context"
@@ -14,8 +14,9 @@ import (
 
 func TestGetFilesystemSize(t *testing.T) {
 	ctx := context.Background()
+	fsClient := New(nil)
 
-	result, err := getFilesystemSize(ctx, "")
+	result, err := fsClient.getFilesystemSize(ctx, "")
 	assert.Equal(t, result, int64(0), "got non-zero filesystem size")
 	assert.Error(t, err, "no error")
 	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
@@ -23,8 +24,9 @@ func TestGetFilesystemSize(t *testing.T) {
 
 func TestGetFilesystemStats(t *testing.T) {
 	ctx := context.Background()
+	fsClient := New(nil)
 
-	result1, result2, result3, result4, result5, result6, err := GetFilesystemStats(ctx, "")
+	result1, result2, result3, result4, result5, result6, err := fsClient.GetFilesystemStats(ctx, "")
 	assert.Equal(t, result1, int64(0), "got non-zero available size")
 	assert.Equal(t, result2, int64(0), "got non-zero capacity")
 	assert.Equal(t, result3, int64(0), "got non-zero usage")
@@ -35,20 +37,20 @@ func TestGetFilesystemStats(t *testing.T) {
 	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }
 
-func TestGetDeviceFilePath(t *testing.T) {
+func TestGetUnmountPath(t *testing.T) {
 	ctx := context.Background()
+	fsClient := New(nil)
 
-	result, err := GetDeviceFilePath(ctx, "", "")
-	assert.Equal(t, result, "", "got device file path")
+	result, err := fsClient.GetUnmountPath(ctx, &models.VolumeTrackingInfo{})
+	assert.Equal(t, result, "", "got unmount path")
 	assert.Error(t, err, "no error")
 	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }
 
-func TestGetUnmountPath(t *testing.T) {
-	ctx := context.Background()
-
-	result, err := GetUnmountPath(ctx, &models.VolumeTrackingInfo{})
-	assert.Equal(t, result, "", "got unmount path")
+func TestGenerateAnonymousMemFile(t *testing.T) {
+	fsClient := New(nil)
+	result, err := fsClient.GenerateAnonymousMemFile("", "")
+	assert.Equal(t, 0, result)
 	assert.Error(t, err, "no error")
 	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }

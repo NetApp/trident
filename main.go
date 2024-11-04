@@ -432,7 +432,10 @@ func main() {
 			}
 		} else {
 			hybridControllerFrontend = plainctrlhelper.NewHelper(orchestrator)
-			hybridNodeFrontend = plainnodehelper.NewHelper(orchestrator)
+			hybridNodeFrontend, err = plainnodehelper.NewHelper(orchestrator)
+			if err != nil {
+				Log().Fatalf("Unable to start the K8S hybrid controller frontend: '%s'", err)
+			}
 		}
 
 		if *csiRole == csi.CSIController || *csiRole == csi.CSIAllInOne {

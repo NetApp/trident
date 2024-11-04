@@ -17,6 +17,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/filesystem"
 	tridentmodels "github.com/netapp/trident/utils/models"
 )
 
@@ -256,7 +257,7 @@ func Clone(ctx context.Context, source, destination interface{}) {
 
 // CheckSupportedFilesystem checks for a supported file system type
 func CheckSupportedFilesystem(ctx context.Context, fs, volumeInternalName string) (string, error) {
-	fsType, err := utils.VerifyFilesystemSupport(fs)
+	fsType, err := filesystem.VerifyFilesystemSupport(fs)
 	if err == nil {
 		Logc(ctx).WithFields(LogFields{
 			"fileSystemType": fsType,

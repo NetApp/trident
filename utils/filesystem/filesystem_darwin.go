@@ -2,7 +2,7 @@
 
 // NOTE: This file should only contain functions for handling the filesystem for Darwin flavor
 
-package utils
+package filesystem
 
 import (
 	"golang.org/x/net/context"
@@ -13,14 +13,14 @@ import (
 )
 
 // GetFilesystemStats unused stub function
-func GetFilesystemStats(ctx context.Context, _ string) (int64, int64, int64, int64, int64, int64, error) {
+func (f *FSClient) GetFilesystemStats(ctx context.Context, _ string) (int64, int64, int64, int64, int64, int64, error) {
 	Logc(ctx).Debug(">>>> filesystem_darwin.GetFilesystemStats")
 	defer Logc(ctx).Debug("<<<< filesystem_darwin.GetFilesystemStats")
 	return 0, 0, 0, 0, 0, 0, errors.UnsupportedError("GetFilesystemStats is not supported for darwin")
 }
 
 // getFilesystemSize unused stub function
-func getFilesystemSize(ctx context.Context, _ string) (int64, error) {
+func (f *FSClient) getFilesystemSize(ctx context.Context, _ string) (int64, error) {
 	Logc(ctx).Debug(">>>> filesystem_darwin.getFilesystemSize")
 	defer Logc(ctx).Debug("<<<< filesystem_darwin.getFilesystemSize")
 	return 0, errors.UnsupportedError("getFilesystemSize is not supported for darwin")
@@ -35,9 +35,17 @@ func GetDeviceFilePath(ctx context.Context, _, volumeId string) (string, error) 
 }
 
 // GetUnmountPath is a dummy added for compilation.
-func GetUnmountPath(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (string, error) {
+func (f *FSClient) GetUnmountPath(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (string, error) {
 	Logc(ctx).Debug(">>>> filesystem_darwin.GetUnmountPath")
 	defer Logc(ctx).Debug("<<<< filesystem_darwin.GetUnmountPath")
 
 	return "", errors.UnsupportedError("GetUnmountPath is not supported for darwin")
+}
+
+func (f *FSClient) GenerateAnonymousMemFile(tempFileName, content string) (int, error) {
+	ctx := context.Background()
+	Logc(ctx).Debug(">>>> filesystem_darwin.generateAnonymousMemFile")
+	defer Logc(ctx).Debug("<<<< filesystem_darwin.generateAnonymousMemFile")
+
+	return 0, errors.UnsupportedError("generateAnonymousMemFile is not supported for darwin")
 }

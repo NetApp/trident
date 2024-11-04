@@ -20,6 +20,7 @@ import (
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
@@ -39,7 +40,7 @@ var (
 	mountClient, _ = mount.New()
 	IscsiUtils     = iscsi.NewReconcileUtils(chrootPathPrefix, NewOSClient())
 	iscsiClient    = iscsi.NewDetailed(chrootPathPrefix, command, iscsi.DefaultSelfHealingExclusion, NewOSClient(),
-		NewDevicesClient(), NewFilesystemClient(), mountClient, IscsiUtils, afero.Afero{Fs: afero.NewOsFs()})
+		NewDevicesClient(), filesystem.New(mountClient), mountClient, IscsiUtils, afero.Afero{Fs: afero.NewOsFs()})
 
 	// Non-persistent map to maintain flush delays/errors if any, for device path(s).
 	iSCSIVolumeFlushExceptions = make(map[string]time.Time)

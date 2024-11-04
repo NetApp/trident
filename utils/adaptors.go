@@ -138,17 +138,3 @@ func (c DevicesClient) NewLUKSDeviceFromMappingPath(ctx context.Context, mapping
 ) (models.LUKSDeviceInterface, error) {
 	return NewLUKSDeviceFromMappingPath(ctx, mappingPath, volumeId)
 }
-
-type FilesystemClient struct{}
-
-func NewFilesystemClient() FilesystemClient {
-	return FilesystemClient{}
-}
-
-func (c FilesystemClient) FormatVolume(ctx context.Context, device, fstype, options string) error {
-	return formatVolume(ctx, device, fstype, options)
-}
-
-func (c FilesystemClient) RepairVolume(ctx context.Context, device, fstype string) {
-	repairVolume(ctx, device, fstype)
-}

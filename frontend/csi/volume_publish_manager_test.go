@@ -15,24 +15,24 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/mocks/mock_utils/mock_filesystem"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
-	"github.com/netapp/trident/mocks/mock_utils/mock_models"
 	sa "github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/exec"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
 )
 
 func TestNewVolumePublishManager(t *testing.T) {
 	aPath := "foo"
-	v := NewVolumePublishManager(aPath)
+	v := NewVolumePublishManagerDetailed(aPath, filesystem.New(nil), afero.NewOsFs())
 	assert.Equal(t, aPath, v.volumeTrackingInfoPath, "volume publish manager did not contain expected path")
 }
 
 func TestGetVolumeTrackingFiles(t *testing.T) {
-	defer func() { osFs = afero.NewOsFs() }()
-	osFs = afero.NewMemMapFs()
-	v := NewVolumePublishManager(config.VolumeTrackingInfoPath)
+	osFs := afero.NewMemMapFs()
+	v := NewVolumePublishManagerDetailed(config.VolumeTrackingInfoPath, filesystem.New(nil), osFs)
 
 	trackPath := config.VolumeTrackingInfoPath
 	_, err := osFs.Create(path.Join(trackPath, "pvc-123"))
@@ -54,13 +54,16 @@ func TestGetVolumeTrackingFiles(t *testing.T) {
 
 func TestWriteTrackingInfo(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	mockJSONUtils := mock_models.NewMockJSONReaderWriter(mockCtrl)
+	mockJSONUtils := mock_filesystem.NewMockJSONReaderWriter(mockCtrl)
 
-	defer func() { osFs = afero.NewOsFs() }()
-	osFs = afero.NewMemMapFs()
-	utils.JsonReaderWriter = mockJSONUtils
+	osFs := afero.NewMemMapFs()
 
-	v := NewVolumePublishManager("")
+	defer func(previousJsonRW filesystem.JSONReaderWriter) {
+		jsonRW = previousJsonRW
+	}(jsonRW)
+	jsonRW = mockJSONUtils
+
+	v := NewVolumePublishManagerDetailed("", filesystem.New(nil), osFs)
 
 	volId := "pvc-123"
 	fName := volId + ".json"
@@ -84,13 +87,15 @@ func TestWriteTrackingInfo(t *testing.T) {
 
 func TestReadTrackingInfo(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	mockJSONUtils := mock_models.NewMockJSONReaderWriter(mockCtrl)
+	mockJSONUtils := mock_filesystem.NewMockJSONReaderWriter(mockCtrl)
 
-	defer func() { osFs = afero.NewOsFs() }()
-	osFs = afero.NewMemMapFs()
-	utils.JsonReaderWriter = mockJSONUtils
+	defer func(previousJsonRW filesystem.JSONReaderWriter) {
+		jsonRW = previousJsonRW
+	}(jsonRW)
+	jsonRW = mockJSONUtils
 
-	v := NewVolumePublishManager("")
+	osFs := afero.NewMemMapFs()
+	v := NewVolumePublishManagerDetailed("", filesystem.New(nil), osFs)
 
 	volId := "pvc-123"
 	fName := volId + ".json"
@@ -118,12 +123,10 @@ func TestReadTrackingInfo(t *testing.T) {
 }
 
 func TestListVolumeTrackingInfo_FailsToGetVolumeTrackingFiles(t *testing.T) {
-	defer func(original afero.Fs) { osFs = original }(osFs)
-	osFs = afero.NewMemMapFs()
-
 	// Set up the volume publish manager.
 	trackPath := config.VolumeTrackingInfoPath
-	v := NewVolumePublishManager(trackPath)
+	osFs := afero.NewMemMapFs()
+	v := NewVolumePublishManagerDetailed(trackPath, filesystem.New(nil), osFs)
 
 	// Without setting up the directory or files in memory, this will fail at GetVolumeTrackingFiles.
 	allTrackingInfo, err := v.ListVolumeTrackingInfo(ctx)
@@ -132,12 +135,10 @@ func TestListVolumeTrackingInfo_FailsToGetVolumeTrackingFiles(t *testing.T) {
 }
 
 func TestListVolumeTrackingInfo_FailsWhenNoTrackingFilesFound(t *testing.T) {
-	defer func(original afero.Fs) { osFs = original }(osFs)
-	osFs = afero.NewMemMapFs()
-
 	// Set up the volume tracking directory and publish manager.
 	trackPath := config.VolumeTrackingInfoPath
-	v := NewVolumePublishManager(trackPath)
+	osFs := afero.NewMemMapFs()
+	v := NewVolumePublishManagerDetailed(trackPath, filesystem.New(nil), osFs)
 	if err := osFs.Mkdir(trackPath, 0o600); err != nil {
 		t.Fatalf("failed to create tracking file directory in memory fs for testing; %v", err)
 	}
@@ -150,16 +151,16 @@ func TestListVolumeTrackingInfo_FailsWhenNoTrackingFilesFound(t *testing.T) {
 func TestListVolumeTrackingInfo_FailsToReadTrackingInfo(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 
-	defer func(original models.JSONReaderWriter) { utils.JsonReaderWriter = original }(utils.JsonReaderWriter)
-	jsonReaderWriter := mock_models.NewMockJSONReaderWriter(mockCtrl)
-	utils.JsonReaderWriter = jsonReaderWriter
-
-	defer func(original afero.Fs) { osFs = original }(osFs)
-	osFs = afero.NewMemMapFs()
+	jsonReaderWriter := mock_filesystem.NewMockJSONReaderWriter(mockCtrl)
+	defer func(previousJsonRW filesystem.JSONReaderWriter) {
+		jsonRW = previousJsonRW
+	}(jsonRW)
+	jsonRW = jsonReaderWriter
 
 	// Set up the volume tracking directory and files.
 	trackPath := config.VolumeTrackingInfoPath
-	v := NewVolumePublishManager(trackPath)
+	osFs := afero.NewMemMapFs()
+	v := NewVolumePublishManagerDetailed(trackPath, filesystem.New(nil), osFs)
 	volumeOne := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
 	volumeTrackingInfo := &models.VolumeTrackingInfo{
 		VolumePublishInfo: models.VolumePublishInfo{},
@@ -199,16 +200,14 @@ func TestListVolumeTrackingInfo_FailsToReadTrackingInfo(t *testing.T) {
 func TestListVolumeTrackingInfo_SucceedsToListTrackingFileInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 
-	defer func(original models.JSONReaderWriter) { utils.JsonReaderWriter = original }(utils.JsonReaderWriter)
-	jsonReaderWriter := mock_models.NewMockJSONReaderWriter(mockCtrl)
-	utils.JsonReaderWriter = jsonReaderWriter
-
-	defer func(original afero.Fs) { osFs = original }(osFs)
-	osFs = afero.NewMemMapFs()
+	defer func(original filesystem.JSONReaderWriter) { jsonRW = original }(jsonRW)
+	jsonReaderWriter := mock_filesystem.NewMockJSONReaderWriter(mockCtrl)
+	jsonRW = jsonReaderWriter
 
 	// Set up the volume tracking directory and files.
 	trackPath := config.VolumeTrackingInfoPath
-	v := NewVolumePublishManager(trackPath)
+	osFs := afero.NewMemMapFs()
+	v := NewVolumePublishManagerDetailed(trackPath, filesystem.New(nil), osFs)
 	volumeOne := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
 	volumeTrackingInfo := &models.VolumeTrackingInfo{
 		VolumePublishInfo: models.VolumePublishInfo{},
@@ -248,19 +247,15 @@ func TestListVolumeTrackingInfo_SucceedsToListTrackingFileInformation(t *testing
 func TestDeleteTrackingInfo(t *testing.T) {
 	volName := "pvc-123"
 
-	oldDeleter := fileDeleter
-	defer func() { fileDeleter = oldDeleter }()
-	fileDeleter = func(ctx context.Context, filepath, fileDescription string) (string, error) {
-		return "", nil
-	}
-	v := NewVolumePublishManager("")
+	osFs := afero.NewMemMapFs()
+	mockFilesytesm := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+	v := NewVolumePublishManagerDetailed("", mockFilesytesm, osFs)
+	mockFilesytesm.EXPECT().DeleteFile(gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil)
 
 	err := v.DeleteTrackingInfo(context.Background(), volName)
 	assert.NoError(t, err, "expected no error deleting the tracking info")
 
-	fileDeleter = func(ctx context.Context, filepath, fileDescription string) (string, error) {
-		return "", errors.New("foo")
-	}
+	mockFilesytesm.EXPECT().DeleteFile(gomock.Any(), gomock.Any(), gomock.Any()).Return("", errors.New("foo"))
 	err = v.DeleteTrackingInfo(context.Background(), volName)
 	assert.Error(t, err, "expected error if delete tracking info fails")
 	assert.Equal(t, "foo", err.Error(), "expected the error we threw")
@@ -268,15 +263,17 @@ func TestDeleteTrackingInfo(t *testing.T) {
 
 func TestUpgradeVolumeTrackingFile(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	jsonReaderWriter := mock_models.NewMockJSONReaderWriter(mockCtrl)
-	original := utils.JsonReaderWriter
-	defer func() { utils.JsonReaderWriter = original }()
-	utils.JsonReaderWriter = jsonReaderWriter
-	defer func() { osFs = afero.NewOsFs() }()
-	osFs = afero.NewMemMapFs()
+	jsonReaderWriter := mock_filesystem.NewMockJSONReaderWriter(mockCtrl)
+	defer func(previousJsonRW filesystem.JSONReaderWriter) {
+		jsonRW = previousJsonRW
+	}(jsonRW)
+	jsonRW = jsonReaderWriter
+
+	osFs := afero.NewMemMapFs()
+	trackPath := "/bar"
+	v := NewVolumePublishManagerDetailed(trackPath, filesystem.New(nil), osFs)
 
 	stagePath := "/foo"
-	trackPath := "/bar"
 	trackInfoAndPath := models.VolumeTrackingInfo{}
 	trackInfoAndPath.StagingTargetPath = stagePath
 	pubInfoNfsIp := models.VolumePublishInfo{}
@@ -284,7 +281,6 @@ func TestUpgradeVolumeTrackingFile(t *testing.T) {
 	volName := "pvc-123"
 	fName := volName + ".json"
 	pubPaths := map[string]struct{}{}
-	v := NewVolumePublishManager(trackPath)
 	stagedDeviceInfo := path.Join(stagePath, volumePublishInfoFilename)
 	trackingInfoFile := path.Join(trackPath, fName)
 	tmpTrackingInfoFile := path.Join(trackPath, "tmp-"+fName)
@@ -335,15 +331,17 @@ func TestUpgradeVolumeTrackingFile(t *testing.T) {
 
 func TestUpgradeVolumeTrackingFile_MissingDevicePathBeforeUpgrade(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	jsonReaderWriter := mock_models.NewMockJSONReaderWriter(mockCtrl)
-	original := utils.JsonReaderWriter
-	defer func() { utils.JsonReaderWriter = original }()
-	utils.JsonReaderWriter = jsonReaderWriter
-	defer func() { osFs = afero.NewOsFs() }()
-	osFs = afero.NewMemMapFs()
+	jsonReaderWriter := mock_filesystem.NewMockJSONReaderWriter(mockCtrl)
+	defer func(previousJsonRW filesystem.JSONReaderWriter) {
+		jsonRW = previousJsonRW
+	}(jsonRW)
+	jsonRW = jsonReaderWriter
+	osFs := afero.NewMemMapFs()
 
 	stagePath := "/foo"
 	trackPath := "/bar"
+
+	v := NewVolumePublishManagerDetailed(trackPath, filesystem.New(nil), osFs)
 
 	basePubInfo := models.VolumePublishInfo{}
 	basePubInfo.NfsServerIP = "1.1.1.1"
@@ -355,7 +353,6 @@ func TestUpgradeVolumeTrackingFile_MissingDevicePathBeforeUpgrade(t *testing.T) 
 	volName := "pvc-123"
 	fName := volName + ".json"
 	pubPaths := map[string]struct{}{}
-	v := NewVolumePublishManager(trackPath)
 	trackingInfoFile := path.Join(trackPath, fName)
 	stagedDeviceInfo := path.Join(stagePath, volumePublishInfoFilename)
 	tmpTrackingInfoFile := path.Join(trackPath, "tmp-"+fName)
@@ -426,12 +423,12 @@ func TestUpgradeVolumeTrackingFile_MissingDevicePathBeforeUpgrade(t *testing.T) 
 
 func TestUpgradeVolumeTrackingFile_MissingDevicePathAfterUpgrade(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	jsonReaderWriter := mock_models.NewMockJSONReaderWriter(mockCtrl)
-	original := utils.JsonReaderWriter
-	defer func() { utils.JsonReaderWriter = original }()
-	utils.JsonReaderWriter = jsonReaderWriter
-	defer func() { osFs = afero.NewOsFs() }()
-	osFs = afero.NewMemMapFs()
+	jsonReaderWriter := mock_filesystem.NewMockJSONReaderWriter(mockCtrl)
+	defer func(previousJsonRW filesystem.JSONReaderWriter) {
+		jsonRW = previousJsonRW
+	}(jsonRW)
+	jsonRW = jsonReaderWriter
+	osFs := afero.NewMemMapFs()
 
 	stagePath := "/foo"
 	trackPath := "/bar"
@@ -456,7 +453,7 @@ func TestUpgradeVolumeTrackingFile_MissingDevicePathAfterUpgrade(t *testing.T) {
 	volName := "pvc-123"
 	fName := volName + ".json"
 	pubPaths := map[string]struct{}{}
-	v := NewVolumePublishManager(trackPath)
+	v := NewVolumePublishManagerDetailed(trackPath, filesystem.New(nil), osFs)
 	trackingInfoFile := path.Join(trackPath, fName)
 	tmpTrackingInfoFile := path.Join(trackPath, "tmp-"+fName)
 
@@ -575,25 +572,22 @@ func TestUpgradeVolumeTrackingFile_MissingDevicePathAfterUpgrade(t *testing.T) {
 func TestValidateTrackingFile(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockiSCSIUtils := mock_iscsi.NewMockIscsiReconcileUtils(mockCtrl)
-	jsonReaderWriter := mock_models.NewMockJSONReaderWriter(mockCtrl)
+	jsonReaderWriter := mock_filesystem.NewMockJSONReaderWriter(mockCtrl)
 
-	defer func() { osFs = afero.NewOsFs() }()
-	osFs = afero.NewMemMapFs()
-	utils.JsonReaderWriter = jsonReaderWriter
-	oldDeleter := fileDeleter
+	osFs := afero.NewMemMapFs()
+	defer func(previousJsonRW filesystem.JSONReaderWriter) {
+		jsonRW = previousJsonRW
+	}(jsonRW)
+	jsonRW = jsonReaderWriter
 
-	defer func() { fileDeleter = oldDeleter }()
-	fileDeleter = func(ctx context.Context, filepath, fileDescription string) (string, error) {
-		return "", nil
-	}
+	trackPath := "."
+	v := NewVolumePublishManagerDetailed(trackPath, filesystem.New(nil), osFs)
 
 	oldiSCSIUtils := iscsiUtils
 	defer func() { iscsiUtils = oldiSCSIUtils }()
 	iscsiUtils = mockiSCSIUtils
 
 	stagePath := "/foo"
-	trackPath := "."
-	v := NewVolumePublishManager(trackPath)
 	volName := "pvc-123"
 	fName := volName + ".json"
 	fsType := "ext4"
@@ -664,13 +658,11 @@ func TestValidateTrackingFile(t *testing.T) {
 }
 
 func TestDeleteFailedUpgradeTrackingFile(t *testing.T) {
-	filename := "tmp-foo"
-	v := NewVolumePublishManager(config.VolumeTrackingInfoPath)
+	filename := "/var/lib/trident/tracking/tmp-foo"
+	osFs := afero.NewMemMapFs()
 
-	defer func() { osFs = afero.NewOsFs() }()
-	osFs = afero.NewMemMapFs()
-	defer func(fn fileDeleterType) { fileDeleter = fn }(fileDeleter)
-	fileDeleter = func(ctx context.Context, f, fDesc string) (string, error) { return "", osFs.Remove(filename) }
+	v := NewVolumePublishManagerDetailed(config.VolumeTrackingInfoPath, filesystem.NewDetailed(exec.NewCommand(), osFs, nil),
+		osFs)
 
 	file, _ := osFs.Create(filename)
 	fileinfo, _ := file.Stat()
@@ -682,16 +674,17 @@ func TestDeleteFailedUpgradeTrackingFile(t *testing.T) {
 
 func TestClearStagedDeviceInfo(t *testing.T) {
 	filename := volumePublishInfoFilename
+	osFs := afero.NewMemMapFs()
+	v := NewVolumePublishManagerDetailed(config.VolumeTrackingInfoPath, filesystem.New(nil), osFs)
 
 	defer func() { osFs = afero.NewOsFs() }()
-	osFs = afero.NewMemMapFs()
 
 	// happy path
 	_, err := osFs.Create(filename)
 	_, statErr := osFs.Stat(filename)
 	assert.NoError(t, err, "expected no error creating a test file")
 	assert.NoError(t, statErr, "expected to be able to stat just-created test file")
-	err = clearStagedDeviceInfo(context.Background(), ".", "pvc-123")
+	err = v.clearStagedDeviceInfo(context.Background(), ".", "pvc-123")
 
 	_, statErr = osFs.Stat(filename)
 	assert.NoError(t, err, "expected test file to exist before deletion")
@@ -700,6 +693,6 @@ func TestClearStagedDeviceInfo(t *testing.T) {
 	// does not exist case
 	_, statErr = osFs.Stat(filename)
 	assert.Error(t, statErr, "file should not exist")
-	err = clearStagedDeviceInfo(context.Background(), ".", "pvc-123")
+	err = v.clearStagedDeviceInfo(context.Background(), ".", "pvc-123")
 	assert.NoError(t, err, "clear staged tracking file should not fail if the file doesn't exist")
 }

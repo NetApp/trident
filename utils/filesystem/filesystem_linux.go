@@ -2,7 +2,7 @@
 
 // This file should only contain functions for handling the filesystem for Linux flavor
 
-package utils
+package filesystem
 
 import (
 	"context"
@@ -16,9 +16,14 @@ import (
 	"github.com/netapp/trident/utils/models"
 )
 
+type statFSResult struct {
+	Output unix.Statfs_t
+	Error  error
+}
+
 // GetFilesystemStats returns the size of the filesystem for the given path.
 // The caller of the func is responsible for verifying the mountPoint existence and readiness.
-func GetFilesystemStats(
+func (f *FSClient) GetFilesystemStats(
 	ctx context.Context, path string,
 ) (available, capacity, usage, inodes, inodesFree, inodesUsed int64, err error) {
 	Logc(ctx).Debug(">>>> filesystem_linux.GetFilesystemStats")
@@ -77,11 +82,11 @@ func GetFilesystemStats(
 
 // getFilesystemSize returns the size of the filesystem for the given path.
 // The caller of the func is responsible for verifying the mountPoint existence and readiness.
-func getFilesystemSize(ctx context.Context, path string) (int64, error) {
+func (f *FSClient) getFilesystemSize(ctx context.Context, path string) (int64, error) {
 	Logc(ctx).Debug(">>>> filesystem_linux.getFilesystemSize")
 	defer Logc(ctx).Debug("<<<< filesystem_linux.getFilesystemSize")
 
-	_, size, _, _, _, _, err := GetFilesystemStats(ctx, path)
+	_, size, _, _, _, _, err := f.GetFilesystemStats(ctx, path)
 	if err != nil {
 		return 0, err
 	}
@@ -98,16 +103,16 @@ func GetDeviceFilePath(ctx context.Context, path, volumeId string) (string, erro
 }
 
 // GetUnmountPath is a dummy added for compilation
-func GetUnmountPath(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (string, error) {
+func (f *FSClient) GetUnmountPath(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (string, error) {
 	Logc(ctx).Debug(">>>> filesystem_linux.GetUnmountPath")
 	defer Logc(ctx).Debug("<<<< filesystem_linux.GetUnmountPath")
 
 	return "", errors.UnsupportedError("GetUnmountPath is not supported for linux")
 }
 
-// generateAnonymousMemFile uses linux syscall memfd_create to create an anonymous, temporary, in-memory file
+// GenerateAnonymousMemFile uses linux syscall memfd_create to create an anonymous, temporary, in-memory file
 // with the specified name and contents
-func generateAnonymousMemFile(tempFileName, content string) (int, error) {
+func (f *FSClient) GenerateAnonymousMemFile(tempFileName, content string) (int, error) {
 	fd, err := unix.MemfdCreate(tempFileName, 0)
 	if err != nil {
 		return -1, fmt.Errorf("failed to create anonymous file; %v", err)

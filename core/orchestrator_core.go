@@ -32,6 +32,7 @@ import (
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/fcp"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
@@ -101,6 +102,7 @@ type TridentOrchestrator struct {
 	stopReconcileBackendLoop chan bool
 	uuid                     string
 	iscsi                    iscsi.ISCSI
+	fs                       filesystem.Filesystem
 	fcp                      fcp.FCP
 	mount                    mount.Mount
 }
@@ -109,7 +111,7 @@ type TridentOrchestrator struct {
 func NewTridentOrchestrator(client persistentstore.Client) (*TridentOrchestrator, error) {
 	// TODO (vivintw) the adaptors are being plugged in here as a temporary measure to prevent cyclic dependencies.
 	// NewClient() must plugin default implementation of the various package clients.
-	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient())
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +121,7 @@ func NewTridentOrchestrator(client persistentstore.Client) (*TridentOrchestrator
 		return nil, err
 	}
 
-	fcpClent, err := fcp.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	fcpClent, err := fcp.New(utils.NewOSClient(), utils.NewDevicesClient(), filesystem.New(mountClient))
 	if err != nil {
 		return nil, err
 	}
@@ -140,6 +142,7 @@ func NewTridentOrchestrator(client persistentstore.Client) (*TridentOrchestrator
 		iscsi:              iscsiClient,
 		fcp:                fcpClent,
 		mount:              mountClient,
+		fs:                 filesystem.New(mountClient),
 	}, nil
 }
 
@@ -2670,7 +2673,7 @@ func (o *TridentOrchestrator) validateImportVolume(ctx context.Context, volumeCo
 
 	// Make sure that for the Raw-block volume import we do not have ext3, ext4 or xfs filesystem specified
 	if volumeConfig.VolumeMode == config.RawBlock {
-		if volumeConfig.FileSystem != "" && volumeConfig.FileSystem != config.FsRaw {
+		if volumeConfig.FileSystem != "" && volumeConfig.FileSystem != filesystem.Raw {
 			return fmt.Errorf("cannot create raw-block volume %s with the filesystem %s",
 				originalName, volumeConfig.FileSystem)
 		}
@@ -3621,7 +3624,7 @@ func (o *TridentOrchestrator) AttachVolume(
 	}
 
 	// Check if volume is already mounted
-	dfOutput, dfOuputErr := utils.GetDFOutput(ctx)
+	dfOutput, dfOuputErr := o.fs.GetDFOutput(ctx)
 	if dfOuputErr != nil {
 		err = fmt.Errorf("error checking if %v is already mounted: %v", mountpoint, dfOuputErr)
 		return err

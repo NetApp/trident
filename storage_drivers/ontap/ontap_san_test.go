@@ -25,6 +25,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
@@ -71,7 +72,7 @@ func newMockOntapSANDriver(t *testing.T) (*mockapi.MockOntapAPI, *SANStorageDriv
 	driver.API = mockAPI
 	driver.ips = []string{"127.0.0.1"}
 
-	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient())
 	assert.NoError(t, err)
 	driver.iscsi = iscsiClient
 
@@ -1254,7 +1255,8 @@ func TestOntapSanVolumeCreate_FormatOptions(t *testing.T) {
 	fsType := "xfs"
 
 	// Setting up what formatOptions could look like.
-	tempFormatOptions := strings.Join([]string{"-b 4096", "-T stirde=2056, stripe=16"}, utils.FormatOptionsSeparator)
+	tempFormatOptions := strings.Join([]string{"-b 4096", "-T stirde=2056, stripe=16"},
+		filesystem.FormatOptionsSeparator)
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.SetInternalAttributes(map[string]string{

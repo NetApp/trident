@@ -35,6 +35,7 @@ import (
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/fcp"
+	"github.com/netapp/trident/utils/filesystem"
 	tridentmodels "github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/version"
 )
@@ -893,7 +894,7 @@ func PublishLUN(
 	}
 
 	// xfs volumes are always mounted with '-o nouuid' to allow clones to be mounted to the same node as the source
-	if fstype == tridentconfig.FsXfs {
+	if fstype == filesystem.Xfs {
 		publishInfo.MountOptions = drivers.EnsureMountOption(publishInfo.MountOptions, drivers.MountOptionNoUUID)
 	}
 

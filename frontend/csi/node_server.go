@@ -27,6 +27,7 @@ import (
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/fcp"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
@@ -355,14 +356,14 @@ func (p *Plugin) NodeGetVolumeStats(
 		}
 		publishInfo := &trackingInfo.VolumePublishInfo
 
-		isRawBlock = publishInfo.FilesystemType == tridentconfig.FsRaw
+		isRawBlock = publishInfo.FilesystemType == filesystem.Raw
 	}
 	if isRawBlock {
 		// Return no capacity info for raw block volumes, we cannot reliably determine the capacity.
 		return &csi.NodeGetVolumeStatsResponse{}, nil
 	} else {
 		// If filesystem, return usage reported by FS.
-		available, capacity, usage, inodes, inodesFree, inodesUsed, err := utils.GetFilesystemStats(
+		available, capacity, usage, inodes, inodesFree, inodesUsed, err := p.fs.GetFilesystemStats(
 			ctx, req.GetVolumePath())
 		if err != nil {
 			Logc(ctx).Errorf("unable to get filesystem stats at path: %s; %v", req.GetVolumePath(), err)
@@ -470,7 +471,7 @@ func (p *Plugin) nodeExpandVolume(
 		Logc(ctx).WithField("volumeId", volumeId).Info("Filesystem expansion check is not required.")
 		return nil
 	case tridentconfig.Block:
-		if fsType, err = utils.VerifyFilesystemSupport(publishInfo.FilesystemType); err != nil {
+		if fsType, err = filesystem.VerifyFilesystemSupport(publishInfo.FilesystemType); err != nil {
 			break
 		}
 		// We don't need to rescan mount devices for NVMe protocol backend. Automatic namespace rescanning happens
@@ -523,8 +524,8 @@ func (p *Plugin) nodeExpandVolume(
 	}
 
 	// Expand filesystem.
-	if fsType != tridentconfig.FsRaw {
-		filesystemSize, err := utils.ExpandFilesystemOnNode(ctx, publishInfo, devicePath, stagingTargetPath, fsType,
+	if fsType != filesystem.Raw {
+		filesystemSize, err := p.fs.ExpandFilesystemOnNode(ctx, publishInfo, devicePath, stagingTargetPath, fsType,
 			mountOptions)
 		if err != nil {
 			Logc(ctx).WithFields(LogFields{
@@ -983,7 +984,7 @@ func (p *Plugin) nodeUnstageSMBVolume(
 		return &csi.NodeUnstageVolumeResponse{}, err
 	}
 
-	mappingPath, err = utils.GetUnmountPath(ctx, trackingInfo)
+	mappingPath, err = p.fs.GetUnmountPath(ctx, trackingInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -1389,7 +1390,7 @@ func (p *Plugin) nodePublishFCPVolume(
 		}
 	}
 
-	if publishInfo.FilesystemType == tridentconfig.FsRaw {
+	if publishInfo.FilesystemType == filesystem.Raw {
 
 		if len(publishInfo.MountOptions) > 0 {
 			publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "bind", ",")
@@ -1628,7 +1629,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		return nil
 	}
 
-	deviceInfo, err := p.deviceClient.GetDeviceInfoForLUN(ctx, hostSessionMap, int(publishInfo.IscsiLunNumber),
+	deviceInfo, err := p.devices.GetDeviceInfoForLUN(ctx, hostSessionMap, int(publishInfo.IscsiLunNumber),
 		publishInfo.IscsiTargetIQN, false)
 	if err != nil {
 		Logc(ctx).WithError(err).Debug("Could not find devices.")
@@ -1650,7 +1651,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 			"multipathDevice": deviceInfo.MultipathDevice,
 		}
 
-		luksMapperPath, err = p.deviceClient.GetLUKSDeviceForMultipathDevice(deviceInfo.MultipathDevice)
+		luksMapperPath, err = p.devices.GetLUKSDeviceForMultipathDevice(deviceInfo.MultipathDevice)
 		if err != nil {
 			if !errors.IsNotFoundError(err) {
 				Logc(ctx).WithFields(fields).WithError(err).Error("Failed to get LUKS device path from multipath device.")
@@ -1662,7 +1663,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		// Ensure the LUKS device is closed if the luksMapperPath is set.
 		if luksMapperPath != "" {
 			fields["luksDevice"] = luksMapperPath
-			err = p.deviceClient.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath)
+			err = p.devices.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath)
 			if err != nil {
 				if !errors.IsMaxWaitExceededError(err) {
 					Logc(ctx).WithFields(fields).WithError(err).Error("Failed to close LUKS device.")
@@ -1679,11 +1680,11 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	// Delete the device from the host.
-	unmappedMpathDevice, err := p.deviceClient.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, p.unsafeDetach, force)
+	unmappedMpathDevice, err := p.devices.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, p.unsafeDetach, force)
 	if err != nil {
 		if errors.IsISCSISameLunNumberError(err) {
 			// There is a need to pass all the publish infos this time
-			unmappedMpathDevice, err = p.deviceClient.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo,
+			unmappedMpathDevice, err = p.devices.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo,
 				p.readAllTrackingFiles(ctx),
 				p.unsafeDetach, force)
 		}
@@ -1756,7 +1757,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	// It needs to be removed prior to removing the 'unmappedMpathDevice' device below.
 	if luksMapperPath != "" {
 		// EnsureLUKSDeviceClosed will not return an error if the device is already closed or removed.
-		if err = p.deviceClient.EnsureLUKSDeviceClosed(ctx, luksMapperPath); err != nil {
+		if err = p.devices.EnsureLUKSDeviceClosed(ctx, luksMapperPath); err != nil {
 			Logc(ctx).WithFields(LogFields{
 				"devicePath": luksMapperPath,
 			}).WithError(err).Warning("Unable to remove LUKS mapper device.")
@@ -1766,7 +1767,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	// If there is multipath device, flush(remove) mappings
-	if err := p.deviceClient.RemoveMultipathDeviceMapping(ctx, unmappedMpathDevice); err != nil {
+	if err := p.devices.RemoveMultipathDeviceMapping(ctx, unmappedMpathDevice); err != nil {
 		return err
 	}
 
@@ -1832,7 +1833,7 @@ func (p *Plugin) nodePublishISCSIVolume(
 		var err error
 		if utils.IsLegacyLUKSDevicePath(devicePath) {
 			// Supports legacy volumes that store the LUKS device path
-			luksDevice, err = p.deviceClient.NewLUKSDeviceFromMappingPath(ctx, devicePath,
+			luksDevice, err = p.devices.NewLUKSDeviceFromMappingPath(ctx, devicePath,
 				req.VolumeContext["internalName"])
 		} else {
 			luksDevice, err = utils.NewLUKSDevice(publishInfo.DevicePath, req.VolumeContext["internalName"])
@@ -1848,7 +1849,7 @@ func (p *Plugin) nodePublishISCSIVolume(
 		// Mount LUKS device instead of mpath.
 		devicePath = luksDevice.MappedDevicePath()
 	}
-	isRawBlock := publishInfo.FilesystemType == tridentconfig.FsRaw
+	isRawBlock := publishInfo.FilesystemType == filesystem.Raw
 	if isRawBlock {
 
 		if len(publishInfo.MountOptions) > 0 {
@@ -2179,7 +2180,7 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 	case models.LoginScan:
 		// Set FilesystemType to "raw" so that we only heal the session connectivity and not perform the mount and
 		// filesystem related operations.
-		publishInfo.FilesystemType = tridentconfig.FsRaw
+		publishInfo.FilesystemType = filesystem.Raw
 
 		volumeID, err := publishedISCSISessions.VolumeIDForPortalAndLUN(portal, lunID)
 		if err != nil {
@@ -2459,7 +2460,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 	}
 
 	if isLUKS {
-		luksDevice, err := p.deviceClient.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
+		luksDevice, err := p.devices.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
 			req.VolumeContext["internalName"])
 		if err != nil {
 			return err
@@ -2609,7 +2610,7 @@ func (p *Plugin) nodePublishNVMeVolume(
 
 	if utils.ParseBool(publishInfo.LUKSEncryption) {
 		// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
-		luksDevice, err := p.deviceClient.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
+		luksDevice, err := p.devices.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
 			req.VolumeContext["internalName"])
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
@@ -2620,7 +2621,7 @@ func (p *Plugin) nodePublishNVMeVolume(
 		}
 	}
 
-	isRawBlock := publishInfo.FilesystemType == tridentconfig.FsRaw
+	isRawBlock := publishInfo.FilesystemType == filesystem.Raw
 	if isRawBlock {
 
 		if len(publishInfo.MountOptions) > 0 {
@@ -2667,11 +2668,11 @@ func (p *Plugin) nodeStageSANVolume(
 		fsType = mountCapability.GetFsType()
 	}
 
-	if fsType == tridentconfig.FsRaw && mountCapability != nil {
+	if fsType == filesystem.Raw && mountCapability != nil {
 		return nil, status.Error(codes.InvalidArgument, "mount capability requested with raw blocks")
 	}
 
-	if fsType != tridentconfig.FsRaw && blockCapability != nil {
+	if fsType != filesystem.Raw && blockCapability != nil {
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("block capability requested with %s", fsType))
 	}
 

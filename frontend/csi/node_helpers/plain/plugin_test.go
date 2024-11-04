@@ -201,14 +201,14 @@ func TestRemovePublishedPath_Succeeds(t *testing.T) {
 func TestNewHelper(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockOrchestrator.NewMockOrchestrator(mockCtrl)
-	h := NewHelper(orchestrator)
+	h, _ := NewHelper(orchestrator)
 	assert.NotNilf(t, h, "expected helper to not be nil")
 }
 
 func TestActivate(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockOrchestrator.NewMockOrchestrator(mockCtrl)
-	h := NewHelper(orchestrator)
+	h, _ := NewHelper(orchestrator)
 	err := h.Activate()
 	assert.NoError(t, err)
 }
@@ -216,6 +216,6 @@ func TestActivate(t *testing.T) {
 func TestVersion(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockOrchestrator.NewMockOrchestrator(mockCtrl)
-	h := NewHelper(orchestrator)
+	h, _ := NewHelper(orchestrator)
 	assert.Equal(t, csi.Version, h.Version())
 }

@@ -1,12 +1,13 @@
 // Copyright 2024 NetApp, Inc. All Rights Reserved.
 
-package utils
+package filesystem
+
+//go:generate mockgen -destination=../../mocks/mock_utils/mock_filesystem/mock_mount_client.go github.com/netapp/trident/utils/filesystem Mount
+//go:generate mockgen -destination=../../mocks/mock_utils/mock_filesystem/mock_filesystem_client.go github.com/netapp/trident/utils/filesystem Filesystem
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/fs"
 	"os"
 	"os/exec"
 	"strings"
@@ -18,16 +19,16 @@ import (
 
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils/errors"
+	tridentexec "github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/models"
 )
 
 const (
 	// Filesystem types
-	fsXfs  = "xfs"
-	fsExt3 = "ext3"
-	fsExt4 = "ext4"
-	fsRaw  = "raw"
+	Xfs  = "xfs"
+	Ext3 = "ext3"
+	Ext4 = "ext4"
+	Raw  = "raw"
 )
 
 const (
@@ -40,39 +41,64 @@ const (
 	fsckSyntaxError             = 16
 	fsckCancelledByUser         = 32
 	fsckSharedLibError          = 128
+
+	FormatOptionsSeparator = " "
 )
 
-const FormatOptionsSeparator = " "
-
 var (
-	osFs             = afero.NewOsFs()
-	JsonReaderWriter = NewJSONReaderWriter()
+	formatVolumeMaxRetryDuration = 30 * time.Second
 
 	duringFormatVolume = fiji.Register("duringFormatVolume", "filesystem")
 	duringRepairVolume = fiji.Register("duringRepairVolume", "filesystem")
 )
 
-type jsonReaderWriter struct{}
-
-func NewJSONReaderWriter() models.JSONReaderWriter {
-	return &jsonReaderWriter{}
+type Filesystem interface {
+	GetDFOutput(ctx context.Context) ([]models.DFInfo, error)
+	FormatVolume(ctx context.Context, device, fstype, options string) error
+	RepairVolume(ctx context.Context, device, fstype string)
+	ExpandFilesystemOnNode(
+		ctx context.Context, publishInfo *models.VolumePublishInfo, devicePath, stagedTargetPath, fsType, mountOptions string,
+	) (int64, error)
+	DeleteFile(ctx context.Context, filepath, fileDescription string) (string, error)
+	GetFilesystemStats(
+		ctx context.Context, path string,
+	) (available, capacity, usage, inodes, inodesFree, inodesUsed int64, err error)
+	GetUnmountPath(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (string, error)
+	GenerateAnonymousMemFile(tempFileName, content string) (int, error)
 }
 
-// DFInfo data structure for wrapping the parsed output from the 'df' command
-type DFInfo struct {
-	Target string
-	Source string
+type Mount interface {
+	MountFilesystemForResize(ctx context.Context, devicePath, stagedTargetPath, mountOptions string) (string, error)
+	RemoveMountPoint(ctx context.Context, mountPointPath string) error
+}
+
+type FSClient struct {
+	command     tridentexec.Command
+	osFs        afero.Fs
+	mountClient Mount
+}
+
+func New(mount Mount) *FSClient {
+	return NewDetailed(tridentexec.NewCommand(), afero.NewOsFs(), mount)
+}
+
+func NewDetailed(command tridentexec.Command, osFs afero.Fs, mount Mount) *FSClient {
+	return &FSClient{
+		command:     command,
+		osFs:        osFs,
+		mountClient: mount,
+	}
 }
 
 // GetDFOutput returns parsed DF output
-func GetDFOutput(ctx context.Context) ([]DFInfo, error) {
+func (f *FSClient) GetDFOutput(ctx context.Context) ([]models.DFInfo, error) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
 	Logc(ctx).Debug(">>>> filesystem.GetDFOutput")
 	defer Logc(ctx).Debug("<<<< filesystem.GetDFOutput")
 
-	var result []DFInfo
-	out, err := command.Execute(ctx, "df", "--output=target,source")
+	var result []models.DFInfo
+	out, err := f.command.Execute(ctx, "df", "--output=target,source")
 	if err != nil {
 		// df returns an error if there's a stale file handle that we can
 		// safely ignore. There may be other reasons. Consider it a warning if
@@ -88,7 +114,7 @@ func GetDFOutput(ctx context.Context) ([]DFInfo, error) {
 
 		a := strings.Fields(l)
 		if len(a) > 1 {
-			result = append(result, DFInfo{
+			result = append(result, models.DFInfo{
 				Target: a[0],
 				Source: a[1],
 			})
@@ -100,8 +126,8 @@ func GetDFOutput(ctx context.Context) ([]DFInfo, error) {
 	return result, nil
 }
 
-// formatVolume creates a filesystem for the supplied device of the supplied type.
-func formatVolume(ctx context.Context, device, fstype, options string) error {
+// FormatVolume creates a filesystem for the supplied device of the supplied type.
+func (f *FSClient) FormatVolume(ctx context.Context, device, fstype, options string) error {
 	logFields := LogFields{"device": device, "fsType": fstype}
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.formatVolume")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.formatVolume")
@@ -119,15 +145,15 @@ func formatVolume(ctx context.Context, device, fstype, options string) error {
 	}
 
 	switch fstype {
-	case fsXfs:
+	case Xfs:
 		optionList = append(optionList, "-f", device)
-		out, err = command.Execute(ctx, "mkfs.xfs", optionList...)
-	case fsExt3:
+		out, err = f.command.Execute(ctx, "mkfs.xfs", optionList...)
+	case Ext3:
 		optionList = append(optionList, "-F", device)
-		out, err = command.Execute(ctx, "mkfs.ext3", optionList...)
-	case fsExt4:
+		out, err = f.command.Execute(ctx, "mkfs.ext3", optionList...)
+	case Ext4:
 		optionList = append(optionList, "-F", device)
-		out, err = command.Execute(ctx, "mkfs.ext4", optionList...)
+		out, err = f.command.Execute(ctx, "mkfs.ext4", optionList...)
 	default:
 		return fmt.Errorf("unsupported file system type: %s", fstype)
 	}
@@ -144,20 +170,20 @@ func formatVolume(ctx context.Context, device, fstype, options string) error {
 }
 
 // formatVolume creates a filesystem for the supplied device of the supplied type.
-func formatVolumeRetry(ctx context.Context, device, fstype, options string) error {
+func (f *FSClient) formatVolumeRetry(ctx context.Context, device, fstype, options string) error {
 	logFields := LogFields{"device": device, "fsType": fstype}
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.formatVolumeRetry")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.formatVolumeRetry")
 
-	maxDuration := 30 * time.Second
-
 	formatVolume := func() error {
-		return formatVolume(ctx, device, fstype, options)
+		return f.FormatVolume(ctx, device, fstype, options)
 	}
 
 	formatNotify := func(err error, duration time.Duration) {
 		Logc(ctx).WithField("increment", duration).Debug("Format failed, retrying.")
 	}
+
+	maxDuration := formatVolumeMaxRetryDuration
 
 	formatBackoff := backoff.NewExponentialBackOff()
 	formatBackoff.InitialInterval = 2 * time.Second
@@ -175,11 +201,16 @@ func formatVolumeRetry(ctx context.Context, device, fstype, options string) erro
 	return nil
 }
 
-// repairVolume runs fsck on a volume. This is best-effort, does not return error.
-func repairVolume(ctx context.Context, device, fstype string) {
+// RepairVolume runs fsck on a volume. This is best-effort, does not return error.
+func (f *FSClient) RepairVolume(ctx context.Context, device, fstype string) {
 	logFields := LogFields{"device": device, "fsType": fstype}
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.repairVolume")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.repairVolume")
+
+	// Note: FIJI error injection will have no effect due to no error return. Panic injection is still valid.
+	if err := duringRepairVolume.Inject(); err != nil {
+		Logc(ctx).WithError(err).Debug("FIJI error in repairVolume has no effect, no error return.")
+	}
 
 	var err error
 
@@ -187,9 +218,9 @@ func repairVolume(ctx context.Context, device, fstype string) {
 	case "xfs":
 		break // fsck.xfs does nothing
 	case "ext3":
-		_, err = command.Execute(ctx, "fsck.ext3", "-p", device)
+		_, err = f.command.Execute(ctx, "fsck.ext3", "-p", device)
 	case "ext4":
-		_, err = command.Execute(ctx, "fsck.ext4", "-p", device)
+		_, err = f.command.Execute(ctx, "fsck.ext4", "-p", device)
 	default:
 		Logc(ctx).WithFields(logFields).Errorf("Unsupported file system type: %s.", fstype)
 	}
@@ -216,7 +247,7 @@ func repairVolume(ctx context.Context, device, fstype string) {
 }
 
 // ExpandFilesystemOnNode will expand the filesystem of an already expanded volume.
-func ExpandFilesystemOnNode(
+func (f *FSClient) ExpandFilesystemOnNode(
 	ctx context.Context, publishInfo *models.VolumePublishInfo, devicePath, stagedTargetPath, fsType, mountOptions string,
 ) (int64, error) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
@@ -235,12 +266,13 @@ func ExpandFilesystemOnNode(
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.ExpandFilesystemOnNode")
 
 	if expansionMountPoint == "" {
-		expansionMountPoint, err = mountClient.MountFilesystemForResize(ctx, devicePath, stagedTargetPath, mountOptions)
+		expansionMountPoint, err = f.mountClient.MountFilesystemForResize(ctx, devicePath, stagedTargetPath,
+			mountOptions)
 		if err != nil {
 			return 0, err
 		}
 		defer func() {
-			err = multierr.Append(err, mountClient.RemoveMountPoint(ctx, expansionMountPoint))
+			err = multierr.Append(err, f.mountClient.RemoveMountPoint(ctx, expansionMountPoint))
 		}()
 	}
 
@@ -249,9 +281,9 @@ func ExpandFilesystemOnNode(
 	var size int64
 	switch fsType {
 	case "xfs":
-		size, err = expandFilesystem(ctx, "xfs_growfs", expansionMountPoint, expansionMountPoint)
+		size, err = f.expandFilesystem(ctx, "xfs_growfs", expansionMountPoint, expansionMountPoint)
 	case "ext3", "ext4":
-		size, err = expandFilesystem(ctx, "resize2fs", devicePath, expansionMountPoint)
+		size, err = f.expandFilesystem(ctx, "resize2fs", devicePath, expansionMountPoint)
 	default:
 		err = fmt.Errorf("unsupported file system type: %s", fsType)
 	}
@@ -261,7 +293,7 @@ func ExpandFilesystemOnNode(
 	return size, err
 }
 
-func expandFilesystem(ctx context.Context, cmd, cmdArguments, tmpMountPoint string) (int64, error) {
+func (f *FSClient) expandFilesystem(ctx context.Context, cmd, cmdArguments, tmpMountPoint string) (int64, error) {
 	logFields := LogFields{
 		"cmd":           cmd,
 		"cmdArguments":  cmdArguments,
@@ -270,17 +302,17 @@ func expandFilesystem(ctx context.Context, cmd, cmdArguments, tmpMountPoint stri
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.expandFilesystem")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.expandFilesystem")
 
-	preExpandSize, err := getFilesystemSize(ctx, tmpMountPoint)
+	preExpandSize, err := f.getFilesystemSize(ctx, tmpMountPoint)
 	if err != nil {
 		return 0, err
 	}
-	_, err = command.Execute(ctx, cmd, cmdArguments)
+	_, err = f.command.Execute(ctx, cmd, cmdArguments)
 	if err != nil {
 		Logc(ctx).Errorf("Expanding filesystem failed; %s", err)
 		return 0, err
 	}
 
-	postExpandSize, err := getFilesystemSize(ctx, tmpMountPoint)
+	postExpandSize, err := f.getFilesystemSize(ctx, tmpMountPoint)
 	if err != nil {
 		return 0, err
 	}
@@ -292,71 +324,9 @@ func expandFilesystem(ctx context.Context, cmd, cmdArguments, tmpMountPoint stri
 	return postExpandSize, nil
 }
 
-// WriteJSONFile writes the contents of any type of struct to a file, with logging.
-func (j jsonReaderWriter) WriteJSONFile(
-	ctx context.Context, fileContents interface{}, filepath, fileDescription string,
-) error {
-	file, err := osFs.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0o600)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = file.Close() }()
-
-	if err = json.NewEncoder(file).Encode(fileContents); err != nil {
-		Logc(ctx).WithFields(LogFields{
-			"filename": filepath,
-			"error":    err.Error(),
-		}).Error(fmt.Sprintf("Unable to write %s file.", fileDescription))
-		return err
-	}
-
-	return nil
-}
-
-// ReadJSONFile reads a file at the specified path and deserializes its contents into the provided fileContents var.
-// fileContents must be a pointer to a struct, not a pointer type!
-func (j *jsonReaderWriter) ReadJSONFile(
-	ctx context.Context, fileContents interface{}, filepath, fileDescription string,
-) error {
-	file, err := osFs.Open(filepath)
-	if err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
-			Logc(ctx).WithFields(LogFields{
-				"filepath": filepath,
-				"error":    err.Error(),
-			}).Warningf("Could not find JSON file: %s.", filepath)
-			return errors.NotFoundError(err.Error())
-		}
-		return err
-	}
-	defer func() { _ = file.Close() }()
-
-	fileInfo, err := file.Stat()
-	if err != nil {
-		return err
-	}
-	// We do not consider an empty file valid JSON.
-	if fileInfo.Size() == 0 {
-		return errors.InvalidJSONError("file was empty, which is not considered valid JSON")
-	}
-
-	err = json.NewDecoder(file).Decode(fileContents)
-	if err != nil {
-		Logc(ctx).WithFields(LogFields{
-			"filename": filepath,
-			"error":    err.Error(),
-		}).Error(fmt.Sprintf("Could not parse %s file.", fileDescription))
-
-		e, _ := errors.AsInvalidJSONError(err)
-		return e
-	}
-
-	return nil
-}
-
 // DeleteFile deletes the file at the provided path, and provides additional logging.
-func DeleteFile(ctx context.Context, filepath, fileDescription string) (string, error) {
-	if err := osFs.Remove(filepath); err != nil {
+func (f *FSClient) DeleteFile(ctx context.Context, filepath, fileDescription string) (string, error) {
+	if err := f.osFs.Remove(filepath); err != nil {
 		logFields := LogFields{strings.ReplaceAll(fileDescription, " ", ""): filepath, "error": err}
 
 		if os.IsNotExist(err) {

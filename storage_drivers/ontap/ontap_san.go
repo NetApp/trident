@@ -94,7 +94,7 @@ func (d *SANStorageDriver) Initialize(
 
 	// Initialize the iSCSI client
 	var err error
-	d.iscsi, err = iscsi.New(utils.NewOSClient(), utils.NewDevicesClient(), utils.NewFilesystemClient())
+	d.iscsi, err = iscsi.New(utils.NewOSClient(), utils.NewDevicesClient())
 	if err != nil {
 		return fmt.Errorf("could not initialize iSCSI client; %v", err)
 	}

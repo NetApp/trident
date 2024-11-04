@@ -888,17 +888,6 @@ func RedactSecretsFromString(stringToSanitize string, replacements map[string]st
 	return stringToSanitize
 }
 
-// VerifyFilesystemSupport checks for a supported file system type
-func VerifyFilesystemSupport(fs string) (string, error) {
-	fstype := strings.ToLower(fs)
-	switch fstype {
-	case fsXfs, fsExt3, fsExt4, fsRaw:
-		return fstype, nil
-	default:
-		return "", fmt.Errorf("unsupported fileSystemType option: %s", fstype)
-	}
-}
-
 // AppendToStringList appends an item to a string list with a seperator
 func AppendToStringList(stringList, newItem, sep string) string {
 	stringListItems := SplitString(context.TODO(), stringList, sep)

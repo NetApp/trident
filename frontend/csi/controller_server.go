@@ -24,6 +24,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -161,7 +162,7 @@ func (p *Plugin) CreateVolume(
 				"raw block volumes are not supported for this container orchestrator")
 		}
 		volumeMode = tridentconfig.RawBlock
-		fsType = tridentconfig.FsRaw
+		fsType = filesystem.Raw
 	}
 
 	for _, csiAccessMode := range csiAccessModes {

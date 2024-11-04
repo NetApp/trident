@@ -1,7 +1,7 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
 // This file contains the code derived from https://github.com/kubernetes-csi/csi-driver-smb/blob/master/pkg/mounter/safe_mounter_windows.go
 
-package utils
+package csiutils
 
 import (
 	"context"

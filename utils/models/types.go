@@ -2,7 +2,6 @@
 
 package models
 
-//go:generate mockgen -destination=../../mocks/mock_utils/mock_models/mock_json_utils.go github.com/netapp/trident/utils/models JSONReaderWriter
 //go:generate mockgen -destination=../../mocks/mock_utils/mock_models/mock_luks/mock_luks.go -package mock_luks github.com/netapp/trident/utils/models LUKSDeviceInterface
 
 import (
@@ -101,6 +100,12 @@ type NVMeAccessInfo struct {
 	NVMeSubsystemNQN  string   `json:"nvmeSubsystemNqn,omitempty"`
 	NVMeSubsystemUUID string   `json:"nvmeSubsystemUUID,omitempty"`
 	NVMeNamespaceUUID string   `json:"nvmeNamespaceUUID,omitempty"`
+}
+
+// DFInfo data structure for wrapping the parsed output from the 'df' command
+type DFInfo struct {
+	Target string
+	Source string
 }
 
 type VolumePublishInfo struct {
@@ -318,11 +323,6 @@ type NodePrepBreadcrumb struct {
 	TridentVersion string `json:"tridentVersion"`
 	NFS            string `json:"nfs,omitempty"`
 	ISCSI          string `json:"iscsi,omitempty"`
-}
-
-type JSONReaderWriter interface {
-	WriteJSONFile(ctx context.Context, fileContents interface{}, filepath, fileDescription string) error
-	ReadJSONFile(ctx context.Context, fileContents interface{}, filepath, fileDescription string) error
 }
 
 // Data structure and related interfaces to help iSCSI self-healing
