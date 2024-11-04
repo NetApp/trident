@@ -4,7 +4,6 @@ package apt_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -35,8 +34,7 @@ func TestApt_MultipathToolsInstalled(t *testing.T) {
 	}
 	const timeout = 1 * time.Second
 	const logCommandOutput = false
-	const alreadyInstalledOutput = "foo baz"
-	const notInstalledOutput = "Unable to locate package " + apt.PackageMultipathTools
+	const notInstalledOutput = "foo baz"
 
 	tests := map[string]parameters{
 		"error executing command": {
@@ -52,7 +50,7 @@ func TestApt_MultipathToolsInstalled(t *testing.T) {
 			getCommand: func(controller *gomock.Controller) *mockexec.MockCommand {
 				mockCommand := mockexec.NewMockCommand(controller)
 				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageMultipathTools).Return([]byte(alreadyInstalledOutput), nil)
+					"--installed", apt.PackageMultipathTools).Return([]byte(apt.PackageMultipathTools), nil)
 				return mockCommand
 			},
 			assertResponse: assert.True,
@@ -91,8 +89,7 @@ func TestApt_InstallIscsiRequirements(t *testing.T) {
 
 	const timeout = 1 * time.Second
 	const logCommandOutput = false
-	const successfulpackageInstallOutput = "foo baz"
-	const failedPackageInstallOutput = "Unable to locate package %s"
+	const failedPackageInstallOutput = "foo baz"
 
 	tests := map[string]parameters{
 		"happy path: error installing lsscsi": {
@@ -103,11 +100,11 @@ func TestApt_InstallIscsiRequirements(t *testing.T) {
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageOpenIscsi).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageOpenIscsi).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageOpenIscsi).Return([]byte(apt.PackageOpenIscsi), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageMultipathTools).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageMultipathTools).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageMultipathTools).Return([]byte(apt.PackageMultipathTools), nil)
 				return mockCommand
 			},
 			assertError: assert.NoError,
@@ -122,11 +119,11 @@ func TestApt_InstallIscsiRequirements(t *testing.T) {
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageOpenIscsi).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageOpenIscsi).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageOpenIscsi).Return([]byte(apt.PackageOpenIscsi), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageMultipathTools).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageMultipathTools).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageMultipathTools).Return([]byte(apt.PackageMultipathTools), nil)
 				return mockCommand
 			},
 			assertError: assert.NoError,
@@ -137,15 +134,15 @@ func TestApt_InstallIscsiRequirements(t *testing.T) {
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageLsscsi).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageLsscsi).Return([]byte(fmt.Sprintf(failedPackageInstallOutput, apt.PackageLsscsi)), nil)
+					"--installed", apt.PackageLsscsi).Return([]byte(failedPackageInstallOutput), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageOpenIscsi).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageOpenIscsi).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageOpenIscsi).Return([]byte(apt.PackageOpenIscsi), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageMultipathTools).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageMultipathTools).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageMultipathTools).Return([]byte(apt.PackageMultipathTools), nil)
 				return mockCommand
 			},
 			assertError: assert.NoError,
@@ -154,17 +151,17 @@ func TestApt_InstallIscsiRequirements(t *testing.T) {
 			getCommand: func(controller *gomock.Controller) *mockexec.MockCommand {
 				mockCommand := mockexec.NewMockCommand(controller)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
-					"-y", apt.PackageLsscsi).Return([]byte(successfulpackageInstallOutput), nil)
+					"-y", apt.PackageLsscsi).Return([]byte(apt.PackageLsscsi), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageLsscsi).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageLsscsi).Return([]byte(apt.PackageLsscsi), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageOpenIscsi).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageOpenIscsi).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageOpenIscsi).Return([]byte(apt.PackageOpenIscsi), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageMultipathTools).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageMultipathTools).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageMultipathTools).Return([]byte(apt.PackageMultipathTools), nil)
 				return mockCommand
 			},
 			assertError: assert.NoError,
@@ -175,7 +172,7 @@ func TestApt_InstallIscsiRequirements(t *testing.T) {
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageLsscsi).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageLsscsi).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageLsscsi).Return([]byte(apt.PackageLsscsi), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageOpenIscsi).Return(nil, errors.New("some error"))
 				return mockCommand
@@ -188,7 +185,7 @@ func TestApt_InstallIscsiRequirements(t *testing.T) {
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageLsscsi).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageLsscsi).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageLsscsi).Return([]byte(apt.PackageLsscsi), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageOpenIscsi).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
@@ -203,11 +200,11 @@ func TestApt_InstallIscsiRequirements(t *testing.T) {
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageLsscsi).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageLsscsi).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageLsscsi).Return([]byte(apt.PackageLsscsi), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageOpenIscsi).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageOpenIscsi).Return([]byte(fmt.Sprintf(failedPackageInstallOutput, apt.PackageOpenIscsi)), nil)
+					"--installed", apt.PackageOpenIscsi).Return([]byte(failedPackageInstallOutput), nil)
 				return mockCommand
 			},
 			assertError: assert.Error,
@@ -218,11 +215,11 @@ func TestApt_InstallIscsiRequirements(t *testing.T) {
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageLsscsi).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageLsscsi).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageLsscsi).Return([]byte(apt.PackageLsscsi), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageOpenIscsi).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageOpenIscsi).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageOpenIscsi).Return([]byte(apt.PackageOpenIscsi), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageMultipathTools).Return(nil, errors.New("some error"))
 				return mockCommand
@@ -235,11 +232,11 @@ func TestApt_InstallIscsiRequirements(t *testing.T) {
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageLsscsi).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageLsscsi).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageLsscsi).Return([]byte(apt.PackageLsscsi), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageOpenIscsi).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageOpenIscsi).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageOpenIscsi).Return([]byte(apt.PackageOpenIscsi), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageMultipathTools).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
@@ -254,15 +251,15 @@ func TestApt_InstallIscsiRequirements(t *testing.T) {
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageLsscsi).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageLsscsi).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageLsscsi).Return([]byte(apt.PackageLsscsi), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageOpenIscsi).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageOpenIscsi).Return([]byte(successfulpackageInstallOutput), nil)
+					"--installed", apt.PackageOpenIscsi).Return([]byte(apt.PackageOpenIscsi), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "install",
 					"-y", apt.PackageMultipathTools).Return(nil, nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "apt", timeout, logCommandOutput, "list",
-					"--installed", apt.PackageMultipathTools).Return([]byte(fmt.Sprintf(failedPackageInstallOutput, apt.PackageMultipathTools)), nil)
+					"--installed", apt.PackageMultipathTools).Return([]byte(failedPackageInstallOutput), nil)
 				return mockCommand
 			},
 			assertError: assert.Error,

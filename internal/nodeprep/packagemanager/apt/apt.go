@@ -85,8 +85,8 @@ func (a *Apt) validatePackageInstall(ctx context.Context, packageName string) er
 		return errors.New(fmt.Sprintf("failed to validate %s package install: %s", packageName, output))
 	}
 
-	if strings.Contains(output, fmt.Sprintf("Unable to locate package %s", packageName)) {
-		return fmt.Errorf("failed to install package %s: %s", packageName, output)
+	if !strings.Contains(output, packageName) {
+		return errors.New(fmt.Sprintf("failed to install %s package : %s", packageName, output))
 	}
 
 	return nil
