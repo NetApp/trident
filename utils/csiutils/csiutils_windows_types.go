@@ -8,7 +8,7 @@ import (
 	"k8s.io/mount-utils"
 )
 
-//go:generate mockgen -destination=../mocks/mock_csiutils/mock_csiutils.go github.com/netapp/trident/csiutils CSIProxyUtils
+//go:generate mockgen -destination=../../mocks/mock_csiutils/mock_csiutils.go github.com/netapp/trident/utils/csiutils CSIProxyUtils
 
 type CSIProxyUtils interface {
 	SMBMount(context.Context, string, string, string, string, string) error
