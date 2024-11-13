@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -280,6 +280,8 @@ func AttachNVMeVolumeRetry(
 func AttachNVMeVolume(
 	ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
 ) error {
+	Logc(ctx).Debug(">>>> nvme.AttachNVMeVolume")
+	defer Logc(ctx).Debug("<<<< nvme.AttachNVMeVolume")
 	nvmeHandler := NewNVMeHandler()
 	nvmeSubsys := nvmeHandler.NewNVMeSubsystem(ctx, publishInfo.NVMeSubsystemNQN)
 	connectionStatus := nvmeSubsys.GetConnectionStatus()
@@ -298,32 +300,61 @@ func AttachNVMeVolume(
 	devPath := nvmeDev.GetPath()
 	publishInfo.DevicePath = devPath
 
-	if err = NVMeMountVolume(ctx, name, mountpoint, publishInfo); err != nil {
+	if err = NVMeMountVolume(ctx, name, mountpoint, publishInfo, secrets); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func NVMeMountVolume(ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo) error {
+func NVMeMountVolume(
+	ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
+) error {
+	Logc(ctx).Debug(">>>> nvme.NVMeMountVolume")
+	defer Logc(ctx).Debug("<<<< nvme.NVMeMountVolume")
+
+	// This is the raw device path for a nvme namespace.
+	devicePath := publishInfo.DevicePath
+
+	// Format and open a LUKS device if LUKS Encryption is set to true.
+	var luksFormatted bool
+	var err error
+	isLUKSDevice := ParseBool(publishInfo.LUKSEncryption)
+	if isLUKSDevice {
+		luksDevice, _ := NewLUKSDevice(devicePath, name)
+		luksFormatted, err = EnsureLUKSDeviceMappedOnHost(ctx, luksDevice, name, secrets)
+		if err != nil {
+			return err
+		}
+		devicePath = luksDevice.MappedDevicePath()
+	}
+
+	if isLUKSDevice && !luksFormatted {
+		Logc(ctx).Errorf("Unable to identify if luks device.", devicePath)
+		return err
+	}
+
+	// No filesystem work is required for raw block; return early.
 	if publishInfo.FilesystemType == filesystem.Raw {
 		return nil
 	}
-	devicePath := publishInfo.DevicePath
 
 	existingFstype, err := getDeviceFSType(ctx, devicePath)
 	if err != nil {
 		return err
 	}
 	if existingFstype == "" {
-		if unformatted, err := isDeviceUnformatted(ctx, devicePath); err != nil {
-			Logc(ctx).WithField("device",
-				devicePath).Errorf("Unable to identify if the device is not formatted; err: %v", err)
-			return err
-		} else if !unformatted {
-			Logc(ctx).WithField("device", devicePath).Errorf("Device is not not formatted; err: %v", err)
-			return fmt.Errorf("device %v is not unformatted", devicePath)
+		if !isLUKSDevice {
+			if unformatted, err := isDeviceUnformatted(ctx, devicePath); err != nil {
+				Logc(ctx).WithField("device",
+					devicePath).Errorf("Unable to identify if the device is not formatted; err: %v", err)
+				return err
+			} else if !unformatted {
+				Logc(ctx).WithField("device", devicePath).Errorf("Device is not not formatted; err: %v", err)
+				return fmt.Errorf("device %v is not unformatted", devicePath)
+			}
 		}
+
 		Logc(ctx).WithFields(LogFields{"volume": name, "fstype": publishInfo.FilesystemType}).Debug("Formatting LUN.")
 		err := fsClient.FormatVolume(ctx, devicePath, publishInfo.FilesystemType, publishInfo.FormatOptions)
 		if err != nil {

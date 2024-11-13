@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -18,6 +19,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
+	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
@@ -978,6 +980,21 @@ func TestNVMeCreate_NamespaceCreateAPIError(t *testing.T) {
 	err = d.Create(ctx, volConfig, pool1, volAttrs)
 
 	assert.ErrorContains(t, err, "failed to create namespace")
+}
+
+func TestNVMeCreate_LUKSVolume(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
+
+	volConfig.LUKSEncryption = "true"
+	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
+	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
+	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return("nsUUID", nil)
+
+	err := d.Create(ctx, volConfig, pool1, volAttrs)
+
+	assert.NoError(t, err, "Failed to create NVMe volume.")
 }
 
 func TestNVMeCreate_Success(t *testing.T) {
@@ -2246,6 +2263,52 @@ func TestImport(t *testing.T) {
 	err = d.Import(ctx, volConfig, originalName)
 
 	assert.NoError(t, err)
+}
+
+func TestImport_LUKSNamespace(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	_, volConfig, _ := getNVMeCreateArgs(d)
+	originalName := "fakeOriginalName"
+	vol := &api.Volume{Aggregates: []string{"data"}}
+	ns := &api.NVMeNamespace{
+		Name: "/vol/cloneVol1/namespace0",
+		Size: "20GB",
+		UUID: "fakeUUID",
+	}
+	ns.State = "online"
+
+	vol.Comment = "fakeComment"
+	volConfig.LUKSEncryption = "true"
+	volConfig.ImportNotManaged = true
+	volConfig.Size = "20GB"
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
+	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false, nil)
+	// mAPI.EXPECT().VolumeRename(ctx, originalName, volConfig.InternalName).Return(nil)
+
+	beforeLUKSOverheadBytesStr, err := utils.ConvertSizeToBytes(volConfig.Size)
+	if err != nil {
+		t.Fatalf("failed to convert volume size")
+	}
+	beforeLUKSOverhead, err := strconv.ParseUint(beforeLUKSOverheadBytesStr, 10, 64)
+	if err != nil {
+		t.Fatalf("failed to convert volume size")
+	}
+
+	err = d.Import(ctx, volConfig, originalName)
+
+	afterLUKSOverheadBytesStr, err := utils.ConvertSizeToBytes(volConfig.Size)
+	if err != nil {
+		t.Fatalf("failed to convert volume size")
+	}
+	afterLUKSOverhead, err := strconv.ParseUint(afterLUKSOverheadBytesStr, 10, 64)
+	if err != nil {
+		t.Fatalf("failed to convert volume size")
+	}
+
+	assert.NoError(t, err)
+	assert.Less(t, afterLUKSOverhead, beforeLUKSOverhead)
+	assert.Equal(t, beforeLUKSOverhead, incrementWithLUKSMetadataIfLUKSEnabled(ctx, afterLUKSOverhead, "true"))
 }
 
 func TestImport_NameTemplate(t *testing.T) {

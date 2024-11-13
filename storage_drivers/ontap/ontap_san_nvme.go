@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -298,9 +298,19 @@ func (d *NVMeStorageDriver) Create(
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
-	requestedSizeBytes, _ := strconv.ParseUint(requestedSize, 10, 64)
+
+	requestedSizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
+	}
 	namespaceSizeBytes := GetVolumeSize(requestedSizeBytes, storagePool.InternalAttributes()[Size])
+
+	// Add a constant overhead for LUKS volumes to account for LUKS metadata. This overhead is
+	// part of the LUN but is not reported to the orchestrator.
+	reportedSize := namespaceSizeBytes
+	namespaceSizeBytes = incrementWithLUKSMetadataIfLUKSEnabled(ctx, namespaceSizeBytes, luksEncryption)
 	namespaceSize := strconv.FormatUint(namespaceSizeBytes, 10)
+
 	// Get the FlexVol size based on the snapshot reserve.
 	flexVolSize := drivers.CalculateVolumeSizeBytes(ctx, name, namespaceSizeBytes, snapshotReserveInt)
 	// Add extra 10% to the FlexVol to account for Namespace metadata.
@@ -335,7 +345,7 @@ func (d *NVMeStorageDriver) Create(
 	}
 
 	// Update config to reflect values used to create volume.
-	volConfig.Size = strconv.FormatUint(namespaceSizeBytes, 10)
+	volConfig.Size = strconv.FormatUint(reportedSize, 10)
 	volConfig.SpaceReserve = spaceReserve
 	volConfig.SnapshotPolicy = snapshotPolicy
 	volConfig.SnapshotReserve = snapshotReserve
@@ -617,7 +627,9 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 	}
 
 	// Set the volume to LUKS if backend has LUKS true as default
-	volConfig.LUKSEncryption = d.Config.LUKSEncryption
+	if volConfig.LUKSEncryption == "" {
+		volConfig.LUKSEncryption = d.Config.LUKSEncryption
+	}
 
 	// Set the filesystem type to backend's, if it hasn't been set via annotation
 	// in the provided pvc during import.
@@ -648,6 +660,16 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 
 	// Use the Namespace size
 	volConfig.Size = nsInfo.Size
+
+	// If the import is a LUKS encrypted volume, then remove the LUKS metadata overhead from the reported
+	// size on the volConfig.
+	if utils.ParseBool(volConfig.LUKSEncryption) {
+		newSize, err := subtractUintFromSizeString(volConfig.Size, utils.LUKSMetadataSize)
+		if err != nil {
+			return err
+		}
+		volConfig.Size = newSize
+	}
 
 	// Rename the volume if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
@@ -1314,6 +1336,9 @@ func (d *NVMeStorageDriver) Resize(
 		return fmt.Errorf("requested size %d is less than existing volume size %d", requestedSizeBytes, nsSizeBytes)
 	}
 
+	// Add a constant overhead for LUKS volumes to account for LUKS metadata.
+	requestedSizeBytes = incrementWithLUKSMetadataIfLUKSEnabled(ctx, requestedSizeBytes, volConfig.LUKSEncryption)
+
 	snapshotReserveInt, err := getSnapshotReserveFromOntap(ctx, name, d.API.VolumeInfo)
 	if err != nil {
 		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume.")
@@ -1375,6 +1400,9 @@ func (d *NVMeStorageDriver) Resize(
 			return fmt.Errorf("volume resize failed")
 		}
 	}
+
+	// LUKS metadata size is not reported so remove it from LUN size
+	requestedSizeBytes = decrementWithLUKSMetadataIfLUKSEnabled(ctx, requestedSizeBytes, volConfig.LUKSEncryption)
 
 	// Setting the new size in the volume config.
 	volConfig.Size = strconv.FormatUint(requestedSizeBytes, 10)

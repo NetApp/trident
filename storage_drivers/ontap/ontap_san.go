@@ -357,6 +357,7 @@ func (d *SANStorageDriver) Create(
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
+
 	requestedSizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
@@ -367,8 +368,8 @@ func (d *SANStorageDriver) Create(
 	// part of the LUN but is not reported to the orchestrator.
 	reportedSize := lunSizeBytes
 	lunSizeBytes = incrementWithLUKSMetadataIfLUKSEnabled(ctx, lunSizeBytes, luksEncryption)
-
 	lunSize := strconv.FormatUint(lunSizeBytes, 10)
+
 	// Get the flexvol size based on the snapshot reserve
 	flexvolSize := drivers.CalculateVolumeSizeBytes(ctx, name, lunSizeBytes, snapshotReserveInt)
 	// Add extra 10% to the Flexvol to account for LUN metadata

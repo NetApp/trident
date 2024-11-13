@@ -1071,7 +1071,7 @@ func GetLUKSDeviceForMultipathDevice(multipathDevice string) (string, error) {
 	// Get holder of mpath device
 	dirents, err := os.ReadDir(fmt.Sprintf("/sys/block/%s/holders/", dmDevice))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get holders directory entries; %v", err)
 	}
 
 	if len(dirents) == 0 {

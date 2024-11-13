@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -3231,11 +3231,11 @@ func (d OntapAPIREST) NVMeSubsystemCreate(ctx context.Context, subsystemName str
 	fields := []string{"target_nqn"}
 	subsystem, err := d.api.NVMeSubsystemGetByName(ctx, subsystemName, fields)
 	if err != nil {
-		Logc(ctx).Infof("problem getting subsystem; %v", err)
+		Logc(ctx).Infof("Problem getting subsystem; %v", err)
 		return nil, err
 	}
 	if subsystem == nil {
-		Logc(ctx).Infof("subsystem doesn't exists, creating new subsystem %v now.", subsystemName)
+		Logc(ctx).Infof("Subsystem doesn't exist, creating new subsystem %v now.", subsystemName)
 		subsystem, err = d.api.NVMeSubsystemCreate(ctx, subsystemName)
 		if err != nil {
 			return nil, err

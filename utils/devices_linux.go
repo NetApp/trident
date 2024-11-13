@@ -24,9 +24,10 @@ import (
 )
 
 const (
-	luksCommandTimeout time.Duration = time.Second * 30
-	luksCypherMode                   = "aes-xts-plain64"
-	luksType                         = "luks2"
+	luksCommandTimeout = time.Second * 30
+	luksCypherMode     = "aes-xts-plain64"
+	luksType           = "luks2"
+
 	// Return code for "no permission (bad passphrase)" from cryptsetup command
 	luksCryptsetupBadPassphraseReturnCode = 2
 
@@ -46,7 +47,8 @@ var (
 	beforeBlockDeviceFlushBuffer              = fiji.Register("beforeBlockDeviceFlushBuffer", "devices_linux")
 	beforeCryptSetupFormat                    = fiji.Register("beforeCryptSetupFormat", "node_server")
 	duringOpenBeforeCryptSetupOpen            = fiji.Register("duringOpenBeforeCryptSetupOpen", "devices_linux")
-	duringRotatePassphraseBeforeLuksKeyChange = fiji.Register("duringRotatePassphraseBeforeLuksKeyChange", "devices_linux")
+	duringRotatePassphraseBeforeLuksKeyChange = fiji.Register("duringRotatePassphraseBeforeLuksKeyChange",
+		"devices_linux")
 
 	osFs = afero.NewOsFs()
 )
@@ -360,8 +362,8 @@ func EnsureLUKSDeviceClosed(ctx context.Context, devicePath string) error {
 		Logc(ctx).WithFields(LogFields{
 			"device": devicePath,
 			"error":  err.Error(),
-		}).Debug("Failed to stat device")
-		return fmt.Errorf("could not stat device: %s %v.", devicePath, err)
+		}).Debug("Failed to stat device.")
+		return fmt.Errorf("could not stat device: %s; %v", devicePath, err)
 	}
 	Logc(ctx).WithFields(LogFields{
 		"device": devicePath,

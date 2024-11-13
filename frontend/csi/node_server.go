@@ -1536,7 +1536,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 		}
 
 		var luksDevice models.LUKSDeviceInterface
-		luksDevice, err = utils.NewLUKSDevice(publishInfo.DevicePath, req.VolumeContext["internalName"])
+		luksDevice, err = p.devices.NewLUKSDevice(publishInfo.DevicePath, req.VolumeContext["internalName"])
 		if err != nil {
 			return err
 		}
@@ -1836,11 +1836,13 @@ func (p *Plugin) nodePublishISCSIVolume(
 			luksDevice, err = p.devices.NewLUKSDeviceFromMappingPath(ctx, devicePath,
 				req.VolumeContext["internalName"])
 		} else {
-			luksDevice, err = utils.NewLUKSDevice(publishInfo.DevicePath, req.VolumeContext["internalName"])
+			luksDevice, err = p.devices.NewLUKSDevice(publishInfo.DevicePath, req.VolumeContext["internalName"])
 		}
+
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
+
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, req.GetVolumeId(), req.GetSecrets(), false)
 		if err != nil {
 			Logc(ctx).WithError(err).Error("Failed to ensure current LUKS passphrase.")
@@ -2441,7 +2443,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 	publishInfo *models.VolumePublishInfo,
 ) error {
-	isLUKS := utils.ParseBool(publishInfo.LUKSEncryption)
+	isLUKS := utils.ParseBool(req.PublishContext["LUKSEncryption"])
 	publishInfo.LUKSEncryption = strconv.FormatBool(isLUKS)
 	publishInfo.MountOptions = req.PublishContext["mountOptions"]
 	publishInfo.NVMeSubsystemNQN = req.PublishContext["nvmeSubsystemNqn"]
@@ -2449,8 +2451,10 @@ func (p *Plugin) nodeStageNVMeVolume(
 	publishInfo.NVMeTargetIPs = strings.Split(req.PublishContext["nvmeTargetIPs"], ",")
 	publishInfo.SANType = req.PublishContext["SANType"]
 
-	if err := utils.AttachNVMeVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo, nil,
-		utils.NVMeAttachTimeout); err != nil {
+	err := utils.AttachNVMeVolumeRetry(
+		ctx, req.VolumeContext["internalName"], "", publishInfo, req.GetSecrets(), utils.NVMeAttachTimeout,
+	)
+	if err != nil {
 		return err
 	}
 
@@ -2460,11 +2464,11 @@ func (p *Plugin) nodeStageNVMeVolume(
 	}
 
 	if isLUKS {
-		luksDevice, err := p.devices.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
-			req.VolumeContext["internalName"])
+		luksDevice, err := p.devices.NewLUKSDevice(publishInfo.DevicePath, req.VolumeContext["internalName"])
 		if err != nil {
 			return err
 		}
+
 		// Ensure we update the passphrase in case it has never been set before
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
 		if err != nil {
@@ -2500,10 +2504,40 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 		publishInfo.NVMeNamespaceUUID)
 
 	// Get the device using 'nvme-cli' commands. Flush the device IOs.
+	// Proceed further with unstage flow, if device is not found.
 	nvmeDev, err := p.nvmeHandler.NewNVMeDevice(ctx, publishInfo.NVMeNamespaceUUID)
-	// Proceed further with Unstage flow, if 'device is not found'.
 	if err != nil && !errors.IsNotFoundError(err) {
 		return nil, fmt.Errorf("error while getting NVMe device, %v", err)
+	}
+
+	var devicePath string
+	if nvmeDev != nil {
+		devicePath = nvmeDev.GetPath()
+	}
+
+	var luksMapperPath string
+	if utils.ParseBool(publishInfo.LUKSEncryption) && devicePath != "" {
+		fields := LogFields{
+			"lunID":           publishInfo.IscsiLunNumber,
+			"publishedDevice": publishInfo.DevicePath,
+			"nvmeDevPath":     nvmeDev.GetPath(),
+		}
+
+		luksMapperPath, err = p.devices.GetLUKSDeviceForMultipathDevice(devicePath)
+		if err != nil {
+			return &csi.NodeUnstageVolumeResponse{}, err
+		}
+
+		// Ensure the LUKS device is closed if the luksMapperPath is set.
+		if luksMapperPath != "" {
+			if err = p.devices.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath); err != nil {
+				if !errors.IsMaxWaitExceededError(err) {
+					Logc(ctx).WithFields(fields).WithError(err).Error("Failed to close LUKS device.")
+					return &csi.NodeUnstageVolumeResponse{}, err
+				}
+				Logc(ctx).WithFields(fields).WithError(err).Debug("LUKS close wait time exceeded, continuing with device removal.")
+			}
+		}
 	}
 
 	if !nvmeDev.IsNil() {
@@ -2580,6 +2614,20 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 		return nil, status.Error(codes.Internal, errStr)
 	}
 
+	// If the luks device still exists, it means the device was unable to be closed prior to removing the block
+	// device. This can happen if the LUN was deleted or offline. It should be removable by this point.
+	// It needs to be removed prior to removing the 'unmappedMpathDevice' device below.
+	if luksMapperPath != "" {
+		// EnsureLUKSDeviceClosed will not return an error if the device is already closed or removed.
+		if err = p.devices.EnsureLUKSDeviceClosed(ctx, luksMapperPath); err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"devicePath": luksMapperPath,
+			}).WithError(err).Warning("Unable to remove LUKS mapper device.")
+		}
+		// Clear the time duration for the LUKS device.
+		utils.LuksCloseDurations.RemoveDurationTracking(luksMapperPath)
+	}
+
 	// Delete the device info we saved to the volume tracking info path so unstage can succeed.
 	if err := p.nodeHelper.DeleteTrackingInfo(ctx, volumeId); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -2608,22 +2656,25 @@ func (p *Plugin) nodePublishNVMeVolume(
 		publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "ro", ",")
 	}
 
+	devicePath := publishInfo.DevicePath
 	if utils.ParseBool(publishInfo.LUKSEncryption) {
 		// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
-		luksDevice, err := p.devices.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
-			req.VolumeContext["internalName"])
+		luksDevice, err := p.devices.NewLUKSDevice(devicePath, req.VolumeContext["internalName"])
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
+
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, req.GetVolumeId(), req.GetSecrets(), false)
 		if err != nil {
 			Logc(ctx).WithError(err).Error("Failed to ensure current LUKS passphrase.")
 		}
+
+		// At this point, we must reassign the device path to the luks mapper path for mounts to work.
+		devicePath = luksDevice.MappedDevicePath()
 	}
 
 	isRawBlock := publishInfo.FilesystemType == filesystem.Raw
 	if isRawBlock {
-
 		if len(publishInfo.MountOptions) > 0 {
 			publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "bind", ",")
 		} else {
@@ -2631,13 +2682,13 @@ func (p *Plugin) nodePublishNVMeVolume(
 		}
 
 		// Place the block device at the target path for the raw-block.
-		err = p.mount.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, true)
+		err = p.mount.MountDevice(ctx, devicePath, req.TargetPath, publishInfo.MountOptions, true)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "unable to bind mount raw device; %s", err)
 		}
 	} else {
 		// Mount the device.
-		err = p.mount.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, false)
+		err = p.mount.MountDevice(ctx, devicePath, req.TargetPath, publishInfo.MountOptions, false)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "unable to mount device; %s", err)
 		}
