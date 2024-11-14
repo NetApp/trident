@@ -4,26 +4,27 @@
 
 ## Changes since v24.06.0
 
-**Coming soon:** Trident’s new features for Kubernetes-native:
-- Data protection
+**New:** Trident data protection and data management features
+- Backup and recovery
 - Disaster recovery
-- Application mobility 
+- Application mobility
 - Data migration
 
- You are required to install the new Trident protect module to unlock these capabilities.
+You are required to install the new Trident protect module to unlock these capabilities. [Read more to get started](https://docs.netapp.com/us-en/trident/trident-protect/learn-about-trident-protect.html).
 
 **Fixes:**
 
 - Added support for Windows Server 2019.
 - **Kubernetes:** Fixed Rancher admission webhook preventing Trident Helm installations (Issue [#839](https://github.com/NetApp/trident/issues/839)).
 - **Kubernetes:** Fixed Affinity key in Helm chart values (Issue [#898](https://github.com/NetApp/trident/issues/898)).
-- **Kubernetes:** Fixed tridentControllerPluginNodeSelector/tridentNodePluginNodeSelector won't work with "true" 
+- **Kubernetes:** Fixed tridentControllerPluginNodeSelector/tridentNodePluginNodeSelector won't work with "true"
   value (Issue [#899](https://github.com/NetApp/trident/issues/899)).
 - **Kubernetes:** Delete ephemeral snapshots created during cloning (Issue [#901](https://github.com/NetApp/trident/issues/901)).
-- Fixed `go mod tidy`in Trident repo (Issue [#767](https://github.com/NetApp/trident/issues/767)).
+- Fixed `go mod tidy` in Trident repo (Issue [#767](https://github.com/NetApp/trident/issues/767)).
 
 **Enhancements:**
 
+- **Kubernetes:** Added support for Kubernetes 1.31.
 - **Kubernetes:** Added new flag `--k8s_api_qps` to installers to set the QPS value used by Trident to communicate 
   with the Kubernetes API server.
 - **Kubernetes:** Added `--node-prep` flag to installers for automatic management of storage protocol dependencies 
