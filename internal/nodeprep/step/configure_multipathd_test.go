@@ -92,6 +92,34 @@ func TestMultipathConfigureStep_AddConfiguration(t *testing.T) {
 			},
 			assertError: assert.NoError,
 		},
+		"happy path no package manager": {
+			getConfiguration: func() mpathconfig.MpathConfiguration {
+				mockCtrl := gomock.NewController(t)
+				section := mock_mpathconfig.NewMockMpathConfigurationSection(mockCtrl)
+
+				section.EXPECT().AddSection(mpathconfig.DefaultsSectionName).Return(section, nil)
+				section.EXPECT().SetProperty("find_multipaths", "no").Return(nil)
+
+				section.EXPECT().AddSection(mpathconfig.BlacklistSectionName).Return(section, nil)
+				section.EXPECT().AddSection(mpathconfig.DeviceSectionName).Return(section, nil)
+				section.EXPECT().SetProperty("vendor", ".*").Return(nil)
+				section.EXPECT().SetProperty("product", ".*").Return(nil)
+
+				section.EXPECT().AddSection(mpathconfig.BlacklistExceptionsSectionName).Return(section, nil)
+				section.EXPECT().AddSection(mpathconfig.DeviceSectionName).Return(section, nil)
+				section.EXPECT().SetProperty("vendor", "NETAPP").Return(nil)
+				section.EXPECT().SetProperty("product", "LUN").Return(nil)
+
+				mpathConfig := mock_mpathconfig.NewMockMpathConfiguration(mockCtrl)
+				mpathConfig.EXPECT().GetRootSection().Return(section).Times(3)
+
+				return mpathConfig
+			},
+			getPackageManager: func() packagemanager.PackageManager {
+				return nil
+			},
+			assertError: assert.NoError,
+		},
 		"default section creation returns an error": {
 			getConfiguration: func() mpathconfig.MpathConfiguration {
 				mockCtrl := gomock.NewController(t)
@@ -383,6 +411,26 @@ func TestMultipathConfigureStep_UpdateConfiguration(t *testing.T) {
 			},
 			assertError: assert.NoError,
 		},
+		"required configuration is already present and no package manager": {
+			getConfiguration: func() mpathconfig.MpathConfiguration {
+				mockCtrl := gomock.NewController(t)
+				section := mock_mpathconfig.NewMockMpathConfigurationSection(mockCtrl)
+				section.EXPECT().HasProperty("find_multipaths").Return(true)
+				section.EXPECT().GetProperty("find_multipaths").Return("no", nil)
+
+				section.EXPECT().GetDeviceSection("NETAPP", "LUN", "").Return(section, nil)
+
+				mpathConfig := mock_mpathconfig.NewMockMpathConfiguration(mockCtrl)
+				mpathConfig.EXPECT().GetSection(mpathconfig.DefaultsSectionName).Return(section, nil)
+				mpathConfig.EXPECT().GetSection(mpathconfig.BlacklistExceptionsSectionName).Return(section, nil)
+
+				return mpathConfig
+			},
+			getPackageManager: func() packagemanager.PackageManager {
+				return nil
+			},
+			assertError: assert.NoError,
+		},
 		"get property 'find_multipaths' from the defaults section returns an error": {
 			getConfiguration: func() mpathconfig.MpathConfiguration {
 				mockCtrl := gomock.NewController(t)
@@ -667,6 +715,9 @@ func TestMultipathConfigureStep_UpdateConfiguration(t *testing.T) {
 }
 
 func TestMultipathConfigureStep_Apply(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	osFs := afero.Afero{Fs: fs}
+
 	type parameters struct {
 		mpathConfigLocation    string
 		getMpathConfiguration  func() mpathconfig.MpathConfiguration
@@ -681,7 +732,7 @@ func TestMultipathConfigureStep_Apply(t *testing.T) {
 		"multipath tools already installed and configuration file exists": {
 			mpathConfigLocation: os.DevNull,
 			getMpathConfiguration: func() mpathconfig.MpathConfiguration {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(osFs)
 				assert.NoError(t, err)
 				return config
 			},
@@ -696,7 +747,7 @@ func TestMultipathConfigureStep_Apply(t *testing.T) {
 		"multipath tools installed and configuration exists: error getting config": {
 			mpathConfigLocation: os.DevNull,
 			getMpathConfiguration: func() mpathconfig.MpathConfiguration {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(osFs)
 				assert.NoError(t, err)
 				return config
 			},
@@ -733,7 +784,7 @@ func TestMultipathConfigureStep_Apply(t *testing.T) {
 		"multipath tools already installed and configuration does not exist": {
 			mpathConfigLocation: "9d0010ae-479a-49c3-9460-16726606b458.conf",
 			getMpathConfiguration: func() mpathconfig.MpathConfiguration {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(osFs)
 				assert.NoError(t, err)
 				return config
 			},
@@ -748,7 +799,7 @@ func TestMultipathConfigureStep_Apply(t *testing.T) {
 		"multipath tools does not exist": {
 			mpathConfigLocation: os.DevNull,
 			getMpathConfiguration: func() mpathconfig.MpathConfiguration {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(osFs)
 				assert.NoError(t, err)
 				return config
 			},
@@ -763,7 +814,7 @@ func TestMultipathConfigureStep_Apply(t *testing.T) {
 		"multipath tools does not exist: error getting config": {
 			mpathConfigLocation: os.DevNull,
 			getMpathConfiguration: func() mpathconfig.MpathConfiguration {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(osFs)
 				assert.NoError(t, err)
 				return config
 			},
@@ -805,12 +856,11 @@ func TestMultipathConfigureStep_Apply(t *testing.T) {
 				err:    params.configConstructorError,
 			}
 
-			fs := afero.NewMemMapFs()
 			_, err := fs.Create(os.DevNull)
 			assert.NoError(t, err)
 			configurator := step.NewMultipathConfigureStepDetailed(params.mpathConfigLocation,
 				configConstructors.NewFromFile, configConstructors.New, params.getPackageManager(),
-				afero.Afero{Fs: fs})
+				osFs)
 
 			err = configurator.Apply(ctx)
 			if params.assertError != nil {
@@ -826,10 +876,10 @@ type mockMpathConfigConstructor struct {
 	err    error
 }
 
-func (m *mockMpathConfigConstructor) New() (mpathconfig.MpathConfiguration, error) {
+func (m *mockMpathConfigConstructor) New(_ afero.Afero) (mpathconfig.MpathConfiguration, error) {
 	return m.config, m.err
 }
 
-func (m *mockMpathConfigConstructor) NewFromFile(_ string) (mpathconfig.MpathConfiguration, error) {
+func (m *mockMpathConfigConstructor) NewFromFile(_ afero.Afero, _ string) (mpathconfig.MpathConfiguration, error) {
 	return m.config, m.err
 }

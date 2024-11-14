@@ -1,6 +1,6 @@
 // Copyright 2024 NetApp, Inc. All Rights Reserved.
 
-package amzn
+package rhel
 
 import (
 	"context"
@@ -20,21 +20,21 @@ const (
 	defaultLogCommandOutput = true
 )
 
-type Amzn struct {
+type RHEL struct {
 	*systemctl.Systemctl
 }
 
-func New() *Amzn {
+func New() *RHEL {
 	return NewDetailed(systemctl.NewSystemctlDetailed(exec.NewCommand(), defaultCommandTimeout, defaultLogCommandOutput))
 }
 
-func NewDetailed(systemctl *systemctl.Systemctl) *Amzn {
-	return &Amzn{
+func NewDetailed(systemctl *systemctl.Systemctl) *RHEL {
+	return &RHEL{
 		Systemctl: systemctl,
 	}
 }
 
-func (a *Amzn) EnableIscsiServices(ctx context.Context) error {
+func (a *RHEL) EnableIscsiServices(ctx context.Context) error {
 	if err := a.EnableServiceWithValidation(ctx, ServiceIscsid); err != nil {
 		return err
 	}

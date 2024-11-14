@@ -1,6 +1,6 @@
 // Copyright 2024 NetApp, Inc. All Rights Reserved.
 
-package amzn_test
+package rhel_test
 
 import (
 	"context"
@@ -10,24 +10,24 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/netapp/trident/internal/nodeprep/systemmanager/amzn"
+	"github.com/netapp/trident/internal/nodeprep/systemmanager/rhel"
 	"github.com/netapp/trident/internal/nodeprep/systemmanager/systemctl"
 	"github.com/netapp/trident/mocks/mock_utils/mock_exec"
 )
 
 func TestNew(t *testing.T) {
-	amznClient := amzn.New()
-	assert.NotNil(t, amznClient)
+	RHELClient := rhel.New()
+	assert.NotNil(t, RHELClient)
 }
 
 func TestNewDetailed(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	command := mock_exec.NewMockCommand(ctrl)
-	amznClient := amzn.NewDetailed(systemctl.NewSystemctlDetailed(command, 1*time.Second, true))
-	assert.NotNil(t, amznClient)
+	RHELClient := rhel.NewDetailed(systemctl.NewSystemctlDetailed(command, 1*time.Second, true))
+	assert.NotNil(t, RHELClient)
 }
 
-func TestAmzn_EnableIscsiServices(t *testing.T) {
+func TestRHEL_EnableIscsiServices(t *testing.T) {
 	type parameters struct {
 		getCommand  func(controller *gomock.Controller) *mock_exec.MockCommand
 		assertError assert.ErrorAssertionFunc
@@ -43,7 +43,7 @@ func TestAmzn_EnableIscsiServices(t *testing.T) {
 			getCommand: func(controller *gomock.Controller) *mock_exec.MockCommand {
 				command := mock_exec.NewMockCommand(controller)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "enable", "--now", amzn.ServiceIscsid).Return(nil, assert.AnError)
+					logCommandOutput, "enable", "--now", rhel.ServiceIscsid).Return(nil, assert.AnError)
 				return command
 			},
 			assertError: assert.Error,
@@ -52,9 +52,9 @@ func TestAmzn_EnableIscsiServices(t *testing.T) {
 			getCommand: func(controller *gomock.Controller) *mock_exec.MockCommand {
 				command := mock_exec.NewMockCommand(controller)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "enable", "--now", amzn.ServiceIscsid).Return(nil, nil)
+					logCommandOutput, "enable", "--now", rhel.ServiceIscsid).Return(nil, nil)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "show", amzn.ServiceIscsid, "--property=ActiveState").Return(nil, assert.AnError)
+					logCommandOutput, "show", rhel.ServiceIscsid, "--property=ActiveState").Return(nil, assert.AnError)
 				return command
 			},
 			assertError: assert.Error,
@@ -63,9 +63,9 @@ func TestAmzn_EnableIscsiServices(t *testing.T) {
 			getCommand: func(controller *gomock.Controller) *mock_exec.MockCommand {
 				command := mock_exec.NewMockCommand(controller)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "enable", "--now", amzn.ServiceIscsid).Return(nil, nil)
+					logCommandOutput, "enable", "--now", rhel.ServiceIscsid).Return(nil, nil)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "show", amzn.ServiceIscsid, "--property=ActiveState").Return([]byte(activeStateInactive), nil)
+					logCommandOutput, "show", rhel.ServiceIscsid, "--property=ActiveState").Return([]byte(activeStateInactive), nil)
 				return command
 			},
 			assertError: assert.Error,
@@ -74,11 +74,11 @@ func TestAmzn_EnableIscsiServices(t *testing.T) {
 			getCommand: func(controller *gomock.Controller) *mock_exec.MockCommand {
 				command := mock_exec.NewMockCommand(controller)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "enable", "--now", amzn.ServiceIscsid).Return(nil, nil)
+					logCommandOutput, "enable", "--now", rhel.ServiceIscsid).Return(nil, nil)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "show", amzn.ServiceIscsid, "--property=ActiveState").Return([]byte(activeStateActive), nil)
+					logCommandOutput, "show", rhel.ServiceIscsid, "--property=ActiveState").Return([]byte(activeStateActive), nil)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "enable", "--now", amzn.ServiceMultipathd).Return(nil, assert.AnError)
+					logCommandOutput, "enable", "--now", rhel.ServiceMultipathd).Return(nil, assert.AnError)
 				return command
 			},
 			assertError: assert.Error,
@@ -87,13 +87,13 @@ func TestAmzn_EnableIscsiServices(t *testing.T) {
 			getCommand: func(controller *gomock.Controller) *mock_exec.MockCommand {
 				command := mock_exec.NewMockCommand(controller)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "enable", "--now", amzn.ServiceIscsid).Return(nil, nil)
+					logCommandOutput, "enable", "--now", rhel.ServiceIscsid).Return(nil, nil)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "show", amzn.ServiceIscsid, "--property=ActiveState").Return([]byte(activeStateActive), nil)
+					logCommandOutput, "show", rhel.ServiceIscsid, "--property=ActiveState").Return([]byte(activeStateActive), nil)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "enable", "--now", amzn.ServiceMultipathd).Return(nil, nil)
+					logCommandOutput, "enable", "--now", rhel.ServiceMultipathd).Return(nil, nil)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "show", amzn.ServiceMultipathd, "--property=ActiveState").Return(nil, assert.AnError)
+					logCommandOutput, "show", rhel.ServiceMultipathd, "--property=ActiveState").Return(nil, assert.AnError)
 				return command
 			},
 			assertError: assert.Error,
@@ -102,13 +102,13 @@ func TestAmzn_EnableIscsiServices(t *testing.T) {
 			getCommand: func(controller *gomock.Controller) *mock_exec.MockCommand {
 				command := mock_exec.NewMockCommand(controller)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "enable", "--now", amzn.ServiceIscsid).Return(nil, nil)
+					logCommandOutput, "enable", "--now", rhel.ServiceIscsid).Return(nil, nil)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "show", amzn.ServiceIscsid, "--property=ActiveState").Return([]byte(activeStateActive), nil)
+					logCommandOutput, "show", rhel.ServiceIscsid, "--property=ActiveState").Return([]byte(activeStateActive), nil)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "enable", "--now", amzn.ServiceMultipathd).Return(nil, nil)
+					logCommandOutput, "enable", "--now", rhel.ServiceMultipathd).Return(nil, nil)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "show", amzn.ServiceMultipathd, "--property=ActiveState").Return([]byte(activeStateInactive), nil)
+					logCommandOutput, "show", rhel.ServiceMultipathd, "--property=ActiveState").Return([]byte(activeStateInactive), nil)
 				return command
 			},
 			assertError: assert.Error,
@@ -117,13 +117,13 @@ func TestAmzn_EnableIscsiServices(t *testing.T) {
 			getCommand: func(controller *gomock.Controller) *mock_exec.MockCommand {
 				command := mock_exec.NewMockCommand(controller)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "enable", "--now", amzn.ServiceIscsid).Return(nil, nil)
+					logCommandOutput, "enable", "--now", rhel.ServiceIscsid).Return(nil, nil)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "show", amzn.ServiceIscsid, "--property=ActiveState").Return([]byte(activeStateActive), nil)
+					logCommandOutput, "show", rhel.ServiceIscsid, "--property=ActiveState").Return([]byte(activeStateActive), nil)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "enable", "--now", amzn.ServiceMultipathd).Return(nil, nil)
+					logCommandOutput, "enable", "--now", rhel.ServiceMultipathd).Return(nil, nil)
 				command.EXPECT().ExecuteWithTimeout(context.TODO(), "systemctl", commandTimeout,
-					logCommandOutput, "show", amzn.ServiceMultipathd, "--property=ActiveState").Return([]byte(activeStateActive), nil)
+					logCommandOutput, "show", rhel.ServiceMultipathd, "--property=ActiveState").Return([]byte(activeStateActive), nil)
 				return command
 			},
 			assertError: assert.NoError,
@@ -134,8 +134,8 @@ func TestAmzn_EnableIscsiServices(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
-			amznClient := amzn.NewDetailed(systemctl.NewSystemctlDetailed(params.getCommand(ctrl), commandTimeout, logCommandOutput))
-			err := amznClient.EnableIscsiServices(context.TODO())
+			RHELClient := rhel.NewDetailed(systemctl.NewSystemctlDetailed(params.getCommand(ctrl), commandTimeout, logCommandOutput))
+			err := RHELClient.EnableIscsiServices(context.TODO())
 			if params.assertError(t, err) {
 				params.assertError(t, err)
 			}

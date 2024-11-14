@@ -14,8 +14,8 @@ import (
 )
 
 type (
-	NewConfiguration         func() (mpathconfig.MpathConfiguration, error)
-	NewConfigurationFromFile func(filename string) (mpathconfig.MpathConfiguration, error)
+	NewConfiguration         func(os afero.Afero) (mpathconfig.MpathConfiguration, error)
+	NewConfigurationFromFile func(os afero.Afero, filename string) (mpathconfig.MpathConfiguration, error)
 )
 
 type MultipathConfigureStep struct {
@@ -54,14 +54,15 @@ func NewMultipathConfigureStepDetailed(multipathConfigurationLocation string, ne
 func (c *MultipathConfigureStep) Apply(ctx context.Context) error {
 	var mpathCfg mpathconfig.MpathConfiguration
 	var err error
-	if c.packageManager.MultipathToolsInstalled(ctx) {
+
+	if c.packageManager != nil && c.packageManager.MultipathToolsInstalled(ctx) {
 
 		if !c.multipathConfigurationExists() {
 			return fmt.Errorf("found multipath tools already installed but no configuration file found; customer" +
 				" using multipathd with default configuration")
 		}
 
-		mpathCfg, err = c.newConfigurationFromFile(c.multipathConfigurationLocation)
+		mpathCfg, err = c.newConfigurationFromFile(c.os, c.multipathConfigurationLocation)
 		if err != nil {
 			return err
 		}
@@ -71,7 +72,7 @@ func (c *MultipathConfigureStep) Apply(ctx context.Context) error {
 		}
 
 	} else {
-		mpathCfg, err = c.newConfiguration()
+		mpathCfg, err = c.newConfiguration(c.os)
 		if err != nil {
 			return err
 		}

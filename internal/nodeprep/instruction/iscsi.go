@@ -8,8 +8,8 @@ import (
 	"github.com/netapp/trident/internal/nodeprep/packagemanager/yum"
 	"github.com/netapp/trident/internal/nodeprep/step"
 	"github.com/netapp/trident/internal/nodeprep/systemmanager"
-	"github.com/netapp/trident/internal/nodeprep/systemmanager/amzn"
 	"github.com/netapp/trident/internal/nodeprep/systemmanager/debian"
+	"github.com/netapp/trident/internal/nodeprep/systemmanager/rhel"
 )
 
 type ISCSI struct {
@@ -20,12 +20,12 @@ func newDebianAptISCSI() (instruction Instructions) {
 	return newISCSI(apt.New(), debian.New())
 }
 
-func newAmznYumISCSI() (instruction Instructions) {
-	return newISCSI(yum.New(), amzn.New())
+func newRHELYumISCSI() (instruction Instructions) {
+	return newISCSI(yum.New(), rhel.New())
 }
 
 func newYumISCSI() (instruction Instructions) {
-	return newISCSI(yum.New(), amzn.New())
+	return newISCSI(yum.New(), rhel.New())
 }
 
 func newAptISCSI() (instruction Instructions) {
@@ -40,6 +40,17 @@ func newISCSI(packageManager packagemanager.PackageManager, systemManager system
 		step.NewMultipathConfigureStep(packageManager),
 		step.NewInstallIscsiTools(packageManager),
 		step.NewEnableIscsiServices(systemManager),
+	}
+	return
+}
+
+func newRHCOSISCSI() (instruction *ISCSI) {
+	instruction = &ISCSI{}
+	instruction.name = "RHCOS iscsi instructions"
+	// ordering of steps matter here, multipath must be configured before installing iscsi tools to be idempotent
+	instruction.steps = []step.Step{
+		step.NewMultipathConfigureRHCOSStep(),
+		step.NewEnableIscsiServices(rhel.New()),
 	}
 	return
 }

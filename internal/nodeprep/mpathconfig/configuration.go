@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/hpe-storage/common-host-libs/mpathconfig"
+	"github.com/spf13/afero"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
@@ -30,6 +31,7 @@ var _ MpathConfiguration = &Configuration{}
 
 type Configuration struct {
 	configuration *mpathconfig.Configuration
+	osFs          afero.Afero
 }
 
 func (c *Configuration) GetRootSection() MpathConfigurationSection {
@@ -56,7 +58,7 @@ func (c *Configuration) PrintConf() []string {
 }
 
 func (c *Configuration) SaveConfig(filePath string) error {
-	f, err := os.Create(filePath)
+	f, err := c.osFs.Create(filePath)
 	if err != nil {
 		return err
 	}
@@ -80,14 +82,14 @@ func (c *Configuration) SaveConfig(filePath string) error {
 	return err
 }
 
-func New() (MpathConfiguration, error) {
-	return NewFromFile(os.DevNull)
+func New(osFs afero.Afero) (MpathConfiguration, error) {
+	return NewFromFile(osFs, os.DevNull)
 }
 
-func NewFromFile(filename string) (MpathConfiguration, error) {
+func NewFromFile(osFs afero.Afero, filename string) (MpathConfiguration, error) {
 	mpathCfg, err := mpathconfig.ParseConfig(filename)
 	if err != nil {
 		return nil, fmt.Errorf("error creating mpath config: %v", err)
 	}
-	return &Configuration{configuration: mpathCfg}, nil
+	return &Configuration{configuration: mpathCfg, osFs: osFs}, nil
 }

@@ -14,7 +14,7 @@ import (
 )
 
 func TestInstructions(t *testing.T) {
-	AmznYumISCSI := newAmznYumISCSI()
+	RHELYumISCSI := newRHELYumISCSI()
 	DebianAptISCSI := newDebianAptISCSI()
 	YumISCSI := newYumISCSI()
 	AptISCSI := newAptISCSI()
@@ -24,7 +24,7 @@ func TestInstructions(t *testing.T) {
 
 	setDefaultInstructions := func() {
 		scopedInstructions := map[Key]Instructions{}
-		scopedInstructions[Key{Protocol: protocol.ISCSI, Distro: nodeinfo.DistroAmzn, PkgMgr: nodeinfo.PkgMgrYum}] = AmznYumISCSI
+		scopedInstructions[Key{Protocol: protocol.ISCSI, Distro: nodeinfo.DistroAmzn, PkgMgr: nodeinfo.PkgMgrYum}] = RHELYumISCSI
 		scopedInstructions[Key{Protocol: protocol.ISCSI, Distro: nodeinfo.DistroUbuntu, PkgMgr: nodeinfo.PkgMgrApt}] = DebianAptISCSI
 		scopedInstructions[Key{Protocol: protocol.ISCSI, Distro: "", PkgMgr: nodeinfo.PkgMgrYum}] = YumISCSI
 		scopedInstructions[Key{Protocol: protocol.ISCSI, Distro: "", PkgMgr: nodeinfo.PkgMgrApt}] = AptISCSI
@@ -98,7 +98,7 @@ func TestInstructions(t *testing.T) {
 				HostSystem: amazonHostSystemResponse,
 				Distro:     nodeinfo.DistroAmzn,
 			},
-			expectedInstructions: []Instructions{AmznYumISCSI},
+			expectedInstructions: []Instructions{RHELYumISCSI},
 			setInstructions:      setDefaultInstructions,
 			assertError:          assert.NoError,
 		},
@@ -118,7 +118,7 @@ func TestInstructions(t *testing.T) {
 				HostSystem: fooHostSystemResponse,
 				Distro:     fooDistro,
 			},
-			expectedInstructions: []Instructions{AmznYumISCSI},
+			expectedInstructions: []Instructions{RHELYumISCSI},
 			setInstructions:      setDefaultInstructions,
 			assertError:          assert.NoError,
 		},

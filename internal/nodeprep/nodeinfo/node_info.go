@@ -27,6 +27,7 @@ type (
 const (
 	DistroUbuntu  Distro = utils.Ubuntu
 	DistroAmzn    Distro = "amzn"
+	DistroRhcos   Distro = "rhcos"
 	DistroUnknown        = "unknown"
 
 	PkgMgrYum  PkgMgr = "yum"

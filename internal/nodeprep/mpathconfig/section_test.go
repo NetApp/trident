@@ -5,12 +5,16 @@ package mpathconfig_test
 import (
 	"testing"
 
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/internal/nodeprep/mpathconfig"
 )
 
 func TestSection_AddSection(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	os := afero.Afero{Fs: fs}
+
 	type parameters struct {
 		getParentSection func() mpathconfig.MpathConfigurationSection
 		sectionName      string
@@ -21,7 +25,7 @@ func TestSection_AddSection(t *testing.T) {
 	tests := map[string]parameters{
 		"Add defaults section to root section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				return config.GetRootSection()
 			},
@@ -31,7 +35,7 @@ func TestSection_AddSection(t *testing.T) {
 		},
 		"Add blacklist section to root section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				return config.GetRootSection()
 			},
@@ -41,7 +45,7 @@ func TestSection_AddSection(t *testing.T) {
 		},
 		"Add blacklist exceptions section to root section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				return config.GetRootSection()
 			},
@@ -51,7 +55,7 @@ func TestSection_AddSection(t *testing.T) {
 		},
 		"Add devices section to root section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				return config.GetRootSection()
 			},
@@ -61,7 +65,7 @@ func TestSection_AddSection(t *testing.T) {
 		},
 		"Add multipaths section to root section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				return config.GetRootSection()
 			},
@@ -71,7 +75,7 @@ func TestSection_AddSection(t *testing.T) {
 		},
 		"Add overrides section to root section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				return config.GetRootSection()
 			},
@@ -81,7 +85,7 @@ func TestSection_AddSection(t *testing.T) {
 		},
 		"Add device section to root section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				return config.GetRootSection()
 			},
@@ -91,7 +95,7 @@ func TestSection_AddSection(t *testing.T) {
 		},
 		"Add multipath section to root section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				return config.GetRootSection()
 			},
@@ -101,7 +105,7 @@ func TestSection_AddSection(t *testing.T) {
 		},
 		"Add foo section to root section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				return config.GetRootSection()
 			},
@@ -111,7 +115,7 @@ func TestSection_AddSection(t *testing.T) {
 		},
 		"Add section to defaults section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				defaultsSection, err := config.GetRootSection().AddSection(mpathconfig.DefaultsSectionName)
 				assert.NoError(t, err)
@@ -123,7 +127,7 @@ func TestSection_AddSection(t *testing.T) {
 		},
 		"Add section to overrides section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				defaultsSection, err := config.GetRootSection().AddSection(mpathconfig.OverridesSectionName)
 				assert.NoError(t, err)
@@ -135,7 +139,7 @@ func TestSection_AddSection(t *testing.T) {
 		},
 		"Add device section to blacklist section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				defaultsSection, err := config.GetRootSection().AddSection(mpathconfig.BlacklistSectionName)
 				assert.NoError(t, err)
@@ -147,7 +151,7 @@ func TestSection_AddSection(t *testing.T) {
 		},
 		"Add foo section to blacklist section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				blacklistSection, err := config.GetRootSection().AddSection(mpathconfig.BlacklistSectionName)
 				assert.NoError(t, err)
@@ -159,7 +163,7 @@ func TestSection_AddSection(t *testing.T) {
 		},
 		"Add device section to blacklist exception section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				blacklistExceptionSection, err := config.GetRootSection().AddSection(mpathconfig.
 					BlacklistExceptionsSectionName)
@@ -172,7 +176,7 @@ func TestSection_AddSection(t *testing.T) {
 		},
 		"Add foo section to blacklist exception section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				blacklistExceptionSection, err := config.GetRootSection().AddSection(mpathconfig.
 					BlacklistExceptionsSectionName)
@@ -200,6 +204,9 @@ func TestSection_AddSection(t *testing.T) {
 }
 
 func TestSection_GetDeviceSection(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	os := afero.Afero{Fs: fs}
+
 	type parameters struct {
 		GetParentSection func() mpathconfig.MpathConfigurationSection
 		Vendor           string
@@ -222,7 +229,7 @@ func TestSection_GetDeviceSection(t *testing.T) {
 		},
 		"Get device section from root section": {
 			GetParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				return config.GetRootSection()
 			},
@@ -234,7 +241,7 @@ func TestSection_GetDeviceSection(t *testing.T) {
 		},
 		"Get device section from empty section": {
 			GetParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				blacklistSectionName, err := config.GetRootSection().AddSection(mpathconfig.BlacklistSectionName)
 				assert.NoError(t, err)
@@ -248,7 +255,7 @@ func TestSection_GetDeviceSection(t *testing.T) {
 		},
 		"Get device section from section that has a device section": {
 			GetParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				blacklistSectionName, err := config.GetRootSection().AddSection(mpathconfig.BlacklistSectionName)
 				assert.NoError(t, err)
@@ -267,7 +274,7 @@ func TestSection_GetDeviceSection(t *testing.T) {
 		},
 		"Get device section from section that has a device section with different vendor": {
 			GetParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				blacklistSectionName, err := config.GetRootSection().AddSection(mpathconfig.BlacklistSectionName)
 				assert.NoError(t, err)
@@ -286,7 +293,7 @@ func TestSection_GetDeviceSection(t *testing.T) {
 		},
 		"Get device section from section that has a device section with different product": {
 			GetParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				blacklistSectionName, err := config.GetRootSection().AddSection(mpathconfig.BlacklistSectionName)
 				assert.NoError(t, err)
@@ -305,7 +312,7 @@ func TestSection_GetDeviceSection(t *testing.T) {
 		},
 		"Get device section from section that has a device section with different revision": {
 			GetParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				blacklistSectionName, err := config.GetRootSection().AddSection(mpathconfig.BlacklistSectionName)
 				assert.NoError(t, err)
@@ -324,7 +331,7 @@ func TestSection_GetDeviceSection(t *testing.T) {
 		},
 		"Get device section from section that has a multiple sections": {
 			GetParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 
 				blacklistSection, err := config.GetRootSection().AddSection(mpathconfig.BlacklistSectionName)
@@ -364,6 +371,9 @@ func TestSection_GetDeviceSection(t *testing.T) {
 }
 
 func TestSection_HasProperty(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	os := afero.Afero{Fs: fs}
+
 	type parameters struct {
 		getParentSection func() mpathconfig.MpathConfigurationSection
 		property         string
@@ -380,7 +390,7 @@ func TestSection_HasProperty(t *testing.T) {
 		},
 		"Check if property exists in empty section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				return config.GetRootSection()
 			},
@@ -389,7 +399,7 @@ func TestSection_HasProperty(t *testing.T) {
 		},
 		"Check if property exists in section that has the property": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				section, err := config.GetRootSection().AddSection(mpathconfig.DefaultsSectionName)
 				assert.NoError(t, err)
@@ -412,6 +422,9 @@ func TestSection_HasProperty(t *testing.T) {
 }
 
 func TestSection_GetProperty(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	os := afero.Afero{Fs: fs}
+
 	type parameters struct {
 		getParentSection func() mpathconfig.MpathConfigurationSection
 		property         string
@@ -430,7 +443,7 @@ func TestSection_GetProperty(t *testing.T) {
 		},
 		"Get property from empty section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				return config.GetRootSection()
 			},
@@ -439,7 +452,7 @@ func TestSection_GetProperty(t *testing.T) {
 		},
 		"Get property from section that has the property": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				section, err := config.GetRootSection().AddSection(mpathconfig.DefaultsSectionName)
 				assert.NoError(t, err)
@@ -468,6 +481,9 @@ func TestSection_GetProperty(t *testing.T) {
 }
 
 func TestSection_SetProperty(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	os := afero.Afero{Fs: fs}
+
 	type parameters struct {
 		getParentSection func() mpathconfig.MpathConfigurationSection
 		property         string
@@ -486,7 +502,7 @@ func TestSection_SetProperty(t *testing.T) {
 		},
 		"Set property in root section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				return config.GetRootSection()
 			},
@@ -496,7 +512,7 @@ func TestSection_SetProperty(t *testing.T) {
 		},
 		"Set property in defaults section": {
 			getParentSection: func() mpathconfig.MpathConfigurationSection {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.NoError(t, err)
 				defaultsSection, err := config.GetRootSection().AddSection(mpathconfig.DefaultsSectionName)
 				assert.NoError(t, err)

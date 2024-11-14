@@ -6,13 +6,15 @@ import (
 	"os"
 	"testing"
 
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/internal/nodeprep/mpathconfig"
 )
 
 func TestNew(t *testing.T) {
-	config, err := mpathconfig.New()
+	fs := afero.NewMemMapFs()
+	config, err := mpathconfig.New(afero.Afero{Fs: fs})
 	assert.Nil(t, err)
 	assert.NotNil(t, config)
 	assert.IsType(t, &mpathconfig.Configuration{}, config)
@@ -38,9 +40,11 @@ func TestNewFromFile(t *testing.T) {
 		},
 	}
 
+	fs := afero.NewMemMapFs()
+
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
-			config, err := mpathconfig.NewFromFile(params.fileName)
+			config, err := mpathconfig.NewFromFile(afero.Afero{Fs: fs}, params.fileName)
 			if params.assertError != nil {
 				params.assertError(t, err)
 			}
@@ -52,7 +56,9 @@ func TestNewFromFile(t *testing.T) {
 }
 
 func TestConfiguration_GetRootSection(t *testing.T) {
-	config, err := mpathconfig.New()
+	fs := afero.NewMemMapFs()
+
+	config, err := mpathconfig.New(afero.Afero{Fs: fs})
 	assert.Nil(t, err)
 	assert.NotNil(t, config)
 
@@ -62,6 +68,9 @@ func TestConfiguration_GetRootSection(t *testing.T) {
 }
 
 func TestConfiguration_GetSection(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	os := afero.Afero{Fs: fs}
+
 	type parameters struct {
 		getConfig     func() mpathconfig.MpathConfiguration
 		sectionName   string
@@ -80,7 +89,7 @@ func TestConfiguration_GetSection(t *testing.T) {
 		},
 		"get default section from empty configuration": {
 			getConfig: func() mpathconfig.MpathConfiguration {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.Nil(t, err)
 				return config
 			},
@@ -90,7 +99,7 @@ func TestConfiguration_GetSection(t *testing.T) {
 		},
 		"get default section from configuration that has a default section": {
 			getConfig: func() mpathconfig.MpathConfiguration {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.Nil(t, err)
 
 				_, err = config.GetRootSection().AddSection(mpathconfig.DefaultsSectionName)
@@ -104,7 +113,7 @@ func TestConfiguration_GetSection(t *testing.T) {
 		},
 		"get invalid section from configuration that has a default section": {
 			getConfig: func() mpathconfig.MpathConfiguration {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.Nil(t, err)
 
 				_, err = config.GetRootSection().AddSection(mpathconfig.DefaultsSectionName)
@@ -134,6 +143,9 @@ func TestConfiguration_GetSection(t *testing.T) {
 }
 
 func TestConfiguration_PrintConf(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	os := afero.Afero{Fs: fs}
+
 	type parameters struct {
 		getConfig      func() mpathconfig.MpathConfiguration
 		expectedOutput []string
@@ -148,7 +160,7 @@ func TestConfiguration_PrintConf(t *testing.T) {
 		},
 		"print empty configuration": {
 			getConfig: func() mpathconfig.MpathConfiguration {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.Nil(t, err)
 				return config
 			},
@@ -156,7 +168,7 @@ func TestConfiguration_PrintConf(t *testing.T) {
 		},
 		"print configuration with a default section": {
 			getConfig: func() mpathconfig.MpathConfiguration {
-				config, err := mpathconfig.New()
+				config, err := mpathconfig.New(os)
 				assert.Nil(t, err)
 
 				_, err = config.GetRootSection().AddSection(mpathconfig.DefaultsSectionName)
@@ -178,7 +190,8 @@ func TestConfiguration_PrintConf(t *testing.T) {
 }
 
 func TestConfiguration_SaveConfig(t *testing.T) {
-	config, err := mpathconfig.New()
+	fs := afero.NewMemMapFs()
+	config, err := mpathconfig.New(afero.Afero{Fs: fs})
 	assert.NoError(t, err)
 	defaultSection, err := config.GetRootSection().AddSection(mpathconfig.DefaultsSectionName)
 	assert.NoError(t, err)
