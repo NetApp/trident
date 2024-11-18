@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/afero"
 	"golang.org/x/net/context"
 
 	"github.com/netapp/trident/internal/fiji"
@@ -26,7 +27,8 @@ import (
 const LUKSMetadataSize = 18874368
 
 const (
-	luksDevicePrefix = "luks-"
+	luksDevicePrefix          = "luks-"
+	devicesRemovalMaxWaitTime = 5 * time.Second
 )
 
 var (
@@ -35,6 +37,8 @@ var (
 	beforeRemoveFile           = fiji.Register("beforeRemoveFile", "devices")
 
 	LuksCloseDurations = durations.TimeDuration{}
+
+	osFs = afero.NewOsFs()
 )
 
 // waitForDevice accepts a device name and checks if it is present
@@ -173,6 +177,30 @@ func removeDevice(ctx context.Context, deviceInfo *models.ScsiDeviceInfo, ignore
 	listAllISCSIDevices(ctx)
 
 	return nil
+}
+
+// waitForDevicesRemoval waits for devices to be removed from the system.
+func waitForDevicesRemoval(ctx context.Context, osFs afero.Fs, devicePathPrefix string, deviceNames []string,
+	maxWaitTime time.Duration,
+) error {
+	startTime := time.Now()
+	for time.Since(startTime) < maxWaitTime {
+		anyExist := false
+		for _, device := range deviceNames {
+			path := filepath.Join(devicePathPrefix, device)
+			if _, err := osFs.Stat(path); !os.IsNotExist(err) {
+				anyExist = true
+				break
+			}
+		}
+		if !anyExist {
+			return nil
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+
+	Logc(ctx).WithField("devices", deviceNames).Debug("Timed out waiting for devices to be removed.")
+	return errors.TimeoutError("timed out waiting for devices to be removed")
 }
 
 // canFlushMultipathDevice determines whether device can be flushed.
@@ -911,8 +939,13 @@ func removeSCSIDevice(ctx context.Context, deviceInfo *models.ScsiDeviceInfo, ig
 		return false, err
 	}
 
-	// Give the host a chance to fully process the removal
-	time.Sleep(time.Second)
+	// Wait for device to be removed. Do not ignore errors here as we need the device removed
+	// for the force removal of the multipath device to succeed.
+	err = waitForDevicesRemoval(ctx, osFs, iscsi.DevPrefix, deviceInfo.Devices, devicesRemovalMaxWaitTime)
+	if err != nil {
+		return false, err
+	}
+
 	listAllISCSIDevices(ctx)
 
 	// If ignoreErrors was set to true while entering into this function and

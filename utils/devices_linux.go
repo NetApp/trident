@@ -14,7 +14,6 @@ import (
 	"unsafe"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/afero"
 	"golang.org/x/net/context"
 	"golang.org/x/sys/unix"
 
@@ -49,8 +48,6 @@ var (
 	duringOpenBeforeCryptSetupOpen            = fiji.Register("duringOpenBeforeCryptSetupOpen", "devices_linux")
 	duringRotatePassphraseBeforeLuksKeyChange = fiji.Register("duringRotatePassphraseBeforeLuksKeyChange",
 		"devices_linux")
-
-	osFs = afero.NewOsFs()
 )
 
 // flushOneDevice flushes any outstanding I/O to a disk

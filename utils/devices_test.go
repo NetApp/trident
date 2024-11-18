@@ -8,11 +8,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
 	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	"github.com/netapp/trident/mocks/mock_utils/mock_models/mock_luks"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -260,6 +262,88 @@ func TestRemoveMultipathDeviceMapping(t *testing.T) {
 			err := RemoveMultipathDeviceMapping(context.TODO(), tt.devicePath)
 			if tt.expectError {
 				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestWaitForDevicesRemoval(t *testing.T) {
+	errMsg := "timed out waiting for devices to be removed"
+	tests := map[string]struct {
+		name             string
+		devicePathPrefix string
+		deviceNames      []string
+		getOsFs          func() (afero.Fs, error)
+		maxWaitTime      time.Duration
+		expectedError    error
+	}{
+		"Devices removed successfully": {
+			devicePathPrefix: "/dev",
+			deviceNames:      []string{"sda", "sdb"},
+			getOsFs: func() (afero.Fs, error) {
+				return afero.NewMemMapFs(), nil
+			},
+			maxWaitTime:   1 * time.Second,
+			expectedError: nil,
+		},
+		"Timeout waiting for devices to be removed": {
+			devicePathPrefix: "/dev",
+			deviceNames:      []string{"sda", "sdb"},
+			getOsFs: func() (afero.Fs, error) {
+				osFs := afero.NewMemMapFs()
+				_, err := osFs.Create("/dev/sda")
+				if err != nil {
+					return nil, err
+				}
+				_, err = osFs.Create("/dev/sdb")
+				if err != nil {
+					return nil, err
+				}
+				return osFs, nil
+			},
+			maxWaitTime:   1 * time.Second,
+			expectedError: errors.TimeoutError(errMsg),
+		},
+		"Timeout waiting for last device to be removed": {
+			devicePathPrefix: "/dev",
+			deviceNames:      []string{"sda", "sdb"},
+			getOsFs: func() (afero.Fs, error) {
+				osFs := afero.NewMemMapFs()
+				_, err := osFs.Create("/dev/sdb")
+				if err != nil {
+					return nil, err
+				}
+				return osFs, nil
+			},
+			maxWaitTime:   1 * time.Second,
+			expectedError: errors.TimeoutError(errMsg),
+		},
+		"Timeout waiting for first device to be removed": {
+			devicePathPrefix: "/dev",
+			deviceNames:      []string{"sda", "sdb"},
+			getOsFs: func() (afero.Fs, error) {
+				osFs := afero.NewMemMapFs()
+				_, err := osFs.Create("/dev/sda")
+				if err != nil {
+					return nil, err
+				}
+				return osFs, nil
+			},
+			maxWaitTime:   1 * time.Second,
+			expectedError: errors.TimeoutError(errMsg),
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			fs, err := params.getOsFs()
+			assert.NoError(t, err)
+			err = waitForDevicesRemoval(context.Background(), fs, params.devicePathPrefix, params.deviceNames,
+				params.maxWaitTime)
+			if params.expectedError != nil {
+				assert.EqualError(t, err, params.expectedError.Error())
 			} else {
 				assert.NoError(t, err)
 			}
