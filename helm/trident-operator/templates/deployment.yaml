@@ -69,11 +69,11 @@ spec:
         name: trident-operator
         resources:
           requests:
+            cpu: "50m"
+            memory: "50Mi"
+          limits:
             cpu: "1000m"
             memory: "1024Mi"
-          limits:
-            cpu: "20m"
-            memory: "80Mi"
       {{- if and (eq .Values.cloudProvider "Azure") (eq .Values.cloudIdentity "") }}
       volumes:
       - name: azure-cred
