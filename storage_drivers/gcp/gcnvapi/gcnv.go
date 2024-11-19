@@ -559,7 +559,6 @@ func (c Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest) 
 		ShareName:         request.CreationToken,
 		StoragePool:       request.CapacityPool,
 		CapacityGib:       request.SizeBytes / 1073741824,
-		ExportPolicy:      exportPolicyExport(request.ExportPolicy),
 		Protocols:         protocols,
 		UnixPermissions:   request.UnixPermissions,
 		Labels:            request.Labels,
@@ -567,6 +566,9 @@ func (c Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest) 
 		SecurityStyle:     GCNVSecurityStyleFromVolumeSecurityStyle(request.SecurityStyle),
 	}
 
+	if request.ExportPolicy != nil {
+		newVol.ExportPolicy = exportPolicyExport(request.ExportPolicy)
+	}
 	if request.SnapshotReserve != nil {
 		newVol.SnapReserve = float64(*request.SnapshotReserve)
 	}

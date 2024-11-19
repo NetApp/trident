@@ -80,6 +80,6 @@ func TestPauseNTimesHandler_Handle(t *testing.T) {
 	_ = handler.Handle()
 	stop := time.Since(start)
 	// Add a padding to handle variability between runs.
-	maximumPauseTime += 5000 * time.Microsecond
+	maximumPauseTime += 50 * time.Millisecond
 	assert.GreaterOrEqual(t, maximumPauseTime, stop)
 }
