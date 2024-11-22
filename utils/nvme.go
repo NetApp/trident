@@ -313,7 +313,7 @@ func NVMeMountVolume(
 	Logc(ctx).Debug(">>>> nvme.NVMeMountVolume")
 	defer Logc(ctx).Debug("<<<< nvme.NVMeMountVolume")
 
-	// This is the raw device path for a nvme namespace.
+	// Initially, the device path raw device path for this NVMe namespace.
 	devicePath := publishInfo.DevicePath
 
 	// Format and open a LUKS device if LUKS Encryption is set to true.
@@ -326,12 +326,19 @@ func NVMeMountVolume(
 		if err != nil {
 			return err
 		}
+
 		devicePath = luksDevice.MappedDevicePath()
 	}
 
+	// Fail fast if the device should be a LUKS device but is not LUKS formatted.
 	if isLUKSDevice && !luksFormatted {
-		Logc(ctx).Errorf("Unable to identify if luks device.", devicePath)
-		return err
+		Logc(ctx).WithFields(LogFields{
+			"devicePath":      publishInfo.DevicePath,
+			"luksMapperPath":  devicePath,
+			"isLUKSFormatted": luksFormatted,
+			"shouldBeLUKS":    isLUKSDevice,
+		}).Error("Device should be a LUKS device but is not LUKS formatted.")
+		return fmt.Errorf("device should be a LUKS device but is not LUKS formatted")
 	}
 
 	// No filesystem work is required for raw block; return early.
@@ -346,16 +353,23 @@ func NVMeMountVolume(
 	if existingFstype == "" {
 		if !isLUKSDevice {
 			if unformatted, err := isDeviceUnformatted(ctx, devicePath); err != nil {
-				Logc(ctx).WithField("device",
-					devicePath).Errorf("Unable to identify if the device is not formatted; err: %v", err)
+				Logc(ctx).WithField(
+					"device", devicePath,
+				).WithError(err).Error("Unable to identify if the device is not formatted.")
 				return err
 			} else if !unformatted {
-				Logc(ctx).WithField("device", devicePath).Errorf("Device is not not formatted; err: %v", err)
-				return fmt.Errorf("device %v is not unformatted", devicePath)
+				Logc(ctx).WithField(
+					"device", devicePath,
+				).WithError(err).Error("Device is not unformatted.")
+				return fmt.Errorf("device %v is already formatted", devicePath)
 			}
 		}
 
-		Logc(ctx).WithFields(LogFields{"volume": name, "fstype": publishInfo.FilesystemType}).Debug("Formatting LUN.")
+		Logc(ctx).WithFields(LogFields{
+			"volume":    name,
+			"namespace": publishInfo.NVMeNamespaceUUID,
+			"fstype":    publishInfo.FilesystemType,
+		}).Debug("Formatting NVMe Namespace.")
 		err := fsClient.FormatVolume(ctx, devicePath, publishInfo.FilesystemType, publishInfo.FormatOptions)
 		if err != nil {
 			return fmt.Errorf("error formatting Namespace %s, device %s: %v", name, devicePath, err)

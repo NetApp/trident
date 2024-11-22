@@ -502,20 +502,25 @@ func (p *Plugin) nodeExpandVolume(
 		if !utils.IsLegacyLUKSDevicePath(devicePath) {
 			devicePath, err = utils.GetLUKSDeviceForMultipathDevice(devicePath)
 			if err != nil {
+				Logc(ctx).WithFields(LogFields{
+					"volumeId":      volumeId,
+					"publishedPath": publishInfo.DevicePath,
+				}).WithError(err).Error("Failed to get LUKS device path from device path.")
 				return status.Error(codes.Internal, err.Error())
 			}
 		}
 		Logc(ctx).WithField("volumeId", volumeId).Info("Resizing the LUKS mapping.")
-		// Refresh the luks device
-		// cryptsetup resize <luks-device-path> << <passphrase>
+
+		// Refresh the LUKS device.
+		// "cryptsetup resize <luks-device-path> << <passphrase>"
 		passphrase, ok := secrets["luks-passphrase"]
 		if !ok {
 			return status.Error(codes.InvalidArgument, "cannot expand LUKS encrypted volume; no passphrase provided")
 		} else if passphrase == "" {
 			return status.Error(codes.InvalidArgument, "cannot expand LUKS encrypted volume; empty passphrase provided")
 		}
-		err := utils.ResizeLUKSDevice(ctx, devicePath, passphrase)
-		if err != nil {
+
+		if err := utils.ResizeLUKSDevice(ctx, devicePath, passphrase); err != nil {
 			if errors.IsIncorrectLUKSPassphraseError(err) {
 				return status.Error(codes.InvalidArgument, err.Error())
 			}
@@ -1302,7 +1307,7 @@ func (p *Plugin) nodeUnstageFCPVolume(
 		return status.Error(codes.Internal, errStr)
 	}
 
-	// If the luks device still exists, it means the device was unable to be closed prior to removing the block
+	// If the LUKS device still exists, it means the device was unable to be closed prior to removing the block
 	// device. This can happen if the LUN was deleted or offline. It should be removable by this point.
 	// It needs to be removed prior to removing the 'unmappedMpathDevice' device below.
 	if luksMapperPath != "" {
@@ -1752,7 +1757,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		return status.Error(codes.Internal, errStr)
 	}
 
-	// If the luks device still exists, it means the device was unable to be closed prior to removing the block
+	// If the LUKS device still exists, it means the device was unable to be closed prior to removing the block
 	// device. This can happen if the LUN was deleted or offline. It should be removable by this point.
 	// It needs to be removed prior to removing the 'unmappedMpathDevice' device below.
 	if luksMapperPath != "" {
@@ -2472,7 +2477,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 		// Ensure we update the passphrase in case it has never been set before
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
 		if err != nil {
-			return fmt.Errorf("could not set LUKS volume passphrase")
+			return fmt.Errorf("could not set LUKS volume passphrase; %v", err)
 		}
 	}
 
@@ -2482,13 +2487,12 @@ func (p *Plugin) nodeStageNVMeVolume(
 		PublishedPaths:    map[string]struct{}{},
 	}
 
-	// Save the device info to the volume tracking info path for use in the publish & unstage calls.
+	// Save the device info to the volume tracking info path for use in future CSI node publish & unstage calls.
 	if err := p.nodeHelper.WriteTrackingInfo(ctx, volumeId, volTrackingInfo); err != nil {
 		return err
 	}
 
 	p.nvmeHandler.AddPublishedNVMeSession(&publishedNVMeSessions, publishInfo)
-
 	return nil
 }
 
@@ -2507,7 +2511,7 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 	// Proceed further with unstage flow, if device is not found.
 	nvmeDev, err := p.nvmeHandler.NewNVMeDevice(ctx, publishInfo.NVMeNamespaceUUID)
 	if err != nil && !errors.IsNotFoundError(err) {
-		return nil, fmt.Errorf("error while getting NVMe device, %v", err)
+		return nil, fmt.Errorf("failed to get NVMe device; %v", err)
 	}
 
 	var devicePath string
@@ -2518,18 +2522,19 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 	var luksMapperPath string
 	if utils.ParseBool(publishInfo.LUKSEncryption) && devicePath != "" {
 		fields := LogFields{
-			"lunID":           publishInfo.IscsiLunNumber,
-			"publishedDevice": publishInfo.DevicePath,
-			"nvmeDevPath":     nvmeDev.GetPath(),
+			"namespace":     publishInfo.NVMeNamespaceUUID,
+			"devicePath":    devicePath,
+			"publishedPath": publishInfo.DevicePath,
 		}
 
 		luksMapperPath, err = p.devices.GetLUKSDeviceForMultipathDevice(devicePath)
 		if err != nil {
+			Logc(ctx).WithFields(fields).WithError(err).Error("Failed to get LUKS device path from device path.")
 			return &csi.NodeUnstageVolumeResponse{}, err
 		}
 
-		// Ensure the LUKS device is closed if the luksMapperPath is set.
 		if luksMapperPath != "" {
+			fields["luksMapperPath"] = luksMapperPath
 			if err = p.devices.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath); err != nil {
 				if !errors.IsMaxWaitExceededError(err) {
 					Logc(ctx).WithFields(fields).WithError(err).Error("Failed to close LUKS device.")
@@ -2540,51 +2545,43 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 		}
 	}
 
+	// Attempt to flush the NVMe device.
 	if !nvmeDev.IsNil() {
-		// If device is found, proceed to flush and clean up.
-		err := nvmeDev.FlushDevice(ctx, p.unsafeDetach, force)
 		// If flush fails, give a grace period of 6 minutes (nvmeMaxFlushWaitDuration) before giving up.
-		if err != nil {
+		if err := nvmeDev.FlushDevice(ctx, p.unsafeDetach, force); err != nil {
 			if NVMeNamespacesFlushRetry[publishInfo.NVMeNamespaceUUID].IsZero() {
 				NVMeNamespacesFlushRetry[publishInfo.NVMeNamespaceUUID] = time.Now()
-				return nil, fmt.Errorf("error while flushing NVMe device, %v", err)
-			} else {
-				elapsed := time.Since(NVMeNamespacesFlushRetry[publishInfo.NVMeNamespaceUUID])
-				if elapsed > nvmeMaxFlushWaitDuration {
-					// Waited enough, log it and proceed with next step in detach flow.
-					Logc(ctx).WithFields(
-						LogFields{
-							"namespace": publishInfo.NVMeNamespaceUUID,
-							"elapsed":   elapsed,
-							"maxWait":   nvmeMaxFlushWaitDuration,
-						}).Debug("Volume is not safe to be detached. But, waited enough time.")
-					// Done with this, remove entry from exceptions list.
-					delete(NVMeNamespacesFlushRetry, publishInfo.NVMeNamespaceUUID)
-				} else {
-					// Allowing to wait for some more time. Let the kubelet retry.
-					Logc(ctx).WithFields(
-						LogFields{
-							"namespace": publishInfo.NVMeNamespaceUUID,
-							"elapsed":   elapsed,
-						}).Debug("Waiting for some more time.")
-					return nil, fmt.Errorf("error while flushing NVMe device, %v", err)
-				}
+				return nil, fmt.Errorf("failed to flush NVMe device; %v", err)
 			}
-		} else {
-			// No error in 'flush', remove entry from exceptions list in case it was added earlier.
-			delete(NVMeNamespacesFlushRetry, publishInfo.NVMeNamespaceUUID)
+
+			// If the max wait time for flush isn't hit yet, fail and let the CSI node agent call again.
+			elapsed := time.Since(NVMeNamespacesFlushRetry[publishInfo.NVMeNamespaceUUID])
+			if elapsed <= nvmeMaxFlushWaitDuration {
+				Logc(ctx).WithFields(LogFields{
+					"devicePath": devicePath,
+					"namespace":  publishInfo.NVMeNamespaceUUID,
+					"elapsed":    elapsed,
+				}).WithError(err).Debug("Could not flush NVMe device.")
+				return nil, fmt.Errorf("failed to flush NVMe device; %v", err)
+			}
+
+			Logc(ctx).WithFields(LogFields{
+				"namespace": publishInfo.NVMeNamespaceUUID,
+				"elapsed":   elapsed,
+				"maxWait":   nvmeMaxFlushWaitDuration,
+			}).Warn("Could not flush device within expected time period.")
 		}
+
+		delete(NVMeNamespacesFlushRetry, publishInfo.NVMeNamespaceUUID)
 	}
 
 	// Get the number of namespaces associated with the subsystem
 	nvmeSubsys := p.nvmeHandler.NewNVMeSubsystem(ctx, publishInfo.NVMeSubsystemNQN)
 	numNs, err := nvmeSubsys.GetNamespaceCount(ctx)
 	if err != nil {
-		Logc(ctx).WithFields(
-			LogFields{
-				"subsystem": publishInfo.NVMeSubsystemNQN,
-				"error":     err,
-			}).Debug("Error getting Namespace count.")
+		Logc(ctx).WithField(
+			"subsystem", publishInfo.NVMeSubsystemNQN,
+		).WithError(err).Debug("Error getting Namespace count.")
 	}
 
 	// If number of namespaces is more than 1, don't disconnect the subsystem. If we get any issues while getting the
@@ -2592,11 +2589,9 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 	// NVMe self-healing is enabled), which keeps track of namespaces associated with the subsystem.
 	if (err == nil && numNs <= 1) || (p.nvmeSelfHealingInterval > 0 && err != nil && disconnect) {
 		if err := nvmeSubsys.Disconnect(ctx); err != nil {
-			Logc(ctx).WithFields(
-				LogFields{
-					"subsystem": publishInfo.NVMeSubsystemNQN,
-					"error":     err,
-				}).Debug("Error disconnecting subsystem.")
+			Logc(ctx).WithField(
+				"subsystem", publishInfo.NVMeSubsystemNQN,
+			).WithError(err).Debug("Error disconnecting subsystem.")
 		}
 	}
 
@@ -2614,7 +2609,7 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 		return nil, status.Error(codes.Internal, errStr)
 	}
 
-	// If the luks device still exists, it means the device was unable to be closed prior to removing the block
+	// If the LUKS device still exists, it means the device was unable to be closed prior to removing the block
 	// device. This can happen if the LUN was deleted or offline. It should be removable by this point.
 	// It needs to be removed prior to removing the 'unmappedMpathDevice' device below.
 	if luksMapperPath != "" {
@@ -2669,7 +2664,7 @@ func (p *Plugin) nodePublishNVMeVolume(
 			Logc(ctx).WithError(err).Error("Failed to ensure current LUKS passphrase.")
 		}
 
-		// At this point, we must reassign the device path to the luks mapper path for mounts to work.
+		// At this point, we must reassign the device path to the LUKS mapper path for mounts to work.
 		devicePath = luksDevice.MappedDevicePath()
 	}
 

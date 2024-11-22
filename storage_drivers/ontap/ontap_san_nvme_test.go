@@ -2284,7 +2284,6 @@ func TestImport_LUKSNamespace(t *testing.T) {
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
 	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
 	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false, nil)
-	// mAPI.EXPECT().VolumeRename(ctx, originalName, volConfig.InternalName).Return(nil)
 
 	beforeLUKSOverheadBytesStr, err := utils.ConvertSizeToBytes(volConfig.Size)
 	if err != nil {

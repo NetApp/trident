@@ -404,6 +404,7 @@ func (client *Client) AttachVolume(
 		if err != nil {
 			return mpathSize, err
 		}
+
 		devicePath = luksDevice.MappedDevicePath()
 	}
 
@@ -418,11 +419,14 @@ func (client *Client) AttachVolume(
 	if existingFstype == "" {
 		if !isLUKSDevice {
 			if unformatted, err := client.deviceClient.IsDeviceUnformatted(ctx, devicePath); err != nil {
-				Logc(ctx).WithField("device",
-					devicePath).Errorf("Unable to identify if the device is unformatted; err: %v", err)
+				Logc(ctx).WithField(
+					"device", devicePath,
+				).WithError(err).Errorf("Unable to identify if the device is unformatted.")
 				return mpathSize, err
 			} else if !unformatted {
-				Logc(ctx).WithField("device", devicePath).Errorf("Device is not unformatted; err: %v", err)
+				Logc(ctx).WithField(
+					"device", devicePath,
+				).WithError(err).Errorf("Device is not unformatted.")
 				return mpathSize, fmt.Errorf("device %v is not unformatted", devicePath)
 			}
 		} else {
