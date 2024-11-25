@@ -15,7 +15,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/fsx v1.49.2
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.34.2
 	github.com/cenkalti/backoff/v4 v4.3.0
-	github.com/container-storage-interface/spec v1.8.0
+	github.com/container-storage-interface/spec v1.9.0
 	github.com/docker/go-plugins-helpers v0.0.0-20240701071450-45e2431495c8
 	github.com/dustin/go-humanize v1.0.2-0.20231009183035-961771c7ab99
 	github.com/elastic/go-sysinfo v1.14.2

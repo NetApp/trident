@@ -1018,6 +1018,13 @@ func (p *Plugin) ControllerGetVolume(
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
+func (p *Plugin) ControllerModifyVolume(
+	_ context.Context, _ *csi.ControllerModifyVolumeRequest,
+) (*csi.ControllerModifyVolumeResponse, error) {
+	// Trident doesn't support ControllerModifyVolume
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
 func (p *Plugin) getCSIVolumeFromTridentVolume(
 	ctx context.Context, volume *storage.VolumeExternal,
 ) (*csi.Volume, error) {
