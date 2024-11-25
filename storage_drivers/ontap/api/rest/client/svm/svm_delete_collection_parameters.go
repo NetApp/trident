@@ -438,17 +438,53 @@ type SvmDeleteCollectionParams struct {
 	*/
 	S3Allowed *bool
 
+	/* S3CertificateName.
+
+	   Filter by s3.certificate.name
+	*/
+	S3CertificateName *string
+
+	/* S3CertificateUUID.
+
+	   Filter by s3.certificate.uuid
+	*/
+	S3CertificateUUID *string
+
 	/* S3Enabled.
 
 	   Filter by s3.enabled
 	*/
 	S3Enabled *bool
 
+	/* S3IsHTTPEnabled.
+
+	   Filter by s3.is_http_enabled
+	*/
+	S3IsHTTPEnabled *bool
+
+	/* S3IsHTTPSEnabled.
+
+	   Filter by s3.is_https_enabled
+	*/
+	S3IsHTTPSEnabled *bool
+
 	/* S3Name.
 
 	   Filter by s3.name
 	*/
 	S3Name *string
+
+	/* S3Port.
+
+	   Filter by s3.port
+	*/
+	S3Port *int64
+
+	/* S3SecurePort.
+
+	   Filter by s3.secure_port
+	*/
+	S3SecurePort *int64
 
 	/* SerialRecords.
 
@@ -1283,6 +1319,28 @@ func (o *SvmDeleteCollectionParams) SetS3Allowed(s3Allowed *bool) {
 	o.S3Allowed = s3Allowed
 }
 
+// WithS3CertificateName adds the s3CertificateName to the svm delete collection params
+func (o *SvmDeleteCollectionParams) WithS3CertificateName(s3CertificateName *string) *SvmDeleteCollectionParams {
+	o.SetS3CertificateName(s3CertificateName)
+	return o
+}
+
+// SetS3CertificateName adds the s3CertificateName to the svm delete collection params
+func (o *SvmDeleteCollectionParams) SetS3CertificateName(s3CertificateName *string) {
+	o.S3CertificateName = s3CertificateName
+}
+
+// WithS3CertificateUUID adds the s3CertificateUUID to the svm delete collection params
+func (o *SvmDeleteCollectionParams) WithS3CertificateUUID(s3CertificateUUID *string) *SvmDeleteCollectionParams {
+	o.SetS3CertificateUUID(s3CertificateUUID)
+	return o
+}
+
+// SetS3CertificateUUID adds the s3CertificateUuid to the svm delete collection params
+func (o *SvmDeleteCollectionParams) SetS3CertificateUUID(s3CertificateUUID *string) {
+	o.S3CertificateUUID = s3CertificateUUID
+}
+
 // WithS3Enabled adds the s3Enabled to the svm delete collection params
 func (o *SvmDeleteCollectionParams) WithS3Enabled(s3Enabled *bool) *SvmDeleteCollectionParams {
 	o.SetS3Enabled(s3Enabled)
@@ -1294,6 +1352,28 @@ func (o *SvmDeleteCollectionParams) SetS3Enabled(s3Enabled *bool) {
 	o.S3Enabled = s3Enabled
 }
 
+// WithS3IsHTTPEnabled adds the s3IsHTTPEnabled to the svm delete collection params
+func (o *SvmDeleteCollectionParams) WithS3IsHTTPEnabled(s3IsHTTPEnabled *bool) *SvmDeleteCollectionParams {
+	o.SetS3IsHTTPEnabled(s3IsHTTPEnabled)
+	return o
+}
+
+// SetS3IsHTTPEnabled adds the s3IsHttpEnabled to the svm delete collection params
+func (o *SvmDeleteCollectionParams) SetS3IsHTTPEnabled(s3IsHTTPEnabled *bool) {
+	o.S3IsHTTPEnabled = s3IsHTTPEnabled
+}
+
+// WithS3IsHTTPSEnabled adds the s3IsHTTPSEnabled to the svm delete collection params
+func (o *SvmDeleteCollectionParams) WithS3IsHTTPSEnabled(s3IsHTTPSEnabled *bool) *SvmDeleteCollectionParams {
+	o.SetS3IsHTTPSEnabled(s3IsHTTPSEnabled)
+	return o
+}
+
+// SetS3IsHTTPSEnabled adds the s3IsHttpsEnabled to the svm delete collection params
+func (o *SvmDeleteCollectionParams) SetS3IsHTTPSEnabled(s3IsHTTPSEnabled *bool) {
+	o.S3IsHTTPSEnabled = s3IsHTTPSEnabled
+}
+
 // WithS3Name adds the s3Name to the svm delete collection params
 func (o *SvmDeleteCollectionParams) WithS3Name(s3Name *string) *SvmDeleteCollectionParams {
 	o.SetS3Name(s3Name)
@@ -1303,6 +1383,28 @@ func (o *SvmDeleteCollectionParams) WithS3Name(s3Name *string) *SvmDeleteCollect
 // SetS3Name adds the s3Name to the svm delete collection params
 func (o *SvmDeleteCollectionParams) SetS3Name(s3Name *string) {
 	o.S3Name = s3Name
+}
+
+// WithS3Port adds the s3Port to the svm delete collection params
+func (o *SvmDeleteCollectionParams) WithS3Port(s3Port *int64) *SvmDeleteCollectionParams {
+	o.SetS3Port(s3Port)
+	return o
+}
+
+// SetS3Port adds the s3Port to the svm delete collection params
+func (o *SvmDeleteCollectionParams) SetS3Port(s3Port *int64) {
+	o.S3Port = s3Port
+}
+
+// WithS3SecurePort adds the s3SecurePort to the svm delete collection params
+func (o *SvmDeleteCollectionParams) WithS3SecurePort(s3SecurePort *int64) *SvmDeleteCollectionParams {
+	o.SetS3SecurePort(s3SecurePort)
+	return o
+}
+
+// SetS3SecurePort adds the s3SecurePort to the svm delete collection params
+func (o *SvmDeleteCollectionParams) SetS3SecurePort(s3SecurePort *int64) {
+	o.S3SecurePort = s3SecurePort
 }
 
 // WithSerialRecords adds the serialRecords to the svm delete collection params
@@ -2496,6 +2598,40 @@ func (o *SvmDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.S3CertificateName != nil {
+
+		// query param s3.certificate.name
+		var qrS3CertificateName string
+
+		if o.S3CertificateName != nil {
+			qrS3CertificateName = *o.S3CertificateName
+		}
+		qS3CertificateName := qrS3CertificateName
+		if qS3CertificateName != "" {
+
+			if err := r.SetQueryParam("s3.certificate.name", qS3CertificateName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.S3CertificateUUID != nil {
+
+		// query param s3.certificate.uuid
+		var qrS3CertificateUUID string
+
+		if o.S3CertificateUUID != nil {
+			qrS3CertificateUUID = *o.S3CertificateUUID
+		}
+		qS3CertificateUUID := qrS3CertificateUUID
+		if qS3CertificateUUID != "" {
+
+			if err := r.SetQueryParam("s3.certificate.uuid", qS3CertificateUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.S3Enabled != nil {
 
 		// query param s3.enabled
@@ -2513,6 +2649,40 @@ func (o *SvmDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.S3IsHTTPEnabled != nil {
+
+		// query param s3.is_http_enabled
+		var qrS3IsHTTPEnabled bool
+
+		if o.S3IsHTTPEnabled != nil {
+			qrS3IsHTTPEnabled = *o.S3IsHTTPEnabled
+		}
+		qS3IsHTTPEnabled := swag.FormatBool(qrS3IsHTTPEnabled)
+		if qS3IsHTTPEnabled != "" {
+
+			if err := r.SetQueryParam("s3.is_http_enabled", qS3IsHTTPEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.S3IsHTTPSEnabled != nil {
+
+		// query param s3.is_https_enabled
+		var qrS3IsHTTPSEnabled bool
+
+		if o.S3IsHTTPSEnabled != nil {
+			qrS3IsHTTPSEnabled = *o.S3IsHTTPSEnabled
+		}
+		qS3IsHTTPSEnabled := swag.FormatBool(qrS3IsHTTPSEnabled)
+		if qS3IsHTTPSEnabled != "" {
+
+			if err := r.SetQueryParam("s3.is_https_enabled", qS3IsHTTPSEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.S3Name != nil {
 
 		// query param s3.name
@@ -2525,6 +2695,40 @@ func (o *SvmDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qS3Name != "" {
 
 			if err := r.SetQueryParam("s3.name", qS3Name); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.S3Port != nil {
+
+		// query param s3.port
+		var qrS3Port int64
+
+		if o.S3Port != nil {
+			qrS3Port = *o.S3Port
+		}
+		qS3Port := swag.FormatInt64(qrS3Port)
+		if qS3Port != "" {
+
+			if err := r.SetQueryParam("s3.port", qS3Port); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.S3SecurePort != nil {
+
+		// query param s3.secure_port
+		var qrS3SecurePort int64
+
+		if o.S3SecurePort != nil {
+			qrS3SecurePort = *o.S3SecurePort
+		}
+		qS3SecurePort := swag.FormatInt64(qrS3SecurePort)
+		if qS3SecurePort != "" {
+
+			if err := r.SetQueryParam("s3.secure_port", qS3SecurePort); err != nil {
 				return err
 			}
 		}

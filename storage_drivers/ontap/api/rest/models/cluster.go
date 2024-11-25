@@ -83,6 +83,10 @@ type Cluster struct {
 	// Example: support@company.com
 	Contact *string `json:"contact,omitempty"`
 
+	// Specifies whether the cluster is designed for disaggregated storage.
+	// Read Only: true
+	Disaggregated *bool `json:"disaggregated,omitempty"`
+
 	// license
 	License *ClusterInlineLicense `json:"license,omitempty"`
 
@@ -554,6 +558,10 @@ func (m *Cluster) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateDisaggregated(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateLicense(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -687,6 +695,15 @@ func (m *Cluster) contextValidateConfigurationBackup(ctx context.Context, format
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Cluster) contextValidateDisaggregated(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "disaggregated", "body", m.Disaggregated); err != nil {
+		return err
 	}
 
 	return nil

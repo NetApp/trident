@@ -30,6 +30,10 @@ type Port struct {
 	// enabled
 	Enabled *bool `json:"enabled,omitempty"`
 
+	// Requested flow control
+	// Enum: ["none","send","receive","full","pfc"]
+	FlowcontrolAdmin *string `json:"flowcontrol_admin,omitempty"`
+
 	// Number of interfaces hosted. This field is only applicable for cluster administrators. No value is returned for SVM administrators. If the node hosting a port is not healthy no value will be returned.
 	// Read Only: true
 	InterfaceCount *int64 `json:"interface_count,omitempty"`
@@ -62,6 +66,9 @@ type Port struct {
 	// Discovered devices
 	// Read Only: true
 	PortInlineDiscoveredDevices []*PortInlineDiscoveredDevicesInlineArrayItem `json:"discovered_devices,omitempty"`
+
+	// List of PFC queues
+	PortInlinePfcQueuesAdmin []*int64 `json:"pfc_queues_admin,omitempty"`
 
 	// Reachable broadcast domains.
 	// Read Only: true
@@ -114,6 +121,10 @@ func (m *Port) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateFlowcontrolAdmin(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateLag(formats); err != nil {
 		res = append(res, err)
 	}
@@ -131,6 +142,10 @@ func (m *Port) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePortInlineDiscoveredDevices(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePortInlinePfcQueuesAdmin(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -197,6 +212,92 @@ func (m *Port) validateBroadcastDomain(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var portTypeFlowcontrolAdminPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["none","send","receive","full","pfc"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		portTypeFlowcontrolAdminPropEnum = append(portTypeFlowcontrolAdminPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// port
+	// Port
+	// flowcontrol_admin
+	// FlowcontrolAdmin
+	// none
+	// END DEBUGGING
+	// PortFlowcontrolAdminNone captures enum value "none"
+	PortFlowcontrolAdminNone string = "none"
+
+	// BEGIN DEBUGGING
+	// port
+	// Port
+	// flowcontrol_admin
+	// FlowcontrolAdmin
+	// send
+	// END DEBUGGING
+	// PortFlowcontrolAdminSend captures enum value "send"
+	PortFlowcontrolAdminSend string = "send"
+
+	// BEGIN DEBUGGING
+	// port
+	// Port
+	// flowcontrol_admin
+	// FlowcontrolAdmin
+	// receive
+	// END DEBUGGING
+	// PortFlowcontrolAdminReceive captures enum value "receive"
+	PortFlowcontrolAdminReceive string = "receive"
+
+	// BEGIN DEBUGGING
+	// port
+	// Port
+	// flowcontrol_admin
+	// FlowcontrolAdmin
+	// full
+	// END DEBUGGING
+	// PortFlowcontrolAdminFull captures enum value "full"
+	PortFlowcontrolAdminFull string = "full"
+
+	// BEGIN DEBUGGING
+	// port
+	// Port
+	// flowcontrol_admin
+	// FlowcontrolAdmin
+	// pfc
+	// END DEBUGGING
+	// PortFlowcontrolAdminPfc captures enum value "pfc"
+	PortFlowcontrolAdminPfc string = "pfc"
+)
+
+// prop value enum
+func (m *Port) validateFlowcontrolAdminEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, portTypeFlowcontrolAdminPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Port) validateFlowcontrolAdmin(formats strfmt.Registry) error {
+	if swag.IsZero(m.FlowcontrolAdmin) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateFlowcontrolAdminEnum("flowcontrol_admin", "body", *m.FlowcontrolAdmin); err != nil {
+		return err
 	}
 
 	return nil
@@ -282,6 +383,29 @@ func (m *Port) validatePortInlineDiscoveredDevices(formats strfmt.Registry) erro
 				}
 				return err
 			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Port) validatePortInlinePfcQueuesAdmin(formats strfmt.Registry) error {
+	if swag.IsZero(m.PortInlinePfcQueuesAdmin) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.PortInlinePfcQueuesAdmin); i++ {
+		if swag.IsZero(m.PortInlinePfcQueuesAdmin[i]) { // not required
+			continue
+		}
+
+		if err := validate.MinimumInt("pfc_queues_admin"+"."+strconv.Itoa(i), "body", *m.PortInlinePfcQueuesAdmin[i], 0, false); err != nil {
+			return err
+		}
+
+		if err := validate.MaximumInt("pfc_queues_admin"+"."+strconv.Itoa(i), "body", *m.PortInlinePfcQueuesAdmin[i], 7, false); err != nil {
+			return err
 		}
 
 	}

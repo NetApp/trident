@@ -114,6 +114,9 @@ func NewS3ServiceModifyDefault(code int) *S3ServiceModifyDefault {
 | ---------- | ----------- |
 | 92405789   | The name \\\"{object server name}\\\" is not valid. A valid object server name must be a fully qualified domain name. |
 | 92405790   | Object store server name is not valid. Object store server names must have between 3 and 253 characters.  |
+| 92405900   | Certificate not found for SVM \\\"{svm.name}\\\".  |
+| 92405917   | The specified certificate name and UUID do not refer to the same certificate.   |
+| 92406020   | Only certificates of type \\\"server\\\" are supported.  |
 | 92406151   | Set the enabled field of the server to "down" before modifying following fields: {field name} |
 | 92406231   | One or more object store buckets exist with a default retention period greater than the \\\"max_lock_retention_period\\\" specified. Check the default retention period set for each bucket in the specified SVM and try the operation again.
 | 92406237   | One or more object store buckets exist with a default retention period less than the \\\"min_lock_retention_period\\\" specified. Check the default retention period set for each bucket in the specified SVM and try the operation again.

@@ -241,6 +241,7 @@ func NewSnapshotCreateDefault(code int) *SnapshotCreateDefault {
 | 1638617    | Bulk snapshot create is not supported with volume names in a mixed-version cluster. |
 | 1638618    | The property cannot be specified for snapshot create. |
 | 1638630    | Snapshot create operation is not supported on destination of SnapMirror active sync relationship with policy-type "automated-failover-duplex". |
+| 1638644    | POST, DELETE, and PATCH requests on the snapshot session endpoint are not supported on this platform. |
 */
 type SnapshotCreateDefault struct {
 	_statusCode int

@@ -128,6 +128,7 @@ func NewKerberosInterfaceModifyCollectionDefault(code int) *KerberosInterfaceMod
 | 3276937     | Failed to lookup the Vserver for the virtual interface.|
 | 3276941     | Kerberos is a required field.|
 | 3276942     | Service principal name is invalid. It must of the format:"nfs/<LIF-FQDN>@REALM"|
+| 3276943     | Lookup of Kerberos realm failed. The entry doesn't exist.|
 | 3276944     | Internal error. Reason: Failed to initialize the Kerberos context|
 | 3276945     | Internal error. Reason: Failed to parse the service principal name|
 | 3276951     | Warning: Skipping unsupported encryption type for service principal name|
@@ -136,6 +137,7 @@ func NewKerberosInterfaceModifyCollectionDefault(code int) *KerberosInterfaceMod
 | 3277019     | Cannot specify -force when enabling Kerberos.|
 | 3277020     | Modifying the NFS Kerberos configuration for a LIF that is not configured for NFS is not supported.|
 | 3277043     | Keytab import failed due to missing keys. Keys for encryption types are required for  Vserver but found no matching keys for service principal name. Generate the keytab file with all required keys and try again.|
+| 3277133     | The _machine_account_ property can only be specified when the KDC vendor is Microsoft.|
 */
 type KerberosInterfaceModifyCollectionDefault struct {
 	_statusCode int

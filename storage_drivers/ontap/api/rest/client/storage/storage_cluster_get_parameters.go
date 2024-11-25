@@ -68,6 +68,18 @@ type StorageClusterGetParams struct {
 	*/
 	BlockStorageAvailable *int64
 
+	/* BlockStorageDelayedFrees.
+
+	   Filter by block_storage.delayed_frees
+	*/
+	BlockStorageDelayedFrees *int64
+
+	/* BlockStorageFullThresholdPercent.
+
+	   Filter by block_storage.full_threshold_percent
+	*/
+	BlockStorageFullThresholdPercent *int64
+
 	/* BlockStorageInactiveData.
 
 	   Filter by block_storage.inactive_data
@@ -158,17 +170,41 @@ type StorageClusterGetParams struct {
 	*/
 	BlockStorageMediasUsed *int64
 
+	/* BlockStorageNearlyFullThresholdPercent.
+
+	   Filter by block_storage.nearly_full_threshold_percent
+	*/
+	BlockStorageNearlyFullThresholdPercent *int64
+
 	/* BlockStoragePhysicalUsed.
 
 	   Filter by block_storage.physical_used
 	*/
 	BlockStoragePhysicalUsed *int64
 
+	/* BlockStoragePhysicalUsedPercent.
+
+	   Filter by block_storage.physical_used_percent
+	*/
+	BlockStoragePhysicalUsedPercent *int64
+
 	/* BlockStorageSize.
 
 	   Filter by block_storage.size
 	*/
 	BlockStorageSize *int64
+
+	/* BlockStorageTotalMetadataUsed.
+
+	   Filter by block_storage.total_metadata_used
+	*/
+	BlockStorageTotalMetadataUsed *int64
+
+	/* BlockStorageUnusableSpace.
+
+	   Filter by block_storage.unusable_space
+	*/
+	BlockStorageUnusableSpace *int64
 
 	/* BlockStorageUsed.
 
@@ -304,6 +340,28 @@ func (o *StorageClusterGetParams) WithBlockStorageAvailable(blockStorageAvailabl
 // SetBlockStorageAvailable adds the blockStorageAvailable to the storage cluster get params
 func (o *StorageClusterGetParams) SetBlockStorageAvailable(blockStorageAvailable *int64) {
 	o.BlockStorageAvailable = blockStorageAvailable
+}
+
+// WithBlockStorageDelayedFrees adds the blockStorageDelayedFrees to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageDelayedFrees(blockStorageDelayedFrees *int64) *StorageClusterGetParams {
+	o.SetBlockStorageDelayedFrees(blockStorageDelayedFrees)
+	return o
+}
+
+// SetBlockStorageDelayedFrees adds the blockStorageDelayedFrees to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageDelayedFrees(blockStorageDelayedFrees *int64) {
+	o.BlockStorageDelayedFrees = blockStorageDelayedFrees
+}
+
+// WithBlockStorageFullThresholdPercent adds the blockStorageFullThresholdPercent to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageFullThresholdPercent(blockStorageFullThresholdPercent *int64) *StorageClusterGetParams {
+	o.SetBlockStorageFullThresholdPercent(blockStorageFullThresholdPercent)
+	return o
+}
+
+// SetBlockStorageFullThresholdPercent adds the blockStorageFullThresholdPercent to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageFullThresholdPercent(blockStorageFullThresholdPercent *int64) {
+	o.BlockStorageFullThresholdPercent = blockStorageFullThresholdPercent
 }
 
 // WithBlockStorageInactiveData adds the blockStorageInactiveData to the storage cluster get params
@@ -471,6 +529,17 @@ func (o *StorageClusterGetParams) SetBlockStorageMediasUsed(blockStorageMediasUs
 	o.BlockStorageMediasUsed = blockStorageMediasUsed
 }
 
+// WithBlockStorageNearlyFullThresholdPercent adds the blockStorageNearlyFullThresholdPercent to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageNearlyFullThresholdPercent(blockStorageNearlyFullThresholdPercent *int64) *StorageClusterGetParams {
+	o.SetBlockStorageNearlyFullThresholdPercent(blockStorageNearlyFullThresholdPercent)
+	return o
+}
+
+// SetBlockStorageNearlyFullThresholdPercent adds the blockStorageNearlyFullThresholdPercent to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageNearlyFullThresholdPercent(blockStorageNearlyFullThresholdPercent *int64) {
+	o.BlockStorageNearlyFullThresholdPercent = blockStorageNearlyFullThresholdPercent
+}
+
 // WithBlockStoragePhysicalUsed adds the blockStoragePhysicalUsed to the storage cluster get params
 func (o *StorageClusterGetParams) WithBlockStoragePhysicalUsed(blockStoragePhysicalUsed *int64) *StorageClusterGetParams {
 	o.SetBlockStoragePhysicalUsed(blockStoragePhysicalUsed)
@@ -482,6 +551,17 @@ func (o *StorageClusterGetParams) SetBlockStoragePhysicalUsed(blockStoragePhysic
 	o.BlockStoragePhysicalUsed = blockStoragePhysicalUsed
 }
 
+// WithBlockStoragePhysicalUsedPercent adds the blockStoragePhysicalUsedPercent to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStoragePhysicalUsedPercent(blockStoragePhysicalUsedPercent *int64) *StorageClusterGetParams {
+	o.SetBlockStoragePhysicalUsedPercent(blockStoragePhysicalUsedPercent)
+	return o
+}
+
+// SetBlockStoragePhysicalUsedPercent adds the blockStoragePhysicalUsedPercent to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStoragePhysicalUsedPercent(blockStoragePhysicalUsedPercent *int64) {
+	o.BlockStoragePhysicalUsedPercent = blockStoragePhysicalUsedPercent
+}
+
 // WithBlockStorageSize adds the blockStorageSize to the storage cluster get params
 func (o *StorageClusterGetParams) WithBlockStorageSize(blockStorageSize *int64) *StorageClusterGetParams {
 	o.SetBlockStorageSize(blockStorageSize)
@@ -491,6 +571,28 @@ func (o *StorageClusterGetParams) WithBlockStorageSize(blockStorageSize *int64) 
 // SetBlockStorageSize adds the blockStorageSize to the storage cluster get params
 func (o *StorageClusterGetParams) SetBlockStorageSize(blockStorageSize *int64) {
 	o.BlockStorageSize = blockStorageSize
+}
+
+// WithBlockStorageTotalMetadataUsed adds the blockStorageTotalMetadataUsed to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageTotalMetadataUsed(blockStorageTotalMetadataUsed *int64) *StorageClusterGetParams {
+	o.SetBlockStorageTotalMetadataUsed(blockStorageTotalMetadataUsed)
+	return o
+}
+
+// SetBlockStorageTotalMetadataUsed adds the blockStorageTotalMetadataUsed to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageTotalMetadataUsed(blockStorageTotalMetadataUsed *int64) {
+	o.BlockStorageTotalMetadataUsed = blockStorageTotalMetadataUsed
+}
+
+// WithBlockStorageUnusableSpace adds the blockStorageUnusableSpace to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageUnusableSpace(blockStorageUnusableSpace *int64) *StorageClusterGetParams {
+	o.SetBlockStorageUnusableSpace(blockStorageUnusableSpace)
+	return o
+}
+
+// SetBlockStorageUnusableSpace adds the blockStorageUnusableSpace to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageUnusableSpace(blockStorageUnusableSpace *int64) {
+	o.BlockStorageUnusableSpace = blockStorageUnusableSpace
 }
 
 // WithBlockStorageUsed adds the blockStorageUsed to the storage cluster get params
@@ -645,6 +747,40 @@ func (o *StorageClusterGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qBlockStorageAvailable != "" {
 
 			if err := r.SetQueryParam("block_storage.available", qBlockStorageAvailable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageDelayedFrees != nil {
+
+		// query param block_storage.delayed_frees
+		var qrBlockStorageDelayedFrees int64
+
+		if o.BlockStorageDelayedFrees != nil {
+			qrBlockStorageDelayedFrees = *o.BlockStorageDelayedFrees
+		}
+		qBlockStorageDelayedFrees := swag.FormatInt64(qrBlockStorageDelayedFrees)
+		if qBlockStorageDelayedFrees != "" {
+
+			if err := r.SetQueryParam("block_storage.delayed_frees", qBlockStorageDelayedFrees); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageFullThresholdPercent != nil {
+
+		// query param block_storage.full_threshold_percent
+		var qrBlockStorageFullThresholdPercent int64
+
+		if o.BlockStorageFullThresholdPercent != nil {
+			qrBlockStorageFullThresholdPercent = *o.BlockStorageFullThresholdPercent
+		}
+		qBlockStorageFullThresholdPercent := swag.FormatInt64(qrBlockStorageFullThresholdPercent)
+		if qBlockStorageFullThresholdPercent != "" {
+
+			if err := r.SetQueryParam("block_storage.full_threshold_percent", qBlockStorageFullThresholdPercent); err != nil {
 				return err
 			}
 		}
@@ -905,6 +1041,23 @@ func (o *StorageClusterGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
+	if o.BlockStorageNearlyFullThresholdPercent != nil {
+
+		// query param block_storage.nearly_full_threshold_percent
+		var qrBlockStorageNearlyFullThresholdPercent int64
+
+		if o.BlockStorageNearlyFullThresholdPercent != nil {
+			qrBlockStorageNearlyFullThresholdPercent = *o.BlockStorageNearlyFullThresholdPercent
+		}
+		qBlockStorageNearlyFullThresholdPercent := swag.FormatInt64(qrBlockStorageNearlyFullThresholdPercent)
+		if qBlockStorageNearlyFullThresholdPercent != "" {
+
+			if err := r.SetQueryParam("block_storage.nearly_full_threshold_percent", qBlockStorageNearlyFullThresholdPercent); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.BlockStoragePhysicalUsed != nil {
 
 		// query param block_storage.physical_used
@@ -922,6 +1075,23 @@ func (o *StorageClusterGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
+	if o.BlockStoragePhysicalUsedPercent != nil {
+
+		// query param block_storage.physical_used_percent
+		var qrBlockStoragePhysicalUsedPercent int64
+
+		if o.BlockStoragePhysicalUsedPercent != nil {
+			qrBlockStoragePhysicalUsedPercent = *o.BlockStoragePhysicalUsedPercent
+		}
+		qBlockStoragePhysicalUsedPercent := swag.FormatInt64(qrBlockStoragePhysicalUsedPercent)
+		if qBlockStoragePhysicalUsedPercent != "" {
+
+			if err := r.SetQueryParam("block_storage.physical_used_percent", qBlockStoragePhysicalUsedPercent); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.BlockStorageSize != nil {
 
 		// query param block_storage.size
@@ -934,6 +1104,40 @@ func (o *StorageClusterGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qBlockStorageSize != "" {
 
 			if err := r.SetQueryParam("block_storage.size", qBlockStorageSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageTotalMetadataUsed != nil {
+
+		// query param block_storage.total_metadata_used
+		var qrBlockStorageTotalMetadataUsed int64
+
+		if o.BlockStorageTotalMetadataUsed != nil {
+			qrBlockStorageTotalMetadataUsed = *o.BlockStorageTotalMetadataUsed
+		}
+		qBlockStorageTotalMetadataUsed := swag.FormatInt64(qrBlockStorageTotalMetadataUsed)
+		if qBlockStorageTotalMetadataUsed != "" {
+
+			if err := r.SetQueryParam("block_storage.total_metadata_used", qBlockStorageTotalMetadataUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageUnusableSpace != nil {
+
+		// query param block_storage.unusable_space
+		var qrBlockStorageUnusableSpace int64
+
+		if o.BlockStorageUnusableSpace != nil {
+			qrBlockStorageUnusableSpace = *o.BlockStorageUnusableSpace
+		}
+		qBlockStorageUnusableSpace := swag.FormatInt64(qrBlockStorageUnusableSpace)
+		if qBlockStorageUnusableSpace != "" {
+
+			if err := r.SetQueryParam("block_storage.unusable_space", qBlockStorageUnusableSpace); err != nil {
 				return err
 			}
 		}

@@ -215,6 +215,9 @@ func NewConsistencyGroupModifyCollectionDefault(code int) *ConsistencyGroupModif
 | 53411870 | When using the \"round_robin\" layout, the volume count must not be greater than the LUN count. |
 | 53411942 | The application or component type of a consistency group that has an associated SnapMirror relationship cannot be changed. |
 | 53411959 | Volumes with snapshot locking enabled cannot be added to a consistency group. |
+| 53412027 | Failed to update the snapshot policy because the snapshot policies are not supported on the destination consistency group of SnapMirror active sync relationships. |
+| 53412056 | The consistency group is not a FlexClone. |
+| 53412057 | Consistency group split operation failed. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ConsistencyGroupModifyCollectionDefault struct {
@@ -311,7 +314,7 @@ type ConsistencyGroupModifyCollectionBody struct {
 
 	// The LUNs array can be used to create or modify LUNs in a consistency group on a new or existing volume that is a member of the consistency group. LUNs are considered members of a consistency group if they are located on a volume that is a member of the consistency group.
 	//
-	// Max Items: 16
+	//
 	// Min Items: 0
 	// Unique: true
 	Luns []*ConsistencyGroupModifyCollectionParamsBodyLunsItems0 `json:"luns"`
@@ -332,7 +335,7 @@ type ConsistencyGroupModifyCollectionBody struct {
 	// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. NVMe namespaces support being cloned. An NVMe namespace cannot be renamed, resized, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace. See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
 	// An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.
 	//
-	// Max Items: 16
+	//
 	// Min Items: 0
 	// Unique: true
 	Namespaces []*ConsistencyGroupModifyCollectionParamsBodyNamespacesItems0 `json:"namespaces"`
@@ -652,10 +655,6 @@ func (o *ConsistencyGroupModifyCollectionBody) validateLuns(formats strfmt.Regis
 		return err
 	}
 
-	if err := validate.MaxItems("info"+"."+"luns", "body", iLunsSize, 16); err != nil {
-		return err
-	}
-
 	if err := validate.UniqueItems("info"+"."+"luns", "body", o.Luns); err != nil {
 		return err
 	}
@@ -721,10 +720,6 @@ func (o *ConsistencyGroupModifyCollectionBody) validateNamespaces(formats strfmt
 	iNamespacesSize := int64(len(o.Namespaces))
 
 	if err := validate.MinItems("info"+"."+"namespaces", "body", iNamespacesSize, 0); err != nil {
-		return err
-	}
-
-	if err := validate.MaxItems("info"+"."+"namespaces", "body", iNamespacesSize, 16); err != nil {
 		return err
 	}
 
@@ -1576,7 +1571,7 @@ type ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0 struct {
 
 	// The LUNs array can be used to create or modify LUNs in a consistency group on a new or existing volume that is a member of the consistency group. LUNs are considered members of a consistency group if they are located on a volume that is a member of the consistency group.
 	//
-	// Max Items: 16
+	//
 	// Min Items: 0
 	// Unique: true
 	Luns []*ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0LunsItems0 `json:"luns"`
@@ -1591,7 +1586,7 @@ type ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0 struct {
 	// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. NVMe namespaces support being cloned. An NVMe namespace cannot be renamed, resized, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace. See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
 	// An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.
 	//
-	// Max Items: 16
+	//
 	// Min Items: 0
 	// Unique: true
 	Namespaces []*ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0NamespacesItems0 `json:"namespaces"`
@@ -1763,10 +1758,6 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0) vali
 		return err
 	}
 
-	if err := validate.MaxItems("luns", "body", iLunsSize, 16); err != nil {
-		return err
-	}
-
 	if err := validate.UniqueItems("luns", "body", o.Luns); err != nil {
 		return err
 	}
@@ -1798,10 +1789,6 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0) vali
 	iNamespacesSize := int64(len(o.Namespaces))
 
 	if err := validate.MinItems("namespaces", "body", iNamespacesSize, 0); err != nil {
-		return err
-	}
-
-	if err := validate.MaxItems("namespaces", "body", iNamespacesSize, 16); err != nil {
 		return err
 	}
 
@@ -3331,7 +3318,7 @@ type ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0LunsItems0
 	// igroup
 	Igroup *ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0LunsItems0LunMapsItems0Igroup `json:"igroup,omitempty"`
 
-	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value.
+	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value. This property is not supported when the _provisioning_options.count_ property is 2 or more.
 	//
 	LogicalUnitNumber *int64 `json:"logical_unit_number,omitempty"`
 }
@@ -9797,7 +9784,7 @@ type ConsistencyGroupModifyCollectionParamsBodyLunsItems0LunMapsItems0 struct {
 	// igroup
 	Igroup *ConsistencyGroupModifyCollectionParamsBodyLunsItems0LunMapsItems0Igroup `json:"igroup,omitempty"`
 
-	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value.
+	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value. This property is not supported when the _provisioning_options.count_ property is 2 or more.
 	//
 	LogicalUnitNumber *int64 `json:"logical_unit_number,omitempty"`
 }
@@ -12370,7 +12357,7 @@ type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsIte
 
 	// The LUNs array can be used to create or modify LUNs in a consistency group on a new or existing volume that is a member of the consistency group. LUNs are considered members of a consistency group if they are located on a volume that is a member of the consistency group.
 	//
-	// Max Items: 16
+	//
 	// Min Items: 0
 	// Unique: true
 	Luns []*ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0LunsItems0 `json:"luns"`
@@ -12385,7 +12372,7 @@ type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsIte
 	// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. NVMe namespaces support being cloned. An NVMe namespace cannot be renamed, resized, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace. See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
 	// An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.
 	//
-	// Max Items: 16
+	//
 	// Min Items: 0
 	// Unique: true
 	Namespaces []*ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0NamespacesItems0 `json:"namespaces"`
@@ -12557,10 +12544,6 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroup
 		return err
 	}
 
-	if err := validate.MaxItems("luns", "body", iLunsSize, 16); err != nil {
-		return err
-	}
-
 	if err := validate.UniqueItems("luns", "body", o.Luns); err != nil {
 		return err
 	}
@@ -12592,10 +12575,6 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroup
 	iNamespacesSize := int64(len(o.Namespaces))
 
 	if err := validate.MinItems("namespaces", "body", iNamespacesSize, 0); err != nil {
-		return err
-	}
-
-	if err := validate.MaxItems("namespaces", "body", iNamespacesSize, 16); err != nil {
 		return err
 	}
 
@@ -14125,7 +14104,7 @@ type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsIte
 	// igroup
 	Igroup *ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0LunsItems0LunMapsItems0Igroup `json:"igroup,omitempty"`
 
-	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value.
+	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value. This property is not supported when the _provisioning_options.count_ property is 2 or more.
 	//
 	LogicalUnitNumber *int64 `json:"logical_unit_number,omitempty"`
 }
@@ -20591,7 +20570,7 @@ type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0LunsItems0LunMapsIte
 	// igroup
 	Igroup *ConsistencyGroupModifyCollectionParamsBodyRecordsItems0LunsItems0LunMapsItems0Igroup `json:"igroup,omitempty"`
 
-	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value.
+	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value. This property is not supported when the _provisioning_options.count_ property is 2 or more.
 	//
 	LogicalUnitNumber *int64 `json:"logical_unit_number,omitempty"`
 }

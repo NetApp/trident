@@ -260,8 +260,9 @@ Also see the table of common errors in the <a href="#Response_body">Response bod
 ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
-| 9699340    | SVM UUID lookup failed                                                        |
-| 9699407    | Additional fields are provided                                                |
+| 262186     | Field "log.retention.duration" cannot be used with field "log.retention.count" |
+| 9699340    | SVM UUID lookup failed                                                         |
+| 9699407    | Additional fields are provided                                                 |
 */
 type S3AuditCreateDefault struct {
 	_statusCode int

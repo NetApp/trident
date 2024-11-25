@@ -228,12 +228,15 @@ func NewStorageUnitCreateDefault(code int) *StorageUnitCreateDefault {
 | ---------- | ----------- |
 | 917525 | The specified storage unit does not exist in the svm. |
 | 917526 | Duplicate storage unit name. |
+| 918232 | The specified storage unit identifier fields must be provided. |
 | 918243 | The specified snapshot UUID is not correct for the specified snapshot name. |
 | 1638400 | Failed to retrieve the storage unit snapshot information. |
 | 5374604 | _false_ is not a supported value for this property. |
 | 5376459 | The specified storage unit UUID is not correct for the storage unit name. |
 | 5376461 | An invalid storage unit name was specified. |
+| 5376489 | The specified storage unit does not exist in the svm. |
 | 5376490 | Storage unit not found. |
+| 5376492 | The source storage unit for the clone operation is not specified. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type StorageUnitCreateDefault struct {

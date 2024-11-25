@@ -20,28 +20,34 @@ import (
 type StorageUnitClone struct {
 
 	// Inherited physical used from the clone's base snapshot.
+	//
 	// Read Only: true
 	InheritedPhysicalUsed *int64 `json:"inherited_physical_used,omitempty"`
 
 	// Inherited savings from the clone's base snapshot.
+	//
 	// Read Only: true
 	InheritedSavings *int64 `json:"inherited_savings,omitempty"`
 
 	// Specifies if this storage unit is a normal FlexVol storage unit or FlexClone storage unit. Valid in POST.
+	//
 	IsFlexclone *bool `json:"is_flexclone,omitempty"`
 
 	// source
 	Source *StorageUnitCloneInlineSource `json:"source,omitempty"`
 
 	// Percentage of FlexClone storage unit blocks split from its parent storage unit.
+	//
 	// Read Only: true
 	SplitCompletePercent *int64 `json:"split_complete_percent,omitempty"`
 
 	// Space required by the containing-aggregate to split the FlexClone storage unit.
+	//
 	// Read Only: true
 	SplitEstimate *int64 `json:"split_estimate,omitempty"`
 
-	// This field is set when a split is executed on an existing FlexClone storage unit, that is when the FlexClone storage unit is split from its parent FlexVol storage unit. Setting this field initiates a split of an existing FlexClone storage unit from a FlexVol storage unit. Valid in PATCH.
+	// This field is set when a split is executed on a FlexClone storage unit, that is when the FlexClone storage unit is split from its parent FlexVol storage unit. Setting this field initiates a split of a FlexClone storage unit from a FlexVol storage unit. Valid in POST and PATCH.
+	//
 	SplitInitiated *bool `json:"split_initiated,omitempty"`
 }
 
@@ -533,10 +539,12 @@ type StorageUnitCloneInlineSourceInlineStorageUnit struct {
 	Links *StorageUnitCloneInlineSourceInlineStorageUnitInlineLinks `json:"_links,omitempty"`
 
 	// The name of the storage unit.
+	//
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the storage unit.
+	//
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
 }

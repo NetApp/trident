@@ -60,6 +60,16 @@ type ClientService interface {
 
 	S3BucketModifyCollection(params *S3BucketModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketModifyCollectionOK, *S3BucketModifyCollectionAccepted, error)
 
+	S3BucketSnapshotCollectionGet(params *S3BucketSnapshotCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSnapshotCollectionGetOK, error)
+
+	S3BucketSnapshotCreate(params *S3BucketSnapshotCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSnapshotCreateCreated, *S3BucketSnapshotCreateAccepted, error)
+
+	S3BucketSnapshotDelete(params *S3BucketSnapshotDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSnapshotDeleteOK, error)
+
+	S3BucketSnapshotDeleteCollection(params *S3BucketSnapshotDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSnapshotDeleteCollectionOK, error)
+
+	S3BucketSnapshotGet(params *S3BucketSnapshotGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSnapshotGetOK, error)
+
 	S3BucketSvmCreate(params *S3BucketSvmCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmCreateCreated, *S3BucketSvmCreateAccepted, error)
 
 	S3BucketSvmDelete(params *S3BucketSvmDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmDeleteOK, *S3BucketSvmDeleteAccepted, error)
@@ -908,6 +918,220 @@ func (a *Client) S3BucketModifyCollection(params *S3BucketModifyCollectionParams
 	// unexpected success response
 	unexpectedSuccess := result.(*S3BucketModifyCollectionDefault)
 	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	S3BucketSnapshotCollectionGet Retrieves a collection of S3 bucket snapshots.
+
+### Related ONTAP commands
+* `vserver object-store-server bucket snapshot show`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/snapshots`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets_{s3_bucket.uuid}_snapshots)
+*/
+func (a *Client) S3BucketSnapshotCollectionGet(params *S3BucketSnapshotCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSnapshotCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketSnapshotCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_snapshot_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/snapshots",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketSnapshotCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3BucketSnapshotCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketSnapshotCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	S3BucketSnapshotCreate Creates an S3 bucket snapshot.
+
+### Required properties
+* `name` - Name of the S3 bucket snapshot to be created.
+### Related ONTAP commands
+* `vserver object-store-server bucket snapshot create`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/snapshots`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets_{s3_bucket.uuid}_snapshots)
+*/
+func (a *Client) S3BucketSnapshotCreate(params *S3BucketSnapshotCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSnapshotCreateCreated, *S3BucketSnapshotCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketSnapshotCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_snapshot_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/snapshots",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketSnapshotCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *S3BucketSnapshotCreateCreated:
+		return value, nil, nil
+	case *S3BucketSnapshotCreateAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketSnapshotCreateDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	S3BucketSnapshotDelete Deletes S3 bucket snapshot.
+
+### Related ONTAP commands
+* `vserver object-store-server bucket snapshot delete`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/snapshots`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets_{s3_bucket.uuid}_snapshots)
+*/
+func (a *Client) S3BucketSnapshotDelete(params *S3BucketSnapshotDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSnapshotDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketSnapshotDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_snapshot_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/snapshots/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketSnapshotDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3BucketSnapshotDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketSnapshotDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+S3BucketSnapshotDeleteCollection s3 bucket snapshot delete collection API
+*/
+func (a *Client) S3BucketSnapshotDeleteCollection(params *S3BucketSnapshotDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSnapshotDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketSnapshotDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_snapshot_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/snapshots",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketSnapshotDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3BucketSnapshotDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketSnapshotDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	S3BucketSnapshotGet Retrieves details of a specific S3 bucket snapshot.
+
+### Related ONTAP commands
+* `vserver object-store-server bucket snapshot show`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/snapshots`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets_{s3_bucket.uuid}_snapshots)
+*/
+func (a *Client) S3BucketSnapshotGet(params *S3BucketSnapshotGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSnapshotGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketSnapshotGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_snapshot_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/buckets/{s3_bucket.uuid}/snapshots/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketSnapshotGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3BucketSnapshotGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketSnapshotGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*

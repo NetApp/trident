@@ -168,17 +168,17 @@ type SnapshotModifyCollectionParams struct {
 	*/
 	SnaplockExpired *bool
 
+	/* SnaplockExpiryTime.
+
+	   Filter by snaplock.expiry_time
+	*/
+	SnaplockExpiryTime *string
+
 	/* SnaplockTimeUntilExpiry.
 
 	   Filter by snaplock.time_until_expiry
 	*/
 	SnaplockTimeUntilExpiry *string
-
-	/* SnaplockExpiryTime.
-
-	   Filter by snaplock_expiry_time
-	*/
-	SnaplockExpiryTime *string
 
 	/* SnapmirrorLabel.
 
@@ -488,17 +488,6 @@ func (o *SnapshotModifyCollectionParams) SetSnaplockExpired(snaplockExpired *boo
 	o.SnaplockExpired = snaplockExpired
 }
 
-// WithSnaplockTimeUntilExpiry adds the snaplockTimeUntilExpiry to the snapshot modify collection params
-func (o *SnapshotModifyCollectionParams) WithSnaplockTimeUntilExpiry(snaplockTimeUntilExpiry *string) *SnapshotModifyCollectionParams {
-	o.SetSnaplockTimeUntilExpiry(snaplockTimeUntilExpiry)
-	return o
-}
-
-// SetSnaplockTimeUntilExpiry adds the snaplockTimeUntilExpiry to the snapshot modify collection params
-func (o *SnapshotModifyCollectionParams) SetSnaplockTimeUntilExpiry(snaplockTimeUntilExpiry *string) {
-	o.SnaplockTimeUntilExpiry = snaplockTimeUntilExpiry
-}
-
 // WithSnaplockExpiryTime adds the snaplockExpiryTime to the snapshot modify collection params
 func (o *SnapshotModifyCollectionParams) WithSnaplockExpiryTime(snaplockExpiryTime *string) *SnapshotModifyCollectionParams {
 	o.SetSnaplockExpiryTime(snaplockExpiryTime)
@@ -508,6 +497,17 @@ func (o *SnapshotModifyCollectionParams) WithSnaplockExpiryTime(snaplockExpiryTi
 // SetSnaplockExpiryTime adds the snaplockExpiryTime to the snapshot modify collection params
 func (o *SnapshotModifyCollectionParams) SetSnaplockExpiryTime(snaplockExpiryTime *string) {
 	o.SnaplockExpiryTime = snaplockExpiryTime
+}
+
+// WithSnaplockTimeUntilExpiry adds the snaplockTimeUntilExpiry to the snapshot modify collection params
+func (o *SnapshotModifyCollectionParams) WithSnaplockTimeUntilExpiry(snaplockTimeUntilExpiry *string) *SnapshotModifyCollectionParams {
+	o.SetSnaplockTimeUntilExpiry(snaplockTimeUntilExpiry)
+	return o
+}
+
+// SetSnaplockTimeUntilExpiry adds the snaplockTimeUntilExpiry to the snapshot modify collection params
+func (o *SnapshotModifyCollectionParams) SetSnaplockTimeUntilExpiry(snaplockTimeUntilExpiry *string) {
+	o.SnaplockTimeUntilExpiry = snaplockTimeUntilExpiry
 }
 
 // WithSnapmirrorLabel adds the snapmirrorLabel to the snapshot modify collection params
@@ -881,6 +881,23 @@ func (o *SnapshotModifyCollectionParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
+	if o.SnaplockExpiryTime != nil {
+
+		// query param snaplock.expiry_time
+		var qrSnaplockExpiryTime string
+
+		if o.SnaplockExpiryTime != nil {
+			qrSnaplockExpiryTime = *o.SnaplockExpiryTime
+		}
+		qSnaplockExpiryTime := qrSnaplockExpiryTime
+		if qSnaplockExpiryTime != "" {
+
+			if err := r.SetQueryParam("snaplock.expiry_time", qSnaplockExpiryTime); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SnaplockTimeUntilExpiry != nil {
 
 		// query param snaplock.time_until_expiry
@@ -893,23 +910,6 @@ func (o *SnapshotModifyCollectionParams) WriteToRequest(r runtime.ClientRequest,
 		if qSnaplockTimeUntilExpiry != "" {
 
 			if err := r.SetQueryParam("snaplock.time_until_expiry", qSnaplockTimeUntilExpiry); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.SnaplockExpiryTime != nil {
-
-		// query param snaplock_expiry_time
-		var qrSnaplockExpiryTime string
-
-		if o.SnaplockExpiryTime != nil {
-			qrSnaplockExpiryTime = *o.SnaplockExpiryTime
-		}
-		qSnaplockExpiryTime := qrSnaplockExpiryTime
-		if qSnaplockExpiryTime != "" {
-
-			if err := r.SetQueryParam("snaplock_expiry_time", qSnaplockExpiryTime); err != nil {
 				return err
 			}
 		}

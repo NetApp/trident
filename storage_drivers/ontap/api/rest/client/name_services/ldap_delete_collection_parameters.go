@@ -296,7 +296,7 @@ type LdapDeleteCollectionParams struct {
 
 	/* StatusIPV6State.
 
-	   Filter by status.ipv6.state
+	   Filter by status.ipv6_state
 	*/
 	StatusIPV6State *string
 
@@ -1580,7 +1580,7 @@ func (o *LdapDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, reg
 
 	if o.StatusIPV6State != nil {
 
-		// query param status.ipv6.state
+		// query param status.ipv6_state
 		var qrStatusIPV6State string
 
 		if o.StatusIPV6State != nil {
@@ -1589,7 +1589,7 @@ func (o *LdapDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, reg
 		qStatusIPV6State := qrStatusIPV6State
 		if qStatusIPV6State != "" {
 
-			if err := r.SetQueryParam("status.ipv6.state", qStatusIPV6State); err != nil {
+			if err := r.SetQueryParam("status.ipv6_state", qStatusIPV6State); err != nil {
 				return err
 			}
 		}

@@ -183,7 +183,6 @@ func NewConsistencyGroupSnapshotModifyCollectionDefault(code int) *ConsistencyGr
 | 53412015 | SnapLock expiry time cannot be before the current expiry time. |
 | 53412016 | Snapshot is not retained by SnapLock. |
 | 53412017 | The operation is not supported on this platform. |
-| 53412027 | Failed to update the snapshot policy because the snapshot policies are not supported on the destination consistency group of SnapMirror active sync relationships. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ConsistencyGroupSnapshotModifyCollectionDefault struct {

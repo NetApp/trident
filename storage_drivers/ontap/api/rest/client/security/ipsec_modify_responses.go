@@ -115,9 +115,10 @@ func NewIpsecModifyDefault(code int) *IpsecModifyDefault {
 | 66256898 | Internal error. Failed to enable IPsec. |
 | 66256899 | Internal error. Failed to disable IPsec. |
 | 66256913 | Offload setting changes are not allowed when IPsec is enabled. |
-| 66256915 | Both anti-replay protection and IPsec offload cannot be operational at the same time. |
+| 66256915 | Anti-replay protection and IPsec offload cannot be operational at the same time. |
 | 66257007 | Failed to update replay window size. |
 | 66257199 | IPsec is not supported in the current cluster version. |
+| 66257496 | IPsec must be enabled to support BGP peer groups with MD5. Disable MD5 first in the BGP peer group. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type IpsecModifyDefault struct {

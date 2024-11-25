@@ -213,6 +213,7 @@ func NewSnapshotDeleteCollectionDefault(code int) *SnapshotDeleteCollectionDefau
 | 1638543    | Failed to delete snapshot because it has an owner. |
 | 1638555    | The specified snapshot has not expired or is locked. |
 | 1638600    | The snapshot does not exist. |
+| 1638644    | POST, DELETE, and PATCH requests on the snapshot session endpoint are not supported on this platform. |
 */
 type SnapshotDeleteCollectionDefault struct {
 	_statusCode int

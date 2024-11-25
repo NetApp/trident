@@ -121,9 +121,10 @@ func NewNfsTLSInterfaceModifyCollectionDefault(code int) *NfsTLSInterfaceModifyC
 | 3277204     | TLS already enabled/disabled on this LIF.|
 | 3277205     | Cannot enable TLS because no certificate was provided.|
 | 3277206     | The "enabled" is a required field.|
-| 92405900    | Certificate not found for the SVM.|
 | 3277210     | The FQDN of the LIF IP address and the common name present in the certificate do not match. Update the certificate so that the common name and LIF FQDN match and retry the operation.|
 | 3277217     | Failed to enable TLS on LIF on vserver because the certificate does not have LIF as subject alternate name.|
+| 92405900    | Certificate not found for the SVM.|
+| 92406020    | Only certificates of type 'server' are supported on the SVM.|
 */
 type NfsTLSInterfaceModifyCollectionDefault struct {
 	_statusCode int

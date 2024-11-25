@@ -22,7 +22,8 @@ type StorageUnitResponse struct {
 	// links
 	Links *CollectionLinks `json:"_links,omitempty"`
 
-	// Number of Records
+	// Number of records.
+	//
 	NumRecords *int64 `json:"num_records,omitempty"`
 
 	// storage unit response inline records

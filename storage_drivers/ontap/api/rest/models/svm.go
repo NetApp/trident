@@ -6115,6 +6115,9 @@ type SvmInlineS3 struct {
 	// links
 	Links *SvmInlineS3InlineLinks `json:"_links,omitempty"`
 
+	// If this is set to true, an SVM administrator can manage the S3 service. If it is false, only the cluster administrator can manage the service.
+	Allowed *bool `json:"allowed,omitempty"`
+
 	// certificate
 	Certificate *SvmInlineS3InlineCertificate `json:"certificate,omitempty"`
 

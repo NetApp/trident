@@ -3735,7 +3735,7 @@ swagger:model ip_interface_inline_svm
 type IPInterfaceInlineSvm struct {
 
 	// links
-	Links *models.IPInterfaceInlineSvmInlineLinks `json:"_links,omitempty"`
+	Links *IPInterfaceInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//

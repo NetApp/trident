@@ -251,6 +251,7 @@ func NewNvmeNamespaceCreateDefault(code int) *NvmeNamespaceCreateDefault {
 | 5376461 | The specified namespace name is invalid. |
 | 5376462 | The specified namespace name is too long. |
 | 5376463 | The snapshot portion of the specified namespace name is too long. |
+| 5440509 | No suitable storage can be found for the specified requirements. |
 | 13565952 | The NVMe namespace clone request failed. |
 | 72089636 | Creating NVMe namespaces with `os_type` AIX is not supported until the effective cluster version is 9.13.1 or later. |
 | 72089720 | NVMe namespaces cannot be created in snapshots. |

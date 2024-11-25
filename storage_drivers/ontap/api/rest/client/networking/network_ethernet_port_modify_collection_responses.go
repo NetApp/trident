@@ -140,6 +140,11 @@ func NewNetworkEthernetPortModifyCollectionDefault(code int) *NetworkEthernetPor
 | 1967195 | Missing or incomplete name retrieval for specified port UUID. |
 | 1967580 | This command is not supported as the effective cluster version is earlier than 9.8. |
 | 1967582 | The reachability parameter is not supported on this cluster. |
+| 53216932 | Failed to determine whether newly introduced PFC flow control is supported. |
+| 53280899 | Not all nodes support enabling the PFC feature. |
+| 53280900 | No PFC queues specified. |
+| 53280901 | Failed to modify PFC. |
+| 53280902 | Cluster ports does not support PFC flow control. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NetworkEthernetPortModifyCollectionDefault struct {
@@ -219,6 +224,10 @@ type NetworkEthernetPortModifyCollectionBody struct {
 	// enabled
 	Enabled *bool `json:"enabled,omitempty"`
 
+	// Requested flow control
+	// Enum: ["none","send","receive","full","pfc"]
+	FlowcontrolAdmin *string `json:"flowcontrol_admin,omitempty"`
+
 	// Number of interfaces hosted. This field is only applicable for cluster administrators. No value is returned for SVM administrators. If the node hosting a port is not healthy no value will be returned.
 	// Read Only: true
 	InterfaceCount *int64 `json:"interface_count,omitempty"`
@@ -251,6 +260,9 @@ type NetworkEthernetPortModifyCollectionBody struct {
 	// Discovered devices
 	// Read Only: true
 	PortInlineDiscoveredDevices []*models.PortInlineDiscoveredDevicesInlineArrayItem `json:"discovered_devices,omitempty"`
+
+	// List of PFC queues
+	PortInlinePfcQueuesAdmin []*int64 `json:"pfc_queues_admin,omitempty"`
 
 	// Reachable broadcast domains.
 	// Read Only: true
@@ -306,6 +318,10 @@ func (o *NetworkEthernetPortModifyCollectionBody) Validate(formats strfmt.Regist
 		res = append(res, err)
 	}
 
+	if err := o.validateFlowcontrolAdmin(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.validateLag(formats); err != nil {
 		res = append(res, err)
 	}
@@ -323,6 +339,10 @@ func (o *NetworkEthernetPortModifyCollectionBody) Validate(formats strfmt.Regist
 	}
 
 	if err := o.validatePortInlineDiscoveredDevices(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validatePortInlinePfcQueuesAdmin(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -393,6 +413,92 @@ func (o *NetworkEthernetPortModifyCollectionBody) validateBroadcastDomain(format
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var networkEthernetPortModifyCollectionBodyTypeFlowcontrolAdminPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["none","send","receive","full","pfc"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		networkEthernetPortModifyCollectionBodyTypeFlowcontrolAdminPropEnum = append(networkEthernetPortModifyCollectionBodyTypeFlowcontrolAdminPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NetworkEthernetPortModifyCollectionBody
+	// NetworkEthernetPortModifyCollectionBody
+	// flowcontrol_admin
+	// FlowcontrolAdmin
+	// none
+	// END DEBUGGING
+	// NetworkEthernetPortModifyCollectionBodyFlowcontrolAdminNone captures enum value "none"
+	NetworkEthernetPortModifyCollectionBodyFlowcontrolAdminNone string = "none"
+
+	// BEGIN DEBUGGING
+	// NetworkEthernetPortModifyCollectionBody
+	// NetworkEthernetPortModifyCollectionBody
+	// flowcontrol_admin
+	// FlowcontrolAdmin
+	// send
+	// END DEBUGGING
+	// NetworkEthernetPortModifyCollectionBodyFlowcontrolAdminSend captures enum value "send"
+	NetworkEthernetPortModifyCollectionBodyFlowcontrolAdminSend string = "send"
+
+	// BEGIN DEBUGGING
+	// NetworkEthernetPortModifyCollectionBody
+	// NetworkEthernetPortModifyCollectionBody
+	// flowcontrol_admin
+	// FlowcontrolAdmin
+	// receive
+	// END DEBUGGING
+	// NetworkEthernetPortModifyCollectionBodyFlowcontrolAdminReceive captures enum value "receive"
+	NetworkEthernetPortModifyCollectionBodyFlowcontrolAdminReceive string = "receive"
+
+	// BEGIN DEBUGGING
+	// NetworkEthernetPortModifyCollectionBody
+	// NetworkEthernetPortModifyCollectionBody
+	// flowcontrol_admin
+	// FlowcontrolAdmin
+	// full
+	// END DEBUGGING
+	// NetworkEthernetPortModifyCollectionBodyFlowcontrolAdminFull captures enum value "full"
+	NetworkEthernetPortModifyCollectionBodyFlowcontrolAdminFull string = "full"
+
+	// BEGIN DEBUGGING
+	// NetworkEthernetPortModifyCollectionBody
+	// NetworkEthernetPortModifyCollectionBody
+	// flowcontrol_admin
+	// FlowcontrolAdmin
+	// pfc
+	// END DEBUGGING
+	// NetworkEthernetPortModifyCollectionBodyFlowcontrolAdminPfc captures enum value "pfc"
+	NetworkEthernetPortModifyCollectionBodyFlowcontrolAdminPfc string = "pfc"
+)
+
+// prop value enum
+func (o *NetworkEthernetPortModifyCollectionBody) validateFlowcontrolAdminEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, networkEthernetPortModifyCollectionBodyTypeFlowcontrolAdminPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (o *NetworkEthernetPortModifyCollectionBody) validateFlowcontrolAdmin(formats strfmt.Registry) error {
+	if swag.IsZero(o.FlowcontrolAdmin) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := o.validateFlowcontrolAdminEnum("info"+"."+"flowcontrol_admin", "body", *o.FlowcontrolAdmin); err != nil {
+		return err
 	}
 
 	return nil
@@ -478,6 +584,29 @@ func (o *NetworkEthernetPortModifyCollectionBody) validatePortInlineDiscoveredDe
 				}
 				return err
 			}
+		}
+
+	}
+
+	return nil
+}
+
+func (o *NetworkEthernetPortModifyCollectionBody) validatePortInlinePfcQueuesAdmin(formats strfmt.Registry) error {
+	if swag.IsZero(o.PortInlinePfcQueuesAdmin) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(o.PortInlinePfcQueuesAdmin); i++ {
+		if swag.IsZero(o.PortInlinePfcQueuesAdmin[i]) { // not required
+			continue
+		}
+
+		if err := validate.MinimumInt("info"+"."+"pfc_queues_admin"+"."+strconv.Itoa(i), "body", *o.PortInlinePfcQueuesAdmin[i], 0, false); err != nil {
+			return err
+		}
+
+		if err := validate.MaximumInt("info"+"."+"pfc_queues_admin"+"."+strconv.Itoa(i), "body", *o.PortInlinePfcQueuesAdmin[i], 7, false); err != nil {
+			return err
 		}
 
 	}
@@ -3858,7 +3987,7 @@ type PortInlineStatisticsInlineDevice struct {
 	LinkDownCountRaw *int64 `json:"link_down_count_raw,omitempty"`
 
 	// receive raw
-	ReceiveRaw *PortInlineStatisticsInlineDeviceInlineReceiveRaw `json:"receive_raw,omitempty"`
+	ReceiveRaw *models.PortInlineStatisticsInlineDeviceInlineReceiveRaw `json:"receive_raw,omitempty"`
 
 	// The timestamp when the device specific counters were collected.
 	// Example: 2017-01-25 11:20:13
@@ -3866,7 +3995,7 @@ type PortInlineStatisticsInlineDevice struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 
 	// transmit raw
-	TransmitRaw *PortInlineStatisticsInlineDeviceInlineTransmitRaw `json:"transmit_raw,omitempty"`
+	TransmitRaw *models.PortInlineStatisticsInlineDeviceInlineTransmitRaw `json:"transmit_raw,omitempty"`
 }
 
 // Validate validates this port inline statistics inline device

@@ -110,9 +110,14 @@ func NewSecurityGroupDeleteCollectionDefault(code int) *SecurityGroupDeleteColle
 }
 
 /*
-SecurityGroupDeleteCollectionDefault describes a response with status code -1, with default header values.
+	SecurityGroupDeleteCollectionDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 5636244 | The group is part of the role mapping configuration. Delete the mapping first and then delete the group. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SecurityGroupDeleteCollectionDefault struct {
 	_statusCode int

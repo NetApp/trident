@@ -933,13 +933,8 @@ func (o *ExportRuleInlinePolicy) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this export rule inline policy based on the context it is used
+// ContextValidate validates this export rule inline policy based on context it is used
 func (o *ExportRuleInlinePolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 

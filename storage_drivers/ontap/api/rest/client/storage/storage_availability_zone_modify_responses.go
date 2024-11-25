@@ -205,6 +205,9 @@ func NewStorageAvailabilityZoneModifyDefault(code int) *StorageAvailabilityZoneM
 | 9240632 | The provided nearly full threshold percent cannot be greater than full threshold percent. |
 | 9240633 | The provided full threshold percent cannot be smaller than nearly full threshold percent. |
 | 9240634 | The provided storage availability zone UUID is not valid. |
+| 262144015 | Failed to retrieve storage availability zone information for provided storage availability zone UUID. |
+| 262144016 | Failed to retrieve the node information for provided storage availability zone UUID. |
+| 262144017 | This operation is not supported on this platform or has been disabled. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type StorageAvailabilityZoneModifyDefault struct {

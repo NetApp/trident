@@ -211,7 +211,8 @@ func NewNodeDeleteCollectionDefault(code int) *NodeDeleteCollectionDefault {
 | 458758 | Failed to load job for cluster remove node operation as the job exists. |
 | 1179732 | Cannot remove a node in a single-node cluster. |
 | 1179735 | Node is not part of a cluster. |
-| 1179848 | Operation not supported on this platform. |
+| 1179848 | Operation not supported at the current effective cluster version. |
+| 1179849 | Operation failed because the effective cluster version could not be verified. |
 | 1182805 | Cannot remove a node from the node network address of the node to be removed. |
 | 2293765 | Removing a node only works for nodes not in failover configuration. |
 | 2293767 | Node has volumes. Either move or delete them from the node before removing the node. |

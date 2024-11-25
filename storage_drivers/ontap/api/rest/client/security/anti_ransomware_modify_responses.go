@@ -209,6 +209,9 @@ func NewAntiRansomwareModifyDefault(code int) *AntiRansomwareModifyDefault {
 | 203161688 | Autonomous Ransomware Protection (ARP) package archive invalid. No ARP version file found. |
 | 203161689 | Internal error. Filesystem error while installing Autonomous Ransomware Protection (ARP) package file. |
 | 203161690 | Autonomous Ransomware Protection (ARP) package update requires an effective cluster version of 9.16.1 or later. |
+| 203161691 | Autonomous Ransomware Protection (ARP) package file is invalid. The checksum verification of the ARP configuration files failed. |
+| 203161692 | Autonomous Ransomware Protection (ARP) package update failed because one or more nodes are not healthy. |
+| 203161694 | Failed to update the Autonomous Ransomware Protection (ARP) package file because the `uri` property was not specified. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AntiRansomwareModifyDefault struct {

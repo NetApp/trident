@@ -226,6 +226,7 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 918657 | Invalid duration value for the \"retention_period\" field. |
 | 1115542 | Invalid value given for the field. |
 | 6619441 | The source volume cannot be the same as the destination volume. |
 | 6619599 | Only the \"none\" tiering policy is supported when creating a destination volume with \"snapshot_locking_enabled\" set to true or if \"snapshot_locking_enabled\" is set to true on the source volume. |
@@ -235,6 +236,7 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 | 6620478 | Internal error. Failed to check SnapMirror capability. |
 | 6620654 | Invalid SnapMirror Consistency Group name. |
 | 6621125 | The policy is not valid for relationships with FlexGroup volume endpoints. Only policies without snapshot creation schedules are supported for these relationships. |
+| 6621128 | Policy is not valid because it has snapshot creation schedules associated with it. Such policies cannot be used for relationships with Consistency Group endpoints. |
 | 6621458 | The destination Consistency Group is the source of a SnapMirror Synchronous (SM-S) relationship. Sources of SM-S relationships cannot be the destination of any other SnapMirror relationship. |
 | 6621782 | A property of the policy is not valid for relationships between these endpoints. |
 | 6621834 | Object store configuration does not exist for specified SVM. |

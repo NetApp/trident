@@ -130,9 +130,9 @@ type ClientService interface {
 
 	NetworkEthernetBroadcastDomainsGet(params *NetworkEthernetBroadcastDomainsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainsGetOK, error)
 
-	NetworkEthernetPortDelete(params *NetworkEthernetPortDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortDeleteOK, error)
+	NetworkEthernetPortDelete(params *NetworkEthernetPortDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortDeleteOK, *NetworkEthernetPortDeleteAccepted, error)
 
-	NetworkEthernetPortDeleteCollection(params *NetworkEthernetPortDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortDeleteCollectionOK, error)
+	NetworkEthernetPortDeleteCollection(params *NetworkEthernetPortDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortDeleteCollectionOK, *NetworkEthernetPortDeleteCollectionAccepted, error)
 
 	NetworkEthernetPortGet(params *NetworkEthernetPortGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortGetOK, error)
 
@@ -2421,7 +2421,7 @@ func (a *Client) NetworkEthernetBroadcastDomainsGet(params *NetworkEthernetBroad
 * `network port ifgrp delete`
 * `network port vlan delete`
 */
-func (a *Client) NetworkEthernetPortDelete(params *NetworkEthernetPortDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortDeleteOK, error) {
+func (a *Client) NetworkEthernetPortDelete(params *NetworkEthernetPortDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortDeleteOK, *NetworkEthernetPortDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewNetworkEthernetPortDeleteParams()
@@ -2445,21 +2445,23 @@ func (a *Client) NetworkEthernetPortDelete(params *NetworkEthernetPortDeletePara
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*NetworkEthernetPortDeleteOK)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *NetworkEthernetPortDeleteOK:
+		return value, nil, nil
+	case *NetworkEthernetPortDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*NetworkEthernetPortDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
 NetworkEthernetPortDeleteCollection network ethernet port delete collection API
 */
-func (a *Client) NetworkEthernetPortDeleteCollection(params *NetworkEthernetPortDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortDeleteCollectionOK, error) {
+func (a *Client) NetworkEthernetPortDeleteCollection(params *NetworkEthernetPortDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortDeleteCollectionOK, *NetworkEthernetPortDeleteCollectionAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewNetworkEthernetPortDeleteCollectionParams()
@@ -2483,15 +2485,17 @@ func (a *Client) NetworkEthernetPortDeleteCollection(params *NetworkEthernetPort
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*NetworkEthernetPortDeleteCollectionOK)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *NetworkEthernetPortDeleteCollectionOK:
+		return value, nil, nil
+	case *NetworkEthernetPortDeleteCollectionAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*NetworkEthernetPortDeleteCollectionDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*

@@ -140,6 +140,18 @@ type NvmeNamespaceCollectionGetParams struct {
 	*/
 	LocationQtreeName *string
 
+	/* LocationStorageAvailabilityZoneName.
+
+	   Filter by location.storage_availability_zone.name
+	*/
+	LocationStorageAvailabilityZoneName *string
+
+	/* LocationStorageAvailabilityZoneUUID.
+
+	   Filter by location.storage_availability_zone.uuid
+	*/
+	LocationStorageAvailabilityZoneUUID *string
+
 	/* LocationVolumeName.
 
 	   Filter by location.volume.name
@@ -736,6 +748,28 @@ func (o *NvmeNamespaceCollectionGetParams) WithLocationQtreeName(locationQtreeNa
 // SetLocationQtreeName adds the locationQtreeName to the nvme namespace collection get params
 func (o *NvmeNamespaceCollectionGetParams) SetLocationQtreeName(locationQtreeName *string) {
 	o.LocationQtreeName = locationQtreeName
+}
+
+// WithLocationStorageAvailabilityZoneName adds the locationStorageAvailabilityZoneName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithLocationStorageAvailabilityZoneName(locationStorageAvailabilityZoneName *string) *NvmeNamespaceCollectionGetParams {
+	o.SetLocationStorageAvailabilityZoneName(locationStorageAvailabilityZoneName)
+	return o
+}
+
+// SetLocationStorageAvailabilityZoneName adds the locationStorageAvailabilityZoneName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetLocationStorageAvailabilityZoneName(locationStorageAvailabilityZoneName *string) {
+	o.LocationStorageAvailabilityZoneName = locationStorageAvailabilityZoneName
+}
+
+// WithLocationStorageAvailabilityZoneUUID adds the locationStorageAvailabilityZoneUUID to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithLocationStorageAvailabilityZoneUUID(locationStorageAvailabilityZoneUUID *string) *NvmeNamespaceCollectionGetParams {
+	o.SetLocationStorageAvailabilityZoneUUID(locationStorageAvailabilityZoneUUID)
+	return o
+}
+
+// SetLocationStorageAvailabilityZoneUUID adds the locationStorageAvailabilityZoneUuid to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetLocationStorageAvailabilityZoneUUID(locationStorageAvailabilityZoneUUID *string) {
+	o.LocationStorageAvailabilityZoneUUID = locationStorageAvailabilityZoneUUID
 }
 
 // WithLocationVolumeName adds the locationVolumeName to the nvme namespace collection get params
@@ -1660,6 +1694,40 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qLocationQtreeName != "" {
 
 			if err := r.SetQueryParam("location.qtree.name", qLocationQtreeName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationStorageAvailabilityZoneName != nil {
+
+		// query param location.storage_availability_zone.name
+		var qrLocationStorageAvailabilityZoneName string
+
+		if o.LocationStorageAvailabilityZoneName != nil {
+			qrLocationStorageAvailabilityZoneName = *o.LocationStorageAvailabilityZoneName
+		}
+		qLocationStorageAvailabilityZoneName := qrLocationStorageAvailabilityZoneName
+		if qLocationStorageAvailabilityZoneName != "" {
+
+			if err := r.SetQueryParam("location.storage_availability_zone.name", qLocationStorageAvailabilityZoneName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationStorageAvailabilityZoneUUID != nil {
+
+		// query param location.storage_availability_zone.uuid
+		var qrLocationStorageAvailabilityZoneUUID string
+
+		if o.LocationStorageAvailabilityZoneUUID != nil {
+			qrLocationStorageAvailabilityZoneUUID = *o.LocationStorageAvailabilityZoneUUID
+		}
+		qLocationStorageAvailabilityZoneUUID := qrLocationStorageAvailabilityZoneUUID
+		if qLocationStorageAvailabilityZoneUUID != "" {
+
+			if err := r.SetQueryParam("location.storage_availability_zone.uuid", qLocationStorageAvailabilityZoneUUID); err != nil {
 				return err
 			}
 		}

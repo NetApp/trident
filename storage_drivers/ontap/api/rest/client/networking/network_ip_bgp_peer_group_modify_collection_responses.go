@@ -130,7 +130,7 @@ func NewNetworkIPBgpPeerGroupModifyCollectionDefault(code int) *NetworkIPBgpPeer
 | 53282021 | IPsec must be enabled to use TCP MD5 in BGP sessions with a BGP peer-group. |
 | 53282024 | peer.md5_secret should be 1-80 bytes. |
 | 53282025 | peer.md5_secret should have an even length. |
-| 53282026 | The hex format of peer.md5_secret should have only hex string starting with '0x'. |
+| 53282026 | The hex format of peer.md5_secret should only contain a hex string starting with '0x'. The specified peer.md5-secret contains non-hex characters. |
 | 53282027 | peer.md5_secret should be 1-79 characters. |
 | 53282028 | peer.md5_secret supports only printable ASCII characters such as numbers, alphabets, or special characters. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.

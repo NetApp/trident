@@ -247,6 +247,7 @@ func NewLunCreateDefault(code int) *LunCreateDefault {
 | 5374241 | A size value with invalid units was provided. |
 | 5374242 | A LUN or NVMe namespace already exists at the specified path. |
 | 5374352 | An invalid name was provided for the LUN. |
+| 5374614 | The specified storage availability zone does not exist. |
 | 5374707 | Creating a LUN in the specific volume is not allowed because the volume is reserved for an application. |
 | 5374858 | The volume specified by `name` is not the same as that specified by `location.volume`. |
 | 5374859 | No volume was specified for the LUN. |
@@ -269,11 +270,13 @@ func NewLunCreateDefault(code int) *LunCreateDefault {
 | 5374944 | The property cannot be specified when converting an NVMe namespace into a LUN. The `target` property of the error object identifies the property. |
 | 5375054 | The source LUN is required when requesting an SVM copy operation. |
 | 5375059 | An unsuitable QoS policy was specified. |
+| 5375061 | The specified `location.storage_availability_zone.uuid` and `location.storage_availability_zone.name` do not refer to the same storage availability zone. |
 | 5376461 | The specified LUN name is invalid. |
 | 5376462 | The specified LUN name is too long. |
 | 5376463 | The snapshot portion of the specified LUN name is too long. |
 | 5376469 | The property cannot be set during the LUN create operation on this platform. |
-| 5440509 | Cannot create a LUN with a LUN map on an SVM that does not have any LIFs. |
+| 5376515 | The specified storage availability zone is not configured for provisioning on the specified SVM. |
+| 5440509 | No suitable storage can be found for the specified requirements. |
 | 5440688 | A LUN cannot be created with the same name as an existing LUN. |
 | 5702832 | A LUN or namespace with the same name is already being created. LUN and namespace names must be unique within an SVM. |
 | 7018877 | Maximum combined total (50) of file and LUN copy and move operations reached. When one or more of the operations has completed, try the command again. |

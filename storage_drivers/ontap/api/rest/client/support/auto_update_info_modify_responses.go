@@ -116,6 +116,7 @@ func NewAutoUpdateInfoModifyDefault(code int) *AutoUpdateInfoModifyDefault {
 | 131072216 | Automatic update requires AutoSupport to be enabled. |
 | 131072217 | Automatic update requires AutoSupport OnDemand to be enabled. |
 | 131072218 | Automatic update requires AutoSupport to use the HTTPS transport. |
+| 131072219 | The provided parameter requires an effective cluster version of ONTAP 9.16.1 or later. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AutoUpdateInfoModifyDefault struct {

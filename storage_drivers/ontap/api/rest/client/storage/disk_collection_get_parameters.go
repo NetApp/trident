@@ -462,6 +462,12 @@ type DiskCollectionGetParams struct {
 	*/
 	StatsThroughput *int64
 
+	/* StorageAvailabilityZoneName.
+
+	   Filter by storage_availability_zone.name
+	*/
+	StorageAvailabilityZoneName *string
+
 	/* StorageAvailabilityZoneUUID.
 
 	   Filter by storage_availability_zone.uuid
@@ -1319,6 +1325,17 @@ func (o *DiskCollectionGetParams) WithStatsThroughput(statsThroughput *int64) *D
 // SetStatsThroughput adds the statsThroughput to the disk collection get params
 func (o *DiskCollectionGetParams) SetStatsThroughput(statsThroughput *int64) {
 	o.StatsThroughput = statsThroughput
+}
+
+// WithStorageAvailabilityZoneName adds the storageAvailabilityZoneName to the disk collection get params
+func (o *DiskCollectionGetParams) WithStorageAvailabilityZoneName(storageAvailabilityZoneName *string) *DiskCollectionGetParams {
+	o.SetStorageAvailabilityZoneName(storageAvailabilityZoneName)
+	return o
+}
+
+// SetStorageAvailabilityZoneName adds the storageAvailabilityZoneName to the disk collection get params
+func (o *DiskCollectionGetParams) SetStorageAvailabilityZoneName(storageAvailabilityZoneName *string) {
+	o.StorageAvailabilityZoneName = storageAvailabilityZoneName
 }
 
 // WithStorageAvailabilityZoneUUID adds the storageAvailabilityZoneUUID to the disk collection get params
@@ -2555,6 +2572,23 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qStatsThroughput != "" {
 
 			if err := r.SetQueryParam("stats.throughput", qStatsThroughput); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StorageAvailabilityZoneName != nil {
+
+		// query param storage_availability_zone.name
+		var qrStorageAvailabilityZoneName string
+
+		if o.StorageAvailabilityZoneName != nil {
+			qrStorageAvailabilityZoneName = *o.StorageAvailabilityZoneName
+		}
+		qStorageAvailabilityZoneName := qrStorageAvailabilityZoneName
+		if qStorageAvailabilityZoneName != "" {
+
+			if err := r.SetQueryParam("storage_availability_zone.name", qStorageAvailabilityZoneName); err != nil {
 				return err
 			}
 		}

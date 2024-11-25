@@ -152,6 +152,12 @@ type NetworkEthernetPortsGetParams struct {
 	*/
 	Fields []string
 
+	/* FlowcontrolAdmin.
+
+	   Filter by flowcontrol_admin
+	*/
+	FlowcontrolAdmin *string
+
 	/* InterfaceCount.
 
 	   Filter by interface_count
@@ -283,6 +289,12 @@ type NetworkEthernetPortsGetParams struct {
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
 	OrderBy []string
+
+	/* PfcQueuesAdmin.
+
+	   Filter by pfc_queues_admin
+	*/
+	PfcQueuesAdmin *int64
 
 	/* RdmaProtocols.
 
@@ -688,6 +700,17 @@ func (o *NetworkEthernetPortsGetParams) SetFields(fields []string) {
 	o.Fields = fields
 }
 
+// WithFlowcontrolAdmin adds the flowcontrolAdmin to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithFlowcontrolAdmin(flowcontrolAdmin *string) *NetworkEthernetPortsGetParams {
+	o.SetFlowcontrolAdmin(flowcontrolAdmin)
+	return o
+}
+
+// SetFlowcontrolAdmin adds the flowcontrolAdmin to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetFlowcontrolAdmin(flowcontrolAdmin *string) {
+	o.FlowcontrolAdmin = flowcontrolAdmin
+}
+
 // WithInterfaceCount adds the interfaceCount to the network ethernet ports get params
 func (o *NetworkEthernetPortsGetParams) WithInterfaceCount(interfaceCount *int64) *NetworkEthernetPortsGetParams {
 	o.SetInterfaceCount(interfaceCount)
@@ -928,6 +951,17 @@ func (o *NetworkEthernetPortsGetParams) WithOrderBy(orderBy []string) *NetworkEt
 // SetOrderBy adds the orderBy to the network ethernet ports get params
 func (o *NetworkEthernetPortsGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
+}
+
+// WithPfcQueuesAdmin adds the pfcQueuesAdmin to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithPfcQueuesAdmin(pfcQueuesAdmin *int64) *NetworkEthernetPortsGetParams {
+	o.SetPfcQueuesAdmin(pfcQueuesAdmin)
+	return o
+}
+
+// SetPfcQueuesAdmin adds the pfcQueuesAdmin to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetPfcQueuesAdmin(pfcQueuesAdmin *int64) {
+	o.PfcQueuesAdmin = pfcQueuesAdmin
 }
 
 // WithRdmaProtocols adds the rdmaProtocols to the network ethernet ports get params
@@ -1495,6 +1529,23 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
+	if o.FlowcontrolAdmin != nil {
+
+		// query param flowcontrol_admin
+		var qrFlowcontrolAdmin string
+
+		if o.FlowcontrolAdmin != nil {
+			qrFlowcontrolAdmin = *o.FlowcontrolAdmin
+		}
+		qFlowcontrolAdmin := qrFlowcontrolAdmin
+		if qFlowcontrolAdmin != "" {
+
+			if err := r.SetQueryParam("flowcontrol_admin", qFlowcontrolAdmin); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.InterfaceCount != nil {
 
 		// query param interface_count
@@ -1860,6 +1911,23 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.PfcQueuesAdmin != nil {
+
+		// query param pfc_queues_admin
+		var qrPfcQueuesAdmin int64
+
+		if o.PfcQueuesAdmin != nil {
+			qrPfcQueuesAdmin = *o.PfcQueuesAdmin
+		}
+		qPfcQueuesAdmin := swag.FormatInt64(qrPfcQueuesAdmin)
+		if qPfcQueuesAdmin != "" {
+
+			if err := r.SetQueryParam("pfc_queues_admin", qPfcQueuesAdmin); err != nil {
+				return err
+			}
 		}
 	}
 

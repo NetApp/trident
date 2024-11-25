@@ -36,6 +36,9 @@ type PerformanceLunMetric struct {
 	// latency
 	Latency *PerformanceLunMetricInlineLatency `json:"latency,omitempty"`
 
+	// space
+	Space *PerformanceLunMetricInlineSpace `json:"space,omitempty"`
+
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
@@ -75,6 +78,10 @@ func (m *PerformanceLunMetric) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateLatency(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSpace(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -235,6 +242,23 @@ func (m *PerformanceLunMetric) validateLatency(formats strfmt.Registry) error {
 		if err := m.Latency.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("latency")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PerformanceLunMetric) validateSpace(formats strfmt.Registry) error {
+	if swag.IsZero(m.Space) { // not required
+		return nil
+	}
+
+	if m.Space != nil {
+		if err := m.Space.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space")
 			}
 			return err
 		}
@@ -438,6 +462,10 @@ func (m *PerformanceLunMetric) ContextValidate(ctx context.Context, formats strf
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSpace(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateStatus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -503,6 +531,20 @@ func (m *PerformanceLunMetric) contextValidateLatency(ctx context.Context, forma
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("latency")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PerformanceLunMetric) contextValidateSpace(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Space != nil {
+		if err := m.Space.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space")
 			}
 			return err
 		}
@@ -757,6 +799,395 @@ func (m *PerformanceLunMetricInlineLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *PerformanceLunMetricInlineLinks) UnmarshalBinary(b []byte) error {
 	var res PerformanceLunMetricInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PerformanceLunMetricInlineSpace Space metrics of the LUN.
+//
+// swagger:model performance_lun_metric_inline_space
+type PerformanceLunMetricInlineSpace struct {
+
+	// Total available free space of the LUN.
+	//
+	// Example: 924
+	// Read Only: true
+	Available *int64 `json:"available,omitempty"`
+
+	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
+	//
+	// Example: PT1D
+	// Read Only: true
+	// Enum: ["PT15S","PT5M","PT30M","PT2H","PT1D"]
+	Duration *string `json:"duration,omitempty"`
+
+	// Total allocated space of the LUN.
+	//
+	// Example: 1024
+	// Read Only: true
+	Size *int64 `json:"size,omitempty"`
+
+	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, any partial errors might return "ok" on success or "error" on an internal uncategorized failure. When a sample collection is missed but completed at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". The "Inconsistent_ delta_time" error occurs when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Read Only: true
+	// Enum: ["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]
+	Status *string `json:"status,omitempty"`
+
+	// Total occupied space of the LUN.
+	//
+	// Example: 100
+	// Read Only: true
+	Used *int64 `json:"used,omitempty"`
+
+	// Total space used by snapshots of the LUN.
+	//
+	// Example: 30
+	// Read Only: true
+	UsedBySnapshots *int64 `json:"used_by_snapshots,omitempty"`
+}
+
+// Validate validates this performance lun metric inline space
+func (m *PerformanceLunMetricInlineSpace) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateDuration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var performanceLunMetricInlineSpaceTypeDurationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["PT15S","PT5M","PT30M","PT2H","PT1D"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		performanceLunMetricInlineSpaceTypeDurationPropEnum = append(performanceLunMetricInlineSpaceTypeDurationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// performance_lun_metric_inline_space
+	// PerformanceLunMetricInlineSpace
+	// duration
+	// Duration
+	// PT15S
+	// END DEBUGGING
+	// PerformanceLunMetricInlineSpaceDurationPT15S captures enum value "PT15S"
+	PerformanceLunMetricInlineSpaceDurationPT15S string = "PT15S"
+
+	// BEGIN DEBUGGING
+	// performance_lun_metric_inline_space
+	// PerformanceLunMetricInlineSpace
+	// duration
+	// Duration
+	// PT5M
+	// END DEBUGGING
+	// PerformanceLunMetricInlineSpaceDurationPT5M captures enum value "PT5M"
+	PerformanceLunMetricInlineSpaceDurationPT5M string = "PT5M"
+
+	// BEGIN DEBUGGING
+	// performance_lun_metric_inline_space
+	// PerformanceLunMetricInlineSpace
+	// duration
+	// Duration
+	// PT30M
+	// END DEBUGGING
+	// PerformanceLunMetricInlineSpaceDurationPT30M captures enum value "PT30M"
+	PerformanceLunMetricInlineSpaceDurationPT30M string = "PT30M"
+
+	// BEGIN DEBUGGING
+	// performance_lun_metric_inline_space
+	// PerformanceLunMetricInlineSpace
+	// duration
+	// Duration
+	// PT2H
+	// END DEBUGGING
+	// PerformanceLunMetricInlineSpaceDurationPT2H captures enum value "PT2H"
+	PerformanceLunMetricInlineSpaceDurationPT2H string = "PT2H"
+
+	// BEGIN DEBUGGING
+	// performance_lun_metric_inline_space
+	// PerformanceLunMetricInlineSpace
+	// duration
+	// Duration
+	// PT1D
+	// END DEBUGGING
+	// PerformanceLunMetricInlineSpaceDurationPT1D captures enum value "PT1D"
+	PerformanceLunMetricInlineSpaceDurationPT1D string = "PT1D"
+)
+
+// prop value enum
+func (m *PerformanceLunMetricInlineSpace) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceLunMetricInlineSpaceTypeDurationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *PerformanceLunMetricInlineSpace) validateDuration(formats strfmt.Registry) error {
+	if swag.IsZero(m.Duration) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateDurationEnum("space"+"."+"duration", "body", *m.Duration); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var performanceLunMetricInlineSpaceTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		performanceLunMetricInlineSpaceTypeStatusPropEnum = append(performanceLunMetricInlineSpaceTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// performance_lun_metric_inline_space
+	// PerformanceLunMetricInlineSpace
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// PerformanceLunMetricInlineSpaceStatusOk captures enum value "ok"
+	PerformanceLunMetricInlineSpaceStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// performance_lun_metric_inline_space
+	// PerformanceLunMetricInlineSpace
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// PerformanceLunMetricInlineSpaceStatusError captures enum value "error"
+	PerformanceLunMetricInlineSpaceStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// performance_lun_metric_inline_space
+	// PerformanceLunMetricInlineSpace
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// PerformanceLunMetricInlineSpaceStatusPartialNoData captures enum value "partial_no_data"
+	PerformanceLunMetricInlineSpaceStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// performance_lun_metric_inline_space
+	// PerformanceLunMetricInlineSpace
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// PerformanceLunMetricInlineSpaceStatusPartialNoUUID captures enum value "partial_no_uuid"
+	PerformanceLunMetricInlineSpaceStatusPartialNoUUID string = "partial_no_uuid"
+
+	// BEGIN DEBUGGING
+	// performance_lun_metric_inline_space
+	// PerformanceLunMetricInlineSpace
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// PerformanceLunMetricInlineSpaceStatusPartialNoResponse captures enum value "partial_no_response"
+	PerformanceLunMetricInlineSpaceStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// performance_lun_metric_inline_space
+	// PerformanceLunMetricInlineSpace
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// PerformanceLunMetricInlineSpaceStatusPartialOtherError captures enum value "partial_other_error"
+	PerformanceLunMetricInlineSpaceStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// performance_lun_metric_inline_space
+	// PerformanceLunMetricInlineSpace
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// PerformanceLunMetricInlineSpaceStatusNegativeDelta captures enum value "negative_delta"
+	PerformanceLunMetricInlineSpaceStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// performance_lun_metric_inline_space
+	// PerformanceLunMetricInlineSpace
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// PerformanceLunMetricInlineSpaceStatusBackfilledData captures enum value "backfilled_data"
+	PerformanceLunMetricInlineSpaceStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// performance_lun_metric_inline_space
+	// PerformanceLunMetricInlineSpace
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// PerformanceLunMetricInlineSpaceStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	PerformanceLunMetricInlineSpaceStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// performance_lun_metric_inline_space
+	// PerformanceLunMetricInlineSpace
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// PerformanceLunMetricInlineSpaceStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	PerformanceLunMetricInlineSpaceStatusInconsistentOldData string = "inconsistent_old_data"
+)
+
+// prop value enum
+func (m *PerformanceLunMetricInlineSpace) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceLunMetricInlineSpaceTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *PerformanceLunMetricInlineSpace) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("space"+"."+"status", "body", *m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this performance lun metric inline space based on the context it is used
+func (m *PerformanceLunMetricInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAvailable(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDuration(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsedBySnapshots(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PerformanceLunMetricInlineSpace) contextValidateAvailable(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"available", "body", m.Available); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PerformanceLunMetricInlineSpace) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"duration", "body", m.Duration); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PerformanceLunMetricInlineSpace) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"size", "body", m.Size); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PerformanceLunMetricInlineSpace) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PerformanceLunMetricInlineSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"used", "body", m.Used); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PerformanceLunMetricInlineSpace) contextValidateUsedBySnapshots(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"used_by_snapshots", "body", m.UsedBySnapshots); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PerformanceLunMetricInlineSpace) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PerformanceLunMetricInlineSpace) UnmarshalBinary(b []byte) error {
+	var res PerformanceLunMetricInlineSpace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

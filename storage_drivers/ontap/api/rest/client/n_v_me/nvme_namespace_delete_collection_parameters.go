@@ -155,6 +155,18 @@ type NvmeNamespaceDeleteCollectionParams struct {
 	*/
 	LocationQtreeName *string
 
+	/* LocationStorageAvailabilityZoneName.
+
+	   Filter by location.storage_availability_zone.name
+	*/
+	LocationStorageAvailabilityZoneName *string
+
+	/* LocationStorageAvailabilityZoneUUID.
+
+	   Filter by location.storage_availability_zone.uuid
+	*/
+	LocationStorageAvailabilityZoneUUID *string
+
 	/* LocationVolumeName.
 
 	   Filter by location.volume.name
@@ -776,6 +788,28 @@ func (o *NvmeNamespaceDeleteCollectionParams) WithLocationQtreeName(locationQtre
 // SetLocationQtreeName adds the locationQtreeName to the nvme namespace delete collection params
 func (o *NvmeNamespaceDeleteCollectionParams) SetLocationQtreeName(locationQtreeName *string) {
 	o.LocationQtreeName = locationQtreeName
+}
+
+// WithLocationStorageAvailabilityZoneName adds the locationStorageAvailabilityZoneName to the nvme namespace delete collection params
+func (o *NvmeNamespaceDeleteCollectionParams) WithLocationStorageAvailabilityZoneName(locationStorageAvailabilityZoneName *string) *NvmeNamespaceDeleteCollectionParams {
+	o.SetLocationStorageAvailabilityZoneName(locationStorageAvailabilityZoneName)
+	return o
+}
+
+// SetLocationStorageAvailabilityZoneName adds the locationStorageAvailabilityZoneName to the nvme namespace delete collection params
+func (o *NvmeNamespaceDeleteCollectionParams) SetLocationStorageAvailabilityZoneName(locationStorageAvailabilityZoneName *string) {
+	o.LocationStorageAvailabilityZoneName = locationStorageAvailabilityZoneName
+}
+
+// WithLocationStorageAvailabilityZoneUUID adds the locationStorageAvailabilityZoneUUID to the nvme namespace delete collection params
+func (o *NvmeNamespaceDeleteCollectionParams) WithLocationStorageAvailabilityZoneUUID(locationStorageAvailabilityZoneUUID *string) *NvmeNamespaceDeleteCollectionParams {
+	o.SetLocationStorageAvailabilityZoneUUID(locationStorageAvailabilityZoneUUID)
+	return o
+}
+
+// SetLocationStorageAvailabilityZoneUUID adds the locationStorageAvailabilityZoneUuid to the nvme namespace delete collection params
+func (o *NvmeNamespaceDeleteCollectionParams) SetLocationStorageAvailabilityZoneUUID(locationStorageAvailabilityZoneUUID *string) {
+	o.LocationStorageAvailabilityZoneUUID = locationStorageAvailabilityZoneUUID
 }
 
 // WithLocationVolumeName adds the locationVolumeName to the nvme namespace delete collection params
@@ -1715,6 +1749,40 @@ func (o *NvmeNamespaceDeleteCollectionParams) WriteToRequest(r runtime.ClientReq
 		if qLocationQtreeName != "" {
 
 			if err := r.SetQueryParam("location.qtree.name", qLocationQtreeName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationStorageAvailabilityZoneName != nil {
+
+		// query param location.storage_availability_zone.name
+		var qrLocationStorageAvailabilityZoneName string
+
+		if o.LocationStorageAvailabilityZoneName != nil {
+			qrLocationStorageAvailabilityZoneName = *o.LocationStorageAvailabilityZoneName
+		}
+		qLocationStorageAvailabilityZoneName := qrLocationStorageAvailabilityZoneName
+		if qLocationStorageAvailabilityZoneName != "" {
+
+			if err := r.SetQueryParam("location.storage_availability_zone.name", qLocationStorageAvailabilityZoneName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationStorageAvailabilityZoneUUID != nil {
+
+		// query param location.storage_availability_zone.uuid
+		var qrLocationStorageAvailabilityZoneUUID string
+
+		if o.LocationStorageAvailabilityZoneUUID != nil {
+			qrLocationStorageAvailabilityZoneUUID = *o.LocationStorageAvailabilityZoneUUID
+		}
+		qLocationStorageAvailabilityZoneUUID := qrLocationStorageAvailabilityZoneUUID
+		if qLocationStorageAvailabilityZoneUUID != "" {
+
+			if err := r.SetQueryParam("location.storage_availability_zone.uuid", qLocationStorageAvailabilityZoneUUID); err != nil {
 				return err
 			}
 		}

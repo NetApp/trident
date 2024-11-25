@@ -71,21 +71,6 @@ type NvmeNamespaceCreateParams struct {
 	*/
 	Info *models.NvmeNamespace
 
-	/* ProvisioningOptionsAuto.
-
-	     If the volume specified in the request does not exist, automatically provision one of appropriate size. If the volume does exist, resize it to accommodate the new namespace.<br/>
-	This property is only supported on Unified ONTAP.<br/>
-	The following behavior changes from a traditional POST:
-	* The operation is asynchronous.
-	* The `qos_policy` property is supported and is applied to the provisioned volume. A default QoS policy is applied to the volume if one is not provided.
-	* The `provisioning_options.count` property is supported, provisioning _count_ namespaces on the volume using the specified properties.
-	* The `subsystem_map` property is supported. If the specified subsystem does not exist, it is created. The namespace is mapped to this subsystem. If a subsystem is provisioned in this way, it will be deleted after it is no longer mapped to any namespaces.
-	* The `clone` and `convert` properties are not supported.
-	* When performing `records` based operations, specifying this property in the query applies to the entire operation. Specifying it for an individual record within the request applies to only that record.
-
-	*/
-	ProvisioningOptionsAuto *bool
-
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
@@ -116,17 +101,14 @@ func (o *NvmeNamespaceCreateParams) WithDefaults() *NvmeNamespaceCreateParams {
 // All values with no default are reset to their zero value.
 func (o *NvmeNamespaceCreateParams) SetDefaults() {
 	var (
-		provisioningOptionsAutoDefault = bool(false)
-
 		returnRecordsDefault = bool(false)
 
 		returnTimeoutDefault = int64(0)
 	)
 
 	val := NvmeNamespaceCreateParams{
-		ProvisioningOptionsAuto: &provisioningOptionsAutoDefault,
-		ReturnRecords:           &returnRecordsDefault,
-		ReturnTimeout:           &returnTimeoutDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -179,17 +161,6 @@ func (o *NvmeNamespaceCreateParams) SetInfo(info *models.NvmeNamespace) {
 	o.Info = info
 }
 
-// WithProvisioningOptionsAuto adds the provisioningOptionsAuto to the nvme namespace create params
-func (o *NvmeNamespaceCreateParams) WithProvisioningOptionsAuto(provisioningOptionsAuto *bool) *NvmeNamespaceCreateParams {
-	o.SetProvisioningOptionsAuto(provisioningOptionsAuto)
-	return o
-}
-
-// SetProvisioningOptionsAuto adds the provisioningOptionsAuto to the nvme namespace create params
-func (o *NvmeNamespaceCreateParams) SetProvisioningOptionsAuto(provisioningOptionsAuto *bool) {
-	o.ProvisioningOptionsAuto = provisioningOptionsAuto
-}
-
 // WithReturnRecords adds the returnRecords to the nvme namespace create params
 func (o *NvmeNamespaceCreateParams) WithReturnRecords(returnRecords *bool) *NvmeNamespaceCreateParams {
 	o.SetReturnRecords(returnRecords)
@@ -222,23 +193,6 @@ func (o *NvmeNamespaceCreateParams) WriteToRequest(r runtime.ClientRequest, reg 
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err
-		}
-	}
-
-	if o.ProvisioningOptionsAuto != nil {
-
-		// query param provisioning_options.auto
-		var qrProvisioningOptionsAuto bool
-
-		if o.ProvisioningOptionsAuto != nil {
-			qrProvisioningOptionsAuto = *o.ProvisioningOptionsAuto
-		}
-		qProvisioningOptionsAuto := swag.FormatBool(qrProvisioningOptionsAuto)
-		if qProvisioningOptionsAuto != "" {
-
-			if err := r.SetQueryParam("provisioning_options.auto", qProvisioningOptionsAuto); err != nil {
-				return err
-			}
 		}
 	}
 

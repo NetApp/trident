@@ -121,6 +121,7 @@ func NewAutosupportModifyDefault(code int) *AutosupportModifyDefault {
 | 8650882 | Automatic update requires AutoSupport OnDemand to be enabled |
 | 8650886 | The provided parameter requires an effective cluster version of ONTAP 9.15.1 or later |
 | 8650887 | Username or password is not allowed in the AutoSupport url and put-url fields |
+| 8650889 | The provided parameter requires an effective cluster version of ONTAP 9.16.1 or later |
 | 53149727 | The proxy URI provided is invalid |
 | 53149728 | The SMTP mail host URI provided is invalid |
 | 53149732 | The proxy URI provided is invalid. IPv6 addresses must be enclosed within square brackets |

@@ -1667,7 +1667,7 @@ func (a *Client) NvmeSubsystemModifyCollection(params *NvmeSubsystemModifyCollec
 }
 
 /*
-	PerformanceNamespaceMetricCollectionGet Retrieves historical performance metrics for an NVMe namespace.
+	PerformanceNamespaceMetricCollectionGet Retrieves historical space and performance metrics for an NVMe namespace.
 
 ### Related ONTAP commands
 * `statistics namespace show`
@@ -1708,7 +1708,7 @@ func (a *Client) PerformanceNamespaceMetricCollectionGet(params *PerformanceName
 }
 
 /*
-	PerformanceNamespaceMetricGet Retrieves historical performance metrics for an NVMe namespace for a specific time.
+	PerformanceNamespaceMetricGet Retrieves historical space and performance metrics for an NVMe namespace for a specific time.
 
 ### Related ONTAP commands
 * `statistics namespace show`

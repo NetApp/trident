@@ -285,6 +285,7 @@ swagger:model StorageUnitSnapshotDeleteCollectionBody
 type StorageUnitSnapshotDeleteCollectionBody struct {
 
 	// Space reclaimed when the snapshot is deleted, in bytes.
+	//
 	// Read Only: true
 	ReclaimableSpace *int64 `json:"reclaimable_space,omitempty"`
 

@@ -3681,7 +3681,7 @@ func (a *Client) PerformanceIscsiMetricGet(params *PerformanceIscsiMetricGetPara
 }
 
 /*
-PerformanceLunMetricCollectionGet Retrieves historical performance metrics for a LUN.
+PerformanceLunMetricCollectionGet Retrieves historical space and performance metrics for a LUN.
 */
 func (a *Client) PerformanceLunMetricCollectionGet(params *PerformanceLunMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceLunMetricCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3719,7 +3719,7 @@ func (a *Client) PerformanceLunMetricCollectionGet(params *PerformanceLunMetricC
 }
 
 /*
-PerformanceLunMetricGet Retrieves historical performance metrics for a LUN for a specific time.
+PerformanceLunMetricGet Retrieves historical space and performance metrics for a LUN for a specific time.
 */
 func (a *Client) PerformanceLunMetricGet(params *PerformanceLunMetricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceLunMetricGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4192,19 +4192,21 @@ func (a *Client) PortsetInterfaceGet(params *PortsetInterfaceGetParams, authInfo
 
 ### Expensive properties
 There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-* `statistics.*`
-* `metric.*`
-* `maps.*`
-* `space.physical_used`
-* `space.physical_used_by_snapshots`
+* `clone.inherited_physical_used`
+* `clone.inherited_savings`
+* `clone.match_source_storage_tier`
 * `clone.source.snapshot.name`
 * `clone.source.snapshot.uuid`
 * `clone.split_complete_percent`
 * `clone.split_estimate`
 * `clone.split_initiated`
-* `clone.match_source_storage_tier`
-* `clone.inherited_physical_used`
-* `clone.inherited_savings`
+* `maps.*`
+* `metric.*`
+* `movement.percent_complete`
+* `movement.start_time`
+* `space.physical_used_by_snapshots`
+* `space.physical_used`
+* `statistics.*`
 ### Learn more
 * [`DOC /storage/storage-units`](#docs-SAN-storage_storage-units)
 */
@@ -4296,19 +4298,21 @@ func (a *Client) StorageUnitCreate(params *StorageUnitCreateParams, authInfo run
 
 ### Expensive properties
 There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-* `statistics.*`
-* `metric.*`
-* `maps.*`
-* `space.physical_used`
-* `space.physical_used_by_snapshots`
+* `clone.inherited_physical_used`
+* `clone.inherited_savings`
+* `clone.match_source_storage_tier`
 * `clone.source.snapshot.name`
 * `clone.source.snapshot.uuid`
 * `clone.split_complete_percent`
 * `clone.split_estimate`
 * `clone.split_initiated`
-* `clone.match_source_storage_tier`
-* `clone.inherited_physical_used`
-* `clone.inherited_savings`
+* `maps.*`
+* `metric.*`
+* `movement.percent_complete`
+* `movement.start_time`
+* `space.physical_used_by_snapshots`
+* `space.physical_used`
+* `statistics.*`
 ### Learn more
 * [`DOC /storage/storage-units`](#docs-SAN-storage_storage-units)
 */

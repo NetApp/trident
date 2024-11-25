@@ -3207,18 +3207,51 @@ func (m *DiskInlineStats) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskInlineStorageAvailabilityZone disk inline storage availability zone
+// DiskInlineStorageAvailabilityZone Storage availability zone that the device is attached to.
 //
 // swagger:model disk_inline_storage_availability_zone
 type DiskInlineStorageAvailabilityZone struct {
 
-	// Storage Availability Zone UUID that the device is attached to.
-	// Example: cf73de77-526d-11ec-af4e-0050568e9df0
+	// links
+	Links *DiskInlineStorageAvailabilityZoneInlineLinks `json:"_links,omitempty"`
+
+	// The name of the storage availability zone.
+	// Example: storage_availability_zone_1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the storage availability zone.
+	// Example: 9b3ff559-3333-11ef-b420-005056ae6060
 	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this disk inline storage availability zone
 func (m *DiskInlineStorageAvailabilityZone) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DiskInlineStorageAvailabilityZone) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_availability_zone" + "." + "_links")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -3226,9 +3259,27 @@ func (m *DiskInlineStorageAvailabilityZone) Validate(formats strfmt.Registry) er
 func (m *DiskInlineStorageAvailabilityZone) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *DiskInlineStorageAvailabilityZone) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_availability_zone" + "." + "_links")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -3243,6 +3294,92 @@ func (m *DiskInlineStorageAvailabilityZone) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *DiskInlineStorageAvailabilityZone) UnmarshalBinary(b []byte) error {
 	var res DiskInlineStorageAvailabilityZone
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// DiskInlineStorageAvailabilityZoneInlineLinks disk inline storage availability zone inline links
+//
+// swagger:model disk_inline_storage_availability_zone_inline__links
+type DiskInlineStorageAvailabilityZoneInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this disk inline storage availability zone inline links
+func (m *DiskInlineStorageAvailabilityZoneInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DiskInlineStorageAvailabilityZoneInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_availability_zone" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this disk inline storage availability zone inline links based on the context it is used
+func (m *DiskInlineStorageAvailabilityZoneInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DiskInlineStorageAvailabilityZoneInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_availability_zone" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *DiskInlineStorageAvailabilityZoneInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *DiskInlineStorageAvailabilityZoneInlineLinks) UnmarshalBinary(b []byte) error {
+	var res DiskInlineStorageAvailabilityZoneInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

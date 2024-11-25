@@ -120,9 +120,14 @@ func NewStorageClusterGetDefault(code int) *StorageClusterGetDefault {
 }
 
 /*
-StorageClusterGetDefault describes a response with status code -1, with default header values.
+	StorageClusterGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 9240637 | This operation is not supported on this platform. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type StorageClusterGetDefault struct {
 	_statusCode int

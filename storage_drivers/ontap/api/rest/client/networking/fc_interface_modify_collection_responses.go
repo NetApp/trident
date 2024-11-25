@@ -3328,7 +3328,7 @@ swagger:model fc_interface_inline_svm
 type FcInterfaceInlineSvm struct {
 
 	// links
-	Links *FcInterfaceInlineSvmInlineLinks `json:"_links,omitempty"`
+	Links *models.FcInterfaceInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM. This field cannot be specified in a PATCH method.
 	//

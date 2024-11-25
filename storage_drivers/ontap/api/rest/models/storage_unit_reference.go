@@ -22,10 +22,12 @@ type StorageUnitReference struct {
 	Links *StorageUnitReferenceInlineLinks `json:"_links,omitempty"`
 
 	// The name of the storage unit.
+	//
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the storage unit.
+	//
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
 }

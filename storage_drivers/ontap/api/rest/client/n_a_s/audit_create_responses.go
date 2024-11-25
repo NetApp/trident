@@ -226,6 +226,7 @@ func NewAuditCreateDefault(code int) *AuditCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 262186     | Field "log.retention.duration" cannot be used with field "log.retention.count"         |
 | 262196     | Log_rotation_now is not an allowed operation                                           |
 | 2621462    | The specified SVM does not exist                                                       |
 | 9699330    | An audit configuration already exists                                                  |

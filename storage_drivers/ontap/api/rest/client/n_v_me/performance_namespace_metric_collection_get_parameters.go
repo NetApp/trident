@@ -172,6 +172,42 @@ type PerformanceNamespaceMetricCollectionGetParams struct {
 	*/
 	ReturnTimeout *int64
 
+	/* SpaceAvailable.
+
+	   Filter by space.available
+	*/
+	SpaceAvailable *int64
+
+	/* SpaceDuration.
+
+	   Filter by space.duration
+	*/
+	SpaceDuration *string
+
+	/* SpaceSize.
+
+	   Filter by space.size
+	*/
+	SpaceSize *int64
+
+	/* SpaceStatus.
+
+	   Filter by space.status
+	*/
+	SpaceStatus *string
+
+	/* SpaceUsed.
+
+	   Filter by space.used
+	*/
+	SpaceUsed *int64
+
+	/* SpaceUsedBySnapshots.
+
+	   Filter by space.used_by_snapshots
+	*/
+	SpaceUsedBySnapshots *int64
+
 	/* Status.
 
 	   Filter by status
@@ -452,6 +488,72 @@ func (o *PerformanceNamespaceMetricCollectionGetParams) WithReturnTimeout(return
 // SetReturnTimeout adds the returnTimeout to the performance namespace metric collection get params
 func (o *PerformanceNamespaceMetricCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
 	o.ReturnTimeout = returnTimeout
+}
+
+// WithSpaceAvailable adds the spaceAvailable to the performance namespace metric collection get params
+func (o *PerformanceNamespaceMetricCollectionGetParams) WithSpaceAvailable(spaceAvailable *int64) *PerformanceNamespaceMetricCollectionGetParams {
+	o.SetSpaceAvailable(spaceAvailable)
+	return o
+}
+
+// SetSpaceAvailable adds the spaceAvailable to the performance namespace metric collection get params
+func (o *PerformanceNamespaceMetricCollectionGetParams) SetSpaceAvailable(spaceAvailable *int64) {
+	o.SpaceAvailable = spaceAvailable
+}
+
+// WithSpaceDuration adds the spaceDuration to the performance namespace metric collection get params
+func (o *PerformanceNamespaceMetricCollectionGetParams) WithSpaceDuration(spaceDuration *string) *PerformanceNamespaceMetricCollectionGetParams {
+	o.SetSpaceDuration(spaceDuration)
+	return o
+}
+
+// SetSpaceDuration adds the spaceDuration to the performance namespace metric collection get params
+func (o *PerformanceNamespaceMetricCollectionGetParams) SetSpaceDuration(spaceDuration *string) {
+	o.SpaceDuration = spaceDuration
+}
+
+// WithSpaceSize adds the spaceSize to the performance namespace metric collection get params
+func (o *PerformanceNamespaceMetricCollectionGetParams) WithSpaceSize(spaceSize *int64) *PerformanceNamespaceMetricCollectionGetParams {
+	o.SetSpaceSize(spaceSize)
+	return o
+}
+
+// SetSpaceSize adds the spaceSize to the performance namespace metric collection get params
+func (o *PerformanceNamespaceMetricCollectionGetParams) SetSpaceSize(spaceSize *int64) {
+	o.SpaceSize = spaceSize
+}
+
+// WithSpaceStatus adds the spaceStatus to the performance namespace metric collection get params
+func (o *PerformanceNamespaceMetricCollectionGetParams) WithSpaceStatus(spaceStatus *string) *PerformanceNamespaceMetricCollectionGetParams {
+	o.SetSpaceStatus(spaceStatus)
+	return o
+}
+
+// SetSpaceStatus adds the spaceStatus to the performance namespace metric collection get params
+func (o *PerformanceNamespaceMetricCollectionGetParams) SetSpaceStatus(spaceStatus *string) {
+	o.SpaceStatus = spaceStatus
+}
+
+// WithSpaceUsed adds the spaceUsed to the performance namespace metric collection get params
+func (o *PerformanceNamespaceMetricCollectionGetParams) WithSpaceUsed(spaceUsed *int64) *PerformanceNamespaceMetricCollectionGetParams {
+	o.SetSpaceUsed(spaceUsed)
+	return o
+}
+
+// SetSpaceUsed adds the spaceUsed to the performance namespace metric collection get params
+func (o *PerformanceNamespaceMetricCollectionGetParams) SetSpaceUsed(spaceUsed *int64) {
+	o.SpaceUsed = spaceUsed
+}
+
+// WithSpaceUsedBySnapshots adds the spaceUsedBySnapshots to the performance namespace metric collection get params
+func (o *PerformanceNamespaceMetricCollectionGetParams) WithSpaceUsedBySnapshots(spaceUsedBySnapshots *int64) *PerformanceNamespaceMetricCollectionGetParams {
+	o.SetSpaceUsedBySnapshots(spaceUsedBySnapshots)
+	return o
+}
+
+// SetSpaceUsedBySnapshots adds the spaceUsedBySnapshots to the performance namespace metric collection get params
+func (o *PerformanceNamespaceMetricCollectionGetParams) SetSpaceUsedBySnapshots(spaceUsedBySnapshots *int64) {
+	o.SpaceUsedBySnapshots = spaceUsedBySnapshots
 }
 
 // WithStatus adds the status to the performance namespace metric collection get params
@@ -771,6 +873,108 @@ func (o *PerformanceNamespaceMetricCollectionGetParams) WriteToRequest(r runtime
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceAvailable != nil {
+
+		// query param space.available
+		var qrSpaceAvailable int64
+
+		if o.SpaceAvailable != nil {
+			qrSpaceAvailable = *o.SpaceAvailable
+		}
+		qSpaceAvailable := swag.FormatInt64(qrSpaceAvailable)
+		if qSpaceAvailable != "" {
+
+			if err := r.SetQueryParam("space.available", qSpaceAvailable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceDuration != nil {
+
+		// query param space.duration
+		var qrSpaceDuration string
+
+		if o.SpaceDuration != nil {
+			qrSpaceDuration = *o.SpaceDuration
+		}
+		qSpaceDuration := qrSpaceDuration
+		if qSpaceDuration != "" {
+
+			if err := r.SetQueryParam("space.duration", qSpaceDuration); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceSize != nil {
+
+		// query param space.size
+		var qrSpaceSize int64
+
+		if o.SpaceSize != nil {
+			qrSpaceSize = *o.SpaceSize
+		}
+		qSpaceSize := swag.FormatInt64(qrSpaceSize)
+		if qSpaceSize != "" {
+
+			if err := r.SetQueryParam("space.size", qSpaceSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceStatus != nil {
+
+		// query param space.status
+		var qrSpaceStatus string
+
+		if o.SpaceStatus != nil {
+			qrSpaceStatus = *o.SpaceStatus
+		}
+		qSpaceStatus := qrSpaceStatus
+		if qSpaceStatus != "" {
+
+			if err := r.SetQueryParam("space.status", qSpaceStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceUsed != nil {
+
+		// query param space.used
+		var qrSpaceUsed int64
+
+		if o.SpaceUsed != nil {
+			qrSpaceUsed = *o.SpaceUsed
+		}
+		qSpaceUsed := swag.FormatInt64(qrSpaceUsed)
+		if qSpaceUsed != "" {
+
+			if err := r.SetQueryParam("space.used", qSpaceUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceUsedBySnapshots != nil {
+
+		// query param space.used_by_snapshots
+		var qrSpaceUsedBySnapshots int64
+
+		if o.SpaceUsedBySnapshots != nil {
+			qrSpaceUsedBySnapshots = *o.SpaceUsedBySnapshots
+		}
+		qSpaceUsedBySnapshots := swag.FormatInt64(qrSpaceUsedBySnapshots)
+		if qSpaceUsedBySnapshots != "" {
+
+			if err := r.SetQueryParam("space.used_by_snapshots", qSpaceUsedBySnapshots); err != nil {
 				return err
 			}
 		}

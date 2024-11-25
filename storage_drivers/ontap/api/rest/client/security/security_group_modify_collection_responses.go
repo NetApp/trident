@@ -208,8 +208,8 @@ type SecurityGroupModifyCollectionBody struct {
 	// Example: AzureGroup1
 	Name *string `json:"name,omitempty"`
 
-	// Group owner. Used to identify a cluster or an SVM.
-	Owner *models.SvmReference `json:"owner,omitempty"`
+	// owner
+	Owner *models.SecurityGroupInlineOwner `json:"owner,omitempty"`
 
 	// Scope of the entity. Set to "cluster" for cluster owned objects and to "svm" for SVM owned objects.
 	// Read Only: true
@@ -569,6 +569,190 @@ func (o *SecurityGroupModifyCollectionBody) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (o *SecurityGroupModifyCollectionBody) UnmarshalBinary(b []byte) error {
 	var res SecurityGroupModifyCollectionBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+SecurityGroupInlineOwner Group owner. Used to identify a cluster or an SVM.
+swagger:model security_group_inline_owner
+*/
+type SecurityGroupInlineOwner struct {
+
+	// links
+	Links *models.SecurityGroupInlineOwnerInlineLinks `json:"_links,omitempty"`
+
+	// The name of the SVM. This field cannot be specified in a PATCH method.
+	//
+	// Example: svm1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
+	//
+	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this security group inline owner
+func (o *SecurityGroupInlineOwner) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *SecurityGroupInlineOwner) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(o.Links) { // not required
+		return nil
+	}
+
+	if o.Links != nil {
+		if err := o.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "owner" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this security group inline owner based on the context it is used
+func (o *SecurityGroupInlineOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *SecurityGroupInlineOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Links != nil {
+		if err := o.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "owner" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *SecurityGroupInlineOwner) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *SecurityGroupInlineOwner) UnmarshalBinary(b []byte) error {
+	var res SecurityGroupInlineOwner
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+SecurityGroupInlineOwnerInlineLinks security group inline owner inline links
+swagger:model security_group_inline_owner_inline__links
+*/
+type SecurityGroupInlineOwnerInlineLinks struct {
+
+	// self
+	Self *models.Href `json:"self,omitempty"`
+}
+
+// Validate validates this security group inline owner inline links
+func (o *SecurityGroupInlineOwnerInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *SecurityGroupInlineOwnerInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(o.Self) { // not required
+		return nil
+	}
+
+	if o.Self != nil {
+		if err := o.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "owner" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this security group inline owner inline links based on the context it is used
+func (o *SecurityGroupInlineOwnerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *SecurityGroupInlineOwnerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Self != nil {
+		if err := o.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "owner" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *SecurityGroupInlineOwnerInlineLinks) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *SecurityGroupInlineOwnerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityGroupInlineOwnerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

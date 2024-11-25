@@ -276,25 +276,81 @@ func (m *ClusterSpace) UnmarshalBinary(b []byte) error {
 type ClusterSpaceInlineBlockStorage struct {
 
 	// Available space across the cluster.
+	// Read Only: true
 	Available *int64 `json:"available,omitempty"`
 
+	// Total delayed free space across the cluster.
+	// ### Platform Specifics
+	// * **Unified ONTAP**: This property is not available as part of `cluster_space.block_storage` object in the REST API and is not reported for GET requests.
+	// * **ASA r2**: Available for GET requests.
+	//
+	// Read Only: true
+	DelayedFrees *int64 `json:"delayed_frees,omitempty"`
+
+	// The cluster space full threshold percentage that triggers an EMS error.
+	// ### Platform Specifics
+	// * **Unified ONTAP**: This property is not available as part of `cluster_space.block_storage` object in the REST API and is not reported for GET requests.
+	// * **ASA r2**: Available for GET, POST, and PATCH requests.
+	//
+	FullThresholdPercent *int64 `json:"full_threshold_percent,omitempty"`
+
 	// Inactive data across the cluster.
+	// ### Platform Specifics
+	// * **Unified ONTAP**: Available for GET requests.
+	// * **ASA r2**: This property is not applicable, it is not available in the REST API and is not reported for GET requests.
 	//
-	//
+	// Read Only: true
 	InactiveData *int64 `json:"inactive_data,omitempty"`
 
 	// Configuration information based on type of media. For example, SSD media type information includes the sum of all the SSD storage across the cluster.
+	// Read Only: true
 	Medias []*ClusterSpaceBlockStorageMediasItems0 `json:"medias,omitempty"`
 
+	// The cluster space nearly full threshold percentage that triggers an EMS warning.
+	// ### Platform Specifics
+	// * **Unified ONTAP**: This property is not available as part of `cluster_space.block_storage` object in the REST API and is not reported for GET requests.
+	// * **ASA r2**: Available for GET, POST, and PATCH requests.
+	//
+	NearlyFullThresholdPercent *int64 `json:"nearly_full_threshold_percent,omitempty"`
+
 	// Total physical used space across the cluster.
+	// Read Only: true
 	PhysicalUsed *int64 `json:"physical_used,omitempty"`
 
+	// The Physical space used percentage across the cluster.
+	// ### Platform Specifics
+	// * **Unified ONTAP**: This property is not available as part of the `cluster_space.block_storage` object in the REST API and is not reported for GET requests.
+	// * **ASA r2**: Available for GET requests.
+	//
+	// Read Only: true
+	PhysicalUsedPercent *int64 `json:"physical_used_percent,omitempty"`
+
 	// Total space across the cluster.
+	// Read Only: true
 	Size *int64 `json:"size,omitempty"`
 
+	// Total metadata used in the cluster.
+	// ### Platform Specifics
+	// * **Unified ONTAP**: This property is not available as part of `cluster_space.block_storage` object in the REST API and is not reported for GET requests.
+	// * **ASA r2**: Available for GET requests.
+	//
+	// Read Only: true
+	TotalMetadataUsed *int64 `json:"total_metadata_used,omitempty"`
+
+	// Total unusable space across the cluster due to some aggregate being unavailable.
+	// ### Platform Specifics
+	// * **Unified ONTAP**: This property is not available as part of `cluster_space.block_storage` object in the REST API and is not reported for GET requests.
+	// * **ASA r2**: Available for GET requests.
+	//
+	// Read Only: true
+	UnusableSpace *int64 `json:"unusable_space,omitempty"`
+
 	// Used space (includes volume reserves) across the cluster.
+	// ### Platform Specifics
+	// * **Unified ONTAP**: Available for GET requests.
+	// * **ASA r2**: This property is not applicable, it is not available in the REST API and is not reported for GET requests.
 	//
-	//
+	// Read Only: true
 	Used *int64 `json:"used,omitempty"`
 }
 
@@ -340,7 +396,43 @@ func (m *ClusterSpaceInlineBlockStorage) validateMedias(formats strfmt.Registry)
 func (m *ClusterSpaceInlineBlockStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateAvailable(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDelayedFrees(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInactiveData(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateMedias(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePhysicalUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePhysicalUsedPercent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTotalMetadataUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUnusableSpace(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsed(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -350,7 +442,38 @@ func (m *ClusterSpaceInlineBlockStorage) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
+func (m *ClusterSpaceInlineBlockStorage) contextValidateAvailable(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"available", "body", m.Available); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineBlockStorage) contextValidateDelayedFrees(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"delayed_frees", "body", m.DelayedFrees); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineBlockStorage) contextValidateInactiveData(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"inactive_data", "body", m.InactiveData); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *ClusterSpaceInlineBlockStorage) contextValidateMedias(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"medias", "body", []*ClusterSpaceBlockStorageMediasItems0(m.Medias)); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(m.Medias); i++ {
 
@@ -363,6 +486,60 @@ func (m *ClusterSpaceInlineBlockStorage) contextValidateMedias(ctx context.Conte
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineBlockStorage) contextValidatePhysicalUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"physical_used", "body", m.PhysicalUsed); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineBlockStorage) contextValidatePhysicalUsedPercent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"physical_used_percent", "body", m.PhysicalUsedPercent); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineBlockStorage) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"size", "body", m.Size); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineBlockStorage) contextValidateTotalMetadataUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"total_metadata_used", "body", m.TotalMetadataUsed); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineBlockStorage) contextValidateUnusableSpace(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"unusable_space", "body", m.UnusableSpace); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineBlockStorage) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"used", "body", m.Used); err != nil {
+		return err
 	}
 
 	return nil
@@ -414,7 +591,9 @@ type ClusterSpaceBlockStorageMediasItems0 struct {
 	Type *string `json:"type,omitempty"`
 
 	// Used space across the cluster based on media type.
-	//
+	// ### Platform Specifics
+	// * **Unified ONTAP**: Available for GET requests.
+	// * **ASA r2**: This property is not applicable, it is not available in the REST API and is not reported for GET requests.
 	//
 	Used *int64 `json:"used,omitempty"`
 }
@@ -665,6 +844,9 @@ func (m *ClusterSpaceBlockStorageMediasItems0) UnmarshalBinary(b []byte) error {
 }
 
 // ClusterSpaceBlockStorageMediasItems0Efficiency Storage efficiency.
+// ### Platform Specifics
+// * **Unified ONTAP**: Available for GET requests.
+// * **ASA r2**: This property is not applicable, it is not available in the REST API and is not reported for GET requests.
 //
 // swagger:model ClusterSpaceBlockStorageMediasItems0Efficiency
 type ClusterSpaceBlockStorageMediasItems0Efficiency struct {
@@ -845,6 +1027,9 @@ func (m *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshots) Unmarsh
 }
 
 // ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones Storage efficiency that does not include the savings provided by snapshots and FlexClone volumes.
+// ### Platform Specifics
+// * **Unified ONTAP**: Available for GET requests.
+// * **ASA r2**: This property is not applicable, it is not available in the REST API and is not reported for GET requests.
 //
 // swagger:model ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones
 type ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones struct {
@@ -940,7 +1125,6 @@ func (m *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclone
 type ClusterSpaceInlineCloudStorage struct {
 
 	// Total space used in cloud.
-	// Read Only: true
 	Used *int64 `json:"used,omitempty"`
 }
 
@@ -953,22 +1137,9 @@ func (m *ClusterSpaceInlineCloudStorage) Validate(formats strfmt.Registry) error
 func (m *ClusterSpaceInlineCloudStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateUsed(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *ClusterSpaceInlineCloudStorage) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "cloud_storage"+"."+"used", "body", m.Used); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -991,6 +1162,9 @@ func (m *ClusterSpaceInlineCloudStorage) UnmarshalBinary(b []byte) error {
 }
 
 // ClusterSpaceInlineEfficiency Storage efficiency.
+// ### Platform Specifics
+// * **Unified ONTAP**: Available for GET requests.
+// * **ASA r2**: This property is not applicable, it is not available in the REST API and is not reported for GET requests.
 //
 // swagger:model cluster_space_inline_efficiency
 type ClusterSpaceInlineEfficiency struct {
@@ -1171,6 +1345,9 @@ func (m *ClusterSpaceInlineEfficiencyWithoutSnapshots) UnmarshalBinary(b []byte)
 }
 
 // ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones Storage efficiency that does not include the savings provided by snapshots and FlexClone volumes.
+// ### Platform Specifics
+// * **Unified ONTAP**: Available for GET requests.
+// * **ASA r2**: This property is not applicable, it is not available in the REST API and is not reported for GET requests.
 //
 // swagger:model cluster_space_inline_efficiency_without_snapshots_flexclones
 type ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones struct {

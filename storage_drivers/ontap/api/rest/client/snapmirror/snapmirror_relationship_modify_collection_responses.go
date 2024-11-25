@@ -263,6 +263,7 @@ func NewSnapmirrorRelationshipModifyCollectionDefault(code int) *SnapmirrorRelat
 | 6621125     | The policy is not valid for relationships with FlexGroup volume endpoints. Only policies without snapshot creation schedules are supported for these relationships. |
 | 13304093    | The property specified is not supported for the specified relationships. |
 | 6622077     | The expand operation has failed on the SnapMirror active sync relationship with specified destination path. |
+| 6619720     | Relationship information has been updated and is being propagated. Wait a few minutes and try the operation again. |
 */
 type SnapmirrorRelationshipModifyCollectionDefault struct {
 	_statusCode int

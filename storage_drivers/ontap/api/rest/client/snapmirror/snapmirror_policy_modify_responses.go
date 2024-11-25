@@ -218,6 +218,7 @@ func NewSnapmirrorPolicyModifyDefault(code int) *SnapmirrorPolicyModifyDefault {
 | 13304011    | Failed to create or modify the specified Snapmirror policy. Reason: The property retention.count cannot have a value greater than 1. |
 | 6621091     | The specified Snapmirror policy cannot have a rule with a preserve value of true. |
 | 6621088     | The specified Snapmirror policy must have at least one rule without a schedule. |
+| 6621129     | Cannot add a snapshot creation schedule to the policy because it is associated with a Consistency Group relationship. |
 */
 type SnapmirrorPolicyModifyDefault struct {
 	_statusCode int

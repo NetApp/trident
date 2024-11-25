@@ -86,6 +86,12 @@ type ConsistencyGroupGetParams struct {
 	*/
 	CloneGuaranteeType *string
 
+	/* CloneHasUnsplitFlexclones.
+
+	   Filter by clone.has_unsplit_flexclones
+	*/
+	CloneHasUnsplitFlexclones *bool
+
 	/* CloneIsFlexclone.
 
 	   Filter by clone.is_flexclone
@@ -97,6 +103,18 @@ type ConsistencyGroupGetParams struct {
 	   Filter by clone.parent_consistency_group.name
 	*/
 	CloneParentConsistencyGroupName *string
+
+	/* CloneParentConsistencyGroupParentName.
+
+	   Filter by clone.parent_consistency_group.parent_name
+	*/
+	CloneParentConsistencyGroupParentName *string
+
+	/* CloneParentConsistencyGroupParentUUID.
+
+	   Filter by clone.parent_consistency_group.parent_uuid
+	*/
+	CloneParentConsistencyGroupParentUUID *string
 
 	/* CloneParentConsistencyGroupUUID.
 
@@ -116,11 +134,35 @@ type ConsistencyGroupGetParams struct {
 	*/
 	CloneParentSnapshotUUID *string
 
+	/* CloneParentSvmName.
+
+	   Filter by clone.parent_svm.name
+	*/
+	CloneParentSvmName *string
+
+	/* CloneParentSvmUUID.
+
+	   Filter by clone.parent_svm.uuid
+	*/
+	CloneParentSvmUUID *string
+
 	/* CloneSnaplockType.
 
 	   Filter by clone.snaplock_type
 	*/
 	CloneSnaplockType *string
+
+	/* CloneSplitCompletePercent.
+
+	   Filter by clone.split_complete_percent
+	*/
+	CloneSplitCompletePercent *int64
+
+	/* CloneSplitEstimate.
+
+	   Filter by clone.split_estimate
+	*/
+	CloneSplitEstimate *int64
 
 	/* CloneSplitInitiated.
 
@@ -139,6 +181,12 @@ type ConsistencyGroupGetParams struct {
 	   Filter by clone.storage_unit.suffix
 	*/
 	CloneStorageUnitSuffix *string
+
+	/* CloneUnsplitFlexclones.
+
+	   Filter by clone.unsplit_flexclones
+	*/
+	CloneUnsplitFlexclones *string
 
 	/* CloneVolumePrefix.
 
@@ -2050,6 +2098,17 @@ func (o *ConsistencyGroupGetParams) SetCloneGuaranteeType(cloneGuaranteeType *st
 	o.CloneGuaranteeType = cloneGuaranteeType
 }
 
+// WithCloneHasUnsplitFlexclones adds the cloneHasUnsplitFlexclones to the consistency group get params
+func (o *ConsistencyGroupGetParams) WithCloneHasUnsplitFlexclones(cloneHasUnsplitFlexclones *bool) *ConsistencyGroupGetParams {
+	o.SetCloneHasUnsplitFlexclones(cloneHasUnsplitFlexclones)
+	return o
+}
+
+// SetCloneHasUnsplitFlexclones adds the cloneHasUnsplitFlexclones to the consistency group get params
+func (o *ConsistencyGroupGetParams) SetCloneHasUnsplitFlexclones(cloneHasUnsplitFlexclones *bool) {
+	o.CloneHasUnsplitFlexclones = cloneHasUnsplitFlexclones
+}
+
 // WithCloneIsFlexclone adds the cloneIsFlexclone to the consistency group get params
 func (o *ConsistencyGroupGetParams) WithCloneIsFlexclone(cloneIsFlexclone *bool) *ConsistencyGroupGetParams {
 	o.SetCloneIsFlexclone(cloneIsFlexclone)
@@ -2070,6 +2129,28 @@ func (o *ConsistencyGroupGetParams) WithCloneParentConsistencyGroupName(clonePar
 // SetCloneParentConsistencyGroupName adds the cloneParentConsistencyGroupName to the consistency group get params
 func (o *ConsistencyGroupGetParams) SetCloneParentConsistencyGroupName(cloneParentConsistencyGroupName *string) {
 	o.CloneParentConsistencyGroupName = cloneParentConsistencyGroupName
+}
+
+// WithCloneParentConsistencyGroupParentName adds the cloneParentConsistencyGroupParentName to the consistency group get params
+func (o *ConsistencyGroupGetParams) WithCloneParentConsistencyGroupParentName(cloneParentConsistencyGroupParentName *string) *ConsistencyGroupGetParams {
+	o.SetCloneParentConsistencyGroupParentName(cloneParentConsistencyGroupParentName)
+	return o
+}
+
+// SetCloneParentConsistencyGroupParentName adds the cloneParentConsistencyGroupParentName to the consistency group get params
+func (o *ConsistencyGroupGetParams) SetCloneParentConsistencyGroupParentName(cloneParentConsistencyGroupParentName *string) {
+	o.CloneParentConsistencyGroupParentName = cloneParentConsistencyGroupParentName
+}
+
+// WithCloneParentConsistencyGroupParentUUID adds the cloneParentConsistencyGroupParentUUID to the consistency group get params
+func (o *ConsistencyGroupGetParams) WithCloneParentConsistencyGroupParentUUID(cloneParentConsistencyGroupParentUUID *string) *ConsistencyGroupGetParams {
+	o.SetCloneParentConsistencyGroupParentUUID(cloneParentConsistencyGroupParentUUID)
+	return o
+}
+
+// SetCloneParentConsistencyGroupParentUUID adds the cloneParentConsistencyGroupParentUuid to the consistency group get params
+func (o *ConsistencyGroupGetParams) SetCloneParentConsistencyGroupParentUUID(cloneParentConsistencyGroupParentUUID *string) {
+	o.CloneParentConsistencyGroupParentUUID = cloneParentConsistencyGroupParentUUID
 }
 
 // WithCloneParentConsistencyGroupUUID adds the cloneParentConsistencyGroupUUID to the consistency group get params
@@ -2105,6 +2186,28 @@ func (o *ConsistencyGroupGetParams) SetCloneParentSnapshotUUID(cloneParentSnapsh
 	o.CloneParentSnapshotUUID = cloneParentSnapshotUUID
 }
 
+// WithCloneParentSvmName adds the cloneParentSvmName to the consistency group get params
+func (o *ConsistencyGroupGetParams) WithCloneParentSvmName(cloneParentSvmName *string) *ConsistencyGroupGetParams {
+	o.SetCloneParentSvmName(cloneParentSvmName)
+	return o
+}
+
+// SetCloneParentSvmName adds the cloneParentSvmName to the consistency group get params
+func (o *ConsistencyGroupGetParams) SetCloneParentSvmName(cloneParentSvmName *string) {
+	o.CloneParentSvmName = cloneParentSvmName
+}
+
+// WithCloneParentSvmUUID adds the cloneParentSvmUUID to the consistency group get params
+func (o *ConsistencyGroupGetParams) WithCloneParentSvmUUID(cloneParentSvmUUID *string) *ConsistencyGroupGetParams {
+	o.SetCloneParentSvmUUID(cloneParentSvmUUID)
+	return o
+}
+
+// SetCloneParentSvmUUID adds the cloneParentSvmUuid to the consistency group get params
+func (o *ConsistencyGroupGetParams) SetCloneParentSvmUUID(cloneParentSvmUUID *string) {
+	o.CloneParentSvmUUID = cloneParentSvmUUID
+}
+
 // WithCloneSnaplockType adds the cloneSnaplockType to the consistency group get params
 func (o *ConsistencyGroupGetParams) WithCloneSnaplockType(cloneSnaplockType *string) *ConsistencyGroupGetParams {
 	o.SetCloneSnaplockType(cloneSnaplockType)
@@ -2114,6 +2217,28 @@ func (o *ConsistencyGroupGetParams) WithCloneSnaplockType(cloneSnaplockType *str
 // SetCloneSnaplockType adds the cloneSnaplockType to the consistency group get params
 func (o *ConsistencyGroupGetParams) SetCloneSnaplockType(cloneSnaplockType *string) {
 	o.CloneSnaplockType = cloneSnaplockType
+}
+
+// WithCloneSplitCompletePercent adds the cloneSplitCompletePercent to the consistency group get params
+func (o *ConsistencyGroupGetParams) WithCloneSplitCompletePercent(cloneSplitCompletePercent *int64) *ConsistencyGroupGetParams {
+	o.SetCloneSplitCompletePercent(cloneSplitCompletePercent)
+	return o
+}
+
+// SetCloneSplitCompletePercent adds the cloneSplitCompletePercent to the consistency group get params
+func (o *ConsistencyGroupGetParams) SetCloneSplitCompletePercent(cloneSplitCompletePercent *int64) {
+	o.CloneSplitCompletePercent = cloneSplitCompletePercent
+}
+
+// WithCloneSplitEstimate adds the cloneSplitEstimate to the consistency group get params
+func (o *ConsistencyGroupGetParams) WithCloneSplitEstimate(cloneSplitEstimate *int64) *ConsistencyGroupGetParams {
+	o.SetCloneSplitEstimate(cloneSplitEstimate)
+	return o
+}
+
+// SetCloneSplitEstimate adds the cloneSplitEstimate to the consistency group get params
+func (o *ConsistencyGroupGetParams) SetCloneSplitEstimate(cloneSplitEstimate *int64) {
+	o.CloneSplitEstimate = cloneSplitEstimate
 }
 
 // WithCloneSplitInitiated adds the cloneSplitInitiated to the consistency group get params
@@ -2147,6 +2272,17 @@ func (o *ConsistencyGroupGetParams) WithCloneStorageUnitSuffix(cloneStorageUnitS
 // SetCloneStorageUnitSuffix adds the cloneStorageUnitSuffix to the consistency group get params
 func (o *ConsistencyGroupGetParams) SetCloneStorageUnitSuffix(cloneStorageUnitSuffix *string) {
 	o.CloneStorageUnitSuffix = cloneStorageUnitSuffix
+}
+
+// WithCloneUnsplitFlexclones adds the cloneUnsplitFlexclones to the consistency group get params
+func (o *ConsistencyGroupGetParams) WithCloneUnsplitFlexclones(cloneUnsplitFlexclones *string) *ConsistencyGroupGetParams {
+	o.SetCloneUnsplitFlexclones(cloneUnsplitFlexclones)
+	return o
+}
+
+// SetCloneUnsplitFlexclones adds the cloneUnsplitFlexclones to the consistency group get params
+func (o *ConsistencyGroupGetParams) SetCloneUnsplitFlexclones(cloneUnsplitFlexclones *string) {
+	o.CloneUnsplitFlexclones = cloneUnsplitFlexclones
 }
 
 // WithCloneVolumePrefix adds the cloneVolumePrefix to the consistency group get params
@@ -5514,6 +5650,23 @@ func (o *ConsistencyGroupGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.CloneHasUnsplitFlexclones != nil {
+
+		// query param clone.has_unsplit_flexclones
+		var qrCloneHasUnsplitFlexclones bool
+
+		if o.CloneHasUnsplitFlexclones != nil {
+			qrCloneHasUnsplitFlexclones = *o.CloneHasUnsplitFlexclones
+		}
+		qCloneHasUnsplitFlexclones := swag.FormatBool(qrCloneHasUnsplitFlexclones)
+		if qCloneHasUnsplitFlexclones != "" {
+
+			if err := r.SetQueryParam("clone.has_unsplit_flexclones", qCloneHasUnsplitFlexclones); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CloneIsFlexclone != nil {
 
 		// query param clone.is_flexclone
@@ -5543,6 +5696,40 @@ func (o *ConsistencyGroupGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qCloneParentConsistencyGroupName != "" {
 
 			if err := r.SetQueryParam("clone.parent_consistency_group.name", qCloneParentConsistencyGroupName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneParentConsistencyGroupParentName != nil {
+
+		// query param clone.parent_consistency_group.parent_name
+		var qrCloneParentConsistencyGroupParentName string
+
+		if o.CloneParentConsistencyGroupParentName != nil {
+			qrCloneParentConsistencyGroupParentName = *o.CloneParentConsistencyGroupParentName
+		}
+		qCloneParentConsistencyGroupParentName := qrCloneParentConsistencyGroupParentName
+		if qCloneParentConsistencyGroupParentName != "" {
+
+			if err := r.SetQueryParam("clone.parent_consistency_group.parent_name", qCloneParentConsistencyGroupParentName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneParentConsistencyGroupParentUUID != nil {
+
+		// query param clone.parent_consistency_group.parent_uuid
+		var qrCloneParentConsistencyGroupParentUUID string
+
+		if o.CloneParentConsistencyGroupParentUUID != nil {
+			qrCloneParentConsistencyGroupParentUUID = *o.CloneParentConsistencyGroupParentUUID
+		}
+		qCloneParentConsistencyGroupParentUUID := qrCloneParentConsistencyGroupParentUUID
+		if qCloneParentConsistencyGroupParentUUID != "" {
+
+			if err := r.SetQueryParam("clone.parent_consistency_group.parent_uuid", qCloneParentConsistencyGroupParentUUID); err != nil {
 				return err
 			}
 		}
@@ -5599,6 +5786,40 @@ func (o *ConsistencyGroupGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.CloneParentSvmName != nil {
+
+		// query param clone.parent_svm.name
+		var qrCloneParentSvmName string
+
+		if o.CloneParentSvmName != nil {
+			qrCloneParentSvmName = *o.CloneParentSvmName
+		}
+		qCloneParentSvmName := qrCloneParentSvmName
+		if qCloneParentSvmName != "" {
+
+			if err := r.SetQueryParam("clone.parent_svm.name", qCloneParentSvmName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneParentSvmUUID != nil {
+
+		// query param clone.parent_svm.uuid
+		var qrCloneParentSvmUUID string
+
+		if o.CloneParentSvmUUID != nil {
+			qrCloneParentSvmUUID = *o.CloneParentSvmUUID
+		}
+		qCloneParentSvmUUID := qrCloneParentSvmUUID
+		if qCloneParentSvmUUID != "" {
+
+			if err := r.SetQueryParam("clone.parent_svm.uuid", qCloneParentSvmUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CloneSnaplockType != nil {
 
 		// query param clone.snaplock_type
@@ -5611,6 +5832,40 @@ func (o *ConsistencyGroupGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qCloneSnaplockType != "" {
 
 			if err := r.SetQueryParam("clone.snaplock_type", qCloneSnaplockType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneSplitCompletePercent != nil {
+
+		// query param clone.split_complete_percent
+		var qrCloneSplitCompletePercent int64
+
+		if o.CloneSplitCompletePercent != nil {
+			qrCloneSplitCompletePercent = *o.CloneSplitCompletePercent
+		}
+		qCloneSplitCompletePercent := swag.FormatInt64(qrCloneSplitCompletePercent)
+		if qCloneSplitCompletePercent != "" {
+
+			if err := r.SetQueryParam("clone.split_complete_percent", qCloneSplitCompletePercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneSplitEstimate != nil {
+
+		// query param clone.split_estimate
+		var qrCloneSplitEstimate int64
+
+		if o.CloneSplitEstimate != nil {
+			qrCloneSplitEstimate = *o.CloneSplitEstimate
+		}
+		qCloneSplitEstimate := swag.FormatInt64(qrCloneSplitEstimate)
+		if qCloneSplitEstimate != "" {
+
+			if err := r.SetQueryParam("clone.split_estimate", qCloneSplitEstimate); err != nil {
 				return err
 			}
 		}
@@ -5662,6 +5917,23 @@ func (o *ConsistencyGroupGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qCloneStorageUnitSuffix != "" {
 
 			if err := r.SetQueryParam("clone.storage_unit.suffix", qCloneStorageUnitSuffix); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneUnsplitFlexclones != nil {
+
+		// query param clone.unsplit_flexclones
+		var qrCloneUnsplitFlexclones string
+
+		if o.CloneUnsplitFlexclones != nil {
+			qrCloneUnsplitFlexclones = *o.CloneUnsplitFlexclones
+		}
+		qCloneUnsplitFlexclones := qrCloneUnsplitFlexclones
+		if qCloneUnsplitFlexclones != "" {
+
+			if err := r.SetQueryParam("clone.unsplit_flexclones", qCloneUnsplitFlexclones); err != nil {
 				return err
 			}
 		}

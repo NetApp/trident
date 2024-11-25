@@ -20,6 +20,9 @@ import (
 // swagger:model storage_availability_zone
 type StorageAvailabilityZone struct {
 
+	// links
+	Links *SelfLink `json:"_links,omitempty"`
+
 	// Availability zone name.
 	// Read Only: true
 	Name *string `json:"name,omitempty"`
@@ -40,6 +43,10 @@ type StorageAvailabilityZone struct {
 func (m *StorageAvailabilityZone) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSpace(formats); err != nil {
 		res = append(res, err)
 	}
@@ -51,6 +58,23 @@ func (m *StorageAvailabilityZone) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *StorageAvailabilityZone) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -99,6 +123,10 @@ func (m *StorageAvailabilityZone) validateStorageAvailabilityZoneInlineNodes(for
 func (m *StorageAvailabilityZone) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateName(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -118,6 +146,20 @@ func (m *StorageAvailabilityZone) ContextValidate(ctx context.Context, formats s
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *StorageAvailabilityZone) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -378,9 +420,6 @@ func (m *StorageAvailabilityZoneInlineNodesInlineArrayItemInlineLinks) Unmarshal
 // swagger:model storage_availability_zone_inline_space
 type StorageAvailabilityZoneInlineSpace struct {
 
-	// links
-	Links *SelfLink `json:"_links,omitempty"`
-
 	// Available space in the availability zone.
 	// Read Only: true
 	Available *int64 `json:"available,omitempty"`
@@ -435,10 +474,6 @@ type StorageAvailabilityZoneInlineSpace struct {
 func (m *StorageAvailabilityZoneInlineSpace) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateEfficiencyWithoutSnapshots(formats); err != nil {
 		res = append(res, err)
 	}
@@ -446,23 +481,6 @@ func (m *StorageAvailabilityZoneInlineSpace) Validate(formats strfmt.Registry) e
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *StorageAvailabilityZoneInlineSpace) validateLinks(formats strfmt.Registry) error {
-	if swag.IsZero(m.Links) { // not required
-		return nil
-	}
-
-	if m.Links != nil {
-		if err := m.Links.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("space" + "." + "_links")
-			}
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -486,10 +504,6 @@ func (m *StorageAvailabilityZoneInlineSpace) validateEfficiencyWithoutSnapshots(
 // ContextValidate validate this storage availability zone inline space based on the context it is used
 func (m *StorageAvailabilityZoneInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.contextValidateLinks(ctx, formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := m.contextValidateAvailable(ctx, formats); err != nil {
 		res = append(res, err)
@@ -538,20 +552,6 @@ func (m *StorageAvailabilityZoneInlineSpace) ContextValidate(ctx context.Context
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *StorageAvailabilityZoneInlineSpace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Links != nil {
-		if err := m.Links.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("space" + "." + "_links")
-			}
-			return err
-		}
-	}
-
 	return nil
 }
 

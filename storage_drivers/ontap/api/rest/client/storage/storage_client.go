@@ -58,6 +58,8 @@ type ClientService interface {
 
 	CloudStoreModifyCollection(params *CloudStoreModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudStoreModifyCollectionOK, *CloudStoreModifyCollectionAccepted, error)
 
+	ClusterSpaceModify(params *ClusterSpaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterSpaceModifyOK, *ClusterSpaceModifyAccepted, error)
+
 	DiskCollectionGet(params *DiskCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DiskCollectionGetOK, error)
 
 	DiskGet(params *DiskGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DiskGetOK, error)
@@ -1008,6 +1010,46 @@ func (a *Client) CloudStoreModifyCollection(params *CloudStoreModifyCollectionPa
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*CloudStoreModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+ClusterSpaceModify Updates full_threshold_percent and nearly_full_threshold_percent for the complete cluster.
+*/
+func (a *Client) ClusterSpaceModify(params *ClusterSpaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterSpaceModifyOK, *ClusterSpaceModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewClusterSpaceModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cluster_space_modify",
+		Method:             "PATCH",
+		PathPattern:        "/storage/cluster",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ClusterSpaceModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *ClusterSpaceModifyOK:
+		return value, nil, nil
+	case *ClusterSpaceModifyAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ClusterSpaceModifyDefault)
 	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -7144,6 +7186,9 @@ func (a *Client) VolumeEfficiencyPolicyCollectionGet(params *VolumeEfficiencyPol
 /*
 	VolumeEfficiencyPolicyCreate Creates a volume efficiency policy.
 
+### Platform Specifics
+* **Unified ONTAP**: POST must be used to create a volume efficiency policy.
+* **ASA r2**: POST is not supported.
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the volume efficiency policy.
 * `name` - Name for the volume efficiency policy.
@@ -7205,6 +7250,9 @@ func (a *Client) VolumeEfficiencyPolicyCreate(params *VolumeEfficiencyPolicyCrea
 /*
 	VolumeEfficiencyPolicyDelete Deletes a volume efficiency policy.
 
+### Platform Specifics
+* **Unified ONTAP**: DELETE must be used to delete a volume efficiency policy.
+* **ASA r2**: DELETE is not supported.
 ### Related ONTAP commands
 * `volume efficiency policy delete`
 ### Learn more
@@ -7329,6 +7377,9 @@ func (a *Client) VolumeEfficiencyPolicyGet(params *VolumeEfficiencyPolicyGetPara
 /*
 	VolumeEfficiencyPolicyModify Updates a volume efficiency policy.
 
+### Platform Specifics
+* **Unified ONTAP**: PATCH must be used to update the attributes of a volume efficiency policy.
+* **ASA r2**: PATCH is not supported.
 ### Related ONTAP commands
 * `volume efficiency policy modify`
 ### Learn more

@@ -7878,10 +7878,10 @@ func (a *Client) SecurityGroupCollectionGet(params *SecurityGroupCollectionGetPa
 	SecurityGroupCreate Creates a group entry.
 
 ### Required properties
-* `owner`
 * `name`
-* `type`
 ### Optional properties
+* `owner`
+* `type`
 * `uuid`
 * `comment`
 ### Related ONTAP commands
@@ -8310,6 +8310,18 @@ func (a *Client) SecurityKeyManagerDeleteCollection(params *SecurityKeyManagerDe
 /*
 	SecurityKeyManagerGet Retrieves key managers.
 
+### Examples:
+  - To retrieve basic information about a key server:
+    ```
+    GET /security/key-managers/{uuid}
+    ```
+  - To retrieve specific fields, including expensive properties:
+    ```
+    GET /security/key-managers/{uuid}?fields=connectivity.cluster_availability,connectivity.node_states.node.name
+    ```
+
+### Note:
+These fields are not available for inactive configurations due to the additional computational cost and the relevance of these fields is exclusive to active configurations.
 ### Expensive properties
 There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `connectivity.cluster_availability`

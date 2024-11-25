@@ -189,13 +189,8 @@ func (m *ExportClientInlinePolicy) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this export client inline policy based on the context it is used
+// ContextValidate validates this export client inline policy based on context it is used
 func (m *ExportClientInlinePolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 

@@ -207,7 +207,17 @@ func NewStorageUnitModifyCollectionDefault(code int) *StorageUnitModifyCollectio
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 5374614 | A non-existent storage availability zone was specified. |
 | 5376461 | An invalid storage unit name was specified. |
+| 5376497 | The storage unit move operation is not ready for cutover. |
+| 5376499 | The storage unit move operation cannot be paused. |
+| 5376500 | The storage unit move operation is not paused. |
+| 5376508 | A storage unit move of a secondary LUN or NVMe namespace is not supported. To move a secondary, you must move the associated primary LUN or NVMe namespace which will move all of the secondaries. |
+| 5376509 | Storage unit move related operations are not allowed for a SVM administrator. |
+| 5376510 | Storage unit move is not allowed for protocol endpoints. |
+| 5376511 | A storage unit move is already in progress for the storage unit. |
+| 5376512 | A storage unit move is not in progress for the storage unit. |
+| 5376513 | An attempt was made to patch a storage unit move state to an unsupported state. Allowed states are aborted, cutover, paused, replicating, and cutover_wait. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type StorageUnitModifyCollectionDefault struct {
@@ -301,6 +311,7 @@ type StorageUnitModifyCollectionBody struct {
 	ConsistencyGroup *models.StorageUnitInlineConsistencyGroup `json:"consistency_group,omitempty"`
 
 	// The time the storage unit was created.
+	//
 	// Example: 2018-06-04 19:00:00
 	// Read Only: true
 	// Format: date-time
@@ -320,6 +331,9 @@ type StorageUnitModifyCollectionBody struct {
 
 	// metric
 	Metric *models.StorageUnitInlineMetric `json:"metric,omitempty"`
+
+	// movement
+	Movement *models.StorageUnitInlineMovement `json:"movement,omitempty"`
 
 	// The name of the storage unit. The name must start with an alphabetic character (a to z or A to Z) or an underscore (_). The name must be 203 characters or less in length. Valid in POST.
 	//
@@ -412,6 +426,10 @@ func (o *StorageUnitModifyCollectionBody) Validate(formats strfmt.Registry) erro
 	}
 
 	if err := o.validateMetric(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateMovement(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -639,6 +657,23 @@ func (o *StorageUnitModifyCollectionBody) validateMetric(formats strfmt.Registry
 		if err := o.Metric.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("info" + "." + "metric")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *StorageUnitModifyCollectionBody) validateMovement(formats strfmt.Registry) error {
+	if swag.IsZero(o.Movement) { // not required
+		return nil
+	}
+
+	if o.Movement != nil {
+		if err := o.Movement.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement")
 			}
 			return err
 		}
@@ -1062,6 +1097,10 @@ func (o *StorageUnitModifyCollectionBody) ContextValidate(ctx context.Context, f
 		res = append(res, err)
 	}
 
+	if err := o.contextValidateMovement(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.contextValidateOsType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1224,6 +1263,20 @@ func (o *StorageUnitModifyCollectionBody) contextValidateMetric(ctx context.Cont
 		if err := o.Metric.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("info" + "." + "metric")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *StorageUnitModifyCollectionBody) contextValidateMovement(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Movement != nil {
+		if err := o.Movement.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement")
 			}
 			return err
 		}
@@ -1618,6 +1671,9 @@ type StorageUnitInlineLocation struct {
 	// node
 	Node *models.StorageUnitInlineLocationInlineNode `json:"node,omitempty"`
 
+	// storage availability zone
+	StorageAvailabilityZone *models.StorageUnitInlineLocationInlineStorageAvailabilityZone `json:"storage_availability_zone,omitempty"`
+
 	// volume
 	Volume *models.StorageUnitInlineLocationInlineVolume `json:"volume,omitempty"`
 }
@@ -1627,6 +1683,10 @@ func (o *StorageUnitInlineLocation) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := o.validateNode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateStorageAvailabilityZone(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1649,6 +1709,23 @@ func (o *StorageUnitInlineLocation) validateNode(formats strfmt.Registry) error 
 		if err := o.Node.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("info" + "." + "location" + "." + "node")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *StorageUnitInlineLocation) validateStorageAvailabilityZone(formats strfmt.Registry) error {
+	if swag.IsZero(o.StorageAvailabilityZone) { // not required
+		return nil
+	}
+
+	if o.StorageAvailabilityZone != nil {
+		if err := o.StorageAvailabilityZone.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "location" + "." + "storage_availability_zone")
 			}
 			return err
 		}
@@ -1682,6 +1759,10 @@ func (o *StorageUnitInlineLocation) ContextValidate(ctx context.Context, formats
 		res = append(res, err)
 	}
 
+	if err := o.contextValidateStorageAvailabilityZone(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.contextValidateVolume(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1698,6 +1779,20 @@ func (o *StorageUnitInlineLocation) contextValidateNode(ctx context.Context, for
 		if err := o.Node.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("info" + "." + "location" + "." + "node")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *StorageUnitInlineLocation) contextValidateStorageAvailabilityZone(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.StorageAvailabilityZone != nil {
+		if err := o.StorageAvailabilityZone.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "location" + "." + "storage_availability_zone")
 			}
 			return err
 		}
@@ -1914,6 +2009,190 @@ func (o *StorageUnitInlineLocationInlineNodeInlineLinks) MarshalBinary() ([]byte
 // UnmarshalBinary interface implementation
 func (o *StorageUnitInlineLocationInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
 	var res StorageUnitInlineLocationInlineNodeInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+StorageUnitInlineLocationInlineStorageAvailabilityZone The storage availability zone that contains the storage unit.<br/>
+// Available in PATCH to initiate a storage unit move operation.
+//
+swagger:model storage_unit_inline_location_inline_storage_availability_zone
+*/
+type StorageUnitInlineLocationInlineStorageAvailabilityZone struct {
+
+	// links
+	Links *models.StorageUnitInlineLocationInlineStorageAvailabilityZoneInlineLinks `json:"_links,omitempty"`
+
+	// The name of the storage availability zone.
+	// Example: storage_availability_zone_1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the storage availability zone.
+	// Example: 9b3ff559-3333-11ef-b420-005056ae6060
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this storage unit inline location inline storage availability zone
+func (o *StorageUnitInlineLocationInlineStorageAvailabilityZone) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineLocationInlineStorageAvailabilityZone) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(o.Links) { // not required
+		return nil
+	}
+
+	if o.Links != nil {
+		if err := o.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "location" + "." + "storage_availability_zone" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this storage unit inline location inline storage availability zone based on the context it is used
+func (o *StorageUnitInlineLocationInlineStorageAvailabilityZone) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineLocationInlineStorageAvailabilityZone) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Links != nil {
+		if err := o.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "location" + "." + "storage_availability_zone" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *StorageUnitInlineLocationInlineStorageAvailabilityZone) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *StorageUnitInlineLocationInlineStorageAvailabilityZone) UnmarshalBinary(b []byte) error {
+	var res StorageUnitInlineLocationInlineStorageAvailabilityZone
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+StorageUnitInlineLocationInlineStorageAvailabilityZoneInlineLinks storage unit inline location inline storage availability zone inline links
+swagger:model storage_unit_inline_location_inline_storage_availability_zone_inline__links
+*/
+type StorageUnitInlineLocationInlineStorageAvailabilityZoneInlineLinks struct {
+
+	// self
+	Self *models.Href `json:"self,omitempty"`
+}
+
+// Validate validates this storage unit inline location inline storage availability zone inline links
+func (o *StorageUnitInlineLocationInlineStorageAvailabilityZoneInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineLocationInlineStorageAvailabilityZoneInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(o.Self) { // not required
+		return nil
+	}
+
+	if o.Self != nil {
+		if err := o.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "location" + "." + "storage_availability_zone" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this storage unit inline location inline storage availability zone inline links based on the context it is used
+func (o *StorageUnitInlineLocationInlineStorageAvailabilityZoneInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineLocationInlineStorageAvailabilityZoneInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Self != nil {
+		if err := o.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "location" + "." + "storage_availability_zone" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *StorageUnitInlineLocationInlineStorageAvailabilityZoneInlineLinks) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *StorageUnitInlineLocationInlineStorageAvailabilityZoneInlineLinks) UnmarshalBinary(b []byte) error {
+	var res StorageUnitInlineLocationInlineStorageAvailabilityZoneInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4047,6 +4326,868 @@ func (o *StorageUnitInlineMetricInlineThroughput) MarshalBinary() ([]byte, error
 // UnmarshalBinary interface implementation
 func (o *StorageUnitInlineMetricInlineThroughput) UnmarshalBinary(b []byte) error {
 	var res StorageUnitInlineMetricInlineThroughput
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+StorageUnitInlineMovement The properties of a storage unit move operation from one storage availability zone to another.
+//
+swagger:model storage_unit_inline_movement
+*/
+type StorageUnitInlineMovement struct {
+
+	// destination
+	Destination *models.StorageUnitInlineMovementInlineDestination `json:"destination,omitempty"`
+
+	// The percentage complete of the move.
+	//
+	// Read Only: true
+	PercentComplete *int64 `json:"percent_complete,omitempty"`
+
+	// source
+	Source *models.StorageUnitInlineMovementInlineSource `json:"source,omitempty"`
+
+	// The start date and time of the storage unit move.
+	//
+	// Example: 2024-12-07 08:45:12
+	// Read Only: true
+	// Format: date-time
+	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
+
+	// The state of the storage unit move operation. Update the state to `aborted` to cancel the move operation. Update the state to `cutover` to trigger cutover. Update the state to `paused` to pause the storage unit move operation in progress. Update the state to `replicating` to resume the paused storage unit move operation. Update the state to `cutover_wait` to go into cutover manually. When the storage unit move operation is waiting to go into the `cutover` state, the operation state is `cutover_pending`. A change of state is only supported if a storage unit move operation is in progress.
+	//
+	// Example: replicating
+	// Enum: ["aborted","cutover","cutover_wait","cutover_pending","failed","paused","queued","replicating","success"]
+	State *string `json:"state,omitempty"`
+}
+
+// Validate validates this storage unit inline movement
+func (o *StorageUnitInlineMovement) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateDestination(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateSource(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateStartTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineMovement) validateDestination(formats strfmt.Registry) error {
+	if swag.IsZero(o.Destination) { // not required
+		return nil
+	}
+
+	if o.Destination != nil {
+		if err := o.Destination.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement" + "." + "destination")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *StorageUnitInlineMovement) validateSource(formats strfmt.Registry) error {
+	if swag.IsZero(o.Source) { // not required
+		return nil
+	}
+
+	if o.Source != nil {
+		if err := o.Source.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement" + "." + "source")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *StorageUnitInlineMovement) validateStartTime(formats strfmt.Registry) error {
+	if swag.IsZero(o.StartTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("info"+"."+"movement"+"."+"start_time", "body", "date-time", o.StartTime.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var storageUnitInlineMovementTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["aborted","cutover","cutover_wait","cutover_pending","failed","paused","queued","replicating","success"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		storageUnitInlineMovementTypeStatePropEnum = append(storageUnitInlineMovementTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// storage_unit_inline_movement
+	// StorageUnitInlineMovement
+	// state
+	// State
+	// aborted
+	// END DEBUGGING
+	// StorageUnitInlineMovementStateAborted captures enum value "aborted"
+	StorageUnitInlineMovementStateAborted string = "aborted"
+
+	// BEGIN DEBUGGING
+	// storage_unit_inline_movement
+	// StorageUnitInlineMovement
+	// state
+	// State
+	// cutover
+	// END DEBUGGING
+	// StorageUnitInlineMovementStateCutover captures enum value "cutover"
+	StorageUnitInlineMovementStateCutover string = "cutover"
+
+	// BEGIN DEBUGGING
+	// storage_unit_inline_movement
+	// StorageUnitInlineMovement
+	// state
+	// State
+	// cutover_wait
+	// END DEBUGGING
+	// StorageUnitInlineMovementStateCutoverWait captures enum value "cutover_wait"
+	StorageUnitInlineMovementStateCutoverWait string = "cutover_wait"
+
+	// BEGIN DEBUGGING
+	// storage_unit_inline_movement
+	// StorageUnitInlineMovement
+	// state
+	// State
+	// cutover_pending
+	// END DEBUGGING
+	// StorageUnitInlineMovementStateCutoverPending captures enum value "cutover_pending"
+	StorageUnitInlineMovementStateCutoverPending string = "cutover_pending"
+
+	// BEGIN DEBUGGING
+	// storage_unit_inline_movement
+	// StorageUnitInlineMovement
+	// state
+	// State
+	// failed
+	// END DEBUGGING
+	// StorageUnitInlineMovementStateFailed captures enum value "failed"
+	StorageUnitInlineMovementStateFailed string = "failed"
+
+	// BEGIN DEBUGGING
+	// storage_unit_inline_movement
+	// StorageUnitInlineMovement
+	// state
+	// State
+	// paused
+	// END DEBUGGING
+	// StorageUnitInlineMovementStatePaused captures enum value "paused"
+	StorageUnitInlineMovementStatePaused string = "paused"
+
+	// BEGIN DEBUGGING
+	// storage_unit_inline_movement
+	// StorageUnitInlineMovement
+	// state
+	// State
+	// queued
+	// END DEBUGGING
+	// StorageUnitInlineMovementStateQueued captures enum value "queued"
+	StorageUnitInlineMovementStateQueued string = "queued"
+
+	// BEGIN DEBUGGING
+	// storage_unit_inline_movement
+	// StorageUnitInlineMovement
+	// state
+	// State
+	// replicating
+	// END DEBUGGING
+	// StorageUnitInlineMovementStateReplicating captures enum value "replicating"
+	StorageUnitInlineMovementStateReplicating string = "replicating"
+
+	// BEGIN DEBUGGING
+	// storage_unit_inline_movement
+	// StorageUnitInlineMovement
+	// state
+	// State
+	// success
+	// END DEBUGGING
+	// StorageUnitInlineMovementStateSuccess captures enum value "success"
+	StorageUnitInlineMovementStateSuccess string = "success"
+)
+
+// prop value enum
+func (o *StorageUnitInlineMovement) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageUnitInlineMovementTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineMovement) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(o.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := o.validateStateEnum("info"+"."+"movement"+"."+"state", "body", *o.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this storage unit inline movement based on the context it is used
+func (o *StorageUnitInlineMovement) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateDestination(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidatePercentComplete(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateSource(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateStartTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineMovement) contextValidateDestination(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Destination != nil {
+		if err := o.Destination.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement" + "." + "destination")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *StorageUnitInlineMovement) contextValidatePercentComplete(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"movement"+"."+"percent_complete", "body", o.PercentComplete); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *StorageUnitInlineMovement) contextValidateSource(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Source != nil {
+		if err := o.Source.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement" + "." + "source")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *StorageUnitInlineMovement) contextValidateStartTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"movement"+"."+"start_time", "body", o.StartTime); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *StorageUnitInlineMovement) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *StorageUnitInlineMovement) UnmarshalBinary(b []byte) error {
+	var res StorageUnitInlineMovement
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+StorageUnitInlineMovementInlineDestination The destination of a storage unit move.
+//
+swagger:model storage_unit_inline_movement_inline_destination
+*/
+type StorageUnitInlineMovementInlineDestination struct {
+
+	// storage availability zone
+	StorageAvailabilityZone *models.StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZone `json:"storage_availability_zone,omitempty"`
+}
+
+// Validate validates this storage unit inline movement inline destination
+func (o *StorageUnitInlineMovementInlineDestination) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateStorageAvailabilityZone(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineMovementInlineDestination) validateStorageAvailabilityZone(formats strfmt.Registry) error {
+	if swag.IsZero(o.StorageAvailabilityZone) { // not required
+		return nil
+	}
+
+	if o.StorageAvailabilityZone != nil {
+		if err := o.StorageAvailabilityZone.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement" + "." + "destination" + "." + "storage_availability_zone")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this storage unit inline movement inline destination based on the context it is used
+func (o *StorageUnitInlineMovementInlineDestination) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateStorageAvailabilityZone(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineMovementInlineDestination) contextValidateStorageAvailabilityZone(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.StorageAvailabilityZone != nil {
+		if err := o.StorageAvailabilityZone.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement" + "." + "destination" + "." + "storage_availability_zone")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *StorageUnitInlineMovementInlineDestination) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *StorageUnitInlineMovementInlineDestination) UnmarshalBinary(b []byte) error {
+	var res StorageUnitInlineMovementInlineDestination
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZone The storage availability zone to which the storage unit is being moved.
+//
+swagger:model storage_unit_inline_movement_inline_destination_inline_storage_availability_zone
+*/
+type StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZone struct {
+
+	// links
+	Links *models.StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZoneInlineLinks `json:"_links,omitempty"`
+
+	// The name of the storage availability zone.
+	// Example: storage_availability_zone_1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the storage availability zone.
+	// Example: 9b3ff559-3333-11ef-b420-005056ae6060
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this storage unit inline movement inline destination inline storage availability zone
+func (o *StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZone) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZone) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(o.Links) { // not required
+		return nil
+	}
+
+	if o.Links != nil {
+		if err := o.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement" + "." + "destination" + "." + "storage_availability_zone" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this storage unit inline movement inline destination inline storage availability zone based on the context it is used
+func (o *StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZone) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZone) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Links != nil {
+		if err := o.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement" + "." + "destination" + "." + "storage_availability_zone" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZone) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZone) UnmarshalBinary(b []byte) error {
+	var res StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZone
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZoneInlineLinks storage unit inline movement inline destination inline storage availability zone inline links
+swagger:model storage_unit_inline_movement_inline_destination_inline_storage_availability_zone_inline__links
+*/
+type StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZoneInlineLinks struct {
+
+	// self
+	Self *models.Href `json:"self,omitempty"`
+}
+
+// Validate validates this storage unit inline movement inline destination inline storage availability zone inline links
+func (o *StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZoneInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZoneInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(o.Self) { // not required
+		return nil
+	}
+
+	if o.Self != nil {
+		if err := o.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement" + "." + "destination" + "." + "storage_availability_zone" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this storage unit inline movement inline destination inline storage availability zone inline links based on the context it is used
+func (o *StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZoneInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZoneInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Self != nil {
+		if err := o.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement" + "." + "destination" + "." + "storage_availability_zone" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZoneInlineLinks) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZoneInlineLinks) UnmarshalBinary(b []byte) error {
+	var res StorageUnitInlineMovementInlineDestinationInlineStorageAvailabilityZoneInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+StorageUnitInlineMovementInlineSource The source of a storage unit move.
+//
+swagger:model storage_unit_inline_movement_inline_source
+*/
+type StorageUnitInlineMovementInlineSource struct {
+
+	// storage availability zone
+	StorageAvailabilityZone *models.StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZone `json:"storage_availability_zone,omitempty"`
+}
+
+// Validate validates this storage unit inline movement inline source
+func (o *StorageUnitInlineMovementInlineSource) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateStorageAvailabilityZone(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineMovementInlineSource) validateStorageAvailabilityZone(formats strfmt.Registry) error {
+	if swag.IsZero(o.StorageAvailabilityZone) { // not required
+		return nil
+	}
+
+	if o.StorageAvailabilityZone != nil {
+		if err := o.StorageAvailabilityZone.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement" + "." + "source" + "." + "storage_availability_zone")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this storage unit inline movement inline source based on the context it is used
+func (o *StorageUnitInlineMovementInlineSource) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateStorageAvailabilityZone(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineMovementInlineSource) contextValidateStorageAvailabilityZone(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.StorageAvailabilityZone != nil {
+		if err := o.StorageAvailabilityZone.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement" + "." + "source" + "." + "storage_availability_zone")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *StorageUnitInlineMovementInlineSource) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *StorageUnitInlineMovementInlineSource) UnmarshalBinary(b []byte) error {
+	var res StorageUnitInlineMovementInlineSource
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZone The storage availability zone from which the storage unit is being moved.
+//
+swagger:model storage_unit_inline_movement_inline_source_inline_storage_availability_zone
+*/
+type StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZone struct {
+
+	// links
+	Links *models.StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZoneInlineLinks `json:"_links,omitempty"`
+
+	// The name of the storage availability zone.
+	// Example: storage_availability_zone_1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the storage availability zone.
+	// Example: 9b3ff559-3333-11ef-b420-005056ae6060
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this storage unit inline movement inline source inline storage availability zone
+func (o *StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZone) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZone) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(o.Links) { // not required
+		return nil
+	}
+
+	if o.Links != nil {
+		if err := o.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement" + "." + "source" + "." + "storage_availability_zone" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this storage unit inline movement inline source inline storage availability zone based on the context it is used
+func (o *StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZone) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZone) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Links != nil {
+		if err := o.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement" + "." + "source" + "." + "storage_availability_zone" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZone) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZone) UnmarshalBinary(b []byte) error {
+	var res StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZone
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZoneInlineLinks storage unit inline movement inline source inline storage availability zone inline links
+swagger:model storage_unit_inline_movement_inline_source_inline_storage_availability_zone_inline__links
+*/
+type StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZoneInlineLinks struct {
+
+	// self
+	Self *models.Href `json:"self,omitempty"`
+}
+
+// Validate validates this storage unit inline movement inline source inline storage availability zone inline links
+func (o *StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZoneInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZoneInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(o.Self) { // not required
+		return nil
+	}
+
+	if o.Self != nil {
+		if err := o.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement" + "." + "source" + "." + "storage_availability_zone" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this storage unit inline movement inline source inline storage availability zone inline links based on the context it is used
+func (o *StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZoneInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZoneInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Self != nil {
+		if err := o.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "movement" + "." + "source" + "." + "storage_availability_zone" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZoneInlineLinks) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZoneInlineLinks) UnmarshalBinary(b []byte) error {
+	var res StorageUnitInlineMovementInlineSourceInlineStorageAvailabilityZoneInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -200,6 +200,18 @@ type StorageUnitModifyCollectionParams struct {
 	*/
 	LocationNodeUUID *string
 
+	/* LocationStorageAvailabilityZoneName.
+
+	   Filter by location.storage_availability_zone.name
+	*/
+	LocationStorageAvailabilityZoneName *string
+
+	/* LocationStorageAvailabilityZoneUUID.
+
+	   Filter by location.storage_availability_zone.uuid
+	*/
+	LocationStorageAvailabilityZoneUUID *string
+
 	/* LocationVolumeName.
 
 	   Filter by location.volume.name
@@ -349,6 +361,48 @@ type StorageUnitModifyCollectionParams struct {
 	   Filter by metric.timestamp
 	*/
 	MetricTimestamp *string
+
+	/* MovementDestinationStorageAvailabilityZoneName.
+
+	   Filter by movement.destination.storage_availability_zone.name
+	*/
+	MovementDestinationStorageAvailabilityZoneName *string
+
+	/* MovementDestinationStorageAvailabilityZoneUUID.
+
+	   Filter by movement.destination.storage_availability_zone.uuid
+	*/
+	MovementDestinationStorageAvailabilityZoneUUID *string
+
+	/* MovementPercentComplete.
+
+	   Filter by movement.percent_complete
+	*/
+	MovementPercentComplete *int64
+
+	/* MovementSourceStorageAvailabilityZoneName.
+
+	   Filter by movement.source.storage_availability_zone.name
+	*/
+	MovementSourceStorageAvailabilityZoneName *string
+
+	/* MovementSourceStorageAvailabilityZoneUUID.
+
+	   Filter by movement.source.storage_availability_zone.uuid
+	*/
+	MovementSourceStorageAvailabilityZoneUUID *string
+
+	/* MovementStartTime.
+
+	   Filter by movement.start_time
+	*/
+	MovementStartTime *string
+
+	/* MovementState.
+
+	   Filter by movement.state
+	*/
+	MovementState *string
 
 	/* Name.
 
@@ -923,6 +977,28 @@ func (o *StorageUnitModifyCollectionParams) SetLocationNodeUUID(locationNodeUUID
 	o.LocationNodeUUID = locationNodeUUID
 }
 
+// WithLocationStorageAvailabilityZoneName adds the locationStorageAvailabilityZoneName to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) WithLocationStorageAvailabilityZoneName(locationStorageAvailabilityZoneName *string) *StorageUnitModifyCollectionParams {
+	o.SetLocationStorageAvailabilityZoneName(locationStorageAvailabilityZoneName)
+	return o
+}
+
+// SetLocationStorageAvailabilityZoneName adds the locationStorageAvailabilityZoneName to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) SetLocationStorageAvailabilityZoneName(locationStorageAvailabilityZoneName *string) {
+	o.LocationStorageAvailabilityZoneName = locationStorageAvailabilityZoneName
+}
+
+// WithLocationStorageAvailabilityZoneUUID adds the locationStorageAvailabilityZoneUUID to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) WithLocationStorageAvailabilityZoneUUID(locationStorageAvailabilityZoneUUID *string) *StorageUnitModifyCollectionParams {
+	o.SetLocationStorageAvailabilityZoneUUID(locationStorageAvailabilityZoneUUID)
+	return o
+}
+
+// SetLocationStorageAvailabilityZoneUUID adds the locationStorageAvailabilityZoneUuid to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) SetLocationStorageAvailabilityZoneUUID(locationStorageAvailabilityZoneUUID *string) {
+	o.LocationStorageAvailabilityZoneUUID = locationStorageAvailabilityZoneUUID
+}
+
 // WithLocationVolumeName adds the locationVolumeName to the storage unit modify collection params
 func (o *StorageUnitModifyCollectionParams) WithLocationVolumeName(locationVolumeName *string) *StorageUnitModifyCollectionParams {
 	o.SetLocationVolumeName(locationVolumeName)
@@ -1196,6 +1272,83 @@ func (o *StorageUnitModifyCollectionParams) WithMetricTimestamp(metricTimestamp 
 // SetMetricTimestamp adds the metricTimestamp to the storage unit modify collection params
 func (o *StorageUnitModifyCollectionParams) SetMetricTimestamp(metricTimestamp *string) {
 	o.MetricTimestamp = metricTimestamp
+}
+
+// WithMovementDestinationStorageAvailabilityZoneName adds the movementDestinationStorageAvailabilityZoneName to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) WithMovementDestinationStorageAvailabilityZoneName(movementDestinationStorageAvailabilityZoneName *string) *StorageUnitModifyCollectionParams {
+	o.SetMovementDestinationStorageAvailabilityZoneName(movementDestinationStorageAvailabilityZoneName)
+	return o
+}
+
+// SetMovementDestinationStorageAvailabilityZoneName adds the movementDestinationStorageAvailabilityZoneName to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) SetMovementDestinationStorageAvailabilityZoneName(movementDestinationStorageAvailabilityZoneName *string) {
+	o.MovementDestinationStorageAvailabilityZoneName = movementDestinationStorageAvailabilityZoneName
+}
+
+// WithMovementDestinationStorageAvailabilityZoneUUID adds the movementDestinationStorageAvailabilityZoneUUID to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) WithMovementDestinationStorageAvailabilityZoneUUID(movementDestinationStorageAvailabilityZoneUUID *string) *StorageUnitModifyCollectionParams {
+	o.SetMovementDestinationStorageAvailabilityZoneUUID(movementDestinationStorageAvailabilityZoneUUID)
+	return o
+}
+
+// SetMovementDestinationStorageAvailabilityZoneUUID adds the movementDestinationStorageAvailabilityZoneUuid to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) SetMovementDestinationStorageAvailabilityZoneUUID(movementDestinationStorageAvailabilityZoneUUID *string) {
+	o.MovementDestinationStorageAvailabilityZoneUUID = movementDestinationStorageAvailabilityZoneUUID
+}
+
+// WithMovementPercentComplete adds the movementPercentComplete to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) WithMovementPercentComplete(movementPercentComplete *int64) *StorageUnitModifyCollectionParams {
+	o.SetMovementPercentComplete(movementPercentComplete)
+	return o
+}
+
+// SetMovementPercentComplete adds the movementPercentComplete to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) SetMovementPercentComplete(movementPercentComplete *int64) {
+	o.MovementPercentComplete = movementPercentComplete
+}
+
+// WithMovementSourceStorageAvailabilityZoneName adds the movementSourceStorageAvailabilityZoneName to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) WithMovementSourceStorageAvailabilityZoneName(movementSourceStorageAvailabilityZoneName *string) *StorageUnitModifyCollectionParams {
+	o.SetMovementSourceStorageAvailabilityZoneName(movementSourceStorageAvailabilityZoneName)
+	return o
+}
+
+// SetMovementSourceStorageAvailabilityZoneName adds the movementSourceStorageAvailabilityZoneName to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) SetMovementSourceStorageAvailabilityZoneName(movementSourceStorageAvailabilityZoneName *string) {
+	o.MovementSourceStorageAvailabilityZoneName = movementSourceStorageAvailabilityZoneName
+}
+
+// WithMovementSourceStorageAvailabilityZoneUUID adds the movementSourceStorageAvailabilityZoneUUID to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) WithMovementSourceStorageAvailabilityZoneUUID(movementSourceStorageAvailabilityZoneUUID *string) *StorageUnitModifyCollectionParams {
+	o.SetMovementSourceStorageAvailabilityZoneUUID(movementSourceStorageAvailabilityZoneUUID)
+	return o
+}
+
+// SetMovementSourceStorageAvailabilityZoneUUID adds the movementSourceStorageAvailabilityZoneUuid to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) SetMovementSourceStorageAvailabilityZoneUUID(movementSourceStorageAvailabilityZoneUUID *string) {
+	o.MovementSourceStorageAvailabilityZoneUUID = movementSourceStorageAvailabilityZoneUUID
+}
+
+// WithMovementStartTime adds the movementStartTime to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) WithMovementStartTime(movementStartTime *string) *StorageUnitModifyCollectionParams {
+	o.SetMovementStartTime(movementStartTime)
+	return o
+}
+
+// SetMovementStartTime adds the movementStartTime to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) SetMovementStartTime(movementStartTime *string) {
+	o.MovementStartTime = movementStartTime
+}
+
+// WithMovementState adds the movementState to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) WithMovementState(movementState *string) *StorageUnitModifyCollectionParams {
+	o.SetMovementState(movementState)
+	return o
+}
+
+// SetMovementState adds the movementState to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) SetMovementState(movementState *string) {
+	o.MovementState = movementState
 }
 
 // WithName adds the name to the storage unit modify collection params
@@ -2023,6 +2176,40 @@ func (o *StorageUnitModifyCollectionParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
+	if o.LocationStorageAvailabilityZoneName != nil {
+
+		// query param location.storage_availability_zone.name
+		var qrLocationStorageAvailabilityZoneName string
+
+		if o.LocationStorageAvailabilityZoneName != nil {
+			qrLocationStorageAvailabilityZoneName = *o.LocationStorageAvailabilityZoneName
+		}
+		qLocationStorageAvailabilityZoneName := qrLocationStorageAvailabilityZoneName
+		if qLocationStorageAvailabilityZoneName != "" {
+
+			if err := r.SetQueryParam("location.storage_availability_zone.name", qLocationStorageAvailabilityZoneName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationStorageAvailabilityZoneUUID != nil {
+
+		// query param location.storage_availability_zone.uuid
+		var qrLocationStorageAvailabilityZoneUUID string
+
+		if o.LocationStorageAvailabilityZoneUUID != nil {
+			qrLocationStorageAvailabilityZoneUUID = *o.LocationStorageAvailabilityZoneUUID
+		}
+		qLocationStorageAvailabilityZoneUUID := qrLocationStorageAvailabilityZoneUUID
+		if qLocationStorageAvailabilityZoneUUID != "" {
+
+			if err := r.SetQueryParam("location.storage_availability_zone.uuid", qLocationStorageAvailabilityZoneUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.LocationVolumeName != nil {
 
 		// query param location.volume.name
@@ -2443,6 +2630,125 @@ func (o *StorageUnitModifyCollectionParams) WriteToRequest(r runtime.ClientReque
 		if qMetricTimestamp != "" {
 
 			if err := r.SetQueryParam("metric.timestamp", qMetricTimestamp); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MovementDestinationStorageAvailabilityZoneName != nil {
+
+		// query param movement.destination.storage_availability_zone.name
+		var qrMovementDestinationStorageAvailabilityZoneName string
+
+		if o.MovementDestinationStorageAvailabilityZoneName != nil {
+			qrMovementDestinationStorageAvailabilityZoneName = *o.MovementDestinationStorageAvailabilityZoneName
+		}
+		qMovementDestinationStorageAvailabilityZoneName := qrMovementDestinationStorageAvailabilityZoneName
+		if qMovementDestinationStorageAvailabilityZoneName != "" {
+
+			if err := r.SetQueryParam("movement.destination.storage_availability_zone.name", qMovementDestinationStorageAvailabilityZoneName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MovementDestinationStorageAvailabilityZoneUUID != nil {
+
+		// query param movement.destination.storage_availability_zone.uuid
+		var qrMovementDestinationStorageAvailabilityZoneUUID string
+
+		if o.MovementDestinationStorageAvailabilityZoneUUID != nil {
+			qrMovementDestinationStorageAvailabilityZoneUUID = *o.MovementDestinationStorageAvailabilityZoneUUID
+		}
+		qMovementDestinationStorageAvailabilityZoneUUID := qrMovementDestinationStorageAvailabilityZoneUUID
+		if qMovementDestinationStorageAvailabilityZoneUUID != "" {
+
+			if err := r.SetQueryParam("movement.destination.storage_availability_zone.uuid", qMovementDestinationStorageAvailabilityZoneUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MovementPercentComplete != nil {
+
+		// query param movement.percent_complete
+		var qrMovementPercentComplete int64
+
+		if o.MovementPercentComplete != nil {
+			qrMovementPercentComplete = *o.MovementPercentComplete
+		}
+		qMovementPercentComplete := swag.FormatInt64(qrMovementPercentComplete)
+		if qMovementPercentComplete != "" {
+
+			if err := r.SetQueryParam("movement.percent_complete", qMovementPercentComplete); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MovementSourceStorageAvailabilityZoneName != nil {
+
+		// query param movement.source.storage_availability_zone.name
+		var qrMovementSourceStorageAvailabilityZoneName string
+
+		if o.MovementSourceStorageAvailabilityZoneName != nil {
+			qrMovementSourceStorageAvailabilityZoneName = *o.MovementSourceStorageAvailabilityZoneName
+		}
+		qMovementSourceStorageAvailabilityZoneName := qrMovementSourceStorageAvailabilityZoneName
+		if qMovementSourceStorageAvailabilityZoneName != "" {
+
+			if err := r.SetQueryParam("movement.source.storage_availability_zone.name", qMovementSourceStorageAvailabilityZoneName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MovementSourceStorageAvailabilityZoneUUID != nil {
+
+		// query param movement.source.storage_availability_zone.uuid
+		var qrMovementSourceStorageAvailabilityZoneUUID string
+
+		if o.MovementSourceStorageAvailabilityZoneUUID != nil {
+			qrMovementSourceStorageAvailabilityZoneUUID = *o.MovementSourceStorageAvailabilityZoneUUID
+		}
+		qMovementSourceStorageAvailabilityZoneUUID := qrMovementSourceStorageAvailabilityZoneUUID
+		if qMovementSourceStorageAvailabilityZoneUUID != "" {
+
+			if err := r.SetQueryParam("movement.source.storage_availability_zone.uuid", qMovementSourceStorageAvailabilityZoneUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MovementStartTime != nil {
+
+		// query param movement.start_time
+		var qrMovementStartTime string
+
+		if o.MovementStartTime != nil {
+			qrMovementStartTime = *o.MovementStartTime
+		}
+		qMovementStartTime := qrMovementStartTime
+		if qMovementStartTime != "" {
+
+			if err := r.SetQueryParam("movement.start_time", qMovementStartTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MovementState != nil {
+
+		// query param movement.state
+		var qrMovementState string
+
+		if o.MovementState != nil {
+			qrMovementState = *o.MovementState
+		}
+		qMovementState := qrMovementState
+		if qMovementState != "" {
+
+			if err := r.SetQueryParam("movement.state", qMovementState); err != nil {
 				return err
 			}
 		}

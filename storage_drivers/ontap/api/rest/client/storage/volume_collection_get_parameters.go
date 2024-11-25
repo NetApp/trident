@@ -2474,7 +2474,7 @@ type VolumeCollectionGetParams struct {
 
 	/* SpaceSnapshotAutodeleteTrigger.
 
-	   Filter by space.snapshot.autodelete_trigger
+	   Filter by space.snapshot.autodelete.trigger
 	*/
 	SpaceSnapshotAutodeleteTrigger *string
 
@@ -16250,7 +16250,7 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 
 	if o.SpaceSnapshotAutodeleteTrigger != nil {
 
-		// query param space.snapshot.autodelete_trigger
+		// query param space.snapshot.autodelete.trigger
 		var qrSpaceSnapshotAutodeleteTrigger string
 
 		if o.SpaceSnapshotAutodeleteTrigger != nil {
@@ -16259,7 +16259,7 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		qSpaceSnapshotAutodeleteTrigger := qrSpaceSnapshotAutodeleteTrigger
 		if qSpaceSnapshotAutodeleteTrigger != "" {
 
-			if err := r.SetQueryParam("space.snapshot.autodelete_trigger", qSpaceSnapshotAutodeleteTrigger); err != nil {
+			if err := r.SetQueryParam("space.snapshot.autodelete.trigger", qSpaceSnapshotAutodeleteTrigger); err != nil {
 				return err
 			}
 		}

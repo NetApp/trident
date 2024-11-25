@@ -34,6 +34,12 @@ func (o *NetworkEthernetPortDeleteCollectionReader) ReadResponse(response runtim
 			return nil, err
 		}
 		return result, nil
+	case 202:
+		result := NewNetworkEthernetPortDeleteCollectionAccepted()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	default:
 		result := NewNetworkEthernetPortDeleteCollectionDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -98,6 +104,62 @@ func (o *NetworkEthernetPortDeleteCollectionOK) String() string {
 }
 
 func (o *NetworkEthernetPortDeleteCollectionOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	return nil
+}
+
+// NewNetworkEthernetPortDeleteCollectionAccepted creates a NetworkEthernetPortDeleteCollectionAccepted with default headers values
+func NewNetworkEthernetPortDeleteCollectionAccepted() *NetworkEthernetPortDeleteCollectionAccepted {
+	return &NetworkEthernetPortDeleteCollectionAccepted{}
+}
+
+/*
+NetworkEthernetPortDeleteCollectionAccepted describes a response with status code 202, with default header values.
+
+Accepted
+*/
+type NetworkEthernetPortDeleteCollectionAccepted struct {
+}
+
+// IsSuccess returns true when this network ethernet port delete collection accepted response has a 2xx status code
+func (o *NetworkEthernetPortDeleteCollectionAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network ethernet port delete collection accepted response has a 3xx status code
+func (o *NetworkEthernetPortDeleteCollectionAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network ethernet port delete collection accepted response has a 4xx status code
+func (o *NetworkEthernetPortDeleteCollectionAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network ethernet port delete collection accepted response has a 5xx status code
+func (o *NetworkEthernetPortDeleteCollectionAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network ethernet port delete collection accepted response a status code equal to that given
+func (o *NetworkEthernetPortDeleteCollectionAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
+// Code gets the status code for the network ethernet port delete collection accepted response
+func (o *NetworkEthernetPortDeleteCollectionAccepted) Code() int {
+	return 202
+}
+
+func (o *NetworkEthernetPortDeleteCollectionAccepted) Error() string {
+	return fmt.Sprintf("[DELETE /network/ethernet/ports][%d] networkEthernetPortDeleteCollectionAccepted", 202)
+}
+
+func (o *NetworkEthernetPortDeleteCollectionAccepted) String() string {
+	return fmt.Sprintf("[DELETE /network/ethernet/ports][%d] networkEthernetPortDeleteCollectionAccepted", 202)
+}
+
+func (o *NetworkEthernetPortDeleteCollectionAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	return nil
 }

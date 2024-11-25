@@ -30,6 +30,12 @@ func (o *NetworkEthernetPortDeleteReader) ReadResponse(response runtime.ClientRe
 			return nil, err
 		}
 		return result, nil
+	case 202:
+		result := NewNetworkEthernetPortDeleteAccepted()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	default:
 		result := NewNetworkEthernetPortDeleteDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -94,6 +100,62 @@ func (o *NetworkEthernetPortDeleteOK) String() string {
 }
 
 func (o *NetworkEthernetPortDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	return nil
+}
+
+// NewNetworkEthernetPortDeleteAccepted creates a NetworkEthernetPortDeleteAccepted with default headers values
+func NewNetworkEthernetPortDeleteAccepted() *NetworkEthernetPortDeleteAccepted {
+	return &NetworkEthernetPortDeleteAccepted{}
+}
+
+/*
+NetworkEthernetPortDeleteAccepted describes a response with status code 202, with default header values.
+
+Accepted
+*/
+type NetworkEthernetPortDeleteAccepted struct {
+}
+
+// IsSuccess returns true when this network ethernet port delete accepted response has a 2xx status code
+func (o *NetworkEthernetPortDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network ethernet port delete accepted response has a 3xx status code
+func (o *NetworkEthernetPortDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network ethernet port delete accepted response has a 4xx status code
+func (o *NetworkEthernetPortDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network ethernet port delete accepted response has a 5xx status code
+func (o *NetworkEthernetPortDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network ethernet port delete accepted response a status code equal to that given
+func (o *NetworkEthernetPortDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
+// Code gets the status code for the network ethernet port delete accepted response
+func (o *NetworkEthernetPortDeleteAccepted) Code() int {
+	return 202
+}
+
+func (o *NetworkEthernetPortDeleteAccepted) Error() string {
+	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] networkEthernetPortDeleteAccepted", 202)
+}
+
+func (o *NetworkEthernetPortDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] networkEthernetPortDeleteAccepted", 202)
+}
+
+func (o *NetworkEthernetPortDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	return nil
 }

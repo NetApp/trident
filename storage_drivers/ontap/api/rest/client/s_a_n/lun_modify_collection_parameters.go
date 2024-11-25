@@ -330,6 +330,18 @@ type LunModifyCollectionParams struct {
 	*/
 	LocationQtreeName *string
 
+	/* LocationStorageAvailabilityZoneName.
+
+	   Filter by location.storage_availability_zone.name
+	*/
+	LocationStorageAvailabilityZoneName *string
+
+	/* LocationStorageAvailabilityZoneUUID.
+
+	   Filter by location.storage_availability_zone.uuid
+	*/
+	LocationStorageAvailabilityZoneUUID *string
+
 	/* LocationVolumeName.
 
 	   Filter by location.volume.name
@@ -1369,6 +1381,28 @@ func (o *LunModifyCollectionParams) WithLocationQtreeName(locationQtreeName *str
 // SetLocationQtreeName adds the locationQtreeName to the lun modify collection params
 func (o *LunModifyCollectionParams) SetLocationQtreeName(locationQtreeName *string) {
 	o.LocationQtreeName = locationQtreeName
+}
+
+// WithLocationStorageAvailabilityZoneName adds the locationStorageAvailabilityZoneName to the lun modify collection params
+func (o *LunModifyCollectionParams) WithLocationStorageAvailabilityZoneName(locationStorageAvailabilityZoneName *string) *LunModifyCollectionParams {
+	o.SetLocationStorageAvailabilityZoneName(locationStorageAvailabilityZoneName)
+	return o
+}
+
+// SetLocationStorageAvailabilityZoneName adds the locationStorageAvailabilityZoneName to the lun modify collection params
+func (o *LunModifyCollectionParams) SetLocationStorageAvailabilityZoneName(locationStorageAvailabilityZoneName *string) {
+	o.LocationStorageAvailabilityZoneName = locationStorageAvailabilityZoneName
+}
+
+// WithLocationStorageAvailabilityZoneUUID adds the locationStorageAvailabilityZoneUUID to the lun modify collection params
+func (o *LunModifyCollectionParams) WithLocationStorageAvailabilityZoneUUID(locationStorageAvailabilityZoneUUID *string) *LunModifyCollectionParams {
+	o.SetLocationStorageAvailabilityZoneUUID(locationStorageAvailabilityZoneUUID)
+	return o
+}
+
+// SetLocationStorageAvailabilityZoneUUID adds the locationStorageAvailabilityZoneUuid to the lun modify collection params
+func (o *LunModifyCollectionParams) SetLocationStorageAvailabilityZoneUUID(locationStorageAvailabilityZoneUUID *string) {
+	o.LocationStorageAvailabilityZoneUUID = locationStorageAvailabilityZoneUUID
 }
 
 // WithLocationVolumeName adds the locationVolumeName to the lun modify collection params
@@ -2988,6 +3022,40 @@ func (o *LunModifyCollectionParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qLocationQtreeName != "" {
 
 			if err := r.SetQueryParam("location.qtree.name", qLocationQtreeName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationStorageAvailabilityZoneName != nil {
+
+		// query param location.storage_availability_zone.name
+		var qrLocationStorageAvailabilityZoneName string
+
+		if o.LocationStorageAvailabilityZoneName != nil {
+			qrLocationStorageAvailabilityZoneName = *o.LocationStorageAvailabilityZoneName
+		}
+		qLocationStorageAvailabilityZoneName := qrLocationStorageAvailabilityZoneName
+		if qLocationStorageAvailabilityZoneName != "" {
+
+			if err := r.SetQueryParam("location.storage_availability_zone.name", qLocationStorageAvailabilityZoneName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationStorageAvailabilityZoneUUID != nil {
+
+		// query param location.storage_availability_zone.uuid
+		var qrLocationStorageAvailabilityZoneUUID string
+
+		if o.LocationStorageAvailabilityZoneUUID != nil {
+			qrLocationStorageAvailabilityZoneUUID = *o.LocationStorageAvailabilityZoneUUID
+		}
+		qLocationStorageAvailabilityZoneUUID := qrLocationStorageAvailabilityZoneUUID
+		if qLocationStorageAvailabilityZoneUUID != "" {
+
+			if err := r.SetQueryParam("location.storage_availability_zone.uuid", qLocationStorageAvailabilityZoneUUID); err != nil {
 				return err
 			}
 		}

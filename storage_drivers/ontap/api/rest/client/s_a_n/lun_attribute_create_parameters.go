@@ -78,21 +78,6 @@ type LunAttributeCreateParams struct {
 	*/
 	LunUUID string
 
-	/* ProvisioningOptionsAuto.
-
-	     If the volume specified in the request does not exist, automatically provision one of appropriate size. If the volume does exist, resize it to accommodate the new LUN.<br/>
-	This property is only supported on Unified ONTAP.<br/>
-	The following behavior changes from a traditional POST:
-	* The operation is asynchronous.
-	* The `qos_policy` property is applied to the provisioned volume instead of the LUN. A default QoS policy is applied to the volume if one is not provided.
-	* The `provisioning_options.count` property is supported, provisioning _count_ LUNs on the volume using the specified properties.
-	* The `lun_maps` property is supported. If the specified initiator group does not exist, it is created. The LUN is mapped to this initiator group. If an initiator group is provisioned in this way, it will be deleted after it is no longer mapped to any LUNs.
-	* The `clone`, `copy`, and `convert` properties are not supported.
-	* When performing `records` based operations, specifying this property in the query applies to the entire operation. Specifying it for an individual record within the request applies to only that record.
-
-	*/
-	ProvisioningOptionsAuto *bool
-
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
@@ -123,17 +108,14 @@ func (o *LunAttributeCreateParams) WithDefaults() *LunAttributeCreateParams {
 // All values with no default are reset to their zero value.
 func (o *LunAttributeCreateParams) SetDefaults() {
 	var (
-		provisioningOptionsAutoDefault = bool(false)
-
 		returnRecordsDefault = bool(false)
 
 		returnTimeoutDefault = int64(0)
 	)
 
 	val := LunAttributeCreateParams{
-		ProvisioningOptionsAuto: &provisioningOptionsAutoDefault,
-		ReturnRecords:           &returnRecordsDefault,
-		ReturnTimeout:           &returnTimeoutDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -197,17 +179,6 @@ func (o *LunAttributeCreateParams) SetLunUUID(lunUUID string) {
 	o.LunUUID = lunUUID
 }
 
-// WithProvisioningOptionsAuto adds the provisioningOptionsAuto to the lun attribute create params
-func (o *LunAttributeCreateParams) WithProvisioningOptionsAuto(provisioningOptionsAuto *bool) *LunAttributeCreateParams {
-	o.SetProvisioningOptionsAuto(provisioningOptionsAuto)
-	return o
-}
-
-// SetProvisioningOptionsAuto adds the provisioningOptionsAuto to the lun attribute create params
-func (o *LunAttributeCreateParams) SetProvisioningOptionsAuto(provisioningOptionsAuto *bool) {
-	o.ProvisioningOptionsAuto = provisioningOptionsAuto
-}
-
 // WithReturnRecords adds the returnRecords to the lun attribute create params
 func (o *LunAttributeCreateParams) WithReturnRecords(returnRecords *bool) *LunAttributeCreateParams {
 	o.SetReturnRecords(returnRecords)
@@ -246,23 +217,6 @@ func (o *LunAttributeCreateParams) WriteToRequest(r runtime.ClientRequest, reg s
 	// path param lun.uuid
 	if err := r.SetPathParam("lun.uuid", o.LunUUID); err != nil {
 		return err
-	}
-
-	if o.ProvisioningOptionsAuto != nil {
-
-		// query param provisioning_options.auto
-		var qrProvisioningOptionsAuto bool
-
-		if o.ProvisioningOptionsAuto != nil {
-			qrProvisioningOptionsAuto = *o.ProvisioningOptionsAuto
-		}
-		qProvisioningOptionsAuto := swag.FormatBool(qrProvisioningOptionsAuto)
-		if qProvisioningOptionsAuto != "" {
-
-			if err := r.SetQueryParam("provisioning_options.auto", qProvisioningOptionsAuto); err != nil {
-				return err
-			}
-		}
 	}
 
 	if o.ReturnRecords != nil {

@@ -152,6 +152,12 @@ type NetworkEthernetPortDeleteCollectionParams struct {
 	*/
 	Enabled *bool
 
+	/* FlowcontrolAdmin.
+
+	   Filter by flowcontrol_admin
+	*/
+	FlowcontrolAdmin *string
+
 	/* Info.
 
 	   Info specification
@@ -277,6 +283,12 @@ type NetworkEthernetPortDeleteCollectionParams struct {
 	   Filter by node.uuid
 	*/
 	NodeUUID *string
+
+	/* PfcQueuesAdmin.
+
+	   Filter by pfc_queues_admin
+	*/
+	PfcQueuesAdmin *int64
 
 	/* RdmaProtocols.
 
@@ -694,6 +706,17 @@ func (o *NetworkEthernetPortDeleteCollectionParams) SetEnabled(enabled *bool) {
 	o.Enabled = enabled
 }
 
+// WithFlowcontrolAdmin adds the flowcontrolAdmin to the network ethernet port delete collection params
+func (o *NetworkEthernetPortDeleteCollectionParams) WithFlowcontrolAdmin(flowcontrolAdmin *string) *NetworkEthernetPortDeleteCollectionParams {
+	o.SetFlowcontrolAdmin(flowcontrolAdmin)
+	return o
+}
+
+// SetFlowcontrolAdmin adds the flowcontrolAdmin to the network ethernet port delete collection params
+func (o *NetworkEthernetPortDeleteCollectionParams) SetFlowcontrolAdmin(flowcontrolAdmin *string) {
+	o.FlowcontrolAdmin = flowcontrolAdmin
+}
+
 // WithInfo adds the info to the network ethernet port delete collection params
 func (o *NetworkEthernetPortDeleteCollectionParams) WithInfo(info NetworkEthernetPortDeleteCollectionBody) *NetworkEthernetPortDeleteCollectionParams {
 	o.SetInfo(info)
@@ -923,6 +946,17 @@ func (o *NetworkEthernetPortDeleteCollectionParams) WithNodeUUID(nodeUUID *strin
 // SetNodeUUID adds the nodeUuid to the network ethernet port delete collection params
 func (o *NetworkEthernetPortDeleteCollectionParams) SetNodeUUID(nodeUUID *string) {
 	o.NodeUUID = nodeUUID
+}
+
+// WithPfcQueuesAdmin adds the pfcQueuesAdmin to the network ethernet port delete collection params
+func (o *NetworkEthernetPortDeleteCollectionParams) WithPfcQueuesAdmin(pfcQueuesAdmin *int64) *NetworkEthernetPortDeleteCollectionParams {
+	o.SetPfcQueuesAdmin(pfcQueuesAdmin)
+	return o
+}
+
+// SetPfcQueuesAdmin adds the pfcQueuesAdmin to the network ethernet port delete collection params
+func (o *NetworkEthernetPortDeleteCollectionParams) SetPfcQueuesAdmin(pfcQueuesAdmin *int64) {
+	o.PfcQueuesAdmin = pfcQueuesAdmin
 }
 
 // WithRdmaProtocols adds the rdmaProtocols to the network ethernet port delete collection params
@@ -1506,6 +1540,23 @@ func (o *NetworkEthernetPortDeleteCollectionParams) WriteToRequest(r runtime.Cli
 			}
 		}
 	}
+
+	if o.FlowcontrolAdmin != nil {
+
+		// query param flowcontrol_admin
+		var qrFlowcontrolAdmin string
+
+		if o.FlowcontrolAdmin != nil {
+			qrFlowcontrolAdmin = *o.FlowcontrolAdmin
+		}
+		qFlowcontrolAdmin := qrFlowcontrolAdmin
+		if qFlowcontrolAdmin != "" {
+
+			if err := r.SetQueryParam("flowcontrol_admin", qFlowcontrolAdmin); err != nil {
+				return err
+			}
+		}
+	}
 	if err := r.SetBodyParam(o.Info); err != nil {
 		return err
 	}
@@ -1845,6 +1896,23 @@ func (o *NetworkEthernetPortDeleteCollectionParams) WriteToRequest(r runtime.Cli
 		if qNodeUUID != "" {
 
 			if err := r.SetQueryParam("node.uuid", qNodeUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PfcQueuesAdmin != nil {
+
+		// query param pfc_queues_admin
+		var qrPfcQueuesAdmin int64
+
+		if o.PfcQueuesAdmin != nil {
+			qrPfcQueuesAdmin = *o.PfcQueuesAdmin
+		}
+		qPfcQueuesAdmin := swag.FormatInt64(qrPfcQueuesAdmin)
+		if qPfcQueuesAdmin != "" {
+
+			if err := r.SetQueryParam("pfc_queues_admin", qPfcQueuesAdmin); err != nil {
 				return err
 			}
 		}

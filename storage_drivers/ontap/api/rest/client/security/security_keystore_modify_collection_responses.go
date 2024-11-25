@@ -866,7 +866,7 @@ swagger:model security_keystore_inline_configuration
 type SecurityKeystoreInlineConfiguration struct {
 
 	// links
-	Links *models.SecurityKeystoreInlineConfigurationInlineLinks `json:"_links,omitempty"`
+	Links *SecurityKeystoreInlineConfigurationInlineLinks `json:"_links,omitempty"`
 
 	// Name of the configuration.
 	// Example: default

@@ -140,8 +140,10 @@ func NewNfsCreateDefault(code int) *NfsCreateDefault {
 | ---------- | ----------- |
 | 1534829    | The port numbers allowed are 635 (the default) and 1024 through 9999 |
 | 2621516    | This operation is only supported on a data SVM |
-| 2621574    | This operation is not permitted on a SVM that is configured as the destination of a MetroCluster SVM relationship |
+| 2621570    | This operation is not permitted on an SVM that is configured as the destination for SVM DR.|
+| 2621574    | This operation is not permitted on an SVM that is configured as the destination of a MetroCluster SVM relationship |
 | 2621706    | The specified SVM UUID is incorrect for the specified SVM name |
+| 3276852    | NFSv4.1 implementation name length for the SVM must be less than 256 bytes.|
 | 3276900    | NFSv4.1 implementation name cannot be an empty string |
 | 3276916    | Vserver is not running |
 | 3276994    | Kerberos must be disabled on all LIFs on Vserver before adding or removing AES encryption. Disable Kerberos on the LIF and try again |

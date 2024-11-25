@@ -202,7 +202,17 @@ func NewStorageUnitModifyDefault(code int) *StorageUnitModifyDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 5374614 | A non-existent storage availability zone was specified. |
 | 5376461 | An invalid storage unit name was specified. |
+| 5376497 | The storage unit move operation is not ready for cutover. |
+| 5376499 | The storage unit move operation cannot be paused. |
+| 5376500 | The storage unit move operation is not paused. |
+| 5376508 | A storage unit move of a secondary LUN or NVMe namespace is not supported. To move a secondary, you must move the associated primary LUN or NVMe namespace which will move all of the secondaries. |
+| 5376509 | Storage unit move related operations are not allowed for a SVM administrator. |
+| 5376510 | Storage unit move is not allowed for protocol endpoints. |
+| 5376511 | A storage unit move is already in progress for the storage unit. |
+| 5376512 | A storage unit move is not in progress for the storage unit. |
+| 5376513 | An attempt was made to patch a storage unit move state to an unsupported state. Allowed states are aborted, cutover, paused, replicating, and cutover_wait. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type StorageUnitModifyDefault struct {

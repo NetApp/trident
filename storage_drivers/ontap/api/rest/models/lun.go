@@ -3791,6 +3791,9 @@ type LunInlineLocation struct {
 	// qtree
 	Qtree *LunInlineLocationInlineQtree `json:"qtree,omitempty"`
 
+	// storage availability zone
+	StorageAvailabilityZone *LunInlineLocationInlineStorageAvailabilityZone `json:"storage_availability_zone,omitempty"`
+
 	// volume
 	Volume *LunInlineLocationInlineVolume `json:"volume,omitempty"`
 }
@@ -3804,6 +3807,10 @@ func (m *LunInlineLocation) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateQtree(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageAvailabilityZone(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3851,6 +3858,23 @@ func (m *LunInlineLocation) validateQtree(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *LunInlineLocation) validateStorageAvailabilityZone(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageAvailabilityZone) { // not required
+		return nil
+	}
+
+	if m.StorageAvailabilityZone != nil {
+		if err := m.StorageAvailabilityZone.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "storage_availability_zone")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *LunInlineLocation) validateVolume(formats strfmt.Registry) error {
 	if swag.IsZero(m.Volume) { // not required
 		return nil
@@ -3877,6 +3901,10 @@ func (m *LunInlineLocation) ContextValidate(ctx context.Context, formats strfmt.
 	}
 
 	if err := m.contextValidateQtree(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStorageAvailabilityZone(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3910,6 +3938,20 @@ func (m *LunInlineLocation) contextValidateQtree(ctx context.Context, formats st
 		if err := m.Qtree.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("location" + "." + "qtree")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunInlineLocation) contextValidateStorageAvailabilityZone(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.StorageAvailabilityZone != nil {
+		if err := m.StorageAvailabilityZone.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "storage_availability_zone")
 			}
 			return err
 		}
@@ -4338,6 +4380,191 @@ func (m *LunInlineLocationInlineQtreeInlineLinks) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
+// LunInlineLocationInlineStorageAvailabilityZone The storage availability zone that contains the LUN.
+// ### Platform Specifics
+// * **Unified ONTAP**:
+// This property is not supported.
+// * **ASA r2**:
+// Valid in POST when creating LUNs of class `protocol_endpoint` only, otherwise read-only.
+//
+// swagger:model lun_inline_location_inline_storage_availability_zone
+type LunInlineLocationInlineStorageAvailabilityZone struct {
+
+	// links
+	Links *LunInlineLocationInlineStorageAvailabilityZoneInlineLinks `json:"_links,omitempty"`
+
+	// The name of the storage availability zone.
+	// Example: storage_availability_zone_1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the storage availability zone.
+	// Example: 9b3ff559-3333-11ef-b420-005056ae6060
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this lun inline location inline storage availability zone
+func (m *LunInlineLocationInlineStorageAvailabilityZone) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunInlineLocationInlineStorageAvailabilityZone) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "storage_availability_zone" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun inline location inline storage availability zone based on the context it is used
+func (m *LunInlineLocationInlineStorageAvailabilityZone) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunInlineLocationInlineStorageAvailabilityZone) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "storage_availability_zone" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunInlineLocationInlineStorageAvailabilityZone) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunInlineLocationInlineStorageAvailabilityZone) UnmarshalBinary(b []byte) error {
+	var res LunInlineLocationInlineStorageAvailabilityZone
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunInlineLocationInlineStorageAvailabilityZoneInlineLinks lun inline location inline storage availability zone inline links
+//
+// swagger:model lun_inline_location_inline_storage_availability_zone_inline__links
+type LunInlineLocationInlineStorageAvailabilityZoneInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this lun inline location inline storage availability zone inline links
+func (m *LunInlineLocationInlineStorageAvailabilityZoneInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunInlineLocationInlineStorageAvailabilityZoneInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "storage_availability_zone" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun inline location inline storage availability zone inline links based on the context it is used
+func (m *LunInlineLocationInlineStorageAvailabilityZoneInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunInlineLocationInlineStorageAvailabilityZoneInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "storage_availability_zone" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunInlineLocationInlineStorageAvailabilityZoneInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunInlineLocationInlineStorageAvailabilityZoneInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LunInlineLocationInlineStorageAvailabilityZoneInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // LunInlineLocationInlineVolume * **Unified ONTAP**:
 // The volume in which the LUN is located. Valid in POST and PATCH.<br/>
 // If properties `name` and `location.volume.name` and/or `location.volume.uuid` are specified in the same request, they must refer to the same volume.<br/>
@@ -4535,7 +4762,7 @@ type LunInlineLunMapsInlineArrayItem struct {
 	// igroup
 	Igroup *LunInlineLunMapsInlineArrayItemInlineIgroup `json:"igroup,omitempty"`
 
-	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value.
+	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value. This property is not supported when the _provisioning_options.count_ property is 2 or more.
 	//
 	LogicalUnitNumber *int64 `json:"logical_unit_number,omitempty"`
 }
@@ -6759,17 +6986,234 @@ func (m *LunInlineMovementInlineProgress) UnmarshalBinary(b []byte) error {
 // swagger:model lun_inline_provisioning_options
 type LunInlineProvisioningOptions struct {
 
-	// The number of LUNs to provision with these properties. Only POST based on `space.size` is supported. When provided, the name is considered a prefix, and a suffix of the form __&lt;N&gt;_ will be generated where N is the next available numeric index, starting with 1.
+	// If the volume specified in the request does not exist, automatically provision one of appropriate size. If the volume does exist, resize it to accommodate the new LUN.<br/>
+	// This property is only supported on Unified ONTAP.<br/>
+	// The following behavior is different from a traditional POST request:
+	// * The operation is asynchronous.
+	// * The `qos_policy` property is applied to the provisioned volume instead of the LUN. A default QoS policy is applied to the volume if one is not provided.
+	// * The `provisioning_options.count` property is supported, provisioning _count_ LUNs on the volume using the specified properties.
+	// * The `lun_maps` property is supported. If the specified initiator group does not exist, it is created. The LUN is mapped to this initiator group. If an initiator group is provisioned in this way, it is deleted after it is no longer mapped to any LUNs.
+	// * The `clone`, `copy`, and `convert` properties are not supported.
+	// * When performing `records` based operations, specifying this property in the query applies to the entire operation. Specifying it for an individual record within the request applies to only that record.
+	// * Many other `provisioning_options` properties are supported to control the placement of the LUN and the properties of the volume containing the LUN.
+	//
+	Auto *bool `json:"auto,omitempty"`
+
+	// The number of LUNs to provision with these properties. Only POST requests based on `space.size` are supported. When provided, the name is considered a prefix, and a suffix of the form __&lt;N&gt;_ is generated where N is the next available numeric index, starting with 1.
+	// Maximum: 80
+	// Minimum: 1
 	Count *int64 `json:"count,omitempty"`
+
+	// qos policy
+	QosPolicy *LunInlineProvisioningOptionsInlineQosPolicy `json:"qos_policy,omitempty"`
+
+	// The snapshot policy for the volume provisioned to host the LUN. This property is only supported when the request provisions a new volume.
+	//
+	SnapshotPolicy *SnapshotPolicyReference `json:"snapshot_policy,omitempty"`
+
+	// storage service
+	StorageService *LunInlineProvisioningOptionsInlineStorageService `json:"storage_service,omitempty"`
+
+	// tiering
+	Tiering *LunInlineProvisioningOptionsInlineTiering `json:"tiering,omitempty"`
+
+	// Specifies whether mirrored aggregates are selected when provisioning the volume to host the LUN. Only mirrored aggregates are used if this parameter is set to _true_ and only unmirrored aggregates are used if this parameter is set to _false_. The default value is _true_ for a MetroCluster configuration and is _false_ for a non-MetroCluster configuration.
+	UseMirroredAggregates *bool `json:"use_mirrored_aggregates,omitempty"`
 }
 
 // Validate validates this lun inline provisioning options
 func (m *LunInlineProvisioningOptions) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateCount(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateQosPolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnapshotPolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageService(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTiering(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this lun inline provisioning options based on context it is used
+func (m *LunInlineProvisioningOptions) validateCount(formats strfmt.Registry) error {
+	if swag.IsZero(m.Count) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("provisioning_options"+"."+"count", "body", *m.Count, 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("provisioning_options"+"."+"count", "body", *m.Count, 80, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LunInlineProvisioningOptions) validateQosPolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.QosPolicy) { // not required
+		return nil
+	}
+
+	if m.QosPolicy != nil {
+		if err := m.QosPolicy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("provisioning_options" + "." + "qos_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunInlineProvisioningOptions) validateSnapshotPolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnapshotPolicy) { // not required
+		return nil
+	}
+
+	if m.SnapshotPolicy != nil {
+		if err := m.SnapshotPolicy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("provisioning_options" + "." + "snapshot_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunInlineProvisioningOptions) validateStorageService(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageService) { // not required
+		return nil
+	}
+
+	if m.StorageService != nil {
+		if err := m.StorageService.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("provisioning_options" + "." + "storage_service")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunInlineProvisioningOptions) validateTiering(formats strfmt.Registry) error {
+	if swag.IsZero(m.Tiering) { // not required
+		return nil
+	}
+
+	if m.Tiering != nil {
+		if err := m.Tiering.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("provisioning_options" + "." + "tiering")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun inline provisioning options based on the context it is used
 func (m *LunInlineProvisioningOptions) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateQosPolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSnapshotPolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStorageService(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTiering(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunInlineProvisioningOptions) contextValidateQosPolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.QosPolicy != nil {
+		if err := m.QosPolicy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("provisioning_options" + "." + "qos_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunInlineProvisioningOptions) contextValidateSnapshotPolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.SnapshotPolicy != nil {
+		if err := m.SnapshotPolicy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("provisioning_options" + "." + "snapshot_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunInlineProvisioningOptions) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.StorageService != nil {
+		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("provisioning_options" + "." + "storage_service")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunInlineProvisioningOptions) contextValidateTiering(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Tiering != nil {
+		if err := m.Tiering.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("provisioning_options" + "." + "tiering")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -6784,6 +7228,542 @@ func (m *LunInlineProvisioningOptions) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *LunInlineProvisioningOptions) UnmarshalBinary(b []byte) error {
 	var res LunInlineProvisioningOptions
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunInlineProvisioningOptionsInlineQosPolicy The QoS policy for the volume provisioned to host the LUN. This property is only supported when the request provisions a new volume. This property is mutually exclusive with the LUN granular `qos_policy`. If no `qos_policy` is provided at LUN or volume granularity, a volume granular policy is set based on the `storage_service.name`, which defaults to the most performant service available.
+//
+// swagger:model lun_inline_provisioning_options_inline_qos_policy
+type LunInlineProvisioningOptionsInlineQosPolicy struct {
+
+	// links
+	Links *SelfLink `json:"_links,omitempty"`
+
+	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
+	// Example: performance
+	Name *string `json:"name,omitempty"`
+
+	// The QoS policy group UUID. This is mutually exclusive with name and other QoS attributes during POST and PATCH.
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this lun inline provisioning options inline qos policy
+func (m *LunInlineProvisioningOptionsInlineQosPolicy) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunInlineProvisioningOptionsInlineQosPolicy) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("provisioning_options" + "." + "qos_policy" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun inline provisioning options inline qos policy based on the context it is used
+func (m *LunInlineProvisioningOptionsInlineQosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunInlineProvisioningOptionsInlineQosPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("provisioning_options" + "." + "qos_policy" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunInlineProvisioningOptionsInlineQosPolicy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunInlineProvisioningOptionsInlineQosPolicy) UnmarshalBinary(b []byte) error {
+	var res LunInlineProvisioningOptionsInlineQosPolicy
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunInlineProvisioningOptionsInlineStorageService Determines the placement of the volume provisioned to host the LUN.
+//
+// swagger:model lun_inline_provisioning_options_inline_storage_service
+type LunInlineProvisioningOptionsInlineStorageService struct {
+
+	// Storage service name. If not specified, the default value is the most performant for the platform.
+	//
+	// Enum: ["extreme","performance","value"]
+	Name *string `json:"name,omitempty"`
+}
+
+// Validate validates this lun inline provisioning options inline storage service
+func (m *LunInlineProvisioningOptionsInlineStorageService) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var lunInlineProvisioningOptionsInlineStorageServiceTypeNamePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["extreme","performance","value"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		lunInlineProvisioningOptionsInlineStorageServiceTypeNamePropEnum = append(lunInlineProvisioningOptionsInlineStorageServiceTypeNamePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// lun_inline_provisioning_options_inline_storage_service
+	// LunInlineProvisioningOptionsInlineStorageService
+	// name
+	// Name
+	// extreme
+	// END DEBUGGING
+	// LunInlineProvisioningOptionsInlineStorageServiceNameExtreme captures enum value "extreme"
+	LunInlineProvisioningOptionsInlineStorageServiceNameExtreme string = "extreme"
+
+	// BEGIN DEBUGGING
+	// lun_inline_provisioning_options_inline_storage_service
+	// LunInlineProvisioningOptionsInlineStorageService
+	// name
+	// Name
+	// performance
+	// END DEBUGGING
+	// LunInlineProvisioningOptionsInlineStorageServiceNamePerformance captures enum value "performance"
+	LunInlineProvisioningOptionsInlineStorageServiceNamePerformance string = "performance"
+
+	// BEGIN DEBUGGING
+	// lun_inline_provisioning_options_inline_storage_service
+	// LunInlineProvisioningOptionsInlineStorageService
+	// name
+	// Name
+	// value
+	// END DEBUGGING
+	// LunInlineProvisioningOptionsInlineStorageServiceNameValue captures enum value "value"
+	LunInlineProvisioningOptionsInlineStorageServiceNameValue string = "value"
+)
+
+// prop value enum
+func (m *LunInlineProvisioningOptionsInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, lunInlineProvisioningOptionsInlineStorageServiceTypeNamePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LunInlineProvisioningOptionsInlineStorageService) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateNameEnum("provisioning_options"+"."+"storage_service"+"."+"name", "body", *m.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this lun inline provisioning options inline storage service based on context it is used
+func (m *LunInlineProvisioningOptionsInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunInlineProvisioningOptionsInlineStorageService) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunInlineProvisioningOptionsInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res LunInlineProvisioningOptionsInlineStorageService
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunInlineProvisioningOptionsInlineTiering The tiering placement and policy definitions for the volume provisioned to host the LUN. This property is only supported when the request provisions a new volume.
+//
+// swagger:model lun_inline_provisioning_options_inline_tiering
+type LunInlineProvisioningOptionsInlineTiering struct {
+
+	// Storage tiering placement rules for the object.
+	// Enum: ["allowed","best_effort","disallowed","required"]
+	Control *string `json:"control,omitempty"`
+
+	// Object stores to use. Used for placement.
+	//
+	// Max Items: 2
+	// Min Items: 0
+	ObjectStores []*LunProvisioningOptionsTieringObjectStoresItems0 `json:"object_stores,omitempty"`
+
+	// Policy that determines whether the user data blocks of a volume in a FabricPool will be tiered to the cloud store when they become cold.
+	// <br>FabricPool combines flash (performance tier) with a cloud store into a single aggregate. Temperature of a volume block increases if it is accessed frequently and decreases when it is not. Valid in POST or PATCH.<br/>all &dash; Allows tiering of both snapshots and active file system user data to the cloud store as soon as possible by ignoring the temperature on the volume blocks.<br/>auto &dash; Allows tiering of both snapshot and active file system user data to the cloud store<br/>none &dash; Volume blocks are not be tiered to the cloud store.<br/>snapshot_only &dash; Allows tiering of only the volume snapshots not associated with the active file system.
+	// <br>The default tiering policy is "snapshot-only" for a FlexVol volume and "none" for a FlexGroup volume. The default minimum cooling period for the "snapshot-only" tiering policy is 2 days and for the "auto" tiering policy it is 31 days.
+	//
+	// Enum: ["all","auto","backup","none","snapshot_only"]
+	Policy *string `json:"policy,omitempty"`
+}
+
+// Validate validates this lun inline provisioning options inline tiering
+func (m *LunInlineProvisioningOptionsInlineTiering) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateControl(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateObjectStores(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var lunInlineProvisioningOptionsInlineTieringTypeControlPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["allowed","best_effort","disallowed","required"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		lunInlineProvisioningOptionsInlineTieringTypeControlPropEnum = append(lunInlineProvisioningOptionsInlineTieringTypeControlPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// lun_inline_provisioning_options_inline_tiering
+	// LunInlineProvisioningOptionsInlineTiering
+	// control
+	// Control
+	// allowed
+	// END DEBUGGING
+	// LunInlineProvisioningOptionsInlineTieringControlAllowed captures enum value "allowed"
+	LunInlineProvisioningOptionsInlineTieringControlAllowed string = "allowed"
+
+	// BEGIN DEBUGGING
+	// lun_inline_provisioning_options_inline_tiering
+	// LunInlineProvisioningOptionsInlineTiering
+	// control
+	// Control
+	// best_effort
+	// END DEBUGGING
+	// LunInlineProvisioningOptionsInlineTieringControlBestEffort captures enum value "best_effort"
+	LunInlineProvisioningOptionsInlineTieringControlBestEffort string = "best_effort"
+
+	// BEGIN DEBUGGING
+	// lun_inline_provisioning_options_inline_tiering
+	// LunInlineProvisioningOptionsInlineTiering
+	// control
+	// Control
+	// disallowed
+	// END DEBUGGING
+	// LunInlineProvisioningOptionsInlineTieringControlDisallowed captures enum value "disallowed"
+	LunInlineProvisioningOptionsInlineTieringControlDisallowed string = "disallowed"
+
+	// BEGIN DEBUGGING
+	// lun_inline_provisioning_options_inline_tiering
+	// LunInlineProvisioningOptionsInlineTiering
+	// control
+	// Control
+	// required
+	// END DEBUGGING
+	// LunInlineProvisioningOptionsInlineTieringControlRequired captures enum value "required"
+	LunInlineProvisioningOptionsInlineTieringControlRequired string = "required"
+)
+
+// prop value enum
+func (m *LunInlineProvisioningOptionsInlineTiering) validateControlEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, lunInlineProvisioningOptionsInlineTieringTypeControlPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LunInlineProvisioningOptionsInlineTiering) validateControl(formats strfmt.Registry) error {
+	if swag.IsZero(m.Control) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateControlEnum("provisioning_options"+"."+"tiering"+"."+"control", "body", *m.Control); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LunInlineProvisioningOptionsInlineTiering) validateObjectStores(formats strfmt.Registry) error {
+	if swag.IsZero(m.ObjectStores) { // not required
+		return nil
+	}
+
+	iObjectStoresSize := int64(len(m.ObjectStores))
+
+	if err := validate.MinItems("provisioning_options"+"."+"tiering"+"."+"object_stores", "body", iObjectStoresSize, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("provisioning_options"+"."+"tiering"+"."+"object_stores", "body", iObjectStoresSize, 2); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ObjectStores); i++ {
+		if swag.IsZero(m.ObjectStores[i]) { // not required
+			continue
+		}
+
+		if m.ObjectStores[i] != nil {
+			if err := m.ObjectStores[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("provisioning_options" + "." + "tiering" + "." + "object_stores" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+var lunInlineProvisioningOptionsInlineTieringTypePolicyPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["all","auto","backup","none","snapshot_only"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		lunInlineProvisioningOptionsInlineTieringTypePolicyPropEnum = append(lunInlineProvisioningOptionsInlineTieringTypePolicyPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// lun_inline_provisioning_options_inline_tiering
+	// LunInlineProvisioningOptionsInlineTiering
+	// policy
+	// Policy
+	// all
+	// END DEBUGGING
+	// LunInlineProvisioningOptionsInlineTieringPolicyAll captures enum value "all"
+	LunInlineProvisioningOptionsInlineTieringPolicyAll string = "all"
+
+	// BEGIN DEBUGGING
+	// lun_inline_provisioning_options_inline_tiering
+	// LunInlineProvisioningOptionsInlineTiering
+	// policy
+	// Policy
+	// auto
+	// END DEBUGGING
+	// LunInlineProvisioningOptionsInlineTieringPolicyAuto captures enum value "auto"
+	LunInlineProvisioningOptionsInlineTieringPolicyAuto string = "auto"
+
+	// BEGIN DEBUGGING
+	// lun_inline_provisioning_options_inline_tiering
+	// LunInlineProvisioningOptionsInlineTiering
+	// policy
+	// Policy
+	// backup
+	// END DEBUGGING
+	// LunInlineProvisioningOptionsInlineTieringPolicyBackup captures enum value "backup"
+	LunInlineProvisioningOptionsInlineTieringPolicyBackup string = "backup"
+
+	// BEGIN DEBUGGING
+	// lun_inline_provisioning_options_inline_tiering
+	// LunInlineProvisioningOptionsInlineTiering
+	// policy
+	// Policy
+	// none
+	// END DEBUGGING
+	// LunInlineProvisioningOptionsInlineTieringPolicyNone captures enum value "none"
+	LunInlineProvisioningOptionsInlineTieringPolicyNone string = "none"
+
+	// BEGIN DEBUGGING
+	// lun_inline_provisioning_options_inline_tiering
+	// LunInlineProvisioningOptionsInlineTiering
+	// policy
+	// Policy
+	// snapshot_only
+	// END DEBUGGING
+	// LunInlineProvisioningOptionsInlineTieringPolicySnapshotOnly captures enum value "snapshot_only"
+	LunInlineProvisioningOptionsInlineTieringPolicySnapshotOnly string = "snapshot_only"
+)
+
+// prop value enum
+func (m *LunInlineProvisioningOptionsInlineTiering) validatePolicyEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, lunInlineProvisioningOptionsInlineTieringTypePolicyPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LunInlineProvisioningOptionsInlineTiering) validatePolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.Policy) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validatePolicyEnum("provisioning_options"+"."+"tiering"+"."+"policy", "body", *m.Policy); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun inline provisioning options inline tiering based on the context it is used
+func (m *LunInlineProvisioningOptionsInlineTiering) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateObjectStores(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunInlineProvisioningOptionsInlineTiering) contextValidateObjectStores(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ObjectStores); i++ {
+
+		if m.ObjectStores[i] != nil {
+			if err := m.ObjectStores[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("provisioning_options" + "." + "tiering" + "." + "object_stores" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunInlineProvisioningOptionsInlineTiering) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunInlineProvisioningOptionsInlineTiering) UnmarshalBinary(b []byte) error {
+	var res LunInlineProvisioningOptionsInlineTiering
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunProvisioningOptionsTieringObjectStoresItems0 lun provisioning options tiering object stores items0
+//
+// swagger:model LunProvisioningOptionsTieringObjectStoresItems0
+type LunProvisioningOptionsTieringObjectStoresItems0 struct {
+
+	// The name of the object store to use. Used for placement.
+	Name *string `json:"name,omitempty"`
+}
+
+// Validate validates this lun provisioning options tiering object stores items0
+func (m *LunProvisioningOptionsTieringObjectStoresItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this lun provisioning options tiering object stores items0 based on context it is used
+func (m *LunProvisioningOptionsTieringObjectStoresItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunProvisioningOptionsTieringObjectStoresItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunProvisioningOptionsTieringObjectStoresItems0) UnmarshalBinary(b []byte) error {
+	var res LunProvisioningOptionsTieringObjectStoresItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

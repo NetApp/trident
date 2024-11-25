@@ -298,20 +298,24 @@ type StorageUnitSnapshotModifyCollectionBody struct {
 	Comment *string `json:"comment,omitempty"`
 
 	// Creation time of the snapshot. It is the storage unit access time when the snapshot was created.
+	//
 	// Example: 2019-02-04 19:00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
 
 	// delta
+	// Read Only: true
 	Delta *models.SnapshotDelta `json:"delta,omitempty"`
 
 	// The expiry time for the snapshot. Snapshots with an expiry time set are not allowed to be deleted until the retention time is reached.
+	//
 	// Example: 2019-02-04 19:00:00
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
 
 	// Size of the logical used file system at the time the snapshot is captured.
+	//
 	// Example: 1228800
 	// Read Only: true
 	LogicalSize *int64 `json:"logical_size,omitempty"`
@@ -326,10 +330,12 @@ type StorageUnitSnapshotModifyCollectionBody struct {
 	Owners []*string `json:"owners,omitempty"`
 
 	// Space reclaimed when the snapshot is deleted, in bytes.
+	//
 	// Read Only: true
 	ReclaimableSpace *int64 `json:"reclaimable_space,omitempty"`
 
-	// Size of the active file system at the time the snapshot is captured. The actual size of the snapshot also includes those blocks trapped by other snapshots. On a snapshot deletion, the "size" amount of blocks is the maximum number of blocks available. On a snapshot restore, the "afs-used size" value will match the snapshot "size" value.
+	// Size of the active file system at the time the snapshot is captured. The actual size of the snapshot also includes those blocks trapped by other snapshots. On a snapshot deletion, the `size` amount of blocks is the maximum number of blocks available. On a snapshot restore, the "AFS used size" value will match the snapshot `size` value.
+	//
 	// Example: 122880
 	// Read Only: true
 	Size *int64 `json:"size,omitempty"`
@@ -338,11 +344,13 @@ type StorageUnitSnapshotModifyCollectionBody struct {
 	Snaplock *models.StorageUnitSnapshotInlineSnaplock `json:"snaplock,omitempty"`
 
 	// Label for SnapMirror operations. Valid in POST and PATCH.
+	//
 	// Max Length: 31
 	// Min Length: 0
 	SnapmirrorLabel *string `json:"snapmirror_label,omitempty"`
 
-	// State of the FlexGroup volume snapshot. A recently created snapshot can be in the "unknown" state while the system is calculating the state. At all other times, a snapshot is valid.
+	// State of the FlexGroup volume snapshot. A recently created snapshot can be in the `unknown` state while the system is calculating the state. At all other times, a snapshot is valid.
+	//
 	// Read Only: true
 	// Enum: ["valid","unknown"]
 	State *string `json:"state,omitempty"`
@@ -362,6 +370,7 @@ type StorageUnitSnapshotModifyCollectionBody struct {
 	UUID *string `json:"uuid,omitempty"`
 
 	// The 128 bit identifier that uniquely identifies a snapshot and its logical data layout.
+	//
 	// Read Only: true
 	VersionUUID *string `json:"version_uuid,omitempty"`
 }
@@ -802,6 +811,14 @@ func (o *StorageUnitSnapshotModifyCollectionBody) contextValidateOwners(ctx cont
 		return err
 	}
 
+	for i := 0; i < len(o.Owners); i++ {
+
+		if err := validate.ReadOnly(ctx, "info"+"."+"owners"+"."+strconv.Itoa(i), "body", o.Owners[i]); err != nil {
+			return err
+		}
+
+	}
+
 	return nil
 }
 
@@ -935,16 +952,19 @@ swagger:model storage_unit_snapshot_inline_snaplock
 type StorageUnitSnapshotInlineSnaplock struct {
 
 	// Indicates whether a SnapLock snapshot has expired.
+	//
 	// Example: true
 	// Read Only: true
 	Expired *bool `json:"expired,omitempty"`
 
 	// SnapLock expiry time for the snapshot, if the snapshot is taken on a SnapLock storage unit. A snapshot is not allowed to be deleted or renamed until the SnapLock ComplianceClock time goes beyond this retention time. This option can be set during snapshot POST and snapshot PATCH on snapshot locking enabled volumes. It can also be used to extend the expiry time of a locked snapshot on a SnapLock for SnapVault destination consistency-group.
+	//
 	// Example: 2019-02-04 19:00:00
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
 
 	// Indicates the remaining SnapLock expiry time of a locked snapshot. This field is set only when the remaining time interval is less than 136 years.
+	//
 	// Example: PT3H27M45S
 	// Read Only: true
 	TimeUntilExpiry *string `json:"time_until_expiry,omitempty"`
@@ -1041,10 +1061,12 @@ type StorageUnitSnapshotInlineStorageUnit struct {
 	Links *models.StorageUnitSnapshotInlineStorageUnitInlineLinks `json:"_links,omitempty"`
 
 	// The name of the storage unit.
+	//
 	// Example: volume1
 	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the storage unit.
+	//
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
 }

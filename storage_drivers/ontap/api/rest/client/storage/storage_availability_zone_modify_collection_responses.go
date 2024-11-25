@@ -210,6 +210,9 @@ func NewStorageAvailabilityZoneModifyCollectionDefault(code int) *StorageAvailab
 | 9240632 | The provided nearly full threshold percent cannot be greater than full threshold percent. |
 | 9240633 | The provided full threshold percent cannot be smaller than nearly full threshold percent. |
 | 9240634 | The provided storage availability zone UUID is not valid. |
+| 262144015 | Failed to retrieve storage availability zone information for provided storage availability zone UUID. |
+| 262144016 | Failed to retrieve the node information for provided storage availability zone UUID. |
+| 262144017 | This operation is not supported on this platform or has been disabled. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type StorageAvailabilityZoneModifyCollectionDefault struct {
@@ -280,6 +283,9 @@ swagger:model StorageAvailabilityZoneModifyCollectionBody
 */
 type StorageAvailabilityZoneModifyCollectionBody struct {
 
+	// links
+	Links *models.SelfLink `json:"_links,omitempty"`
+
 	// Availability zone name.
 	// Read Only: true
 	Name *string `json:"name,omitempty"`
@@ -303,6 +309,10 @@ type StorageAvailabilityZoneModifyCollectionBody struct {
 func (o *StorageAvailabilityZoneModifyCollectionBody) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := o.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.validateSpace(formats); err != nil {
 		res = append(res, err)
 	}
@@ -318,6 +328,23 @@ func (o *StorageAvailabilityZoneModifyCollectionBody) Validate(formats strfmt.Re
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (o *StorageAvailabilityZoneModifyCollectionBody) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(o.Links) { // not required
+		return nil
+	}
+
+	if o.Links != nil {
+		if err := o.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "_links")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -390,6 +417,10 @@ func (o *StorageAvailabilityZoneModifyCollectionBody) validateStorageAvailabilit
 func (o *StorageAvailabilityZoneModifyCollectionBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := o.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.contextValidateName(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -413,6 +444,20 @@ func (o *StorageAvailabilityZoneModifyCollectionBody) ContextValidate(ctx contex
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (o *StorageAvailabilityZoneModifyCollectionBody) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Links != nil {
+		if err := o.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "_links")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -694,9 +739,6 @@ swagger:model storage_availability_zone_inline_space
 */
 type StorageAvailabilityZoneInlineSpace struct {
 
-	// links
-	Links *models.SelfLink `json:"_links,omitempty"`
-
 	// Available space in the availability zone.
 	// Read Only: true
 	Available *int64 `json:"available,omitempty"`
@@ -751,10 +793,6 @@ type StorageAvailabilityZoneInlineSpace struct {
 func (o *StorageAvailabilityZoneInlineSpace) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := o.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := o.validateEfficiencyWithoutSnapshots(formats); err != nil {
 		res = append(res, err)
 	}
@@ -762,23 +800,6 @@ func (o *StorageAvailabilityZoneInlineSpace) Validate(formats strfmt.Registry) e
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (o *StorageAvailabilityZoneInlineSpace) validateLinks(formats strfmt.Registry) error {
-	if swag.IsZero(o.Links) { // not required
-		return nil
-	}
-
-	if o.Links != nil {
-		if err := o.Links.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("info" + "." + "space" + "." + "_links")
-			}
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -802,10 +823,6 @@ func (o *StorageAvailabilityZoneInlineSpace) validateEfficiencyWithoutSnapshots(
 // ContextValidate validate this storage availability zone inline space based on the context it is used
 func (o *StorageAvailabilityZoneInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
-
-	if err := o.contextValidateLinks(ctx, formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := o.contextValidateAvailable(ctx, formats); err != nil {
 		res = append(res, err)
@@ -854,20 +871,6 @@ func (o *StorageAvailabilityZoneInlineSpace) ContextValidate(ctx context.Context
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (o *StorageAvailabilityZoneInlineSpace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
-
-	if o.Links != nil {
-		if err := o.Links.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("info" + "." + "space" + "." + "_links")
-			}
-			return err
-		}
-	}
-
 	return nil
 }
 

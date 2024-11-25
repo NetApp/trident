@@ -34,7 +34,7 @@ type ConsistencyGroupChild struct {
 
 	// The LUNs array can be used to create or modify LUNs in a consistency group on a new or existing volume that is a member of the consistency group. LUNs are considered members of a consistency group if they are located on a volume that is a member of the consistency group.
 	//
-	// Max Items: 16
+	//
 	// Min Items: 0
 	// Unique: true
 	ConsistencyGroupChildInlineLuns []*ConsistencyGroupChildInlineLunsInlineArrayItem `json:"luns,omitempty"`
@@ -44,7 +44,7 @@ type ConsistencyGroupChild struct {
 	// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. NVMe namespaces support being cloned. An NVMe namespace cannot be renamed, resized, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace. See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
 	// An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.
 	//
-	// Max Items: 16
+	//
 	// Min Items: 0
 	// Unique: true
 	ConsistencyGroupChildInlineNamespaces []*ConsistencyGroupChildInlineNamespacesInlineArrayItem `json:"namespaces,omitempty"`
@@ -221,10 +221,6 @@ func (m *ConsistencyGroupChild) validateConsistencyGroupChildInlineLuns(formats 
 		return err
 	}
 
-	if err := validate.MaxItems("luns", "body", iConsistencyGroupChildInlineLunsSize, 16); err != nil {
-		return err
-	}
-
 	if err := validate.UniqueItems("luns", "body", m.ConsistencyGroupChildInlineLuns); err != nil {
 		return err
 	}
@@ -256,10 +252,6 @@ func (m *ConsistencyGroupChild) validateConsistencyGroupChildInlineNamespaces(fo
 	iConsistencyGroupChildInlineNamespacesSize := int64(len(m.ConsistencyGroupChildInlineNamespaces))
 
 	if err := validate.MinItems("namespaces", "body", iConsistencyGroupChildInlineNamespacesSize, 0); err != nil {
-		return err
-	}
-
-	if err := validate.MaxItems("namespaces", "body", iConsistencyGroupChildInlineNamespacesSize, 16); err != nil {
 		return err
 	}
 
@@ -1780,7 +1772,7 @@ type ConsistencyGroupChildLunsItems0LunMapsItems0 struct {
 	// igroup
 	Igroup *ConsistencyGroupChildLunsItems0LunMapsItems0Igroup `json:"igroup,omitempty"`
 
-	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value.
+	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value. This property is not supported when the _provisioning_options.count_ property is 2 or more.
 	//
 	LogicalUnitNumber *int64 `json:"logical_unit_number,omitempty"`
 }

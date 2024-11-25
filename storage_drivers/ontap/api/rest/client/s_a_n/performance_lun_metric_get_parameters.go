@@ -77,7 +77,7 @@ type PerformanceLunMetricGetParams struct {
 
 	/* Timestamp.
 
-	   The timestamp of the performance data.
+	   The timestamp of the space and performance data.
 
 
 	   Format: date-time

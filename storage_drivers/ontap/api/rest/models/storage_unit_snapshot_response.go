@@ -23,10 +23,12 @@ type StorageUnitSnapshotResponse struct {
 	// links
 	Links *CollectionLinks `json:"_links,omitempty"`
 
-	// Number of Records
+	// Number of records.
+	//
 	NumRecords *int64 `json:"num_records,omitempty"`
 
 	// Space reclaimed when the snapshot is deleted, in bytes.
+	//
 	// Read Only: true
 	ReclaimableSpace *int64 `json:"reclaimable_space,omitempty"`
 

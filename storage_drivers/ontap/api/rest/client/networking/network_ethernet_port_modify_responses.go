@@ -135,6 +135,11 @@ func NewNetworkEthernetPortModifyDefault(code int) *NetworkEthernetPortModifyDef
 | 1967195 | Missing or incomplete name retrieval for specified port UUID. |
 | 1967580 | This command is not supported as the effective cluster version is earlier than 9.8. |
 | 1967582 | The reachability parameter is not supported on this cluster. |
+| 53216932 | Failed to determine whether newly introduced PFC flow control is supported. |
+| 53280899 | Not all nodes support enabling the PFC feature. |
+| 53280900 | No PFC queues specified. |
+| 53280901 | Failed to modify PFC. |
+| 53280902 | Cluster ports does not support PFC flow control. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NetworkEthernetPortModifyDefault struct {

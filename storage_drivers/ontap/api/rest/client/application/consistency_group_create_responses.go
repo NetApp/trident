@@ -227,6 +227,7 @@ func NewConsistencyGroupCreateDefault(code int) *ConsistencyGroupCreateDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 5374127 | The specified LUN name is invalid. |
+| 5440501 | The specified storage unit size is insufficient. |
 | 5440509 | No suitable storage can be found for the specified requirements. |
 | 53411842 | Consistency group does not exist. |
 | 53411843 | A consistency group with specified UUID was not found. |

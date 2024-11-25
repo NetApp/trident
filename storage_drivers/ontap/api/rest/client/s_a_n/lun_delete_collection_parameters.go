@@ -329,6 +329,18 @@ type LunDeleteCollectionParams struct {
 	*/
 	LocationQtreeName *string
 
+	/* LocationStorageAvailabilityZoneName.
+
+	   Filter by location.storage_availability_zone.name
+	*/
+	LocationStorageAvailabilityZoneName *string
+
+	/* LocationStorageAvailabilityZoneUUID.
+
+	   Filter by location.storage_availability_zone.uuid
+	*/
+	LocationStorageAvailabilityZoneUUID *string
+
 	/* LocationVolumeName.
 
 	   Filter by location.volume.name
@@ -1371,6 +1383,28 @@ func (o *LunDeleteCollectionParams) WithLocationQtreeName(locationQtreeName *str
 // SetLocationQtreeName adds the locationQtreeName to the lun delete collection params
 func (o *LunDeleteCollectionParams) SetLocationQtreeName(locationQtreeName *string) {
 	o.LocationQtreeName = locationQtreeName
+}
+
+// WithLocationStorageAvailabilityZoneName adds the locationStorageAvailabilityZoneName to the lun delete collection params
+func (o *LunDeleteCollectionParams) WithLocationStorageAvailabilityZoneName(locationStorageAvailabilityZoneName *string) *LunDeleteCollectionParams {
+	o.SetLocationStorageAvailabilityZoneName(locationStorageAvailabilityZoneName)
+	return o
+}
+
+// SetLocationStorageAvailabilityZoneName adds the locationStorageAvailabilityZoneName to the lun delete collection params
+func (o *LunDeleteCollectionParams) SetLocationStorageAvailabilityZoneName(locationStorageAvailabilityZoneName *string) {
+	o.LocationStorageAvailabilityZoneName = locationStorageAvailabilityZoneName
+}
+
+// WithLocationStorageAvailabilityZoneUUID adds the locationStorageAvailabilityZoneUUID to the lun delete collection params
+func (o *LunDeleteCollectionParams) WithLocationStorageAvailabilityZoneUUID(locationStorageAvailabilityZoneUUID *string) *LunDeleteCollectionParams {
+	o.SetLocationStorageAvailabilityZoneUUID(locationStorageAvailabilityZoneUUID)
+	return o
+}
+
+// SetLocationStorageAvailabilityZoneUUID adds the locationStorageAvailabilityZoneUuid to the lun delete collection params
+func (o *LunDeleteCollectionParams) SetLocationStorageAvailabilityZoneUUID(locationStorageAvailabilityZoneUUID *string) {
+	o.LocationStorageAvailabilityZoneUUID = locationStorageAvailabilityZoneUUID
 }
 
 // WithLocationVolumeName adds the locationVolumeName to the lun delete collection params
@@ -2990,6 +3024,40 @@ func (o *LunDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qLocationQtreeName != "" {
 
 			if err := r.SetQueryParam("location.qtree.name", qLocationQtreeName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationStorageAvailabilityZoneName != nil {
+
+		// query param location.storage_availability_zone.name
+		var qrLocationStorageAvailabilityZoneName string
+
+		if o.LocationStorageAvailabilityZoneName != nil {
+			qrLocationStorageAvailabilityZoneName = *o.LocationStorageAvailabilityZoneName
+		}
+		qLocationStorageAvailabilityZoneName := qrLocationStorageAvailabilityZoneName
+		if qLocationStorageAvailabilityZoneName != "" {
+
+			if err := r.SetQueryParam("location.storage_availability_zone.name", qLocationStorageAvailabilityZoneName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationStorageAvailabilityZoneUUID != nil {
+
+		// query param location.storage_availability_zone.uuid
+		var qrLocationStorageAvailabilityZoneUUID string
+
+		if o.LocationStorageAvailabilityZoneUUID != nil {
+			qrLocationStorageAvailabilityZoneUUID = *o.LocationStorageAvailabilityZoneUUID
+		}
+		qLocationStorageAvailabilityZoneUUID := qrLocationStorageAvailabilityZoneUUID
+		if qLocationStorageAvailabilityZoneUUID != "" {
+
+			if err := r.SetQueryParam("location.storage_availability_zone.uuid", qLocationStorageAvailabilityZoneUUID); err != nil {
 				return err
 			}
 		}

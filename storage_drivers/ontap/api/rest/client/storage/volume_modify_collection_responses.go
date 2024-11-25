@@ -14819,14 +14819,14 @@ swagger:model volume_inline_rebalancing
 type VolumeInlineRebalancing struct {
 
 	// links
-	Links *models.VolumeInlineRebalancingInlineLinks `json:"_links,omitempty"`
+	Links *VolumeInlineRebalancingInlineLinks `json:"_links,omitempty"`
 
 	// The amount of data that has been moved in or out of a constituent. A positive value represents data moving into the constituent while a negative value is data moving out of the constituent.
 	// Read Only: true
 	DataMoved *int64 `json:"data_moved,omitempty"`
 
 	// engine
-	Engine *models.VolumeInlineRebalancingInlineEngine `json:"engine,omitempty"`
+	Engine *VolumeInlineRebalancingInlineEngine `json:"engine,omitempty"`
 
 	// Specifies whether or not to exclude files that are stuck in snapshots during rebalancing operation. When a new capacity rebalancing operation is started on a FlexGroup volume, it uses the current "exclude_snapshots" value. Once the operation is started, any changes to the "exclude_snapshots" value do not affect the currently running capacity rebalancing operation. Only future capacity rebalancing operations will use the new "exclude_snapshots" value.
 	ExcludeSnapshots *bool `json:"exclude_snapshots,omitempty"`
@@ -15429,10 +15429,10 @@ swagger:model volume_inline_rebalancing_inline_engine
 type VolumeInlineRebalancingInlineEngine struct {
 
 	// movement
-	Movement *models.VolumeInlineRebalancingInlineEngineInlineMovement `json:"movement,omitempty"`
+	Movement *VolumeInlineRebalancingInlineEngineInlineMovement `json:"movement,omitempty"`
 
 	// scanner
-	Scanner *models.VolumeInlineRebalancingInlineEngineInlineScanner `json:"scanner,omitempty"`
+	Scanner *VolumeInlineRebalancingInlineEngineInlineScanner `json:"scanner,omitempty"`
 }
 
 // Validate validates this volume inline rebalancing inline engine
@@ -15562,7 +15562,7 @@ type VolumeInlineRebalancingInlineEngineInlineMovement struct {
 	FileMovesStarted *int64 `json:"file_moves_started,omitempty"`
 
 	// last error
-	LastError *models.VolumeInlineRebalancingInlineEngineInlineMovementInlineLastError `json:"last_error,omitempty"`
+	LastError *VolumeInlineRebalancingInlineEngineInlineMovementInlineLastError `json:"last_error,omitempty"`
 
 	// Start time of the most recent file move on the constituent.
 	// Example: 2018-06-04 19:00:00
@@ -15832,14 +15832,14 @@ type VolumeInlineRebalancingInlineEngineInlineScanner struct {
 	BlocksScanned *int64 `json:"blocks_scanned,omitempty"`
 
 	// blocks skipped
-	BlocksSkipped *models.VolumeInlineRebalancingInlineEngineInlineScannerInlineBlocksSkipped `json:"blocks_skipped,omitempty"`
+	BlocksSkipped *VolumeInlineRebalancingInlineEngineInlineScannerInlineBlocksSkipped `json:"blocks_skipped,omitempty"`
 
 	// Number of files scanned on this constituent.
 	// Read Only: true
 	FilesScanned *int64 `json:"files_scanned,omitempty"`
 
 	// files skipped
-	FilesSkipped *models.VolumeInlineRebalancingInlineEngineInlineScannerInlineFilesSkipped `json:"files_skipped,omitempty"`
+	FilesSkipped *VolumeInlineRebalancingInlineEngineInlineScannerInlineFilesSkipped `json:"files_skipped,omitempty"`
 }
 
 // Validate validates this volume inline rebalancing inline engine inline scanner

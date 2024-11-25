@@ -187,7 +187,7 @@ type ConsistencyGroupResponseInlineRecordsInlineArrayItem struct {
 
 	// The LUNs array can be used to create or modify LUNs in a consistency group on a new or existing volume that is a member of the consistency group. LUNs are considered members of a consistency group if they are located on a volume that is a member of the consistency group.
 	//
-	// Max Items: 16
+	//
 	// Min Items: 0
 	// Unique: true
 	Luns []*ConsistencyGroupResponseRecordsItems0LunsItems0 `json:"luns"`
@@ -208,7 +208,7 @@ type ConsistencyGroupResponseInlineRecordsInlineArrayItem struct {
 	// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. NVMe namespaces support being cloned. An NVMe namespace cannot be renamed, resized, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace. See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
 	// An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.
 	//
-	// Max Items: 16
+	//
 	// Min Items: 0
 	// Unique: true
 	Namespaces []*ConsistencyGroupResponseRecordsItems0NamespacesItems0 `json:"namespaces"`
@@ -500,10 +500,6 @@ func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItem) validateLuns(form
 		return err
 	}
 
-	if err := validate.MaxItems("luns", "body", iLunsSize, 16); err != nil {
-		return err
-	}
-
 	if err := validate.UniqueItems("luns", "body", m.Luns); err != nil {
 		return err
 	}
@@ -569,10 +565,6 @@ func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItem) validateNamespace
 	iNamespacesSize := int64(len(m.Namespaces))
 
 	if err := validate.MinItems("namespaces", "body", iNamespacesSize, 0); err != nil {
-		return err
-	}
-
-	if err := validate.MaxItems("namespaces", "body", iNamespacesSize, 16); err != nil {
 		return err
 	}
 
@@ -1668,6 +1660,10 @@ type ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineClone struct {
 	// guarantee
 	Guarantee *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineGuarantee `json:"guarantee,omitempty"`
 
+	// Specifies if the consistency group contains any unsplit FlexClone storage units.
+	// Read Only: true
+	HasUnsplitFlexclones *bool `json:"has_unsplit_flexclones,omitempty"`
+
 	// Specifies if this consistency group is a FlexClone of a consistency group.
 	// Read Only: true
 	IsFlexclone *bool `json:"is_flexclone,omitempty"`
@@ -1678,15 +1674,30 @@ type ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineClone struct {
 	// parent snapshot
 	ParentSnapshot *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSnapshot `json:"parent_snapshot,omitempty"`
 
+	// parent svm
+	ParentSvm *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvm `json:"parent_svm,omitempty"`
+
 	// Specifies the SnapLock type for the clone consistency group.
 	// Enum: ["compliance","enterprise","non_snaplock"]
 	SnaplockType *string `json:"snaplock_type,omitempty"`
 
-	// Splits volumes after cloning. Default is false.
+	// Percentage of FlexClone blocks split from its parent consistency group.
+	// Read Only: true
+	SplitCompletePercent *int64 `json:"split_complete_percent,omitempty"`
+
+	// Space required to split the FlexClone consistency group.
+	// Read Only: true
+	SplitEstimate *int64 `json:"split_estimate,omitempty"`
+
+	// Splits volumes after cloning. Defaults to false during POST. Only accepts true during a PATCH.
 	SplitInitiated *bool `json:"split_initiated,omitempty"`
 
 	// storage unit
 	StorageUnit *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineStorageUnit `json:"storage_unit,omitempty"`
+
+	// A list of unsplit FlexClone storage units in the consistency group.
+	// Read Only: true
+	UnsplitFlexclones []*string `json:"unsplit_flexclones"`
 
 	// volume
 	Volume *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineVolume `json:"volume,omitempty"`
@@ -1705,6 +1716,10 @@ func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineClone) Valida
 	}
 
 	if err := m.validateParentSnapshot(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateParentSvm(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1769,6 +1784,23 @@ func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineClone) valida
 		if err := m.ParentSnapshot.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("clone" + "." + "parent_snapshot")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineClone) validateParentSvm(formats strfmt.Registry) error {
+	if swag.IsZero(m.ParentSvm) { // not required
+		return nil
+	}
+
+	if m.ParentSvm != nil {
+		if err := m.ParentSvm.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("clone" + "." + "parent_svm")
 			}
 			return err
 		}
@@ -1885,6 +1917,10 @@ func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineClone) Contex
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateHasUnsplitFlexclones(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateIsFlexclone(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1897,7 +1933,23 @@ func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineClone) Contex
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateParentSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSplitCompletePercent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSplitEstimate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateStorageUnit(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUnsplitFlexclones(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1920,6 +1972,15 @@ func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineClone) contex
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineClone) contextValidateHasUnsplitFlexclones(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "clone"+"."+"has_unsplit_flexclones", "body", m.HasUnsplitFlexclones); err != nil {
+		return err
 	}
 
 	return nil
@@ -1962,6 +2023,38 @@ func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineClone) contex
 	return nil
 }
 
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineClone) contextValidateParentSvm(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ParentSvm != nil {
+		if err := m.ParentSvm.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("clone" + "." + "parent_svm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineClone) contextValidateSplitCompletePercent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "clone"+"."+"split_complete_percent", "body", m.SplitCompletePercent); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineClone) contextValidateSplitEstimate(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "clone"+"."+"split_estimate", "body", m.SplitEstimate); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineClone) contextValidateStorageUnit(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageUnit != nil {
@@ -1971,6 +2064,15 @@ func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineClone) contex
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineClone) contextValidateUnsplitFlexclones(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "clone"+"."+"unsplit_flexclones", "body", []*string(m.UnsplitFlexclones)); err != nil {
+		return err
 	}
 
 	return nil
@@ -2120,11 +2222,15 @@ type ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParent
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// The name of the consistency group.
-	// Example: my_consistency_group
 	Name *string `json:"name,omitempty"`
 
+	// The name of the parent consistency group used when cloning a child consistency group.
+	ParentName *string `json:"parent_name,omitempty"`
+
+	// The unique identifier of the parent consistency group used when cloning a child consistency group.
+	ParentUUID *string `json:"parent_uuid,omitempty"`
+
 	// The unique identifier of the consistency group.
-	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	UUID *string `json:"uuid,omitempty"`
 }
 
@@ -2385,6 +2491,188 @@ func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlinePa
 	return nil
 }
 
+// ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvm SVM, applies only to SVM-scoped objects.
+//
+// swagger:model consistency_group_response_inline_records_inline_array_item_inline_clone_inline_parent_svm
+type ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvm struct {
+
+	// links
+	Links *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvmInlineLinks `json:"_links,omitempty"`
+
+	// The name of the SVM. This field cannot be specified in a PATCH method.
+	//
+	// Example: svm1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM. This field cannot be specified in a PATCH method.
+	//
+	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this consistency group response inline records inline array item inline clone inline parent svm
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvm) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvm) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("clone" + "." + "parent_svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this consistency group response inline records inline array item inline clone inline parent svm based on the context it is used
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("clone" + "." + "parent_svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvm) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvm) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvm
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvmInlineLinks consistency group response inline records inline array item inline clone inline parent svm inline links
+//
+// swagger:model consistency_group_response_inline_records_inline_array_item_inline_clone_inline_parent_svm_inline__links
+type ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvmInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this consistency group response inline records inline array item inline clone inline parent svm inline links
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvmInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("clone" + "." + "parent_svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this consistency group response inline records inline array item inline clone inline parent svm inline links based on the context it is used
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("clone" + "." + "parent_svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvmInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineParentSvmInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineStorageUnit Storage unit name suffix/prefix for the cloned blocks. This is applied to all the vdisks, i.e. LUNs or NVMe namespaces within the consistency group.
 //
 // swagger:model consistency_group_response_inline_records_inline_array_item_inline_clone_inline_storage_unit
@@ -2425,8 +2713,7 @@ func (m *ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineSt
 	return nil
 }
 
-// ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineVolume
-// Volume name suffix/prefix for the cloned volumes.
+// ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineVolume Volume name suffix/prefix for the cloned volumes.
 //
 // swagger:model consistency_group_response_inline_records_inline_array_item_inline_clone_inline_volume
 type ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineCloneInlineVolume struct {
@@ -2484,7 +2771,7 @@ type ConsistencyGroupResponseRecordsItems0ConsistencyGroupsItems0 struct {
 
 	// The LUNs array can be used to create or modify LUNs in a consistency group on a new or existing volume that is a member of the consistency group. LUNs are considered members of a consistency group if they are located on a volume that is a member of the consistency group.
 	//
-	// Max Items: 16
+	//
 	// Min Items: 0
 	// Unique: true
 	Luns []*ConsistencyGroupResponseRecordsItems0ConsistencyGroupsItems0LunsItems0 `json:"luns"`
@@ -2499,7 +2786,7 @@ type ConsistencyGroupResponseRecordsItems0ConsistencyGroupsItems0 struct {
 	// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. NVMe namespaces support being cloned. An NVMe namespace cannot be renamed, resized, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace. See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
 	// An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.
 	//
-	// Max Items: 16
+	//
 	// Min Items: 0
 	// Unique: true
 	Namespaces []*ConsistencyGroupResponseRecordsItems0ConsistencyGroupsItems0NamespacesItems0 `json:"namespaces"`
@@ -2671,10 +2958,6 @@ func (m *ConsistencyGroupResponseRecordsItems0ConsistencyGroupsItems0) validateL
 		return err
 	}
 
-	if err := validate.MaxItems("luns", "body", iLunsSize, 16); err != nil {
-		return err
-	}
-
 	if err := validate.UniqueItems("luns", "body", m.Luns); err != nil {
 		return err
 	}
@@ -2706,10 +2989,6 @@ func (m *ConsistencyGroupResponseRecordsItems0ConsistencyGroupsItems0) validateN
 	iNamespacesSize := int64(len(m.Namespaces))
 
 	if err := validate.MinItems("namespaces", "body", iNamespacesSize, 0); err != nil {
-		return err
-	}
-
-	if err := validate.MaxItems("namespaces", "body", iNamespacesSize, 16); err != nil {
 		return err
 	}
 
@@ -4230,7 +4509,7 @@ type ConsistencyGroupResponseRecordsItems0ConsistencyGroupsItems0LunsItems0LunMa
 	// igroup
 	Igroup *ConsistencyGroupResponseRecordsItems0ConsistencyGroupsItems0LunsItems0LunMapsItems0Igroup `json:"igroup,omitempty"`
 
-	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value.
+	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value. This property is not supported when the _provisioning_options.count_ property is 2 or more.
 	//
 	LogicalUnitNumber *int64 `json:"logical_unit_number,omitempty"`
 }
@@ -10629,7 +10908,7 @@ type ConsistencyGroupResponseRecordsItems0LunsItems0LunMapsItems0 struct {
 	// igroup
 	Igroup *ConsistencyGroupResponseRecordsItems0LunsItems0LunMapsItems0Igroup `json:"igroup,omitempty"`
 
-	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value.
+	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value. This property is not supported when the _provisioning_options.count_ property is 2 or more.
 	//
 	LogicalUnitNumber *int64 `json:"logical_unit_number,omitempty"`
 }

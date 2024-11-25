@@ -214,6 +214,7 @@ func NewSnapshotModifyDefault(code int) *SnapshotModifyDefault {
 | 1638539    | Cannot determine the status of the snapshot rename operation for the specified volume. |
 | 1638554    | Failed to set expiry time for the snapshot. |
 | 1638600    | The snapshot does not exist. |
+| 1638644    | POST, DELETE, and PATCH requests on the snapshot session endpoint are not supported on this platform. |
 */
 type SnapshotModifyDefault struct {
 	_statusCode int
