@@ -167,33 +167,35 @@ type DeploymentYAMLArguments struct {
 	CloudProvider           string                `json:"cloudProvider"`
 	IdentityLabel           bool                  `json:"identityLabel"`
 	K8sAPIQPS               int                   `json:"k8sAPIQPS"`
+	Resources               *v1.ResourceRequirements `json:"resources"`
 }
 
 type DaemonsetYAMLArguments struct {
-	DaemonsetName            string                `json:"daemonsetName"`
-	TridentImage             string                `json:"tridentImage"`
-	ImageRegistry            string                `json:"imageRegistry"`
-	KubeletDir               string                `json:"kubeletDir"`
-	LogFormat                string                `json:"logFormat"`
-	LogLevel                 string                `json:"logLevel"`
-	LogWorkflows             string                `json:"logWorkflows"`
-	LogLayers                string                `json:"logLayers"`
-	ProbePort                string                `json:"probePort"`
-	ImagePullSecrets         []string              `json:"imagePullSecrets"`
-	Labels                   map[string]string     `json:"labels"`
-	ControllingCRDetails     map[string]string     `json:"controllingCRDetails"`
-	EnableForceDetach        bool                  `json:"enableForceDetach"`
-	DisableAuditLog          bool                  `json:"disableAuditLog"`
-	Debug                    bool                  `json:"debug"`
-	Version                  *versionutils.Version `json:"version"`
-	HTTPRequestTimeout       string                `json:"httpRequestTimeout"`
-	NodeSelector             map[string]string     `json:"nodeSelector"`
-	Tolerations              []map[string]string   `json:"tolerations"`
-	ServiceAccountName       string                `json:"serviceAccountName"`
-	ImagePullPolicy          string                `json:"imagePullPolicy"`
-	ISCSISelfHealingInterval string                `json:"iscsiSelfHealingInterval"`
-	ISCSISelfHealingWaitTime string                `json:"iscsiSelfHealingWaitTime"`
-	NodePrep                 []string              `json:"nodePrep"`
+	DaemonsetName            string                   `json:"daemonsetName"`
+	TridentImage             string                   `json:"tridentImage"`
+	ImageRegistry            string                   `json:"imageRegistry"`
+	KubeletDir               string                   `json:"kubeletDir"`
+	LogFormat                string                   `json:"logFormat"`
+	LogLevel                 string                   `json:"logLevel"`
+	LogWorkflows             string                   `json:"logWorkflows"`
+	LogLayers                string                   `json:"logLayers"`
+	ProbePort                string                   `json:"probePort"`
+	ImagePullSecrets         []string                 `json:"imagePullSecrets"`
+	Labels                   map[string]string        `json:"labels"`
+	ControllingCRDetails     map[string]string        `json:"controllingCRDetails"`
+	EnableForceDetach        bool                     `json:"enableForceDetach"`
+	DisableAuditLog          bool                     `json:"disableAuditLog"`
+	Debug                    bool                     `json:"debug"`
+	Version                  *versionutils.Version    `json:"version"`
+	HTTPRequestTimeout       string                   `json:"httpRequestTimeout"`
+	NodeSelector             map[string]string        `json:"nodeSelector"`
+	Tolerations              []map[string]string      `json:"tolerations"`
+	ServiceAccountName       string                   `json:"serviceAccountName"`
+	ImagePullPolicy          string                   `json:"imagePullPolicy"`
+	ISCSISelfHealingInterval string                   `json:"iscsiSelfHealingInterval"`
+	ISCSISelfHealingWaitTime string                   `json:"iscsiSelfHealingWaitTime"`
+	NodePrep                 []string                 `json:"nodePrep"`
+	Resources                *v1.ResourceRequirements `json:"resources"`
 }
 
 type TridentVersionPodYAMLArguments struct {

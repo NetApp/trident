@@ -11,6 +11,8 @@ import (
 	commonconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
+	v1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -502,6 +504,7 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = utils.ReplaceMultilineYAMLTag(deploymentYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
 	deploymentYAML = utils.ReplaceMultilineYAMLTag(deploymentYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
 	deploymentYAML = utils.ReplaceMultilineYAMLTag(deploymentYAML, "NODE_TOLERATIONS", constructTolerations(args.Tolerations))
+	deploymentYAML = utils.ReplaceMultilineYAMLTag(deploymentYAML, "RESOURCES", constructResources(args.Resources))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_FORCE_DETACH}", strconv.FormatBool(args.EnableForceDetach))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_ACP}", enableACP)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{K8S_API_CLIENT_TRIDENT_THROTTLE}", K8sAPITridentThrottle)
@@ -572,6 +575,7 @@ spec:
         {ENABLE_ACP}
         {DEBUG}
         {K8S_API_CLIENT_TRIDENT_THROTTLE}
+        {RESOURCES}
         livenessProbe:
           exec:
             command:
@@ -625,9 +629,7 @@ spec:
         {AUTOSUPPORT_HOSTNAME}
         {AUTOSUPPORT_DEBUG}
         {AUTOSUPPORT_INSECURE}
-        resources:
-          limits:
-            memory: 1Gi
+        {RESOURCES}
         volumeMounts:
         - name: asup-dir
           mountPath: /asup
@@ -645,6 +647,7 @@ spec:
         - "--retry-interval-start=8s"
         - "--retry-interval-max=30s"
         {K8S_API_CLIENT_SIDECAR_THROTTLE}
+        {RESOURCES}
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -664,6 +667,7 @@ spec:
         - "--retry-interval-start=10s"
         - "--csi-address=$(ADDRESS)"
         {K8S_API_CLIENT_SIDECAR_THROTTLE}
+        {RESOURCES}
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -678,6 +682,7 @@ spec:
         - "--timeout=300s"
         - "--csi-address=$(ADDRESS)"
         {K8S_API_CLIENT_SIDECAR_THROTTLE}
+        {RESOURCES}
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -696,6 +701,7 @@ spec:
         - "--timeout=300s"
         - "--csi-address=$(ADDRESS)"
         {K8S_API_CLIENT_SIDECAR_THROTTLE}
+        {RESOURCES}
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -886,6 +892,7 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = utils.ReplaceMultilineYAMLTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
 	daemonSetYAML = utils.ReplaceMultilineYAMLTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
 	daemonSetYAML = utils.ReplaceMultilineYAMLTag(daemonSetYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
+	daemonSetYAML = utils.ReplaceMultilineYAMLTag(daemonSetYAML, "RESOURCES", constructResources(args.Resources))
 
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", daemonSetYAML).Trace("CSI Daemonset Linux YAML.")
@@ -1033,6 +1040,7 @@ spec:
           timeoutSeconds: 5
           periodSeconds: 10
           initialDelaySeconds: 15
+        {RESOURCES}
         env:
         - name: KUBE_NODE_NAME
           valueFrom:
@@ -1074,6 +1082,7 @@ spec:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--csi-address=$(ADDRESS)"
         - "--kubelet-registration-path=$(REGISTRATION_PATH)"
+        {RESOURCES}
         env:
         - name: ADDRESS
           value: /plugin/csi.sock
@@ -2652,6 +2661,16 @@ func constructOwnerRef(ownerRef map[string]string) string {
 	}
 
 	return ownerRefData
+}
+
+func constructResources(res *v1.ResourceRequirements) string {
+	r := struct {
+		Resources *v1.ResourceRequirements `json:"resources"`
+	}{
+		Resources: res,
+	}
+	bytes, _ := yaml.Marshal(r)
+	return string(bytes)
 }
 
 func constructImagePullSecrets(imagePullSecrets []string) string {

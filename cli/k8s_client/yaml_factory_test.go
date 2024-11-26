@@ -15,6 +15,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	csiv1 "k8s.io/api/storage/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/config"
@@ -513,6 +514,30 @@ func TestGetCSIDeploymentYAML_K8sAPIQPS(t *testing.T) {
 	}
 }
 
+func TestGetCSIDeploymentYAML_Resources(t *testing.T) {
+	args := &DeploymentYAMLArguments{Resources: &v1.ResourceRequirements{
+		Limits:   v1.ResourceList{v1.ResourceCPU: resource.MustParse("114m"), v1.ResourceMemory: resource.MustParse("256Mi")},
+		Requests: v1.ResourceList{v1.ResourceCPU: resource.MustParse("200m"), v1.ResourceMemory: resource.MustParse("512Mi")},
+	}}
+
+	expectedResourcesString := `
+        resources:
+          limits:
+            cpu: 114m
+            memory: 256Mi
+          requests:
+            cpu: 200m
+            memory: 512Mi
+`
+	yamlData := GetCSIDeploymentYAML(args)
+	_, err := yaml.YAMLToJSON([]byte(yamlData))
+	if err != nil {
+		t.Fatalf("expected valid YAML, got %s", yamlData)
+	}
+	assert.Contains(t, yamlData, expectedResourcesString,
+		fmt.Sprintf("expected resources in final YAML: %s", yamlData))
+}
+
 func TestGetCSIDaemonSetYAMLLinux(t *testing.T) {
 	versions := []string{"1.21.0", "1.23.0", "1.25.0"}
 
@@ -856,6 +881,30 @@ func TestGetCSIDaemonSetYAMLLinux_Tolerations(t *testing.T) {
 		fmt.Sprintf("expected toleration in final YAML: %s", yamlData))
 	assert.NotContains(t, yamlData, defaultTolerationString,
 		fmt.Sprintf("expected default tolerations to not appear in final YAML: %s", yamlData))
+}
+
+func TestGetCSIDaemonSetYAMLLinux_Resources(t *testing.T) {
+	args := &DaemonsetYAMLArguments{Resources: &v1.ResourceRequirements{
+		Limits:   v1.ResourceList{v1.ResourceCPU: resource.MustParse("114m"), v1.ResourceMemory: resource.MustParse("256Mi")},
+		Requests: v1.ResourceList{v1.ResourceCPU: resource.MustParse("200m"), v1.ResourceMemory: resource.MustParse("512Mi")},
+	}}
+
+	expectedResourcesString := `
+        resources:
+          limits:
+            cpu: 114m
+            memory: 256Mi
+          requests:
+            cpu: 200m
+            memory: 512Mi
+`
+	yamlData := GetCSIDaemonSetYAMLLinux(args)
+	_, err := yaml.YAMLToJSON([]byte(yamlData))
+	if err != nil {
+		t.Fatalf("expected valid YAML, got %s", yamlData)
+	}
+	assert.Contains(t, yamlData, expectedResourcesString,
+		fmt.Sprintf("expected resources in final YAML: %s", yamlData))
 }
 
 func TestGetCSIDaemonSetYAMLWindows(t *testing.T) {
