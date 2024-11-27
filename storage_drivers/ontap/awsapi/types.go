@@ -12,11 +12,13 @@ import (
 )
 
 type AWSAPI interface {
-	GetSecret(ctx context.Context, secretARN string) (map[string]string, error)
+	CreateSecret(ctx context.Context, request *SecretCreateRequest) (*Secret, error)
+	GetSecret(ctx context.Context, secretARN string) (*Secret, error)
 
 	GetFilesystems(ctx context.Context) (*[]*Filesystem, error)
 	GetFilesystemByID(ctx context.Context, ID string) (*Filesystem, error)
 
+	CreateSVM(ctx context.Context, request *SVMCreateRequest) (*SVM, error)
 	GetSVMs(ctx context.Context) (*[]*SVM, error)
 	GetSVMByID(ctx context.Context, ID string) (*SVM, error)
 

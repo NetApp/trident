@@ -21,6 +21,12 @@ type FSxObject struct {
 	Name string `json:"name"`
 }
 
+type Secret struct {
+	FSxObject
+	SecretARN string            `json:"secretARN"`
+	SecretMap map[string]string `json:"secretMap"`
+}
+
 type Filesystem struct {
 	FSxObject
 	Created time.Time `json:"created"`
@@ -76,4 +82,19 @@ type VolumeCreateRequest struct {
 	UnixPermissions   string            `json:"unixPermissions,omitempty"`
 	BackupID          string            `json:"backupId,omitempty"`
 	SnapshotID        string            `json:"snapshotId,omitempty"`
+}
+
+type SecretCreateRequest struct {
+	Name        string            `json:"Name"`
+	Description string            `json:"Description"`
+	SecretData  map[string]string `json:"SecretData"`
+	Tags        map[string]string `json:"Tags"`
+}
+
+type SVMCreateRequest struct {
+	ClientRequestToken      string `json:"ClientRequestToken"`
+	SecretARN               string `json:"SecretARN"`
+	Name                    string `json:"Name"`
+	RootVolumeSecurityStyle string `json:"RootVolumeSecurityStyle"`
+	SvmAdminPassword        string `json:"SvmAdminPassword"`
 }

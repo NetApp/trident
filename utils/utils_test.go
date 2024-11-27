@@ -1634,3 +1634,71 @@ func TestParseIntInRange(t *testing.T) {
 		})
 	}
 }
+
+func TestGenerateRandomPassword(t *testing.T) {
+	tests := []struct {
+		name        string
+		length      int
+		lowerChar   bool
+		upperChar   bool
+		digitChar   bool
+		specialChar bool
+		expectError bool
+	}{
+		{
+			name:        "all character sets",
+			length:      12,
+			lowerChar:   true,
+			upperChar:   true,
+			digitChar:   true,
+			specialChar: true,
+			expectError: false,
+		},
+		{
+			name:        "lowerChar and digit",
+			length:      8,
+			lowerChar:   true,
+			upperChar:   false,
+			digitChar:   true,
+			specialChar: false,
+			expectError: false,
+		},
+		{
+			name:        "uppercase and digit",
+			length:      8,
+			lowerChar:   false,
+			upperChar:   true,
+			digitChar:   true,
+			specialChar: false,
+			expectError: false,
+		},
+		{
+			name:        "lowerchar, upperChar and digit",
+			length:      8,
+			lowerChar:   true,
+			upperChar:   true,
+			digitChar:   true,
+			specialChar: false,
+			expectError: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctx := context.Background()
+			password := GenerateRandomPassword(ctx, test.length, test.lowerChar, test.upperChar, test.digitChar, test.specialChar)
+			if test.expectError {
+				assert.Empty(t, password)
+			} else {
+				assert.NotEmpty(t, password)
+				assert.Equal(t, test.length, len(password))
+				if test.lowerChar || test.upperChar {
+					assert.Regexp(t, `[a-zA-Z]`, password)
+				}
+				if test.digitChar {
+					assert.Regexp(t, `[0-9]`, password)
+				}
+			}
+		})
+	}
+}

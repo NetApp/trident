@@ -177,3 +177,12 @@ anfConfigurator:
   netappAccounts: []
   resourceGroups: []
   customerEncryptionKeys: {}
+  
+# Auto generated ONTAP backend related fields consumed by the configurator controller.
+ontapConfigurator:
+  enabled: false
+  svms:
+    - fsxnID: ''
+      svmName: ''
+      protocols: []
+      authType: ''

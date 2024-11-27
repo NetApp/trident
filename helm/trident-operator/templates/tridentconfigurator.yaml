@@ -33,3 +33,79 @@ spec:
     {{- end }}
 {{- end }}
 
+---
+
+{{- if .Values.ontapConfigurator.enabled }}
+{{- $includeCR := false }}
+{{- range .Values.ontapConfigurator.svms }}
+  {{- if or (has "nfs" .protocols) (has "smb" .protocols) }}
+    {{- $includeCR = true }}
+  {{- end }}
+{{- end }}
+
+{{- if $includeCR }}
+apiVersion: trident.netapp.io/v1
+kind: TridentConfigurator
+metadata:
+  name: netapp-nas-backend-configurator
+spec:
+  storageDriverName: ontap-nas
+  svms:
+  {{- range .Values.ontapConfigurator.svms }}
+    {{- if or (has "nfs" .protocols) (has "smb" .protocols) }}
+    - fsxnID: {{ .fsxnID | quote }}
+      protocols:
+      {{- $filteredProtocols := list }}
+      {{- range .protocols }}
+        {{- if or (eq . "nfs") (eq . "smb") }}
+          {{- $filteredProtocols = append $filteredProtocols . }}
+        {{- end }}
+      {{- end }}
+      {{- range $filteredProtocols }}
+        - {{ . | quote }}
+      {{- end }}
+      svmName: {{ .svmName | quote }}
+      authType: {{ .authType | default "awsarn" | quote }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
+
+---
+
+{{- if .Values.ontapConfigurator.enabled }}
+{{- $includeCR := false }}
+{{- range .Values.ontapConfigurator.svms }}
+  {{- if or (has "iscsi" .protocols) (has "nvme" .protocols) }}
+    {{- $includeCR = true }}
+  {{- end }}
+{{- end }}
+
+{{- if $includeCR }}
+apiVersion: trident.netapp.io/v1
+kind: TridentConfigurator
+metadata:
+  name: netapp-san-backend-configurator
+spec:
+  storageDriverName: ontap-san
+  svms:
+  {{- range .Values.ontapConfigurator.svms }}
+    {{- if or (has "iscsi" .protocols) (has "nvme" .protocols) }}
+    - fsxnID: {{ .fsxnID | quote }}
+      protocols:
+      {{- $filteredProtocols := list }}
+      {{- range .protocols }}
+        {{- if or (eq . "iscsi") (eq . "nvme") }}
+          {{- $filteredProtocols = append $filteredProtocols . }}
+        {{- end }}
+      {{- end }}
+      {{- range $filteredProtocols }}
+        - {{ . | quote }}
+      {{- end }}
+      svmName: {{ .svmName | quote }}
+      authType: {{ .authType | default "awsarn" | quote }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

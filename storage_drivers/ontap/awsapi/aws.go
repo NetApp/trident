@@ -18,6 +18,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/fsx"
 	fsxtypes "github.com/aws/aws-sdk-go-v2/service/fsx/types"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+	secretmanagertypes "github.com/aws/aws-sdk-go-v2/service/secretsmanager/types"
 	"github.com/cenkalti/backoff/v4"
 
 	. "github.com/netapp/trident/logging"
@@ -112,7 +113,54 @@ func NewClient(ctx context.Context, config ClientConfig) (*Client, error) {
 	return client, nil
 }
 
-func (d *Client) GetSecret(ctx context.Context, secretARN string) (map[string]string, error) {
+func (d *Client) SetClientFsConfig(fileSystemId string) {
+	d.config.FilesystemID = fileSystemId
+}
+
+func (d *Client) CreateSecret(ctx context.Context, request *SecretCreateRequest) (*Secret, error) {
+	logFields := LogFields{
+		"API":         "CreateSecret",
+		"SecretName":  request.Name,
+		"Description": request.Description,
+	}
+
+	secretBytes, err := json.Marshal(request.SecretData)
+	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Could not marshal secret data.")
+		return nil, fmt.Errorf("error marshaling secret data; %w", err)
+	}
+
+	// Add tags to the secret request if they are provided
+	tags := make([]secretmanagertypes.Tag, 0)
+	for k, v := range request.Tags {
+		tags = append(tags, secretmanagertypes.Tag{
+			Key:   utils.Ptr(k),
+			Value: utils.Ptr(v),
+		})
+	}
+
+	input := &secretsmanager.CreateSecretInput{
+		Name:         utils.Ptr(request.Name),
+		Description:  utils.Ptr(request.Description),
+		SecretString: utils.Ptr(string(secretBytes)),
+		Tags:         tags,
+	}
+
+	createSecretOutput, err := d.secretsClient.CreateSecret(ctx, input)
+	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Could not create secret.")
+		return nil, fmt.Errorf("error creating secret; %w", err)
+	}
+
+	logFields["requestID"], _ = middleware.GetRequestIDMetadata(createSecretOutput.ResultMetadata)
+	Logc(ctx).WithFields(logFields).Info("Secret created.")
+
+	return &Secret{
+		SecretARN: DerefString(createSecretOutput.ARN),
+	}, nil
+}
+
+func (d *Client) GetSecret(ctx context.Context, secretARN string) (*Secret, error) {
 	input := &secretsmanager.GetSecretValueInput{
 		SecretId:     utils.Ptr(secretARN),
 		VersionStage: utils.Ptr("AWSCURRENT"),
@@ -122,13 +170,20 @@ func (d *Client) GetSecret(ctx context.Context, secretARN string) (map[string]st
 	if err != nil {
 		return nil, err
 	}
-
+	secret := &Secret{
+		FSxObject: FSxObject{
+			ARN:  DerefString(secretData.ARN),
+			ID:   DerefString(secretData.VersionId),
+			Name: DerefString(secretData.Name),
+		},
+	}
 	var secretMap map[string]string
 	if err = json.Unmarshal([]byte(DerefString(secretData.SecretString)), &secretMap); err != nil {
 		return nil, err
 	}
-
-	return secretMap, nil
+	secret.SecretMap = secretMap
+	secret.SecretARN = *secretData.ARN
+	return secret, nil
 }
 
 // ParseVolumeARN parses the AWS-style ARN for a volume.
@@ -252,6 +307,41 @@ func (d *Client) getFilesystemFromFSxFilesystem(f fsxtypes.FileSystem) *Filesyst
 	}
 
 	return filesystem
+}
+
+func (d *Client) CreateSVM(ctx context.Context, request *SVMCreateRequest) (*SVM, error) {
+	logFields := LogFields{
+		"API":        "CreateStorageVirtualMachine",
+		"svmName":    request.Name,
+		"filesystem": d.config.FilesystemID,
+	}
+
+	secret, err := d.GetSecret(ctx, request.SecretARN)
+	if err != nil {
+		logFields["requestID"] = GetRequestIDFromError(err)
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Could not get secret.")
+		return nil, fmt.Errorf("error getting secret; %w", err)
+	}
+	input := &fsx.CreateStorageVirtualMachineInput{
+		FileSystemId:     utils.Ptr(d.config.FilesystemID),
+		Name:             utils.Ptr(request.Name),
+		SvmAdminPassword: utils.Ptr(secret.SecretMap["password"]),
+	}
+
+	output, err := d.fsxClient.CreateStorageVirtualMachine(ctx, input)
+	if err != nil {
+		logFields["requestID"] = GetRequestIDFromError(err)
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Could not create SVM.")
+		return nil, fmt.Errorf("error creating SVM; %w", err)
+	}
+
+	newSVM := d.getSVMFromFSxSVM(*output.StorageVirtualMachine)
+
+	logFields["requestID"], _ = middleware.GetRequestIDMetadata(output.ResultMetadata)
+	logFields["svmID"] = newSVM.ID
+	Logc(ctx).WithFields(logFields).Info("SVM create request issued.")
+
+	return newSVM, nil
 }
 
 func (d *Client) GetSVMs(ctx context.Context) (*[]*SVM, error) {

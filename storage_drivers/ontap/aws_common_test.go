@@ -275,17 +275,23 @@ func TestSvmCredentials(t *testing.T) {
 	config.CommonStorageDriverConfig.DebugTraceFlags["method"] = true
 	config.StorageDriverName = "ontap-nas"
 	tests := []struct {
-		name      string
-		secretMap map[string]string
-		error     string
+		name   string
+		secret *awsapi.Secret
+		error  string
 	}{
-		{"The username key is missing", map[string]string{}, "ontap-nas driver must include username in the secret referenced by Credentials"},
-		{"The username key is missing", map[string]string{"username": "username"}, "ontap-nas driver must include password in the secret referenced by Credentials"},
-		{"The username key is missing", map[string]string{"username": "username", "password": "password"}, ""},
+		{"Both username and password key is missing", &awsapi.Secret{
+			SecretMap: map[string]string{},
+		}, "ontap-nas driver must include username in the secret referenced by Credentials"},
+		{"The password key is missing", &awsapi.Secret{
+			SecretMap: map[string]string{"username": "username"},
+		}, "ontap-nas driver must include password in the secret referenced by Credentials"},
+		{"Both username and password key is present", &awsapi.Secret{
+			SecretMap: map[string]string{"username": "username", "password": "password"},
+		}, ""},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			mockAWSAPI.EXPECT().GetSecret(ctx, secretArn).Return(test.secretMap, nil)
+			mockAWSAPI.EXPECT().GetSecret(ctx, secretArn).Return(test.secret, nil)
 			err := SetSvmCredentials(ctx, secretArn, mockAWSAPI, config)
 			if test.error == "" {
 				assert.NoError(t, err, nil)

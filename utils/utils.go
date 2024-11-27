@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"math/big"
 	"net"
 	"net/http"
 	"net/url"
@@ -1087,4 +1088,57 @@ func parseIntInRange(s string, min, max int64) (int64, error) {
 		return 0, fmt.Errorf("value %s is out of range [%d, %d]", s, min, max)
 	}
 	return i, nil
+}
+
+func GenerateRandomPassword(ctx context.Context, length int, lowerChar, upperChar, digitChar, specialChar bool) string {
+	const (
+		lowerChars   = "abcdefghijklmnopqrstuvwxyz"
+		upperChars   = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		digitChars   = "0123456789"
+		specialChars = "!@#$%^&*()-_+=<>?{}[]|\\~`"
+	)
+	var allChars string
+	if lowerChar {
+		allChars += lowerChars
+	}
+	if upperChar {
+		allChars += upperChars
+	}
+	if digitChar {
+		allChars += digitChars
+	}
+	if specialChar {
+		allChars += specialChars
+	}
+
+	if len(allChars) == 0 {
+		Logc(ctx).Warn("No character sets selected, using default character set (lowercase letters, uppercase letters, digits)")
+		allChars = lowerChars + upperChars + digitChars
+	}
+
+	for {
+		passwordBytes := make([]byte, length)
+		hasLetter, hasDigit := false, false
+
+		for i := 0; i < length; i++ {
+			randomIndex, err := rand.Int(rand.Reader, big.NewInt(int64(len(allChars))))
+			if err != nil {
+				Logc(ctx).Warn("Failed to generate random number for password, setting default password")
+				return ""
+			}
+			char := allChars[randomIndex.Int64()]
+			passwordBytes[i] = char
+			if strings.ContainsRune(lowerChars+upperChars, rune(char)) {
+				hasLetter = true
+			}
+			if strings.ContainsRune(digitChars, rune(char)) {
+				hasDigit = true
+			}
+		}
+
+		password := string(passwordBytes)
+		if hasLetter && hasDigit && !strings.Contains(password, "admin") {
+			return password
+		}
+	}
 }

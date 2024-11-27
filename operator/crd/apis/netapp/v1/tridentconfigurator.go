@@ -31,6 +31,7 @@ const (
 	Done              TConfPhase = "Done"
 
 	StorageDriverName = "storageDriverName"
+	FsxnID            = "fsxnID"
 )
 
 func (tc *TridentConfigurator) GetStorageDriverName() (string, error) {
@@ -55,4 +56,20 @@ func (tc *TridentConfigurator) Validate() error {
 		return fmt.Errorf("empty tconf spec is not allowed")
 	}
 	return nil
+}
+
+func (tc *TridentConfigurator) IsAwsFsxnTconf() (bool, error) {
+	var tConfSpec map[string]interface{}
+	if err := json.Unmarshal(tc.Spec.Raw, &tConfSpec); err != nil {
+		return false, err
+	}
+	svms, _ := tConfSpec["svms"].([]interface{})
+	for _, svm := range svms {
+		svmMap, _ := svm.(map[string]interface{})
+		fsxnId, ok := svmMap[FsxnID].(string)
+		if ok && fsxnId != "" {
+			return true, nil
+		}
+	}
+	return false, nil
 }

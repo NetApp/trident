@@ -393,6 +393,24 @@ func (c *Controller) reconcile(keyItem string) error {
 			Log().Error("Failed to process ANF backend: ", err)
 			return err
 		}
+	case config.OntapNASStorageDriverName, config.OntapSANStorageDriverName:
+		isAwsFsxn, err := tconfCR.IsAwsFsxnTconf()
+		if err != nil {
+			Log().Error("Failed to check if tconf is for AWS FSxN: ", err)
+			return err
+		}
+		if isAwsFsxn {
+			Log().Debugf("Tconf indicates auto-backend config is for AWS FSxN")
+			fsxn, err := storage_drivers.NewFsxnInstance(torcCR, tconfCR, c.Clients)
+			if err != nil {
+				Log().Info("Failed to create FsxN backend instance: ", err)
+				return err
+			}
+			if err := c.ProcessBackend(fsxn, tconfCR); err != nil {
+				Log().Error("Failed to process FsxN backend: ", err)
+				return err
+			}
+		}
 	default:
 		return fmt.Errorf("backend not supported")
 	}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/netapp/trident/config"
 	sa "github.com/netapp/trident/storage_attribute"
 
 	"github.com/netapp/trident/utils"
@@ -157,6 +158,7 @@ func constructAADSecret(namespace string) string {
 	return aadSecret
 }
 
+// GetVolumeSnapshotClassYAML returns the VolumeSnapshotClass YAML
 func GetVolumeSnapshotClassYAML(name string) string {
 	vscYAML := volumeSnapshotClassTemplate
 
@@ -165,6 +167,7 @@ func GetVolumeSnapshotClassYAML(name string) string {
 	return vscYAML
 }
 
+// volumeSnapshotClassTemplate is a template for the VolumeSnapshotClass YAML
 const volumeSnapshotClassTemplate = `---
 apiVersion: snapshot.storage.k8s.io/v1
 kind: VolumeSnapshotClass
@@ -172,4 +175,64 @@ metadata:
   name: {NAME}
 driver: csi.trident.netapp.io
 deletionPolicy: Delete
+`
+
+// getFsxnTBCYaml returns the FsxN Trident backend config YAML
+func getFsxnTBCYaml(svm SVM, tridentNamespace, backendName, protocolType string) string {
+	tbcYaml := FsxnTBCYaml
+	tbcYaml = strings.ReplaceAll(tbcYaml, "{TBC_NAME}", backendName)
+	tbcYaml = strings.ReplaceAll(tbcYaml, "{NAMESPACE}", tridentNamespace)
+	tbcYaml = strings.ReplaceAll(tbcYaml, "{MANAGEMENT_LIF}", svm.ManagementLIF)
+	tbcYaml = strings.ReplaceAll(tbcYaml, "{FILE_SYSTEM_ID}", svm.FsxnID)
+	tbcYaml = strings.ReplaceAll(tbcYaml, "{SVM_NAME}", svm.SvmName)
+	tbcYaml = strings.ReplaceAll(tbcYaml, "{AWS_ARN}", svm.SecretARNName)
+	if protocolType == sa.NFS {
+		tbcYaml = strings.ReplaceAll(tbcYaml, "{DRIVER_TYPE}", config.OntapNASStorageDriverName)
+		tbcYaml = strings.ReplaceAll(tbcYaml, "{NAS_TYPE}", strings.Join([]string{"nasType:", protocolType}, " "))
+	} else if protocolType == sa.ISCSI {
+		tbcYaml = strings.ReplaceAll(tbcYaml, "{DRIVER_TYPE}", config.OntapSANStorageDriverName)
+		tbcYaml = strings.ReplaceAll(tbcYaml, "{NAS_TYPE}", "")
+	}
+	return tbcYaml
+}
+
+// FsxnTBCYaml is a template for the FsxN san driver Trident backend config YAML
+const FsxnTBCYaml = `---
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+ name: {TBC_NAME}
+ namespace: {NAMESPACE}
+spec:
+ version: 1
+ storageDriverName: {DRIVER_TYPE}
+ {NAS_TYPE}
+ managementLIF: {MANAGEMENT_LIF}
+ aws:
+   fsxFileSystemID: {FILE_SYSTEM_ID}
+ svm: {SVM_NAME}
+ credentials:
+   name: {AWS_ARN}
+   type: awsarn
+`
+
+// getFsxnStorageClassYaml returns the Fsxn storage class YAML
+func getFsxnStorageClassYaml(name, backendType string) string {
+	scYaml := fsxnStorageClassTemplate
+	scYaml = strings.ReplaceAll(scYaml, "{NAME}", name)
+	scYaml = strings.ReplaceAll(scYaml, "{BACKEND_TYPE}", backendType)
+	return scYaml
+}
+
+// fsxnStorageClassTemplate is a template for the Fsxn storage class YAML
+const fsxnStorageClassTemplate = `---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+ name: {NAME}
+provisioner: csi.trident.netapp.io
+parameters:
+ backendType: {BACKEND_TYPE}
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
 `

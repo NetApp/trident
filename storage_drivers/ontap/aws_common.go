@@ -18,7 +18,8 @@ import (
 
 // SetSvmCredentials Pull SVM credentials out of AWS secret store and enter them into the config.
 func SetSvmCredentials(ctx context.Context, secretARN string, api awsapi.AWSAPI, config *drivers.OntapStorageDriverConfig) (err error) {
-	secretMap, secretErr := api.GetSecret(ctx, secretARN)
+	secret, secretErr := api.GetSecret(ctx, secretARN)
+	secretMap := secret.SecretMap
 	if secretErr != nil {
 		return fmt.Errorf("could not retrieve credentials from AWS Secrets Manager; %w", secretErr)
 	}
