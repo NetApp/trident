@@ -1912,6 +1912,10 @@ func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 
 	// If the volume is already the requested size, there's nothing to do
 	if int64(sizeWithReserveBytes) == volume.SizeBytes {
+		volConfigSize := strconv.FormatUint(sizeBytes, 10)
+		if volConfigSize != volConfig.Size {
+			volConfig.Size = volConfigSize
+		}
 		return nil
 	}
 
