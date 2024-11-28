@@ -1,4 +1,4 @@
-{{- if .Values.anfConfigurator.enabled }}
+{{- if or .Values.anfConfigurator.enabled .Values.ontapConfigurator.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -23,6 +23,18 @@ metadata:
     "helm.sh/hook-delete-policy": hook-succeeded, hook-failed
 spec:
   restartPolicy: Never
+  {{- if .Values.affinity }}
+  affinity:
+{{ toYaml .Values.affinity | nindent 4 }}
+  {{- end }}
+  {{- if .Values.nodeSelector }}
+  nodeSelector:
+{{ toYaml .Values.nodeSelector | nindent 4 }}
+  {{- end }}
+  {{- if .Values.tolerations }}
+  tolerations:
+{{ toYaml .Values.tolerations | nindent 4 }}
+  {{- end }}
   initContainers:
     - name: init-container-1
       image: {{ include "trident.image" $ }}
@@ -34,7 +46,7 @@ spec:
         - check
         - operator
         - --timeout
-        - "7200" # Keeping it 12mins as AKS extension script has an upper limit of 15mins.
+        - "7200" # Keeping it 12 mins as AKS extension script has an upper limit of 15 mins.
       env:
         - name: POD_NAMESPACE
           valueFrom:
