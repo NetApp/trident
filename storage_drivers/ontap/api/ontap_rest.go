@@ -2361,11 +2361,11 @@ func (c RestClient) LunCloneCreate(
 
 	params.SetInfo(lunInfo)
 
-	lunCreateCreated, _, err := c.api.San.LunCreate(params, c.authInfo)
+	lunCreateCreated, lunCreateAccepted, err := c.api.San.LunCreate(params, c.authInfo)
 	if err != nil {
 		return err
 	}
-	if lunCreateCreated == nil {
+	if lunCreateCreated == nil && lunCreateAccepted == nil {
 		return fmt.Errorf("unexpected response from LUN create")
 	}
 
@@ -2376,7 +2376,7 @@ func (c RestClient) LunCloneCreate(
 // LunCreate creates a LUN
 func (c RestClient) LunCreate(
 	ctx context.Context, lunPath string, sizeInBytes int64, osType string, qosPolicyGroup QosPolicyGroup,
-	spaceReserved, spaceAllocated bool,
+	spaceReserved, spaceAllocated *bool,
 ) error {
 	if strings.Contains(lunPath, failureLUNCreate) {
 		return errors.New("injected error")
@@ -2392,24 +2392,39 @@ func (c RestClient) LunCreate(
 		OsType: utils.Ptr(osType),
 		Space: &models.LunInlineSpace{
 			Size: utils.Ptr(sizeInBytes),
-			Guarantee: &models.LunInlineSpaceInlineGuarantee{
-				Requested: utils.Ptr(spaceReserved),
-			},
-			ScsiThinProvisioningSupportEnabled: utils.Ptr(spaceAllocated),
-		},
-		QosPolicy: &models.LunInlineQosPolicy{
-			Name: utils.Ptr(qosPolicyGroup.Name),
 		},
 	}
+
+	// Set spaceReserved if present.
+	if spaceReserved != nil {
+		lunInfo.Space.Guarantee = &models.LunInlineSpaceInlineGuarantee{
+			Requested: spaceReserved,
+		}
+	}
+
+	// Set spaceAllocated if present.
+	if spaceAllocated != nil {
+		lunInfo.Space.ScsiThinProvisioningSupportEnabled = spaceAllocated
+	}
+
+	// Set QosPolicy name if present.
+	if qosPolicyGroup.Name != "" {
+		lunInfo.QosPolicy = &models.LunInlineQosPolicy{
+			Name: utils.Ptr(qosPolicyGroup.Name),
+		}
+	}
+
 	lunInfo.Svm = &models.LunInlineSvm{UUID: utils.Ptr(c.svmUUID)}
 
 	params.SetInfo(lunInfo)
 
-	lunCreateCreated, _, err := c.api.San.LunCreate(params, c.authInfo)
+	lunCreateCreated, lunCreateAccepted, err := c.api.San.LunCreate(params, c.authInfo)
 	if err != nil {
 		return err
 	}
-	if lunCreateCreated == nil {
+
+	// If both response parameter is nil, then it is unexpected.
+	if lunCreateCreated == nil && lunCreateAccepted == nil {
 		return fmt.Errorf("unexpected response from LUN create")
 	}
 
@@ -2505,11 +2520,13 @@ func (c RestClient) LunDelete(
 	params.HTTPClient = c.httpClient
 	params.UUID = lunUUID
 
-	lunDeleteResult, _, err := c.api.San.LunDelete(params, c.authInfo)
+	lunDeleteResult, lunDeleteAccepted, err := c.api.San.LunDelete(params, c.authInfo)
 	if err != nil {
 		return fmt.Errorf("could not delete lun; %v", err)
 	}
-	if lunDeleteResult == nil {
+
+	// If both of the response parameters are nil, then it is unexpected.
+	if lunDeleteResult == nil && lunDeleteAccepted == nil {
 		return fmt.Errorf("could not delete lun: %v", "unexpected result")
 	}
 
@@ -2566,11 +2583,13 @@ func (c RestClient) LunSetComment(
 
 	params.SetInfo(lunInfo)
 
-	lunModifyOK, _, err := c.api.San.LunModify(params, c.authInfo)
+	lunModifyOK, lunModifyAccepted, err := c.api.San.LunModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
-	if lunModifyOK == nil {
+
+	// If both of the response parameters are nil, then it is unexpected.
+	if lunModifyOK == nil && lunModifyAccepted == nil {
 		return fmt.Errorf("unexpected response from LUN modify")
 	}
 
@@ -2645,11 +2664,13 @@ func (c RestClient) LunSetAttribute(
 		}
 		params.Info = attrInfo
 
-		lunAttrCreateOK, _, err := c.api.San.LunAttributeCreate(params, c.authInfo)
+		lunAttrCreateOK, lunAttrCreateAccepted, err := c.api.San.LunAttributeCreate(params, c.authInfo)
 		if err != nil {
 			return err
 		}
-		if lunAttrCreateOK == nil {
+
+		// If both the response parameters are nil, then it is unexpected.
+		if lunAttrCreateOK == nil && lunAttrCreateAccepted == nil {
 			return fmt.Errorf("unexpected response from LUN attribute create")
 		}
 		return nil
@@ -2712,11 +2733,13 @@ func (c RestClient) LunSetQosPolicyGroup(
 
 	params.SetInfo(lunInfo)
 
-	lunModifyOK, _, err := c.api.San.LunModify(params, c.authInfo)
+	lunModifyOK, lunModifyAccepted, err := c.api.San.LunModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
-	if lunModifyOK == nil {
+
+	// If both the response parameters are nil, then it is unexpected.
+	if lunModifyOK == nil && lunModifyAccepted == nil {
 		return fmt.Errorf("unexpected response from LUN modify")
 	}
 
@@ -2753,11 +2776,13 @@ func (c RestClient) LunRename(
 
 	params.SetInfo(lunInfo)
 
-	lunModifyOK, _, err := c.api.San.LunModify(params, c.authInfo)
+	lunModifyOK, lunModifyAccepted, err := c.api.San.LunModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
-	if lunModifyOK == nil {
+
+	// If both the response parameters are nil, then it is unexpected.
+	if lunModifyOK == nil && lunModifyAccepted == nil {
 		return fmt.Errorf("unexpected response from LUN modify")
 	}
 
@@ -3031,11 +3056,13 @@ func (c RestClient) LunSetSize(
 
 	params.SetInfo(lunInfo)
 
-	lunModifyOK, _, err := c.api.San.LunModify(params, c.authInfo)
+	lunModifyOK, lunModifyAccepted, err := c.api.San.LunModify(params, c.authInfo)
 	if err != nil {
 		return 0, err
 	}
-	if lunModifyOK == nil {
+
+	// If both the response parameters are nil, then it is unexpected.
+	if lunModifyOK == nil && lunModifyAccepted == nil {
 		return 0, fmt.Errorf("unexpected response from LUN modify")
 	}
 

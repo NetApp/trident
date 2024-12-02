@@ -128,7 +128,7 @@ type RestClientInterface interface {
 	// LunCloneCreate creates a LUN clone
 	LunCloneCreate(ctx context.Context, lunPath, sourcePath string, sizeInBytes int64, osType string, qosPolicyGroup QosPolicyGroup) error
 	// LunCreate creates a LUN
-	LunCreate(ctx context.Context, lunPath string, sizeInBytes int64, osType string, qosPolicyGroup QosPolicyGroup, spaceReserved, spaceAllocated bool) error
+	LunCreate(ctx context.Context, lunPath string, sizeInBytes int64, osType string, qosPolicyGroup QosPolicyGroup, spaceReserved, spaceAllocated *bool) error
 	// LunGet gets the LUN with the specified uuid
 	LunGet(ctx context.Context, uuid string) (*san.LunGetOK, error)
 	// LunGetByName gets the LUN with the specified name

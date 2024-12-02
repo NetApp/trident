@@ -2084,8 +2084,8 @@ func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
 		return err
 	}
 
-	creationErr := d.api.LunCreate(ctx, lun.Name, sizeBytes, lun.OsType, lun.Qos, *lun.SpaceReserved,
-		*lun.SpaceAllocated)
+	creationErr := d.api.LunCreate(ctx, lun.Name, sizeBytes, lun.OsType, lun.Qos, lun.SpaceReserved,
+		lun.SpaceAllocated)
 	if creationErr != nil {
 		return fmt.Errorf("error creating LUN %v: %v", lun.Name, creationErr)
 	}

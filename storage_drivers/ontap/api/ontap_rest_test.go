@@ -1253,7 +1253,7 @@ func TestOntapREST_LunCreate(t *testing.T) {
 			assert.NotNil(t, rs)
 
 			err := rs.LunCreate(ctx, test.lunPath, int64(2147483648), "linux",
-				QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, false, false)
+				QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, utils.Ptr(false), utils.Ptr(false))
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not create LUN")
 			} else {

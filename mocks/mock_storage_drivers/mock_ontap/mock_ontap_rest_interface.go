@@ -795,7 +795,7 @@ func (mr *MockRestClientInterfaceMockRecorder) LunCloneCreate(arg0, arg1, arg2, 
 }
 
 // LunCreate mocks base method.
-func (m *MockRestClientInterface) LunCreate(arg0 context.Context, arg1 string, arg2 int64, arg3 string, arg4 api.QosPolicyGroup, arg5, arg6 bool) error {
+func (m *MockRestClientInterface) LunCreate(arg0 context.Context, arg1 string, arg2 int64, arg3 string, arg4 api.QosPolicyGroup, arg5, arg6 *bool) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LunCreate", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 	ret0, _ := ret[0].(error)

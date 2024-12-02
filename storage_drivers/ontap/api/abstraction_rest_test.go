@@ -3509,14 +3509,14 @@ func TestLunCreate(t *testing.T) {
 	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 
 	// case 1: Create LUN
-	rsi.EXPECT().LunCreate(ctx, lun.Name, int64(2147483648), lun.OsType, lun.Qos, *lun.SpaceReserved,
-		*lun.SpaceAllocated).Return(nil)
+	rsi.EXPECT().LunCreate(ctx, lun.Name, int64(2147483648), lun.OsType, lun.Qos, lun.SpaceReserved,
+		lun.SpaceAllocated).Return(nil)
 	err := oapi.LunCreate(ctx, lun)
 	assert.NoError(t, err, "error returned while creating a LUN info")
 
 	// case 2: Create LUN returned error
-	rsi.EXPECT().LunCreate(ctx, lun.Name, int64(2147483648), lun.OsType, lun.Qos, *lun.SpaceReserved,
-		*lun.SpaceAllocated).
+	rsi.EXPECT().LunCreate(ctx, lun.Name, int64(2147483648), lun.OsType, lun.Qos, lun.SpaceReserved,
+		lun.SpaceAllocated).
 		Return(fmt.Errorf("Failed to create LUN"))
 	err = oapi.LunCreate(ctx, lun)
 	assert.Error(t, err, "no error returned while creating a LUN info")
