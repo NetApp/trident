@@ -2984,6 +2984,37 @@ func (c Client) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([
 	return dataLIFs, nil
 }
 
+func (c Client) NetFcpInterfaceGet() (*azgo.FcpInterfaceGetIterResponse, error) {
+	response, err := azgo.NewFcpInterfaceGetIterRequest().
+		SetMaxRecords(DefaultZapiRecords).
+		SetQuery(azgo.FcpInterfaceGetIterRequestQuery{
+			FcpInterfaceInfoPtr: &azgo.FcpInterfaceInfoType{},
+		}).ExecuteUsing(c.zr)
+
+	return response, err
+}
+
+func (c Client) NetFcpInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
+	lifResponse, err := c.NetFcpInterfaceGet()
+	if err = azgo.GetError(ctx, lifResponse, err); err != nil {
+		return nil, fmt.Errorf("error checking network interfaces: %v", err)
+	}
+
+	dataLIFs := make([]string, 0)
+	if lifResponse.Result.AttributesListPtr != nil {
+		for _, attrs := range lifResponse.Result.AttributesListPtr.FcpInterfaceInfoPtr {
+			dataLIFs = append(dataLIFs, attrs.PortName())
+		}
+	}
+
+	if len(dataLIFs) < 1 {
+		return []string{}, fmt.Errorf("no data LIFs meet the provided criteria (protocol: %s)", protocol)
+	}
+
+	Logc(ctx).WithField("dataLIFs", dataLIFs).Debug("Data LIFs")
+	return dataLIFs, nil
+}
+
 // SystemGetVersion returns the system version
 // equivalent to filer::> version
 func (c Client) SystemGetVersion() (*azgo.SystemGetVersionResponse, error) {

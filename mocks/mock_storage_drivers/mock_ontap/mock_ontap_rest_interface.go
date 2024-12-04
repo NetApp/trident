@@ -1306,6 +1306,21 @@ func (mr *MockRestClientInterfaceMockRecorder) NVMeSubsystemRemoveNamespace(arg0
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeSubsystemRemoveNamespace", reflect.TypeOf((*MockRestClientInterface)(nil).NVMeSubsystemRemoveNamespace), arg0, arg1, arg2)
 }
 
+// NetFcpInterfaceGetDataLIFs mocks base method.
+func (m *MockRestClientInterface) NetFcpInterfaceGetDataLIFs(arg0 context.Context, arg1 string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NetFcpInterfaceGetDataLIFs", arg0, arg1)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NetFcpInterfaceGetDataLIFs indicates an expected call of NetFcpInterfaceGetDataLIFs.
+func (mr *MockRestClientInterfaceMockRecorder) NetFcpInterfaceGetDataLIFs(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetFcpInterfaceGetDataLIFs", reflect.TypeOf((*MockRestClientInterface)(nil).NetFcpInterfaceGetDataLIFs), arg0, arg1)
+}
+
 // NetInterfaceGetDataLIFs mocks base method.
 func (m *MockRestClientInterface) NetInterfaceGetDataLIFs(arg0 context.Context, arg1 string) ([]string, error) {
 	m.ctrl.T.Helper()

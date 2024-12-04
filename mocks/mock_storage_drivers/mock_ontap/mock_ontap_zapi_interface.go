@@ -1179,6 +1179,21 @@ func (mr *MockZapiClientInterfaceMockRecorder) LunUnmap(arg0, arg1 any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunUnmap", reflect.TypeOf((*MockZapiClientInterface)(nil).LunUnmap), arg0, arg1)
 }
 
+// NetFcpInterfaceGetDataLIFs mocks base method.
+func (m *MockZapiClientInterface) NetFcpInterfaceGetDataLIFs(arg0 context.Context, arg1 string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NetFcpInterfaceGetDataLIFs", arg0, arg1)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NetFcpInterfaceGetDataLIFs indicates an expected call of NetFcpInterfaceGetDataLIFs.
+func (mr *MockZapiClientInterfaceMockRecorder) NetFcpInterfaceGetDataLIFs(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetFcpInterfaceGetDataLIFs", reflect.TypeOf((*MockZapiClientInterface)(nil).NetFcpInterfaceGetDataLIFs), arg0, arg1)
+}
+
 // NetInterfaceGet mocks base method.
 func (m *MockZapiClientInterface) NetInterfaceGet() (*azgo.NetInterfaceGetIterResponse, error) {
 	m.ctrl.T.Helper()

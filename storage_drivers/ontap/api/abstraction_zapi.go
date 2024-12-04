@@ -1091,6 +1091,10 @@ func (d OntapAPIZAPI) NetInterfaceGetDataLIFs(ctx context.Context, protocol stri
 	return d.api.NetInterfaceGetDataLIFs(ctx, protocol)
 }
 
+func (d OntapAPIZAPI) NetFcpInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
+	return d.api.NetFcpInterfaceGetDataLIFs(ctx, protocol)
+}
+
 func (d OntapAPIZAPI) GetSVMAggregateNames(_ context.Context) ([]string, error) {
 	return d.api.SVMGetAggregateNames()
 }

@@ -3159,6 +3159,40 @@ func (c RestClient) NetInterfaceGetDataLIFs(ctx context.Context, protocol string
 	return dataLIFs, nil
 }
 
+func (c RestClient) NetFcpInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
+	if protocol == "" {
+		return nil, fmt.Errorf("missing protocol specification")
+	}
+
+	params := networking.NewFcInterfaceCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.SvmUUID = utils.Ptr(c.svmUUID)
+	fields := []string{"wwpn", "state"}
+	params.SetFields(fields)
+
+	lifResponse, err := c.api.Networking.FcInterfaceCollectionGet(params, c.authInfo)
+	if err != nil {
+		return nil, fmt.Errorf("error checking network interfaces; %v", err)
+	}
+	if lifResponse == nil {
+		return nil, fmt.Errorf("unexpected error checking network interfaces")
+	}
+
+	dataLIFs := make([]string, 0)
+	for _, record := range lifResponse.Payload.FcInterfaceResponseInlineRecords {
+		if record.Wwpn != nil && record.State != nil && *record.State == models.IPInterfaceStateUp {
+			if record.Wwpn != nil {
+				dataLIFs = append(dataLIFs, *record.Wwpn)
+			}
+		}
+	}
+
+	Logc(ctx).WithField("dataLIFs", dataLIFs).Debug("Data LIFs")
+	return dataLIFs, nil
+}
+
 // ////////////////////////////////////////////////////////////////////////////
 // JOB operations
 // ////////////////////////////////////////////////////////////////////////////

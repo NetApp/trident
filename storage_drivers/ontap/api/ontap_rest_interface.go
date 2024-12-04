@@ -172,6 +172,7 @@ type RestClientInterface interface {
 	// NetworkIPInterfacesList lists all IP interfaces
 	NetworkIPInterfacesList(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error)
 	NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error)
+	NetFcpInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error)
 	// JobGet returns the job by ID
 	JobGet(ctx context.Context, jobUUID string, fields []string) (*cluster.JobGetOK, error)
 	// IsJobFinished lookus up the supplied JobLinkResponse's UUID to see if it's reached a terminal state

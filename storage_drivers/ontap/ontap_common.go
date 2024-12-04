@@ -485,17 +485,23 @@ func getSVMState(
 		}
 	}
 
-	// Check dataLIF for iSCSI and NVMe protocols
-	if protocol != sa.FCP {
-		upDataLIFs, err := client.NetInterfaceGetDataLIFs(ctx, protocol)
-		if err != nil || len(upDataLIFs) == 0 {
-			if err != nil {
-				// Log error and keep going.
-				Logc(ctx).WithField("error", err).Warn("Error getting list of data LIFs from backend.")
-			}
-			// No data LIFs with state 'up' found.
-			return StateReasonDataLIFsDown, changeMap
+	upDataLIFs := make([]string, 0)
+	if protocol == sa.FCP {
+		// Check dataLIF for FC protocol
+		upDataLIFs, err = client.NetFcpInterfaceGetDataLIFs(ctx, protocol)
+	} else {
+		// Check dataLIF for iSCSI and NVMe protocols
+		upDataLIFs, err = client.NetInterfaceGetDataLIFs(ctx, protocol)
+	}
+
+	if err != nil || len(upDataLIFs) == 0 {
+		if err != nil {
+			// Log error and keep going.
+			fields := LogFields{"error": err, "protocol": protocol}
+			Logc(ctx).WithFields(fields).Warn("Error getting list of data LIFs from backend.")
 		}
+		// No data LIFs with state 'up' found.
+		return StateReasonDataLIFsDown, changeMap
 	}
 
 	// Get ONTAP version

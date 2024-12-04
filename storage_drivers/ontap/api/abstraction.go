@@ -144,6 +144,7 @@ type OntapAPI interface {
 
 	GetSLMDataLifs(ctx context.Context, ips, reportingNodeNames []string) ([]string, error)
 	NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error)
+	NetFcpInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error)
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)
 
 	SnapshotRestoreVolume(ctx context.Context, snapshotName, sourceVolume string) error

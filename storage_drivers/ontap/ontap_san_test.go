@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -3593,7 +3592,6 @@ func TestOntapSANStorageDriverInitialize_WithNameTemplate(t *testing.T) {
 
 		driver.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
 		driver.telemetry.TridentBackendUUID = BackendUUID
-		hostname, _ := os.Hostname()
 		message, _ := json.Marshal(driver.GetTelemetry())
 
 		mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
@@ -3604,7 +3602,7 @@ func TestOntapSANStorageDriverInitialize_WithNameTemplate(t *testing.T) {
 		mockAPI.EXPECT().IgroupCreate(ctx, gomock.Any(), "iscsi", "linux").Return(nil)
 		mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(iscsiInitiatorAuth, nil)
 		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"1.1.1.1"}, nil)
-		mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", hostname,
+		mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", "hostname",
 			string(message), 1, "trident", 5).AnyTimes()
 		mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
 
@@ -3673,7 +3671,6 @@ func TestOntapSANStorageDriverInitialize_NameTemplateDefineInStoragePool(t *test
 
 		driver.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
 		driver.telemetry.TridentBackendUUID = BackendUUID
-		hostname, _ := os.Hostname()
 		message, _ := json.Marshal(driver.GetTelemetry())
 
 		mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
@@ -3684,7 +3681,7 @@ func TestOntapSANStorageDriverInitialize_NameTemplateDefineInStoragePool(t *test
 		mockAPI.EXPECT().IgroupCreate(ctx, gomock.Any(), "iscsi", "linux").Return(nil)
 		mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(iscsiInitiatorAuth, nil)
 		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"1.1.1.1"}, nil)
-		mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", hostname,
+		mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", "hostname",
 			string(message), 1, "trident", 5).AnyTimes()
 		mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
 
@@ -3760,7 +3757,6 @@ func TestOntapSANStorageDriverInitialize_NameTemplateDefineInBothPool(t *testing
 
 		driver.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
 		driver.telemetry.TridentBackendUUID = BackendUUID
-		hostname, _ := os.Hostname()
 		message, _ := json.Marshal(driver.GetTelemetry())
 
 		mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
@@ -3771,7 +3767,7 @@ func TestOntapSANStorageDriverInitialize_NameTemplateDefineInBothPool(t *testing
 		mockAPI.EXPECT().IgroupCreate(ctx, gomock.Any(), "iscsi", "linux").Return(nil)
 		mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(iscsiInitiatorAuth, nil)
 		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"1.1.1.1"}, nil)
-		mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", hostname,
+		mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", "hostname",
 			string(message), 1, "trident", 5).AnyTimes()
 		mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
 
@@ -3887,7 +3883,6 @@ func TestOntapSanStorageDriverInitialize(t *testing.T) {
 
 	driver.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
 	driver.telemetry.TridentBackendUUID = BackendUUID
-	hostname, _ := os.Hostname()
 	message, _ := json.Marshal(driver.GetTelemetry())
 
 	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
@@ -3898,7 +3893,56 @@ func TestOntapSanStorageDriverInitialize(t *testing.T) {
 	mockAPI.EXPECT().IgroupCreate(ctx, gomock.Any(), "iscsi", "linux").Return(nil)
 	mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(iscsiInitiatorAuth, nil)
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"1.1.1.1"}, nil)
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", hostname,
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", "hostname",
+		string(message), 1, "trident", 5).AnyTimes()
+	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
+
+	result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
+
+	assert.NoError(t, result, "Ontap SAN storage driver initialization failed")
+}
+
+func TestOntapSanStorageDriverInitialize_WithFC(t *testing.T) {
+	ctx := context.Background()
+
+	mockAPI, driver := newMockOntapSANDriver(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	commonConfig := getCommonConfig()
+
+	configJSON := `
+	{
+		"version":           1,
+		"storageDriverName": "ontap-san",
+		"managementLIF":     "127.0.0.1:0",
+		"svm":               "SVM1",
+		"aggregate":         "data",
+		"username":          "dummyuser",
+		"sanType":           "fcp",
+		"password":          "dummypassword"
+	}`
+	secrets := map[string]string{
+		"clientcertificate": "dummy-certificate",
+	}
+	driver.telemetry = &Telemetry{
+		Plugin: driver.Name(),
+		SVM:    "SVM1",
+		Driver: driver,
+		done:   make(chan struct{}),
+	}
+
+	driver.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
+	driver.telemetry.TridentBackendUUID = BackendUUID
+	message, _ := json.Marshal(driver.GetTelemetry())
+
+	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
+	)
+	mockAPI.EXPECT().IgroupCreate(ctx, gomock.Any(), "fcp", "linux").Return(nil)
+	mockAPI.EXPECT().NetFcpInterfaceGetDataLIFs(ctx, "fcp").Return([]string{"10:20:30:40:50:60:70:80"}, nil)
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", "hostname",
 		string(message), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
 
@@ -3964,7 +4008,6 @@ func TestOntapSanStorageDriverInitialize_NetInterfaceGetDataLIFsFail(t *testing.
 
 	driver.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
 	driver.telemetry.TridentBackendUUID = BackendUUID
-	hostname, _ := os.Hostname()
 	message, _ := json.Marshal(driver.GetTelemetry())
 
 	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
@@ -3974,7 +4017,54 @@ func TestOntapSanStorageDriverInitialize_NetInterfaceGetDataLIFsFail(t *testing.
 	)
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").
 		Return(nil, fmt.Errorf("error in getting datalifs"))
-	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", hostname,
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", "hostname",
+		string(message), 1, "trident", 5).AnyTimes()
+
+	result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
+
+	assert.Error(t, result, "Ontap SAN driver initialized")
+}
+
+func TestOntapSanStorageDriverInitialize_FcpInterfaceGetFail(t *testing.T) {
+	ctx := context.Background()
+
+	mockAPI, driver := newMockOntapSANDriver(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	commonConfig := getCommonConfig()
+
+	configJSON := `
+	{
+		"version":           1,
+		"storageDriverName": "ontap-san",
+		"managementLIF":     "127.0.0.1:0",
+		"svm":               "SVM1",
+		"aggregate":         "data",
+		"username":          "dummyuser",
+		"sanType":           "fcp",
+		"password":          "dummypassword"
+	}`
+	secrets := map[string]string{
+		"clientcertificate": "dummy-certificate",
+	}
+	driver.telemetry = &Telemetry{
+		Plugin: driver.Name(),
+		SVM:    "SVM1",
+		Driver: driver,
+		done:   make(chan struct{}),
+	}
+
+	driver.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
+	driver.telemetry.TridentBackendUUID = BackendUUID
+	message, _ := json.Marshal(driver.GetTelemetry())
+
+	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
+	)
+	mockAPI.EXPECT().NetFcpInterfaceGetDataLIFs(ctx, "fcp").Return(nil, fmt.Errorf("error in getting datalifs"))
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", "hostname",
 		string(message), 1, "trident", 5).AnyTimes()
 
 	result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)

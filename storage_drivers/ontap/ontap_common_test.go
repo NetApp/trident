@@ -6133,7 +6133,6 @@ func TestGetSVMState(t *testing.T) {
 	dataLIFs := []string{"1.2.3.4"}
 	derivedPools := []string{"aggr1"}
 	existingPools := []string{"aggr1"}
-	protocol := sa.ISCSI
 
 	// Format for every test:
 	// Calls needed.
@@ -6144,7 +6143,7 @@ func TestGetSVMState(t *testing.T) {
 	// a: API.GetSVMState returns error
 	mockAPI.EXPECT().GetSVMState(ctx).Return("TestStateInvalid", fmt.Errorf("GetSVMState returned error"))
 
-	state, code := getSVMState(ctx, mockAPI, protocol, derivedPoolsNil, aggrsNil...)
+	state, code := getSVMState(ctx, mockAPI, sa.ISCSI, derivedPoolsNil, aggrsNil...)
 	assert.Equal(t, StateReasonSVMUnreachable, state, "state returned should be TestStateUnknown")
 	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should not be pool change")
 	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
@@ -6153,7 +6152,7 @@ func TestGetSVMState(t *testing.T) {
 	// a: SVM is stopped
 	mockAPI.EXPECT().GetSVMState(ctx).Return(models.SvmStateStopped, nil).Times(1)
 
-	state, code = getSVMState(ctx, mockAPI, protocol, derivedPoolsNil, aggrsNil...)
+	state, code = getSVMState(ctx, mockAPI, sa.ISCSI, derivedPoolsNil, aggrsNil...)
 	assert.Equal(t, StateReasonSVMStopped, state, "state should be SVM stopped")
 	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should not be pool change")
 	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
@@ -6167,7 +6166,7 @@ func TestGetSVMState(t *testing.T) {
 	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
 
-	state, code = getSVMState(ctx, mockAPI, protocol, derivedPoolsNil, aggrsNil...)
+	state, code = getSVMState(ctx, mockAPI, sa.ISCSI, derivedPoolsNil, aggrsNil...)
 	assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
 	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should not be pool change")
 	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
@@ -6175,7 +6174,7 @@ func TestGetSVMState(t *testing.T) {
 	// b: client.GetSVMAggregateNames returns empty list
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(nil, nil).Times(1)
 
-	state, code = getSVMState(ctx, mockAPI, protocol, []string{"aggr1"}, aggrsNil...)
+	state, code = getSVMState(ctx, mockAPI, sa.ISCSI, []string{"aggr1"}, aggrsNil...)
 	assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
 	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
 	assert.True(t, code.Contains(storage.BackendStatePoolsChange), "Should be a pool change")
@@ -6184,7 +6183,7 @@ func TestGetSVMState(t *testing.T) {
 	// c: client.GetSVMAggregateNames returns non-empty list, config.Aggregate is missing
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"aggr1", "aggr2"}, nil).Times(1)
 
-	state, code = getSVMState(ctx, mockAPI, protocol, []string{"aggr1"}, []string{"aggr3"}...)
+	state, code = getSVMState(ctx, mockAPI, sa.ISCSI, []string{"aggr1"}, []string{"aggr3"}...)
 	assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
 	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
 	assert.True(t, code.Contains(storage.BackendStatePoolsChange), "Should be a pool change")
@@ -6196,7 +6195,7 @@ func TestGetSVMState(t *testing.T) {
 	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
 
-	state, code = getSVMState(ctx, mockAPI, protocol, []string{"aggr1"}, []string{"aggr1"}...)
+	state, code = getSVMState(ctx, mockAPI, sa.ISCSI, []string{"aggr1"}, []string{"aggr1"}...)
 	assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
 	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
 	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should be no pool change")
@@ -6208,7 +6207,7 @@ func TestGetSVMState(t *testing.T) {
 	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
 
-	state, code = getSVMState(ctx, mockAPI, protocol, []string{"aggr1"}, "")
+	state, code = getSVMState(ctx, mockAPI, sa.ISCSI, []string{"aggr1"}, "")
 	assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
 	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
 	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should be no pool change")
@@ -6220,7 +6219,7 @@ func TestGetSVMState(t *testing.T) {
 	// a: error getting data LIFs
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, fmt.Errorf("API call returned error")).Times(1)
 
-	state, code = getSVMState(ctx, mockAPI, protocol, existingPools)
+	state, code = getSVMState(ctx, mockAPI, sa.ISCSI, existingPools)
 	assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
 	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
 	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should be no pool change")
@@ -6229,7 +6228,7 @@ func TestGetSVMState(t *testing.T) {
 	// b: no data LIFs in up state
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(nil, nil).Times(1)
 
-	state, code = getSVMState(ctx, mockAPI, protocol, existingPools)
+	state, code = getSVMState(ctx, mockAPI, sa.ISCSI, existingPools)
 	assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
 	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
 	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should be no pool change")
@@ -6240,7 +6239,39 @@ func TestGetSVMState(t *testing.T) {
 	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
 
-	state, code = getSVMState(ctx, mockAPI, protocol, existingPools)
+	state, code = getSVMState(ctx, mockAPI, sa.ISCSI, existingPools)
+	assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
+	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
+	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should be no pool change")
+	assert.Equal(t, "", state, "Reason should be empty")
+
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, nil).AnyTimes()
+
+	// d: error getting FC data LIFs
+	mockAPI.EXPECT().NetFcpInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs,
+		fmt.Errorf("API call returned error")).Times(1)
+
+	state, code = getSVMState(ctx, mockAPI, sa.FCP, existingPools)
+	assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
+	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
+	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should be no pool change")
+	assert.Equal(t, StateReasonDataLIFsDown, state, "Reason should be equal to StateReasonDataLIFsDown")
+
+	// e: no FC data LIFs in up state
+	mockAPI.EXPECT().NetFcpInterfaceGetDataLIFs(ctx, gomock.Any()).Return(nil, nil).Times(1)
+
+	state, code = getSVMState(ctx, mockAPI, sa.FCP, existingPools)
+	assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
+	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
+	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should be no pool change")
+	assert.Equal(t, StateReasonDataLIFsDown, state, "Reason should be equal to StateReasonDataLIFsDown")
+
+	// f: all well with FC.
+	mockAPI.EXPECT().NetFcpInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, nil).Times(1)
+	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
+	mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
+
+	state, code = getSVMState(ctx, mockAPI, sa.FCP, existingPools)
 	assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
 	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
 	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should be no pool change")
@@ -6253,7 +6284,7 @@ func TestGetSVMState(t *testing.T) {
 	mockAPI.EXPECT().APIVersion(ctx, false).Return("9.15.1", nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 
-	state, code = getSVMState(ctx, mockAPI, protocol, existingPools)
+	state, code = getSVMState(ctx, mockAPI, sa.ISCSI, existingPools)
 	assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
 	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should be no pool change")
 	assert.True(t, code.Contains(storage.BackendStateAPIVersionChange), "Should reflect change in ONTAP version")
@@ -6262,20 +6293,20 @@ func TestGetSVMState(t *testing.T) {
 	mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 
-	state, code = getSVMState(ctx, mockAPI, protocol, existingPools)
+	state, code = getSVMState(ctx, mockAPI, sa.ISCSI, existingPools)
 	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should reflect NO change in ONTAP version")
 
 	// c: current ONTAP version < cached ONTAP version
 	mockAPI.EXPECT().APIVersion(ctx, false).Return("9.13.1", nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 
-	state, code = getSVMState(ctx, mockAPI, protocol, existingPools)
+	state, code = getSVMState(ctx, mockAPI, sa.ISCSI, existingPools)
 	assert.True(t, code.Contains(storage.BackendStateAPIVersionChange), "Should reflect change in ONTAP version")
 
 	// d: error in fetching the api version
 	mockAPI.EXPECT().APIVersion(ctx, true).Return("", fmt.Errorf("API call returned error")).Times(1)
 
-	state, code = getSVMState(ctx, mockAPI, protocol, existingPools)
+	state, code = getSVMState(ctx, mockAPI, sa.ISCSI, existingPools)
 	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
 
 	// Creating a ZAPI mock client, to test the same scenario as above, just specific to ZAPI.
@@ -6288,7 +6319,7 @@ func TestGetSVMState(t *testing.T) {
 	mockZapiClient.EXPECT().SystemGetOntapiVersion(ctx, true).Return("1.241", nil)
 	mockZapiClient.EXPECT().SystemGetOntapiVersion(ctx, false).Return("1.251", nil)
 
-	state, code = getSVMState(ctx, mockONTAPZAPI, protocol, existingPools)
+	state, code = getSVMState(ctx, mockONTAPZAPI, sa.ISCSI, existingPools)
 	assert.True(t, code.Contains(storage.BackendStateAPIVersionChange), "Should reflect change in ONTAP version")
 
 	// f: current ONTAP version < cached ONTAP version
@@ -6298,7 +6329,7 @@ func TestGetSVMState(t *testing.T) {
 	mockZapiClient.EXPECT().SystemGetOntapiVersion(ctx, false).Return("1.241", nil)
 	mockZapiClient.EXPECT().SystemGetOntapiVersion(ctx, true).Return("1.251", nil)
 
-	state, code = getSVMState(ctx, mockONTAPZAPI, protocol, existingPools)
+	state, code = getSVMState(ctx, mockONTAPZAPI, sa.ISCSI, existingPools)
 	assert.True(t, code.Contains(storage.BackendStateAPIVersionChange), "Should reflect change in ONTAP version")
 
 	// g: current ONTAP version = cached ONTAP version
@@ -6308,7 +6339,7 @@ func TestGetSVMState(t *testing.T) {
 	mockZapiClient.EXPECT().SystemGetOntapiVersion(ctx, false).Return("1.251", nil)
 	mockZapiClient.EXPECT().SystemGetOntapiVersion(ctx, true).Return("1.251", nil)
 
-	state, code = getSVMState(ctx, mockONTAPZAPI, protocol, existingPools)
+	state, code = getSVMState(ctx, mockONTAPZAPI, sa.ISCSI, existingPools)
 	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should reflect NO change in ONTAP version")
 }
 

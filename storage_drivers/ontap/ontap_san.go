@@ -35,6 +35,7 @@ type SANStorageDriver struct {
 	initialized bool
 	Config      drivers.OntapStorageDriverConfig
 	ips         []string
+	wwpns       []string
 	API         api.OntapAPI
 	AWSAPI      awsapi.AWSAPI
 	telemetry   *Telemetry
@@ -74,6 +75,8 @@ func (d *SANStorageDriver) BackendName() string {
 		lif0 := "noLIFs"
 		if len(d.ips) > 0 {
 			lif0 = d.ips[0]
+		} else if len(d.wwpns) > 0 {
+			lif0 = strings.ReplaceAll(d.wwpns[0], ":", ".")
 		}
 		return CleanBackendName("ontapsan_" + lif0)
 	} else {
@@ -128,9 +131,18 @@ func (d *SANStorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	if d.Config.SANType == sa.ISCSI {
-		d.ips, err = d.API.NetInterfaceGetDataLIFs(ctx, "iscsi")
-		if err != nil {
+	if d.Config.SANType == sa.FCP {
+		if d.wwpns, err = d.API.NetFcpInterfaceGetDataLIFs(ctx, d.Config.SANType); err != nil {
+			return err
+		}
+
+		if len(d.wwpns) == 0 {
+			return fmt.Errorf("no FC data LIFs found on SVM %s", d.API.SVMName())
+		} else {
+			Logc(ctx).WithField("dataLIFs", d.wwpns).Debug("Found FC LIFs.")
+		}
+	} else {
+		if d.ips, err = d.API.NetInterfaceGetDataLIFs(ctx, d.Config.SANType); err != nil {
 			return err
 		}
 
@@ -140,8 +152,6 @@ func (d *SANStorageDriver) Initialize(
 			Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
 		}
 	}
-
-	// TODO (vhs): Check if there is a need to validate if FCP interfaces are present.
 
 	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d,
 		d.getStoragePoolAttributes(ctx), d.BackendName())
