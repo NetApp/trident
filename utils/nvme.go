@@ -13,7 +13,9 @@ import (
 	"go.uber.org/multierr"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
 )
@@ -321,8 +323,8 @@ func NVMeMountVolume(
 	var err error
 	isLUKSDevice := ParseBool(publishInfo.LUKSEncryption)
 	if isLUKSDevice {
-		luksDevice, _ := NewLUKSDevice(devicePath, name)
-		luksFormatted, err = EnsureLUKSDeviceMappedOnHost(ctx, luksDevice, name, secrets)
+		luksDevice := luks.NewLUKSDevice(devicePath, name, exec.NewCommand())
+		luksFormatted, err = luksDevice.EnsureLUKSDeviceMappedOnHost(ctx, name, secrets)
 		if err != nil {
 			return err
 		}
@@ -346,13 +348,13 @@ func NVMeMountVolume(
 		return nil
 	}
 
-	existingFstype, err := getDeviceFSType(ctx, devicePath)
+	existingFstype, err := devicesClient.GetDeviceFSType(ctx, devicePath)
 	if err != nil {
 		return err
 	}
 	if existingFstype == "" {
 		if !isLUKSDevice {
-			if unformatted, err := isDeviceUnformatted(ctx, devicePath); err != nil {
+			if unformatted, err := devicesClient.IsDeviceUnformatted(ctx, devicePath); err != nil {
 				Logc(ctx).WithField(
 					"device", devicePath,
 				).WithError(err).Error("Unable to identify if the device is not formatted.")
@@ -374,7 +376,7 @@ func NVMeMountVolume(
 		if err != nil {
 			return fmt.Errorf("error formatting Namespace %s, device %s: %v", name, devicePath, err)
 		}
-	} else if existingFstype != unknownFstype && existingFstype != publishInfo.FilesystemType {
+	} else if existingFstype != filesystem.UnknownFstype && existingFstype != publishInfo.FilesystemType {
 		Logc(ctx).WithFields(LogFields{
 			"volume":          name,
 			"existingFstype":  existingFstype,

@@ -69,51 +69,6 @@ func (mr *MockFcpReconcileUtilsMockRecorder) GetFCPHostSessionMapForTarget(arg0,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFCPHostSessionMapForTarget", reflect.TypeOf((*MockFcpReconcileUtils)(nil).GetFCPHostSessionMapForTarget), arg0, arg1)
 }
 
-// GetMultipathDeviceBySerial mocks base method.
-func (m *MockFcpReconcileUtils) GetMultipathDeviceBySerial(arg0 context.Context, arg1 string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMultipathDeviceBySerial", arg0, arg1)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetMultipathDeviceBySerial indicates an expected call of GetMultipathDeviceBySerial.
-func (mr *MockFcpReconcileUtilsMockRecorder) GetMultipathDeviceBySerial(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultipathDeviceBySerial", reflect.TypeOf((*MockFcpReconcileUtils)(nil).GetMultipathDeviceBySerial), arg0, arg1)
-}
-
-// GetMultipathDeviceDisks mocks base method.
-func (m *MockFcpReconcileUtils) GetMultipathDeviceDisks(arg0 context.Context, arg1 string) ([]string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMultipathDeviceDisks", arg0, arg1)
-	ret0, _ := ret[0].([]string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetMultipathDeviceDisks indicates an expected call of GetMultipathDeviceDisks.
-func (mr *MockFcpReconcileUtilsMockRecorder) GetMultipathDeviceDisks(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultipathDeviceDisks", reflect.TypeOf((*MockFcpReconcileUtils)(nil).GetMultipathDeviceDisks), arg0, arg1)
-}
-
-// GetMultipathDeviceUUID mocks base method.
-func (m *MockFcpReconcileUtils) GetMultipathDeviceUUID(arg0 string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMultipathDeviceUUID", arg0)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetMultipathDeviceUUID indicates an expected call of GetMultipathDeviceUUID.
-func (mr *MockFcpReconcileUtilsMockRecorder) GetMultipathDeviceUUID(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultipathDeviceUUID", reflect.TypeOf((*MockFcpReconcileUtils)(nil).GetMultipathDeviceUUID), arg0)
-}
-
 // GetSysfsBlockDirsForLUN mocks base method.
 func (m *MockFcpReconcileUtils) GetSysfsBlockDirsForLUN(arg0 int, arg1 []map[string]int) []string {
 	m.ctrl.T.Helper()

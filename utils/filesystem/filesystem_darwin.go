@@ -41,11 +41,3 @@ func (f *FSClient) GetUnmountPath(ctx context.Context, trackingInfo *models.Volu
 
 	return "", errors.UnsupportedError("GetUnmountPath is not supported for darwin")
 }
-
-func (f *FSClient) GenerateAnonymousMemFile(tempFileName, content string) (int, error) {
-	ctx := context.Background()
-	Logc(ctx).Debug(">>>> filesystem_darwin.generateAnonymousMemFile")
-	defer Logc(ctx).Debug("<<<< filesystem_darwin.generateAnonymousMemFile")
-
-	return 0, errors.UnsupportedError("generateAnonymousMemFile is not supported for darwin")
-}

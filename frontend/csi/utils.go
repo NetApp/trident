@@ -16,8 +16,8 @@ import (
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
+	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -246,10 +246,11 @@ func performProtocolSpecificReconciliation(ctx context.Context, trackingInfo *mo
 // of any possibly in use passphrases. If forceUpdate is true, the Trident controller will be notified of the current
 // passphrase name, regardless of a rotation.
 func ensureLUKSVolumePassphrase(
-	ctx context.Context, restClient controllerAPI.TridentController, luksDevice models.LUKSDeviceInterface,
+	ctx context.Context, restClient controllerAPI.TridentController, luksDevice luks.Device,
 	volumeId string, secrets map[string]string, forceUpdate bool,
 ) error {
-	luksPassphraseName, luksPassphrase, previousLUKSPassphraseName, previousLUKSPassphrase := utils.GetLUKSPassphrasesFromSecretMap(secrets)
+	luksPassphraseName, luksPassphrase, previousLUKSPassphraseName,
+		previousLUKSPassphrase := luks.GetLUKSPassphrasesFromSecretMap(secrets)
 	if luksPassphrase == "" {
 		return fmt.Errorf("LUKS passphrase cannot be empty")
 	}

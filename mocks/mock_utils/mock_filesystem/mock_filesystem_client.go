@@ -84,21 +84,6 @@ func (mr *MockFilesystemMockRecorder) FormatVolume(arg0, arg1, arg2, arg3 any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FormatVolume", reflect.TypeOf((*MockFilesystem)(nil).FormatVolume), arg0, arg1, arg2, arg3)
 }
 
-// GenerateAnonymousMemFile mocks base method.
-func (m *MockFilesystem) GenerateAnonymousMemFile(arg0, arg1 string) (int, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GenerateAnonymousMemFile", arg0, arg1)
-	ret0, _ := ret[0].(int)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GenerateAnonymousMemFile indicates an expected call of GenerateAnonymousMemFile.
-func (mr *MockFilesystemMockRecorder) GenerateAnonymousMemFile(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateAnonymousMemFile", reflect.TypeOf((*MockFilesystem)(nil).GenerateAnonymousMemFile), arg0, arg1)
-}
-
 // GetDFOutput mocks base method.
 func (m *MockFilesystem) GetDFOutput(arg0 context.Context) ([]models.DFInfo, error) {
 	m.ctrl.T.Helper()

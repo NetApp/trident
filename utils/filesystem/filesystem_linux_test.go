@@ -9,7 +9,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"golang.org/x/sys/unix"
 
 	"github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	"github.com/netapp/trident/mocks/mock_utils/mock_filesystem"
@@ -26,26 +25,6 @@ func TestGetUnmountPath(t *testing.T) {
 	assert.Equal(t, result, "", "got unmount path")
 	assert.Error(t, err, "no error")
 	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
-}
-
-func TestGenerateAnonymousMemFile(t *testing.T) {
-	fsClient := &FSClient{}
-	tempFileName := "testFile"
-	content := "testContent"
-
-	fd, err := fsClient.GenerateAnonymousMemFile(tempFileName, content)
-	assert.NoError(t, err, "expected no error creating anonymous mem file")
-	assert.Greater(t, fd, 0, "expected valid file descriptor")
-
-	// Read back the content to verify
-	readContent := make([]byte, len(content))
-	_, err = unix.Read(fd, readContent)
-	assert.NoError(t, err, "expected no error reading anonymous mem file")
-	assert.Equal(t, content, string(readContent), "expected content to match")
-
-	// Close the file descriptor
-	err = unix.Close(fd)
-	assert.NoError(t, err, "expected no error closing anonymous mem file")
 }
 
 func TestExpandFilesystemOnNode(t *testing.T) {

@@ -6,7 +6,6 @@ package fcp
 
 import (
 	"context"
-	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -17,18 +16,17 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 
-	"github.com/netapp/trident/utils/mount"
-	// "github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/devices"
+	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
 	tridentexec "github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/mount"
 )
 
 const (
-	unknownFstype = "<unknown>"
-
 	DevPrefix     = "/dev/"
 	DevMapperRoot = "/dev/mapper/"
 
@@ -55,6 +53,9 @@ type FCP interface {
 	PreChecks(ctx context.Context) error
 	RescanDevices(ctx context.Context, targetWWNN string, lunID int32, minSize int64) error
 	IsAlreadyAttached(ctx context.Context, lunID int, targetWWNN string) bool
+	GetDeviceInfoForLUN(
+		ctx context.Context, lunID int, fcpNodeName string, needFSType, isDetachCall bool,
+	) (*ScsiDeviceInfo, error)
 }
 
 // DefaultSelfHealingExclusion Exclusion list contains keywords if found in any Target WWNN should not be considered for
@@ -68,14 +69,10 @@ type OS interface {
 type Devices interface {
 	WaitForDevice(ctx context.Context, device string) error
 	GetDeviceFSType(ctx context.Context, device string) (string, error)
-	NewLUKSDevice(rawDevicePath, volumeId string) (models.LUKSDeviceInterface, error)
-	EnsureLUKSDeviceMappedOnHost(
-		ctx context.Context, luksDevice models.LUKSDeviceInterface, name string,
-		secrets map[string]string,
-	) (bool, error)
+	NewLUKSDevice(rawDevicePath, volumeId string) (luks.Device, error)
+	EnsureLUKSDeviceMappedOnHost(ctx context.Context, name string, secrets map[string]string) (bool, error)
 	IsDeviceUnformatted(ctx context.Context, device string) (bool, error)
 	EnsureDeviceReadable(ctx context.Context, device string) error
-	GetFCPDiskSize(ctx context.Context, devicePath string) (int64, error)
 }
 
 type FileSystem interface {
@@ -93,13 +90,13 @@ type Client struct {
 	command              tridentexec.Command
 	selfHealingExclusion []string
 	osClient             OS
-	deviceClient         Devices
+	deviceClient         devices.Devices
 	fs                   FileSystem
 	mount                Mount
 	fcpUtils             FcpReconcileUtils
 }
 
-func New(osClient OS, deviceClient Devices, fileSystemClient FileSystem) (*Client, error) {
+func New(osClient OS, fileSystemClient FileSystem) (*Client, error) {
 	chrootPathPrefix := ""
 	if os.Getenv("DOCKER_PLUGIN_MODE") != "" {
 		chrootPathPrefix = "/host"
@@ -113,12 +110,12 @@ func New(osClient OS, deviceClient Devices, fileSystemClient FileSystem) (*Clien
 	}
 
 	return NewDetailed(chrootPathPrefix, tridentexec.NewCommand(), DefaultSelfHealingExclusion, osClient,
-		deviceClient, fileSystemClient, mountClient, reconcileutils), nil
+		devices.New(), fileSystemClient, mountClient, reconcileutils), nil
 }
 
 func NewDetailed(
 	chrootPathPrefix string, command tridentexec.Command, selfHealingExclusion []string,
-	osClient OS, deviceClient Devices, fs FileSystem, mount Mount,
+	osClient OS, deviceClient devices.Devices, fs FileSystem, mount Mount,
 	fcpUtils FcpReconcileUtils,
 ) *Client {
 	return &Client{
@@ -176,7 +173,7 @@ func (client *Client) RescanDevices(ctx context.Context, targetWWNN string, lunI
 	Logc(ctx).WithFields(fields).Debug(">>>> fcp.RescanDevices")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< fcp.RescanDevices")
 
-	deviceInfo, err := client.getDeviceInfoForLUN(ctx, int(lunID), targetWWNN, false, false)
+	deviceInfo, err := client.GetDeviceInfoForLUN(ctx, int(lunID), targetWWNN, false, false)
 	if err != nil {
 		return fmt.Errorf("error getting FCP device information: %s", err)
 	} else if deviceInfo == nil {
@@ -185,7 +182,7 @@ func (client *Client) RescanDevices(ctx context.Context, targetWWNN string, lunI
 
 	allLargeEnough := true
 	for _, diskDevice := range deviceInfo.Devices {
-		size, err := client.deviceClient.GetFCPDiskSize(ctx, DevPrefix+diskDevice)
+		size, err := client.deviceClient.GetDiskSize(ctx, DevPrefix+diskDevice)
 		if err != nil {
 			return err
 		}
@@ -205,7 +202,7 @@ func (client *Client) RescanDevices(ctx context.Context, targetWWNN string, lunI
 	if !allLargeEnough {
 		time.Sleep(time.Second)
 		for _, diskDevice := range deviceInfo.Devices {
-			size, err := client.deviceClient.GetFCPDiskSize(ctx, DevPrefix+diskDevice)
+			size, err := client.deviceClient.GetDiskSize(ctx, DevPrefix+diskDevice)
 			if err != nil {
 				return err
 			}
@@ -218,7 +215,7 @@ func (client *Client) RescanDevices(ctx context.Context, targetWWNN string, lunI
 
 	if deviceInfo.MultipathDevice != "" {
 		multipathDevice := deviceInfo.MultipathDevice
-		size, err := client.deviceClient.GetFCPDiskSize(ctx, DevPrefix+multipathDevice)
+		size, err := client.deviceClient.GetDiskSize(ctx, DevPrefix+multipathDevice)
 		if err != nil {
 			return err
 		}
@@ -232,7 +229,7 @@ func (client *Client) RescanDevices(ctx context.Context, targetWWNN string, lunI
 			}
 			// TODO (vhs): Introduce a backoff rather than a fixed delay.
 			time.Sleep(time.Second)
-			size, err = client.deviceClient.GetFCPDiskSize(ctx, DevPrefix+multipathDevice)
+			size, err = client.deviceClient.GetDiskSize(ctx, DevPrefix+multipathDevice)
 			if err != nil {
 				return err
 			}
@@ -255,7 +252,7 @@ func (client *Client) rescanDisk(ctx context.Context, deviceName string) error {
 	Logc(ctx).WithFields(fields).Debug(">>>> fcp.rescanDisk")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< fcp.rescanDisk")
 
-	listAllDevices(ctx)
+	client.deviceClient.ListAllDevices(ctx)
 	filename := fmt.Sprintf(client.chrootPathPrefix+"/sys/block/%s/device/rescan", deviceName)
 	Logc(ctx).WithField("filename", filename).Debug("Opening file for writing.")
 
@@ -278,7 +275,7 @@ func (client *Client) rescanDisk(ctx context.Context, deviceName string) error {
 		return fmt.Errorf("no data written to %s", filename)
 	}
 
-	listAllDevices(ctx)
+	client.deviceClient.ListAllDevices(ctx)
 	return nil
 }
 
@@ -391,7 +388,7 @@ func (client *Client) AttachVolume(
 	}
 
 	// Lookup all the SCSI device information
-	deviceInfo, err := client.getDeviceInfoForLUN(ctx, lunID, publishInfo.FCTargetWWNN, false, false)
+	deviceInfo, err := client.GetDeviceInfoForLUN(ctx, lunID, publishInfo.FCTargetWWNN, false, false)
 	if err != nil {
 		return mpathSize, fmt.Errorf("error getting FCP device information: %v", err)
 	} else if deviceInfo == nil {
@@ -430,7 +427,8 @@ func (client *Client) AttachVolume(
 		// Once the multipath device has been found, compare its size with
 		// the size of one of the devices, if it differs then mark it for
 		// resize after the staging.
-		correctMpathSize, mpathSizeCorrect, err := client.verifyMultipathDeviceSize(ctx, deviceToUse, deviceInfo.Devices[0])
+		correctMpathSize, mpathSizeCorrect, err := client.deviceClient.VerifyMultipathDeviceSize(ctx, deviceToUse,
+			deviceInfo.Devices[0])
 		if err != nil {
 			Logc(ctx).WithFields(LogFields{
 				"scsiLun":         deviceInfo.LUN,
@@ -476,8 +474,8 @@ func (client *Client) AttachVolume(
 	}
 
 	if isLUKSDevice {
-		luksDevice, _ := client.deviceClient.NewLUKSDevice(devicePath, name)
-		luksFormatted, err = client.deviceClient.EnsureLUKSDeviceMappedOnHost(ctx, luksDevice, name, secrets)
+		luksDevice := luks.NewLUKSDevice(devicePath, name, client.command)
+		luksFormatted, err = luksDevice.EnsureLUKSDeviceMappedOnHost(ctx, name, secrets)
 		if err != nil {
 			return mpathSize, err
 		}
@@ -519,7 +517,7 @@ func (client *Client) AttachVolume(
 		if err != nil {
 			return mpathSize, fmt.Errorf("error formatting LUN %s, device %s: %v", name, deviceToUse, err)
 		}
-	} else if existingFstype != unknownFstype && existingFstype != publishInfo.FilesystemType {
+	} else if existingFstype != filesystem.UnknownFstype && existingFstype != publishInfo.FilesystemType {
 		Logc(ctx).WithFields(LogFields{
 			"volume":          name,
 			"existingFstype":  existingFstype,
@@ -573,9 +571,9 @@ type ScsiDeviceInfo struct {
 	HostSessionMap  map[int]int
 }
 
-// getDeviceInfoForLUN finds FCP devices using /dev/disk/by-path values.  This method should be
+// GetDeviceInfoForLUN finds FCP devices using /dev/disk/by-path values.  This method should be
 // called after calling waitForDeviceScan so that the device paths are known to exist.
-func (client *Client) getDeviceInfoForLUN(
+func (client *Client) GetDeviceInfoForLUN(
 	ctx context.Context, lunID int, fcpNodeName string, needFSType, isDetachCall bool,
 ) (*ScsiDeviceInfo, error) {
 	fields := LogFields{
@@ -609,7 +607,7 @@ func (client *Client) getDeviceInfoForLUN(
 
 	multipathDevice := ""
 	for _, device := range devices {
-		multipathDevice = client.findMultipathDeviceForDevice(ctx, device)
+		multipathDevice = client.deviceClient.FindMultipathDeviceForDevice(ctx, device)
 		if multipathDevice != "" {
 			break
 		}
@@ -749,7 +747,7 @@ func (client *Client) waitForMultipathDeviceForDevices(ctx context.Context, devi
 	multipathDevice := ""
 
 	for _, device := range devices {
-		multipathDevice = client.findMultipathDeviceForDevice(ctx, device)
+		multipathDevice = client.deviceClient.FindMultipathDeviceForDevice(ctx, device)
 		if multipathDevice != "" {
 			break
 		}
@@ -764,25 +762,6 @@ func (client *Client) waitForMultipathDeviceForDevices(ctx context.Context, devi
 	}
 
 	return multipathDevice, nil
-}
-
-// findMultipathDeviceForDevice finds the devicemapper parent of a device name like /dev/sdx.
-func (client *Client) findMultipathDeviceForDevice(ctx context.Context, device string) string {
-	Logc(ctx).WithField("device", device).Debug(">>>> fcp.findMultipathDeviceForDevice")
-	defer Logc(ctx).WithField("device", device).Debug("<<<< fcp.findMultipathDeviceForDevice")
-
-	holdersDir := client.chrootPathPrefix + "/sys/block/" + device + "/holders"
-	if dirs, err := os.ReadDir(holdersDir); err == nil {
-		for _, f := range dirs {
-			name := f.Name()
-			if strings.HasPrefix(name, "dm-") {
-				return name
-			}
-		}
-	}
-
-	Logc(ctx).WithField("device", device).Debug("Could not find multipath device for device.")
-	return ""
 }
 
 // waitForDeviceScan scans all paths to a specific LUN and waits until all
@@ -818,7 +797,7 @@ func (client *Client) waitForDeviceScan(ctx context.Context, lunID int, fcpNodeN
 		}
 	}
 
-	if err := client.ScanTargetLUN(ctx, lunID, hosts); err != nil {
+	if err := client.deviceClient.ScanTargetLUN(ctx, lunID, hosts); err != nil {
 		Logc(ctx).WithField("scanError", err).Error("Could not scan for new LUN.")
 	}
 
@@ -879,60 +858,6 @@ func (client *Client) waitForDeviceScan(ctx context.Context, lunID int, fcpNodeN
 	return nil
 }
 
-// scanTargetLUN scans a single LUN or all the LUNs on an FCP target to discover it.
-// If all the LUNs are to be scanned please pass -1 for lunID.
-func (client *Client) scanTargetLUN(ctx context.Context, lunID int, hosts []int) error {
-	fields := LogFields{"hosts": hosts, "lunID": lunID}
-	Logc(ctx).WithFields(fields).Debug(">>>> fcp.scanTargetLUN")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< fcp.scanTargetLUN")
-
-	var (
-		f   *os.File
-		err error
-	)
-
-	// By default, scan for all the LUNs
-	scanCmd := "0 0 -"
-	if lunID >= 0 {
-		scanCmd = fmt.Sprintf("0 0 %d", lunID)
-	}
-
-	listAllDevices(ctx)
-	for _, hostNumber := range hosts {
-
-		filename := fmt.Sprintf(client.chrootPathPrefix+"/sys/class/scsi_host/host%d/scan", hostNumber)
-		if f, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0o200); err != nil {
-			Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
-			return err
-		}
-
-		// if err = duringScanTargetLunAfterFileOpen.Inject(); err != nil {
-		//	return err
-		// }
-
-		if written, err := f.WriteString(scanCmd); err != nil {
-			Logc(ctx).WithFields(LogFields{"file": filename, "error": err}).Warning("Could not write to file.")
-			f.Close()
-			return err
-		} else if written == 0 {
-			Logc(ctx).WithField("file", filename).Warning("No data written to file.")
-			f.Close()
-			return fmt.Errorf("no data written to %s", filename)
-		}
-
-		f.Close()
-
-		listAllDevices(ctx)
-		Logc(ctx).WithFields(LogFields{
-			"scanCmd":  scanCmd,
-			"scanFile": filename,
-			"host":     hostNumber,
-		}).Debug("Invoked SCSI scan for host.")
-	}
-
-	return nil
-}
-
 // handleInvalidSerials checks the LUN serial number for each path of a given LUN, and
 // if it doesn't match the expected value, runs a handler function.
 func (client *Client) handleInvalidSerials(
@@ -947,7 +872,7 @@ func (client *Client) handleInvalidSerials(
 	hostSessionMap := client.fcpUtils.GetFCPHostSessionMapForTarget(ctx, targetWWNN)
 	paths := client.fcpUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
 	for _, path := range paths {
-		serial, err := getLunSerial(ctx, path)
+		serial, err := client.deviceClient.GetLunSerial(ctx, path)
 		if err != nil {
 			if os.IsNotExist(err) {
 				// LUN either isn't scanned yet, or this kernel
@@ -988,35 +913,6 @@ func (client *Client) handleInvalidSerials(
 	return nil
 }
 
-// getLunSerial get Linux's idea of what the LUN serial number is
-func getLunSerial(ctx context.Context, path string) (string, error) {
-	Logc(ctx).WithField("path", path).Debug("Get LUN Serial")
-	// We're going to read the SCSI VPD page 80 serial number
-	// information. Linux helpfully provides this through sysfs
-	// so we don't need to open the device and send the ioctl
-	// ourselves.
-	filename := path + "/vpd_pg80"
-	b, err := os.ReadFile(filename)
-	if err != nil {
-		return "", err
-	}
-	if 4 > len(b) || 0x80 != b[1] {
-		Logc(ctx).WithFields(LogFields{
-			"data": b,
-		}).Error("VPD page 80 format check failed")
-		return "", fmt.Errorf("malformed VPD page 80 data")
-	}
-	length := int(binary.BigEndian.Uint16(b[2:4]))
-	if len(b) != length+4 {
-		Logc(ctx).WithFields(LogFields{
-			"actual":   len(b),
-			"expected": length + 4,
-		}).Error("VPD page 80 length check failed")
-		return "", fmt.Errorf("incorrect length for VPD page 80 serial number")
-	}
-	return string(b[4:]), nil
-}
-
 // verifyMultipathDeviceSerial compares the serial number of the DM device with the serial
 // of the LUN to ensure correct DM device has been discovered
 func (client *Client) verifyMultipathDeviceSerial(
@@ -1030,7 +926,7 @@ func (client *Client) verifyMultipathDeviceSerial(
 	// Multipath UUID contains LUN serial in hex format
 	lunSerialHex := hex.EncodeToString([]byte(lunSerial))
 
-	multipathDeviceUUID, err := client.fcpUtils.GetMultipathDeviceUUID(multipathDevice)
+	multipathDeviceUUID, err := client.deviceClient.GetMultipathDeviceUUID(multipathDevice)
 	if err != nil {
 		if errors.IsNotFoundError(err) {
 			// If UUID does not exist, then it is hard to verify the DM serial
@@ -1070,63 +966,6 @@ func (client *Client) verifyMultipathDeviceSerial(
 	}).Debug("Multipath device serial check passed.")
 
 	return nil
-}
-
-// verifyMultipathDeviceSize compares the size of the DM device with the size
-// of a device to ensure correct DM device has the correct size.
-func (client *Client) verifyMultipathDeviceSize(
-	ctx context.Context, multipathDevice, device string,
-) (int64, bool, error) {
-	deviceSize, err := client.deviceClient.GetFCPDiskSize(ctx, "/dev/"+device)
-	if err != nil {
-		return 0, false, err
-	}
-
-	mpathSize, err := client.deviceClient.GetFCPDiskSize(ctx, "/dev/"+multipathDevice)
-	if err != nil {
-		return 0, false, err
-	}
-
-	if deviceSize != mpathSize {
-		return deviceSize, false, nil
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"multipathDevice": multipathDevice,
-		"device":          device,
-	}).Debug("Multipath device size check passed.")
-
-	return 0, true, nil
-}
-
-// In the case of FCP trace debug, log info about session and what devices are present
-func listAllDevices(ctx context.Context) {
-	Logc(ctx).Trace(">>>> fcp.listAllDevices")
-	defer Logc(ctx).Trace("<<<< fcp.listAllDevices")
-	// Log information about all the devices
-	dmLog := make([]string, 0)
-	sdLog := make([]string, 0)
-	sysLog := make([]string, 0)
-	entries, _ := os.ReadDir(DevPrefix)
-	for _, entry := range entries {
-		if strings.HasPrefix(entry.Name(), "dm-") {
-			dmLog = append(dmLog, entry.Name())
-		}
-		if strings.HasPrefix(entry.Name(), "sd") {
-			sdLog = append(sdLog, entry.Name())
-		}
-	}
-
-	entries, _ = os.ReadDir("/sys/block/")
-	for _, entry := range entries {
-		sysLog = append(sysLog, entry.Name())
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"/dev/dm-*":    dmLog,
-		"/dev/sd*":     sdLog,
-		"/sys/block/*": sysLog,
-	}).Trace("Listing all FCP Devices.")
 }
 
 // PreChecks to check if all the required tools are present and configured correctly for the  volume

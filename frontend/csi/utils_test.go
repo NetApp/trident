@@ -12,8 +12,8 @@ import (
 
 	"github.com/netapp/trident/config"
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
+	"github.com/netapp/trident/mocks/mock_utils/mock_devices/mock_luks"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
-	"github.com/netapp/trident/mocks/mock_utils/mock_models/mock_luks"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
@@ -113,7 +113,7 @@ func TestEnsureLUKSVolumePassphrase(t *testing.T) {
 	// Positive case: Passphrase already latest
 	mockCtrl := gomock.NewController(t)
 	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice := mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice := mock_luks.NewMockDevice(mockCtrl)
 	secrets := map[string]string{
 		"luks-passphrase-name": "A",
 		"luks-passphrase":      "passphraseA",
@@ -127,7 +127,7 @@ func TestEnsureLUKSVolumePassphrase(t *testing.T) {
 	// Positive case: Passphrase already latest, force update
 	mockCtrl = gomock.NewController(t)
 	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
 	secrets = map[string]string{
 		"luks-passphrase-name": "A",
 		"luks-passphrase":      "passphraseA",
@@ -142,7 +142,7 @@ func TestEnsureLUKSVolumePassphrase(t *testing.T) {
 	// Positive case: Passphrase not correct, but previous passphrase is correct, rotation needed
 	mockCtrl = gomock.NewController(t)
 	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
 	secrets = map[string]string{
 		"luks-passphrase-name":          "B",
 		"luks-passphrase":               "passphraseB",
@@ -165,7 +165,7 @@ func TestEnsureLUKSVolumePassphrase_Error(t *testing.T) {
 	// Negative case: Checking passphrase is correct errors
 	mockCtrl := gomock.NewController(t)
 	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice := mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice := mock_luks.NewMockDevice(mockCtrl)
 	secrets := map[string]string{
 		"luks-passphrase-name":          "B",
 		"luks-passphrase":               "passphraseB",
@@ -181,7 +181,7 @@ func TestEnsureLUKSVolumePassphrase_Error(t *testing.T) {
 	// Negative case: Checking previous passphrase is correct errors
 	mockCtrl = gomock.NewController(t)
 	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
 	secrets = map[string]string{
 		"luks-passphrase-name":          "B",
 		"luks-passphrase":               "passphraseB",
@@ -198,7 +198,7 @@ func TestEnsureLUKSVolumePassphrase_Error(t *testing.T) {
 	// Negative case: Sending pre-rotation passphrases to trident controller fails
 	mockCtrl = gomock.NewController(t)
 	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
 	secrets = map[string]string{
 		"luks-passphrase-name":          "B",
 		"luks-passphrase":               "passphraseB",
@@ -216,7 +216,7 @@ func TestEnsureLUKSVolumePassphrase_Error(t *testing.T) {
 	// Negative case: Passphrase rotation fails
 	mockCtrl = gomock.NewController(t)
 	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
 	secrets = map[string]string{
 		"luks-passphrase-name":          "B",
 		"luks-passphrase":               "passphraseB",
@@ -235,7 +235,7 @@ func TestEnsureLUKSVolumePassphrase_Error(t *testing.T) {
 	// Negative case: Verifying passphrase rotation fails
 	mockCtrl = gomock.NewController(t)
 	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
 	secrets = map[string]string{
 		"luks-passphrase-name":          "B",
 		"luks-passphrase":               "passphraseB",
@@ -255,7 +255,7 @@ func TestEnsureLUKSVolumePassphrase_Error(t *testing.T) {
 	// Negative case: Sending post-rotation passphrases to trident controller fails
 	mockCtrl = gomock.NewController(t)
 	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
 	secrets = map[string]string{
 		"luks-passphrase-name":          "B",
 		"luks-passphrase":               "passphraseB",
@@ -278,7 +278,7 @@ func TestEnsureLUKSVolumePassphrase_InvalidSecret(t *testing.T) {
 	// Negative case: No passphrases
 	mockCtrl := gomock.NewController(t)
 	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice := mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice := mock_luks.NewMockDevice(mockCtrl)
 	secrets := map[string]string{}
 	err := ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
 	assert.Error(t, err)
@@ -288,7 +288,7 @@ func TestEnsureLUKSVolumePassphrase_InvalidSecret(t *testing.T) {
 	// Negative case: passphrase but no passphrase name
 	mockCtrl = gomock.NewController(t)
 	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
 	secrets = map[string]string{
 		"luks-passphrase": "passphraseA",
 	}
@@ -300,7 +300,7 @@ func TestEnsureLUKSVolumePassphrase_InvalidSecret(t *testing.T) {
 	// Negative case: passphrase but empty passphrase name
 	mockCtrl = gomock.NewController(t)
 	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
 	secrets = map[string]string{
 		"luks-passphrase-name": "A",
 		"luks-passphrase":      "",
@@ -313,7 +313,7 @@ func TestEnsureLUKSVolumePassphrase_InvalidSecret(t *testing.T) {
 	// Negative case: passphrase name but no passphrase name
 	mockCtrl = gomock.NewController(t)
 	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
 	secrets = map[string]string{
 		"luks-passphrase-name": "A",
 	}
@@ -325,7 +325,7 @@ func TestEnsureLUKSVolumePassphrase_InvalidSecret(t *testing.T) {
 	// Negative case: passphrase name but empty passphrase name
 	mockCtrl = gomock.NewController(t)
 	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
 	secrets = map[string]string{
 		"luks-passphrase-name": "A",
 		"luks-passphrase":      "",
@@ -338,7 +338,7 @@ func TestEnsureLUKSVolumePassphrase_InvalidSecret(t *testing.T) {
 	// Negative case: passphrase valid, previous luks passphrase valid but no name
 	mockCtrl = gomock.NewController(t)
 	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
 	secrets = map[string]string{
 		"luks-passphrase-name":     "A",
 		"luks-passphrase":          "passphraseA",
@@ -353,7 +353,7 @@ func TestEnsureLUKSVolumePassphrase_InvalidSecret(t *testing.T) {
 	// Negative case: passphrase valid, previous luks passphrase valid but empty name
 	mockCtrl = gomock.NewController(t)
 	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
 	secrets = map[string]string{
 		"luks-passphrase-name":          "A",
 		"luks-passphrase":               "passphraseA",
@@ -369,7 +369,7 @@ func TestEnsureLUKSVolumePassphrase_InvalidSecret(t *testing.T) {
 	// Negative case: passphrase valid, previous luks passphrase name valid but no passphrase
 	mockCtrl = gomock.NewController(t)
 	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
 	secrets = map[string]string{
 		"luks-passphrase-name":          "A",
 		"luks-passphrase":               "passphraseA",
@@ -384,7 +384,7 @@ func TestEnsureLUKSVolumePassphrase_InvalidSecret(t *testing.T) {
 	// Negative case: passphrase valid, previous luks passphrase name valid but empty passphrase
 	mockCtrl = gomock.NewController(t)
 	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
 	secrets = map[string]string{
 		"luks-passphrase-name":          "A",
 		"luks-passphrase":               "passphraseA",
@@ -402,7 +402,7 @@ func TestEnsureLUKSVolumePassphrase_NoCorrectPassphraseProvided(t *testing.T) {
 	// Negative case: Passphrase not correct and no previous specified
 	mockCtrl := gomock.NewController(t)
 	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice := mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice := mock_luks.NewMockDevice(mockCtrl)
 	secrets := map[string]string{
 		"luks-passphrase-name": "A",
 		"luks-passphrase":      "passphraseA",
@@ -416,7 +416,7 @@ func TestEnsureLUKSVolumePassphrase_NoCorrectPassphraseProvided(t *testing.T) {
 	// Negative case: Passphrase not correct and incorrect previous
 	mockCtrl = gomock.NewController(t)
 	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
 	secrets = map[string]string{
 		"luks-passphrase-name":          "B",
 		"luks-passphrase":               "passphraseB",

@@ -24,6 +24,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
@@ -664,7 +665,7 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 	// If the import is a LUKS encrypted volume, then remove the LUKS metadata overhead from the reported
 	// size on the volConfig.
 	if utils.ParseBool(volConfig.LUKSEncryption) {
-		newSize, err := subtractUintFromSizeString(volConfig.Size, utils.LUKSMetadataSize)
+		newSize, err := subtractUintFromSizeString(volConfig.Size, luks.LUKSMetadataSize)
 		if err != nil {
 			return err
 		}

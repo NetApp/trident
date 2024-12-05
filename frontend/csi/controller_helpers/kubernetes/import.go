@@ -20,6 +20,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -115,7 +116,7 @@ func (h *helper) ImportVolume(
 	// LUKS annotation should be accepted as either "LUKSEncryption" or "luksEncryption" to match storage pools.
 	if luksAnnotation := getCaseFoldedAnnotation(claim.GetObjectMeta().GetAnnotations(), AnnLUKSEncryption); luksAnnotation != "" {
 		if utils.ParseBool(luksAnnotation) {
-			dataSize -= utils.LUKSMetadataSize
+			dataSize -= luks.LUKSMetadataSize
 		}
 	}
 

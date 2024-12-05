@@ -68,6 +68,21 @@ func (mr *MockISCSIMockRecorder) AttachVolumeRetry(arg0, arg1, arg2, arg3, arg4,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachVolumeRetry", reflect.TypeOf((*MockISCSI)(nil).AttachVolumeRetry), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
+// GetDeviceInfoForLUN mocks base method.
+func (m *MockISCSI) GetDeviceInfoForLUN(arg0 context.Context, arg1 map[int]int, arg2 int, arg3 string, arg4 bool) (*models.ScsiDeviceInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDeviceInfoForLUN", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(*models.ScsiDeviceInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDeviceInfoForLUN indicates an expected call of GetDeviceInfoForLUN.
+func (mr *MockISCSIMockRecorder) GetDeviceInfoForLUN(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeviceInfoForLUN", reflect.TypeOf((*MockISCSI)(nil).GetDeviceInfoForLUN), arg0, arg1, arg2, arg3, arg4)
+}
+
 // IsAlreadyAttached mocks base method.
 func (m *MockISCSI) IsAlreadyAttached(arg0 context.Context, arg1 int, arg2 string) bool {
 	m.ctrl.T.Helper()
@@ -108,6 +123,21 @@ func (m *MockISCSI) PreChecks(arg0 context.Context) error {
 func (mr *MockISCSIMockRecorder) PreChecks(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PreChecks", reflect.TypeOf((*MockISCSI)(nil).PreChecks), arg0)
+}
+
+// PrepareDeviceForRemoval mocks base method.
+func (m *MockISCSI) PrepareDeviceForRemoval(arg0 context.Context, arg1 *models.ScsiDeviceInfo, arg2 *models.VolumePublishInfo, arg3 []models.VolumePublishInfo, arg4, arg5 bool) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PrepareDeviceForRemoval", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PrepareDeviceForRemoval indicates an expected call of PrepareDeviceForRemoval.
+func (mr *MockISCSIMockRecorder) PrepareDeviceForRemoval(arg0, arg1, arg2, arg3, arg4, arg5 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareDeviceForRemoval", reflect.TypeOf((*MockISCSI)(nil).PrepareDeviceForRemoval), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
 // RemoveLUNFromSessions mocks base method.

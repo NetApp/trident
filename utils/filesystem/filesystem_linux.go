@@ -109,22 +109,3 @@ func (f *FSClient) GetUnmountPath(ctx context.Context, trackingInfo *models.Volu
 
 	return "", errors.UnsupportedError("GetUnmountPath is not supported for linux")
 }
-
-// GenerateAnonymousMemFile uses linux syscall memfd_create to create an anonymous, temporary, in-memory file
-// with the specified name and contents
-func (f *FSClient) GenerateAnonymousMemFile(tempFileName, content string) (int, error) {
-	fd, err := unix.MemfdCreate(tempFileName, 0)
-	if err != nil {
-		return -1, fmt.Errorf("failed to create anonymous file; %v", err)
-	}
-	_, err = unix.Write(fd, []byte(content))
-	if err != nil {
-		return fd, fmt.Errorf("failed to write anonymous file; %v", err)
-	}
-	// Rewind back to the beginning
-	_, err = unix.Seek(fd, 0, 0)
-	if err != nil {
-		return fd, fmt.Errorf("failed to rewind anonymous file; %v", err)
-	}
-	return fd, nil
-}

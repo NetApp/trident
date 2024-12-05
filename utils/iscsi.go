@@ -19,6 +19,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
@@ -27,20 +28,17 @@ import (
 )
 
 const (
-	iSCSIMaxFlushWaitDuration  = 6 * time.Minute
-	luksCloseMaxWaitDuration   = 2 * time.Minute
 	SessionSourceNodeStage     = "nodeStage"
 	SessionSourceTrackingInfo  = "trackingInfo"
 	SessionSourceCurrentStatus = "currentStatus"
-
-	unknownFstype = "<unknown>"
 )
 
 var (
 	mountClient, _ = mount.New()
 	IscsiUtils     = iscsi.NewReconcileUtils(chrootPathPrefix, NewOSClient())
+	devicesClient  = devices.New()
 	iscsiClient    = iscsi.NewDetailed(chrootPathPrefix, command, iscsi.DefaultSelfHealingExclusion, NewOSClient(),
-		NewDevicesClient(), filesystem.New(mountClient), mountClient, IscsiUtils, afero.Afero{Fs: afero.NewOsFs()})
+		devicesClient, filesystem.New(mountClient), mountClient, IscsiUtils, afero.Afero{Fs: afero.NewOsFs()})
 
 	// Non-persistent map to maintain flush delays/errors if any, for device path(s).
 	iSCSIVolumeFlushExceptions = make(map[string]time.Time)
@@ -228,7 +226,7 @@ func handleInvalidSerials(
 	hostSessionMap := IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIqn)
 	paths := IscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
 	for _, path := range paths {
-		serial, err := getLunSerial(ctx, path)
+		serial, err := devicesClient.GetLunSerial(ctx, path)
 		if err != nil {
 			if os.IsNotExist(err) {
 				// LUN either isn't scanned yet, or this kernel
@@ -282,7 +280,7 @@ func verifyMultipathDeviceSerial(
 	// Multipath UUID contains LUN serial in hex format
 	lunSerialHex := hex.EncodeToString([]byte(lunSerial))
 
-	multipathDeviceUUID, err := IscsiUtils.GetMultipathDeviceUUID(multipathDevice)
+	multipathDeviceUUID, err := devicesClient.GetMultipathDeviceUUID(multipathDevice)
 	if err != nil {
 		if errors.IsNotFoundError(err) {
 			// If UUID does not exist, then it is hard to verify the DM serial
@@ -322,33 +320,6 @@ func verifyMultipathDeviceSerial(
 	}).Debug("Multipath device serial check passed.")
 
 	return nil
-}
-
-// verifyMultipathDeviceSize compares the size of the DM device with the size
-// of a device to ensure correct DM device has the correct size.
-func verifyMultipathDeviceSize(
-	ctx context.Context, multipathDevice, device string,
-) (int64, bool, error) {
-	deviceSize, err := getISCSIDiskSize(ctx, "/dev/"+device)
-	if err != nil {
-		return 0, false, err
-	}
-
-	mpathSize, err := getISCSIDiskSize(ctx, "/dev/"+multipathDevice)
-	if err != nil {
-		return 0, false, err
-	}
-
-	if deviceSize != mpathSize {
-		return deviceSize, false, nil
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"multipathDevice": multipathDevice,
-		"device":          device,
-	}).Debug("Multipath device size check passed.")
-
-	return 0, true, nil
 }
 
 // filterTargets parses the output of iscsiadm -m node or -m discoverydb -t st -D
@@ -576,7 +547,7 @@ func PopulateCurrentSessions(ctx context.Context, currentMapping *models.ISCSISe
 	}
 
 	// Get all known iSCSI devices
-	iscsiDevices, err := GetISCSIDevices(ctx, true)
+	iscsiDevices, err := iscsiClient.GetISCSIDevices(ctx, true)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Error("Failed to get list of iSCSI devices.")
 		return err
@@ -890,10 +861,6 @@ func execIscsiadmCommand(ctx context.Context, args ...string) ([]byte, error) {
 	return iscsiClient.ExecIscsiadmCommand(ctx, args...)
 }
 
-func listAllISCSIDevices(ctx context.Context) {
-	iscsiClient.ListAllDevices(ctx)
-}
-
 func getISCSISessionInfo(ctx context.Context) ([]iscsi.SessionInfo, error) {
 	return iscsiClient.GetSessionInfo(ctx)
 }
@@ -915,7 +882,7 @@ func LoginISCSITarget(ctx context.Context, publishInfo *models.VolumePublishInfo
 }
 
 func iSCSIScanTargetLUN(ctx context.Context, lunID int, hosts []int) error {
-	return iscsiClient.ScanTargetLUN(ctx, lunID, hosts)
+	return devicesClient.ScanTargetLUN(ctx, lunID, hosts)
 }
 
 func IsISCSISessionStale(ctx context.Context, sessionNumber string) bool {

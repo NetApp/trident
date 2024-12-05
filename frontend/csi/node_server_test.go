@@ -21,11 +21,13 @@ import (
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
 	mockUtils "github.com/netapp/trident/mocks/mock_utils"
+	"github.com/netapp/trident/mocks/mock_utils/mock_devices"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	"github.com/netapp/trident/mocks/mock_utils/mock_mount"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
+	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
@@ -1023,7 +1025,7 @@ func TestFixISCSISessions(t *testing.T) {
 		},
 	}
 
-	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient())
+	iscsiClient, err := iscsi.New(utils.NewOSClient())
 	assert.NoError(t, err)
 
 	nodeServer := &Plugin{
@@ -1940,7 +1942,7 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 	type parameters struct {
 		getISCSIClient               func() iscsi.ISCSI
 		getIscsiReconcileUtilsClient func() iscsi.IscsiReconcileUtils
-		getDeviceClient              func() iscsi.Devices
+		getDeviceClient              func() devices.Devices
 		getMountClient               func() mount.Mount
 		getNodeHelper                func() nodehelpers.NodeHelper
 		publishInfo                  models.VolumePublishInfo
@@ -1964,14 +1966,14 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
 				mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
 				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", nil)
+				mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
 				return mockISCSIClient
 			},
-			getDeviceClient: func() iscsi.Devices {
-				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
-					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
-				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any(), false, false).Return("", nil)
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
 				return mockDeviceClient
 			},
@@ -2003,16 +2005,16 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
 				mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
 				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", nil)
+				mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
 				return mockISCSIClient
 			},
-			getDeviceClient: func() iscsi.Devices {
-				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
-					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return(mockDevicePath, nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), mockDevicePath).Return(nil)
-				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-					false, false).Return("", nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosed(gomock.Any(), mockDevicePath).Return(nil)
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
 				return mockDeviceClient
@@ -2047,18 +2049,18 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 
 				mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
 				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", nil)
+				mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
 
 				return mockISCSIClient
 			},
-			getDeviceClient: func() iscsi.Devices {
-				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
-					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return(mockDevicePath, nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), mockDevicePath).
 					Return(nil)
-				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any(), false, false).Return("", nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosed(gomock.Any(), mockDevicePath).Return(nil)
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
 				return mockDeviceClient
@@ -2087,6 +2089,8 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
 				return mockISCSIClient
 			},
 			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
@@ -2095,10 +2099,9 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 					gomock.Any()).Return(map[int]int{6: 3})
 				return mockIscsiReconcileUtilsClient
 			},
-			getDeviceClient: func() iscsi.Devices {
-				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
-					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+
 				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return(mockDevicePath, nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), mockDevicePath).
 					Return(fmt.Errorf("mock error"))
@@ -2126,10 +2129,14 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 					gomock.Any()).Return(map[int]int{6: 3})
 				return mockIscsiReconcileUtilsClient
 			},
-			getDeviceClient: func() iscsi.Devices {
-				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any(), false).Return(nil, nil)
+				return mockISCSIClient
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				return mockDeviceClient
 			},
 		},
@@ -2143,10 +2150,14 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 					gomock.Any()).Return(map[int]int{6: 3})
 				return mockIscsiReconcileUtilsClient
 			},
-			getDeviceClient: func() iscsi.Devices {
-				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+			getISCSIClient: func() iscsi.ISCSI {
+				mockIscsiClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockIscsiClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any(), false).Return(nil, fmt.Errorf("mock error"))
+				return mockIscsiClient
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				return mockDeviceClient
 			},
 		},
@@ -2157,6 +2168,8 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
 				return mockISCSIClient
 			},
 			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
@@ -2165,10 +2178,8 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 					gomock.Any()).Return(map[int]int{6: 3})
 				return mockIscsiReconcileUtilsClient
 			},
-			getDeviceClient: func() iscsi.Devices {
-				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
-					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("", fmt.Errorf(
 					"mock error"))
 				return mockDeviceClient
@@ -2181,17 +2192,17 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", fmt.Errorf("mock error"))
+				mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
 				return mockISCSIClient
 			},
-			getDeviceClient: func() iscsi.Devices {
-				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
-					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return(mockDevicePath, nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), mockDevicePath).
 					Return(nil)
-				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any(), false, false).Return("", fmt.Errorf("mock error"))
 				return mockDeviceClient
 			},
 			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
@@ -2212,19 +2223,19 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
 				mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
 				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", errors.ISCSISameLunNumberError("mock error"))
+				mockISCSIClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", nil)
+				mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
 				return mockISCSIClient
 			},
-			getDeviceClient: func() iscsi.Devices {
-				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
-					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return(mockDevicePath, nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), mockDevicePath).
 					Return(nil)
-				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any(), false, false).Return("", errors.ISCSISameLunNumberError("mock error"))
-				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any(), false, false).Return("", nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosed(gomock.Any(), mockDevicePath).Return(nil)
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
 				return mockDeviceClient
@@ -2242,6 +2253,8 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 			},
 			getNodeHelper: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{}, nil).AnyTimes()
 				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
 				return mockNodeHelper
 			},
@@ -2254,14 +2267,14 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
 				mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(true, nil)
+				mockISCSIClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", nil)
+				mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
 				return mockISCSIClient
 			},
-			getDeviceClient: func() iscsi.Devices {
-				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
-					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
-				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any(), false, false).Return("", nil)
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
 				return mockDeviceClient
 			},
@@ -2291,14 +2304,14 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
 				mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(false, nil)
 				mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+				mockISCSIClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", nil)
+				mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
 				return mockISCSIClient
 			},
-			getDeviceClient: func() iscsi.Devices {
-				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
-					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
-				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any(), false, false).Return("", nil)
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
 				return mockDeviceClient
 			},
@@ -2330,14 +2343,14 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
 				mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
 				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", nil)
+				mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
 				return mockISCSIClient
 			},
-			getDeviceClient: func() iscsi.Devices {
-				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
-					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
-				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any(), false, false).Return("", nil)
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				return mockDeviceClient
 			},
 			getMountClient: func() mount.Mount {
@@ -2364,14 +2377,14 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
 				mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
 				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", nil)
+				mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
 				return mockISCSIClient
 			},
-			getDeviceClient: func() iscsi.Devices {
-				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
-					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
-				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any(), false, false).Return("", nil)
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).
 					Return(fmt.Errorf("mock error"))
 				return mockDeviceClient
@@ -2399,14 +2412,14 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
 				mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
 				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), false, false).Return("", nil)
+				mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
 				return mockISCSIClient
 			},
-			getDeviceClient: func() iscsi.Devices {
-				mockDeviceClient := mock_iscsi.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
-					gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
-				mockDeviceClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any(), false, false).Return("", nil)
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMapping(gomock.Any(), gomock.Any()).Return(nil)
 				return mockDeviceClient
 			},

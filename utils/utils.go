@@ -20,7 +20,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	"go.uber.org/multierr"
 	"golang.org/x/text/cases"
@@ -60,8 +59,6 @@ const (
 	// Path separator
 	WindowsPathSeparator = `\`
 	UnixPathSeparator    = "/"
-
-	deviceOperationsTimeout = 5 * time.Second
 
 	TimestampFormat = "2006-01-02T15:04:05Z"
 )

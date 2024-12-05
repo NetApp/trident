@@ -71,7 +71,7 @@ func newMockOntapSANDriver(t *testing.T) (*mockapi.MockOntapAPI, *SANStorageDriv
 	driver.API = mockAPI
 	driver.ips = []string{"127.0.0.1"}
 
-	iscsiClient, err := iscsi.New(utils.NewOSClient(), utils.NewDevicesClient())
+	iscsiClient, err := iscsi.New(utils.NewOSClient())
 	assert.NoError(t, err)
 	driver.iscsi = iscsiClient
 

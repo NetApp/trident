@@ -25,10 +25,11 @@ import (
 
 const (
 	// Filesystem types
-	Xfs  = "xfs"
-	Ext3 = "ext3"
-	Ext4 = "ext4"
-	Raw  = "raw"
+	Xfs           = "xfs"
+	Ext3          = "ext3"
+	Ext4          = "ext4"
+	Raw           = "raw"
+	UnknownFstype = "<unknown>"
 )
 
 const (
@@ -64,7 +65,6 @@ type Filesystem interface {
 		ctx context.Context, path string,
 	) (available, capacity, usage, inodes, inodesFree, inodesUsed int64, err error)
 	GetUnmountPath(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (string, error)
-	GenerateAnonymousMemFile(tempFileName, content string) (int, error)
 }
 
 type Mount interface {

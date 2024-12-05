@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 	time "time"
 
+	fcp "github.com/netapp/trident/utils/fcp"
 	models "github.com/netapp/trident/utils/models"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -54,6 +55,21 @@ func (m *MockFCP) AttachVolumeRetry(arg0 context.Context, arg1, arg2 string, arg
 func (mr *MockFCPMockRecorder) AttachVolumeRetry(arg0, arg1, arg2, arg3, arg4, arg5 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachVolumeRetry", reflect.TypeOf((*MockFCP)(nil).AttachVolumeRetry), arg0, arg1, arg2, arg3, arg4, arg5)
+}
+
+// GetDeviceInfoForLUN mocks base method.
+func (m *MockFCP) GetDeviceInfoForLUN(arg0 context.Context, arg1 int, arg2 string, arg3, arg4 bool) (*fcp.ScsiDeviceInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDeviceInfoForLUN", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(*fcp.ScsiDeviceInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDeviceInfoForLUN indicates an expected call of GetDeviceInfoForLUN.
+func (mr *MockFCPMockRecorder) GetDeviceInfoForLUN(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeviceInfoForLUN", reflect.TypeOf((*MockFCP)(nil).GetDeviceInfoForLUN), arg0, arg1, arg2, arg3, arg4)
 }
 
 // IsAlreadyAttached mocks base method.

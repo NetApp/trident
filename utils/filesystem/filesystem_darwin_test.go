@@ -46,11 +46,3 @@ func TestGetUnmountPath(t *testing.T) {
 	assert.Error(t, err, "no error")
 	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }
-
-func TestGenerateAnonymousMemFile(t *testing.T) {
-	fsClient := New(nil)
-	result, err := fsClient.GenerateAnonymousMemFile("", "")
-	assert.Equal(t, 0, result)
-	assert.Error(t, err, "no error")
-	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
-}

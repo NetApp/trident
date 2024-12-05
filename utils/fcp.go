@@ -8,5 +8,5 @@ import (
 var (
 	FcpUtils  = fcp.NewReconcileUtils(chrootPathPrefix, NewOSClient())
 	fcpClient = fcp.NewDetailed(chrootPathPrefix, command, fcp.DefaultSelfHealingExclusion, NewOSClient(),
-		NewDevicesClient(), filesystem.New(mountClient), mountClient, FcpUtils)
+		devicesClient, filesystem.New(mountClient), mountClient, FcpUtils)
 )

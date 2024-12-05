@@ -33,6 +33,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/fcp"
 	"github.com/netapp/trident/utils/filesystem"
@@ -3772,7 +3773,7 @@ func incrementWithLUKSMetadataIfLUKSEnabled(ctx context.Context, size uint64, lu
 	}
 
 	if isLUKS {
-		return size + utils.LUKSMetadataSize
+		return size + luks.LUKSMetadataSize
 	}
 
 	return size
@@ -3785,13 +3786,13 @@ func decrementWithLUKSMetadataIfLUKSEnabled(ctx context.Context, size uint64, lu
 		Logc(ctx).WithError(err).Debug("Could not parse luksEncryption string.")
 	}
 
-	if utils.LUKSMetadataSize > size {
+	if luks.LUKSMetadataSize > size {
 		Logc(ctx).WithError(err).WithField("size", size).Error("Size too small to subtract LUKS metadata.")
 		return 0
 	}
 
 	if isLUKS {
-		return size - utils.LUKSMetadataSize
+		return size - luks.LUKSMetadataSize
 	}
 
 	return size
