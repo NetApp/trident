@@ -65,7 +65,7 @@ func (c *ConfiguratorClient) CreateOrPatchObject(objType ObjectType, objName, ob
 		Log().Errorf("Patch failed for %s %s: %v", objName, objType, err)
 	}
 
-	if err := c.deleteObject(objType, objName, objNamespace); err != nil {
+	if err := c.DeleteObject(objType, objName, objNamespace); err != nil {
 		return err
 	}
 
@@ -166,7 +166,8 @@ func (c *ConfiguratorClient) patchObject(objType ObjectType, objName, objNamespa
 	return fmt.Errorf("unsupported object %s of type %s", objName, objType)
 }
 
-func (c *ConfiguratorClient) deleteObject(objType ObjectType, objName, objNamespace string) error {
+// DeleteObject deletes the object of the given type and name.
+func (c *ConfiguratorClient) DeleteObject(objType ObjectType, objName, objNamespace string) error {
 	switch objType {
 	case OCRD:
 		return c.kClient.DeleteCRD(objName)
@@ -179,6 +180,19 @@ func (c *ConfiguratorClient) deleteObject(objType ObjectType, objName, objNamesp
 	}
 
 	return fmt.Errorf("unsupported object %s of type %s", objName, objType)
+}
+
+// ListObjects lists the objects of the given type.
+func (c *ConfiguratorClient) ListObjects(objType ObjectType, objNamespace string) (interface{}, error) {
+	switch objType {
+	case OCRD:
+	case OBackend:
+		return c.tClient.ListTridentBackend(objNamespace)
+	case OStorageClass:
+	case OSnapshotClass:
+	}
+
+	return nil, fmt.Errorf("unsupported object type %s", objType)
 }
 
 func (c *ConfiguratorClient) GetControllingTorcCR() (*operatorV1.TridentOrchestrator, error) {

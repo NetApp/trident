@@ -17,9 +17,11 @@ import (
 	. "github.com/netapp/trident/logging"
 	confClients "github.com/netapp/trident/operator/controllers/configurator/clients"
 	operatorV1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
+	tridentV1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -60,8 +62,8 @@ type SVM struct {
 	ManagementLIF string   `json:"managementLIF"`
 }
 
-// NewFsxnInstance creates a new instance of the AWS struct and populates it with the provided CRs and client
-func NewFsxnInstance(
+// NewFSxNInstance creates a new instance of the AWS struct and populates it with the provided CRs and client
+func NewFSxNInstance(
 	torcCR *operatorV1.TridentOrchestrator, configuratorCR *operatorV1.TridentConfigurator,
 	client confClients.ConfiguratorClientInterface,
 ) (*AWS, error) {
@@ -70,7 +72,7 @@ func NewFsxnInstance(
 	}
 
 	if configuratorCR == nil {
-		return nil, fmt.Errorf("empty AWSFsxN configurator CR")
+		return nil, fmt.Errorf("empty AWS FSxN configurator CR")
 	}
 
 	if client == nil {
@@ -117,7 +119,7 @@ func (aws *AWS) Validate() error {
 	aws.AwsClient = api
 
 	for key, fsxnInstance := range aws.SVMs {
-		if err := aws.processFsxnInstance(context.Background(), key, fsxnInstance); err != nil {
+		if err := aws.processFSxNInstance(context.Background(), key, fsxnInstance); err != nil {
 			return err
 		}
 	}
@@ -125,25 +127,31 @@ func (aws *AWS) Validate() error {
 	return nil
 }
 
-// processFsxnInstance processes the auto-backend configuration for the FSxN instance.
+// processFSxNInstance processes the auto-backend configuration for the FSxN instance.
 // It creates the SVM if it does not exist and creates the secret for the SVM.
-func (aws *AWS) processFsxnInstance(ctx context.Context, key int, svm SVM) error {
+func (aws *AWS) processFSxNInstance(ctx context.Context, key int, svm SVM) error {
 	var (
-		svmName    string
-		secretName string
-		secretARN  string
-		svmExists  bool
+		svmName       string
+		secretName    string
+		secretARN     string
+		svmExists     bool
+		ErrStatusCode = "StatusCode: 400"
 	)
 	svmName = svm.SvmName
 	if svmName == "" {
 		svmName = fmt.Sprintf(SvmNamePattern, svm.FsxnID)
+		svm.SvmName = svmName
 	}
 	_, err := aws.AwsClient.GetFilesystemByID(ctx, svm.FsxnID)
-	if err != nil {
+	if errors.IsNotFoundError(err) || (err != nil && strings.Contains(err.Error(), ErrStatusCode)) {
+		err = aws.cleanUpFSxNRelatedObjects(svm, svm.Protocols)
+		if err != nil {
+			Log().Error(err)
+		}
 		return fmt.Errorf("error occurred while getting fsxn id: %v : %v", svm.FsxnID, err)
 	}
 	Log().Debugf("Filesystem ID: %s exists", svm.FsxnID)
-	secretName = fmt.Sprintf(TridentSecretPattern, strings.TrimPrefix(svmName, "trident-"))
+	secretName = getAWSSecretName(svmName)
 	// Get the secret if it already exists or create a new one
 	secret, _ := aws.AwsClient.GetSecret(ctx, secretName)
 	if secret != nil {
@@ -245,7 +253,7 @@ func (aws *AWS) Create() ([]string, error) {
 	)
 	for _, svm := range aws.SVMs {
 		for _, protocol := range svm.Protocols {
-			backendName = getFsxnBackendName(svm.FsxnID, protocol)
+			backendName = getFSxNBackendName(svm.FsxnID, protocol)
 			backendYAML := getFsxnTBCYaml(svm, aws.TridentNamespace, backendName, protocol)
 			if err := aws.ConfClient.CreateOrPatchObject(confClients.OBackend, backendName,
 				aws.TridentNamespace, backendYAML); err != nil {
@@ -262,7 +270,7 @@ func (aws *AWS) CreateStorageClass() error {
 	var driver string
 	for _, svm := range aws.SVMs {
 		for _, protocol := range svm.Protocols {
-			name := getFsxnStorageClassName(svm.FsxnID, protocol)
+			name := getFSxNStorageClassName(svm.FsxnID, protocol)
 			if protocol == sa.NFS {
 				driver = config.OntapNASStorageDriverName
 			} else if protocol == sa.ISCSI {
@@ -290,12 +298,95 @@ func (aws *AWS) GetCloudProvider() string {
 	return k8sclient.CloudProviderAWS
 }
 
-// getFsxnTBCYaml returns the FsxN Trident backend config name
-func getFsxnBackendName(fsxnId, protocolType string) string {
+// DeleteBackend deletes the backend if the FSxN instance is deleted
+func (aws *AWS) DeleteBackend(request map[string]interface{}) error {
+	protocols := request["protocols"].([]string)
+	fsxnId := request["FSxNID"].(string)
+	for _, protocol := range protocols {
+		backendName := getFSxNBackendName(fsxnId, protocol)
+		if err := aws.ConfClient.DeleteObject(confClients.OBackend, backendName, aws.TridentNamespace); err != nil {
+			return fmt.Errorf("error occurred while deleting backend: %w", err)
+		}
+	}
+	return nil
+}
+
+// DeleteStorageClass deletes the storage class if the FSxN instance is deleted
+func (aws *AWS) DeleteStorageClass(request map[string]interface{}) error {
+	protocols := request["protocols"].([]string)
+	fsxnId := request["FSxNID"].(string)
+	for _, protocol := range protocols {
+		name := getFSxNStorageClassName(fsxnId, protocol)
+		if err := aws.ConfClient.DeleteObject(confClients.OStorageClass, name, aws.TridentNamespace); err != nil {
+			return fmt.Errorf("error occurred while deleting storage class: %w", err)
+		}
+	}
+	return nil
+}
+
+// DeleteSnapshotClass deletes the snapshot class if the FSxN instance is deleted
+func (aws *AWS) DeleteSnapshotClass() error {
+	tbcList, err := aws.ConfClient.ListObjects(confClients.OBackend, "")
+	if err != nil {
+		return fmt.Errorf("error occurred while listing TBC objects: %w", err)
+	}
+	if len(tbcList.(*tridentV1.TridentBackendList).Items) == 0 {
+		if err := aws.ConfClient.DeleteObject(confClients.OSnapshotClass, NetAppSnapshotClassName, ""); err != nil {
+			return fmt.Errorf("error occurred while deleting snapshot class: %w", err)
+		}
+	}
+
+	return nil
+}
+
+// cleanUpFSxNRelatedObjects cleans up the FSxN instance related objects like storage class, backend, and AWS secret
+func (aws *AWS) cleanUpFSxNRelatedObjects(svm SVM, protocols []string) (err error) {
+	cleanupRequest := map[string]interface{}{
+		"FSxNID":    svm.FsxnID,
+		"protocols": protocols,
+	}
+
+	// Delete the storage class
+	if deleteErr := aws.DeleteStorageClass(cleanupRequest); err != nil {
+		err = fmt.Errorf("failed to delete VolumeSnapshotClass: %w", deleteErr)
+	}
+
+	// Delete the backend
+	if deleteErr := aws.DeleteBackend(cleanupRequest); err != nil {
+		err = fmt.Errorf("failed to delete backend: %w", deleteErr)
+	}
+
+	// Delete the AWS secret
+	if deleteErr := deleteSecret(context.Background(), aws, getAWSSecretName(svm.SvmName)); err != nil {
+		err = fmt.Errorf("failed to delete AWS secret: %w", deleteErr)
+	}
+
+	// Delete the VolumeSnapshotClass if no backend is present
+	if deleteErr := aws.DeleteSnapshotClass(); err != nil {
+		err = fmt.Errorf("failed to delete VolumeSnapshotClass: %w", deleteErr)
+	}
+
+	return
+}
+
+func deleteSecret(ctx context.Context, aws *AWS, secretName string) error {
+	if err := aws.AwsClient.DeleteSecret(ctx, secretName); err != nil {
+		return fmt.Errorf("error occurred while deleting secret: %w", err)
+	}
+	return nil
+}
+
+// getFSxNBackendName returns the FsxN Trident backend config name
+func getFSxNBackendName(fsxnId, protocolType string) string {
 	return fmt.Sprintf(BackendNamePattern, fsxnId, protocolType)
 }
 
-// getFsxnStorageClassName returns the storage class name for the FSxN backend
-func getFsxnStorageClassName(fsxnId, protocolType string) string {
+// getFSxNStorageClassName returns the storage class name for the FSxN backend
+func getFSxNStorageClassName(fsxnId, protocolType string) string {
 	return fmt.Sprintf(StorageClassNamePattern, fsxnId, protocolType)
+}
+
+// getAWSSecretName returns the AWS secret name for the FSxN backend
+func getAWSSecretName(svmName string) string {
+	return fmt.Sprintf(TridentSecretPattern, strings.TrimPrefix(svmName, "trident-"))
 }

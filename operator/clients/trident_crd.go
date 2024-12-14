@@ -41,3 +41,7 @@ func (tc *TridentCRDClient) PatchTridentBackendConfig(name, namespace string, pa
 func (tc *TridentCRDClient) DeleteTridentBackendConfig(name, namespace string) error {
 	return tc.client.TridentV1().TridentBackendConfigs(namespace).Delete(ctx, name, deleteOpts)
 }
+
+func (tc *TridentCRDClient) ListTridentBackend(namespace string) (*tridentV1.TridentBackendList, error) {
+	return tc.client.TridentV1().TridentBackends(namespace).List(ctx, listOpts)
+}

@@ -144,6 +144,7 @@ rules:
       - volumesnapshotclasses
     verbs:
       - create
+      - delete
   - apiGroups:
       - snapshot.storage.k8s.io
     resources:

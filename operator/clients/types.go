@@ -38,6 +38,7 @@ type OperatorCRDClientInterface interface {
 type TridentCRDClientInterface interface {
 	CheckTridentBackendConfigExists(name, namespace string) (bool, error)
 	GetTridentBackendConfig(name, namespace string) (*tridentV1.TridentBackendConfig, error)
+	ListTridentBackend(namespace string) (*tridentV1.TridentBackendList, error)
 	PatchTridentBackendConfig(name, namespace string, patchBytes []byte, patchType types.PatchType) error
 	DeleteTridentBackendConfig(name, namespace string) error
 }

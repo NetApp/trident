@@ -14,6 +14,7 @@ import (
 type AWSAPI interface {
 	CreateSecret(ctx context.Context, request *SecretCreateRequest) (*Secret, error)
 	GetSecret(ctx context.Context, secretARN string) (*Secret, error)
+	DeleteSecret(ctx context.Context, secretARN string) error
 
 	GetFilesystems(ctx context.Context) (*[]*Filesystem, error)
 	GetFilesystemByID(ctx context.Context, ID string) (*Filesystem, error)

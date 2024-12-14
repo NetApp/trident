@@ -58,7 +58,7 @@ func (tc *TridentConfigurator) Validate() error {
 	return nil
 }
 
-func (tc *TridentConfigurator) IsAwsFsxnTconf() (bool, error) {
+func (tc *TridentConfigurator) IsAWSFSxNTconf() (bool, error) {
 	var tConfSpec map[string]interface{}
 	if err := json.Unmarshal(tc.Spec.Raw, &tConfSpec); err != nil {
 		return false, err

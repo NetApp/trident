@@ -87,6 +87,20 @@ func (mr *MockAWSAPIMockRecorder) CreateVolume(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVolume", reflect.TypeOf((*MockAWSAPI)(nil).CreateVolume), arg0, arg1)
 }
 
+// DeleteSecret mocks base method.
+func (m *MockAWSAPI) DeleteSecret(ctx context.Context, secretARN string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteSecret", ctx, secretARN)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteSecret indicates an expected call of DeleteSecret.
+func (mr *MockAWSAPIMockRecorder) DeleteSecret(ctx, secretARN any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSecret", reflect.TypeOf((*MockAWSAPI)(nil).DeleteSecret), ctx, secretARN)
+}
+
 // DeleteVolume mocks base method.
 func (m *MockAWSAPI) DeleteVolume(arg0 context.Context, arg1 *awsapi.Volume) error {
 	m.ctrl.T.Helper()

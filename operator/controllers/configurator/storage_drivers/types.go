@@ -8,4 +8,7 @@ type Backend interface {
 	CreateStorageClass() error
 	CreateSnapshotClass() error
 	GetCloudProvider() string
+	DeleteBackend(map[string]interface{}) error
+	DeleteStorageClass(map[string]interface{}) error
+	DeleteSnapshotClass() error
 }

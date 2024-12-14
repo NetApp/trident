@@ -47,6 +47,8 @@ type ConfiguratorClientInterface interface {
 	GetControllingTorcCR() (*operatorV1.TridentOrchestrator, error)
 	GetTconfCR(name string) (*operatorV1.TridentConfigurator, error)
 	GetANFSecrets(secretName string) (string, string, error)
+	DeleteObject(objType ObjectType, objName, objNamespace string) error
+	ListObjects(objType ObjectType, objNamespace string) (interface{}, error)
 }
 
 type ExtendedK8sClientInterface interface {

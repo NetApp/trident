@@ -394,20 +394,20 @@ func (c *Controller) reconcile(keyItem string) error {
 			return err
 		}
 	case config.OntapNASStorageDriverName, config.OntapSANStorageDriverName:
-		isAwsFsxn, err := tconfCR.IsAwsFsxnTconf()
+		isAwsFSxN, err := tconfCR.IsAWSFSxNTconf()
 		if err != nil {
 			Log().Error("Failed to check if tconf is for AWS FSxN: ", err)
 			return err
 		}
-		if isAwsFsxn {
+		if isAwsFSxN {
 			Log().Debugf("Tconf indicates auto-backend config is for AWS FSxN")
-			fsxn, err := storage_drivers.NewFsxnInstance(torcCR, tconfCR, c.Clients)
+			fsxn, err := storage_drivers.NewFSxNInstance(torcCR, tconfCR, c.Clients)
 			if err != nil {
 				Log().Info("Failed to create FsxN backend instance: ", err)
 				return err
 			}
 			if err := c.ProcessBackend(fsxn, tconfCR); err != nil {
-				Log().Error("Failed to process FsxN backend: ", err)
+				Log().Error("Failed to process FSxN backend: ", err)
 				return err
 			}
 		}

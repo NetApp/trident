@@ -222,6 +222,18 @@ func (a *ANF) GetCloudProvider() string {
 	return "None"
 }
 
+func (a *ANF) DeleteBackend(map[string]interface{}) error {
+	return nil
+}
+
+func (a *ANF) DeleteStorageClass(map[string]interface{}) error {
+	return nil
+}
+
+func (a *ANF) DeleteSnapshotClass() error {
+	return nil
+}
+
 func (a *ANF) populateAndValidateAZResources() error {
 	a.FilteredCapacityPoolMap = a.AZClient.FilteredCapacityPoolMap(context.TODO(), a.ResourceGroups,
 		a.NetappAccounts, a.CapacityPools)

@@ -186,6 +186,25 @@ func (d *Client) GetSecret(ctx context.Context, secretARN string) (*Secret, erro
 	return secret, nil
 }
 
+// DeleteSecret deletes a secret by its ARN/name.
+func (d *Client) DeleteSecret(ctx context.Context, secretARN string) error {
+	logFields := LogFields{
+		"API":       "DeleteSecret",
+		"secretARN": secretARN,
+	}
+	deleteSecretInput := &secretsmanager.DeleteSecretInput{
+		SecretId:                   utils.Ptr(secretARN),
+		ForceDeleteWithoutRecovery: utils.Ptr(true),
+	}
+	if _, err := d.secretsClient.DeleteSecret(ctx, deleteSecretInput); err != nil {
+		logFields["requestID"] = GetRequestIDFromError(err)
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Could not delete secret.")
+		return fmt.Errorf("error deleting secret; %w", err)
+	}
+	Logc(ctx).WithFields(logFields).Info("Secret deleted.")
+	return nil
+}
+
 // ParseVolumeARN parses the AWS-style ARN for a volume.
 func ParseVolumeARN(volumeARN string) (region, accountID, filesystemID, volumeID string, err error) {
 	match := volumeARNRegex.FindStringSubmatch(volumeARN)
