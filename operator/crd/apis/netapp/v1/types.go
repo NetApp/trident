@@ -72,6 +72,7 @@ type TridentOrchestratorSpec struct {
 	CloudIdentity                string            `json:"cloudIdentity,omitempty"`
 	EnableACP                    bool              `json:"enableACP,omitempty"`
 	ACPImage                     string            `json:"acpImage,omitempty"`
+	EnableAutoBackendConfig      bool              `json:"enableAutoBackendConfig,omitempty"`
 	ISCSISelfHealingInterval     string            `json:"iscsiSelfHealingInterval,omitempty"`
 	ISCSISelfHealingWaitTime     string            `json:"iscsiSelfHealingWaitTime,omitempty"`
 	K8sAPIQPS                    int               `json:"k8sAPIQPS,omitempty"`

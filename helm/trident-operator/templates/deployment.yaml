@@ -46,7 +46,9 @@ spec:
       containers:
       - command:
         - /trident-operator
+        {{- if or .Values.anfConfigurator.enabled .Values.ontapConfigurator.enabled }}
         - -configurator-reconcile-interval={{ .Values.configuratorReconcileInterval }}
+        {{- end }}
         {{- if .Values.operatorDebug }}
         - -debug
         {{- end }}
