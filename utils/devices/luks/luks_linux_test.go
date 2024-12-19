@@ -102,15 +102,52 @@ func TestLUKSDevice_LUKSFormat(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockCommand := mockexec.NewMockCommand(mockCtrl)
 
-	luksDevice := NewDetailed("/dev/sdb", "pvc-test", mockCommand, devices.New(), afero.NewMemMapFs())
-	assert.Equal(t, "/dev/mapper/pvc-test", luksDevice.MappedDevicePath())
-	assert.Equal(t, "/dev/sdb", luksDevice.RawDevicePath())
-
-	// Setup mock calls and reassign any clients to their mock counterparts.
+	mockCryptsetupIsLuks(mockCommand).Return([]byte(""),
+		mock_exec.NewMockExitError(cryptsetupIsLuksDeviceIsNotLuksStatusCode, "not LUKS"))
+	mockCryptsetupLuksFormat(mockCommand).Return([]byte(""), nil)
 	mockCryptsetupIsLuks(mockCommand).Return([]byte(""), nil)
 
+	mockDevices := mock_devices.NewMockDevices(mockCtrl)
+	mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), "/dev/sdb").Return(true, nil)
+
+	luksDevice := NewDetailed("/dev/sdb", "pvc-test", mockCommand, mockDevices, afero.NewMemMapFs())
 	err := luksDevice.lUKSFormat(context.Background(), "passphrase")
 	assert.NoError(t, err)
+}
+
+func TestLUKSFormat_UnformattedCheckError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockCommand := mockexec.NewMockCommand(mockCtrl)
+
+	mockCryptsetupIsLuks(mockCommand).Return([]byte(""),
+		mock_exec.NewMockExitError(cryptsetupIsLuksDeviceIsNotLuksStatusCode, "not LUKS"))
+
+	// Setup mock calls and reassign any clients to their mock counterparts.
+	mockDevices := mock_devices.NewMockDevices(mockCtrl)
+	mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), "/dev/sdb").Return(false, errors.New("mock error"))
+
+	luksDevice := NewDetailed("/dev/sdb", "pvc-test", mockCommand, mockDevices, afero.NewMemMapFs())
+	err := luksDevice.lUKSFormat(context.Background(), "passphrase")
+	assert.Error(t, err)
+}
+
+func TestLUKSFormat_SecondFormatCheckError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockCommand := mockexec.NewMockCommand(mockCtrl)
+
+	// Setup mock calls and reassign any clients to their mock counterparts.
+	mockCryptsetupIsLuks(mockCommand).Return([]byte(""),
+		mock_exec.NewMockExitError(cryptsetupIsLuksDeviceIsNotLuksStatusCode, "not LUKS"))
+	mockCryptsetupLuksFormat(mockCommand).Return([]byte(""), nil)
+	mockCryptsetupIsLuks(mockCommand).Return([]byte(""),
+		mock_exec.NewMockExitError(cryptsetupIsLuksDeviceIsNotLuksStatusCode, "not LUKS"))
+
+	mockDevices := mock_devices.NewMockDevices(mockCtrl)
+	mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), "/dev/sdb").Return(true, nil)
+
+	luksDevice := NewDetailed("/dev/sdb", "pvc-test", mockCommand, mockDevices, afero.NewMemMapFs())
+	err := luksDevice.lUKSFormat(context.Background(), "passphrase")
+	assert.Error(t, err)
 }
 
 func TestLUKSDevice_LUKSFormat_FailsCheckingIfDeviceIsLUKS(t *testing.T) {
@@ -161,6 +198,38 @@ func TestLUKSDevice_IsOpen(t *testing.T) {
 	assert.True(t, isOpen)
 }
 
+func TestIsOpen_NotOpen(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockCommand := mockexec.NewMockCommand(mockCtrl)
+
+	luksDevice := NewDetailed("/dev/sdb", "pvc-test", mockCommand, devices.New(), afero.NewMemMapFs())
+	assert.Equal(t, "/dev/mapper/pvc-test", luksDevice.MappedDevicePath())
+	assert.Equal(t, "/dev/sdb", luksDevice.RawDevicePath())
+
+	// Setup mock calls and reassign any clients to their mock counterparts.
+	mockCryptsetupLuksStatus(mockCommand).Return([]byte(""), mock_exec.NewMockExitError(cryptsetupStatusDeviceDoesExistStatusCode, "mock error"))
+
+	isOpen, err := luksDevice.IsOpen(context.Background())
+	assert.NoError(t, err)
+	assert.True(t, isOpen)
+}
+
+func TestIsOpen_UnknownError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockCommand := mockexec.NewMockCommand(mockCtrl)
+
+	luksDevice := NewDetailed("/dev/sdb", "pvc-test", mockCommand, devices.New(), afero.NewMemMapFs())
+	assert.Equal(t, "/dev/mapper/pvc-test", luksDevice.MappedDevicePath())
+	assert.Equal(t, "/dev/sdb", luksDevice.RawDevicePath())
+
+	// Setup mock calls and reassign any clients to their mock counterparts.
+	mockCryptsetupLuksStatus(mockCommand).Return([]byte(""), mock_exec.NewMockExitError(128, "mock error"))
+
+	isOpen, err := luksDevice.IsOpen(context.Background())
+	assert.Error(t, err)
+	assert.False(t, isOpen)
+}
+
 func TestLUKSDevice_MissingDevicePath(t *testing.T) {
 	luksDevice := LUKSDevice{mappedDeviceName: "pvc-test", rawDevicePath: ""}
 	isFormatted, err := luksDevice.IsLUKSFormatted(context.Background())
@@ -203,7 +272,7 @@ func TestLUKSDevice_ExecErrors(t *testing.T) {
 	assert.Error(t, err)
 	assert.False(t, isOpen)
 
-	devicesClient := devices.NewDetailed(mockCommand, afero.NewMemMapFs())
+	devicesClient := devices.NewDetailed(mockCommand, afero.NewMemMapFs(), nil)
 	err = devicesClient.CloseLUKSDevice(context.Background(), luksDevice.MappedDevicePath())
 	assert.Error(t, err)
 }

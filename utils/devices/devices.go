@@ -1,6 +1,7 @@
 // Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 //go:generate mockgen -destination=../../mocks/mock_utils/mock_devices/mock_devices_client.go github.com/netapp/trident/utils/devices Devices
+//go:generate mockgen -destination=../../mocks/mock_utils/mock_devices/mock_size_getter_client.go github.com/netapp/trident/utils/devices SizeGetter
 
 package devices
 
@@ -74,17 +75,28 @@ type Devices interface {
 	) error
 }
 
+type SizeGetter interface {
+	GetDiskSize(ctx context.Context, devicePath string) (int64, error)
+}
+
+type DiskSizeGetter struct{}
+
+func NewDiskSizeGetter() *DiskSizeGetter {
+	return &DiskSizeGetter{}
+}
+
 type Client struct {
 	chrootPathPrefix string
 	command          exec.Command
 	osFs             afero.Afero
+	SizeGetter
 }
 
 func New() *Client {
-	return NewDetailed(exec.NewCommand(), afero.NewOsFs())
+	return NewDetailed(exec.NewCommand(), afero.NewOsFs(), NewDiskSizeGetter())
 }
 
-func NewDetailed(command exec.Command, osFs afero.Fs) *Client {
+func NewDetailed(command exec.Command, osFs afero.Fs, diskSizeGetter SizeGetter) *Client {
 	chrootPathPrefix := ""
 	if os.Getenv("DOCKER_PLUGIN_MODE") != "" {
 		chrootPathPrefix = "/host"
@@ -93,6 +105,7 @@ func NewDetailed(command exec.Command, osFs afero.Fs) *Client {
 		chrootPathPrefix: chrootPathPrefix,
 		command:          command,
 		osFs:             afero.Afero{Fs: osFs},
+		SizeGetter:       diskSizeGetter,
 	}
 }
 
@@ -297,7 +310,7 @@ func (c *Client) FindDevicesForMultipathDevice(ctx context.Context, device strin
 	devices := make([]string, 0)
 
 	slavesDir := c.chrootPathPrefix + "/sys/block/" + device + "/slaves"
-	if dirs, err := os.ReadDir(slavesDir); err == nil {
+	if dirs, err := c.osFs.ReadDir(slavesDir); err == nil {
 		for _, f := range dirs {
 			name := f.Name()
 			if strings.HasPrefix(name, "sd") {
@@ -585,7 +598,7 @@ func (c *Client) GetMultipathDeviceDisks(
 	multipathDevice := strings.TrimPrefix(multipathDevicePath, "/dev/")
 
 	diskPath := c.chrootPathPrefix + fmt.Sprintf("/sys/block/%s/slaves/", multipathDevice)
-	diskDirs, err := os.ReadDir(diskPath)
+	diskDirs, err := c.osFs.ReadDir(diskPath)
 	if err != nil {
 		Logc(ctx).WithError(err).Errorf("Could not read %s", diskPath)
 		return nil, fmt.Errorf("failed to identify multipath device disks; unable to read '%s'", diskPath)
@@ -607,7 +620,7 @@ func (c *Client) GetMultipathDeviceDisks(
 func (c *Client) GetMultipathDeviceBySerial(ctx context.Context, hexSerial string) (string, error) {
 	sysPath := c.chrootPathPrefix + "/sys/block/"
 
-	blockDirs, err := os.ReadDir(sysPath)
+	blockDirs, err := c.osFs.ReadDir(sysPath)
 	if err != nil {
 		Logc(ctx).WithError(err).Errorf("Could not read %s", sysPath)
 		return "", fmt.Errorf("failed to find multipath device by serial; unable to read '%s'", sysPath)
@@ -647,12 +660,12 @@ func (c *Client) GetMultipathDeviceUUID(multipathDevicePath string) (string, err
 
 	deviceUUIDPath := c.chrootPathPrefix + fmt.Sprintf("/sys/block/%s/dm/uuid", multipathDevice)
 
-	exists, err := PathExists(deviceUUIDPath)
+	exists, err := PathExists(c.osFs, deviceUUIDPath)
 	if !exists || err != nil {
 		return "", errors.NotFoundError("multipath device '%s' UUID not found", multipathDevice)
 	}
 
-	UUID, err := os.ReadFile(deviceUUIDPath)
+	UUID, err := c.osFs.ReadFile(deviceUUIDPath)
 	if err != nil {
 		return "", err
 	}
@@ -666,7 +679,7 @@ func (c *Client) RemoveDevice(ctx context.Context, devices []string, ignoreError
 	defer Logc(ctx).Debug("<<<< devices.removeDevice")
 
 	var (
-		f   *os.File
+		f   afero.File
 		err error
 	)
 
@@ -674,7 +687,7 @@ func (c *Client) RemoveDevice(ctx context.Context, devices []string, ignoreError
 	for _, deviceName := range devices {
 
 		filename := fmt.Sprintf(c.chrootPathPrefix+"/sys/block/%s/device/delete", deviceName)
-		if f, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0o200); err != nil {
+		if f, err = c.osFs.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0o200); err != nil {
 			Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
 			if ignoreErrors {
 				continue
@@ -746,7 +759,7 @@ func (c *Client) GetLUKSDeviceForMultipathDevice(multipathDevice string) (string
 	dmDevice := strings.TrimSuffix(strings.TrimPrefix(multipathDevice, "/dev/"), "/")
 
 	// Get holder of mpath device
-	dirents, err := os.ReadDir(fmt.Sprintf("/sys/block/%s/holders/", dmDevice))
+	dirents, err := c.osFs.ReadDir(fmt.Sprintf("/sys/block/%s/holders/", dmDevice))
 	if err != nil {
 		return "", err
 	}
@@ -759,7 +772,7 @@ func (c *Client) GetLUKSDeviceForMultipathDevice(multipathDevice string) (string
 	holder := dirents[0].Name()
 
 	// Verify holder is LUKS device
-	b, err := os.ReadFile(fmt.Sprintf("/sys/block/%s/dm/uuid", holder))
+	b, err := c.osFs.ReadFile(fmt.Sprintf("/sys/block/%s/dm/uuid", holder))
 	if err != nil {
 		return "", err
 	}

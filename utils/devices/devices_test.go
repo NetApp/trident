@@ -17,6 +17,8 @@ import (
 
 	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	tridentError "github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/exec"
+	"github.com/netapp/trident/utils/models"
 )
 
 func TestRemoveMultipathDeviceMapping(t *testing.T) {
@@ -66,7 +68,7 @@ func TestRemoveMultipathDeviceMapping(t *testing.T) {
 					Return(tt.mockReturn, tt.mockError)
 			}
 
-			deviceClient := NewDetailed(mockCommand, afero.NewMemMapFs())
+			deviceClient := NewDetailed(mockCommand, afero.NewMemMapFs(), NewDiskSizeGetter())
 			err := deviceClient.RemoveMultipathDeviceMapping(context.TODO(), tt.devicePath)
 			if tt.expectError {
 				assert.Error(t, err)
@@ -181,7 +183,7 @@ func TestClient_scanTargetLUN(t *testing.T) {
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
-			client := NewDetailed(nil, afero.Afero{Fs: params.getFileSystemUtils()})
+			client := NewDetailed(nil, afero.Afero{Fs: params.getFileSystemUtils()}, NewDiskSizeGetter())
 
 			err := client.ScanTargetLUN(context.TODO(), lunID, []int{host1, host2})
 			if params.assertError != nil {
@@ -266,7 +268,7 @@ func TestClient_getLunSerial(t *testing.T) {
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
-			client := NewDetailed(nil, afero.Afero{Fs: params.getFileSystemUtils()})
+			client := NewDetailed(nil, afero.Afero{Fs: params.getFileSystemUtils()}, NewDiskSizeGetter())
 			response, err := client.GetLunSerial(context.TODO(), devicePath)
 			if params.assertError != nil {
 				params.assertError(t, err)
@@ -276,94 +278,599 @@ func TestClient_getLunSerial(t *testing.T) {
 	}
 }
 
-// NOTE: Since this is now in the devices package,
-// we cannot unit test this without finding a way to mock file's Fd() function.
-// Afero does not support this.
-//func TestClient_verifyMultipathDeviceSize(t *testing.T) {
-//	type parameters struct {
-//		getDevicesClient   func(controller *gomock.Controller) Devices
-//		getFs              func(controller *gomock.Controller) afero.Fs
-//		assertError        assert.ErrorAssertionFunc
-//		assertValid        assert.BoolAssertionFunc
-//		expectedDeviceSize int64
-//	}
-//
-//	const deviceName = "sda"
-//	const multipathDeviceName = "dm-0"
-//
-//	tests := map[string]parameters{
-//		"error getting device size": {
-//			getDevicesClient: func(controller *gomock.Controller) Devices {
-//				mockDevices := mock_devices.NewMockDevices(controller)
-//				mockDevices.EXPECT().GetISCSIDiskSize(context.TODO(), gomock.Any()).Return(int64(0),
-//					errors.New("some error"))
-//				return mockDevices
-//			},
-//			assertError:        assert.Error,
-//			assertValid:        assert.False,
-//			expectedDeviceSize: 0,
-//		},
-//		"error getting multipath device size": {
-//			getDevicesClient: func(controller *gomock.Controller) Devices {
-//				mockDevices := mock_devices.NewMockDevices(controller)
-//				mockDevices.EXPECT().GetISCSIDiskSize(context.TODO(), gomock.Any()).Return(int64(1), nil)
-//				mockDevices.EXPECT().GetISCSIDiskSize(context.TODO(), gomock.Any()).Return(int64(0),
-//					errors.New("some error"))
-//				return mockDevices
-//			},
-//			assertError:        assert.Error,
-//			assertValid:        assert.False,
-//			expectedDeviceSize: 0,
-//		},
-//		"device size != multipath device size": {
-//			getDevicesClient: func(controller *gomock.Controller) Devices {
-//				mockDevices := mock_devices.NewMockDevices(controller)
-//				mockDevices.EXPECT().GetISCSIDiskSize(context.TODO(), gomock.Any()).Return(int64(1), nil)
-//				mockDevices.EXPECT().GetISCSIDiskSize(context.TODO(), gomock.Any()).Return(int64(0), nil)
-//				return mockDevices
-//			},
-//			assertError:        assert.NoError,
-//			assertValid:        assert.False,
-//			expectedDeviceSize: 1,
-//		},
-//		"happy path": {
-//			getDevicesClient: func(controller *gomock.Controller) Devices {
-//				mockDevices := mock_devices.NewMockDevices(controller)
-//				mockDevices.EXPECT().GetISCSIDiskSize(context.TODO(), gomock.Any()).Return(int64(1), nil)
-//				mockDevices.EXPECT().GetISCSIDiskSize(context.TODO(), gomock.Any()).Return(int64(1), nil)
-//				return mockDevices
-//			},
-//			getFs: func(controller *gomock.Controller) afero.Fs {
-//				fs := afero.NewMemMapFs()
-//				fs.Create(DevPrefix + deviceName)
-//				fs.Create(multipathDeviceName)
-//				return fs
-//			},
-//			assertError:        assert.NoError,
-//			assertValid:        assert.True,
-//			expectedDeviceSize: 0,
-//		},
-//	}
-//
-//	for name, params := range tests {
-//		t.Run(name, func(t *testing.T) {
-//			ctrl := gomock.NewController(t)
-//			var fs afero.Fs
-//			if params.getFs != nil {
-//				fs = params.getFs(ctrl)
-//			}
-//			client := NewDetailed(execCmd.NewCommand(), fs)
-//			deviceSize, valid, err := client.VerifyMultipathDeviceSize(context.TODO(), multipathDeviceName, deviceName)
-//			if params.assertError != nil {
-//				params.assertError(t, err)
-//			}
-//			if params.assertValid != nil {
-//				params.assertValid(t, valid)
-//			}
-//			assert.Equal(t, params.expectedDeviceSize, deviceSize)
-//		})
-//	}
-//}
+func TestClient_EnsureDeviceReadable(t *testing.T) {
+	devicePath := "/dev/mock-0"
+	tests := map[string]struct {
+		getMockCmd  func() exec.Command
+		expectError bool
+	}{
+		"Happy Path": {
+			getMockCmd: func() exec.Command {
+				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
+				outBytes := 4096
+				out := make([]byte, outBytes)
+				for i := range outBytes {
+					out[i] = 0
+				}
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "dd", 5*time.Second, false, "if="+devicePath,
+					"bs=4096", "count=1", "status=none").Return(out, nil)
+				return mockCommand
+			},
+			expectError: false,
+		},
+		"Fail to read device": {
+			getMockCmd: func() exec.Command {
+				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "dd", 5*time.Second, false, "if="+devicePath,
+					"bs=4096", "count=1", "status=none").Return([]byte(""), fmt.Errorf("error"))
+				return mockCommand
+			},
+			expectError: true,
+		},
+		"NoDataRead": {
+			getMockCmd: func() exec.Command {
+				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "dd", 5*time.Second, false, "if="+devicePath,
+					"bs=4096", "count=1", "status=none").Return([]byte(""), nil)
+				return mockCommand
+			},
+			expectError: true,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			deviceClient := NewDetailed(params.getMockCmd(), afero.NewMemMapFs(), NewDiskSizeGetter())
+			err := deviceClient.EnsureDeviceReadable(context.TODO(), devicePath)
+			if params.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestCanFlushMultipathDevice(t *testing.T) {
+	devicePath := "/dev/mock-0"
+	tests := map[string]struct {
+		getMockCmd  func() exec.Command
+		expectError bool
+	}{
+		"Happy Path": {
+			getMockCmd: func() exec.Command {
+				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 5*time.Second, true,
+					"-C", devicePath).Return([]byte(""), nil)
+				return mockCommand
+			},
+			expectError: false,
+		},
+		"Device Not Ready For Flush": {
+			getMockCmd: func() exec.Command {
+				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 5*time.Second, true,
+					"-C", devicePath).Return([]byte(""), fmt.Errorf("error"))
+				return mockCommand
+			},
+			expectError: true,
+		},
+		"Device Unavailable": {
+			getMockCmd: func() exec.Command {
+				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 5*time.Second, true,
+					"-C", devicePath).Return([]byte("no usable paths found"), fmt.Errorf("error"))
+				return mockCommand
+			},
+			expectError: true,
+		},
+		"Flush timeout exceeded": {
+			getMockCmd: func() exec.Command {
+				volumeFlushExceptions[devicePath] = time.Now().Add(-1 * time.Hour)
+				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 5*time.Second, true,
+					"-C", devicePath).Return([]byte("no usable paths found"), fmt.Errorf("error"))
+				return mockCommand
+			},
+			expectError: true,
+		},
+	}
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			deviceClient := NewDetailed(params.getMockCmd(), afero.NewMemMapFs(), NewDiskSizeGetter())
+			err := deviceClient.canFlushMultipathDevice(context.TODO(), devicePath)
+			delete(volumeFlushExceptions, devicePath)
+			if params.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestFindDevicesForMultipathDevice(t *testing.T) {
+	dm := "dm-0"
+	device := "sda"
+	tests := map[string]struct {
+		getFs  func() afero.Fs
+		expect []string
+	}{
+		"Happy Path": {
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				fs.Create(fmt.Sprintf("/sys/block/%s/slaves/%s", dm, device))
+				return fs
+			},
+			expect: []string{device},
+		},
+		"Device Not Found": {
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				return fs
+			},
+			expect: []string{},
+		},
+	}
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			deviceClient := NewDetailed(nil, params.getFs(), nil)
+			s := deviceClient.FindDevicesForMultipathDevice(context.TODO(), dm)
+			assert.Equal(t, params.expect, s)
+		})
+	}
+}
+
+func TestVerifyMultipathDevice(t *testing.T) {
+	tests := map[string]struct {
+		getFs           func() afero.Fs
+		publishInfo     *models.VolumePublishInfo
+		deviceInfo      *models.ScsiDeviceInfo
+		allPublishInfos []models.VolumePublishInfo
+		expectError     bool
+	}{
+		"CompareWithPublishedDevicePath Happy Path": {
+			publishInfo: &models.VolumePublishInfo{
+				DevicePath: "/dev/dm-0",
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "/dev/dm-0",
+			},
+			getFs: func() afero.Fs {
+				return afero.NewMemMapFs()
+			},
+			expectError: false,
+		},
+		"CompareWithPublishedDevicePath Incorrect Multipath": {
+			publishInfo: &models.VolumePublishInfo{
+				DevicePath: "/dev/dm-0",
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "/dev/dm-1",
+			},
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				fs.Mkdir("/sys/block/dm-0/slaves/sda", 0o755)
+				return fs
+			},
+			expectError: false,
+		},
+		"CompareWithPublishedDevicePath Incorrect Multipath, Ghost Device": {
+			publishInfo: &models.VolumePublishInfo{
+				DevicePath: "/dev/dm-0",
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "/dev/dm-1",
+			},
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				fs.Mkdir("/sys/block/dm-0/slaves", 0o755)
+				return fs
+			},
+			expectError: false,
+		},
+		"CompareWithPublishedSerialNumber Happy Path": {
+			publishInfo: &models.VolumePublishInfo{
+				DevicePath: "",
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiLunSerial: "1234",
+					},
+				},
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "/dev/dm-0",
+				DevicePaths:     []string{"/dev/sda"},
+			},
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				afero.WriteFile(fs, "/dev/sda/vpd_pg80", []byte{
+					0, 128, 0, 12, 121, 111, 99, 119, 66, 63, 87, 108,
+					55, 120, 50, 108,
+				}, 0o755)
+				return fs
+			},
+			expectError: false,
+		},
+		"CompareWithPublishedSerialNumber GetMultipathDeviceUUID Error": {
+			publishInfo: &models.VolumePublishInfo{
+				DevicePath: "",
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiLunSerial: "yocwB?Wl7x2l",
+					},
+				},
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "/dev/dm-0",
+				DevicePaths:     []string{"/dev/sda"},
+			},
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				afero.WriteFile(fs, "/dev/sda/vpd_pg80", []byte{
+					0, 128, 0, 12, 121, 111, 99, 119, 66, 63, 87, 108,
+					55, 120, 50, 108,
+				}, 0o755)
+				fs.Mkdir("/sys/block/dm-0", 0o755)
+				return fs
+			},
+			expectError: true,
+		},
+		"CompareWithPublishedSerialNumber Missing Multipath Device": {
+			publishInfo: &models.VolumePublishInfo{
+				DevicePath: "",
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiLunSerial: "yocwB?Wl7x2l",
+					},
+				},
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "/dev/dm-0",
+				DevicePaths:     []string{"/dev/sda"},
+			},
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				afero.WriteFile(fs, "/dev/sda/vpd_pg80", []byte{
+					0, 128, 0, 12, 121, 111, 99, 119, 66, 63, 87, 108,
+					55, 120, 50, 108,
+				}, 0o755)
+				return fs
+			},
+			expectError: true,
+		},
+		"CompareWithPublishedSerialNumber Fail Getting LUN Serial": {
+			publishInfo: &models.VolumePublishInfo{
+				DevicePath: "",
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiLunSerial: "yocwB?Wl7x2l",
+					},
+				},
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "/dev/dm-0",
+				DevicePaths:     []string{"/dev/sda"},
+			},
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// LUN serial is not defined
+				return fs
+			},
+			expectError: true,
+		},
+		"CompareWithPublishedSerialNumber Ghost Device": {
+			publishInfo: &models.VolumePublishInfo{
+				DevicePath: "",
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiLunSerial: "yocwB?Wl7x2l",
+					},
+				},
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "/dev/dm-0",
+				DevicePaths:     []string{"/dev/sda"},
+			},
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// Defines LUN serial
+				afero.WriteFile(fs, "/dev/sda/vpd_pg80", []byte{
+					0, 128, 0, 12, 121, 111, 99, 119, 66, 63, 87, 108,
+					55, 120, 50, 108,
+				}, 0o755)
+				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("mpath-3600a0980796f6377423f576c3778326c"), 0o755)
+				fs.Mkdir("/sys/block/dm-1/slaves/sdb", 0o755)
+				return fs
+			},
+			expectError: false,
+		},
+		"CompareWithPublishedSerialNumber Not Ghost Device": {
+			publishInfo: &models.VolumePublishInfo{
+				DevicePath: "",
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiLunSerial: "yocwB?Wl7x2l",
+					},
+				},
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "/dev/dm-0",
+				DevicePaths:     []string{"/dev/sda"},
+			},
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				afero.WriteFile(fs, "/dev/sda/vpd_pg80", []byte{
+					0, 128, 0, 12, 121, 111, 99, 119, 66, 63, 87, 108,
+					55, 120, 50, 108,
+				}, 0o755)
+				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("mpath-3600a0980796f6377423f576c3778326c"), 0o755)
+				fs.Mkdir("/sys/block/dm-1/slaves/", 0o755)
+				return fs
+			},
+			expectError: false,
+		},
+		"CompareWithAllPublishInfos Happy Path": {
+			publishInfo: &models.VolumePublishInfo{
+				DevicePath: "",
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiLunSerial: "",
+					},
+				},
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "/dev/dm-0",
+				DevicePaths:     []string{"/dev/sda"},
+			},
+			allPublishInfos: []models.VolumePublishInfo{
+				{
+					VolumeAccessInfo: models.VolumeAccessInfo{
+						IscsiAccessInfo: models.IscsiAccessInfo{
+							IscsiLunNumber: 1,
+						},
+					},
+				},
+			},
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				afero.WriteFile(fs, "/dev/sda/vpd_pg80", []byte{
+					0, 128, 0, 12, 121, 111, 99, 119, 66, 63, 87, 108,
+					55, 120, 50, 108,
+				}, 0o755)
+				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("mpath-3600a0980796f6377423f576c3778326c"), 0o755)
+				fs.Mkdir("/sys/block/dm-1/slaves/", 0o755)
+				return fs
+			},
+			expectError: false,
+		},
+		"CompareWithAllPublishInfos Missing All Publish Info": {
+			publishInfo: &models.VolumePublishInfo{
+				DevicePath: "",
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiLunSerial: "",
+					},
+				},
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "/dev/dm-0",
+				DevicePaths:     []string{"/dev/sda"},
+			},
+			allPublishInfos: []models.VolumePublishInfo{},
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				afero.WriteFile(fs, "/dev/sda/vpd_pg80", []byte{
+					0, 128, 0, 12, 121, 111, 99, 119, 66, 63, 87, 108,
+					55, 120, 50, 108,
+				}, 0o755)
+				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("mpath-3600a0980796f6377423f576c3778326c"), 0o755)
+				fs.Mkdir("/sys/block/dm-1/slaves/", 0o755)
+				return fs
+			},
+			expectError: true,
+		},
+		"CompareWithAllPublishInfos Duplicate LUNs": {
+			publishInfo: &models.VolumePublishInfo{
+				DevicePath: "",
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiLunSerial: "",
+						IscsiLunNumber: 2,
+					},
+				},
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "/dev/dm-0",
+				DevicePaths:     []string{"/dev/sda"},
+			},
+			allPublishInfos: []models.VolumePublishInfo{
+				{
+					VolumeAccessInfo: models.VolumeAccessInfo{
+						IscsiAccessInfo: models.IscsiAccessInfo{
+							IscsiLunNumber: 2,
+						},
+					},
+				},
+				{
+					VolumeAccessInfo: models.VolumeAccessInfo{
+						IscsiAccessInfo: models.IscsiAccessInfo{
+							IscsiLunNumber: 2,
+						},
+					},
+				},
+			},
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				afero.WriteFile(fs, "/dev/sda/vpd_pg80", []byte{
+					0, 128, 0, 12, 121, 111, 99, 119, 66, 63, 87, 108,
+					55, 120, 50, 108,
+				}, 0o755)
+				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("mpath-3600a0980796f6377423f576c3778326c"), 0o755)
+				fs.Mkdir("/sys/block/dm-1/slaves/", 0o755)
+				return fs
+			},
+			expectError: true,
+		},
+	}
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			deviceClient := NewDetailed(nil, params.getFs(), nil)
+			_, err := deviceClient.VerifyMultipathDevice(context.TODO(), params.publishInfo,
+				params.allPublishInfos,
+				params.deviceInfo)
+			if params.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestRemoveDevice(t *testing.T) {
+	tests := map[string]struct {
+		getFs       func() afero.Fs
+		deviceInfo  *models.ScsiDeviceInfo
+		expectError bool
+	}{
+		"Happy Path": {
+			deviceInfo: &models.ScsiDeviceInfo{
+				Devices: []string{"sda"},
+			},
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				fs.Create("/sys/block/sda/device/delete")
+				return fs
+			},
+			expectError: false,
+		},
+		"Error Opening File": {
+			deviceInfo: &models.ScsiDeviceInfo{
+				Devices: []string{"sda"},
+			},
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				return fs
+			},
+			expectError: true,
+		},
+	}
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			deviceClient := NewDetailed(nil, params.getFs(), NewDiskSizeGetter())
+			err := deviceClient.RemoveDevice(context.TODO(), params.deviceInfo.Devices, false)
+			if params.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestGetLUKSDeviceForMultipathDevice(t *testing.T) {
+	multipathDevice := "/dev/dm-0"
+	tests := map[string]struct {
+		getFs       func() afero.Fs
+		expectError bool
+	}{
+		"Happy Path": {
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				fs.Create("/sys/block/dm-0/holders/dm-1")
+				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("CRYPT-LUKS2-b600e061186e46ac8b05590f389da249-luks-trident_pvc_4b7874ba_58d7_4d93_8d36_09a09b837f81"), 0o755)
+				return fs
+			},
+			expectError: false,
+		},
+		"No Holders Found": {
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				fs.Mkdir("/sys/block/dm-0/holders/", 0o755)
+				// afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("CRYPT-LUKS2-b600e061186e46ac8b05590f389da249-luks-trident_pvc_4b7874ba_58d7_4d93_8d36_09a09b837f81"), 0755)
+				return fs
+			},
+			expectError: true,
+		},
+		"Multiple Holders Found": {
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				fs.Create("/sys/block/dm-0/holders/dm-1")
+				fs.Create("/sys/block/dm-0/holders/dm-2")
+				// afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("CRYPT-LUKS2-b600e061186e46ac8b05590f389da249-luks-trident_pvc_4b7874ba_58d7_4d93_8d36_09a09b837f81"), 0755)
+				return fs
+			},
+			expectError: true,
+		},
+		"Not LUKS Device": {
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				fs.Create("/sys/block/dm-0/holders/dm-1")
+				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("not-a-luks-uuid"), 0o755)
+				return fs
+			},
+			expectError: true,
+		},
+		"Error Reading Holders Dir": {
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				return fs
+			},
+			expectError: true,
+		},
+		"Error Reading UUID": {
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				fs.Create("/sys/block/dm-0/holders/dm-1")
+				return fs
+			},
+			expectError: true,
+		},
+	}
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			deviceClient := NewDetailed(nil, params.getFs(), NewDiskSizeGetter())
+			_, err := deviceClient.GetLUKSDeviceForMultipathDevice(multipathDevice)
+			if params.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestFindMultipathDeviceForDevice(t *testing.T) {
+	device := "sda"
+	tests := map[string]struct {
+		getFs  func() afero.Fs
+		expect string
+	}{
+		"Happy Path": {
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				fs.Create(fmt.Sprintf("/sys/block/%s/holders/dm-1", device))
+				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("CRYPT-LUKS2-b600e061186e46ac8b05590f389da249-luks-trident_pvc_4b7874ba_58d7_4d93_8d36_09a09b837f81"), 0o755)
+				return fs
+			},
+			expect: "dm-1",
+		},
+		"Not Found": {
+			getFs: func() afero.Fs {
+				return afero.NewMemMapFs()
+			},
+			expect: "",
+		},
+	}
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			deviceClient := NewDetailed(nil, params.getFs(), NewDiskSizeGetter())
+			foundDevice := deviceClient.FindMultipathDeviceForDevice(context.TODO(), device)
+			assert.Equal(t, params.expect, foundDevice)
+		})
+	}
+}
 
 func TestWaitForDevicesRemoval(t *testing.T) {
 	errMsg := "timed out waiting for devices to be removed"
@@ -436,7 +943,7 @@ func TestWaitForDevicesRemoval(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			fs, err := params.getOsFs()
 			assert.NoError(t, err)
-			devices := NewDetailed(nil, fs)
+			devices := NewDetailed(nil, fs, nil)
 			err = devices.WaitForDevicesRemoval(context.Background(), params.devicePathPrefix, params.deviceNames,
 				params.maxWaitTime)
 			if params.expectedError != nil {

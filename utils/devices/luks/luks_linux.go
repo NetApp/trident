@@ -21,6 +21,9 @@ import (
 const (
 	luksCommandTimeout time.Duration = time.Second * 30
 
+	luksCypherMode = "aes-xts-plain64"
+	luksType       = "luks2"
+
 	// Return code for "no permission (bad passphrase)" from cryptsetup command
 	luksCryptsetupBadPassphraseReturnCode = 2
 

@@ -40,9 +40,6 @@ var (
 	iscsiClient    = iscsi.NewDetailed(chrootPathPrefix, command, iscsi.DefaultSelfHealingExclusion, NewOSClient(),
 		devicesClient, filesystem.New(mountClient), mountClient, IscsiUtils, afero.Afero{Fs: afero.NewOsFs()})
 
-	// Non-persistent map to maintain flush delays/errors if any, for device path(s).
-	iSCSIVolumeFlushExceptions = make(map[string]time.Time)
-
 	// perNodeIgroupRegex is used to ensure an igroup meets the following format:
 	// <up to and including 59 characters of a container orchestrator node name>-<36 characters of trident version uuid>
 	// ex: Kubernetes-NodeA-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z

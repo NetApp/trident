@@ -16,7 +16,7 @@ import (
 func TestFlushOneDevice(t *testing.T) {
 	ctx := context.Background()
 
-	devices := NewDetailed(exec.NewCommand(), afero.NewMemMapFs())
+	devices := NewDetailed(exec.NewCommand(), afero.NewMemMapFs(), nil)
 	result := devices.FlushOneDevice(ctx, "/test/path")
 	assert.Error(t, result, "no error")
 	assert.True(t, errors.IsUnsupportedError(result), "not UnsupportedError")
@@ -25,7 +25,7 @@ func TestFlushOneDevice(t *testing.T) {
 func TestGetISCSIDiskSize(t *testing.T) {
 	ctx := context.Background()
 
-	devices := NewDetailed(exec.NewCommand(), afero.NewMemMapFs())
+	devices := NewDetailed(exec.NewCommand(), afero.NewMemMapFs(), NewDiskSizeGetter())
 	result, err := devices.GetDiskSize(ctx, "/test/path")
 	assert.Equal(t, result, int64(0), "received disk size")
 	assert.Error(t, err, "no error")

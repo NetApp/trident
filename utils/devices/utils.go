@@ -3,11 +3,11 @@
 package devices
 
 import (
-	"os"
+	"github.com/spf13/afero"
 )
 
-func PathExists(path string) (bool, error) {
-	if _, err := os.Stat(path); err == nil {
+func PathExists(fs afero.Fs, path string) (bool, error) {
+	if _, err := fs.Stat(path); err == nil {
 		return true, nil
 	}
 	return false, nil

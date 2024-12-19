@@ -7,7 +7,6 @@ package devices
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 	"syscall"
 	"time"
@@ -19,22 +18,12 @@ import (
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
+	execCmd "github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/filesystem"
 )
 
 const (
-	luksCloseTimeout = 30 * time.Second
-	luksCypherMode   = "aes-xts-plain64"
-	luksType         = "luks2"
-
-	// Return codes for `cryptsetup status`
-	cryptsetupStatusDeviceDoesExistStatusCode    = 0
-	cryptsetupStatusDeviceDoesNotExistStatusCode = 4
-
-	// Return codes for `cryptsetup isLuks`
-	cryptsetupIsLuksDeviceIsLuksStatusCode    = 0
-	cryptsetupIsLuksDeviceIsNotLuksStatusCode = 1
-
+	luksCloseTimeout         = 30 * time.Second
 	luksCloseMaxWaitDuration = 2 * time.Minute
 )
 
@@ -71,7 +60,7 @@ func (c *Client) FlushOneDevice(ctx context.Context, devicePath string) error {
 }
 
 // GetDiskSize queries the current block size in bytes
-func (c *Client) GetDiskSize(ctx context.Context, devicePath string) (int64, error) {
+func (c *DiskSizeGetter) GetDiskSize(ctx context.Context, devicePath string) (int64, error) {
 	fields := LogFields{"rawDevicePath": devicePath}
 	Logc(ctx).WithFields(fields).Debug(">>>> devices_linux.GetDiskSize")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices_linux.GetDiskSize")
@@ -203,7 +192,7 @@ func (c *Client) GetDeviceFSType(ctx context.Context, device string) (string, er
 		if errors.IsTimeoutError(err) {
 			c.ListAllDevices(ctx)
 			return "", err
-		} else if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 2 {
+		} else if exitErr, ok := err.(execCmd.ExitError); ok && exitErr.ExitCode() == 2 {
 			// EITHER: Disk device is unformatted.
 			// OR: For 'blkid', if the specified token (TYPE/PTTYPE, etc) was
 			// not found, or no (specified) devices could be identified, an
@@ -293,7 +282,7 @@ func (c *Client) WaitForDevice(ctx context.Context, device string) error {
 	Logc(ctx).WithFields(fields).Debug(">>>> devices.waitForDevice")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.waitForDevice")
 
-	exists, err := PathExists(device)
+	exists, err := PathExists(c.osFs, device)
 	if !exists || err != nil {
 		return errors.New("device not yet present")
 	} else {

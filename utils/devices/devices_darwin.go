@@ -37,7 +37,7 @@ func (c *Client) VerifyMultipathDeviceSize(ctx context.Context, multipathDevice,
 }
 
 // GetDiskSize unused stub function
-func (c *Client) GetDiskSize(ctx context.Context, _ string) (int64, error) {
+func (c *DiskSizeGetter) GetDiskSize(ctx context.Context, _ string) (int64, error) {
 	Logc(ctx).Debug(">>>> devices_darwin.GetDiskSize")
 	defer Logc(ctx).Debug("<<<< devices_darwin.GetDiskSize")
 	return 0, errors.UnsupportedError("GetDiskSize is not supported for darwin")
