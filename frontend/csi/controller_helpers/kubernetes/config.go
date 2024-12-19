@@ -47,6 +47,7 @@ const (
 	AnnBlockSize            = annPrefix + "/blockSize"
 	AnnFileSystem           = annPrefix + "/fileSystem"
 	AnnCloneFromPVC         = annPrefix + "/cloneFromPVC"
+	AnnCloneFromSnapshot    = annPrefix + "/cloneFromSnapshot"
 	AnnSplitOnClone         = annPrefix + "/splitOnClone"
 	AnnNotManaged           = annPrefix + "/notManaged"
 	AnnImportOriginalName   = annPrefix + "/importOriginalName"
