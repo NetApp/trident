@@ -34,8 +34,8 @@ import (
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	persistentstore "github.com/netapp/trident/persistent_store"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/osutils"
 )
 
 var (
@@ -304,7 +304,7 @@ func main() {
 	// Process any docker plugin environment variables (after we flag.Parse() the CLI above)
 	if *dockerPluginMode {
 		os.Setenv("DOCKER_PLUGIN_MODE", "1")
-		utils.SetChrootPathPrefix("/host")
+		osutils.SetChrootPathPrefix("/host")
 	}
 
 	err = processDockerPluginArgs(ctx)

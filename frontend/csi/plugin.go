@@ -30,6 +30,7 @@ import (
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
+	"github.com/netapp/trident/utils/osutils"
 )
 
 const (
@@ -91,6 +92,7 @@ type Plugin struct {
 	mount   mount.Mount
 	fs      filesystem.Filesystem
 	fcp     fcp.FCP
+	osutils osutils.Utils
 }
 
 func NewControllerPlugin(
@@ -112,6 +114,7 @@ func NewControllerPlugin(
 		enableForceDetach: enableForceDetach,
 		opCache:           sync.Map{},
 		command:           execCmd.NewCommand(),
+		osutils:           osutils.New(),
 	}
 
 	var err error
@@ -164,9 +167,8 @@ func NewNodePlugin(
 	}
 	Logc(ctx).Info(msg)
 
-	// TODO (vivintw) the adaptors are being plugged in here as a temporary measure to prevent cyclic dependencies.
 	// NewClient() must plugin default implementation of the various package clients.
-	iscsiClient, err := iscsi.New(utils.NewOSClient())
+	iscsiClient, err := iscsi.New()
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +180,7 @@ func NewNodePlugin(
 
 	fs := filesystem.New(mountClient)
 
-	fcpClient, err := fcp.New(utils.NewOSClient(), fs)
+	fcpClient, err := fcp.New()
 	if err != nil {
 		return nil, err
 	}
@@ -205,6 +207,7 @@ func NewNodePlugin(
 		mount:   mountClient,
 		fs:      fs,
 		command: execCmd.NewCommand(),
+		osutils: osutils.New(),
 	}
 
 	if runtime.GOOS == "windows" {
@@ -275,7 +278,7 @@ func NewAllInOnePlugin(
 
 	// TODO (vivintw) the adaptors are being plugged in here as a temporary measure to prevent cyclic dependencies.
 	// NewClient() must plugin default implementation of the various package clients.
-	iscsiClient, err := iscsi.New(utils.NewOSClient())
+	iscsiClient, err := iscsi.New()
 	if err != nil {
 		return nil, err
 	}
@@ -287,7 +290,7 @@ func NewAllInOnePlugin(
 
 	fs := filesystem.New(mountClient)
 
-	fcpClient, err := fcp.New(utils.NewOSClient(), fs)
+	fcpClient, err := fcp.New()
 	if err != nil {
 		return nil, err
 	}
@@ -313,6 +316,7 @@ func NewAllInOnePlugin(
 		mount:                    mountClient,
 		fs:                       fs,
 		command:                  execCmd.NewCommand(),
+		osutils:                  osutils.New(),
 	}
 
 	// Define controller capabilities

@@ -1,13 +1,12 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
 
-package utils
+package osutils
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 	"net"
-	"os"
 	"os/exec"
 	"path"
 	"time"
@@ -21,19 +20,19 @@ import (
 )
 
 // NFSActiveOnHost will return if the rpc-statd daemon is active on the given host
-func NFSActiveOnHost(ctx context.Context) (bool, error) {
+func (o *OSUtils) NFSActiveOnHost(ctx context.Context) (bool, error) {
 	Logc(ctx).Debug(">>>> osutils_linux.NFSActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_linux.NFSActiveOnHost")
 
-	return ServiceActiveOnHost(ctx, "rpc-statd")
+	return o.ServiceActiveOnHost(ctx, "rpc-statd")
 }
 
 // ServiceActiveOnHost checks if the service is currently running
-func ServiceActiveOnHost(ctx context.Context, service string) (bool, error) {
+func (o *OSUtils) ServiceActiveOnHost(ctx context.Context, service string) (bool, error) {
 	Logc(ctx).Debug(">>>> osutils_linux.ServiceActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_linux.ServiceActiveOnHost")
 
-	output, err := command.ExecuteWithTimeout(ctx, "systemctl", 30*time.Second, true, "is-active", service)
+	output, err := o.command.ExecuteWithTimeout(ctx, "systemctl", 30*time.Second, true, "is-active", service)
 	if err != nil {
 		if _, ok := err.(*exec.ExitError); ok {
 			Logc(ctx).WithField("service", service).Debug("Service is not active on the host.")
@@ -49,7 +48,7 @@ func ServiceActiveOnHost(ctx context.Context, service string) (bool, error) {
 }
 
 // GetHostSystemInfo returns information about the host system
-func GetHostSystemInfo(ctx context.Context) (*models.HostSystem, error) {
+func (o *OSUtils) GetHostSystemInfo(ctx context.Context) (*models.HostSystem, error) {
 	Logc(ctx).Debug(">>>> osutils_linux.GetHostSystemInfo")
 	defer Logc(ctx).Debug("<<<< osutils_linux.GetHostSystemInfo")
 
@@ -61,11 +60,12 @@ func GetHostSystemInfo(ctx context.Context) (*models.HostSystem, error) {
 	osInfo := sysinfo.OS{}
 	msg := "Problem reading host system info."
 
-	if RunningInContainer() {
+	if runningInContainer() {
 		// Get the hosts' info via tridentctl because the sysInfo library needs to be chrooted in order to detect
 		// the host OS and not the container's but chroot is irreversible and thus needs to run in a separate
 		// short-lived binary
-		data, err = command.ExecuteWithTimeout(ctx, "tridentctl", 5*time.Second, true, "system", "--chroot-path", "/host")
+		data, err = o.command.ExecuteWithTimeout(ctx, "tridentctl", 5*time.Second, true, "system", "--chroot-path",
+			"/host")
 		if err != nil {
 			Logc(ctx).WithField("err", err).Error(msg)
 			return nil, err
@@ -92,7 +92,7 @@ func GetHostSystemInfo(ctx context.Context) (*models.HostSystem, error) {
 }
 
 // getIPAddresses uses the Linux-specific netlink library to get a host's external IP addresses.
-func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
+func (o *OSUtils) getIPAddresses(ctx context.Context) ([]net.Addr, error) {
 	Logc(ctx).Debug(">>>> osutils_linux.getIPAddresses")
 	defer Logc(ctx).Debug("<<<< osutils_linux.getIPAddresses")
 
@@ -100,7 +100,7 @@ func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
 	addressMap := make(map[string]net.Addr)
 
 	// Consider addresses from non-dummy interfaces
-	addresses, err := getIPAddressesExceptingDummyInterfaces(ctx)
+	addresses, err := o.getIPAddressesExceptingDummyInterfaces(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
 	}
 
 	// Consider addresses from interfaces on default routes
-	addresses, err = getIPAddressesExceptingNondefaultRoutes(ctx)
+	addresses, err = o.getIPAddressesExceptingNondefaultRoutes(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -125,11 +125,11 @@ func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
 }
 
 // getIPAddressesExceptingDummyInterfaces returns all global unicast addresses from non-dummy interfaces.
-func getIPAddressesExceptingDummyInterfaces(ctx context.Context) ([]net.Addr, error) {
+func (o *OSUtils) getIPAddressesExceptingDummyInterfaces(ctx context.Context) ([]net.Addr, error) {
 	Logc(ctx).Debug(">>>> osutils_linux.getAddressesExceptingDummyInterfaces")
 	defer Logc(ctx).Debug("<<<< osutils_linux.getAddressesExceptingDummyInterfaces")
 
-	allLinks, err := netlink.LinkList()
+	allLinks, err := netLink.LinkList()
 	if err != nil {
 		Logc(ctx).Error(err)
 		return nil, err
@@ -149,16 +149,16 @@ func getIPAddressesExceptingDummyInterfaces(ctx context.Context) ([]net.Addr, er
 		links = append(links, link)
 	}
 
-	return getUsableAddressesFromLinks(ctx, links), nil
+	return o.getUsableAddressesFromLinks(ctx, links), nil
 }
 
 // getIPAddressesExceptingNondefaultRoutes returns all global unicast addresses from interfaces on default routes.
-func getIPAddressesExceptingNondefaultRoutes(ctx context.Context) ([]net.Addr, error) {
+func (o *OSUtils) getIPAddressesExceptingNondefaultRoutes(ctx context.Context) ([]net.Addr, error) {
 	Logc(ctx).Debug(">>>> osutils_linux.getAddressesExceptingNondefaultRoutes")
 	defer Logc(ctx).Debug("<<<< osutils_linux.getAddressesExceptingNondefaultRoutes")
 
 	// Get all default routes (nil destination)
-	routes, err := netlink.RouteListFiltered(netlink.FAMILY_ALL, &netlink.Route{}, netlink.RT_FILTER_DST)
+	routes, err := netLink.RouteListFiltered(netlink.FAMILY_ALL, &netlink.Route{}, netlink.RT_FILTER_DST)
 	if err != nil {
 		Logc(ctx).Error(err)
 		return nil, err
@@ -173,18 +173,18 @@ func getIPAddressesExceptingNondefaultRoutes(ctx context.Context) ([]net.Addr, e
 
 	links := make([]netlink.Link, 0)
 	for linkIndex := range intfIndexMap {
-		if link, err := netlink.LinkByIndex(linkIndex); err != nil {
+		if link, err := netLink.LinkByIndex(linkIndex); err != nil {
 			Logc(ctx).Error(err)
 		} else {
 			links = append(links, link)
 		}
 	}
 
-	return getUsableAddressesFromLinks(ctx, links), nil
+	return o.getUsableAddressesFromLinks(ctx, links), nil
 }
 
 // getUsableAddressesFromLinks returns all global unicast addresses on the specified interfaces.
-func getUsableAddressesFromLinks(ctx context.Context, links []netlink.Link) []net.Addr {
+func (o *OSUtils) getUsableAddressesFromLinks(ctx context.Context, links []netlink.Link) []net.Addr {
 	addrs := make([]net.Addr, 0)
 
 	for _, link := range links {
@@ -192,7 +192,7 @@ func getUsableAddressesFromLinks(ctx context.Context, links []netlink.Link) []ne
 		logFields := LogFields{"interface": link.Attrs().Name, "type": link.Type()}
 		Logc(ctx).WithFields(logFields).Debug("Considering interface.")
 
-		linkAddrs, err := netlink.AddrList(link, netlink.FAMILY_ALL)
+		linkAddrs, err := netLink.AddrList(link, netlink.FAMILY_ALL)
 		if err != nil {
 			Log().WithFields(logFields).Errorf("Could not get addresses for interface; %v", err)
 			continue
@@ -222,8 +222,8 @@ func getUsableAddressesFromLinks(ctx context.Context, links []netlink.Link) []ne
 }
 
 // IsLikelyDir determines if mountpoint is a directory
-func IsLikelyDir(mountpoint string) (bool, error) {
-	stat, err := os.Stat(mountpoint)
+func (o *OSUtils) IsLikelyDir(mountpoint string) (bool, error) {
+	stat, err := o.osFs.Stat(mountpoint)
 	if err != nil {
 		return false, err
 	}

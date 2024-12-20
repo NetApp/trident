@@ -10,16 +10,6 @@ import (
 
 // TODO (vivintw) this file needs to be removed once all the files under utils are packaged correctly.
 
-type OSClient struct{}
-
-func NewOSClient() OSClient {
-	return OSClient{}
-}
-
-func (c OSClient) PathExists(path string) (bool, error) {
-	return PathExists(path)
-}
-
 func GetDeviceInfoForLUN(
 	ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string, isDetachCall bool,
 ) (*models.ScsiDeviceInfo, error) {

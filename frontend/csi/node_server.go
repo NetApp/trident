@@ -33,6 +33,7 @@ import (
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/osutils"
 )
 
 const (
@@ -263,7 +264,7 @@ func (p *Plugin) NodeUnpublishVolume(
 		return nil, status.Error(codes.InvalidArgument, "no target path provided")
 	}
 
-	isDir, err := utils.IsLikelyDir(targetPath)
+	isDir, err := p.osutils.IsLikelyDir(targetPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			Logc(ctx).WithFields(fields).Infof("target path (%s) not found; volume is not mounted.", targetPath)
@@ -305,7 +306,7 @@ func (p *Plugin) NodeUnpublishVolume(
 	// however today Kubernetes performs this deletion. Here we are making best efforts
 	// to delete the resource at target path. Sometimes this fails resulting CSI calling
 	// NodeUnpublishVolume again and usually deletion goes through in the second attempt.
-	if err = utils.DeleteResourceAtPath(ctx, targetPath); err != nil {
+	if err = p.osutils.DeleteResourceAtPath(ctx, targetPath); err != nil {
 		Logc(ctx).Debugf("Unable to delete resource at target path: %s; %s", targetPath, err)
 	}
 
@@ -340,7 +341,7 @@ func (p *Plugin) NodeGetVolumeStats(
 	}
 
 	// Ensure volume is published at path
-	exists, err := utils.PathExists(req.GetVolumePath())
+	exists, err := p.osutils.PathExists(req.GetVolumePath())
 	if !exists || err != nil {
 		return nil, status.Error(codes.NotFound,
 			fmt.Sprintf("could not find volume mount at path: %s; %v", req.GetVolumePath(), err))
@@ -655,7 +656,7 @@ func (p *Plugin) NodeGetInfo(
 func (p *Plugin) nodeGetInfo(ctx context.Context) *models.Node {
 	// Only get the host system info if we don't have the info yet.
 	if p.hostInfo == nil {
-		host, err := utils.GetHostSystemInfo(ctx)
+		host, err := p.osutils.GetHostSystemInfo(ctx)
 		if err != nil {
 			p.hostInfo = &models.HostSystem{}
 			Logc(ctx).WithError(err).Warn("Unable to get host system information.")
@@ -680,7 +681,7 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *models.Node {
 		Logc(ctx).WithField("IQN", iscsiWWN).Info("Discovered iSCSI initiator name.")
 	}
 
-	ips, err := utils.GetIPAddresses(ctx)
+	ips, err := p.osutils.GetIPAddresses(ctx)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Error("Could not get IP addresses.")
 	} else if len(ips) == 0 {
@@ -696,7 +697,7 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *models.Node {
 
 	// Discover active protocol services on the host.
 	var services []string
-	nfsActive, err := utils.NFSActiveOnHost(ctx)
+	nfsActive, err := p.osutils.NFSActiveOnHost(ctx)
 	if err != nil {
 		Logc(ctx).WithError(err).Warn("Error discovering NFS service on host.")
 	}
@@ -704,7 +705,7 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *models.Node {
 		services = append(services, "NFS")
 	}
 
-	smbActive, err := utils.SMBActiveOnHost(ctx)
+	smbActive, err := osutils.SMBActiveOnHost(ctx)
 	if err != nil {
 		Logc(ctx).WithError(err).Warn("Error discovering SMB service on host.")
 	}
@@ -712,7 +713,7 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *models.Node {
 		services = append(services, "SMB")
 	}
 
-	iscsiActive, err := utils.ISCSIActiveOnHost(ctx, *p.hostInfo)
+	iscsiActive, err := p.iscsi.ISCSIActiveOnHost(ctx, *p.hostInfo)
 	if err != nil {
 		Logc(ctx).WithError(err).Warn("Error discovering iSCSI service on host.")
 	}

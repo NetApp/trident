@@ -23,6 +23,7 @@ import (
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
+	"github.com/netapp/trident/utils/osutils"
 )
 
 func TestClient_AttachVolume_LUKS(t *testing.T) {
@@ -258,7 +259,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			ctrl := gomock.NewController(t)
 			iscsiClient := NewDetailed(params.chrootPathPrefix, params.getCommand(ctrl), DefaultSelfHealingExclusion,
 				params.getOSClient(ctrl), params.getDeviceClient(ctrl), params.getFileSystemClient(ctrl),
-				params.getMountClient(ctrl), params.getReconcileUtils(ctrl), afero.Afero{Fs: params.getFileSystemUtils()})
+				params.getMountClient(ctrl), params.getReconcileUtils(ctrl),
+				afero.Afero{Fs: params.getFileSystemUtils()}, nil)
 
 			mpathSize, err := iscsiClient.AttachVolume(context.TODO(), params.volumeName, params.volumeMountPoint,
 				&params.publishInfo, params.volumeAuthSecrets)
@@ -267,6 +269,101 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			}
 
 			assert.Equal(t, params.expectedMpathSize, mpathSize)
+		})
+	}
+}
+
+func TestISCSIActiveOnHost(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockExec := mockexec.NewMockCommand(mockCtrl)
+
+	type args struct {
+		ctx  context.Context
+		host models.HostSystem
+	}
+	type expected struct {
+		active bool
+		err    error
+	}
+	tests := map[string]struct {
+		name     string
+		args     args
+		expected expected
+		service  string
+	}{
+		"ActiveCentos": {
+			args: args{
+				ctx:  context.Background(),
+				host: models.HostSystem{OS: models.SystemOS{Distro: osutils.Centos}},
+			},
+			expected: expected{
+				active: true,
+				err:    nil,
+			},
+			service: "iscsid",
+		},
+		"ActiveRHEL": {
+			args: args{
+				ctx:  context.Background(),
+				host: models.HostSystem{OS: models.SystemOS{Distro: osutils.RHEL}},
+			},
+			expected: expected{
+				active: true,
+				err:    nil,
+			},
+			service: "iscsid",
+		},
+		"ActiveUbuntu": {
+			args: args{
+				ctx:  context.Background(),
+				host: models.HostSystem{OS: models.SystemOS{Distro: osutils.Ubuntu}},
+			},
+			expected: expected{
+				active: true,
+				err:    nil,
+			},
+			service: "open-iscsi",
+		},
+		"InactiveRHEL": {
+			args: args{
+				ctx:  context.Background(),
+				host: models.HostSystem{OS: models.SystemOS{Distro: osutils.RHEL}},
+			},
+			expected: expected{
+				active: false,
+				err:    nil,
+			},
+			service: "iscsid",
+		},
+		"UnknownDistro": {
+			args: args{
+				ctx:  context.Background(),
+				host: models.HostSystem{OS: models.SystemOS{Distro: "SUSE"}},
+			},
+			expected: expected{
+				active: true,
+				err:    nil,
+			},
+			service: "iscsid",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockExec.EXPECT().ExecuteWithTimeout(
+				tt.args.ctx, "systemctl", 30*time.Second, true, "is-active", tt.service,
+			).Return([]byte(""), tt.expected.err)
+
+			osUtils := osutils.NewDetailed(mockExec, afero.NewMemMapFs())
+			iscsiClient := NewDetailed("", mockExec, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: afero.NewMemMapFs()}, osUtils)
+			active, err := iscsiClient.ISCSIActiveOnHost(tt.args.ctx, tt.args.host)
+			if tt.expected.err != nil {
+				assert.Error(t, err)
+				assert.False(t, active)
+			} else {
+				assert.NoError(t, err)
+				assert.True(t, active)
+			}
 		})
 	}
 }

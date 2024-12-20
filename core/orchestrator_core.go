@@ -109,9 +109,8 @@ type TridentOrchestrator struct {
 
 // NewTridentOrchestrator returns a storage orchestrator instance
 func NewTridentOrchestrator(client persistentstore.Client) (*TridentOrchestrator, error) {
-	// TODO (vivintw) the adaptors are being plugged in here as a temporary measure to prevent cyclic dependencies.
 	// NewClient() must plugin default implementation of the various package clients.
-	iscsiClient, err := iscsi.New(utils.NewOSClient())
+	iscsiClient, err := iscsi.New()
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +120,7 @@ func NewTridentOrchestrator(client persistentstore.Client) (*TridentOrchestrator
 		return nil, err
 	}
 
-	fcpClent, err := fcp.New(utils.NewOSClient(), filesystem.New(mountClient))
+	fcpClent, err := fcp.New()
 	if err != nil {
 		return nil, err
 	}

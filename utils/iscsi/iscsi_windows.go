@@ -1,8 +1,6 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
-// This file should only contain functions for handling the filesystem for Windows flavor
-
-package utils
+package iscsi
 
 import (
 	"context"
@@ -13,7 +11,7 @@ import (
 )
 
 // ISCSIActiveOnHost unused stub function
-func ISCSIActiveOnHost(ctx context.Context, host models.HostSystem) (bool, error) {
+func (client *Client) ISCSIActiveOnHost(ctx context.Context, host models.HostSystem) (bool, error) {
 	Logc(ctx).Debug(">>>> iscsi_windows.ISCSIActiveOnHost")
 	defer Logc(ctx).Debug("<<<< iscsi_windows.ISCSIActiveOnHost")
 	return false, errors.UnsupportedError("ISCSIActiveOnHost is not supported for windows")

@@ -22,7 +22,6 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
@@ -71,7 +70,7 @@ func newMockOntapSANDriver(t *testing.T) (*mockapi.MockOntapAPI, *SANStorageDriv
 	driver.API = mockAPI
 	driver.ips = []string{"127.0.0.1"}
 
-	iscsiClient, err := iscsi.New(utils.NewOSClient())
+	iscsiClient, err := iscsi.New()
 	assert.NoError(t, err)
 	driver.iscsi = iscsiClient
 

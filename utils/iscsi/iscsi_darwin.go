@@ -2,7 +2,7 @@
 
 // File to contain iscsi protocol related functionalities for Darwin flavor
 
-package utils
+package iscsi
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 )
 
 // ISCSIActiveOnHost unused stub function
-func ISCSIActiveOnHost(ctx context.Context, host models.HostSystem) (bool, error) {
+func (client *Client) ISCSIActiveOnHost(ctx context.Context, host models.HostSystem) (bool, error) {
 	Logc(ctx).Debug(">>>> iscsi_darwin.ISCSIActiveOnHost")
 	defer Logc(ctx).Debug("<<<< iscsi_darwin.ISCSIActiveOnHost")
 	return false, errors.UnsupportedError("ISCSIActiveOnHost is not supported for darwin")

@@ -24,6 +24,7 @@ import (
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
+	"github.com/netapp/trident/utils/osutils"
 )
 
 const (
@@ -96,18 +97,18 @@ type Client struct {
 	fcpUtils             FcpReconcileUtils
 }
 
-func New(osClient OS, fileSystemClient FileSystem) (*Client, error) {
-	chrootPathPrefix := ""
-	if os.Getenv("DOCKER_PLUGIN_MODE") != "" {
-		chrootPathPrefix = "/host"
-	}
+func New() (*Client, error) {
+	chrootPathPrefix := osutils.ChrootPathPrefix
 
+	osClient := osutils.New()
 	reconcileutils := NewReconcileUtils(chrootPathPrefix, osClient)
 
 	mountClient, err := mount.New()
 	if err != nil {
 		return nil, err
 	}
+
+	fileSystemClient := filesystem.New(mountClient)
 
 	return NewDetailed(chrootPathPrefix, tridentexec.NewCommand(), DefaultSelfHealingExclusion, osClient,
 		devices.New(), fileSystemClient, mountClient, reconcileutils), nil

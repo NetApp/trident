@@ -1,6 +1,6 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
 
-package utils
+package osutils
 
 import (
 	"context"
@@ -20,7 +20,7 @@ import (
 // of the Trident code base this file exists to handle windows specific code.
 
 // getIPAddresses unused stub function
-func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
+func (o *OSUtils) getIPAddresses(ctx context.Context) ([]net.Addr, error) {
 	Logc(ctx).Debug(">>>> osutils_windows.getIPAddresses")
 	defer Logc(ctx).Debug("<<<< osutils_windows.getIPAddresses")
 	return nil, errors.UnsupportedError("getIPAddresses is not supported for windows")
@@ -34,7 +34,7 @@ func SMBActiveOnHost(ctx context.Context) (bool, error) {
 }
 
 // GetHostSystemInfo returns the information about OS type and platform
-func GetHostSystemInfo(ctx context.Context) (*models.HostSystem, error) {
+func (o *OSUtils) GetHostSystemInfo(ctx context.Context) (*models.HostSystem, error) {
 	osInfo, err := sysinfo.Host()
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func GetHostSystemInfo(ctx context.Context) (*models.HostSystem, error) {
 }
 
 // NFSActiveOnHost unused stub function
-func NFSActiveOnHost(ctx context.Context) (bool, error) {
+func (o *OSUtils) NFSActiveOnHost(ctx context.Context) (bool, error) {
 	Logc(ctx).Debug(">>>> osutils_windows.NFSActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_windows.NFSActiveOnHost")
 	return false, errors.UnsupportedError("NFSActiveOnHost is not supported for windows")
@@ -66,6 +66,13 @@ func GetTargetFilePath(ctx context.Context, resourcePath, arg string) string {
 }
 
 // IsLikelyDir determines if mountpoint is a directory
-func IsLikelyDir(mountpoint string) (bool, error) {
-	return PathExists(mountpoint)
+func (o *OSUtils) IsLikelyDir(mountpoint string) (bool, error) {
+	return o.PathExists(mountpoint)
+}
+
+// ServiceActiveOnHost checks if the service is currently running
+func (o *OSUtils) ServiceActiveOnHost(ctx context.Context, service string) (bool, error) {
+	Logc(ctx).Debug(">>>> osutils_windows.ServiceActiveOnHost")
+	defer Logc(ctx).Debug("<<<< osutils_windows.ServiceActiveOnHost")
+	return false, errors.UnsupportedError("ServiceActiveOnHost is not supported for windows")
 }

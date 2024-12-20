@@ -33,6 +33,7 @@ import (
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
+	"github.com/netapp/trident/utils/osutils"
 )
 
 func TestNodeStageVolume(t *testing.T) {
@@ -1025,7 +1026,7 @@ func TestFixISCSISessions(t *testing.T) {
 		},
 	}
 
-	iscsiClient, err := iscsi.New(utils.NewOSClient())
+	iscsiClient, err := iscsi.New()
 	assert.NoError(t, err)
 
 	nodeServer := &Plugin{
@@ -1750,6 +1751,7 @@ func TestNodeRegisterWithController_Success(t *testing.T) {
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	mockNVMeHandler := mockUtils.NewMockNVMeInterface(mockCtrl)
 
+	iscsiClient, _ := iscsi.New()
 	// Create a node server plugin
 	nodeServer := &Plugin{
 		nodeName:     nodeName,
@@ -1758,6 +1760,8 @@ func TestNodeRegisterWithController_Success(t *testing.T) {
 		restClient:   mockClient,
 		nvmeHandler:  mockNVMeHandler,
 		orchestrator: mockOrchestrator,
+		osutils:      osutils.New(),
+		iscsi:        iscsiClient,
 	}
 
 	// Create a fake node response to be returned by controller
@@ -1791,6 +1795,7 @@ func TestNodeRegisterWithController_TopologyLabels(t *testing.T) {
 	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	mockNVMeHandler := mockUtils.NewMockNVMeInterface(mockCtrl)
+	iscsiClient, _ := iscsi.New()
 
 	// Create a node server plugin
 	nodeServer := &Plugin{
@@ -1800,6 +1805,8 @@ func TestNodeRegisterWithController_TopologyLabels(t *testing.T) {
 		restClient:   mockClient,
 		nvmeHandler:  mockNVMeHandler,
 		orchestrator: mockOrchestrator,
+		osutils:      osutils.New(),
+		iscsi:        iscsiClient,
 	}
 
 	// Create set of cases with varying topology labels
@@ -1874,6 +1881,7 @@ func TestNodeRegisterWithController_Failure(t *testing.T) {
 	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	mockNVMeHandler := mockUtils.NewMockNVMeInterface(mockCtrl)
+	iscsiClient, _ := iscsi.New()
 
 	// Create a node server plugin
 	nodeServer := &Plugin{
@@ -1883,6 +1891,8 @@ func TestNodeRegisterWithController_Failure(t *testing.T) {
 		restClient:   mockClient,
 		nvmeHandler:  mockNVMeHandler,
 		orchestrator: mockOrchestrator,
+		iscsi:        iscsiClient,
+		osutils:      osutils.New(),
 	}
 
 	// Create a fake node response to be returned by controller

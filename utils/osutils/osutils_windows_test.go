@@ -1,6 +1,6 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
 
-package utils
+package osutils
 
 import (
 	"context"
@@ -13,14 +13,16 @@ import (
 
 func TestGetHostSystemInfo(t *testing.T) {
 	ctx := context.Background()
-	result, err := GetHostSystemInfo(ctx)
+	osutils := New()
+	result, err := osutils.GetHostSystemInfo(ctx)
 	assert.NotNil(t, result, "host system information is not populated")
 	assert.NoError(t, err, "no error")
 }
 
 func TestNFSActiveOnHost(t *testing.T) {
 	ctx := context.Background()
-	result, err := NFSActiveOnHost(ctx)
+	osutils := New()
+	result, err := osutils.NFSActiveOnHost(ctx)
 	assert.False(t, result, "nfs is present on the host")
 	assert.Error(t, err, "no error")
 	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
@@ -34,7 +36,8 @@ func TestGetTargetFilePath(t *testing.T) {
 
 func TestGetIPAddresses(t *testing.T) {
 	ctx := context.Background()
-	result, err := getIPAddresses(ctx)
+	osutils := New()
+	result, err := osutils.getIPAddresses(ctx)
 	assert.Nil(t, result, "got ip address")
 	assert.Error(t, err, "no error")
 	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")

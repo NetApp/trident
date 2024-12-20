@@ -1,4 +1,4 @@
-package utils
+package osutils
 
 import (
 	"context"
@@ -11,7 +11,8 @@ import (
 
 func TestGetIPAddresses(t *testing.T) {
 	ctx := context.Background()
-	result, err := getIPAddresses(ctx)
+	utils := New()
+	result, err := utils.getIPAddresses(ctx)
 	assert.Nil(t, result, "got ip address")
 	assert.Error(t, err, "no error")
 	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
@@ -19,7 +20,8 @@ func TestGetIPAddresses(t *testing.T) {
 
 func TestGetHostSystemInfo(t *testing.T) {
 	ctx := context.Background()
-	result, err := GetHostSystemInfo(ctx)
+	utils := New()
+	result, err := utils.GetHostSystemInfo(ctx)
 	assert.Nil(t, result, "got host system info")
 	assert.Error(t, err, "no error")
 	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
@@ -27,20 +29,23 @@ func TestGetHostSystemInfo(t *testing.T) {
 
 func TestNFSActiveOnHost(t *testing.T) {
 	ctx := context.Background()
-	result, err := NFSActiveOnHost(ctx)
+	utils := New()
+	result, err := utils.NFSActiveOnHost(ctx)
 	assert.False(t, result, "nfs is present on the host")
 	assert.Error(t, err, "no error")
 	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }
 
 func TestIsLikelyDir_NotPresent(t *testing.T) {
-	result, err := IsLikelyDir("\\usr")
+	utils := New()
+	result, err := utils.IsLikelyDir("\\usr")
 	assert.False(t, result, "directory exists")
 	assert.Error(t, err, "no error")
 }
 
 func TestIsLikelyDir_Present(t *testing.T) {
-	result, err := IsLikelyDir("/Users")
+	utils := New()
+	result, err := utils.IsLikelyDir("/Users")
 	assert.True(t, result, "directory doesn't exists")
 	assert.NoError(t, err, "error occurred")
 }

@@ -30,6 +30,7 @@ import (
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
+	"github.com/netapp/trident/utils/osutils"
 )
 
 const (
@@ -80,6 +81,7 @@ type ISCSI interface {
 	TargetHasMountedDevice(ctx context.Context, targetIQN string) (bool, error)
 	SafeToLogOut(ctx context.Context, hostNumber, sessionNumber int) bool
 	Logout(ctx context.Context, targetIQN, targetPortal string) error
+	ISCSIActiveOnHost(ctx context.Context, host models.HostSystem) (bool, error)
 	GetDeviceInfoForLUN(
 		ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string, needFSType bool,
 	) (*models.ScsiDeviceInfo, error)
@@ -143,16 +145,15 @@ type Client struct {
 	mountClient          mount.Mount
 	iscsiUtils           IscsiReconcileUtils
 	os                   afero.Afero
+	osUtils              osutils.Utils
 }
 
-func New(osClient OS) (*Client, error) {
-	chrootPathPrefix := ""
-	if os.Getenv("DOCKER_PLUGIN_MODE") != "" {
-		chrootPathPrefix = "/host"
-	}
+func New() (*Client, error) {
+	chrootPathPrefix := osutils.ChrootPathPrefix
 
-	reconcileutils := NewReconcileUtils(chrootPathPrefix, osClient)
-	osUtils := afero.Afero{Fs: afero.NewOsFs()}
+	osUtils := osutils.New()
+	reconcileutils := NewReconcileUtils(chrootPathPrefix, osUtils)
+	osFs := afero.Afero{Fs: afero.NewOsFs()}
 	mountClient, err := mount.New()
 	if err != nil {
 		return nil, fmt.Errorf("error creating mount client: %v", err)
@@ -161,14 +162,14 @@ func New(osClient OS) (*Client, error) {
 	fsClient := filesystem.New(mountClient)
 
 	devicesClient := devices.New()
-	return NewDetailed(chrootPathPrefix, tridentexec.NewCommand(), DefaultSelfHealingExclusion, osClient,
-		devicesClient, fsClient, mountClient, reconcileutils, osUtils), nil
+	return NewDetailed(chrootPathPrefix, tridentexec.NewCommand(), DefaultSelfHealingExclusion, osUtils,
+		devicesClient, fsClient, mountClient, reconcileutils, osFs, osUtils), nil
 }
 
 func NewDetailed(chrootPathPrefix string, command tridentexec.Command, selfHealingExclusion []string, osClient OS,
 	devices devices.Devices, fileSystemClient filesystem.Filesystem, mountClient mount.Mount,
 	iscsiUtils IscsiReconcileUtils,
-	os afero.Afero,
+	os afero.Afero, osUtils osutils.Utils,
 ) *Client {
 	return &Client{
 		chrootPathPrefix:     chrootPathPrefix,
@@ -180,6 +181,7 @@ func NewDetailed(chrootPathPrefix string, command tridentexec.Command, selfHeali
 		iscsiUtils:           iscsiUtils,
 		selfHealingExclusion: selfHealingExclusion,
 		os:                   os,
+		osUtils:              osUtils,
 	}
 }
 

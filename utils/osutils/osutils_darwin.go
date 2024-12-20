@@ -1,11 +1,10 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
 
-package utils
+package osutils
 
 import (
 	"context"
 	"net"
-	"os"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
@@ -17,29 +16,29 @@ import (
 // of the Trident code base this file exists to handle darwin specific code.
 
 // getIPAddresses unused stub function
-func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
+func (o *OSUtils) getIPAddresses(ctx context.Context) ([]net.Addr, error) {
 	Logc(ctx).Debug(">>>> osutils_darwin.getIPAddresses")
 	defer Logc(ctx).Debug("<<<< osutils_darwin.getIPAddresses")
 	return nil, errors.UnsupportedError("getIPAddresses is not supported for darwin")
 }
 
 // GetHostSystemInfo unused stub function
-func GetHostSystemInfo(ctx context.Context) (*models.HostSystem, error) {
+func (o *OSUtils) GetHostSystemInfo(ctx context.Context) (*models.HostSystem, error) {
 	Logc(ctx).Debug(">>>> osutils_darwin.GetHostSystemInfo")
 	defer Logc(ctx).Debug("<<<< osutils_darwin.GetHostSystemInfo")
 	return nil, errors.UnsupportedError("GetHostSystemInfo is not supported for darwin")
 }
 
 // NFSActiveOnHost unused stub function
-func NFSActiveOnHost(ctx context.Context) (bool, error) {
+func (o *OSUtils) NFSActiveOnHost(ctx context.Context) (bool, error) {
 	Logc(ctx).Debug(">>>> osutils_darwin.NFSActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_darwin.NFSActiveOnHost")
 	return false, errors.UnsupportedError("NFSActiveOnHost is not supported for darwin")
 }
 
 // IsLikelyDir determines if mountpoint is a directory
-func IsLikelyDir(mountpoint string) (bool, error) {
-	stat, err := os.Stat(mountpoint)
+func (o *OSUtils) IsLikelyDir(mountpoint string) (bool, error) {
+	stat, err := o.osFs.Stat(mountpoint)
 	if err != nil {
 		return false, err
 	}
@@ -59,4 +58,11 @@ func SMBActiveOnHost(ctx context.Context) (bool, error) {
 	Logc(ctx).Debug(">>>> osutils_darwin.SMBActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_darwin.SMBActiveOnHost")
 	return false, errors.UnsupportedError("SMBActiveOnHost is not supported for darwin")
+}
+
+// ServiceActiveOnHost checks if the service is currently running
+func (o *OSUtils) ServiceActiveOnHost(ctx context.Context, service string) (bool, error) {
+	Logc(ctx).Debug(">>>> osutils_darwin.ServiceActiveOnHost")
+	defer Logc(ctx).Debug("<<<< osutils_darwin.ServiceActiveOnHost")
+	return false, errors.UnsupportedError("ServiceActiveOnHost is not supported for darwin")
 }

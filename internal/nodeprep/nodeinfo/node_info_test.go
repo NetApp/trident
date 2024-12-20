@@ -10,8 +10,10 @@ import (
 
 	"github.com/netapp/trident/internal/nodeprep/nodeinfo"
 	"github.com/netapp/trident/mocks/mock_internal/mock_nodeprep/mock_nodeinfo"
+	"github.com/netapp/trident/mocks/mock_utils/mock_osutils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/osutils"
 )
 
 func TestNew(t *testing.T) {
@@ -21,7 +23,7 @@ func TestNew(t *testing.T) {
 
 func TestNewDetailed(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	os := mock_nodeinfo.NewMockOS(ctrl)
+	os := mock_osutils.NewMockUtils(ctrl)
 	binary := mock_nodeinfo.NewMockBinary(ctrl)
 	node := nodeinfo.NewDetailed(os, binary)
 	assert.NotNil(t, node)
@@ -29,7 +31,7 @@ func TestNewDetailed(t *testing.T) {
 
 func TestNode_GetInfo(t *testing.T) {
 	type parameters struct {
-		getOSClient      func(controller *gomock.Controller) nodeinfo.OS
+		getOSClient      func(controller *gomock.Controller) osutils.Utils
 		getBinaryClient  func(controller *gomock.Controller) nodeinfo.Binary
 		expectedNodeInfo *nodeinfo.NodeInfo
 		assertError      assert.ErrorAssertionFunc
@@ -55,8 +57,8 @@ func TestNode_GetInfo(t *testing.T) {
 
 	tests := map[string]parameters{
 		"error getting host system info": {
-			getOSClient: func(controller *gomock.Controller) nodeinfo.OS {
-				os := mock_nodeinfo.NewMockOS(controller)
+			getOSClient: func(controller *gomock.Controller) osutils.Utils {
+				os := mock_osutils.NewMockUtils(controller)
 				os.EXPECT().GetHostSystemInfo(gomock.Any()).Return(nil, errors.New("some error"))
 				return os
 			},
@@ -68,8 +70,8 @@ func TestNode_GetInfo(t *testing.T) {
 			assertError:      assert.Error,
 		},
 		"node info returns unsupported distro": {
-			getOSClient: func(controller *gomock.Controller) nodeinfo.OS {
-				os := mock_nodeinfo.NewMockOS(controller)
+			getOSClient: func(controller *gomock.Controller) osutils.Utils {
+				os := mock_osutils.NewMockUtils(controller)
 				os.EXPECT().GetHostSystemInfo(gomock.Any()).Return(&fooHostSystemResponse, nil)
 				return os
 			},
@@ -86,8 +88,8 @@ func TestNode_GetInfo(t *testing.T) {
 			assertError: assert.NoError,
 		},
 		"node info returns supported distro ubuntu": {
-			getOSClient: func(controller *gomock.Controller) nodeinfo.OS {
-				os := mock_nodeinfo.NewMockOS(controller)
+			getOSClient: func(controller *gomock.Controller) osutils.Utils {
+				os := mock_osutils.NewMockUtils(controller)
 				os.EXPECT().GetHostSystemInfo(gomock.Any()).Return(&ubuntuHostSystemResponse, nil)
 				return os
 			},
@@ -104,8 +106,8 @@ func TestNode_GetInfo(t *testing.T) {
 			assertError: assert.NoError,
 		},
 		"node info returns supported distro amazon linux": {
-			getOSClient: func(controller *gomock.Controller) nodeinfo.OS {
-				os := mock_nodeinfo.NewMockOS(controller)
+			getOSClient: func(controller *gomock.Controller) osutils.Utils {
+				os := mock_osutils.NewMockUtils(controller)
 				os.EXPECT().GetHostSystemInfo(gomock.Any()).Return(&amazonHostSystemResponse, nil)
 				return os
 			},
@@ -123,8 +125,8 @@ func TestNode_GetInfo(t *testing.T) {
 			assertError: assert.NoError,
 		},
 		"node info on host with no package manager": {
-			getOSClient: func(controller *gomock.Controller) nodeinfo.OS {
-				os := mock_nodeinfo.NewMockOS(controller)
+			getOSClient: func(controller *gomock.Controller) osutils.Utils {
+				os := mock_osutils.NewMockUtils(controller)
 				os.EXPECT().GetHostSystemInfo(gomock.Any()).Return(&ubuntuHostSystemResponse, nil)
 				return os
 			},

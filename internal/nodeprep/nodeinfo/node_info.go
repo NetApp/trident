@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/osutils"
 )
 
 type NodeInfo struct {
@@ -25,7 +25,7 @@ type (
 )
 
 const (
-	DistroUbuntu  Distro = utils.Ubuntu
+	DistroUbuntu  Distro = osutils.Ubuntu
 	DistroAmzn    Distro = "amzn"
 	DistroRhcos   Distro = "rhcos"
 	DistroUnknown        = "unknown"
@@ -40,17 +40,17 @@ type Node interface {
 }
 
 type NodeClient struct {
-	os     OS
+	os     osutils.Utils
 	binary Binary
 }
 
 func New() *NodeClient {
-	return NewDetailed(NewOSClient(), NewBinary())
+	return NewDetailed(osutils.New(), NewBinary())
 }
 
-func NewDetailed(os OS, binary Binary) *NodeClient {
+func NewDetailed(osUtils osutils.Utils, binary Binary) *NodeClient {
 	return &NodeClient{
-		os:     os,
+		os:     osUtils,
 		binary: binary,
 	}
 }

@@ -31,9 +31,6 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	osClient := mock_iscsi.NewMockOS(ctrl)
-
 	type parameters struct {
 		setUpEnvironment func()
 	}
@@ -52,7 +49,7 @@ func TestNew(t *testing.T) {
 				params.setUpEnvironment()
 			}
 
-			iscsiClient, err := New(osClient)
+			iscsiClient, err := New()
 			assert.NoError(t, err)
 			assert.NotNil(t, iscsiClient)
 		})
@@ -68,7 +65,7 @@ func TestNewDetailed(t *testing.T) {
 	mountClient := mock_mount.NewMockMount(ctrl)
 	command := mockexec.NewMockCommand(ctrl)
 	iscsiClient := NewDetailed(chrootPathPrefix, command, DefaultSelfHealingExclusion, osClient, devicesClient, FileSystemClient,
-		mountClient, nil, afero.Afero{Fs: afero.NewMemMapFs()})
+		mountClient, nil, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
 	assert.NotNil(t, iscsiClient)
 }
 
@@ -264,7 +261,8 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 			ctrl := gomock.NewController(t)
 			iscsiClient := NewDetailed(params.chrootPathPrefix, params.getCommand(ctrl), DefaultSelfHealingExclusion,
 				params.getOSClient(ctrl), params.getDeviceClient(ctrl), params.getFileSystemClient(ctrl),
-				params.getMountClient(ctrl), params.getReconcileUtils(ctrl), afero.Afero{Fs: params.getFileSystemUtils()})
+				params.getMountClient(ctrl), params.getReconcileUtils(ctrl),
+				afero.Afero{Fs: params.getFileSystemUtils()}, nil)
 
 			mpathSize, err := iscsiClient.AttachVolumeRetry(context.TODO(), "", "", &params.publishInfo, nil,
 				testTimeout)
@@ -2170,7 +2168,8 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			ctrl := gomock.NewController(t)
 			iscsiClient := NewDetailed(params.chrootPathPrefix, params.getCommand(ctrl), DefaultSelfHealingExclusion,
 				params.getOSClient(ctrl), params.getDeviceClient(ctrl), params.getFileSystemClient(ctrl),
-				params.getMountClient(ctrl), params.getReconcileUtils(ctrl), afero.Afero{Fs: params.getFileSystemUtils()})
+				params.getMountClient(ctrl), params.getReconcileUtils(ctrl),
+				afero.Afero{Fs: params.getFileSystemUtils()}, nil)
 
 			mpathSize, err := iscsiClient.AttachVolume(context.TODO(), params.volumeName, params.volumeMountPoint,
 				&params.publishInfo, params.volumeAuthSecrets)
@@ -2243,7 +2242,7 @@ func TestClient_AddSession(t *testing.T) {
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
-			client, err := New(nil)
+			client, err := New()
 			assert.NoError(t, err)
 			ctx := context.WithValue(context.TODO(), SessionInfoSource, "test")
 			client.AddSession(ctx, params.sessions, &params.publishInfo, params.volID,
@@ -2686,7 +2685,8 @@ func TestClient_RescanDevices(t *testing.T) {
 			controller := gomock.NewController(t)
 
 			client := NewDetailed("", params.getCommandClient(controller), DefaultSelfHealingExclusion, nil,
-				params.getDeviceClient(controller), nil, nil, params.getReconcileUtils(controller), afero.Afero{Fs: params.getFileSystemUtils()})
+				params.getDeviceClient(controller), nil, nil, params.getReconcileUtils(controller),
+				afero.Afero{Fs: params.getFileSystemUtils()}, nil)
 
 			err := client.RescanDevices(context.TODO(), params.targetIQN, params.lunID, params.minSize)
 			if params.assertError != nil {
@@ -2790,7 +2790,8 @@ func TestClient_rescanDisk(t *testing.T) {
 			if params.getDevices != nil {
 				deviceClient = params.getDevices(gomock.NewController(t))
 			}
-			client := NewDetailed("", nil, nil, nil, deviceClient, nil, nil, nil, afero.Afero{Fs: params.getFileSystemUtils()})
+			client := NewDetailed("", nil, nil, nil, deviceClient, nil, nil, nil,
+				afero.Afero{Fs: params.getFileSystemUtils()}, nil)
 			err := client.rescanDisk(context.TODO(), deviceName)
 			if params.assertError != nil {
 				params.assertError(t, err)
@@ -2843,7 +2844,7 @@ func TestClient_reloadMultipathDevice(t *testing.T) {
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			client := NewDetailed("", params.getCommand(ctrl), nil, nil, nil, nil, nil, nil, afero.Afero{})
+			client := NewDetailed("", params.getCommand(ctrl), nil, nil, nil, nil, nil, nil, afero.Afero{}, nil)
 
 			err := client.reloadMultipathDevice(context.TODO(), params.multipathDeviceName)
 			if params.assertError != nil {
@@ -2918,7 +2919,7 @@ func TestClient_IsAlreadyAttached(t *testing.T) {
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			controller := gomock.NewController(t)
-			client := NewDetailed("", nil, nil, nil, nil, nil, nil, params.getIscsiUtils(controller), afero.Afero{})
+			client := NewDetailed("", nil, nil, nil, nil, nil, nil, params.getIscsiUtils(controller), afero.Afero{}, nil)
 
 			attached := client.IsAlreadyAttached(context.TODO(), params.lunID, params.targetIQN)
 			if params.assertResponse != nil {
@@ -3126,7 +3127,7 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 				params.getIscsiUtils(ctrl),
 				afero.Afero{
 					Fs: params.getFileSystemUtils(),
-				})
+				}, nil)
 			deviceInfo, err := client.GetDeviceInfoForLUN(context.TODO(), params.hostSessionMap, params.lunID,
 				params.iSCSINodeName, params.needFS)
 			if params.assertError != nil {
@@ -3198,7 +3199,7 @@ func TestClient_purgeOneLun(t *testing.T) {
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
-			client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: params.getFileSystemUtils()})
+			client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: params.getFileSystemUtils()}, nil)
 			err := client.purgeOneLun(context.TODO(), params.path)
 			if params.assertError != nil {
 				params.assertError(t, err)
@@ -3278,7 +3279,7 @@ func TestClient_rescanOneLun(t *testing.T) {
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
-			client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: params.getFileSystemUtils()})
+			client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: params.getFileSystemUtils()}, nil)
 
 			err := client.rescanOneLun(context.TODO(), params.path)
 			if params.assertError != nil {
@@ -3375,7 +3376,8 @@ func TestClient_waitForMultipathDeviceForLUN(t *testing.T) {
 			if params.getDevices != nil {
 				deviceClient = params.getDevices(ctrl)
 			}
-			client := NewDetailed("", nil, nil, nil, deviceClient, nil, nil, params.getIscsiUtils(ctrl), afero.Afero{Fs: params.getFileSystemUtils()})
+			client := NewDetailed("", nil, nil, nil, deviceClient, nil, nil, params.getIscsiUtils(ctrl),
+				afero.Afero{Fs: params.getFileSystemUtils()}, nil)
 
 			err := client.waitForMultipathDeviceForLUN(context.TODO(), params.hostSessionMap, lunID, iscsiNodeName)
 			if params.assertError != nil {
@@ -3524,7 +3526,7 @@ func TestClient_waitForDeviceScan(t *testing.T) {
 			}
 			client := NewDetailed("", params.getCommandClient(ctrl), nil, params.getOsClient(ctrl), deviceClient, nil, nil,
 				params.getIscsiUtils(ctrl),
-				afero.Afero{Fs: params.getFileSystemUtils()})
+				afero.Afero{Fs: params.getFileSystemUtils()}, nil)
 
 			err := client.waitForDeviceScan(context.TODO(), params.hostSessionMap, lunID, iscsiNodeName)
 			if params.assertError != nil {
@@ -3670,7 +3672,8 @@ func TestClient_handleInvalidSerials(t *testing.T) {
 				devicesClient = params.getDevicesClient(ctrl)
 			}
 
-			client := NewDetailed("", nil, nil, nil, devicesClient, nil, nil, params.getIscsiUtils(ctrl), afero.Afero{Fs: params.getFileSystemUtils()})
+			client := NewDetailed("", nil, nil, nil, devicesClient, nil, nil, params.getIscsiUtils(ctrl),
+				afero.Afero{Fs: params.getFileSystemUtils()}, nil)
 
 			err := client.handleInvalidSerials(context.TODO(), params.hostSessionMap, lunID, targetIQN, params.expectedSerial, mockHandler)
 			if params.assertError != nil {
@@ -3767,7 +3770,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + alternateTargetIQN + ` (non-flash)`
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			client := NewDetailed("", params.getCommandClient(ctrl), nil, nil, nil, nil, nil, nil,
-				afero.Afero{Fs: params.getFileSystemUtils()})
+				afero.Afero{Fs: params.getFileSystemUtils()}, nil)
 
 			portalsNeedingLogin, loggedIn, err := client.portalsToLogin(context.TODO(), targetIQN, []string{
 				portal1,
@@ -3849,7 +3852,7 @@ func TestClient_verifyMultipathDeviceSerial(t *testing.T) {
 			if params.getDevices != nil {
 				devicesClient = params.getDevices(ctrl)
 			}
-			client := NewDetailed("", nil, nil, nil, devicesClient, nil, nil, nil, afero.Afero{})
+			client := NewDetailed("", nil, nil, nil, devicesClient, nil, nil, nil, afero.Afero{}, nil)
 			err := client.verifyMultipathDeviceSerial(context.TODO(), multipathDeviceName, params.lunSerial)
 			if params.assertError != nil {
 				params.assertError(t, err)
@@ -4115,7 +4118,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				devicesClient = params.getDevices(ctrl)
 			}
 			client := NewDetailed("", params.getCommandClient(ctrl), nil, nil, devicesClient, nil, nil, nil,
-				afero.Afero{Fs: params.getFileSystemUtils()})
+				afero.Afero{Fs: params.getFileSystemUtils()}, nil)
 			successfullyLoggedIn, err := client.EnsureSessions(context.TODO(), &params.publishInfo, params.portals)
 			if params.assertError != nil {
 				params.assertError(t, err)
@@ -4269,7 +4272,7 @@ func TestClient_LoginTarget(t *testing.T) {
 				deviceClient = params.getDeviceClient(ctrl)
 			}
 			iscsiClient := NewDetailed("", params.getCommandClient(ctrl), nil, nil, deviceClient, nil, nil, nil,
-				afero.Afero{Fs: afero.NewMemMapFs()})
+				afero.Afero{Fs: afero.NewMemMapFs()}, nil)
 
 			err := iscsiClient.LoginTarget(context.TODO(), &params.publishInfo, params.portal)
 			if params.assertError != nil {
@@ -4465,7 +4468,7 @@ func TestClient_ensureTarget(t *testing.T) {
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			client := NewDetailed("", params.getCommandClient(ctrl), nil, nil, nil, nil, nil, nil, afero.Afero{})
+			client := NewDetailed("", params.getCommandClient(ctrl), nil, nil, nil, nil, nil, nil, afero.Afero{}, nil)
 			err := client.ensureTarget(context.TODO(), targetPortal, targetIQN, params.username,
 				params.password, params.targetUsername, params.targetInitiatorSecret, networkInterface)
 			if params.assertError != nil {
@@ -4504,7 +4507,7 @@ func TestClient_multipathdIsRunning(t *testing.T) {
 					ctx, gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return([]byte(tt.execOut), tt.execErr)
 			}
-			iscsiClient := NewDetailed("", mockExec, nil, nil, nil, nil, nil, nil, afero.Afero{})
+			iscsiClient := NewDetailed("", mockExec, nil, nil, nil, nil, nil, nil, afero.Afero{}, nil)
 
 			actualValue := iscsiClient.multipathdIsRunning(context.Background())
 			assert.Equal(t, tt.expectedValue, actualValue)

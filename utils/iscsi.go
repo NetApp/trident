@@ -25,6 +25,7 @@ import (
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
+	"github.com/netapp/trident/utils/osutils"
 )
 
 const (
@@ -34,11 +35,12 @@ const (
 )
 
 var (
+	iqnRegex       = regexp.MustCompile(`^\s*InitiatorName\s*=\s*(?P<iqn>\S+)(|\s+.*)$`)
 	mountClient, _ = mount.New()
-	IscsiUtils     = iscsi.NewReconcileUtils(chrootPathPrefix, NewOSClient())
+	IscsiUtils     = iscsi.NewReconcileUtils(osutils.ChrootPathPrefix, osutils.New())
 	devicesClient  = devices.New()
-	iscsiClient    = iscsi.NewDetailed(chrootPathPrefix, command, iscsi.DefaultSelfHealingExclusion, NewOSClient(),
-		devicesClient, filesystem.New(mountClient), mountClient, IscsiUtils, afero.Afero{Fs: afero.NewOsFs()})
+	iscsiClient    = iscsi.NewDetailed(osutils.ChrootPathPrefix, command, iscsi.DefaultSelfHealingExclusion, osutils.New(),
+		devicesClient, filesystem.New(mountClient), mountClient, IscsiUtils, afero.Afero{Fs: afero.NewOsFs()}, nil)
 
 	// perNodeIgroupRegex is used to ensure an igroup meets the following format:
 	// <up to and including 59 characters of a container orchestrator node name>-<36 characters of trident version uuid>

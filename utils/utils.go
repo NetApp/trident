@@ -46,11 +46,6 @@ const (
 	PrepOutdated      models.NodePrepStatus = "outdated"
 	PrepPreConfigured models.NodePrepStatus = "preconfigured"
 
-	Centos = "centos"
-	RHEL   = "rhel"
-	Ubuntu = "ubuntu"
-	Debian = "debian"
-
 	REDACTED = "<REDACTED>"
 
 	// NAS protocols
@@ -782,11 +777,6 @@ func GetRegexSubmatches(r *regexp.Regexp, s string) map[string]string {
 		}
 	}
 	return paramsMap
-}
-
-// Detect if code is running in a container or not
-func RunningInContainer() bool {
-	return os.Getenv("CSI_ENDPOINT") != ""
 }
 
 func Max(x, y int64) int64 {

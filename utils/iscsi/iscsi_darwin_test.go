@@ -1,6 +1,6 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
 
-package utils
+package iscsi
 
 import (
 	"context"
@@ -21,7 +21,9 @@ func TestISCSIActiveOnHost(t *testing.T) {
 		Services: []string{"srv-1", "srv-2"},
 	}
 
-	result, err := ISCSIActiveOnHost(ctx, host)
+	iscsiClient, err := New()
+	assert.NoError(t, err)
+	result, err := iscsiClient.ISCSIActiveOnHost(ctx, host)
 	assert.False(t, result, "iscsi is active on host")
 	assert.Error(t, err, "no error")
 	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")

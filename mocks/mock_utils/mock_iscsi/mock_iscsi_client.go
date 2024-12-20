@@ -83,6 +83,21 @@ func (mr *MockISCSIMockRecorder) GetDeviceInfoForLUN(arg0, arg1, arg2, arg3, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeviceInfoForLUN", reflect.TypeOf((*MockISCSI)(nil).GetDeviceInfoForLUN), arg0, arg1, arg2, arg3, arg4)
 }
 
+// ISCSIActiveOnHost mocks base method.
+func (m *MockISCSI) ISCSIActiveOnHost(arg0 context.Context, arg1 models.HostSystem) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ISCSIActiveOnHost", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ISCSIActiveOnHost indicates an expected call of ISCSIActiveOnHost.
+func (mr *MockISCSIMockRecorder) ISCSIActiveOnHost(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ISCSIActiveOnHost", reflect.TypeOf((*MockISCSI)(nil).ISCSIActiveOnHost), arg0, arg1)
+}
+
 // IsAlreadyAttached mocks base method.
 func (m *MockISCSI) IsAlreadyAttached(arg0 context.Context, arg1 int, arg2 string) bool {
 	m.ctrl.T.Helper()

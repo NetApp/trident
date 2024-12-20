@@ -196,7 +196,7 @@ func newTestOntapSanEcoDriver(t *testing.T, vserverAdminHost, vserverAdminPort, 
 		config.AWSConfig.FSxFilesystemID = *fsxId
 	}
 
-	iscsiClient, err := iscsi.New(utils.NewOSClient())
+	iscsiClient, err := iscsi.New()
 	assert.NoError(t, err)
 
 	sanEcoDriver := &SANEconomyStorageDriver{
