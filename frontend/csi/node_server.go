@@ -17,6 +17,7 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/container-storage-interface/spec/lib/go/csi"
+	"github.com/spf13/afero"
 	"go.uber.org/multierr"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -524,7 +525,7 @@ func (p *Plugin) nodeExpandVolume(
 			return status.Error(codes.InvalidArgument, "cannot expand LUKS encrypted volume; empty passphrase provided")
 		}
 
-		luksDevice := luks.NewLUKSDevice("", filepath.Base(devicePath), p.command)
+		luksDevice := luks.NewDetailed("", filepath.Base(devicePath), p.command, p.devices, afero.NewOsFs())
 		if err := luksDevice.Resize(ctx, passphrase); err != nil {
 			if errors.IsIncorrectLUKSPassphraseError(err) {
 				return status.Error(codes.InvalidArgument, err.Error())
