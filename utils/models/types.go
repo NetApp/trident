@@ -106,23 +106,23 @@ type DFInfo struct {
 }
 
 type VolumePublishInfo struct {
-	Localhost         bool     `json:"localhost,omitempty"`
-	HostIQN           []string `json:"hostIQN,omitempty"`
-	HostNQN           string   `json:"hostNQN,omitempty"`
-	HostWWPN          []string `json:"hostWWPN,omitempty"`
-	HostIP            []string `json:"hostIP,omitempty"`
-	BackendUUID       string   `json:"backendUUID,omitempty"`
-	Nodes             []*Node  `json:"nodes,omitempty"`
-	HostName          string   `json:"hostName,omitempty"`
-	FilesystemType    string   `json:"fstype,omitempty"`
-	SharedTarget      bool     `json:"sharedTarget,omitempty"`
-	DevicePath        string   `json:"devicePath,omitempty"`
-	RawDevicePath     string   `json:"rawDevicePath,omitempty"` // NOTE: devicePath was renamed to this 23.01-23.04
-	Unmanaged         bool     `json:"unmanaged,omitempty"`
-	StagingMountpoint string   `json:"stagingMountpoint,omitempty"` // NOTE: Added in 22.04 release
-	TridentUUID       string   `json:"tridentUUID,omitempty"`       // NOTE: Added in 22.07 release
-	LUKSEncryption    string   `json:"LUKSEncryption,omitempty"`
-	SANType           string   `json:"SANType,omitempty"`
+	Localhost         bool                `json:"localhost,omitempty"`
+	HostIQN           []string            `json:"hostIQN,omitempty"`
+	HostNQN           string              `json:"hostNQN,omitempty"`
+	HostWWPNMap       map[string][]string `json:"hostWWPNMap,omitempty"`
+	HostIP            []string            `json:"hostIP,omitempty"`
+	BackendUUID       string              `json:"backendUUID,omitempty"`
+	Nodes             []*Node             `json:"nodes,omitempty"`
+	HostName          string              `json:"hostName,omitempty"`
+	FilesystemType    string              `json:"fstype,omitempty"`
+	SharedTarget      bool                `json:"sharedTarget,omitempty"`
+	DevicePath        string              `json:"devicePath,omitempty"`
+	RawDevicePath     string              `json:"rawDevicePath,omitempty"` // NOTE: devicePath was renamed to this 23.01-23.04
+	Unmanaged         bool                `json:"unmanaged,omitempty"`
+	StagingMountpoint string              `json:"stagingMountpoint,omitempty"` // NOTE: Added in 22.04 release
+	TridentUUID       string              `json:"tridentUUID,omitempty"`       // NOTE: Added in 22.07 release
+	LUKSEncryption    string              `json:"LUKSEncryption,omitempty"`
+	SANType           string              `json:"SANType,omitempty"`
 	VolumeAccessInfo
 }
 
@@ -188,7 +188,7 @@ type Node struct {
 	Name             string               `json:"name"`
 	IQN              string               `json:"iqn,omitempty"`
 	NQN              string               `json:"nqn,omitempty"`
-	WWPNs            []string             `json:"wwpns,omitempty"`
+	HostWWPNMap      map[string][]string  `json:"hostWWPNMap,omitempty"`
 	IPs              []string             `json:"ips,omitempty"`
 	TopologyLabels   map[string]string    `json:"topologyLabels,omitempty"`
 	NodePrep         *NodePrep            `json:"nodePrep,omitempty"`
@@ -204,7 +204,7 @@ type NodeExternal struct {
 	Name             string               `json:"name"`
 	IQN              string               `json:"iqn,omitempty"`
 	NQN              string               `json:"nqn,omitempty"`
-	WWPNs            []string             `json:"wwpns,omitempty"`
+	HostWWPNMap      map[string][]string  `json:"hostWWPNMap,omitempty"`
 	IPs              []string             `json:"ips,omitempty"`
 	TopologyLabels   map[string]string    `json:"topologyLabels,omitempty"`
 	NodePrep         *NodePrep            `json:"nodePrep,omitempty"`
@@ -237,7 +237,7 @@ func (n *Node) ConstructExternal() *NodeExternal {
 		Name:             node.Name,
 		IQN:              node.IQN,
 		NQN:              node.NQN,
-		WWPNs:            node.WWPNs,
+		HostWWPNMap:      node.HostWWPNMap,
 		IPs:              node.IPs,
 		TopologyLabels:   node.TopologyLabels,
 		NodePrep:         node.NodePrep,

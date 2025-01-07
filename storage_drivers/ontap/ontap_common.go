@@ -869,13 +869,22 @@ func PublishLUN(
 		}
 	} else if config.SANType == sa.FCP {
 		// Add wwpns to igroup
-		for _, hostWWPN := range publishInfo.HostWWPN {
-			portName := strings.TrimPrefix(hostWWPN, "0x")
-			wwpn := fcp.ConvertStrToWWNFormat(portName)
 
-			err = clientAPI.EnsureIgroupAdded(ctx, igroupName, wwpn)
-			if err != nil {
-				return fmt.Errorf("error adding WWPN %v to igroup %v: %v", portName, igroupName, err)
+		// Get the WWPNs and WWNNs from the host and propagate only the ones which are mapped to SVM
+		for initiatorPortName, targetPortNames := range publishInfo.HostWWPNMap {
+			// Format the WWNNs to match the SVM WWNNs
+			for _, targetPortName := range targetPortNames {
+				portNameFormatted := fcp.ConvertStrToWWNFormat(strings.TrimPrefix(targetPortName, "0x"))
+				// Add initiator port name to igroup, if the target port name is mapped to SVM
+				if nodeName == portNameFormatted {
+					portName := strings.TrimPrefix(initiatorPortName, "0x")
+					wwpn := fcp.ConvertStrToWWNFormat(portName)
+
+					err = clientAPI.EnsureIgroupAdded(ctx, igroupName, wwpn)
+					if err != nil {
+						return fmt.Errorf("error adding WWPN %v to igroup %v: %v", portName, igroupName, err)
+					}
+				}
 			}
 		}
 	}

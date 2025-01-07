@@ -696,8 +696,8 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *models.Node {
 		Logc(ctx).WithField("IP Addresses", ips).Info("Discovered IP addresses.")
 	}
 
-	var fcWWPNs []string
-	if fcWWPNs, err = fcp.GetFCPHostPortNames(ctx); err != nil {
+	var hostWWPNMap map[string][]string
+	if hostWWPNMap, err = fcp.GetFCPInitiatorTargetMap(ctx); err != nil {
 		Logc(ctx).WithError(err).Warn("Problem getting FCP host node port name association.")
 	}
 
@@ -749,14 +749,14 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *models.Node {
 
 	// Generate node object.
 	node := &models.Node{
-		Name:     p.nodeName,
-		IQN:      iscsiWWN,
-		NQN:      nvmeNQN,
-		WWPNs:    fcWWPNs,
-		IPs:      ips,
-		NodePrep: nil,
-		HostInfo: p.hostInfo,
-		Deleted:  false,
+		Name:        p.nodeName,
+		IQN:         iscsiWWN,
+		NQN:         nvmeNQN,
+		HostWWPNMap: hostWWPNMap,
+		IPs:         ips,
+		NodePrep:    nil,
+		HostInfo:    p.hostInfo,
+		Deleted:     false,
 		// If the node is already known to exist Trident CSI Controllers persistence layer,
 		// that state will be used instead. Otherwise, node state defaults to clean.
 		PublicationState: models.NodeClean,

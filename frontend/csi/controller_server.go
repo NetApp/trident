@@ -360,7 +360,7 @@ func (p *Plugin) ControllerPublishVolume(
 		Localhost:      false,
 		HostIQN:        []string{nodeInfo.IQN},
 		HostNQN:        nodeInfo.NQN,
-		HostWWPN:       nodeInfo.WWPNs,
+		HostWWPNMap:    nodeInfo.HostWWPNMap,
 		HostIP:         nodeInfo.IPs,
 		HostName:       nodeInfo.Name,
 		Unmanaged:      volume.Config.ImportNotManaged,
