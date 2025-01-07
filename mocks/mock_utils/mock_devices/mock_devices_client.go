@@ -297,6 +297,20 @@ func (mr *MockDevicesMockRecorder) RemoveMultipathDeviceMapping(arg0, arg1 any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMultipathDeviceMapping", reflect.TypeOf((*MockDevices)(nil).RemoveMultipathDeviceMapping), arg0, arg1)
 }
 
+// RemoveMultipathDeviceMappingWithRetries mocks base method.
+func (m *MockDevices) RemoveMultipathDeviceMappingWithRetries(arg0 context.Context, arg1 string, arg2 uint64, arg3 time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveMultipathDeviceMappingWithRetries", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveMultipathDeviceMappingWithRetries indicates an expected call of RemoveMultipathDeviceMappingWithRetries.
+func (mr *MockDevicesMockRecorder) RemoveMultipathDeviceMappingWithRetries(arg0, arg1, arg2, arg3 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMultipathDeviceMappingWithRetries", reflect.TypeOf((*MockDevices)(nil).RemoveMultipathDeviceMappingWithRetries), arg0, arg1, arg2, arg3)
+}
+
 // ScanTargetLUN mocks base method.
 func (m *MockDevices) ScanTargetLUN(arg0 context.Context, arg1 int, arg2 []int) error {
 	m.ctrl.T.Helper()

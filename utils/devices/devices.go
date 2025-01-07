@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/spf13/afero"
 	"golang.org/x/net/context"
 
@@ -73,6 +74,8 @@ type Devices interface {
 	WaitForDevicesRemoval(ctx context.Context, devicePathPrefix string, deviceNames []string,
 		maxWaitTime time.Duration,
 	) error
+	RemoveMultipathDeviceMappingWithRetries(ctx context.Context, devicePath string, retries uint64,
+		sleep time.Duration) error
 }
 
 type SizeGetter interface {
@@ -557,6 +560,30 @@ func (c *Client) RemoveMultipathDeviceMapping(ctx context.Context, devicePath st
 			}).WithError(err).Error("Error encountered in multipath flush(remove) mapping command.")
 			return fmt.Errorf("failed to flush multipath device: %w", err)
 		}
+	}
+
+	return nil
+}
+
+// RemoveMultipathDeviceMappingWithRetries calls RemoveMultipathDeviceMapping with retries.
+func (c *Client) RemoveMultipathDeviceMappingWithRetries(ctx context.Context, devicePath string, retries uint64,
+	sleep time.Duration,
+) error {
+	operation := func() error {
+		return c.RemoveMultipathDeviceMapping(ctx, devicePath)
+	}
+
+	// Create a ConstantBackOff instance
+	constantBackOff := backoff.NewConstantBackOff(sleep)
+	backOffWithMaxRetries := backoff.WithMaxRetries(constantBackOff, retries)
+
+	err := backoff.Retry(operation, backOffWithMaxRetries)
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"attempts":   retries,
+			"devicePath": devicePath,
+		}).WithError(err).Error("Failed to remove multipath device mapping: maximum retries exceeded.")
+		return err
 	}
 
 	return nil

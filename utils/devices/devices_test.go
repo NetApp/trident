@@ -954,3 +954,66 @@ func TestWaitForDevicesRemoval(t *testing.T) {
 		})
 	}
 }
+
+func TestRemoveMultipathDeviceMappingWithRetries(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockFs := afero.NewMemMapFs()
+	devicePath := "/dev/mock-0"
+
+	tests := map[string]struct {
+		retries     uint64
+		sleep       time.Duration
+		getCommand  func() exec.Command
+		expectError bool
+	}{
+		"Successful removal on first attempt": {
+			retries: 3,
+			sleep:   10 * time.Millisecond,
+			getCommand: func() exec.Command {
+				mockCommand := mockexec.NewMockCommand(ctrl)
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 10*time.Second, false, "-f", "/dev/mock-0").Return([]byte{}, nil).Times(1)
+				return mockCommand
+			},
+			expectError: false,
+		},
+		"Successful removal after retries": {
+			retries: 2,
+			sleep:   10 * time.Millisecond,
+			getCommand: func() exec.Command {
+				mockCommand := mockexec.NewMockCommand(ctrl)
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 10*time.Second, false, "-f",
+					"/dev/mock-0").Return([]byte{}, errors.New("error"))
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 10*time.Second, false, "-f", "/dev/mock-0").Return([]byte{}, nil).Times(1)
+				return mockCommand
+			},
+			expectError: false,
+		},
+		"Failed removal after all retries": {
+			retries: 2,
+			sleep:   10 * time.Millisecond,
+			getCommand: func() exec.Command {
+				mockCommand := mockexec.NewMockCommand(ctrl)
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 10*time.Second, false, "-f",
+					"/dev/mock-0").Return([]byte{}, errors.New("error")).Times(3)
+				return mockCommand
+			},
+			expectError: true,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockCommand := params.getCommand()
+			client := NewDetailed(mockCommand, mockFs, nil)
+			err := client.RemoveMultipathDeviceMappingWithRetries(context.TODO(), devicePath, params.retries,
+				params.sleep)
+			if params.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

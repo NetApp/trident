@@ -69,6 +69,11 @@ var (
 	afterInitialTrackingInfoWrite  = fiji.Register("afterInitialTrackingInfoWrite", "node_server")
 )
 
+const (
+	removeMultipathDeviceMappingRetries    = 4
+	removeMultipathDeviceMappingRetryDelay = 500 * time.Millisecond
+)
+
 func attemptLock(ctx context.Context, lockContext string, lockTimeout time.Duration) bool {
 	startTime := time.Now()
 	utils.Lock(ctx, lockContext, lockID)
@@ -1779,7 +1784,8 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	// If there is multipath device, flush(remove) mappings
-	if err := p.devices.RemoveMultipathDeviceMapping(ctx, unmappedMpathDevice); err != nil {
+	if err := p.devices.RemoveMultipathDeviceMappingWithRetries(ctx, unmappedMpathDevice,
+		removeMultipathDeviceMappingRetries, removeMultipathDeviceMappingRetryDelay); err != nil {
 		return err
 	}
 

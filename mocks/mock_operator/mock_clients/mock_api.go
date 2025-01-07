@@ -185,6 +185,21 @@ func (mr *MockTridentCRDClientInterfaceMockRecorder) GetTridentBackendConfig(arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTridentBackendConfig", reflect.TypeOf((*MockTridentCRDClientInterface)(nil).GetTridentBackendConfig), arg0, arg1)
 }
 
+// ListTridentBackend mocks base method.
+func (m *MockTridentCRDClientInterface) ListTridentBackend(arg0 string) (*v11.TridentBackendList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListTridentBackend", arg0)
+	ret0, _ := ret[0].(*v11.TridentBackendList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListTridentBackend indicates an expected call of ListTridentBackend.
+func (mr *MockTridentCRDClientInterfaceMockRecorder) ListTridentBackend(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTridentBackend", reflect.TypeOf((*MockTridentCRDClientInterface)(nil).ListTridentBackend), arg0)
+}
+
 // PatchTridentBackendConfig mocks base method.
 func (m *MockTridentCRDClientInterface) PatchTridentBackendConfig(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
 	m.ctrl.T.Helper()
