@@ -350,6 +350,11 @@ func (client *Client) AttachVolume(
 		return mpathSize, err
 	}
 
+	// Check if zoning exists for the target
+	if isZoned, err := client.fcpUtils.CheckZoningExistsWithTarget(ctx, publishInfo.FCTargetWWNN); !isZoned {
+		return mpathSize, err
+	}
+
 	// First attempt to fix invalid serials by rescanning them
 	err = client.handleInvalidSerials(ctx, lunID, publishInfo.FCTargetWWNN, publishInfo.FCPLunSerial, rescanOneLun)
 	if err != nil {

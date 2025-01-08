@@ -21,6 +21,7 @@ type FcpReconcileUtils interface {
 	GetSysfsBlockDirsForLUN(int, []map[string]int) []string
 	GetDevicesForLUN(paths []string) ([]string, error)
 	ReconcileFCPVolumeInfo(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (bool, error)
+	CheckZoningExistsWithTarget(context.Context, string) (bool, error)
 }
 
 type FcpReconcileHelper struct {
@@ -103,11 +104,7 @@ func (h *FcpReconcileHelper) GetFCPHostSessionMapForTarget(
 				continue
 			}
 
-			tgName := strings.TrimPrefix(string(targetName), "0x")
-			tgName = strings.TrimSuffix(tgName, "\n")
-			nname := strings.ReplaceAll(fcpNodeName, ":", "")
-
-			if tgName == nname {
+			if MatchWorldWideNames(string(targetName), fcpNodeName, false) {
 				fcHostPath := h.chrootPathPrefix + "/sys/class/fc_host/"
 
 				var hostNumber string
@@ -200,4 +197,57 @@ func (h *FcpReconcileHelper) GetDevicesForLUN(paths []string) ([]string, error) 
 		devices = append(devices, list[0].Name())
 	}
 	return devices, nil
+}
+
+// CheckZoningExistsWithTarget checks if the target is zoned with the initiator.
+func (h *FcpReconcileHelper) CheckZoningExistsWithTarget(ctx context.Context, targetNodeName string) (bool, error) {
+	fields := LogFields{"targetNodeName": targetNodeName}
+	Logc(ctx).WithFields(fields).Debug(">>>> fcp.CheckZoningExistsWithTarget")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< fcp.CheckZoningExistsWithTarget")
+
+	sysPath := h.chrootPathPrefix + "/sys/class/fc_remote_ports/"
+	rportDirs, err := os.ReadDir(sysPath)
+	if err != nil {
+		Logc(ctx).WithField("error", err).Errorf("Could not read %s", sysPath)
+		return false, err
+	}
+
+	for _, rportDir := range rportDirs {
+		rportDirName := rportDir.Name()
+		if !strings.HasPrefix(rportDirName, "rport") {
+			continue
+		}
+
+		devicePath := sysPath + rportDirName
+		nodeNamePath := devicePath + "/node_name"
+		nodeName, err := os.ReadFile(nodeNamePath)
+		if err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"path":  nodeNamePath,
+				"error": err,
+			}).Error("Could not read target name file")
+			continue
+		}
+
+		if !MatchWorldWideNames(string(nodeName), targetNodeName, false) {
+			// Skip the check for non-relevant target
+			continue
+		}
+
+		portStatus, err := os.ReadFile(devicePath + "/port_state")
+		if err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"path":  devicePath + "/port_state",
+				"error": err,
+			}).Error("Could not read port state file")
+			continue
+		}
+
+		portStatusStr := strings.TrimSpace(string(portStatus))
+		if portStatusStr == "Online" {
+			return true, nil
+		}
+	}
+
+	return false, fmt.Errorf("no zoned ports found")
 }

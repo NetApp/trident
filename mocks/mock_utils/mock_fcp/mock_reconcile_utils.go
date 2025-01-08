@@ -40,6 +40,21 @@ func (m *MockFcpReconcileUtils) EXPECT() *MockFcpReconcileUtilsMockRecorder {
 	return m.recorder
 }
 
+// CheckZoningExistsWithTarget mocks base method.
+func (m *MockFcpReconcileUtils) CheckZoningExistsWithTarget(arg0 context.Context, arg1 string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckZoningExistsWithTarget", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckZoningExistsWithTarget indicates an expected call of CheckZoningExistsWithTarget.
+func (mr *MockFcpReconcileUtilsMockRecorder) CheckZoningExistsWithTarget(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckZoningExistsWithTarget", reflect.TypeOf((*MockFcpReconcileUtils)(nil).CheckZoningExistsWithTarget), arg0, arg1)
+}
+
 // GetDevicesForLUN mocks base method.
 func (m *MockFcpReconcileUtils) GetDevicesForLUN(arg0 []string) ([]string, error) {
 	m.ctrl.T.Helper()

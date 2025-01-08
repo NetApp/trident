@@ -151,3 +151,21 @@ func ConvertStrToWWNFormat(wwnStr string) string {
 	}
 	return wwn
 }
+
+// MatchWorldWideNames compares two WWNs and returns true if they match.
+func MatchWorldWideNames(wwn1, wwn2 string, identicalSearch bool) bool {
+	if identicalSearch {
+		return wwn1 == wwn2
+	}
+
+	// Sanitize the WWN strings
+	wwn1Str := strings.TrimPrefix(wwn1, "0x")
+	wwn1Str = strings.TrimSpace(wwn1Str)
+	wwn1Str = strings.ReplaceAll(wwn1Str, ":", "")
+
+	wwn2Str := strings.TrimPrefix(wwn2, "0x")
+	wwn2Str = strings.TrimSpace(wwn2Str)
+	wwn2Str = strings.ReplaceAll(wwn2Str, ":", "")
+
+	return wwn1Str == wwn2Str
+}
