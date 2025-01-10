@@ -21,7 +21,8 @@ func (f *FSClient) getFilesystemSize(ctx context.Context, _ string) (int64, erro
 }
 
 func (f *FSClient) GetFilesystemStats(ctx context.Context, path string) (int64, int64, int64, int64, int64, int64,
-	error) {
+	error,
+) {
 	Logc(ctx).Debug(">>>> filesystem_windows.GetFilesystemStats")
 	defer Logc(ctx).Debug("<<<< filesystem_windows.GetFilesystemStats")
 

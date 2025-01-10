@@ -11,6 +11,7 @@ package mock_filesystem
 
 import (
 	context "context"
+	fs "io/fs"
 	reflect "reflect"
 
 	models "github.com/netapp/trident/utils/models"
@@ -144,4 +145,34 @@ func (m *MockFilesystem) RepairVolume(arg0 context.Context, arg1, arg2 string) {
 func (mr *MockFilesystemMockRecorder) RepairVolume(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RepairVolume", reflect.TypeOf((*MockFilesystem)(nil).RepairVolume), arg0, arg1, arg2)
+}
+
+// ScanDir mocks base method.
+func (m *MockFilesystem) ScanDir(arg0 string) ([]fs.FileInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScanDir", arg0)
+	ret0, _ := ret[0].([]fs.FileInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ScanDir indicates an expected call of ScanDir.
+func (mr *MockFilesystemMockRecorder) ScanDir(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanDir", reflect.TypeOf((*MockFilesystem)(nil).ScanDir), arg0)
+}
+
+// ScanFile mocks base method.
+func (m *MockFilesystem) ScanFile(arg0 string) ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScanFile", arg0)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ScanFile indicates an expected call of ScanFile.
+func (mr *MockFilesystemMockRecorder) ScanFile(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanFile", reflect.TypeOf((*MockFilesystem)(nil).ScanFile), arg0)
 }

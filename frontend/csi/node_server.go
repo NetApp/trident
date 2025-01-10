@@ -2517,9 +2517,10 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 	disconnect := p.nvmeHandler.RemovePublishedNVMeSession(&publishedNVMeSessions, publishInfo.NVMeSubsystemNQN,
 		publishInfo.NVMeNamespaceUUID)
 
+	nvmeSubsys := p.nvmeHandler.NewNVMeSubsystem(ctx, publishInfo.NVMeSubsystemNQN)
 	// Get the device using 'nvme-cli' commands. Flush the device IOs.
 	// Proceed further with unstage flow, if device is not found.
-	nvmeDev, err := p.nvmeHandler.NewNVMeDevice(ctx, publishInfo.NVMeNamespaceUUID)
+	nvmeDev, err := nvmeSubsys.GetNVMeDevice(ctx, publishInfo.NVMeNamespaceUUID)
 	if err != nil && !errors.IsNotFoundError(err) {
 		return nil, fmt.Errorf("failed to get NVMe device; %v", err)
 	}
@@ -2586,7 +2587,6 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 	}
 
 	// Get the number of namespaces associated with the subsystem
-	nvmeSubsys := p.nvmeHandler.NewNVMeSubsystem(ctx, publishInfo.NVMeSubsystemNQN)
 	numNs, err := nvmeSubsys.GetNamespaceCount(ctx)
 	if err != nil {
 		Logc(ctx).WithField(

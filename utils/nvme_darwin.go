@@ -7,6 +7,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/filesystem"
 )
 
 // NVMeActiveOnHost checks if NVMe is active on host
@@ -24,10 +25,10 @@ func GetHostNqn(ctx context.Context) (string, error) {
 }
 
 // GetNVMeSubsystemList returns the list of subsystems connected to the k8s node.
-func GetNVMeSubsystemList(ctx context.Context) (Subsystems, error) {
-	Logc(ctx).Debug(">>>> nvme_darwin.GetNVMeSubsystemList")
-	defer Logc(ctx).Debug("<<<< nvme_darwin.GetNVMeSubsystemList")
-	return Subsystems{}, errors.UnsupportedError("GetNVMeSubsystemList is not supported for darwin")
+func listSubsystemsFromSysFs(fs filesystem.FSClient, ctx context.Context) (Subsystems, error) {
+	Logc(ctx).Debug(">>>> nvme_darwin.listSubsystemsFromSysFs")
+	defer Logc(ctx).Debug("<<<< nvme_darwin.listSubsystemsFromSysFs")
+	return Subsystems{}, errors.UnsupportedError("listSubsystemsFromSysFs is not supported for darwin")
 }
 
 // ConnectSubsystemToHost creates a path (or session) from the ONTAP subsystem to the k8s node using svmDataLIF.
@@ -42,6 +43,36 @@ func DisconnectSubsystemFromHost(ctx context.Context, subsysNqn string) error {
 	Logc(ctx).Debug(">>>> nvme_darwin.DisconnectSubsystemFromHost")
 	defer Logc(ctx).Debug("<<<< nvme_darwin.DisconnectSubsystemFromHost")
 	return errors.UnsupportedError("DisconnectSubsystemFromHost is not supported for darwin")
+}
+
+func GetNVMeSubsystem(ctx context.Context, fs filesystem.FSClient, nqn string) (NVMeSubsystem, error) {
+	Logc(ctx).Debug(">>>> nvme_darwin.GetNVMeSubsystem")
+	defer Logc(ctx).Debug("<<<< nvme_darwin.GetNVMeSubsystem")
+	return NVMeSubsystem{}, errors.UnsupportedError("GetNVMeSubsystem is not supported for darwin")
+}
+
+func GetNVMeSubsystemPaths(ctx context.Context, fs filesystem.FSClient, subsystemDirPath string) ([]Path, error) {
+	Logc(ctx).Debug(">>>> nvme_darwin.GetNVMeSubsystemPaths")
+	defer Logc(ctx).Debug("<<<< nvme_darwin.GetNVMeSubsystemPaths")
+	return []Path{}, errors.UnsupportedError("GetNVMeSubsystemPaths is not supported for darwin")
+}
+
+func InitializeNVMeSubsystemPath(ctx context.Context, path *Path) error {
+	Logc(ctx).Debug(">>>> nvme_darwin.InitializeNVMeSubsystemPath")
+	defer Logc(ctx).Debug("<<<< nvme_darwin.InitializeNVMeSubsystemPath")
+	return errors.UnsupportedError("InitializeNVMeSubsystemPath is not supported for darwin")
+}
+
+func GetNVMeDeviceCountAt(ctx context.Context, fs filesystem.FSClient, path string) (int, error) {
+	Logc(ctx).Debug(">>>> nvme_darwin.GetNVMeDeviceCountAt")
+	defer Logc(ctx).Debug("<<<< nvme_darwin.GetNVMeDeviceCountAt")
+	return 0, errors.UnsupportedError("GetNVMeDeviceCountAt is not supported for darwin")
+}
+
+func GetNVMeDeviceAt(ctx context.Context, path, nsUUID string) (NVMeDeviceInterface, error) {
+	Logc(ctx).Debug(">>>> nvme_darwin.GetNVMeDeviceAt")
+	defer Logc(ctx).Debug("<<<< nvme_darwin.GetNVMeDeviceAt")
+	return nil, errors.UnsupportedError("GetNVMeDeviceAt is not supported for darwin")
 }
 
 // GetNamespaceCountForSubsDevice returns the number of namespaces present in a given subsystem device.

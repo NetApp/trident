@@ -14,7 +14,6 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/devices/luks"
-	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
@@ -22,39 +21,18 @@ import (
 
 const NVMeAttachTimeout = 20 * time.Second
 
-var fsClient = filesystem.New(mountClient)
-
-// getNVMeSubsystem returns the NVMe subsystem details.
-func getNVMeSubsystem(ctx context.Context, subsysNqn string) (*NVMeSubsystem, error) {
-	Logc(ctx).Debug(">>>> nvme.getNVMeSubsystem")
-	defer Logc(ctx).Debug("<<<< nvme.getNVMeSubsystem")
-
-	subsys, err := GetNVMeSubsystemList(ctx)
-	if err != nil {
-		Logc(ctx).WithField("Error", err).Errorf("Failed to get subsystem list: %v", err)
-		return nil, err
-	}
-
-	// Getting current subsystem details.
-	for _, sub := range subsys.Subsystems {
-		if sub.NQN == subsysNqn {
-			return &sub, nil
-		}
-	}
-
-	return nil, fmt.Errorf("couldn't find subsystem %s", subsysNqn)
-}
+var fsClient = *filesystem.New(mountClient)
 
 // updatePaths updates the paths with the current state of the subsystem on the k8s node.
 func (s *NVMeSubsystem) updatePaths(ctx context.Context) error {
 	// Getting current state of subsystem on the k8s node.
-	sub, err := getNVMeSubsystem(ctx, s.NQN)
+	paths, err := GetNVMeSubsystemPaths(ctx, fsClient, s.Name)
 	if err != nil {
 		Logc(ctx).WithField("Error", err).Errorf("Failed to update subsystem paths: %v", err)
 		return fmt.Errorf("failed to update subsystem paths: %v", err)
 	}
 
-	s.Paths = sub.Paths
+	s.Paths = paths
 
 	return nil
 }
@@ -137,43 +115,38 @@ func (s *NVMeSubsystem) Disconnect(ctx context.Context) error {
 
 // GetNamespaceCount returns the number of namespaces mapped to the subsystem.
 func (s *NVMeSubsystem) GetNamespaceCount(ctx context.Context) (int, error) {
-	var combinedError error
-
+	credibility := false
 	for _, path := range s.Paths {
-		count, err := GetNamespaceCountForSubsDevice(ctx, "/dev/"+path.Name)
-		if err != nil {
-			Logc(ctx).WithField("Error", err).Warnf("Failed to get namespace count: %v", err)
-			combinedError = multierr.Append(combinedError, err)
-			continue
+		if path.State == "live" {
+			credibility = true
+			break
 		}
-
-		return count, nil
 	}
 
-	// Couldn't find any sessions, so no namespaces are attached to this subsystem.
-	// But if there was error getting the number of namespaces from all the paths, return error.
-	return 0, combinedError
+	if !credibility {
+		return 0, fmt.Errorf("nvme paths are down, couldn't get the number of namespaces")
+	}
+
+	count, err := GetNVMeDeviceCountAt(ctx, s.FS, s.Name)
+	if err != nil {
+		Logc(ctx).Errorf("Failed to get namespace count: %v", err)
+		return 0, err
+	}
+
+	return count, nil
 }
 
-// getNVMeDevice returns the NVMe device corresponding to nsPath namespace.
-func getNVMeDevice(ctx context.Context, nsUUID string) (*NVMeDevice, error) {
-	Logc(ctx).Debug(">>>> nvme.getNVMeDevice")
-	defer Logc(ctx).Debug("<<<< nvme.getNVMeDevice")
+func (s *NVMeSubsystem) GetNVMeDevice(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error) {
+	Logc(ctx).Debug(">>>> nvme.GetNVMeDevice")
+	defer Logc(ctx).Debug("<<<< nvme.GetNVMeDevice")
 
-	dList, err := GetNVMeDeviceList(ctx)
+	devInterface, err := GetNVMeDeviceAt(ctx, s.Name, nsUUID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get device: %v", err)
+		Logc(ctx).Errorf("Failed to get NVMe device, %v", err)
+		return nil, err
 	}
 
-	for _, dev := range dList.Devices {
-		if dev.UUID == nsUUID {
-			Logc(ctx).Debugf("Device found: %v.", dev)
-			return &dev, nil
-		}
-	}
-
-	Logc(ctx).WithField("nsUUID", nsUUID).Debug("No device found for this Namespace.")
-	return nil, errors.NotFoundError("no device found for the given namespace %v", nsUUID)
+	return devInterface, nil
 }
 
 // GetPath returns the device path where we mount the filesystem in NodePublish.
@@ -203,7 +176,7 @@ func (d *NVMeDevice) FlushDevice(ctx context.Context, ignoreErrors, force bool) 
 
 // IsNil returns true if Device and NamespacePath are not set.
 func (d *NVMeDevice) IsNil() bool {
-	if d == nil || (d.Device == "" && d.NamespacePath == "") {
+	if d == nil || d.Device == "" {
 		return true
 	}
 	return false
@@ -214,20 +187,15 @@ func NewNVMeHandler() NVMeInterface {
 	return &NVMeHandler{}
 }
 
-// NewNVMeDevice returns new NVMe device
-func (nh *NVMeHandler) NewNVMeDevice(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error) {
-	return getNVMeDevice(ctx, nsUUID)
-}
-
 // NewNVMeSubsystem returns NVMe subsystem object. Even if a subsystem is not connected to the k8s node,
 // this function returns a minimal NVMe subsystem object.
 func (nh *NVMeHandler) NewNVMeSubsystem(ctx context.Context, subsNqn string) NVMeSubsystemInterface {
-	sub, err := getNVMeSubsystem(ctx, subsNqn)
+	sub, err := GetNVMeSubsystem(ctx, fsClient, subsNqn)
 	if err != nil {
 		Logc(ctx).WithField("Error", err).Warnf("Failed to get subsystem: %v; returning minimal subsystem", err)
 		return &NVMeSubsystem{NQN: subsNqn}
 	}
-	return sub
+	return &sub
 }
 
 // GetHostNqn returns the NQN of the k8s node.
@@ -295,7 +263,7 @@ func AttachNVMeVolume(
 		}
 	}
 
-	nvmeDev, err := nvmeHandler.NewNVMeDevice(ctx, publishInfo.NVMeNamespaceUUID)
+	nvmeDev, err := nvmeSubsys.GetNVMeDevice(ctx, publishInfo.NVMeNamespaceUUID)
 	if err != nil {
 		return err
 	}
@@ -589,7 +557,7 @@ func (nh *NVMeHandler) PopulateCurrentNVMeSessions(ctx context.Context, currSess
 	}
 
 	// Get the list of the subsystems currently present on the k8s node.
-	subs, err := GetNVMeSubsystemList(ctx)
+	subs, err := listSubsystemsFromSysFs(fsClient, ctx)
 	if err != nil {
 		Logc(ctx).WithField("Error", err).Errorf("Failed to get subsystem list: %v", err)
 		return err

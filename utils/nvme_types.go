@@ -6,6 +6,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -92,6 +93,7 @@ type NVMeSubsystem struct {
 	Name  string `json:"Name"`
 	NQN   string `json:"NQN"`
 	Paths []Path `json:"Paths"`
+	FS    filesystem.FSClient
 }
 
 type Subsystems struct {
@@ -130,6 +132,7 @@ type NVMeSubsystemInterface interface {
 	Disconnect(ctx context.Context) error
 	GetNamespaceCount(ctx context.Context) (int, error)
 	IsNetworkPathPresent(ip string) bool
+	GetNVMeDevice(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error)
 }
 
 type NVMeDeviceInterface interface {
@@ -147,7 +150,6 @@ type NVMeInterface interface {
 	NVMeActiveOnHost(ctx context.Context) (bool, error)
 	GetHostNqn(ctx context.Context) (string, error)
 	NewNVMeSubsystem(ctx context.Context, subsNqn string) NVMeSubsystemInterface
-	NewNVMeDevice(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error)
 	AddPublishedNVMeSession(pubSessions *NVMeSessions, publishInfo *models.VolumePublishInfo)
 	RemovePublishedNVMeSession(pubSessions *NVMeSessions, subNQN, nsUUID string) bool
 	PopulateCurrentNVMeSessions(ctx context.Context, currSessions *NVMeSessions) error

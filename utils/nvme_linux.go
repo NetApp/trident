@@ -6,14 +6,43 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"regexp"
 	"strings"
 	"time"
 
 	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
+	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/filesystem"
 )
 
-var transport = "tcp"
+var (
+	transport    = "tcp"
+	nvmeNQNRegex = regexp.MustCompile(`^nvme([0-9]+)n([0-9]+)$`)
+	nvmeRegex    = regexp.MustCompile(`^nvme([0-9]+)$`)
+)
+
+const (
+	NVME_PATH = "/sys/class/nvme-subsystem"
+	SUBSYSNQN = "/subsysnqn"
+)
+
+func ReadFile(fs filesystem.FSClient, filename string) ([]byte, error) {
+	data, err := fs.ScanFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func ReadDir(fs filesystem.FSClient, path string) ([]os.FileInfo, error) {
+	dir, err := fs.ScanDir(path)
+	if err != nil {
+		return nil, err
+	}
+	return dir, nil
+}
 
 // GetHostNqn returns the Nqn string of the k8s node.
 func GetHostNqn(ctx context.Context) (string, error) {
@@ -55,6 +84,38 @@ func NVMeActiveOnHost(ctx context.Context) (bool, error) {
 	}
 
 	return false, fmt.Errorf("NVMe driver is not loaded on the host")
+}
+
+func listSubsystemsFromSysFs(fs filesystem.FSClient, ctx context.Context) (Subsystems, error) {
+	Logc(ctx).Trace(">>>> nvme_linux.listSubsystemsFromSysFs")
+	defer Logc(ctx).Trace("<<<< nvme_linux.listSubsystemsFromSysFs")
+
+	var subsystems Subsystems
+	subsystemDirs, err := ReadDir(fs, NVME_PATH)
+	if err != nil {
+		return subsystems, fmt.Errorf("failed to open nvme subsystems directory: %v", err)
+	}
+
+	for _, subsystemDir := range subsystemDirs {
+		subsystemDirPath := NVME_PATH + "/" + subsystemDir.Name()
+		subsystemNqnPath := subsystemDirPath + SUBSYSNQN
+		fileBytes, err := ReadFile(fs, subsystemNqnPath)
+		if err != nil {
+			return subsystems, fmt.Errorf("failed to read subsystem nqn: %v", err)
+		}
+
+		fileContent := strings.TrimSpace(string(fileBytes))
+
+		sub := NVMeSubsystem{NQN: fileContent, Name: subsystemDirPath}
+		paths, err := GetNVMeSubsystemPaths(ctx, fs, subsystemDirPath)
+		if err != nil {
+			return subsystems, err
+		}
+		sub.Paths = paths
+		subsystems.Subsystems = append(subsystems.Subsystems, sub)
+	}
+
+	return subsystems, nil
 }
 
 // GetNVMeSubsystemList returns the list of subsystems connected to the k8s node.
@@ -137,6 +198,156 @@ func GetNamespaceCountForSubsDevice(ctx context.Context, subsDevice string) (int
 	}
 
 	return strings.Count(string(out), "["), nil
+}
+
+func GetNVMeSubsystem(ctx context.Context, fs filesystem.FSClient, nqn string) (NVMeSubsystem, error) {
+	Logc(ctx).Trace(">>>> nvme_linux.GetNVMeSubsystem")
+	defer Logc(ctx).Trace("<<<< nvme_linux.GetNVMeSubsystem")
+
+	sub := NVMeSubsystem{NQN: nqn}
+	subsystemDirs, err := ReadDir(fs, NVME_PATH)
+	if err != nil {
+		return sub, fmt.Errorf("failed to open nvme subsystems directory: %v", err)
+	}
+
+	subsystemDirPath := ""
+	for _, subsystemDir := range subsystemDirs {
+		subsystemDirPath = NVME_PATH + "/" + subsystemDir.Name()
+		subsystemNqnPath := subsystemDirPath + SUBSYSNQN
+
+		// Example of subsysnqn file : nqn.1992-08.com.netapp:sn.6628417f7bec11ef9bf2005056b3e634:subsystem.scspa3014048001-b06e4d9a-6817-446b-8dc6-e819c100f935
+		fileBytes, err := ReadFile(fs, subsystemNqnPath)
+		if err != nil {
+			return sub, fmt.Errorf("failed to read subsystem nqn: %v", err)
+		}
+
+		fileContent := strings.TrimSpace(string(fileBytes))
+		// Ignore this subsystem because it doesn't have the right NQN.
+		if nqn != fileContent {
+			continue
+		}
+
+		// Gather the subsystem paths.
+		sub.Name = subsystemDirPath
+		paths, err := GetNVMeSubsystemPaths(ctx, fs, subsystemDirPath)
+		if err != nil {
+			return sub, err
+		}
+		sub.Paths = paths
+	}
+
+	if len(sub.Paths) == 0 {
+		return sub, errors.NotFoundError("no subsystem paths found")
+	}
+
+	return sub, nil
+}
+
+func GetNVMeSubsystemPaths(ctx context.Context, fs filesystem.FSClient, subsystemDirPath string) ([]Path, error) {
+	Logc(ctx).Trace(">>>> nvme_linux.GetNVMeSubsystemPaths")
+	defer Logc(ctx).Trace("<<<< nvme_linux.GetNVMeSubsystemPaths")
+
+	var paths []Path
+
+	subsystemDirContents, err := ReadDir(fs, subsystemDirPath)
+	if err != nil {
+		return paths, fmt.Errorf("failed to read subsystem directory contents, %v", err)
+	}
+
+	for _, subsystemDirContent := range subsystemDirContents {
+		if nvmeRegex.MatchString(subsystemDirContent.Name()) {
+			path := Path{Name: subsystemDirPath + "/" + subsystemDirContent.Name()}
+			if err := updateNVMeSubsystemPathAttributes(ctx, fs, &path); err != nil {
+				return paths, fmt.Errorf("failed to get path, %v", err)
+			}
+
+			paths = append(paths, path)
+		}
+	}
+
+	return paths, nil
+}
+
+func updateNVMeSubsystemPathAttributes(ctx context.Context, fs filesystem.FSClient, path *Path) error {
+	Logc(ctx).Trace(">>>> nvme_linux.updateNVMeSubsystemPathAttributes")
+	defer Logc(ctx).Trace("<<<< nvme_linux.updateNVMeSubsystemPathAttributes")
+
+	if path == nil {
+		return fmt.Errorf("path is nil")
+	}
+	var err error
+	// Example of state: live
+	if path.State, err = getSessionFileContent("state", path.Name, fs); err != nil {
+		Logc(ctx).WithError(err).Error("state is nil")
+		return err
+	}
+	// Example of address: traddr=fd20:8b1e:b258:2014:9c83:2d91:44a:b618,trsvcid=4420
+	if path.Address, err = getSessionFileContent("address", path.Name, fs); err != nil {
+		Logc(ctx).WithError(err).Error("address is nil")
+		return err
+	}
+	// Example of transport: tcp
+	if path.Transport, err = getSessionFileContent("transport", path.Name, fs); err != nil {
+		Logc(ctx).WithError(err).Error("transport is nil")
+		return err
+	}
+	return nil
+}
+
+func getSessionFileContent(sessionFileName, pathName string, fs filesystem.FSClient) (string, error) {
+	fileBytes, err := ReadFile(fs, pathName+"/"+sessionFileName)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(fileBytes)), nil
+}
+
+func GetNVMeDeviceCountAt(ctx context.Context, fs filesystem.FSClient, path string) (int, error) {
+	Logc(ctx).Trace(">>>> nvme_linux.GetNVMeDeviceCountAt")
+	defer Logc(ctx).Trace("<<<< nvme_linux.GetNVMeDeviceCountAt")
+
+	count := 0
+
+	pathDirContents, err := ReadDir(fs, path)
+	if err != nil {
+		return count, fmt.Errorf("failed to open %s directory, %v", path, err)
+	}
+
+	for _, pathDirContent := range pathDirContents {
+		if nvmeNQNRegex.MatchString(pathDirContent.Name()) {
+			count++
+		}
+	}
+
+	return count, nil
+}
+
+func GetNVMeDeviceAt(ctx context.Context, path, nsUUID string) (NVMeDeviceInterface, error) {
+	Logc(ctx).Trace(">>>> nvme_linux.GetNVMeDeviceAt")
+	defer Logc(ctx).Trace("<<<< nvme_linux.GetNVMeDeviceAt")
+
+	pathContents, err := os.ReadDir(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open %s directory, %v", path, err)
+	}
+
+	for _, pathContent := range pathContents {
+		if nvmeNQNRegex.MatchString(pathContent.Name()) {
+			uuidPath := path + "/" + pathContent.Name() + "/uuid"
+			fileBytes, err := os.ReadFile(uuidPath)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read uuid, %v", err)
+			}
+
+			fileContent := strings.TrimSpace(string(fileBytes))
+
+			if nsUUID == fileContent {
+				return &NVMeDevice{UUID: nsUUID, Device: "/dev/" + pathContent.Name()}, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("nvme device not found")
 }
 
 // GetNVMeDeviceList returns the list of NVMe devices present on the k8s node.

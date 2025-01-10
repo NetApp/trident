@@ -65,6 +65,8 @@ type Filesystem interface {
 		ctx context.Context, path string,
 	) (available, capacity, usage, inodes, inodesFree, inodesUsed int64, err error)
 	GetUnmountPath(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (string, error)
+	ScanFile(filename string) ([]byte, error)
+	ScanDir(path string) ([]os.FileInfo, error)
 }
 
 type Mount interface {
@@ -339,4 +341,33 @@ func (f *FSClient) DeleteFile(ctx context.Context, filepath, fileDescription str
 	}
 
 	return filepath, nil
+}
+
+func (f *FSClient) ScanFile(filename string) ([]byte, error) {
+	fs := afero.NewOsFs()
+
+	file, err := fs.Open(filename)
+	if err != nil {
+		fmt.Println("Failed to open file:", err)
+		return nil, err
+	}
+	defer file.Close()
+
+	data, err := afero.ReadAll(file)
+	if err != nil {
+		fmt.Println("Failed to read file:", err)
+		return nil, err
+	}
+	return data, nil
+}
+
+func (f *FSClient) ScanDir(path string) ([]os.FileInfo, error) {
+	fs := afero.NewOsFs()
+
+	dirEntries, err := afero.ReadDir(fs, path)
+	if err != nil {
+		fmt.Println("Failed to read  directory:", err)
+		return nil, err
+	}
+	return dirEntries, nil
 }

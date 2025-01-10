@@ -1,3 +1,5 @@
+//go:build linux
+
 package utils
 
 import (
@@ -5,14 +7,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"testing"
 	"time"
 
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
 	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	"github.com/netapp/trident/utils/exec"
+	"github.com/netapp/trident/utils/filesystem"
 )
 
 func TestGetHostNQN(t *testing.T) {
@@ -383,4 +388,104 @@ func TestFlushNVMeDevice(t *testing.T) {
 	err = FlushNVMeDevice(ctx, "fakeDevice")
 
 	assert.Error(t, err)
+}
+
+// MockDirEntry is a mock implementation of os.DirEntry.
+type MockDirEntry struct {
+	name string
+}
+
+// Name returns the name of the mock directory entry.
+func (m *MockDirEntry) Name() string {
+	return m.name
+}
+
+// IsDir always returns false for the mock directory entry.
+func (m *MockDirEntry) IsDir() bool {
+	return false
+}
+
+// Type returns the type of the mock directory entry.
+func (m *MockDirEntry) Type() fs.FileMode {
+	return fs.ModeDir
+}
+
+// Info returns the file info of the mock directory entry.
+func (m *MockDirEntry) Info() (fs.FileInfo, error) {
+	// Return a dummy file info for the mock entry.
+	return nil, nil
+}
+
+func TestListSubsystemsFromSysFs(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	osFs := afero.NewMemMapFs()
+	mockFsClient := filesystem.NewDetailed(nil, osFs, nil)
+	_, err := listSubsystemsFromSysFs(*mockFsClient, ctx())
+	assert.Nil(t, err)
+
+	filePath := "/sys/class/nvme-subsystem/nvme1/subsysnqn"
+	fileContent := []byte("This is a test file")
+	err = afero.WriteFile(osFs, filePath, fileContent, 0o644)
+	if err != nil {
+		t.Errorf("Failed to create test file: %v", err)
+	}
+
+	_, err = listSubsystemsFromSysFs(*mockFsClient, ctx())
+	assert.Nil(t, err)
+}
+
+func TestGetNVMeSubsystem(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	osFs := afero.NewMemMapFs()
+	mockFsClient := filesystem.NewDetailed(nil, osFs, nil)
+
+	_, err := GetNVMeSubsystem(ctx(), *mockFsClient, "nqn")
+	assert.NotNil(t, err)
+
+	filePath := "/sys/class/nvme-subsystem/"
+	fileContent := []byte("This is a test file")
+	err = afero.WriteFile(osFs, filePath, fileContent, 0o644)
+	if err != nil {
+		t.Errorf("Failed to create test file: %v", err)
+	}
+
+	_, err = GetNVMeSubsystem(ctx(), *mockFsClient, "/sys/class/nvme-subsystem")
+	assert.NotNil(t, err)
+}
+
+func TestGetNVMeSubsystemPaths(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	osFs := afero.NewMemMapFs()
+	mockFsClient := filesystem.NewDetailed(nil, osFs, nil)
+
+	filePath := "/sys/class/nvme-subsystem/test"
+	fileContent := []byte("This is a test file")
+	err := afero.WriteFile(osFs, filePath, fileContent, 0o644)
+	if err != nil {
+		t.Errorf("Failed to create test file: %v", err)
+	}
+	_, err = GetNVMeSubsystemPaths(ctx(), *mockFsClient, "/sys/class/nvme-subsystem")
+	assert.Nil(t, err)
+}
+
+func TestGetNVMeDeviceCountAt(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	osFs := afero.NewMemMapFs()
+	mockFsClient := filesystem.NewDetailed(nil, osFs, nil)
+	filePath := "/sys/class/nvme-subsystem/test"
+	fileContent := []byte("This is a test file")
+	err := afero.WriteFile(osFs, filePath, fileContent, 0o644)
+	if err != nil {
+		t.Errorf("Failed to create test file: %v", err)
+	}
+	_, err = GetNVMeDeviceCountAt(ctx(), *mockFsClient, "transport")
+	assert.NotNil(t, err)
 }
