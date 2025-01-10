@@ -55,6 +55,8 @@ const (
 	AnnInternalSnapshotName = annPrefix + "/internalSnapshotName"
 	AnnMirrorRelationship   = annPrefix + "/mirrorRelationship"
 	AnnVolumeShareFromPVC   = annPrefix + "/shareFromPVC"
+	AnnVolumeCloneToNS      = annPrefix + "/cloneToNamespace"
+	AnnVolumeCloneFromNS    = annPrefix + "/cloneFromNamespace"
 	AnnVolumeShareToNS      = annPrefix + "/shareToNamespace"
 	AnnReadOnlyClone        = annPrefix + "/readOnlyClone"
 	AnnLUKSEncryption       = annPrefix + "/luksEncryption" // import only
