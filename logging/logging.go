@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package logging
 
@@ -19,7 +19,7 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/utils/crypto"
+	"github.com/netapp/trident/internal/crypto"
 )
 
 const (
@@ -314,7 +314,7 @@ func (hook *FileHook) logfileNeedsRotation() bool {
 func (hook *FileHook) maybeDoLogfileRotation() error {
 	// Could use a counter or some other heuristic to decide when to do this, but it's
 	// more a less a wash to let rand() do it every 1/n times.
-	if crypto.GetRandomNumber(randomLogcheckInterval) == 0 {
+	if crypto.RandomNumber(randomLogcheckInterval) == 0 {
 		return hook.doLogfileRotation()
 	}
 	return nil

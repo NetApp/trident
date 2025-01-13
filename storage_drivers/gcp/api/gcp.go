@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 // This package provides a high-level interface to the NetApp GCP Cloud Volumes NFS REST API.
 package api
@@ -21,8 +21,8 @@ import (
 
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/collection"
 	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 	versionutils "github.com/netapp/trident/utils/version"
@@ -203,7 +203,7 @@ func (d *Client) InvokeAPI(
 		tr.TLSClientConfig.InsecureSkipVerify = false
 	}
 
-	utils.LogHTTPRequest(request, requestBody, LogLayerGCPNASDriver.String(), false, d.config.DebugTraceFlags["api"])
+	RedactedHTTPRequest(request, requestBody, LogLayerGCPNASDriver.String(), false, d.config.DebugTraceFlags["api"])
 
 	// Send the request
 	client := &http.Client{
@@ -227,7 +227,7 @@ func (d *Client) InvokeAPI(
 	var responseBody []byte
 
 	responseBody, err = io.ReadAll(response.Body)
-	utils.LogHTTPResponse(ctx, response, responseBody, "", false, d.config.DebugTraceFlags["api"])
+	RedactedHTTPResponse(ctx, response, responseBody, "", false, d.config.DebugTraceFlags["api"])
 
 	return response, responseBody, err
 }
@@ -483,7 +483,7 @@ func (d *Client) WaitForVolumeStates(
 
 		volumeState = f.LifeCycleState
 
-		if utils.SliceContainsString(desiredStates, volumeState) {
+		if collection.ContainsString(desiredStates, volumeState) {
 			return nil
 		}
 

@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -20,7 +20,6 @@ import (
 	mockhelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_helpers"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -58,7 +57,7 @@ func generateFakePublishVolumeRequest() *csi.ControllerPublishVolumeRequest {
 
 func generateVolumePublicationFromCSIPublishRequest(req *csi.ControllerPublishVolumeRequest) *models.VolumePublication {
 	vp := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(req.GetVolumeId(), req.GetNodeId()),
+		Name:       models.GenerateVolumePublishName(req.GetVolumeId(), req.GetNodeId()),
 		VolumeName: req.GetVolumeId(),
 		NodeName:   req.GetNodeId(),
 		ReadOnly:   req.GetReadonly(),

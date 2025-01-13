@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -21,8 +21,9 @@ import (
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	"github.com/netapp/trident/pkg/convert"
+	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -707,7 +708,7 @@ func (h *helper) IsValidResourceName(name string) bool {
 	if len(name) > maxResourceNameLength {
 		return false
 	}
-	return utils.DNS1123DomainRegex.MatchString(name)
+	return network.DNS1123DomainRegex.MatchString(name)
 }
 
 // mapEventType maps between K8S API event types and Trident CSI helper event types.  The
@@ -748,7 +749,7 @@ func getVolumeConfig(
 	// If snapshotDir annotation is provided, ensure it is lower case
 	snapshotDirAnn := getAnnotation(annotations, AnnSnapshotDir)
 	if snapshotDirAnn != "" {
-		snapDirFormatted, err := utils.GetFormattedBool(snapshotDirAnn)
+		snapDirFormatted, err := convert.ToFormattedBool(snapshotDirAnn)
 		if err != nil {
 			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir annotation: %v.", snapshotDirAnn)
 		}

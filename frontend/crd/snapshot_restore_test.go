@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package crd
 
@@ -18,7 +18,7 @@ import (
 	mockacp "github.com/netapp/trident/mocks/mock_acp"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -91,13 +91,13 @@ func fakeVS(vsName, vsNamespace, vscName, pvcName string, creationTime time.Time
 		},
 		Spec: snapshotv1.VolumeSnapshotSpec{
 			Source: snapshotv1.VolumeSnapshotSource{
-				PersistentVolumeClaimName: utils.Ptr(pvcName),
+				PersistentVolumeClaimName: convert.ToPtr(pvcName),
 			},
 		},
 		Status: &snapshotv1.VolumeSnapshotStatus{
 			BoundVolumeSnapshotContentName: &vscName,
-			CreationTime:                   utils.Ptr(metav1.NewTime(creationTime)),
-			ReadyToUse:                     utils.Ptr(true),
+			CreationTime:                   convert.ToPtr(metav1.NewTime(creationTime)),
+			ReadyToUse:                     convert.ToPtr(true),
 		},
 	}
 }
@@ -118,9 +118,9 @@ func fakeVSC(vsName, vsNamespace, vscName, vsHandle string, creationTime time.Ti
 			},
 		},
 		Status: &snapshotv1.VolumeSnapshotContentStatus{
-			SnapshotHandle: utils.Ptr(vsHandle),
-			CreationTime:   utils.Ptr(creationTime.UnixNano()),
-			ReadyToUse:     utils.Ptr(true),
+			SnapshotHandle: convert.ToPtr(vsHandle),
+			CreationTime:   convert.ToPtr(creationTime.UnixNano()),
+			ReadyToUse:     convert.ToPtr(true),
 		},
 	}
 }
@@ -721,7 +721,7 @@ func TestGetKubernetesObjectsForActionSnapshotRestore(t *testing.T) {
 	assert.Error(t, err)
 
 	// No VS snapshot creation time
-	vs.Status.BoundVolumeSnapshotContentName = utils.Ptr(snapRestoreVSC1)
+	vs.Status.BoundVolumeSnapshotContentName = convert.ToPtr(snapRestoreVSC1)
 	vs.Status.CreationTime = nil
 	_, _ = snapClient.SnapshotV1().VolumeSnapshots(namespace1).Update(ctx(), vs, updateOpts)
 
@@ -730,7 +730,7 @@ func TestGetKubernetesObjectsForActionSnapshotRestore(t *testing.T) {
 	assert.Error(t, err)
 
 	// Zero VS snapshot creation time
-	vs.Status.CreationTime = utils.Ptr(metav1.NewTime(time.Time{}))
+	vs.Status.CreationTime = convert.ToPtr(metav1.NewTime(time.Time{}))
 	_, _ = snapClient.SnapshotV1().VolumeSnapshots(namespace1).Update(ctx(), vs, updateOpts)
 
 	_, _, err = crdController.getKubernetesObjectsForActionSnapshotRestore(ctx(), tasr)
@@ -738,7 +738,7 @@ func TestGetKubernetesObjectsForActionSnapshotRestore(t *testing.T) {
 	assert.Error(t, err)
 
 	// VS nil ready to use
-	vs.Status.CreationTime = utils.Ptr(metav1.NewTime(time.Now()))
+	vs.Status.CreationTime = convert.ToPtr(metav1.NewTime(time.Now()))
 	vs.Status.ReadyToUse = nil
 	_, _ = snapClient.SnapshotV1().VolumeSnapshots(namespace1).Update(ctx(), vs, updateOpts)
 
@@ -747,7 +747,7 @@ func TestGetKubernetesObjectsForActionSnapshotRestore(t *testing.T) {
 	assert.Error(t, err)
 
 	// VS not ready to use
-	vs.Status.ReadyToUse = utils.Ptr(false)
+	vs.Status.ReadyToUse = convert.ToPtr(false)
 	_, _ = snapClient.SnapshotV1().VolumeSnapshots(namespace1).Update(ctx(), vs, updateOpts)
 
 	_, _, err = crdController.getKubernetesObjectsForActionSnapshotRestore(ctx(), tasr)
@@ -755,7 +755,7 @@ func TestGetKubernetesObjectsForActionSnapshotRestore(t *testing.T) {
 	assert.Error(t, err)
 
 	// Missing VSC
-	vs.Status.ReadyToUse = utils.Ptr(true)
+	vs.Status.ReadyToUse = convert.ToPtr(true)
 	_, _ = snapClient.SnapshotV1().VolumeSnapshots(namespace1).Update(ctx(), vs, updateOpts)
 
 	_, _, err = crdController.getKubernetesObjectsForActionSnapshotRestore(ctx(), tasr)
@@ -781,7 +781,7 @@ func TestGetKubernetesObjectsForActionSnapshotRestore(t *testing.T) {
 	assert.Error(t, err)
 
 	// VSC not ready to use
-	vsc.Status.ReadyToUse = utils.Ptr(false)
+	vsc.Status.ReadyToUse = convert.ToPtr(false)
 	_, _ = snapClient.SnapshotV1().VolumeSnapshotContents().Update(ctx(), vsc, updateOpts)
 
 	_, _, err = crdController.getKubernetesObjectsForActionSnapshotRestore(ctx(), tasr)
@@ -789,7 +789,7 @@ func TestGetKubernetesObjectsForActionSnapshotRestore(t *testing.T) {
 	assert.Error(t, err)
 
 	// VSC nil snapshot handle
-	vsc.Status.ReadyToUse = utils.Ptr(true)
+	vsc.Status.ReadyToUse = convert.ToPtr(true)
 	vsc.Status.SnapshotHandle = nil
 	_, _ = snapClient.SnapshotV1().VolumeSnapshotContents().Update(ctx(), vsc, updateOpts)
 
@@ -798,7 +798,7 @@ func TestGetKubernetesObjectsForActionSnapshotRestore(t *testing.T) {
 	assert.Error(t, err)
 
 	// VSC invalid snapshot handle
-	vsc.Status.SnapshotHandle = utils.Ptr(snapRestoreSnap1)
+	vsc.Status.SnapshotHandle = convert.ToPtr(snapRestoreSnap1)
 	_, _ = snapClient.SnapshotV1().VolumeSnapshotContents().Update(ctx(), vsc, updateOpts)
 
 	_, _, err = crdController.getKubernetesObjectsForActionSnapshotRestore(ctx(), tasr)
@@ -806,7 +806,7 @@ func TestGetKubernetesObjectsForActionSnapshotRestore(t *testing.T) {
 	assert.Error(t, err)
 
 	// All OK
-	vsc.Status.SnapshotHandle = utils.Ptr(snapRestoreSnapHandle1)
+	vsc.Status.SnapshotHandle = convert.ToPtr(snapRestoreSnapHandle1)
 	_, _ = snapClient.SnapshotV1().VolumeSnapshotContents().Update(ctx(), vsc, updateOpts)
 
 	tridentVolume, tridentSnapshot, err := crdController.getKubernetesObjectsForActionSnapshotRestore(ctx(), tasr)

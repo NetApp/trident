@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -17,6 +17,7 @@ import (
 
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
+	"github.com/netapp/trident/internal/crypto"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
@@ -24,9 +25,10 @@ import (
 	"github.com/netapp/trident/mocks/mock_utils/mock_devices"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	"github.com/netapp/trident/mocks/mock_utils/mock_mount"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
-	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
@@ -1061,7 +1063,7 @@ func TestFixISCSISessions(t *testing.T) {
 
 			for _, portal := range portals {
 				lastAccessTime := publishedISCSISessions.Info[portal].PortalInfo.LastAccessTime
-				if utils.SliceContainsString(input.PortalsFixed, portal) {
+				if collection.ContainsString(input.PortalsFixed, portal) {
 					assert.True(t, lastAccessTime.After(timeNow),
 						fmt.Sprintf("mismatched last access time for %v portal", portal))
 				} else {
@@ -1175,12 +1177,12 @@ func TestDiscoverDesiredPublicationState_GetsPublicationsWithoutError(t *testing
 	nodeName := "bar"
 	expectedPublications := []*models.VolumePublicationExternal{
 		{
-			Name:       utils.GenerateVolumePublishName("foo", nodeName),
+			Name:       models.GenerateVolumePublishName("foo", nodeName),
 			NodeName:   nodeName,
 			VolumeName: "foo",
 		},
 		{
-			Name:       utils.GenerateVolumePublishName("baz", nodeName),
+			Name:       models.GenerateVolumePublishName("baz", nodeName),
 			NodeName:   nodeName,
 			VolumeName: "baz",
 		},
@@ -1211,12 +1213,12 @@ func TestDiscoverDesiredPublicationState_FailsToGetPublicationsWithError(t *test
 	nodeName := "bar"
 	expectedPublications := []*models.VolumePublicationExternal{
 		{
-			Name:       utils.GenerateVolumePublishName("foo", nodeName),
+			Name:       models.GenerateVolumePublishName("foo", nodeName),
 			NodeName:   nodeName,
 			VolumeName: "foo",
 		},
 		{
-			Name:       utils.GenerateVolumePublishName("baz", nodeName),
+			Name:       models.GenerateVolumePublishName("baz", nodeName),
 			NodeName:   nodeName,
 			VolumeName: "baz",
 		},
@@ -1331,7 +1333,7 @@ func TestDiscoverStalePublications_DiscoversStalePublicationsCorrectly(t *testin
 	volumeThree := "pvc-85987a99-648d-4d84-95df-47d0256ca2ad"
 	desiredPublicationState := map[string]*models.VolumePublicationExternal{
 		volumeOne: {
-			Name:       utils.GenerateVolumePublishName(volumeOne, nodeName),
+			Name:       models.GenerateVolumePublishName(volumeOne, nodeName),
 			NodeName:   nodeName,
 			VolumeName: volumeOne,
 		},
@@ -1377,7 +1379,7 @@ func TestPerformNodeCleanup_ShouldNotDiscoverAnyStalePublications(t *testing.T) 
 	volume := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
 	desiredPublicationState := []*models.VolumePublicationExternal{
 		{
-			Name:       utils.GenerateVolumePublishName(volume, nodeName),
+			Name:       models.GenerateVolumePublishName(volume, nodeName),
 			NodeName:   nodeName,
 			VolumeName: volume,
 		},
@@ -1417,7 +1419,7 @@ func TestPerformNodeCleanup_ShouldFailToDiscoverDesiredPublicationsFromControlle
 	volume := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
 	desiredPublicationState := []*models.VolumePublicationExternal{
 		{
-			Name:       utils.GenerateVolumePublishName(volume, nodeName),
+			Name:       models.GenerateVolumePublishName(volume, nodeName),
 			NodeName:   nodeName,
 			VolumeName: volume,
 		},
@@ -1445,7 +1447,7 @@ func TestPerformNodeCleanup_ShouldFailToDiscoverActualPublicationsFromHost(t *te
 	volume := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
 	desiredPublicationState := []*models.VolumePublicationExternal{
 		{
-			Name:       utils.GenerateVolumePublishName(volume, nodeName),
+			Name:       models.GenerateVolumePublishName(volume, nodeName),
 			NodeName:   nodeName,
 			VolumeName: volume,
 		},
@@ -1500,7 +1502,7 @@ func TestUpdateNodePublicationState_FailsToUpdateNodeAsCleaned(t *testing.T) {
 	nodeState := models.NodeCleanable
 	nodeName := "foo"
 	nodeStateFlags := &models.NodePublicationStateFlags{
-		ProvisionerReady: utils.Ptr(true),
+		ProvisionerReady: convert.ToPtr(true),
 	}
 
 	mockCtrl := gomock.NewController(t)
@@ -1522,7 +1524,7 @@ func TestUpdateNodePublicationState_SuccessfullyUpdatesNodeAsCleaned(t *testing.
 	nodeState := models.NodeCleanable
 	nodeName := "foo"
 	nodeStateFlags := &models.NodePublicationStateFlags{
-		ProvisionerReady: utils.Ptr(true),
+		ProvisionerReady: convert.ToPtr(true),
 	}
 
 	mockCtrl := gomock.NewController(t)

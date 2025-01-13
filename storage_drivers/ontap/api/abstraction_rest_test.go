@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package api_test
 
@@ -13,6 +13,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
+	"github.com/netapp/trident/pkg/convert"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	nas "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
@@ -22,7 +23,6 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/snapmirror"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/storage"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -56,7 +56,7 @@ func TestEnsureIGroupAdded(t *testing.T) {
 	assert.NoError(t, err)
 
 	// positive test case
-	igroup := &models.Igroup{IgroupInlineInitiators: []*models.IgroupInlineInitiatorsInlineArrayItem{{Name: utils.Ptr(initiator)}}}
+	igroup := &models.Igroup{IgroupInlineInitiators: []*models.IgroupInlineInitiatorsInlineArrayItem{{Name: convert.ToPtr(initiator)}}}
 	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(igroup, nil)
 	err = oapi.EnsureIgroupAdded(ctx, initiatorGroup, initiator)
 	assert.NoError(t, err)
@@ -72,14 +72,14 @@ func TestEnsureLunMapped(t *testing.T) {
 
 	initiatorGroup := "initiatorGroup"
 	lunPath := "/dev/sda"
-	number := utils.Ptr(int64(100))
+	number := convert.ToPtr(int64(100))
 	lunPayload := &models.LunMapResponse{
-		NumRecords: utils.Ptr(int64(1)),
+		NumRecords: convert.ToPtr(int64(1)),
 		LunMapResponseInlineRecords: []*models.LunMap{
 			{
 				LogicalUnitNumber: nil,
 				Igroup: &models.LunMapInlineIgroup{
-					Name: utils.Ptr(initiatorGroup),
+					Name: convert.ToPtr(initiatorGroup),
 				},
 			},
 		},
@@ -135,7 +135,7 @@ func TestEnsureLunMapped(t *testing.T) {
 	assert.Equal(t, int(*number), resultLun, "lun count does not match")
 
 	// If lun not already mapped OR incorrectly mapped
-	lunMapCollection.Payload.LunMapResponseInlineRecords[0].Igroup.Name = utils.Ptr("tmp")
+	lunMapCollection.Payload.LunMapResponseInlineRecords[0].Igroup.Name = convert.ToPtr("tmp")
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, nil)
 	rsi.EXPECT().LunMap(ctx, initiatorGroup, lunPath, -1).Return(lunMapCreated, nil)
 	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)

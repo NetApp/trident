@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -18,6 +18,8 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	mock_ontap "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
+	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -27,7 +29,6 @@ import (
 	ontap_storage "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/storage"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	tridentmodels "github.com/netapp/trident/utils/models"
 )
@@ -121,10 +122,10 @@ func TestEnsureSVMWithRest(t *testing.T) {
 	mockRestClient.EXPECT().SvmList(ctx, gomock.Any()).DoAndReturn(
 		func(ctx context.Context, pattern string) (*svm.SvmCollectionGetOK, error) {
 			var records []*models.Svm
-			records = append(records, &models.Svm{Name: utils.Ptr(svmName), UUID: utils.Ptr(svmUUID)})
+			records = append(records, &models.Svm{Name: convert.ToPtr(svmName), UUID: convert.ToPtr(svmUUID)})
 			result := &svm.SvmCollectionGetOK{
 				Payload: &models.SvmResponse{
-					NumRecords:               utils.Ptr(int64((len(records)))),
+					NumRecords:               convert.ToPtr(int64((len(records)))),
 					SvmResponseInlineRecords: records,
 				},
 			}
@@ -452,7 +453,7 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
 					AggregateResponseInlineRecords: []*models.Aggregate{
-						{Name: utils.Ptr("aggr2")},
+						{Name: convert.ToPtr("aggr2")},
 					},
 				},
 			}
@@ -479,7 +480,7 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 				Payload: &models.AggregateResponse{
 					AggregateResponseInlineRecords: []*models.Aggregate{
 						{
-							Name:  utils.Ptr(aggr),
+							Name:  convert.ToPtr(aggr),
 							Space: nil,
 						},
 					},
@@ -508,7 +509,7 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 				Payload: &models.AggregateResponse{
 					AggregateResponseInlineRecords: []*models.Aggregate{
 						{
-							Name: utils.Ptr(aggr),
+							Name: convert.ToPtr(aggr),
 							Space: &models.AggregateInlineSpace{
 								BlockStorage: nil,
 							},
@@ -539,15 +540,15 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 				Payload: &models.AggregateResponse{
 					AggregateResponseInlineRecords: []*models.Aggregate{
 						{
-							Name: utils.Ptr(aggr),
+							Name: convert.ToPtr(aggr),
 							Space: &models.AggregateInlineSpace{
-								Footprint: utils.Ptr(int64(8496407527424)),
+								Footprint: convert.ToPtr(int64(8496407527424)),
 								BlockStorage: &models.AggregateInlineSpaceInlineBlockStorage{
-									Size:                                utils.Ptr(int64(11689104961536)),
-									Used:                                utils.Ptr(int64(9090249289728)),
-									UsedIncludingSnapshotReserve:        utils.Ptr(int64(9090249289728)),
-									UsedIncludingSnapshotReservePercent: utils.Ptr(int64(78)),
-									VolumeFootprintsPercent:             utils.Ptr(int64(73)),
+									Size:                                convert.ToPtr(int64(11689104961536)),
+									Used:                                convert.ToPtr(int64(9090249289728)),
+									UsedIncludingSnapshotReserve:        convert.ToPtr(int64(9090249289728)),
+									UsedIncludingSnapshotReservePercent: convert.ToPtr(int64(78)),
+									VolumeFootprintsPercent:             convert.ToPtr(int64(73)),
 								},
 							},
 						},
@@ -577,21 +578,21 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 				Payload: &models.AggregateResponse{
 					AggregateResponseInlineRecords: []*models.Aggregate{
 						{
-							Name: utils.Ptr(aggr),
+							Name: convert.ToPtr(aggr),
 							Space: &models.AggregateInlineSpace{
-								Footprint: utils.Ptr(int64(8496407527424)),
+								Footprint: convert.ToPtr(int64(8496407527424)),
 								BlockStorage: &models.AggregateInlineSpaceInlineBlockStorage{
-									Size:                                utils.Ptr(int64(11689104961536)),
-									Used:                                utils.Ptr(int64(9090249289728)),
-									UsedIncludingSnapshotReserve:        utils.Ptr(int64(9090249289728)),
-									UsedIncludingSnapshotReservePercent: utils.Ptr(int64(78)),
-									VolumeFootprintsPercent:             utils.Ptr(int64(73)),
+									Size:                                convert.ToPtr(int64(11689104961536)),
+									Used:                                convert.ToPtr(int64(9090249289728)),
+									UsedIncludingSnapshotReserve:        convert.ToPtr(int64(9090249289728)),
+									UsedIncludingSnapshotReservePercent: convert.ToPtr(int64(78)),
+									VolumeFootprintsPercent:             convert.ToPtr(int64(73)),
 								},
 							},
 						},
 						{
 							// extra entry for cloud tier
-							Name: utils.Ptr(aggr),
+							Name: convert.ToPtr(aggr),
 						},
 					},
 				},
@@ -1973,11 +1974,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: utils.Ptr(node),
+					Name: convert.ToPtr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: utils.Ptr(models.IPAddress(ip)),
+				Address: convert.ToPtr(models.IPAddress(ip)),
 			},
 		}
 
@@ -2010,11 +2011,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: utils.Ptr(node),
+					Name: convert.ToPtr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: utils.Ptr(models.IPAddress(ip)),
+				Address: convert.ToPtr(models.IPAddress(ip)),
 			},
 		}
 
@@ -2047,11 +2048,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: utils.Ptr(node),
+					Name: convert.ToPtr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: utils.Ptr(models.IPAddress(ip)),
+				Address: convert.ToPtr(models.IPAddress(ip)),
 			},
 		}
 
@@ -2084,11 +2085,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: utils.Ptr(node),
+					Name: convert.ToPtr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: utils.Ptr(models.IPAddress(ip)),
+				Address: convert.ToPtr(models.IPAddress(ip)),
 			},
 		}
 
@@ -2121,11 +2122,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: utils.Ptr(node),
+					Name: convert.ToPtr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: utils.Ptr(models.IPAddress(ip)),
+				Address: convert.ToPtr(models.IPAddress(ip)),
 			},
 		}
 
@@ -2160,11 +2161,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: utils.Ptr(node),
+					Name: convert.ToPtr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: utils.Ptr(models.IPAddress(ip)),
+				Address: convert.ToPtr(models.IPAddress(ip)),
 			},
 		}
 
@@ -2199,11 +2200,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: utils.Ptr(node),
+					Name: convert.ToPtr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: utils.Ptr(models.IPAddress(ip)),
+				Address: convert.ToPtr(models.IPAddress(ip)),
 			},
 		}
 
@@ -2238,11 +2239,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: utils.Ptr(node),
+					Name: convert.ToPtr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: utils.Ptr(models.IPAddress(ip)),
+				Address: convert.ToPtr(models.IPAddress(ip)),
 			},
 		}
 
@@ -2253,7 +2254,7 @@ func TestRestGetSLMLifs(t *testing.T) {
 	info := &models.IPInterface{
 		Location: &models.IPInterfaceInlineLocation{
 			Node: &models.IPInterfaceInlineLocationInlineNode{
-				Name: utils.Ptr("node1"),
+				Name: convert.ToPtr("node1"),
 			},
 		},
 	}
@@ -2287,11 +2288,11 @@ func TestRestGetSLMLifs(t *testing.T) {
 		info := &models.IPInterface{
 			Location: &models.IPInterfaceInlineLocation{
 				Node: &models.IPInterfaceInlineLocationInlineNode{
-					Name: utils.Ptr(node),
+					Name: convert.ToPtr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: utils.Ptr(models.IPAddress(ip)),
+				Address: convert.ToPtr(models.IPAddress(ip)),
 			},
 		}
 
@@ -2301,7 +2302,7 @@ func TestRestGetSLMLifs(t *testing.T) {
 	// Extra entry but without IP address
 	info = &models.IPInterface{
 		IP: &models.IPInfo{
-			Address: utils.Ptr(models.IPAddress("1.2.3.4")),
+			Address: convert.ToPtr(models.IPAddress("1.2.3.4")),
 		},
 	}
 	infos = append(infos, info)
@@ -6717,7 +6718,7 @@ func TestSubtractUintFromSizeString(t *testing.T) {
 		size := strconv.FormatInt(sizeValue, 10) + units[rand.Intn(len(units))]
 		val := uint64(rand.Int63n(maxValue))
 
-		sizeBytesString, err := utils.ConvertSizeToBytes(size)
+		sizeBytesString, err := capacity.ToBytes(size)
 		assert.NoError(t, err)
 		sizeBytes, _ := strconv.ParseUint(sizeBytesString, 10, 64)
 

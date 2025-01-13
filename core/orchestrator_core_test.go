@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -25,6 +25,7 @@ import (
 	mockpersistentstore "github.com/netapp/trident/mocks/mock_persistent_store"
 	mockstorage "github.com/netapp/trident/mocks/mock_storage"
 	persistentstore "github.com/netapp/trident/persistent_store"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -32,7 +33,6 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	fakedriver "github.com/netapp/trident/storage_drivers/fake"
 	tu "github.com/netapp/trident/storage_drivers/fake/test_utils"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -3689,53 +3689,53 @@ func TestUpdateNode(t *testing.T) {
 			name:              "readyStayClean",
 			initialNodeState:  models.NodeClean,
 			expectedNodeState: models.NodeClean,
-			flags:             &models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(true), AdministratorReady: utils.Ptr(false)},
+			flags:             &models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(true), AdministratorReady: convert.ToPtr(false)},
 		},
 		{
 			name:              "cleanedStayClean",
 			initialNodeState:  models.NodeClean,
 			expectedNodeState: models.NodeClean,
-			flags:             &models.NodePublicationStateFlags{ProvisionerReady: utils.Ptr(true)},
+			flags:             &models.NodePublicationStateFlags{ProvisionerReady: convert.ToPtr(true)},
 		},
 		{
 			name:              "cleanToDirty",
 			initialNodeState:  models.NodeClean,
 			expectedNodeState: models.NodeDirty,
-			flags:             &models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(false)},
+			flags:             &models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(false)},
 		},
 		{
 			name:              "cleanableToClean",
 			initialNodeState:  models.NodeCleanable,
 			expectedNodeState: models.NodeClean,
 			flags: &models.NodePublicationStateFlags{
-				OrchestratorReady:  utils.Ptr(true),
-				AdministratorReady: utils.Ptr(true),
-				ProvisionerReady:   utils.Ptr(true),
+				OrchestratorReady:  convert.ToPtr(true),
+				AdministratorReady: convert.ToPtr(true),
+				ProvisionerReady:   convert.ToPtr(true),
 			},
 		},
 		{
 			name:              "readyStayCleanable",
 			initialNodeState:  models.NodeCleanable,
 			expectedNodeState: models.NodeCleanable,
-			flags:             &models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(true), AdministratorReady: utils.Ptr(true)},
+			flags:             &models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(true), AdministratorReady: convert.ToPtr(true)},
 		},
 		{
 			name:              "cleanableToDirty",
 			initialNodeState:  models.NodeCleanable,
 			expectedNodeState: models.NodeDirty,
-			flags:             &models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(false)},
+			flags:             &models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(false)},
 		},
 		{
 			name:              "dirtyToCleanable",
 			initialNodeState:  models.NodeDirty,
 			expectedNodeState: models.NodeCleanable,
-			flags:             &models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(true), AdministratorReady: utils.Ptr(true)},
+			flags:             &models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(true), AdministratorReady: convert.ToPtr(true)},
 		},
 		{
 			name:              "notReadyStayDirty",
 			initialNodeState:  models.NodeDirty,
 			expectedNodeState: models.NodeDirty,
-			flags:             &models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(true)},
+			flags:             &models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(true)},
 		},
 	}
 
@@ -3777,7 +3777,7 @@ func TestUpdateNode_BootstrapError(t *testing.T) {
 	orchestrator.bootstrapError = expectedError
 
 	result := orchestrator.UpdateNode(ctx(), "testNode1",
-		&models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false)})
+		&models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false)})
 
 	assert.Equal(t, expectedError, result, "UpdateNode did not return bootstrap error")
 }
@@ -3786,7 +3786,7 @@ func TestUpdateNode_NodeNotFound(t *testing.T) {
 	orchestrator := getOrchestrator(t, false)
 
 	result := orchestrator.UpdateNode(ctx(), "testNode1",
-		&models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false)})
+		&models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false)})
 
 	assert.True(t, errors.IsNotFoundError(result), "UpdateNode did not fail")
 }
@@ -3802,8 +3802,8 @@ func TestUpdateNode_NodeStoreUpdateFailed(t *testing.T) {
 	}
 	expectedError := errors.New("failure")
 	flags := &models.NodePublicationStateFlags{
-		OrchestratorReady:  utils.Ptr(false),
-		AdministratorReady: utils.Ptr(false),
+		OrchestratorReady:  convert.ToPtr(false),
+		AdministratorReady: convert.ToPtr(false),
 	}
 
 	mockCtrl := gomock.NewController(t)
@@ -7797,14 +7797,14 @@ func TestReconcileVolumePublications_AddsPublicationForLegacyVolume(t *testing.T
 	nodeName := "baz"
 	attachedLegacyVolumes := []*models.VolumePublicationExternal{
 		{
-			Name:       utils.GenerateVolumePublishName(legacyVolumeName, nodeName),
+			Name:       models.GenerateVolumePublishName(legacyVolumeName, nodeName),
 			NodeName:   nodeName,
 			VolumeName: legacyVolumeName,
 			ReadOnly:   true,
 			AccessMode: 2,
 		},
 		{
-			Name:       utils.GenerateVolumePublishName(standardVolumeName, nodeName),
+			Name:       models.GenerateVolumePublishName(standardVolumeName, nodeName),
 			NodeName:   nodeName,
 			VolumeName: standardVolumeName,
 		},
@@ -7830,7 +7830,7 @@ func TestReconcileVolumePublications_AddsPublicationForLegacyVolume(t *testing.T
 		},
 	}
 	standardPublication := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(standardVolumeName, nodeName),
+		Name:       models.GenerateVolumePublishName(standardVolumeName, nodeName),
 		NodeName:   nodeName,
 		VolumeName: standardVolumeName,
 		ReadOnly:   false,
@@ -7888,21 +7888,21 @@ func TestReconcileVolumePublications_SupportsMultiAttachedLegacyVolumes(t *testi
 	nodeNameOne := "bar"
 	nodeNameTwo := "baz"
 	attachedLegacyVolumeOne := &models.VolumePublicationExternal{
-		Name:       utils.GenerateVolumePublishName(volumeName, nodeNameOne),
+		Name:       models.GenerateVolumePublishName(volumeName, nodeNameOne),
 		NodeName:   nodeNameOne,
 		VolumeName: volumeName,
 		ReadOnly:   false,
 		AccessMode: 5,
 	}
 	attachedLegacyVolumeTwo := &models.VolumePublicationExternal{
-		Name:       utils.GenerateVolumePublishName(volumeName, nodeNameTwo),
+		Name:       models.GenerateVolumePublishName(volumeName, nodeNameTwo),
 		NodeName:   nodeNameTwo,
 		VolumeName: volumeName,
 		ReadOnly:   false,
 		AccessMode: 5,
 	}
 	attachedLegacyVolumeThree := &models.VolumePublicationExternal{
-		Name:       utils.GenerateVolumePublishName(volumeName, nodeNameTwo),
+		Name:       models.GenerateVolumePublishName(volumeName, nodeNameTwo),
 		NodeName:   "buz",
 		VolumeName: volumeName,
 		ReadOnly:   false,
@@ -7928,7 +7928,7 @@ func TestReconcileVolumePublications_SupportsMultiAttachedLegacyVolumes(t *testi
 	// Suppose the volume supports RWX, but Trident lacks a publication record for the publication on node two.
 	// AccessMode - https://github.com/container-storage-interface/spec/blob/release-1.5/lib/go/csi/csi.pb.go#L152
 	publication := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeName, nodeNameTwo),
+		Name:       models.GenerateVolumePublishName(volumeName, nodeNameTwo),
 		NodeName:   nodeNameTwo,
 		VolumeName: volumeName,
 		ReadOnly:   false,
@@ -7983,17 +7983,17 @@ func TestReconcileVolumePublications_FailsToAddMissingVolumePublications(t *test
 	nodeNameOne := "bar"
 	nodeNameTwo := "baz"
 	attachedLegacyVolumeOne := &models.VolumePublicationExternal{
-		Name:       utils.GenerateVolumePublishName(volumeName, nodeNameOne),
+		Name:       models.GenerateVolumePublishName(volumeName, nodeNameOne),
 		NodeName:   nodeNameOne,
 		VolumeName: volumeName,
 	}
 	attachedLegacyVolumeTwo := &models.VolumePublicationExternal{
-		Name:       utils.GenerateVolumePublishName(volumeName, nodeNameTwo),
+		Name:       models.GenerateVolumePublishName(volumeName, nodeNameTwo),
 		NodeName:   nodeNameTwo,
 		VolumeName: volumeName,
 	}
 	attachedLegacyVolumeWithNoTridentVolume := &models.VolumePublicationExternal{
-		Name:       utils.GenerateVolumePublishName("buz", nodeNameTwo),
+		Name:       models.GenerateVolumePublishName("buz", nodeNameTwo),
 		NodeName:   nodeNameTwo,
 		VolumeName: "buz",
 	}
@@ -8013,7 +8013,7 @@ func TestReconcileVolumePublications_FailsToAddMissingVolumePublications(t *test
 		},
 	}
 	publication := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeName, nodeNameTwo),
+		Name:       models.GenerateVolumePublishName(volumeName, nodeNameTwo),
 		NodeName:   nodeNameTwo,
 		VolumeName: volumeName,
 		ReadOnly:   false,

@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package docker
 
@@ -22,8 +22,8 @@ import (
 	"github.com/netapp/trident/core"
 	frontendcommon "github.com/netapp/trident/frontend/common"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
@@ -294,7 +294,7 @@ func (p *Plugin) Create(request *volume.CreateRequest) error {
 		return p.dockerError(ctx, err)
 	}
 
-	sizeBytes, err := utils.GetVolumeSizeBytes(ctx, request.Options, "0")
+	sizeBytes, err := capacity.GetVolumeSizeBytes(ctx, request.Options, "0")
 	if err != nil {
 		return fmt.Errorf("error creating volume: %v", err)
 	} else if sizeBytes > math.MaxInt64 {

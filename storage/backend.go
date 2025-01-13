@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -12,16 +12,16 @@ import (
 	"strconv"
 	"time"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/cenkalti/backoff/v4"
 	"github.com/mitchellh/copystructure"
 
 	"github.com/netapp/trident/acp"
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/capacity"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -731,7 +731,7 @@ func (b *StorageBackend) ResizeVolume(ctx context.Context, volConfig *VolumeConf
 	}
 
 	// Determine volume size in bytes
-	requestedSize, err := utils.ConvertSizeToBytes(newSize)
+	requestedSize, err := capacity.ToBytes(newSize)
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", newSize, err)
 	}

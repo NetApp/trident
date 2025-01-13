@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 // Package api provides a high-level interface to the Azure NetApp Files SDK
 package api
@@ -24,8 +24,9 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -912,7 +913,7 @@ func (c Client) WaitForVolumeState(
 		}
 
 		// Return a permanent error to stop retrying if we reached one of the abort states
-		if utils.SliceContainsString(abortStates, f.ProvisioningState) {
+		if collection.ContainsString(abortStates, f.ProvisioningState) {
 			return backoff.Permanent(TerminalState(err))
 		}
 
@@ -1011,7 +1012,7 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 
 	// Only set the zone if specified
 	if request.Zone != "" {
-		newVol.Zones = []*string{utils.Ptr(request.Zone)}
+		newVol.Zones = []*string{convert.ToPtr(request.Zone)}
 	}
 
 	// Only set the snapshot ID if we are cloning
@@ -1402,7 +1403,7 @@ func (c Client) WaitForSnapshotState(
 		err = fmt.Errorf("snapshot state is %s, not %s", s.ProvisioningState, desiredState)
 
 		// Return a permanent error to stop retrying if we reached one of the abort states
-		if utils.SliceContainsString(abortStates, s.ProvisioningState) {
+		if collection.ContainsString(abortStates, s.ProvisioningState) {
 			return backoff.Permanent(TerminalState(err))
 		}
 
@@ -1492,7 +1493,7 @@ func (c Client) RestoreSnapshot(ctx context.Context, filesystem *FileSystem, sna
 	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
 
 	revertBody := netapp.VolumeRevert{
-		SnapshotID: utils.Ptr(snapshot.SnapshotID),
+		SnapshotID: convert.ToPtr(snapshot.SnapshotID),
 	}
 
 	_, err := c.sdkClient.VolumesClient.BeginRevert(responseCtx,

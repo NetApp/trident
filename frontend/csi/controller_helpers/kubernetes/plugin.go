@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -38,10 +38,10 @@ import (
 	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 	versionutils "github.com/netapp/trident/utils/version"
@@ -596,7 +596,7 @@ func (h *helper) listAttachmentsAsPublications(
 
 		// Build an external publication to supply to the core
 		publication := &models.VolumePublicationExternal{
-			Name:       utils.GenerateVolumePublishName(volumeName, nodeName),
+			Name:       models.GenerateVolumePublishName(volumeName, nodeName),
 			VolumeName: volumeName,
 			NodeName:   nodeName,
 			ReadOnly:   tridentVolume.Config.AccessInfo.ReadOnly, // should always default to false.
@@ -1266,8 +1266,8 @@ func (h *helper) getNodePublicationState(node *v1.Node) *models.NodePublicationS
 	}
 
 	return &models.NodePublicationStateFlags{
-		OrchestratorReady:  utils.Ptr(ready),
-		AdministratorReady: utils.Ptr(!outOfService),
+		OrchestratorReady:  convert.ToPtr(ready),
+		AdministratorReady: convert.ToPtr(!outOfService),
 	}
 }
 

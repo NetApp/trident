@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -16,11 +16,11 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
+	"github.com/netapp/trident/utils/smb"
 )
 
 const volumePublishInfoFilename = "volumePublishInfo.json"
@@ -496,5 +496,5 @@ func (v *VolumePublishManager) deleteStagedDeviceInfo(ctx context.Context, stagi
 
 // isUpgradeWindowsTrackingFile verifies if this is windows tracking file.
 func (v *VolumePublishManager) isUpgradedWindowsTrackingFile(trackInfo *models.VolumeTrackingInfo) bool {
-	return runtime.GOOS == "windows" && trackInfo.FilesystemType == utils.SMB
+	return runtime.GOOS == "windows" && trackInfo.FilesystemType == smb.SMB
 }

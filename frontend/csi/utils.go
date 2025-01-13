@@ -14,9 +14,9 @@ import (
 
 	"github.com/netapp/trident/config"
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
+	"github.com/netapp/trident/internal/crypto"
 	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"

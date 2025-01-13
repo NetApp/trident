@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 /*
 Copyright 2016 The Kubernetes Authors.
@@ -40,8 +40,8 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	clientgotesting "k8s.io/client-go/testing"
 
+	"github.com/netapp/trident/internal/crypto"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
 )
 
 // This file is derived from k8s.io/client-go/testing/fixture.go, version 0.26.0.
@@ -418,7 +418,7 @@ func (t *tracker) add(
 
 	if newMeta.GetGenerateName() != "" {
 		if newMeta.GetName() == "" {
-			newMeta.SetName(newMeta.GetGenerateName() + strings.ToLower(utils.RandomString(5)))
+			newMeta.SetName(newMeta.GetGenerateName() + strings.ToLower(crypto.RandomString(5)))
 		}
 	}
 

@@ -1,9 +1,10 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package crypto
 
 import (
 	"bytes"
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/ecdsa"
@@ -19,6 +20,7 @@ import (
 	"math"
 	"math/big"
 	mathRand "math/rand"
+	"strings"
 	"time"
 
 	// Logrus is directly imported here because importing Trident's logging package will cause an import cycle.
@@ -36,7 +38,7 @@ type CertInfo struct {
 	ClientCert string
 }
 
-// makeHTTPCertInfo generates a CA key and cert, then uses that key to sign two
+// MakeHTTPCertInfo generates a CA key and cert, then uses that key to sign two
 // other keys and certs, one for a TLS server and one for a TLS client. None of
 // the parameters are configurable...the serial numbers and principal names are
 // hardcoded, the validity period is hardcoded to 1970-2070, and the algorithm
@@ -202,7 +204,7 @@ func bigIntHash(n *big.Int) ([]byte, error) {
 	return hash.Sum(nil), nil
 }
 
-// GenerateAESKey generates a cryptographically random 32-byte key, returned as a base64-encoded string
+// GenerateAESKey generates a cryptographically random 32-byte key, returned as a base64-encoded string.
 func GenerateAESKey() (string, error) {
 	key := make([]byte, 32)
 	_, err := cryptoRand.Read(key)
@@ -210,7 +212,7 @@ func GenerateAESKey() (string, error) {
 }
 
 // EncryptStringWithAES takes a string and a key and returns the encrypted,
-// base64-encoded form of the string
+// base64-encoded form of the string.
 func EncryptStringWithAES(plainText string, key []byte) (string, error) {
 	// Create the cipher
 	block, err2 := aes.NewCipher(key)
@@ -237,7 +239,7 @@ func EncryptStringWithAES(plainText string, key []byte) (string, error) {
 }
 
 // DecryptStringWithAES takes an encrypted,
-// base64-encoded string and a key and returns the plaintext form of the string
+// base64-encoded string and a key and returns the plaintext form of the string.
 func DecryptStringWithAES(encryptedText string, key []byte) (string, error) {
 	// Decode the string into byte array
 	encryptedBytes, err2 := base64.StdEncoding.DecodeString(encryptedText)
@@ -273,14 +275,14 @@ func DecryptStringWithAES(encryptedText string, key []byte) (string, error) {
 	return string(plainText), nil
 }
 
-// PKCS7Pad will pad the input to a multiple of blocksize according to PKCS#7 standard
+// PKCS7Pad will pad the input to a multiple of blocksize according to PKCS#7 standard.
 func PKCS7Pad(input []byte, blockSize int) []byte {
 	padLength := blockSize - len(input)%blockSize
 	padding := bytes.Repeat([]byte{byte(padLength)}, padLength)
 	return append(input, padding...)
 }
 
-// PKCS7Pad will remove the padding from input according to PKCS#7 standard
+// PKCS7Unpad will remove the padding from input according to PKCS#7 standard.
 func PKCS7Unpad(input []byte) ([]byte, error) {
 	inputLength := len(input)
 	paddingLength := int(input[inputLength-1])
@@ -292,8 +294,8 @@ func PKCS7Unpad(input []byte) ([]byte, error) {
 	return input[:(inputLength - paddingLength)], nil
 }
 
-// GetRandomNumber will generate a cryptographically secure random number in the range of [0, max)
-func GetRandomNumber(max int) int {
+// RandomNumber will generate a cryptographically secure random number in the range of [0, max).
+func RandomNumber(max int) int {
 	randomNo, err := cryptoRand.Int(cryptoRand.Reader, big.NewInt(int64(max)))
 	if err != nil {
 		log.WithError(err).Error("Unable to generate secure random number")
@@ -303,4 +305,71 @@ func GetRandomNumber(max int) int {
 	// The type conversion converts the larger type int64 to int
 	// the function makes this assumption because the original input parameter is defined as int
 	return int(randomNo.Int64())
+}
+
+// RandomString returns a string of the specified length consisting only of alphabetic characters.
+func RandomString(strSize int) string {
+	chars := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	bytes := make([]byte, strSize)
+	_, err := cryptoRand.Read(bytes)
+	if err != nil {
+		log.WithError(err).Error("Unable to generate random bytes")
+	}
+	for i, b := range bytes {
+		bytes[i] = chars[b%byte(len(chars))]
+	}
+	return string(bytes)
+}
+
+func GenerateRandomPassword(ctx context.Context, length int, lowerChar, upperChar, digitChar, specialChar bool) string {
+	const (
+		lowerChars   = "abcdefghijklmnopqrstuvwxyz"
+		upperChars   = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		digitChars   = "0123456789"
+		specialChars = "!@#$%^&*()-_+=<>?{}[]|\\~`"
+	)
+	var allChars string
+	if lowerChar {
+		allChars += lowerChars
+	}
+	if upperChar {
+		allChars += upperChars
+	}
+	if digitChar {
+		allChars += digitChars
+	}
+	if specialChar {
+		allChars += specialChars
+	}
+
+	if len(allChars) == 0 {
+		log.Warn("No character sets selected, using default character set (lowercase letters, uppercase letters, digits)")
+		allChars = lowerChars + upperChars + digitChars
+	}
+
+	for {
+		passwordBytes := make([]byte, length)
+		hasLetter, hasDigit := false, false
+
+		for i := 0; i < length; i++ {
+			randomIndex, err := cryptoRand.Int(cryptoRand.Reader, big.NewInt(int64(len(allChars))))
+			if err != nil {
+				log.Warn("Failed to generate random number for password, setting default password")
+				return ""
+			}
+			char := allChars[randomIndex.Int64()]
+			passwordBytes[i] = char
+			if strings.ContainsRune(lowerChars+upperChars, rune(char)) {
+				hasLetter = true
+			}
+			if strings.ContainsRune(digitChars, rune(char)) {
+				hasDigit = true
+			}
+		}
+
+		password := string(passwordBytes)
+		if hasLetter && hasDigit && !strings.Contains(password, "admin") {
+			return password
+		}
+	}
 }

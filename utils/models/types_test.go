@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package models
 
@@ -11,6 +11,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
+	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -80,7 +83,7 @@ func TestNodeConstructExternal(t *testing.T) {
 			},
 			Services: []string{"NFS", "iSCSI"},
 		},
-		Deleted:          Ptr(false),
+		Deleted:          convert.ToPtr(false),
 		PublicationState: NodeClean,
 	}
 
@@ -198,9 +201,9 @@ func TestLUNs_IdentifyMissingLUNs(t *testing.T) {
 	var n LUNs
 
 	assert.Equal(t, []int32{}, l.IdentifyMissingLUNs(n), "Missing LUN mismatch when input is empty")
-	containsAll, _ := SliceContainsElements([]int32{4, 99}, l.IdentifyMissingLUNs(m))
+	containsAll, _ := collection.ContainsElements([]int32{4, 99}, l.IdentifyMissingLUNs(m))
 	assert.True(t, containsAll, "Missing LUN mismatch")
-	containsAll, _ = SliceContainsElements(l.AllLUNs(), n.IdentifyMissingLUNs(l))
+	containsAll, _ = collection.ContainsElements(l.AllLUNs(), n.IdentifyMissingLUNs(l))
 	assert.True(t, containsAll, "Missing LUN mismatch when struct is not initalized or empty")
 }
 
@@ -758,7 +761,7 @@ func TestISCSISessions_LUNsForPortal(t *testing.T) {
 	luns, err = iSCSISessionNotEmpty.LUNsForPortal(portal)
 	assert.Nil(t, err, "expected no error when getting LUNsForPortal")
 	assert.NotEmpty(t, luns, "expected LUNsForPortal to be NOT empty")
-	containsAll, _ := SliceContainsElements(luns, inputLUNInfo.AllLUNs())
+	containsAll, _ := collection.ContainsElements(luns, inputLUNInfo.AllLUNs())
 	assert.True(t, containsAll, "expected LUNs to be equal")
 }
 
@@ -1010,23 +1013,23 @@ func TestNodePublicationStateFlags_IsNodeDirty(t *testing.T) {
 		expected, shouldFail                  bool
 	}{
 		"returns false when OrchestratorReady is true but AdministratorReady is not": {
-			orchestratorReady:  Ptr(true),
+			orchestratorReady:  convert.ToPtr(true),
 			administratorReady: nil,
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is false but AdministratorReady is not": {
-			orchestratorReady:  Ptr(false),
+			orchestratorReady:  convert.ToPtr(false),
 			administratorReady: nil,
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is not set but AdministratorReady is true": {
 			orchestratorReady:  nil,
-			administratorReady: Ptr(true),
+			administratorReady: convert.ToPtr(true),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is not set but AdministratorReady is false": {
 			orchestratorReady:  nil,
-			administratorReady: Ptr(false),
+			administratorReady: convert.ToPtr(false),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady and AdministratorReady are not set": {
@@ -1035,23 +1038,23 @@ func TestNodePublicationStateFlags_IsNodeDirty(t *testing.T) {
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is true and AdministratorReady is false": {
-			orchestratorReady:  Ptr(true),
-			administratorReady: Ptr(false),
+			orchestratorReady:  convert.ToPtr(true),
+			administratorReady: convert.ToPtr(false),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is false and AdministratorReady is true": {
-			orchestratorReady:  Ptr(false),
-			administratorReady: Ptr(true),
+			orchestratorReady:  convert.ToPtr(false),
+			administratorReady: convert.ToPtr(true),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is true and AdministratorReady is true": {
-			orchestratorReady:  Ptr(true),
-			administratorReady: Ptr(true),
+			orchestratorReady:  convert.ToPtr(true),
+			administratorReady: convert.ToPtr(true),
 			expected:           false,
 		},
 		"returns true when OrchestratorReady is false and AdministratorReady is false": {
-			orchestratorReady:  Ptr(false),
-			administratorReady: Ptr(false),
+			orchestratorReady:  convert.ToPtr(false),
+			administratorReady: convert.ToPtr(false),
 			expected:           true,
 		},
 	}
@@ -1074,23 +1077,23 @@ func TestNodePublicationStateFlags_IsNodeCleanable(t *testing.T) {
 		expected, shouldFail                  bool
 	}{
 		"returns false when OrchestratorReady is true but AdministratorReady is not set": {
-			orchestratorReady:  Ptr(true),
+			orchestratorReady:  convert.ToPtr(true),
 			administratorReady: nil,
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is false but AdministratorReady is not set": {
-			orchestratorReady:  Ptr(false),
+			orchestratorReady:  convert.ToPtr(false),
 			administratorReady: nil,
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is not set but AdministratorReady is true": {
 			orchestratorReady:  nil,
-			administratorReady: Ptr(true),
+			administratorReady: convert.ToPtr(true),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is not set but AdministratorReady is false": {
 			orchestratorReady:  nil,
-			administratorReady: Ptr(false),
+			administratorReady: convert.ToPtr(false),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady and AdministratorReady are not set": {
@@ -1099,23 +1102,23 @@ func TestNodePublicationStateFlags_IsNodeCleanable(t *testing.T) {
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is true and AdministratorReady is false": {
-			orchestratorReady:  Ptr(true),
-			administratorReady: Ptr(false),
+			orchestratorReady:  convert.ToPtr(true),
+			administratorReady: convert.ToPtr(false),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is false and AdministratorReady is true": {
-			orchestratorReady:  Ptr(false),
-			administratorReady: Ptr(true),
+			orchestratorReady:  convert.ToPtr(false),
+			administratorReady: convert.ToPtr(true),
 			expected:           false,
 		},
 		"returns true when OrchestratorReady is true and AdministratorReady is true": {
-			orchestratorReady:  Ptr(true),
-			administratorReady: Ptr(true),
+			orchestratorReady:  convert.ToPtr(true),
+			administratorReady: convert.ToPtr(true),
 			expected:           true,
 		},
 		"returns false when OrchestratorReady is false and AdministratorReady is false": {
-			orchestratorReady:  Ptr(false),
-			administratorReady: Ptr(false),
+			orchestratorReady:  convert.ToPtr(false),
+			administratorReady: convert.ToPtr(false),
 			expected:           false,
 		},
 	}
@@ -1144,153 +1147,153 @@ func TestNodePublicationStateFlags_IsNodeCleaned(t *testing.T) {
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is true but AdministratorReady and ProvisionerReady are not set": {
-			orchestratorReady:  Ptr(true),
+			orchestratorReady:  convert.ToPtr(true),
 			administratorReady: nil,
 			provisionerReady:   nil,
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is false but AdministratorReady and ProvisionerReady are not set": {
-			orchestratorReady:  Ptr(false),
+			orchestratorReady:  convert.ToPtr(false),
 			administratorReady: nil,
 			provisionerReady:   nil,
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is true, AdministratorReady is true, and ProvisionerReady is not set": {
-			orchestratorReady:  Ptr(true),
-			administratorReady: Ptr(true),
+			orchestratorReady:  convert.ToPtr(true),
+			administratorReady: convert.ToPtr(true),
 			provisionerReady:   nil,
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is true, AdministratorReady is false, and ProvisionerReady is not set": {
-			orchestratorReady:  Ptr(true),
-			administratorReady: Ptr(false),
+			orchestratorReady:  convert.ToPtr(true),
+			administratorReady: convert.ToPtr(false),
 			provisionerReady:   nil,
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is false, AdministratorReady is true, and ProvisionerReady is not set": {
-			orchestratorReady:  Ptr(false),
-			administratorReady: Ptr(true),
+			orchestratorReady:  convert.ToPtr(false),
+			administratorReady: convert.ToPtr(true),
 			provisionerReady:   nil,
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is true, AdministratorReady is not set, and ProvisionerReady is true": {
-			orchestratorReady:  Ptr(true),
+			orchestratorReady:  convert.ToPtr(true),
 			administratorReady: nil,
-			provisionerReady:   Ptr(true),
+			provisionerReady:   convert.ToPtr(true),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is true, AdministratorReady is not set, and ProvisionerReady is false": {
-			orchestratorReady:  Ptr(true),
+			orchestratorReady:  convert.ToPtr(true),
 			administratorReady: nil,
-			provisionerReady:   Ptr(false),
+			provisionerReady:   convert.ToPtr(false),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is false, AdministratorReady is not set, and ProvisionerReady is true": {
-			orchestratorReady:  Ptr(false),
+			orchestratorReady:  convert.ToPtr(false),
 			administratorReady: nil,
-			provisionerReady:   Ptr(true),
+			provisionerReady:   convert.ToPtr(true),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is false, AdministratorReady is not set, and ProvisionerReady is false": {
-			orchestratorReady:  Ptr(false),
+			orchestratorReady:  convert.ToPtr(false),
 			administratorReady: nil,
-			provisionerReady:   Ptr(false),
+			provisionerReady:   convert.ToPtr(false),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is not set, AdministratorReady is true, and ProvisionerReady is not set": {
 			orchestratorReady:  nil,
-			administratorReady: Ptr(true),
+			administratorReady: convert.ToPtr(true),
 			provisionerReady:   nil,
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is not set, AdministratorReady is false, and ProvisionerReady is not set": {
 			orchestratorReady:  nil,
-			administratorReady: Ptr(false),
+			administratorReady: convert.ToPtr(false),
 			provisionerReady:   nil,
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is not set, AdministratorReady is true, and ProvisionerReady is false": {
 			orchestratorReady:  nil,
-			administratorReady: Ptr(true),
-			provisionerReady:   Ptr(false),
+			administratorReady: convert.ToPtr(true),
+			provisionerReady:   convert.ToPtr(false),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is not set, AdministratorReady is false, and ProvisionerReady is true": {
 			orchestratorReady:  nil,
-			administratorReady: Ptr(false),
-			provisionerReady:   Ptr(true),
+			administratorReady: convert.ToPtr(false),
+			provisionerReady:   convert.ToPtr(true),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is not set, AdministratorReady is true, and ProvisionerReady is true": {
 			orchestratorReady:  nil,
-			administratorReady: Ptr(true),
-			provisionerReady:   Ptr(true),
+			administratorReady: convert.ToPtr(true),
+			provisionerReady:   convert.ToPtr(true),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is not set, AdministratorReady is false, and ProvisionerReady is false": {
 			orchestratorReady:  nil,
-			administratorReady: Ptr(false),
-			provisionerReady:   Ptr(false),
+			administratorReady: convert.ToPtr(false),
+			provisionerReady:   convert.ToPtr(false),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is not set, AdministratorReady is not set, and ProvisionerReady is true": {
 			orchestratorReady:  nil,
 			administratorReady: nil,
-			provisionerReady:   Ptr(true),
+			provisionerReady:   convert.ToPtr(true),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is not set, AdministratorReady is not set, and ProvisionerReady is false": {
 			orchestratorReady:  nil,
 			administratorReady: nil,
-			provisionerReady:   Ptr(false),
+			provisionerReady:   convert.ToPtr(false),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is true, AdministratorReady is false, and ProvisionerReady is false": {
-			orchestratorReady:  Ptr(true),
-			administratorReady: Ptr(false),
-			provisionerReady:   Ptr(false),
+			orchestratorReady:  convert.ToPtr(true),
+			administratorReady: convert.ToPtr(false),
+			provisionerReady:   convert.ToPtr(false),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is true, AdministratorReady is true, and ProvisionerReady is false": {
-			orchestratorReady:  Ptr(true),
-			administratorReady: Ptr(true),
-			provisionerReady:   Ptr(false),
+			orchestratorReady:  convert.ToPtr(true),
+			administratorReady: convert.ToPtr(true),
+			provisionerReady:   convert.ToPtr(false),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is true, AdministratorReady is false, and ProvisionerReady is true": {
-			orchestratorReady:  Ptr(true),
-			administratorReady: Ptr(false),
-			provisionerReady:   Ptr(true),
+			orchestratorReady:  convert.ToPtr(true),
+			administratorReady: convert.ToPtr(false),
+			provisionerReady:   convert.ToPtr(true),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is false, AdministratorReady is true, and ProvisionerReady is false": {
-			orchestratorReady:  Ptr(false),
-			administratorReady: Ptr(true),
-			provisionerReady:   Ptr(false),
+			orchestratorReady:  convert.ToPtr(false),
+			administratorReady: convert.ToPtr(true),
+			provisionerReady:   convert.ToPtr(false),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is false, AdministratorReady is true, and ProvisionerReady is true": {
-			orchestratorReady:  Ptr(false),
-			administratorReady: Ptr(true),
-			provisionerReady:   Ptr(true),
+			orchestratorReady:  convert.ToPtr(false),
+			administratorReady: convert.ToPtr(true),
+			provisionerReady:   convert.ToPtr(true),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is false, AdministratorReady is false, and ProvisionerReady is true": {
-			orchestratorReady:  Ptr(false),
-			administratorReady: Ptr(false),
-			provisionerReady:   Ptr(true),
+			orchestratorReady:  convert.ToPtr(false),
+			administratorReady: convert.ToPtr(false),
+			provisionerReady:   convert.ToPtr(true),
 			expected:           false,
 		},
 		"returns false when OrchestratorReady is false, AdministratorReady is false, and ProvisionerReady is false": {
-			orchestratorReady:  Ptr(false),
-			administratorReady: Ptr(false),
-			provisionerReady:   Ptr(false),
+			orchestratorReady:  convert.ToPtr(false),
+			administratorReady: convert.ToPtr(false),
+			provisionerReady:   convert.ToPtr(false),
 			expected:           false,
 		},
 		"returns true when OrchestratorReady is true, AdministratorReady is true, and ProvisionerReady is true": {
-			orchestratorReady:  Ptr(true),
-			administratorReady: Ptr(true),
-			provisionerReady:   Ptr(true),
+			orchestratorReady:  convert.ToPtr(true),
+			administratorReady: convert.ToPtr(true),
+			provisionerReady:   convert.ToPtr(true),
 			expected:           true,
 		},
 	}
@@ -1357,7 +1360,7 @@ func TestParseHostportIP(t *testing.T) {
 	}
 	for _, testCase := range tests {
 		t.Run(testCase.InputIP, func(t *testing.T) {
-			assert.Equal(t, testCase.OutputIP, ParseHostportIP(testCase.InputIP), "IP mismatch")
+			assert.Equal(t, testCase.OutputIP, network.ParseHostportIP(testCase.InputIP), "IP mismatch")
 		})
 	}
 }

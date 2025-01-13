@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package common
 
@@ -11,10 +11,11 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -127,9 +128,9 @@ func GetVolumeConfig(
 	defer Logc(ctx).Trace("<<<< GetVolumeConfig")
 
 	// If snapshotDir is provided, ensure it is lower case
-	snapshotDir := utils.GetV(opts, "snapshotDir", "")
+	snapshotDir := collection.GetV(opts, "snapshotDir", "")
 	if snapshotDir != "" {
-		snapDirFormatted, err := utils.GetFormattedBool(snapshotDir)
+		snapDirFormatted, err := convert.ToFormattedBool(snapshotDir)
 		if err != nil {
 			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", snapshotDir)
 			return nil, err
@@ -144,27 +145,27 @@ func GetVolumeConfig(
 		Protocol:            protocol,
 		AccessMode:          accessMode,
 		VolumeMode:          volumeMode,
-		SpaceReserve:        utils.GetV(opts, "spaceReserve", ""),
-		SecurityStyle:       utils.GetV(opts, "securityStyle", ""),
-		SplitOnClone:        utils.GetV(opts, "splitOnClone", ""),
-		SnapshotPolicy:      utils.GetV(opts, "snapshotPolicy", ""),
-		SnapshotReserve:     utils.GetV(opts, "snapshotReserve", ""),
+		SpaceReserve:        collection.GetV(opts, "spaceReserve", ""),
+		SecurityStyle:       collection.GetV(opts, "securityStyle", ""),
+		SplitOnClone:        collection.GetV(opts, "splitOnClone", ""),
+		SnapshotPolicy:      collection.GetV(opts, "snapshotPolicy", ""),
+		SnapshotReserve:     collection.GetV(opts, "snapshotReserve", ""),
 		SnapshotDir:         snapshotDir,
-		ExportPolicy:        utils.GetV(opts, "exportPolicy", ""),
-		UnixPermissions:     utils.GetV(opts, "unixPermissions", ""),
-		BlockSize:           utils.GetV(opts, "blocksize", ""),
-		Qos:                 utils.GetV(opts, "qos", ""),
-		QosType:             utils.GetV(opts, "type", ""),
-		FileSystem:          utils.GetV(opts, "fstype|fileSystemType", ""),
-		Encryption:          utils.GetV(opts, "encryption", ""),
-		CloneSourceVolume:   utils.GetV(opts, "from", ""),
-		CloneSourceSnapshot: utils.GetV(opts, "fromSnap|fromSnapshot", ""),
-		ServiceLevel:        utils.GetV(opts, "serviceLevel", ""),
-		CVSStorageClass:     utils.GetV(opts, "cvsStorageClass", ""),
-		Network:             utils.GetV(opts, "network", ""),
+		ExportPolicy:        collection.GetV(opts, "exportPolicy", ""),
+		UnixPermissions:     collection.GetV(opts, "unixPermissions", ""),
+		BlockSize:           collection.GetV(opts, "blocksize", ""),
+		Qos:                 collection.GetV(opts, "qos", ""),
+		QosType:             collection.GetV(opts, "type", ""),
+		FileSystem:          collection.GetV(opts, "fstype|fileSystemType", ""),
+		Encryption:          collection.GetV(opts, "encryption", ""),
+		CloneSourceVolume:   collection.GetV(opts, "from", ""),
+		CloneSourceSnapshot: collection.GetV(opts, "fromSnap|fromSnapshot", ""),
+		ServiceLevel:        collection.GetV(opts, "serviceLevel", ""),
+		CVSStorageClass:     collection.GetV(opts, "cvsStorageClass", ""),
+		Network:             collection.GetV(opts, "network", ""),
 		RequisiteTopologies: requisiteTopologies,
 		PreferredTopologies: preferredTopologies,
-		Zone:                utils.GetV(opts, "zone", ""),
+		Zone:                collection.GetV(opts, "zone", ""),
 	}
 	Logc(ctx).WithField("VolumeConfig", cfg).Trace("Returning volume config.")
 

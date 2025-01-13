@@ -14,13 +14,13 @@ import (
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/internal/crypto"
 	. "github.com/netapp/trident/logging"
 	confClients "github.com/netapp/trident/operator/controllers/configurator/clients"
 	operatorV1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
 	tridentV1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -164,7 +164,7 @@ func (aws *AWS) processFSxNInstance(ctx context.Context, key int, svm SVM) error
 			Description: Description,
 			SecretData: map[string]string{
 				"username": VsAdmin,
-				"password": utils.GenerateRandomPassword(ctx, 10, true, true, true, true),
+				"password": crypto.GenerateRandomPassword(ctx, 10, true, true, true, true),
 			},
 			Tags: map[string]string{
 				FileSystemId: svm.FsxnID,

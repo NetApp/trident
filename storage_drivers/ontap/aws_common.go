@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -9,10 +9,10 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -160,7 +160,7 @@ func validateFSxFilesystem(
 				config.AWSConfig.FSxFilesystemID)
 		}
 	} else {
-		if !utils.SliceContainsString(discoveredSVMNames, config.SVM) {
+		if !collection.ContainsString(discoveredSVMNames, config.SVM) {
 			return fmt.Errorf("SVM %s does not exist in filesystem %s", config.SVM, config.AWSConfig.FSxFilesystemID)
 		}
 	}

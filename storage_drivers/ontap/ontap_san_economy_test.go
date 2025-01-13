@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -13,19 +13,19 @@ import (
 	"strings"
 	"testing"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
-	"github.com/netapp/trident/utils"
 	utilserrors "github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
@@ -581,7 +581,7 @@ func TestDriverIgnoresDataLIF(t *testing.T) {
 func TestDriverValidateInvalidPrefix(t *testing.T) {
 	_, d := newMockOntapSanEcoDriver(t)
 
-	d.Config.StoragePrefix = utils.Ptr("B@D")
+	d.Config.StoragePrefix = convert.ToPtr("B@D")
 
 	assert.EqualError(t, d.validate(ctx), "storage prefix may only contain letters/digits/underscore/dash")
 }
@@ -3891,7 +3891,7 @@ func TestOntapSanEconomyGetStorageBackendPools(t *testing.T) {
 
 func TestOntapSanEconomyGetInternalVolumeName(t *testing.T) {
 	_, d := newMockOntapSanEcoDriver(t)
-	d.Config.StoragePrefix = utils.Ptr("storagePrefix_")
+	d.Config.StoragePrefix = convert.ToPtr("storagePrefix_")
 	volConfig := &storage.VolumeConfig{Name: "my-Lun"}
 	pool := storage.NewStoragePool(nil, "dummyPool")
 

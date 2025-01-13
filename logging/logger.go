@@ -1,10 +1,12 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package logging
 
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/url"
 	"sort"
 	"strings"
 
@@ -15,6 +17,8 @@ import (
 const (
 	UseDefault = iota
 	Trace
+
+	redacted = "<REDACTED>"
 )
 
 var (
@@ -534,4 +538,81 @@ func FormatMessageForLog(msg string) string {
 	}
 
 	return sentenceCased
+}
+
+func RedactedHTTPRequest(request *http.Request, requestBody []byte, driverName string, redactBody, isDriverLog bool) {
+	header := ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+	footer := "--------------------------------------------------------------------------------"
+
+	ctx := request.Context()
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
+	requestURL, err := url.Parse(request.URL.String())
+	if err != nil {
+		if isDriverLog {
+			Logd(ctx, driverName, true).WithError(err).Errorf("Unable to parse URL '%s'", request.URL.String())
+		} else {
+			Logc(ctx).WithError(err).Errorf("Unable to parse URL '%s'", request.URL.String())
+		}
+	}
+	requestURL.User = nil
+
+	headers := make(map[string][]string)
+	for k, v := range request.Header {
+		headers[k] = v
+	}
+	delete(headers, "Authorization")
+	delete(headers, "Api-Key")
+	delete(headers, "Secret-Key")
+
+	var body string
+	if requestBody == nil {
+		body = "<nil>"
+	} else if redactBody {
+		body = redacted
+	} else {
+		body = string(requestBody)
+	}
+
+	if isDriverLog {
+		Logd(ctx, driverName, true).Tracef("\n%s\n%s %s\nHeaders: %v\nBody: %s\n%s",
+			header, request.Method, requestURL, headers, body, footer)
+	} else {
+		Logc(ctx).Tracef("\n%s\n%s %s\nHeaders: %v\nBody: %s\n%s",
+			header, request.Method, requestURL, headers, body, footer)
+	}
+}
+
+func RedactedHTTPResponse(
+	ctx context.Context, response *http.Response, responseBody []byte, driverName string, redactBody, isDriverLog bool,
+) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
+	header := "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+	footer := "================================================================================"
+
+	headers := make(map[string][]string)
+	for k, v := range response.Header {
+		headers[k] = v
+	}
+	delete(headers, "Authorization")
+	delete(headers, "Api-Key")
+	delete(headers, "Secret-Key")
+
+	var body string
+	if responseBody == nil {
+		body = "<nil>"
+	} else if redactBody {
+		body = redacted
+	} else {
+		body = string(responseBody)
+	}
+
+	if isDriverLog {
+		Logd(ctx, driverName, true).Tracef("\n%s\nStatus: %s\nHeaders: %v\nBody: %s\n%s", header,
+			response.Status, headers, body, footer)
+	} else {
+		Logc(ctx).Tracef("\n%s\nStatus: %s\nHeaders: %v\nBody: %s\n%s", header,
+			response.Status, headers, body, footer)
+	}
 }

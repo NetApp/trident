@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package storagedrivers
 
@@ -14,6 +14,8 @@ import (
 
 	trident "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/convert"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
@@ -70,7 +72,7 @@ func ValidateCommonSettings(ctx context.Context, configJSON string) (*CommonStor
 
 	// Validate volume size limit (if set)
 	if config.LimitVolumeSize != "" {
-		if _, err = utils.ConvertSizeToBytes(config.LimitVolumeSize); err != nil {
+		if _, err = capacity.ToBytes(config.LimitVolumeSize); err != nil {
 			return nil, fmt.Errorf("invalid value for limitVolumeSize: %v", config.LimitVolumeSize)
 		}
 	}
@@ -186,7 +188,7 @@ func CheckVolumeSizeLimits(
 	}
 
 	volumeSizeLimit := uint64(0)
-	volumeSizeLimitStr, parseErr := utils.ConvertSizeToBytes(limitVolumeSize)
+	volumeSizeLimitStr, parseErr := capacity.ToBytes(limitVolumeSize)
 	if parseErr != nil {
 		return false, 0, fmt.Errorf("error parsing limitVolumeSize: %v", parseErr)
 	}
@@ -316,7 +318,7 @@ func EncodeStorageBackendPools[P StorageBackendPool](
 
 	encodedPools := make([]string, 0)
 	for _, pool := range backendPools {
-		encodedPool, err := utils.EncodeObjectToBase64String(pool)
+		encodedPool, err := convert.ObjectToBase64String(pool)
 		if err != nil {
 			return nil, err
 		}
@@ -342,7 +344,7 @@ func DecodeStorageBackendPools[P StorageBackendPool](
 	backendPools := make([]P, 0)
 	for _, pool := range encodedPools {
 		var backendPool P
-		err := utils.DecodeBase64StringToObject(pool, &backendPool)
+		err := convert.Base64StringToObject(pool, &backendPool)
 		if err != nil {
 			return nil, err
 		}

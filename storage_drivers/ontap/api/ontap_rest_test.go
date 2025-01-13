@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -13,6 +13,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/netapp/trident/pkg/convert"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
@@ -20,7 +21,6 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/storage"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
-	"github.com/netapp/trident/utils"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -147,8 +147,8 @@ func TestExtractErrorResponse(t *testing.T) {
 	lunModifyDefaultResponse = s_a_n.LunModifyDefault{
 		Payload: &models.ErrorResponse{
 			Error: &models.ReturnedError{
-				Code:    utils.Ptr("42"),
-				Message: utils.Ptr("error 42"),
+				Code:    convert.ToPtr("42"),
+				Message: convert.ToPtr("error 42"),
 			},
 		},
 	}
@@ -169,7 +169,7 @@ func TestVolumeEncryption(t *testing.T) {
 	assert.Nil(t, volumeEncrytion.Enabled)
 
 	// positive case:  if set to false, should be sent as false (not omitted)
-	veMarshall = models.VolumeInlineEncryption{Enabled: utils.Ptr(false)}
+	veMarshall = models.VolumeInlineEncryption{Enabled: convert.ToPtr(false)}
 	bytes, _ = json.MarshalIndent(veMarshall, "", "  ")
 	assert.Equal(t,
 		`{
@@ -181,7 +181,7 @@ func TestVolumeEncryption(t *testing.T) {
 	assert.False(t, *volumeEncrytion.Enabled)
 
 	// positive case:  if set to true, should be sent as true
-	veMarshall = models.VolumeInlineEncryption{Enabled: utils.Ptr(true)}
+	veMarshall = models.VolumeInlineEncryption{Enabled: convert.ToPtr(true)}
 	bytes, _ = json.MarshalIndent(veMarshall, "", "  ")
 	assert.Equal(t,
 		`{
@@ -195,7 +195,7 @@ func TestVolumeEncryption(t *testing.T) {
 
 func TestSnapmirrorErrorCode(t *testing.T) {
 	// ensure the error code remains a *string in the swagger definition (it was incorrectly a number)
-	messageCode := utils.Ptr("42")
+	messageCode := convert.ToPtr("42")
 	smErr := &models.SnapmirrorError{
 		Code:    messageCode,
 		Message: messageCode,
@@ -357,11 +357,11 @@ func TestOntapREST_IscsiInitiatorSetDefaultAuth(t *testing.T) {
 
 func mockSVMUUIDNil(w http.ResponseWriter, r *http.Request) {
 	svm := models.Svm{
-		Name:  utils.Ptr("svm0"),
-		State: utils.Ptr("running"),
+		Name:  convert.ToPtr("svm0"),
+		State: convert.ToPtr("running"),
 		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
 			{
-				Name: utils.Ptr("aggr1"),
+				Name: convert.ToPtr("aggr1"),
 				UUID: nil,
 			},
 		},
@@ -375,7 +375,7 @@ func mockSVMUUIDNil(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/api/svm/svms" {
 		svmResponse := models.SvmResponse{
 			SvmResponseInlineRecords: []*models.Svm{&svm},
-			NumRecords:               utils.Ptr(int64(1)),
+			NumRecords:               convert.ToPtr(int64(1)),
 		}
 		setHTTPResponseHeader(w, http.StatusOK)
 		json.NewEncoder(w).Encode(svmResponse)
@@ -865,7 +865,7 @@ func TestOntapREST_IgroupDestroy(t *testing.T) {
 }
 
 func mockLunListResponse(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
-	lunInfo := getLunInfo(utils.Ptr("lunAttr"))
+	lunInfo := getLunInfo(convert.ToPtr("lunAttr"))
 	numRecords := int64(1)
 
 	url := "/api/storage/luns"
@@ -892,7 +892,7 @@ func mockLunListResponse(hasNextLink bool, w http.ResponseWriter, r *http.Reques
 }
 
 func mockLunListResponseInternalError(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
-	lunInfo := getLunInfo(utils.Ptr("lunAttr"))
+	lunInfo := getLunInfo(convert.ToPtr("lunAttr"))
 	numRecords := int64(1)
 
 	url := "/api/storage/luns"
@@ -917,7 +917,7 @@ func mockLunListResponseInternalError(hasNextLink bool, w http.ResponseWriter, r
 }
 
 func mockLunListResponseNumRecordsNil(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
-	lunInfo := getLunInfo(utils.Ptr("lunAttr"))
+	lunInfo := getLunInfo(convert.ToPtr("lunAttr"))
 
 	url := "/api/storage/luns"
 	var hrefLink *models.LunResponseInlineLinks
@@ -1024,13 +1024,13 @@ func mockLunMapResponse(w http.ResponseWriter, r *http.Request) {
 	initiatorGroup := "initiatorGroup"
 
 	lunMapResponse := &models.LunMapResponse{
-		NumRecords: utils.Ptr(int64(1)),
+		NumRecords: convert.ToPtr(int64(1)),
 		LunMapResponseInlineRecords: []*models.LunMap{
 			{
 				LogicalUnitNumber: nil,
 				Igroup: &models.LunMapInlineIgroup{
-					Name: utils.Ptr(initiatorGroup),
-					UUID: utils.Ptr("fake-igroupUUID"),
+					Name: convert.ToPtr(initiatorGroup),
+					UUID: convert.ToPtr("fake-igroupUUID"),
 				},
 			},
 		},
@@ -1046,7 +1046,7 @@ func mockLunMapResponse(w http.ResponseWriter, r *http.Request) {
 }
 
 func mockLunResponse(w http.ResponseWriter, r *http.Request) {
-	lunInfo := getLunInfo(utils.Ptr("lunAttr"))
+	lunInfo := getLunInfo(convert.ToPtr("lunAttr"))
 	numRecords := int64(1)
 	lunResponse := models.LunResponse{LunResponseInlineRecords: []*models.Lun{lunInfo}, NumRecords: &numRecords}
 	switch r.Method {
@@ -1075,7 +1075,7 @@ func mockLunResponse(w http.ResponseWriter, r *http.Request) {
 }
 
 func mockLunResponseNumRecordsNil(w http.ResponseWriter, r *http.Request) {
-	lunInfo := getLunInfo(utils.Ptr("lunAttr"))
+	lunInfo := getLunInfo(convert.ToPtr("lunAttr"))
 	lunResponse := models.LunResponse{LunResponseInlineRecords: []*models.Lun{lunInfo}}
 	if r.Method == "GET" {
 		if r.URL.Path == "/api/protocols/san/lun-maps" {
@@ -1253,7 +1253,7 @@ func TestOntapREST_LunCreate(t *testing.T) {
 			assert.NotNil(t, rs)
 
 			err := rs.LunCreate(ctx, test.lunPath, int64(2147483648), "linux",
-				QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, utils.Ptr(false), utils.Ptr(false))
+				QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, convert.ToPtr(false), convert.ToPtr(false))
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not create LUN")
 			} else {
@@ -1323,7 +1323,7 @@ func mockLunMapResponseCreateFailure(w http.ResponseWriter, r *http.Request) {
 }
 
 func mockLunResponseFailure(w http.ResponseWriter, r *http.Request) {
-	lunInfo := getLunInfo(utils.Ptr("lunAttr"))
+	lunInfo := getLunInfo(convert.ToPtr("lunAttr"))
 	numRecords := int64(1)
 	lunResponse := models.LunResponse{LunResponseInlineRecords: []*models.Lun{lunInfo}, NumRecords: &numRecords}
 	switch r.Method {
@@ -1352,7 +1352,7 @@ func mockLunResponseFailure(w http.ResponseWriter, r *http.Request) {
 
 func mockLunResponseUUIDNil(w http.ResponseWriter, r *http.Request) {
 	numRecords := int64(1)
-	lunInfo := getLunInfo(utils.Ptr("lunAttr"))
+	lunInfo := getLunInfo(convert.ToPtr("lunAttr"))
 	lunInfo.UUID = nil
 	lunInfo.Name = nil
 	lunResponse := models.LunResponse{LunResponseInlineRecords: []*models.Lun{lunInfo}, NumRecords: &numRecords}
@@ -1401,7 +1401,7 @@ func TestOntapREST_LunSetComment(t *testing.T) {
 
 func mockLunResponseLunInlineAttributesNil(w http.ResponseWriter, r *http.Request) {
 	numRecords := int64(1)
-	lunInfo := getLunInfo(utils.Ptr("lunAttr"))
+	lunInfo := getLunInfo(convert.ToPtr("lunAttr"))
 	lunInfo.UUID = nil
 	lunInfo.Name = nil
 	lunInfo.LunInlineAttributes = nil
@@ -1586,7 +1586,7 @@ func TestOntapREST_LunMapInfo(t *testing.T) {
 }
 
 func mockLunResponseInternalError(w http.ResponseWriter, r *http.Request) {
-	lunInfo := getLunInfo(utils.Ptr("lunAttr"))
+	lunInfo := getLunInfo(convert.ToPtr("lunAttr"))
 	lunResponse := models.LunResponse{LunResponseInlineRecords: []*models.Lun{lunInfo}}
 	if r.Method == "GET" {
 		if r.URL.Path == "/api/protocols/san/lun-maps" {
@@ -1610,8 +1610,8 @@ func mockLunMapResponseNumRecordsNil(w http.ResponseWriter, r *http.Request) {
 			{
 				LogicalUnitNumber: nil,
 				Igroup: &models.LunMapInlineIgroup{
-					Name: utils.Ptr(initiatorGroup),
-					UUID: utils.Ptr("fake-igroupUUID"),
+					Name: convert.ToPtr(initiatorGroup),
+					UUID: convert.ToPtr("fake-igroupUUID"),
 				},
 			},
 		},
@@ -1629,12 +1629,12 @@ func mockLunMapResponseNumRecordsZero(w http.ResponseWriter, r *http.Request) {
 			{
 				LogicalUnitNumber: nil,
 				Igroup: &models.LunMapInlineIgroup{
-					Name: utils.Ptr(initiatorGroup),
-					UUID: utils.Ptr("fake-igroupUUID"),
+					Name: convert.ToPtr(initiatorGroup),
+					UUID: convert.ToPtr("fake-igroupUUID"),
 				},
 			},
 		},
-		NumRecords: utils.Ptr(int64(0)),
+		NumRecords: convert.ToPtr(int64(0)),
 	}
 
 	setHTTPResponseHeader(w, http.StatusOK)
@@ -1649,12 +1649,12 @@ func mockLunMapResponseIgroupUUIDNil(w http.ResponseWriter, r *http.Request) {
 			{
 				LogicalUnitNumber: nil,
 				Igroup: &models.LunMapInlineIgroup{
-					Name: utils.Ptr(initiatorGroup),
+					Name: convert.ToPtr(initiatorGroup),
 					UUID: nil,
 				},
 			},
 		},
-		NumRecords: utils.Ptr(int64(1)),
+		NumRecords: convert.ToPtr(int64(1)),
 	}
 
 	setHTTPResponseHeader(w, http.StatusOK)
@@ -1760,7 +1760,7 @@ func mockLunMapReportingNode(w http.ResponseWriter, r *http.Request) {
 	} else if r.URL.Path == "/api/protocols/san/lun-maps/fake-lunUUID/fakeUUID/reporting-nodes" {
 		lunMapResp := models.LunMapReportingNodeResponse{
 			LunMapReportingNodeResponseInlineRecords: []*models.LunMapReportingNode{
-				{Name: utils.Ptr("fake-lunMap")},
+				{Name: convert.ToPtr("fake-lunMap")},
 			},
 		}
 		setHTTPResponseHeader(w, http.StatusOK)
@@ -1776,7 +1776,7 @@ func mockLunMapReportingNodeFailure(w http.ResponseWriter, r *http.Request) {
 	} else if r.URL.Path == "/api/protocols/san/lun-maps/fake-lunUUID/fakeUUID/reporting-nodes" {
 		lunMapResp := models.LunMapReportingNodeResponse{
 			LunMapReportingNodeResponseInlineRecords: []*models.LunMapReportingNode{
-				{Name: utils.Ptr("fake-lunMap")},
+				{Name: convert.ToPtr("fake-lunMap")},
 			},
 		}
 		setHTTPResponseHeader(w, http.StatusInternalServerError)
@@ -1851,18 +1851,18 @@ func TestOntapREST_GetLunMapReportingNodes(t *testing.T) {
 }
 
 func mockLunResponseSizeNil(w http.ResponseWriter, r *http.Request) {
-	lunInfo := getLunInfo(utils.Ptr("lunAttr"))
+	lunInfo := getLunInfo(convert.ToPtr("lunAttr"))
 	lunInfo.Space.Size = nil
-	lunResponse := models.LunResponse{LunResponseInlineRecords: []*models.Lun{lunInfo}, NumRecords: utils.Ptr(int64(1))}
+	lunResponse := models.LunResponse{LunResponseInlineRecords: []*models.Lun{lunInfo}, NumRecords: convert.ToPtr(int64(1))}
 
 	setHTTPResponseHeader(w, http.StatusOK)
 	json.NewEncoder(w).Encode(lunResponse)
 }
 
 func mockLunResponseSpaceNil(w http.ResponseWriter, r *http.Request) {
-	lunInfo := getLunInfo(utils.Ptr("lunAttr"))
+	lunInfo := getLunInfo(convert.ToPtr("lunAttr"))
 	lunInfo.Space = nil
-	lunResponse := models.LunResponse{LunResponseInlineRecords: []*models.Lun{lunInfo}, NumRecords: utils.Ptr(int64(1))}
+	lunResponse := models.LunResponse{LunResponseInlineRecords: []*models.Lun{lunInfo}, NumRecords: convert.ToPtr(int64(1))}
 
 	setHTTPResponseHeader(w, http.StatusOK)
 	json.NewEncoder(w).Encode(lunResponse)
@@ -1933,7 +1933,7 @@ func getNetworkIpInterface(hasNextLink bool) *models.IPInterfaceResponse {
 	ipFamily := models.IPAddressFamily("ipv4")
 
 	node := models.IPInterfaceInlineLocationInlineNode{
-		Name: utils.Ptr("node1"),
+		Name: convert.ToPtr("node1"),
 	}
 
 	url := ""
@@ -1950,7 +1950,7 @@ func getNetworkIpInterface(hasNextLink bool) *models.IPInterfaceResponse {
 			{
 				Location: &models.IPInterfaceInlineLocation{Node: &node},
 				IP:       &models.IPInfo{Address: &ipAddress, Family: &ipFamily},
-				State:    utils.Ptr("up"),
+				State:    convert.ToPtr("up"),
 			},
 		},
 		Links: hrefLink,
@@ -2062,7 +2062,7 @@ func mockSvmPeerResponse(w http.ResponseWriter, r *http.Request) {
 		SvmPeerResponseInlineRecords: []*models.SvmPeer{
 			{
 				Peer: &models.SvmPeerInlinePeer{
-					Svm: &models.SvmPeerInlinePeerInlineSvm{Name: utils.Ptr("svm1")},
+					Svm: &models.SvmPeerInlinePeerInlineSvm{Name: convert.ToPtr("svm1")},
 				},
 			},
 		},
@@ -2107,18 +2107,18 @@ func mockIsVserverInSVMDR(w http.ResponseWriter, r *http.Request) {
 		SnapmirrorRelationshipResponseInlineRecords: []*models.SnapmirrorRelationship{
 			{
 				Destination: &models.SnapmirrorEndpoint{
-					Path: utils.Ptr("svm0:"),
+					Path: convert.ToPtr("svm0:"),
 					Svm: &models.SnapmirrorEndpointInlineSvm{
-						Name: utils.Ptr("svm0"),
+						Name: convert.ToPtr("svm0"),
 					},
 				},
 				Source: &models.SnapmirrorSourceEndpoint{
-					Path: utils.Ptr("svm1:"),
+					Path: convert.ToPtr("svm1:"),
 					Svm: &models.SnapmirrorSourceEndpointInlineSvm{
-						Name: utils.Ptr("svm1"),
+						Name: convert.ToPtr("svm1"),
 					},
 				},
-				UUID: utils.Ptr(strfmt.UUID("1")),
+				UUID: convert.ToPtr(strfmt.UUID("1")),
 			},
 			{
 				Source: &models.
@@ -2126,7 +2126,7 @@ func mockIsVserverInSVMDR(w http.ResponseWriter, r *http.Request) {
 			},
 			{
 				Source: &models.
-					SnapmirrorSourceEndpoint{Path: utils.Ptr("svm0:")},
+					SnapmirrorSourceEndpoint{Path: convert.ToPtr("svm0:")},
 			},
 			{},
 		},
@@ -2223,9 +2223,9 @@ func mockSVMListNumRecordsNil(hasNextLink bool, w http.ResponseWriter, r *http.R
 	svm := models.Svm{
 		UUID:  &svmUUID,
 		Name:  &svmName,
-		State: utils.Ptr("running"),
+		State: convert.ToPtr("running"),
 		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
-			{Name: utils.Ptr("aggr1")},
+			{Name: convert.ToPtr("aggr1")},
 		},
 	}
 
@@ -2488,8 +2488,8 @@ func mockGetVolumeResponseAccepted(w http.ResponseWriter, r *http.Request) {
 			mockRequestAccepted(w, r)
 		default:
 			volume := &models.Volume{
-				UUID: utils.Ptr("fakeUUID"),
-				Name: utils.Ptr("fakeName"),
+				UUID: convert.ToPtr("fakeUUID"),
+				Name: convert.ToPtr("fakeName"),
 			}
 			numRecords := int64(1)
 			volumeResponse := models.VolumeResponse{
@@ -2745,35 +2745,35 @@ func mockJobResponseInternalError(w http.ResponseWriter, r *http.Request) {
 
 func mockJobResponseJobStateFailure(w http.ResponseWriter, r *http.Request) {
 	jobId := strfmt.UUID("1234")
-	jobLink := models.Job{UUID: &jobId, State: utils.Ptr(models.JobStateFailure)}
+	jobLink := models.Job{UUID: &jobId, State: convert.ToPtr(models.JobStateFailure)}
 	setHTTPResponseHeader(w, http.StatusOK)
 	json.NewEncoder(w).Encode(jobLink)
 }
 
 func mockJobResponseJobStatePaused(w http.ResponseWriter, r *http.Request) {
 	jobId := strfmt.UUID("1234")
-	jobLink := models.Job{UUID: &jobId, State: utils.Ptr(models.JobStatePaused)}
+	jobLink := models.Job{UUID: &jobId, State: convert.ToPtr(models.JobStatePaused)}
 	setHTTPResponseHeader(w, http.StatusOK)
 	json.NewEncoder(w).Encode(jobLink)
 }
 
 func mockJobResponseJobStateRunning(w http.ResponseWriter, r *http.Request) {
 	jobId := strfmt.UUID("1234")
-	jobLink := models.Job{UUID: &jobId, State: utils.Ptr(models.JobStateRunning)}
+	jobLink := models.Job{UUID: &jobId, State: convert.ToPtr(models.JobStateRunning)}
 	setHTTPResponseHeader(w, http.StatusOK)
 	json.NewEncoder(w).Encode(jobLink)
 }
 
 func mockJobResponseJobStateQueued(w http.ResponseWriter, r *http.Request) {
 	jobId := strfmt.UUID("1234")
-	jobLink := models.Job{UUID: &jobId, State: utils.Ptr(models.JobStateQueued)}
+	jobLink := models.Job{UUID: &jobId, State: convert.ToPtr(models.JobStateQueued)}
 	setHTTPResponseHeader(w, http.StatusOK)
 	json.NewEncoder(w).Encode(jobLink)
 }
 
 func mockJobResponseInvalidState(w http.ResponseWriter, r *http.Request) {
 	jobId := strfmt.UUID("1234")
-	jobLink := models.Job{UUID: &jobId, State: utils.Ptr("InvalidState")}
+	jobLink := models.Job{UUID: &jobId, State: convert.ToPtr("InvalidState")}
 	sc := http.StatusOK
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(sc)
@@ -2889,9 +2889,9 @@ func getAggregateResponse(hasNextLink bool) *models.AggregateResponse {
 		},
 	}
 	aggregate := models.Aggregate{
-		Name: utils.Ptr("aggr1"),
+		Name: convert.ToPtr("aggr1"),
 		BlockStorage: &models.AggregateInlineBlockStorage{
-			Primary: &models.AggregateInlineBlockStorageInlinePrimary{DiskType: utils.Ptr("fc")},
+			Primary: &models.AggregateInlineBlockStorageInlinePrimary{DiskType: convert.ToPtr("fc")},
 		},
 		Space: &aggrSpace,
 	}
@@ -2906,7 +2906,7 @@ func getAggregateResponse(hasNextLink bool) *models.AggregateResponse {
 
 	return &models.AggregateResponse{
 		AggregateResponseInlineRecords: []*models.Aggregate{&aggregate},
-		NumRecords:                     utils.Ptr(int64(1)),
+		NumRecords:                     convert.ToPtr(int64(1)),
 		Links:                          hrefLink,
 	}
 }
@@ -2956,9 +2956,9 @@ func mockSVMList(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
 	newSvm := models.Svm{
 		UUID:  &svmUUID,
 		Name:  &svmName,
-		State: utils.Ptr("running"),
+		State: convert.ToPtr("running"),
 		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
-			{Name: utils.Ptr("aggr1")},
+			{Name: convert.ToPtr("aggr1")},
 		},
 	}
 
@@ -2972,7 +2972,7 @@ func mockSVMList(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
 
 	svmResponse := models.SvmResponse{
 		SvmResponseInlineRecords: []*models.Svm{&newSvm},
-		NumRecords:               utils.Ptr(int64(1)),
+		NumRecords:               convert.ToPtr(int64(1)),
 		Links:                    hrefLink,
 	}
 	setHTTPResponseHeader(w, http.StatusOK)
@@ -2986,9 +2986,9 @@ func mockSVMListInternalError(hasNextLink bool, w http.ResponseWriter, r *http.R
 	newsvm := models.Svm{
 		UUID:  &svmUUID,
 		Name:  &svmName,
-		State: utils.Ptr("running"),
+		State: convert.ToPtr("running"),
 		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
-			{Name: utils.Ptr("aggr1")},
+			{Name: convert.ToPtr("aggr1")},
 		},
 	}
 
@@ -3004,7 +3004,7 @@ func mockSVMListInternalError(hasNextLink bool, w http.ResponseWriter, r *http.R
 
 	svmResponse := models.SvmResponse{
 		SvmResponseInlineRecords: []*models.Svm{&newsvm},
-		NumRecords:               utils.Ptr(int64(1)),
+		NumRecords:               convert.ToPtr(int64(1)),
 		Links:                    hrefLink,
 	}
 
@@ -3079,7 +3079,7 @@ func mockSVMSvmStateNil(w http.ResponseWriter, r *http.Request) {
 		UUID: &svmUUID,
 		Name: &svmName,
 		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
-			{Name: utils.Ptr("aggr1")},
+			{Name: convert.ToPtr("aggr1")},
 		},
 	}
 
@@ -3155,9 +3155,9 @@ func mockNodeListResponse(hasNextLink bool, w http.ResponseWriter, r *http.Reque
 
 	nodeResponse := models.NodeResponse{
 		NodeResponseInlineRecords: []*models.NodeResponseInlineRecordsInlineArrayItem{
-			{SerialNumber: utils.Ptr("4048820-60-9")},
+			{SerialNumber: convert.ToPtr("4048820-60-9")},
 		},
-		NumRecords: utils.Ptr(int64(1)),
+		NumRecords: convert.ToPtr(int64(1)),
 		Links:      hrefLink,
 	}
 	setHTTPResponseHeader(w, http.StatusOK)
@@ -3176,9 +3176,9 @@ func mockNodeListResponseInternalError(hasNextLink bool, w http.ResponseWriter, 
 	}
 	nodeResponse := models.NodeResponse{
 		NodeResponseInlineRecords: []*models.NodeResponseInlineRecordsInlineArrayItem{
-			{SerialNumber: utils.Ptr("4048820-60-9")},
+			{SerialNumber: convert.ToPtr("4048820-60-9")},
 		},
-		NumRecords: utils.Ptr(int64(1)),
+		NumRecords: convert.ToPtr(int64(1)),
 		Links:      hrefLink,
 	}
 
@@ -3198,7 +3198,7 @@ func mockNodeListResponseNumRecordsNil(hasNextLink bool, w http.ResponseWriter, 
 	}
 	nodeResponse := models.NodeResponse{
 		NodeResponseInlineRecords: []*models.NodeResponseInlineRecordsInlineArrayItem{
-			{SerialNumber: utils.Ptr("4048820-60-9")},
+			{SerialNumber: convert.ToPtr("4048820-60-9")},
 		},
 		Links: hrefLink,
 	}
@@ -3239,9 +3239,9 @@ func TestOntapREST_NodeList(t *testing.T) {
 func mockNodeResponse(w http.ResponseWriter, r *http.Request) {
 	nodeResponse := models.NodeResponse{
 		NodeResponseInlineRecords: []*models.NodeResponseInlineRecordsInlineArrayItem{
-			{SerialNumber: utils.Ptr("4048820-60-9")},
+			{SerialNumber: convert.ToPtr("4048820-60-9")},
 		},
-		NumRecords: utils.Ptr(int64(1)),
+		NumRecords: convert.ToPtr(int64(1)),
 	}
 	setHTTPResponseHeader(w, http.StatusOK)
 	json.NewEncoder(w).Encode(nodeResponse)
@@ -3252,7 +3252,7 @@ func mockNodeResponseSerialNumberNil(w http.ResponseWriter, r *http.Request) {
 		NodeResponseInlineRecords: []*models.NodeResponseInlineRecordsInlineArrayItem{
 			{},
 		},
-		NumRecords: utils.Ptr(int64(1)),
+		NumRecords: convert.ToPtr(int64(1)),
 	}
 	setHTTPResponseHeader(w, http.StatusOK)
 	json.NewEncoder(w).Encode(nodeResponse)
@@ -3261,7 +3261,7 @@ func mockNodeResponseSerialNumberNil(w http.ResponseWriter, r *http.Request) {
 func mockNodeResponseNumRecordsNil(w http.ResponseWriter, r *http.Request) {
 	nodeResponse := models.NodeResponse{
 		NodeResponseInlineRecords: []*models.NodeResponseInlineRecordsInlineArrayItem{
-			{SerialNumber: utils.Ptr("4048820-60-9")},
+			{SerialNumber: convert.ToPtr("4048820-60-9")},
 		},
 	}
 	setHTTPResponseHeader(w, http.StatusOK)
@@ -3271,9 +3271,9 @@ func mockNodeResponseNumRecordsNil(w http.ResponseWriter, r *http.Request) {
 func mockNodeResponseNumRecordsZero(w http.ResponseWriter, r *http.Request) {
 	nodeResponse := models.NodeResponse{
 		NodeResponseInlineRecords: []*models.NodeResponseInlineRecordsInlineArrayItem{
-			{SerialNumber: utils.Ptr("4048820-60-9")},
+			{SerialNumber: convert.ToPtr("4048820-60-9")},
 		},
-		NumRecords: utils.Ptr(int64(0)),
+		NumRecords: convert.ToPtr(int64(0)),
 	}
 	setHTTPResponseHeader(w, http.StatusOK)
 	json.NewEncoder(w).Encode(nodeResponse)
@@ -3361,8 +3361,8 @@ func mockNvmeNamespaceListResponse(hasNextLink bool, w http.ResponseWriter, r *h
 	nvmeNamespaceResponse := models.NvmeNamespaceResponse{
 		NvmeNamespaceResponseInlineRecords: []*models.NvmeNamespace{
 			{
-				Name:  utils.Ptr("namespace1"),
-				UUID:  utils.Ptr("1cd8a442-86d1-11e0-ae1c-123478563412"),
+				Name:  convert.ToPtr("namespace1"),
+				UUID:  convert.ToPtr("1cd8a442-86d1-11e0-ae1c-123478563412"),
 				Space: &models.NvmeNamespaceInlineSpace{Size: &size},
 			},
 		},
@@ -3392,8 +3392,8 @@ func mockNvmeNamespaceListResponseInternalError(hasNextLink bool, w http.Respons
 	nvmeNamespaceResponse := models.NvmeNamespaceResponse{
 		NvmeNamespaceResponseInlineRecords: []*models.NvmeNamespace{
 			{
-				Name:  utils.Ptr("namespace1"),
-				UUID:  utils.Ptr("1cd8a442-86d1-11e0-ae1c-123478563412"),
+				Name:  convert.ToPtr("namespace1"),
+				UUID:  convert.ToPtr("1cd8a442-86d1-11e0-ae1c-123478563412"),
 				Space: &models.NvmeNamespaceInlineSpace{Size: &size},
 			},
 		},
@@ -3420,8 +3420,8 @@ func mockNvmeNamespaceListResponseNumRecordsNil(hasNextLink bool, w http.Respons
 	nvmeNamespaceResponse := models.NvmeNamespaceResponse{
 		NvmeNamespaceResponseInlineRecords: []*models.NvmeNamespace{
 			{
-				Name:  utils.Ptr("namespace1"),
-				UUID:  utils.Ptr("1cd8a442-86d1-11e0-ae1c-123478563412"),
+				Name:  convert.ToPtr("namespace1"),
+				UUID:  convert.ToPtr("1cd8a442-86d1-11e0-ae1c-123478563412"),
 				Space: &models.NvmeNamespaceInlineSpace{Size: &size},
 			},
 		},
@@ -3447,7 +3447,7 @@ func mockNvmeSubsystemListResponse(hasNextLink bool, w http.ResponseWriter, r *h
 	nvmeSubsystemResponse := models.NvmeSubsystemResponse{
 		NvmeSubsystemResponseInlineRecords: []*models.NvmeSubsystem{
 			{
-				Name: utils.Ptr("subsystemName"),
+				Name: convert.ToPtr("subsystemName"),
 			},
 		},
 		NumRecords: &numRecords,
@@ -3474,7 +3474,7 @@ func mockNvmeSubsystemListResponseInternalError(hasNextLink bool, w http.Respons
 	nvmeSubsystemResponse := models.NvmeSubsystemResponse{
 		NvmeSubsystemResponseInlineRecords: []*models.NvmeSubsystem{
 			{
-				Name: utils.Ptr("subsystemName"),
+				Name: convert.ToPtr("subsystemName"),
 			},
 		},
 		NumRecords: &numRecords,
@@ -3493,8 +3493,8 @@ func mockNvmeNamespaceResponse(w http.ResponseWriter, r *http.Request) {
 	nvmeNamespaceResponse := models.NvmeNamespaceResponse{
 		NvmeNamespaceResponseInlineRecords: []*models.NvmeNamespace{
 			{
-				Name:  utils.Ptr("namespace1"),
-				UUID:  utils.Ptr("1cd8a442-86d1-11e0-ae1c-123478563412"),
+				Name:  convert.ToPtr("namespace1"),
+				UUID:  convert.ToPtr("1cd8a442-86d1-11e0-ae1c-123478563412"),
 				Space: &models.NvmeNamespaceInlineSpace{Size: &size},
 			},
 		},
@@ -3517,8 +3517,8 @@ func mockNvmeNamespaceResponseNumRecordsNil(w http.ResponseWriter, r *http.Reque
 	nvmeNamespaceResponse := models.NvmeNamespaceResponse{
 		NvmeNamespaceResponseInlineRecords: []*models.NvmeNamespace{
 			{
-				Name:  utils.Ptr("namespace1"),
-				UUID:  utils.Ptr("1cd8a442-86d1-11e0-ae1c-123478563412"),
+				Name:  convert.ToPtr("namespace1"),
+				UUID:  convert.ToPtr("1cd8a442-86d1-11e0-ae1c-123478563412"),
 				Space: &models.NvmeNamespaceInlineSpace{Size: &size},
 			},
 		},
@@ -3539,7 +3539,7 @@ func mockNvmeNamespaceResponseNil(w http.ResponseWriter, r *http.Request) {
 		NvmeNamespaceResponseInlineRecords: []*models.NvmeNamespace{
 			nil,
 		},
-		NumRecords: utils.Ptr(int64(1)),
+		NumRecords: convert.ToPtr(int64(1)),
 	}
 
 	setHTTPResponseHeader(w, http.StatusOK)
@@ -3553,7 +3553,7 @@ func mockNvmeSubsystemMapResponse(w http.ResponseWriter, r *http.Request) {
 		NvmeSubsystemMapResponseInlineRecords: []*models.NvmeSubsystemMap{
 			{
 				Namespace: &models.NvmeSubsystemMapInlineNamespace{
-					UUID: utils.Ptr("1cd8a442-86d1-11e0-ae1c-123478563412"),
+					UUID: convert.ToPtr("1cd8a442-86d1-11e0-ae1c-123478563412"),
 				},
 			},
 		},
@@ -3563,7 +3563,7 @@ func mockNvmeSubsystemMapResponse(w http.ResponseWriter, r *http.Request) {
 	nvmeSubsystemResponse := models.NvmeSubsystemResponse{
 		NvmeSubsystemResponseInlineRecords: []*models.NvmeSubsystem{
 			{
-				Name: utils.Ptr("subsystemName"),
+				Name: convert.ToPtr("subsystemName"),
 			},
 		},
 		NumRecords: &numRecords,
@@ -3573,7 +3573,7 @@ func mockNvmeSubsystemMapResponse(w http.ResponseWriter, r *http.Request) {
 		NvmeSubsystemHostResponseInlineRecords: []*models.NvmeSubsystemHost{
 			{
 				Subsystem: &models.NvmeSubsystemHostInlineSubsystem{
-					Name: utils.Ptr("nvmeSubsystemName"),
+					Name: convert.ToPtr("nvmeSubsystemName"),
 				},
 			},
 		},
@@ -4049,9 +4049,9 @@ func mockSVM(w http.ResponseWriter, r *http.Request) {
 	mocksvm := models.Svm{
 		UUID:  &svmUUID,
 		Name:  &svmName,
-		State: utils.Ptr("running"),
+		State: convert.ToPtr("running"),
 		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
-			{Name: utils.Ptr("aggr1")},
+			{Name: convert.ToPtr("aggr1")},
 		},
 	}
 	if r.URL.Path == "/api/svm/svms/1234" {
@@ -4062,7 +4062,7 @@ func mockSVM(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/api/svm/svms" {
 		svmResponse := models.SvmResponse{
 			SvmResponseInlineRecords: []*models.Svm{&mocksvm},
-			NumRecords:               utils.Ptr(int64(1)),
+			NumRecords:               convert.ToPtr(int64(1)),
 		}
 		setHTTPResponseHeader(w, http.StatusOK)
 		json.NewEncoder(w).Encode(svmResponse)
@@ -4071,16 +4071,16 @@ func mockSVM(w http.ResponseWriter, r *http.Request) {
 
 func mockSVMNameNil(w http.ResponseWriter, r *http.Request) {
 	mocksvm := models.Svm{
-		UUID:  utils.Ptr("fake-uuid"),
-		State: utils.Ptr("running"),
+		UUID:  convert.ToPtr("fake-uuid"),
+		State: convert.ToPtr("running"),
 		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
-			{UUID: utils.Ptr("fake-uuid")},
+			{UUID: convert.ToPtr("fake-uuid")},
 		},
 	}
 
 	svmResponse := models.SvmResponse{
 		SvmResponseInlineRecords: []*models.Svm{&mocksvm},
-		NumRecords:               utils.Ptr(int64(1)),
+		NumRecords:               convert.ToPtr(int64(1)),
 	}
 	setHTTPResponseHeader(w, http.StatusOK)
 	json.NewEncoder(w).Encode(svmResponse)
@@ -4088,9 +4088,9 @@ func mockSVMNameNil(w http.ResponseWriter, r *http.Request) {
 
 func mockSVMNumRecordsNil(w http.ResponseWriter, r *http.Request) {
 	mocksvm := models.Svm{
-		Name: utils.Ptr("svm0"),
+		Name: convert.ToPtr("svm0"),
 		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
-			{Name: utils.Ptr("aggr1")},
+			{Name: convert.ToPtr("aggr1")},
 		},
 	}
 	svmResponse := models.SvmResponse{
@@ -4264,7 +4264,7 @@ func getVolumeInfo() *models.Volume {
 	}
 
 	encryption := models.VolumeInlineEncryption{Enabled: &encryptionEnabled}
-	movement := models.VolumeInlineMovement{TieringPolicy: utils.Ptr("tieringPolicy")}
+	movement := models.VolumeInlineMovement{TieringPolicy: convert.ToPtr("tieringPolicy")}
 	volume := models.Volume{
 		Name:                           &volumeName,
 		UUID:                           &volumeUUID,
@@ -5952,7 +5952,7 @@ func TestOntapREST_VolumeListByAttrs(t *testing.T) {
 		Qos:               QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind},
 		SecurityStyle:     "unix",
 		Size:              size,
-		SnapshotDir:       utils.Ptr(snapshotDir),
+		SnapshotDir:       convert.ToPtr(snapshotDir),
 		SnapshotPolicy:    snapshotPolicy,
 		SnapshotReserve:   0,
 		SnapshotSpaceUsed: 1073741810,
@@ -6097,12 +6097,12 @@ func mockQtreeResponseVolumeUUIdNil(w http.ResponseWriter, r *http.Request) {
 
 func getQuotaRule() *models.QuotaRuleResponse {
 	hardLimit := int64(1073741810)
-	quotaVolume := models.QuotaRuleInlineVolume{Name: utils.Ptr("quotaVolumeName")}
-	quotaQtree := models.QuotaRuleInlineQtree{Name: utils.Ptr("quotaQtree")}
+	quotaVolume := models.QuotaRuleInlineVolume{Name: convert.ToPtr("quotaVolumeName")}
+	quotaQtree := models.QuotaRuleInlineQtree{Name: convert.ToPtr("quotaQtree")}
 	quotaSpace := models.QuotaRuleInlineSpace{HardLimit: &hardLimit}
 	quotaRule := models.QuotaRule{
 		Volume: &quotaVolume, Qtree: &quotaQtree, Space: &quotaSpace,
-		UUID: utils.Ptr("QuotaUUID"),
+		UUID: convert.ToPtr("QuotaUUID"),
 	}
 	quotaRuleResponseInlineRecords := []*models.QuotaRule{&quotaRule}
 	numRecords := int64(1)
@@ -6199,7 +6199,7 @@ func mockQtreeListResponseQtreeExists(hasNextLink bool, w http.ResponseWriter, r
 	}
 
 	if !hasNextLink {
-		qtreeResponse.NumRecords = utils.Ptr(int64(0))
+		qtreeResponse.NumRecords = convert.ToPtr(int64(0))
 	}
 	setHTTPResponseHeader(w, http.StatusOK)
 	json.NewEncoder(w).Encode(qtreeResponse)
@@ -6219,12 +6219,12 @@ func mockQtreeListResponseVolumeNil(hasNextLink bool, w http.ResponseWriter, r *
 
 	qtreeResponse := &models.QtreeResponse{
 		QtreeResponseInlineRecords: []*models.Qtree{&qtree},
-		NumRecords:                 utils.Ptr(int64(1)),
+		NumRecords:                 convert.ToPtr(int64(1)),
 		Links:                      hrefLink,
 	}
 
 	if !hasNextLink {
-		qtreeResponse.NumRecords = utils.Ptr(int64(0))
+		qtreeResponse.NumRecords = convert.ToPtr(int64(0))
 	}
 	setHTTPResponseHeader(w, http.StatusOK)
 	json.NewEncoder(w).Encode(qtreeResponse)
@@ -6866,18 +6866,18 @@ func mockSnapMirrorRelationshipResponse(w http.ResponseWriter, r *http.Request) 
 		SnapmirrorRelationshipResponseInlineRecords: []*models.SnapmirrorRelationship{
 			{
 				Destination: &models.SnapmirrorEndpoint{
-					Path: utils.Ptr("svm0:vol1"),
+					Path: convert.ToPtr("svm0:vol1"),
 					Svm: &models.SnapmirrorEndpointInlineSvm{
-						Name: utils.Ptr("svm0"),
+						Name: convert.ToPtr("svm0"),
 					},
 				},
 				Source: &models.SnapmirrorSourceEndpoint{
-					Path: utils.Ptr("svm1:vol1"),
+					Path: convert.ToPtr("svm1:vol1"),
 					Svm: &models.SnapmirrorSourceEndpointInlineSvm{
-						Name: utils.Ptr("svm0"),
+						Name: convert.ToPtr("svm0"),
 					},
 				},
-				UUID: utils.Ptr(strfmt.UUID("1")),
+				UUID: convert.ToPtr(strfmt.UUID("1")),
 			},
 			{},
 			{
@@ -6885,8 +6885,8 @@ func mockSnapMirrorRelationshipResponse(w http.ResponseWriter, r *http.Request) 
 				Source:      &models.SnapmirrorSourceEndpoint{},
 			},
 			{
-				Destination: &models.SnapmirrorEndpoint{Path: utils.Ptr("svm0")},
-				Source:      &models.SnapmirrorSourceEndpoint{Path: utils.Ptr("svm1:vol1")},
+				Destination: &models.SnapmirrorEndpoint{Path: convert.ToPtr("svm0")},
+				Source:      &models.SnapmirrorSourceEndpoint{Path: convert.ToPtr("svm1:vol1")},
 			},
 		},
 	}
@@ -6924,18 +6924,18 @@ func mockSnapMirrorRelationshipResponseFailure(w http.ResponseWriter, r *http.Re
 		SnapmirrorRelationshipResponseInlineRecords: []*models.SnapmirrorRelationship{
 			{
 				Destination: &models.SnapmirrorEndpoint{
-					Path: utils.Ptr("svm0:vol1"),
+					Path: convert.ToPtr("svm0:vol1"),
 					Svm: &models.SnapmirrorEndpointInlineSvm{
-						Name: utils.Ptr("svm0"),
+						Name: convert.ToPtr("svm0"),
 					},
 				},
 				Source: &models.SnapmirrorSourceEndpoint{
-					Path: utils.Ptr("svm1:vol1"),
+					Path: convert.ToPtr("svm1:vol1"),
 					Svm: &models.SnapmirrorSourceEndpointInlineSvm{
-						Name: utils.Ptr("svm0"),
+						Name: convert.ToPtr("svm0"),
 					},
 				},
-				UUID: utils.Ptr(strfmt.UUID("1")),
+				UUID: convert.ToPtr(strfmt.UUID("1")),
 			},
 			{},
 			{
@@ -6943,8 +6943,8 @@ func mockSnapMirrorRelationshipResponseFailure(w http.ResponseWriter, r *http.Re
 				Source:      &models.SnapmirrorSourceEndpoint{},
 			},
 			{
-				Destination: &models.SnapmirrorEndpoint{Path: utils.Ptr("svm0")},
-				Source:      &models.SnapmirrorSourceEndpoint{Path: utils.Ptr("svm1:vol1")},
+				Destination: &models.SnapmirrorEndpoint{Path: convert.ToPtr("svm0")},
+				Source:      &models.SnapmirrorSourceEndpoint{Path: convert.ToPtr("svm1:vol1")},
 			},
 		},
 	}
@@ -6986,8 +6986,8 @@ func mockSnapMirrorRelationshipResponseEmptyValue(w http.ResponseWriter, r *http
 				Source:      &models.SnapmirrorSourceEndpoint{},
 			},
 			{
-				Destination: &models.SnapmirrorEndpoint{Path: utils.Ptr("svm0")},
-				Source:      &models.SnapmirrorSourceEndpoint{Path: utils.Ptr("svm1")},
+				Destination: &models.SnapmirrorEndpoint{Path: convert.ToPtr("svm0")},
+				Source:      &models.SnapmirrorSourceEndpoint{Path: convert.ToPtr("svm1")},
 			},
 		},
 	}
@@ -7000,15 +7000,15 @@ func mockSnapMirrorRelationshipResponseUUIDNil(w http.ResponseWriter, r *http.Re
 		SnapmirrorRelationshipResponseInlineRecords: []*models.SnapmirrorRelationship{
 			{
 				Destination: &models.SnapmirrorEndpoint{
-					Path: utils.Ptr("svm0:vol1"),
+					Path: convert.ToPtr("svm0:vol1"),
 					Svm: &models.SnapmirrorEndpointInlineSvm{
-						Name: utils.Ptr("svm0"),
+						Name: convert.ToPtr("svm0"),
 					},
 				},
 				Source: &models.SnapmirrorSourceEndpoint{
-					Path: utils.Ptr("svm1:vol1"),
+					Path: convert.ToPtr("svm1:vol1"),
 					Svm: &models.SnapmirrorSourceEndpointInlineSvm{
-						Name: utils.Ptr("svm0"),
+						Name: convert.ToPtr("svm0"),
 					},
 				},
 				UUID: nil, // Test the use case where backend return UUID nil.
@@ -7024,19 +7024,19 @@ func mockSnapMirrorRelationshipResponseSync(w http.ResponseWriter, r *http.Reque
 		SnapmirrorRelationshipResponseInlineRecords: []*models.SnapmirrorRelationship{
 			{
 				Destination: &models.SnapmirrorEndpoint{
-					Path: utils.Ptr("svm0:vol1"),
+					Path: convert.ToPtr("svm0:vol1"),
 					Svm: &models.SnapmirrorEndpointInlineSvm{
-						Name: utils.Ptr("svm0"),
+						Name: convert.ToPtr("svm0"),
 					},
 				},
 				Source: &models.SnapmirrorSourceEndpoint{
-					Path: utils.Ptr("svm1:vol1"),
+					Path: convert.ToPtr("svm1:vol1"),
 					Svm: &models.SnapmirrorSourceEndpointInlineSvm{
-						Name: utils.Ptr("svm0"),
+						Name: convert.ToPtr("svm0"),
 					},
 				},
-				Policy: &models.SnapmirrorRelationshipInlinePolicy{Type: utils.Ptr("sync")},
-				UUID:   utils.Ptr(strfmt.UUID("1")),
+				Policy: &models.SnapmirrorRelationshipInlinePolicy{Type: convert.ToPtr("sync")},
+				UUID:   convert.ToPtr(strfmt.UUID("1")),
 			},
 		},
 	}
@@ -7304,9 +7304,9 @@ func TestOntapRest_SnapmirrorDelete(t *testing.T) {
 func mockSnapMirrorPolicyResponse(w http.ResponseWriter, r *http.Request) {
 	copyAllSourceSnapshots := false
 	snapMirroePolicy := models.SnapmirrorPolicy{
-		Name:                   utils.Ptr("snapPolicy"),
+		Name:                   convert.ToPtr("snapPolicy"),
 		CopyAllSourceSnapshots: &copyAllSourceSnapshots,
-		SyncType:               utils.Ptr("sync_mirror"), Type: utils.Ptr("sync"),
+		SyncType:               convert.ToPtr("sync_mirror"), Type: convert.ToPtr("sync"),
 	}
 	snapmirrorPolicyRecords := []*models.SnapmirrorPolicy{&snapMirroePolicy}
 	snapmirrorPolicyResponse := models.SnapmirrorPolicyResponse{SnapmirrorPolicyResponseInlineRecords: snapmirrorPolicyRecords}
@@ -7384,7 +7384,7 @@ func mockSMBShareResponse(w http.ResponseWriter, r *http.Request) {
 		smbShareResponse := models.CifsShareResponse{
 			CifsShareResponseInlineRecords: []*models.CifsShare{
 				{
-					Name: utils.Ptr("share"), Path: utils.Ptr("/"),
+					Name: convert.ToPtr("share"), Path: convert.ToPtr("/"),
 				},
 			},
 			NumRecords: &numRecords,
@@ -7398,7 +7398,7 @@ func mockSMBShareResponseNumRecordsNil(w http.ResponseWriter, r *http.Request) {
 	smbShareResponse := models.CifsShareResponse{
 		CifsShareResponseInlineRecords: []*models.CifsShare{
 			{
-				Name: utils.Ptr("share"), Path: utils.Ptr("/"),
+				Name: convert.ToPtr("share"), Path: convert.ToPtr("/"),
 			},
 		},
 	}
@@ -7510,7 +7510,7 @@ func mockExportPolicyListResponse(hasNextLink bool, w http.ResponseWriter, r *ht
 
 	exportPolicyResponse := models.ExportPolicyResponse{
 		ExportPolicyResponseInlineRecords: []*models.ExportPolicy{&exportPolicy},
-		NumRecords:                        utils.Ptr(int64(1)),
+		NumRecords:                        convert.ToPtr(int64(1)),
 		Links:                             hrefLink,
 	}
 
@@ -7537,7 +7537,7 @@ func mockExportPolicyListResponseInternalError(hasNextLink bool, w http.Response
 
 	exportPolicyResponse := models.ExportPolicyResponse{
 		ExportPolicyResponseInlineRecords: []*models.ExportPolicy{&exportPolicy},
-		NumRecords:                        utils.Ptr(int64(1)),
+		NumRecords:                        convert.ToPtr(int64(1)),
 		Links:                             hrefLink,
 	}
 
@@ -7578,7 +7578,7 @@ func mockExportPolicyResponse(w http.ResponseWriter, r *http.Request) {
 	}
 	exportPolicyResponse := models.ExportPolicyResponse{
 		ExportPolicyResponseInlineRecords: []*models.ExportPolicy{&exportPolicy},
-		NumRecords:                        utils.Ptr(int64(1)),
+		NumRecords:                        convert.ToPtr(int64(1)),
 	}
 
 	switch r.Method {
@@ -7633,7 +7633,7 @@ func mockExportPolicyResponseUUIDNil(w http.ResponseWriter, r *http.Request) {
 	}
 	exportPolicyResponse := models.ExportPolicyResponse{
 		ExportPolicyResponseInlineRecords: []*models.ExportPolicy{&exportPolicy},
-		NumRecords:                        utils.Ptr(int64(1)),
+		NumRecords:                        convert.ToPtr(int64(1)),
 	}
 
 	setHTTPResponseHeader(w, http.StatusOK)

@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package installer
 
@@ -19,12 +19,12 @@ import (
 	"github.com/netapp/trident/cli/api"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	commonconfig "github.com/netapp/trident/config"
+	"github.com/netapp/trident/internal/crypto"
 	"github.com/netapp/trident/internal/nodeprep/protocol"
 	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
-	"github.com/netapp/trident/utils"
-	"github.com/netapp/trident/utils/crypto"
+	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
@@ -416,7 +416,7 @@ func (i *Installer) setInstallationParams(
 		// Override registry only if using the default Trident image name and an alternate registry was supplied
 		// Do not use 'imageRegistry' here, it gets set to a default value.
 		if cr.Spec.ImageRegistry != "" {
-			tridentImage = utils.ReplaceImageRegistry(tridentImage, cr.Spec.ImageRegistry)
+			tridentImage = network.ReplaceImageRegistry(tridentImage, cr.Spec.ImageRegistry)
 		}
 	}
 	if cr.Spec.AutosupportImage != "" {
@@ -425,7 +425,7 @@ func (i *Installer) setInstallationParams(
 		// Override registry only if using the default Autosupport image name and an alternate registry was supplied
 		// Do not use 'imageRegistry' here, it gets set to a default value.
 		if cr.Spec.ImageRegistry != "" {
-			autosupportImage = utils.ReplaceImageRegistry(autosupportImage, cr.Spec.ImageRegistry)
+			autosupportImage = network.ReplaceImageRegistry(autosupportImage, cr.Spec.ImageRegistry)
 		}
 	}
 

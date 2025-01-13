@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -11,18 +11,18 @@ import (
 	"testing"
 	"time"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
 	tridentconfig "github.com/netapp/trident/config"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -812,7 +812,7 @@ func TestOntapNasStorageDriverValidate_InvalidDataLIF(t *testing.T) {
 func TestOntapNasStorageDriverValidate_InvalidPrefix(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 	driver.Config.LUKSEncryption = "false"
-	driver.Config.StoragePrefix = utils.Ptr("B@D")
+	driver.Config.StoragePrefix = convert.ToPtr("B@D")
 	dataLIF := make([]string, 0)
 	dataLIF = append(dataLIF, "10.0.201.1")
 
@@ -923,7 +923,7 @@ func TestOntapNasStorageDriverVolumeClone_ROClone(t *testing.T) {
 	flexVol := api.Volume{
 		Name:        "flexvol",
 		Comment:     "flexvol",
-		SnapshotDir: utils.Ptr(true),
+		SnapshotDir: convert.ToPtr(true),
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
@@ -956,7 +956,7 @@ func TestOntapNasStorageDriverVolumeClone_ROClone_Failure(t *testing.T) {
 	flexVol := api.Volume{
 		Name:        "flexvol",
 		Comment:     "flexvol",
-		SnapshotDir: utils.Ptr(false),
+		SnapshotDir: convert.ToPtr(false),
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
@@ -2291,7 +2291,7 @@ func TestOntapNasStorageDriverGetStorageBackendPools(t *testing.T) {
 
 func TestOntapNasStorageDriverGetInternalVolumeName(t *testing.T) {
 	_, driver := newMockOntapNASDriver(t)
-	driver.Config.StoragePrefix = utils.Ptr("storagePrefix_")
+	driver.Config.StoragePrefix = convert.ToPtr("storagePrefix_")
 	volConfig := &storage.VolumeConfig{Name: "vol1"}
 	pool := storage.NewStoragePool(nil, "dummyPool")
 
@@ -2302,7 +2302,7 @@ func TestOntapNasStorageDriverGetInternalVolumeName(t *testing.T) {
 
 func TestOntapNasStorageDriverGetInternalVolumeNameTemplate(t *testing.T) {
 	_, driver := newMockOntapNASDriver(t)
-	driver.Config.StoragePrefix = utils.Ptr("storagePrefix_")
+	driver.Config.StoragePrefix = convert.ToPtr("storagePrefix_")
 	volConfig := &storage.VolumeConfig{Name: "vol1", Namespace: "testNamespace"}
 
 	pool := storage.NewStoragePool(nil, "dummyPool")

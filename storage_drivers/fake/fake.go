@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package fake
 
@@ -14,17 +14,18 @@ import (
 	"strings"
 	"time"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 
 	"github.com/netapp/trident/config"
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
 	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -79,7 +80,7 @@ type StorageDriver struct {
 
 // String implements Stringer interface for the FakeStorageDriver driver
 func (d StorageDriver) String() string {
-	return utils.ToStringRedacted(&d, []string{"Secret"}, nil)
+	return convert.ToStringRedacted(&d, []string{"Secret"}, nil)
 }
 
 // GoString implements GoStringer interface for the FakeStorageDriver driver
@@ -553,7 +554,7 @@ func (d *StorageDriver) validate(ctx context.Context) error {
 
 	for _, pool := range allPools {
 		// Validate default size
-		if _, err := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size]); err != nil {
+		if _, err := capacity.ToBytes(pool.InternalAttributes()[Size]); err != nil {
 			return fmt.Errorf("invalid value for default volume size in pool %s: %v", pool.Name(), err)
 		}
 	}
@@ -576,7 +577,7 @@ func (d *StorageDriver) Create(
 	}
 
 	// Determine volume size in bytes
-	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	requestedSize, err := capacity.ToBytes(volConfig.Size)
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
@@ -585,7 +586,7 @@ func (d *StorageDriver) Create(
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
 	if sizeBytes == 0 {
-		defaultSize, _ := utils.ConvertSizeToBytes(d.Config.Size)
+		defaultSize, _ := capacity.ToBytes(d.Config.Size)
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
 	if sizeBytes < MinimumVolumeSizeBytes {
@@ -957,7 +958,7 @@ func (d *StorageDriver) CreateSnapshot(
 
 	snapshot := &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   time.Now().UTC().Format(utils.TimestampFormat),
+		Created:   time.Now().UTC().Format(convert.TimestampFormat),
 		SizeBytes: int64(volume.SizeBytes),
 		State:     storage.SnapshotStateOnline,
 	}

@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -19,6 +19,8 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
@@ -138,7 +140,7 @@ func iSCSIDiscovery(ctx context.Context, portal string) ([]ISCSIDiscoveryInfo, e
 		if len(a) >= 2 {
 
 			portalIP := ""
-			if IPv6Check(a[0]) {
+			if network.IPv6Check(a[0]) {
 				// This is an IPv6 address
 				portalIP = strings.Split(a[0], "]")[0]
 				portalIP += "]"
@@ -588,7 +590,7 @@ func PopulateCurrentSessions(ctx context.Context, currentMapping *models.ISCSISe
 		logFields["IscsiPortal"] = targetPortal
 
 		reasonInvalid := models.NotInvalid
-		if SliceContainsString(duplicatePortals, targetPortal) {
+		if collection.ContainsString(duplicatePortals, targetPortal) {
 			Logc(ctx).WithFields(logFields).Warning("Portal value is not unique.")
 
 			reasonInvalid = models.DuplicatePortals // Could be a result of bug in open-iscsi

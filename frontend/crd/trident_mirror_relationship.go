@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package crd
 
@@ -14,9 +14,9 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -104,7 +104,7 @@ func (c *TridentCrdController) updateTMRHandler(old, new interface{}) {
 		if !newRelationship.ObjectMeta.DeletionTimestamp.IsZero() {
 			c.addEventToWorkqueue(key, EventUpdate, ctx, newRelationship.GetKind())
 			return
-		} else if len(newRelationship.Status.Conditions) == 0 || utils.SliceContainsString(
+		} else if len(newRelationship.Status.Conditions) == 0 || collection.ContainsString(
 			netappv1.GetTransitioningMirrorStatusStates(), newRelationship.Status.Conditions[0].MirrorState,
 		) {
 			// TMR is currently transitioning actual states
@@ -286,7 +286,7 @@ func (c *TridentCrdController) handleTridentMirrorRelationship(keyItem *KeyItem)
 			)
 		}
 	}
-	if utils.SliceContainsString(netappv1.GetTransitioningMirrorStatusStates(), statusCondition.MirrorState) {
+	if collection.ContainsString(netappv1.GetTransitioningMirrorStatusStates(), statusCondition.MirrorState) {
 		err = errors.ReconcileIncompleteError(
 			"TridentMirrorRelationship %v in state %v", relationship.Name, statusCondition.MirrorState,
 		)
@@ -470,7 +470,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 	// If we are not already at our desired state on the backend
 	if currentMirrorState != desiredMirrorState {
 		// Ensure we finish the current operation before changing what we are doing
-		if utils.SliceContainsString(netappv1.GetTransitioningMirrorStatusStates(), currentMirrorState) {
+		if collection.ContainsString(netappv1.GetTransitioningMirrorStatusStates(), currentMirrorState) {
 			switch currentMirrorState {
 			case netappv1.MirrorStateEstablishing:
 				desiredMirrorState = netappv1.MirrorStateEstablished

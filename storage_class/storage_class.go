@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package storageclass
 
@@ -13,9 +13,9 @@ import (
 
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/utils"
 )
 
 type BackendPoolInfo struct {
@@ -563,7 +563,7 @@ func GetRegionZoneForTopology(topology map[string]string) (string, string) {
 
 	// Extract region
 	for k, v := range topology {
-		if utils.SliceContainsString(config.TopologyRegionKeys, k) {
+		if collection.ContainsString(config.TopologyRegionKeys, k) {
 			region = v
 			break
 		}
@@ -571,7 +571,7 @@ func GetRegionZoneForTopology(topology map[string]string) (string, string) {
 
 	// Extract zone
 	for k, v := range topology {
-		if utils.SliceContainsString(config.TopologyZoneKeys, k) {
+		if collection.ContainsString(config.TopologyZoneKeys, k) {
 			zone = v
 			break
 		}

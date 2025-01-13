@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -20,9 +20,11 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/maths"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
@@ -1078,7 +1080,7 @@ func (p *Plugin) getCSISnapshotFromTridentSnapshot(
 		}).Error("Could not find volume.")
 		return nil, err
 	}
-	volCapacityString, err := utils.ConvertSizeToBytes(volume.Config.Size)
+	volCapacityString, err := capacity.ToBytes(volume.Config.Size)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"volume": volume.Config.InternalName,
@@ -1094,7 +1096,7 @@ func (p *Plugin) getCSISnapshotFromTridentSnapshot(
 		}).Error("Could not parse volume size.")
 		return nil, err
 	}
-	size := utils.MinInt64(snapshot.SizeBytes, volCapacity)
+	size := maths.MinInt64(snapshot.SizeBytes, volCapacity)
 	if size <= 0 {
 		size = volCapacity
 	}
@@ -1180,7 +1182,7 @@ func (p *Plugin) hasBackendForProtocol(ctx context.Context, protocol tridentconf
 // TODO: Move this to utils once config (github.com/netapp/trident/config) has no dependency on utils.
 // containsMultiNodeAccessMode identifies if list of AccessModes contains any of the multi-node access mode type
 func (p *Plugin) containsMultiNodeAccessMode(accessModes []tridentconfig.AccessMode) bool {
-	_, hasMultiNodeAccessMode := utils.SliceContainsElements(accessModes, tridentconfig.MultiNodeAccessModes)
+	_, hasMultiNodeAccessMode := collection.ContainsElements(accessModes, tridentconfig.MultiNodeAccessModes)
 
 	return hasMultiNodeAccessMode
 }

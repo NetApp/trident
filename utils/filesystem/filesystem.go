@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package filesystem
 
@@ -19,6 +19,7 @@ import (
 
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/convert"
 	tridentexec "github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/models"
 )
@@ -331,11 +332,12 @@ func (f *FSClient) DeleteFile(ctx context.Context, filepath, fileDescription str
 	if err := f.osFs.Remove(filepath); err != nil {
 		logFields := LogFields{strings.ReplaceAll(fileDescription, " ", ""): filepath, "error": err}
 
+		title := convert.ToTitle(fileDescription)
 		if os.IsNotExist(err) {
-			Logc(ctx).WithFields(logFields).Warning(fmt.Sprintf("%s file does not exist.", Title(fileDescription)))
+			Logc(ctx).WithFields(logFields).Warning(fmt.Sprintf("%s file does not exist.", title))
 			return "", nil
 		} else {
-			Logc(ctx).WithFields(logFields).Error(fmt.Sprintf("Removing %s file failed.", fileDescription))
+			Logc(ctx).WithFields(logFields).Error(fmt.Sprintf("Removing %s file failed.", title))
 			return "", err
 		}
 	}

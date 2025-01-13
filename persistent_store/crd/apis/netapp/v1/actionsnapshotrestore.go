@@ -1,11 +1,11 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package v1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/pkg/collection"
 )
 
 func (in *TridentActionSnapshotRestore) GetObjectMeta() metav1.ObjectMeta {
@@ -25,7 +25,7 @@ func (in *TridentActionSnapshotRestore) GetFinalizers() []string {
 
 func (in *TridentActionSnapshotRestore) HasTridentFinalizers() bool {
 	for _, finalizerName := range GetTridentFinalizers() {
-		if utils.SliceContainsString(in.ObjectMeta.Finalizers, finalizerName) {
+		if collection.ContainsString(in.ObjectMeta.Finalizers, finalizerName) {
 			return true
 		}
 	}
@@ -34,7 +34,7 @@ func (in *TridentActionSnapshotRestore) HasTridentFinalizers() bool {
 
 func (in *TridentActionSnapshotRestore) AddTridentFinalizers() {
 	for _, finalizerName := range GetTridentFinalizers() {
-		if !utils.SliceContainsString(in.ObjectMeta.Finalizers, finalizerName) {
+		if !collection.ContainsString(in.ObjectMeta.Finalizers, finalizerName) {
 			in.ObjectMeta.Finalizers = append(in.ObjectMeta.Finalizers, finalizerName)
 		}
 	}
@@ -42,7 +42,7 @@ func (in *TridentActionSnapshotRestore) AddTridentFinalizers() {
 
 func (in *TridentActionSnapshotRestore) RemoveTridentFinalizers() {
 	for _, finalizerName := range GetTridentFinalizers() {
-		in.ObjectMeta.Finalizers = utils.RemoveStringFromSlice(in.ObjectMeta.Finalizers, finalizerName)
+		in.ObjectMeta.Finalizers = collection.RemoveString(in.ObjectMeta.Finalizers, finalizerName)
 	}
 }
 

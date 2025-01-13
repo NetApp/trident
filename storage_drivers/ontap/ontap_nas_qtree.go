@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -18,14 +18,18 @@ import (
 
 	"github.com/netapp/trident/acp"
 	tridentconfig "github.com/netapp/trident/config"
+	"github.com/netapp/trident/internal/crypto"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/capacity"
+	collection2 "github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
+	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
-	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -350,7 +354,7 @@ func (d *NASQtreeStorageDriver) Create(
 	}
 
 	// Determine volume size in bytes
-	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	requestedSize, err := capacity.ToBytes(volConfig.Size)
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
@@ -377,17 +381,17 @@ func (d *NASQtreeStorageDriver) Create(
 	// Get Flexvol options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
 	var (
-		spaceReserve    = utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
-		snapshotPolicy  = utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
+		spaceReserve    = collection2.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
+		snapshotPolicy  = collection2.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
 		snapshotReserve = storagePool.InternalAttributes()[SnapshotReserve]
-		snapshotDir     = utils.GetV(opts, "snapshotDir", storagePool.InternalAttributes()[SnapshotDir])
-		encryption      = utils.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
+		snapshotDir     = collection2.GetV(opts, "snapshotDir", storagePool.InternalAttributes()[SnapshotDir])
+		encryption      = collection2.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
 
 		// Get qtree options with default fallback values
-		unixPermissions = utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
-		exportPolicy    = utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
-		securityStyle   = utils.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
-		tieringPolicy   = utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+		unixPermissions = collection2.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
+		exportPolicy    = collection2.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
+		securityStyle   = collection2.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
+		tieringPolicy   = collection2.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
 		qosPolicy       = storagePool.InternalAttributes()[QosPolicy]
 	)
 
@@ -599,10 +603,10 @@ func (d *NASQtreeStorageDriver) Destroy(ctx context.Context, volConfig *storage.
 	// Rename qtree so it doesn't show up in lists while ONTAP is deleting it in the background.
 	// Ensure the deleted name doesn't exceed the qtree name length limit of 64 characters.
 	path := fmt.Sprintf("/vol/%s/%s", flexvol, name)
-	deletedName := deletedQtreeNamePrefix + name + "_" + utils.RandomString(5)
+	deletedName := deletedQtreeNamePrefix + name + "_" + crypto.RandomString(5)
 	if len(deletedName) > maxQtreeNameLength {
 		trimLength := len(deletedQtreeNamePrefix) + 10
-		deletedName = deletedQtreeNamePrefix + name[trimLength:] + "_" + utils.RandomString(5)
+		deletedName = deletedQtreeNamePrefix + name[trimLength:] + "_" + crypto.RandomString(5)
 	}
 	deletedPath := fmt.Sprintf("/vol/%s/%s", flexvol, deletedName)
 
@@ -775,7 +779,7 @@ func ensureNodeAccessForPolicy(
 		}
 	}
 
-	desiredRules, err := utils.FilterIPs(ctx, targetNode.IPs, config.AutoExportCIDRs)
+	desiredRules, err := network.FilterIPs(ctx, targetNode.IPs, config.AutoExportCIDRs)
 	if err != nil {
 		err = fmt.Errorf("unable to determine desired export policy rules; %v", err)
 		Logc(ctx).Error(err)
@@ -1358,7 +1362,7 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	var unixPermissions string
 	var securityStyle string
 
-	flexvol := d.FlexvolNamePrefix() + utils.RandomString(10)
+	flexvol := d.FlexvolNamePrefix() + crypto.RandomString(10)
 	size := "1g"
 
 	if !d.Config.AutoExportPolicy {
@@ -1391,7 +1395,7 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 		"snapshotDir":     enableSnapshotDir,
 		"exportPolicy":    exportPolicy,
 		"securityStyle":   securityStyle,
-		"encryption":      utils.GetPrintableBoolPtrValue(enableEncryption),
+		"encryption":      convert.ToPrintableBoolPtr(enableEncryption),
 	}).Debug("Creating Flexvol for qtrees.")
 
 	// Create the Flexvol
@@ -1405,7 +1409,7 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 		Qos:             api.QosPolicyGroup{},
 		SecurityStyle:   securityStyle,
 		Size:            size,
-		SnapshotDir:     utils.Ptr(enableSnapshotDir),
+		SnapshotDir:     convert.ToPtr(enableSnapshotDir),
 		SnapshotPolicy:  snapshotPolicy,
 		SnapshotReserve: snapshotReserveInt,
 		SpaceReserve:    spaceReserve,
@@ -1469,7 +1473,7 @@ func (d *NASQtreeStorageDriver) findFlexvolForQtree(
 		Aggregates:      []string{aggregate},
 		Encrypt:         enableEncryption,
 		Name:            d.FlexvolNamePrefix() + "*",
-		SnapshotDir:     utils.Ptr(enableSnapshotDir),
+		SnapshotDir:     convert.ToPtr(enableSnapshotDir),
 		SnapshotPolicy:  snapshotPolicy,
 		SpaceReserve:    spaceReserve,
 		SnapshotReserve: snapshotReserveInt,
@@ -1517,7 +1521,7 @@ func (d *NASQtreeStorageDriver) findFlexvolForQtree(
 	case 1:
 		return eligibleVolumeNames[0], nil
 	default:
-		return eligibleVolumeNames[crypto.GetRandomNumber(len(eligibleVolumeNames))], nil
+		return eligibleVolumeNames[crypto.RandomNumber(len(eligibleVolumeNames))], nil
 	}
 }
 
@@ -1769,7 +1773,7 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols(ctx context.Context) {
 	for flexvol, initialEmptyTime := range d.emptyFlexvolMap {
 
 		// If Flexvol is no longer known to the driver, remove from map and move on
-		if !utils.StringInSlice(flexvol, flexvols) {
+		if !collection2.StringInSlice(flexvol, flexvols) {
 			Logc(ctx).WithField("flexvol", flexvol).Debug(
 				"Flexvol no longer extant, removing from delete deferral map.")
 			delete(d.emptyFlexvolMap, flexvol)
@@ -2276,7 +2280,7 @@ func NewPruneTask(ctx context.Context, d *NASQtreeStorageDriver, tasks []func(co
 	// Read background task timings from config file, use defaults if missing or invalid
 	pruneFlexvolsPeriod := defaultPruneFlexvolsPeriod
 	if d.Config.QtreePruneFlexvolsPeriod != "" {
-		i, err := utils.ParsePositiveInt64(d.Config.QtreePruneFlexvolsPeriod)
+		i, err := convert.ToPositiveInt64(d.Config.QtreePruneFlexvolsPeriod)
 		if err != nil {
 			Logc(ctx).WithField("defaultInterval", pruneFlexvolsPeriod).WithError(err).Warnf(
 				"Invalid Flexvol pruning interval, using default interval.")
@@ -2286,7 +2290,7 @@ func NewPruneTask(ctx context.Context, d *NASQtreeStorageDriver, tasks []func(co
 	}
 	emptyFlexvolDeferredDeletePeriod := defaultEmptyFlexvolDeferredDeletePeriod
 	if d.Config.EmptyFlexvolDeferredDeletePeriod != "" {
-		i, err := utils.ParsePositiveInt(d.Config.EmptyFlexvolDeferredDeletePeriod)
+		i, err := convert.ToPositiveInt(d.Config.EmptyFlexvolDeferredDeletePeriod)
 		if err != nil {
 			Logc(ctx).WithField("defaultInterval", emptyFlexvolDeferredDeletePeriod).WithError(err).Warnf(
 				"Invalid Flexvol deferred delete period, using default interval.")
@@ -2316,7 +2320,7 @@ func NewResizeTask(ctx context.Context, d *NASQtreeStorageDriver, tasks []func(c
 	// Read background task timings from config file, use defaults if missing or invalid
 	resizeQuotasPeriod := defaultResizeQuotasPeriod
 	if d.Config.QtreeQuotaResizePeriod != "" {
-		i, err := utils.ParsePositiveInt64(d.Config.QtreeQuotaResizePeriod)
+		i, err := convert.ToPositiveInt64(d.Config.QtreeQuotaResizePeriod)
 		if err != nil {
 			Logc(ctx).WithField("defaultInterval", resizeQuotasPeriod).WithError(err).Warnf(
 				"Invalid quota resize interval, using default interval.")
@@ -2525,7 +2529,7 @@ func (d *NASQtreeStorageDriver) GetBackendState(ctx context.Context) (string, *r
 
 // String makes NASQtreeStorageDriver satisfy the Stringer interface.
 func (d NASQtreeStorageDriver) String() string {
-	return utils.ToStringRedacted(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
+	return convert.ToStringRedacted(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
 }
 
 // GoString makes NASQtreeStorageDriver satisfy the GoStringer interface.

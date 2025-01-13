@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package controllerAPI
 
@@ -20,7 +20,6 @@ import (
 
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -677,7 +676,7 @@ func TestListVolumePublicationsForNode(t *testing.T) {
 					fakeListVolumePublicationsResponse := &ListVolumePublicationsResponse{
 						VolumePublications: []*models.VolumePublicationExternal{
 							{
-								Name:       utils.GenerateVolumePublishName(volumeName, nodeName),
+								Name:       models.GenerateVolumePublishName(volumeName, nodeName),
 								VolumeName: volumeName,
 								NodeName:   nodeName,
 							},

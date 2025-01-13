@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -10,19 +10,19 @@ import (
 	"testing"
 	"time"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
 	tridentconfig "github.com/netapp/trident/config"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -3582,7 +3582,7 @@ func TestOntapNasFlexgroupStorageDriverGetStorageBackendPools(t *testing.T) {
 
 func TestOntapNasFlexgroupStorageDriverGetInternalVolumeName(t *testing.T) {
 	_, driver := newMockOntapNASFlexgroupDriver(t)
-	driver.Config.StoragePrefix = utils.Ptr("storagePrefix_")
+	driver.Config.StoragePrefix = convert.ToPtr("storagePrefix_")
 	volConfig := &storage.VolumeConfig{Name: "vol1"}
 	pool := storage.NewStoragePool(nil, "dummyPool")
 

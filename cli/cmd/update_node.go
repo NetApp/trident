@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -13,7 +13,7 @@ import (
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -45,13 +45,13 @@ var updateNodeCmd = &cobra.Command{
 		var ready, adminReady, cleaned *bool
 		var err error
 		if cmd.Flags().Changed("orchestratorReady") {
-			ready = utils.Ptr(orchestratorReady)
+			ready = convert.ToPtr(orchestratorReady)
 		}
 		if cmd.Flags().Changed("administratorReady") {
-			adminReady = utils.Ptr(administratorReady)
+			adminReady = convert.ToPtr(administratorReady)
 		}
 		if cmd.Flags().Changed("provisionerReady") {
-			cleaned = utils.Ptr(provisionerReady)
+			cleaned = convert.ToPtr(provisionerReady)
 		}
 
 		if OperatingMode == ModeTunnel {

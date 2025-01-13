@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -18,8 +18,8 @@ import (
 
 	"github.com/netapp/trident/frontend/csi"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -115,7 +115,7 @@ func (h *helper) ImportVolume(
 
 	// LUKS annotation should be accepted as either "LUKSEncryption" or "luksEncryption" to match storage pools.
 	if luksAnnotation := getCaseFoldedAnnotation(claim.GetObjectMeta().GetAnnotations(), AnnLUKSEncryption); luksAnnotation != "" {
-		if utils.ParseBool(luksAnnotation) {
+		if convert.ToBool(luksAnnotation) {
 			dataSize -= luks.LUKSMetadataSize
 		}
 	}

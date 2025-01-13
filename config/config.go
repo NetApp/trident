@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package config
 
@@ -145,6 +145,10 @@ const (
 	Windows = "windows"
 	Darwin  = "darwin"
 
+	// Path separators
+	WindowsPathSeparator = `\`
+	UnixPathSeparator    = "/"
+
 	// Minimum and maximum supported Kubernetes versions
 	KubernetesVersionMin = "v1.25"
 	KubernetesVersionMax = "v1.31"
@@ -180,6 +184,9 @@ const (
 
 	// NVMeSelfHealingInterval is an interval with which the NVMe self-healing thread is called periodically
 	NVMeSelfHealingInterval = 300 * time.Second
+
+	// REDACTED is replacement text for sensitive information that would otherwise be exposed by HTTP logging, etc.
+	REDACTED = "<REDACTED>"
 )
 
 var (

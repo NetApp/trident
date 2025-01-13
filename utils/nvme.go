@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -13,6 +13,7 @@ import (
 	"go.uber.org/multierr"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/filesystem"
@@ -289,7 +290,7 @@ func NVMeMountVolume(
 	// Format and open a LUKS device if LUKS Encryption is set to true.
 	var luksFormatted bool
 	var err error
-	isLUKSDevice := ParseBool(publishInfo.LUKSEncryption)
+	isLUKSDevice := convert.ToBool(publishInfo.LUKSEncryption)
 	if isLUKSDevice {
 		luksDevice := luks.NewLUKSDevice(devicePath, name, exec.NewCommand())
 		luksFormatted, err = luksDevice.EnsureLUKSDeviceMappedOnHost(ctx, name, secrets)

@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -14,12 +14,12 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
+	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
@@ -2285,7 +2285,7 @@ func TestImport_LUKSNamespace(t *testing.T) {
 	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
 	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false, nil)
 
-	beforeLUKSOverheadBytesStr, err := utils.ConvertSizeToBytes(volConfig.Size)
+	beforeLUKSOverheadBytesStr, err := capacity.ToBytes(volConfig.Size)
 	if err != nil {
 		t.Fatalf("failed to convert volume size")
 	}
@@ -2296,7 +2296,7 @@ func TestImport_LUKSNamespace(t *testing.T) {
 
 	err = d.Import(ctx, volConfig, originalName)
 
-	afterLUKSOverheadBytesStr, err := utils.ConvertSizeToBytes(volConfig.Size)
+	afterLUKSOverheadBytesStr, err := capacity.ToBytes(volConfig.Size)
 	if err != nil {
 		t.Fatalf("failed to convert volume size")
 	}

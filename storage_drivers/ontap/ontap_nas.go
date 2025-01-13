@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -10,16 +10,18 @@ import (
 	"strings"
 	"time"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -253,15 +255,15 @@ func (d *NASStorageDriver) Create(
 	// get options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
 	var (
-		spaceReserve      = utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
-		snapshotPolicy    = utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
-		snapshotReserve   = utils.GetV(opts, "snapshotReserve", storagePool.InternalAttributes()[SnapshotReserve])
-		unixPermissions   = utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
-		snapshotDir       = utils.GetV(opts, "snapshotDir", storagePool.InternalAttributes()[SnapshotDir])
-		exportPolicy      = utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
-		securityStyle     = utils.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
-		encryption        = utils.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
-		tieringPolicy     = utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+		spaceReserve      = collection.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
+		snapshotPolicy    = collection.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
+		snapshotReserve   = collection.GetV(opts, "snapshotReserve", storagePool.InternalAttributes()[SnapshotReserve])
+		unixPermissions   = collection.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
+		snapshotDir       = collection.GetV(opts, "snapshotDir", storagePool.InternalAttributes()[SnapshotDir])
+		exportPolicy      = collection.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
+		securityStyle     = collection.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
+		encryption        = collection.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
+		tieringPolicy     = collection.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
 		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
 		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
 	)
@@ -272,7 +274,7 @@ func (d *NASStorageDriver) Create(
 	}
 
 	// Determine volume size in bytes
-	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	requestedSize, err := capacity.ToBytes(volConfig.Size)
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
@@ -339,7 +341,7 @@ func (d *NASStorageDriver) Create(
 		"snapshotDir":       enableSnapshotDir,
 		"exportPolicy":      exportPolicy,
 		"securityStyle":     securityStyle,
-		"encryption":        utils.GetPrintableBoolPtrValue(enableEncryption),
+		"encryption":        convert.ToPrintableBoolPtr(enableEncryption),
 		"tieringPolicy":     tieringPolicy,
 		"qosPolicy":         qosPolicy,
 		"adaptiveQosPolicy": adaptiveQosPolicy,
@@ -502,13 +504,13 @@ func (d *NASStorageDriver) CreateClone(
 		storagePoolSplitOnCloneVal = d.Config.SplitOnClone
 	}
 
-	split, err := strconv.ParseBool(utils.GetV(opts, "splitOnClone", storagePoolSplitOnCloneVal))
+	split, err := strconv.ParseBool(collection.GetV(opts, "splitOnClone", storagePoolSplitOnCloneVal))
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for splitOnClone: %v", err)
 	}
 
-	qosPolicy := utils.GetV(opts, "qosPolicy", "")
-	adaptiveQosPolicy := utils.GetV(opts, "adaptiveQosPolicy", "")
+	qosPolicy := collection.GetV(opts, "qosPolicy", "")
+	adaptiveQosPolicy := collection.GetV(opts, "adaptiveQosPolicy", "")
 	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
 	if err != nil {
 		return err
@@ -1321,7 +1323,7 @@ func (d *NASStorageDriver) GetBackendState(ctx context.Context) (string, *roarin
 
 // String makes NASStorageDriver satisfy the Stringer interface.
 func (d NASStorageDriver) String() string {
-	return utils.ToStringRedacted(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
+	return convert.ToStringRedacted(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
 }
 
 // GoString makes NASStorageDriver satisfy the GoStringer interface.

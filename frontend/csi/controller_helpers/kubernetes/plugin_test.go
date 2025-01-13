@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -27,10 +27,10 @@ import (
 	"github.com/netapp/trident/frontend/csi"
 	. "github.com/netapp/trident/logging"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -353,14 +353,14 @@ func TestUpdateNode(t *testing.T) {
 			key:           "nodeNotReady",
 			taint:         nodeOutOfServiceTaint,
 			condition:     nodeReadyConditionFalse,
-			expectedFlags: &models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(false)},
+			expectedFlags: &models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(false)},
 			error:         nil,
 		},
 		{
 			key:           "nodeUnknown",
 			taint:         nodeOutOfServiceTaint,
 			condition:     nodeReadyConditionUnknown,
-			expectedFlags: &models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(false)},
+			expectedFlags: &models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(false)},
 			error:         errors.New("failed"),
 		},
 	}
@@ -442,42 +442,42 @@ func TestGetNodePublicationState(t *testing.T) {
 			true,
 			noTaint,
 			nodeReadyConditionTrue,
-			&models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(true), AdministratorReady: utils.Ptr(true)},
+			&models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(true), AdministratorReady: convert.ToPtr(true)},
 			nil,
 		},
 		{
 			true,
 			nodeOutOfServiceTaint,
 			nodeReadyConditionTrue,
-			&models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(true), AdministratorReady: utils.Ptr(false)},
+			&models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(true), AdministratorReady: convert.ToPtr(false)},
 			nil,
 		},
 		{
 			true,
 			noTaint,
 			nodeReadyConditionUnknown,
-			&models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(true)},
+			&models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(true)},
 			nil,
 		},
 		{
 			true,
 			nodeOutOfServiceTaint,
 			nodeReadyConditionUnknown,
-			&models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(false)},
+			&models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(false)},
 			nil,
 		},
 		{
 			true,
 			noTaint,
 			nodeReadyConditionFalse,
-			&models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(true)},
+			&models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(true)},
 			nil,
 		},
 		{
 			true,
 			nodeOutOfServiceTaint,
 			nodeReadyConditionFalse,
-			&models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(false)},
+			&models.NodePublicationStateFlags{OrchestratorReady: convert.ToPtr(false), AdministratorReady: convert.ToPtr(false)},
 			nil,
 		},
 	}
@@ -907,7 +907,7 @@ func TestListAttachmentsAsPublications(t *testing.T) {
 	}
 	publications := []*models.VolumePublicationExternal{
 		{
-			Name:       utils.GenerateVolumePublishName(volumeID, node),
+			Name:       models.GenerateVolumePublishName(volumeID, node),
 			VolumeName: volumeID,
 			NodeName:   node,
 			AccessMode: 1, // ReadWriteOnce / SINGLE_NODE_WRITER
@@ -954,7 +954,7 @@ func TestListAttachmentsAsPublications_FailsToGetVolume(t *testing.T) {
 	}
 	publications := []*models.VolumePublicationExternal{
 		{
-			Name:       utils.GenerateVolumePublishName(volumeID, node),
+			Name:       models.GenerateVolumePublishName(volumeID, node),
 			VolumeName: volumeID,
 			NodeName:   node,
 			AccessMode: 1, // ReadWriteOnce / SINGLE_NODE_WRITER

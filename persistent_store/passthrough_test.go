@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -9,13 +9,13 @@ import (
 	"time"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	fakedriver "github.com/netapp/trident/storage_drivers/fake"
 	testutils "github.com/netapp/trident/storage_drivers/fake/test_utils"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -107,7 +107,7 @@ func getFakeSnapshot() *storage.Snapshot {
 	}
 	return &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   time.Now().UTC().Format(utils.TimestampFormat),
+		Created:   time.Now().UTC().Format(convert.TimestampFormat),
 		SizeBytes: 1000000000,
 		State:     storage.SnapshotStateOnline,
 	}

@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 // Package gcnvapi provides a high-level interface to the Google Cloud NetApp Volumes SDK
 package gcnvapi
@@ -22,9 +22,9 @@ import (
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -504,7 +504,7 @@ func (c Client) WaitForVolumeState(
 		}
 
 		// Return a permanent error to stop retrying if we reached one of the abort states
-		if utils.SliceContainsString(abortStates, v.State) {
+		if collection.ContainsString(abortStates, v.State) {
 			return backoff.Permanent(TerminalState(err))
 		}
 
@@ -879,7 +879,7 @@ func (c Client) WaitForSnapshotState(
 		err = fmt.Errorf("snapshot state is %s, not %s", s.State, desiredState)
 
 		// Return a permanent error to stop retrying if we reached one of the abort states
-		if utils.SliceContainsString(abortStates, s.State) {
+		if collection.ContainsString(abortStates, s.State) {
 			return backoff.Permanent(TerminalState(err))
 		}
 

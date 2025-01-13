@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -12,8 +12,8 @@ import (
 	"go.uber.org/mock/gomock"
 
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -33,7 +33,7 @@ const (
 var (
 	errNotReady        = api.NotReadyError("operation still in progress, fail")
 	errNotFound        = api.NotFoundError("not found")
-	endTransferTime, _ = time.Parse(utils.TimestampFormat, transferTime)
+	endTransferTime, _ = time.Parse(convert.TimestampFormat, transferTime)
 )
 
 func TestPromoteMirror_NoErrors(t *testing.T) {

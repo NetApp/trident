@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package gcp
 
@@ -20,14 +20,19 @@ import (
 	"go.uber.org/multierr"
 
 	tridentconfig "github.com/netapp/trident/config"
+	"github.com/netapp/trident/internal/crypto"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/gcp/gcnvapi"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/nfs"
 )
 
 const (
@@ -78,7 +83,7 @@ func (d *NASStorageDriver) GetConfig() drivers.DriverConfig {
 
 // defaultBackendName returns the default name of the backend managed by this driver instance.
 func (d *NASStorageDriver) defaultBackendName() string {
-	id := utils.RandomString(5)
+	id := crypto.RandomString(5)
 	if len(d.Config.APIKey.PrivateKeyID) > 5 {
 		id = d.Config.APIKey.PrivateKeyID[0:5]
 	}
@@ -247,7 +252,7 @@ func (d *NASStorageDriver) populateConfigurationDefaults(
 
 	if config.SnapshotDir != "" {
 		// Set the snapshotDir provided in the config
-		snapDirFormatted, err := utils.GetFormattedBool(config.SnapshotDir)
+		snapDirFormatted, err := convert.ToFormattedBool(config.SnapshotDir)
 		if err != nil {
 			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", config.SnapshotDir)
 			return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
@@ -332,7 +337,7 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 
 		pool.InternalAttributes()[Size] = d.Config.Size
 		pool.InternalAttributes()[UnixPermissions] = d.Config.UnixPermissions
-		pool.InternalAttributes()[ServiceLevel] = utils.Title(d.Config.ServiceLevel)
+		pool.InternalAttributes()[ServiceLevel] = convert.ToTitle(d.Config.ServiceLevel)
 		pool.InternalAttributes()[SnapshotDir] = d.Config.SnapshotDir
 		pool.InternalAttributes()[SnapshotReserve] = d.Config.SnapshotReserve
 		pool.InternalAttributes()[ExportRule] = d.Config.ExportRule
@@ -423,7 +428,7 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 
 			pool.InternalAttributes()[Size] = size
 			pool.InternalAttributes()[UnixPermissions] = unixPermissions
-			pool.InternalAttributes()[ServiceLevel] = utils.Title(serviceLevel)
+			pool.InternalAttributes()[ServiceLevel] = convert.ToTitle(serviceLevel)
 			pool.InternalAttributes()[SnapshotDir] = snapshotDir
 			pool.InternalAttributes()[SnapshotReserve] = snapshotReserve
 			pool.InternalAttributes()[ExportRule] = exportRule
@@ -588,13 +593,13 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 
 		// Validate unix permissions
 		if pool.InternalAttributes()[UnixPermissions] != "" {
-			if err := utils.ValidateOctalUnixPermissions(pool.InternalAttributes()[UnixPermissions]); err != nil {
+			if err := filesystem.ValidateOctalUnixPermissions(pool.InternalAttributes()[UnixPermissions]); err != nil {
 				return fmt.Errorf("invalid value for unixPermissions in pool %s; %v", poolName, err)
 			}
 		}
 
 		// Validate default size
-		if _, err := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size]); err != nil {
+		if _, err := capacity.ToBytes(pool.InternalAttributes()[Size]); err != nil {
 			return fmt.Errorf("invalid value for default volume size in pool %s; %v", poolName, err)
 		}
 	}
@@ -664,7 +669,7 @@ func (d *NASStorageDriver) Create(
 	// Take service level from volume config first (handles Docker case), then from pool.
 	// Service level should not be empty at this point due to application of config defaults.
 	// The service level is needed to select the minimum allowable volume size.
-	serviceLevel := utils.Title(volConfig.ServiceLevel)
+	serviceLevel := convert.ToTitle(volConfig.ServiceLevel)
 	if serviceLevel == "" {
 		serviceLevel = pool.InternalAttributes()[ServiceLevel]
 	}
@@ -691,7 +696,7 @@ func (d *NASStorageDriver) Create(
 	}
 
 	// Determine volume size in bytes
-	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	requestedSize, err := capacity.ToBytes(volConfig.Size)
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s; %v", volConfig.Size, err)
 	}
@@ -700,7 +705,7 @@ func (d *NASStorageDriver) Create(
 		return fmt.Errorf("%v is an invalid volume size; %v", volConfig.Size, err)
 	}
 	if sizeBytes == 0 {
-		defaultSize, _ := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size])
+		defaultSize, _ := capacity.ToBytes(pool.InternalAttributes()[Size])
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
 	if err = drivers.CheckMinVolumeSize(sizeBytes, MinimumVolumeSizeBytes); err != nil {
@@ -748,7 +753,7 @@ func (d *NASStorageDriver) Create(
 	if d.Config.NASType == sa.SMB {
 		protocolTypes = []string{gcnvapi.ProtocolTypeSMB}
 	} else {
-		nfsVersion, err = utils.GetNFSVersionFromMountOptions(mountOptions, "", supportedNFSVersions)
+		nfsVersion, err = nfs.GetNFSVersionFromMountOptions(mountOptions, "", supportedNFSVersions)
 		if err != nil {
 			return err
 		}
@@ -1054,7 +1059,7 @@ func (d *NASStorageDriver) CreateClone(
 		SizeBytes:         sourceVolume.SizeBytes,
 		ProtocolTypes:     sourceVolume.ProtocolTypes,
 		Labels:            labels,
-		SnapshotReserve:   utils.Ptr(sourceVolume.SnapshotReserve),
+		SnapshotReserve:   convert.ToPtr(sourceVolume.SnapshotReserve),
 		SnapshotDirectory: sourceVolume.SnapshotDirectory,
 		SecurityStyle:     sourceVolume.SecurityStyle,
 		SnapshotID:        sourceSnapshot.FullName,
@@ -1162,7 +1167,7 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 				unixPermissions = volume.UnixPermissions
 			}
 			if unixPermissions != "" {
-				if err = utils.ValidateOctalUnixPermissions(unixPermissions); err != nil {
+				if err = filesystem.ValidateOctalUnixPermissions(unixPermissions); err != nil {
 					return fmt.Errorf("could not import volume %s; %v", originalName, err)
 				}
 			}
@@ -1262,7 +1267,7 @@ func (d *NASStorageDriver) fixGCPLabelKey(s string) (string, bool) {
 	}
 
 	// Shorten the string to a maximum of 63 characters
-	s = utils.ShortenString(s, gcnvapi.MaxLabelLength)
+	s = convert.TruncateString(s, gcnvapi.MaxLabelLength)
 
 	return s, true
 }
@@ -1278,7 +1283,7 @@ func (d *NASStorageDriver) fixGCPLabelValue(s string) string {
 	})
 
 	// Shorten the string to a maximum of 63 characters
-	s = utils.ShortenString(s, gcnvapi.MaxLabelLength)
+	s = convert.TruncateString(s, gcnvapi.MaxLabelLength)
 
 	return s
 }
@@ -1510,7 +1515,7 @@ func (d *NASStorageDriver) Publish(
 		publishInfo.FilesystemType = sa.SMB
 	} else {
 		protocol := ""
-		nfsVersion, versionErr := utils.GetNFSVersionFromMountOptions(mountOptions, "", supportedNFSVersions)
+		nfsVersion, versionErr := nfs.GetNFSVersionFromMountOptions(mountOptions, "", supportedNFSVersions)
 		if versionErr != nil {
 			return versionErr
 		}
@@ -1594,7 +1599,7 @@ func (d *NASStorageDriver) GetSnapshot(
 		return nil, fmt.Errorf("snapshot %s state is %s", internalSnapName, snapshot.State)
 	}
 
-	created := snapshot.Created.UTC().Format(utils.TimestampFormat)
+	created := snapshot.Created.UTC().Format(convert.TimestampFormat)
 
 	Logc(ctx).WithFields(LogFields{
 		"snapshotName": internalSnapName,
@@ -1656,7 +1661,7 @@ func (d *NASStorageDriver) GetSnapshots(
 				VolumeName:         volConfig.Name,
 				VolumeInternalName: volConfig.InternalName,
 			},
-			Created:   snapshot.Created.UTC().Format(utils.TimestampFormat),
+			Created:   snapshot.Created.UTC().Format(convert.TimestampFormat),
 			SizeBytes: 0,
 			State:     storage.SnapshotStateOnline,
 		})
@@ -1714,7 +1719,7 @@ func (d *NASStorageDriver) CreateSnapshot(
 
 	return &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   snapshot.Created.UTC().Format(utils.TimestampFormat),
+		Created:   snapshot.Created.UTC().Format(convert.TimestampFormat),
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}, nil
@@ -2084,20 +2089,20 @@ func (d *NASStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	drivers.Clone(ctx, d.Config, &cloneConfig)
 
 	cloneConfig.APIKey = drivers.GCPPrivateKey{
-		Type:                    utils.REDACTED,
-		ProjectID:               utils.REDACTED,
-		PrivateKeyID:            utils.REDACTED,
-		PrivateKey:              utils.REDACTED,
-		ClientEmail:             utils.REDACTED,
-		ClientID:                utils.REDACTED,
-		AuthURI:                 utils.REDACTED,
-		TokenURI:                utils.REDACTED,
-		AuthProviderX509CertURL: utils.REDACTED,
-		ClientX509CertURL:       utils.REDACTED,
+		Type:                    tridentconfig.REDACTED,
+		ProjectID:               tridentconfig.REDACTED,
+		PrivateKeyID:            tridentconfig.REDACTED,
+		PrivateKey:              tridentconfig.REDACTED,
+		ClientEmail:             tridentconfig.REDACTED,
+		ClientID:                tridentconfig.REDACTED,
+		AuthURI:                 tridentconfig.REDACTED,
+		TokenURI:                tridentconfig.REDACTED,
+		AuthProviderX509CertURL: tridentconfig.REDACTED,
+		ClientX509CertURL:       tridentconfig.REDACTED,
 	}
 	cloneConfig.Credentials = map[string]string{
-		drivers.KeyName: utils.REDACTED,
-		drivers.KeyType: utils.REDACTED,
+		drivers.KeyName: tridentconfig.REDACTED,
+		drivers.KeyType: tridentconfig.REDACTED,
 	} // redact the credentials
 
 	return cloneConfig
@@ -2203,7 +2208,7 @@ func (d *NASStorageDriver) getVolumeExternal(volumeAttrs *gcnvapi.Volume) *stora
 
 // String implements stringer interface for the NASStorageDriver driver.
 func (d *NASStorageDriver) String() string {
-	return utils.ToStringRedacted(d, []string{"SDK"}, d.GetExternalConfig(context.Background()))
+	return convert.ToStringRedacted(d, []string{"SDK"}, d.GetExternalConfig(context.Background()))
 }
 
 // GoString implements GoStringer interface for the NASStorageDriver driver.
@@ -2283,7 +2288,7 @@ func (d *NASStorageDriver) nfsExportComponentsForProtocol(
 		}
 		// Fall back to any NFS mount
 		for _, mountTarget := range volume.MountTargets {
-			if utils.SliceContainsString(
+			if collection.ContainsString(
 				[]string{gcnvapi.ProtocolTypeNFSv3, gcnvapi.ProtocolTypeNFSv41}, mountTarget.Protocol) {
 				return d.parseNFSExport(mountTarget.ExportPath)
 			}

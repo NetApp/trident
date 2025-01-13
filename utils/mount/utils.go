@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package mount
 
@@ -6,24 +6,10 @@ import (
 	"context"
 	"strings"
 
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
-
-// sliceContainsString checks to see if a []string contains a string
-func sliceContainsString(slice []string, s string) bool {
-	return sliceContainsStringConditionally(slice, s, func(val1, val2 string) bool { return val1 == val2 })
-}
-
-// sliceContainsStringConditionally checks to see if a []string contains a string based on certain criteria
-func sliceContainsStringConditionally(slice []string, s string, fn func(string, string) bool) bool {
-	for _, item := range slice {
-		if fn(item, s) {
-			return true
-		}
-	}
-	return false
-}
 
 // checkMountOptions check if the new mount options are different from already mounted options.
 // Return an error if there is mismatch with the mount options.
@@ -51,7 +37,7 @@ func areMountOptionsInList(mountOptions string, optionList []string) bool {
 	mountOptionsSlice := strings.Split(strings.TrimPrefix(mountOptions, "-o"), ",")
 
 	for _, mountOptionItem := range mountOptionsSlice {
-		if sliceContainsString(optionList, mountOptionItem) {
+		if collection.ContainsString(optionList, mountOptionItem) {
 			return true
 		}
 	}

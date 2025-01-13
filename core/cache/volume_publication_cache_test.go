@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package cache
 
@@ -7,7 +7,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -27,7 +26,7 @@ func TestVolumePublicationCacheSet(t *testing.T) {
 			volumeID: volumeID,
 			nodeID:   nodeID,
 			publication: &models.VolumePublication{
-				Name: utils.GenerateVolumePublishName(volumeID, nodeID),
+				Name: models.GenerateVolumePublishName(volumeID, nodeID),
 			},
 			expectError: false,
 		},
@@ -35,7 +34,7 @@ func TestVolumePublicationCacheSet(t *testing.T) {
 			volumeID: volumeID,
 			nodeID:   "",
 			publication: &models.VolumePublication{
-				Name: utils.GenerateVolumePublishName(volumeID, ""),
+				Name: models.GenerateVolumePublishName(volumeID, ""),
 			},
 			expectError: true,
 		},
@@ -43,7 +42,7 @@ func TestVolumePublicationCacheSet(t *testing.T) {
 			volumeID: "",
 			nodeID:   nodeID,
 			publication: &models.VolumePublication{
-				Name: utils.GenerateVolumePublishName("", nodeID),
+				Name: models.GenerateVolumePublishName("", nodeID),
 			},
 			expectError: true,
 		},
@@ -51,7 +50,7 @@ func TestVolumePublicationCacheSet(t *testing.T) {
 			volumeID: "",
 			nodeID:   "",
 			publication: &models.VolumePublication{
-				Name: utils.GenerateVolumePublishName("", ""),
+				Name: models.GenerateVolumePublishName("", ""),
 			},
 			expectError: true,
 		},
@@ -91,7 +90,7 @@ func TestVolumePublicationCacheSet(t *testing.T) {
 
 			// Change values on the original publication and assert the cachePub doesn't change.
 			// This proves that the stored value from a Set is not the same pointer as the value from get.
-			publication.Name = utils.GenerateVolumePublishName(volumeID, "changed")
+			publication.Name = models.GenerateVolumePublishName(volumeID, "changed")
 			assert.True(t, cachedPublication != publication, "expected different addresses")
 			assert.NotEqualValues(t, *cachedPublication, *publication, "expected different values")
 		})
@@ -103,7 +102,7 @@ func TestVolumePublicationCacheGet(t *testing.T) {
 	volumeID := "foo"
 	nodeID := "bar"
 	publication := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeID, nodeID),
+		Name:       models.GenerateVolumePublishName(volumeID, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeID,
 	}
@@ -132,7 +131,7 @@ func TestVolumePublicationCacheTryGet(t *testing.T) {
 	volumeID := "foo"
 	nodeID := "bar"
 	publication := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeID, nodeID),
+		Name:       models.GenerateVolumePublishName(volumeID, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeID,
 	}
@@ -170,7 +169,7 @@ func TestVolumePublicationCacheDelete(t *testing.T) {
 	volumeID := "foo"
 	nodeID := "bar"
 	publication := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeID, nodeID),
+		Name:       models.GenerateVolumePublishName(volumeID, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeID,
 	}
@@ -208,12 +207,12 @@ func TestVolumePublicationCacheListPublications(t *testing.T) {
 	nodeID := "bar"
 	volumeIDTwo := "baz"
 	pubOne := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
+		Name:       models.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
 	pubTwo := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
+		Name:       models.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
@@ -254,12 +253,12 @@ func TestVolumePublicationCacheListPublicationsForVolume(t *testing.T) {
 	nodeID := "bar"
 	volumeIDTwo := "baz"
 	pubOne := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
+		Name:       models.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
 	pubTwo := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
+		Name:       models.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
@@ -336,12 +335,12 @@ func TestVolumePublicationCacheListPublicationsForNode(t *testing.T) {
 	nodeID := "bar"
 	volumeIDTwo := "baz"
 	pubOne := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
+		Name:       models.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
 	pubTwo := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
+		Name:       models.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
@@ -417,14 +416,14 @@ func TestVolumePublicationCacheLen(t *testing.T) {
 	volumeID := "foo"
 	nodeID := "bar"
 	publication := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeID, nodeID),
+		Name:       models.GenerateVolumePublishName(volumeID, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeID,
 	}
 
 	volumeIDTwo := "baz"
 	publicationTwo := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
+		Name:       models.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
@@ -468,14 +467,14 @@ func TestVolumePublicationCacheMap(t *testing.T) {
 	volumeID := "foo"
 	nodeID := "bar"
 	publication := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeID, nodeID),
+		Name:       models.GenerateVolumePublishName(volumeID, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeID,
 	}
 
 	volumeIDTwo := "baz"
 	publicationTwo := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
+		Name:       models.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
@@ -511,14 +510,14 @@ func TestVolumePublicationCacheSetMap(t *testing.T) {
 	volumeID := "foo"
 	nodeID := "bar"
 	publication := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeID, nodeID),
+		Name:       models.GenerateVolumePublishName(volumeID, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeID,
 	}
 
 	volumeIDTwo := "baz"
 	publicationTwo := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
+		Name:       models.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
@@ -569,7 +568,7 @@ func TestVolumePublicationCacheClear(t *testing.T) {
 	volumeID := "foo"
 	nodeID := "bar"
 	publication := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volumeID, nodeID),
+		Name:       models.GenerateVolumePublishName(volumeID, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeID,
 	}

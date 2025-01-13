@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package azure
 
@@ -22,15 +22,19 @@ import (
 
 	"github.com/netapp/trident/acp"
 	tridentconfig "github.com/netapp/trident/config"
+	"github.com/netapp/trident/internal/crypto"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/azure/api"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/nfs"
 )
 
 const (
@@ -103,7 +107,7 @@ func (d *NASStorageDriver) GetConfig() drivers.DriverConfig {
 
 // defaultBackendName returns the default name of the backend managed by this driver instance.
 func (d *NASStorageDriver) defaultBackendName() string {
-	id := utils.RandomString(6)
+	id := crypto.RandomString(6)
 	if len(d.Config.ClientID) > 5 {
 		id = d.Config.ClientID[0:5]
 	}
@@ -208,7 +212,7 @@ func (d *NASStorageDriver) Initialize(
 
 	volumeCreateTimeout := d.defaultCreateTimeout()
 	if config.VolumeCreateTimeout != "" {
-		i, parseErr := utils.ParsePositiveInt64(d.Config.VolumeCreateTimeout)
+		i, parseErr := convert.ToPositiveInt64(d.Config.VolumeCreateTimeout)
 		if parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.VolumeCreateTimeout).WithError(parseErr).Error(
 				"Invalid volume create timeout period.")
@@ -281,7 +285,7 @@ func (d *NASStorageDriver) populateConfigurationDefaults(
 
 	if config.SnapshotDir != "" {
 		// Set the snapshotDir provided in the config
-		snapDirFormatted, err := utils.GetFormattedBool(config.SnapshotDir)
+		snapDirFormatted, err := convert.ToFormattedBool(config.SnapshotDir)
 		if err != nil {
 			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", config.SnapshotDir)
 		}
@@ -324,7 +328,7 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 
 	// If snapshotDir is provided, ensure it is lower case
 	if d.Config.SnapshotDir != "" {
-		snapDirFormatted, err := utils.GetFormattedBool(d.Config.SnapshotDir)
+		snapDirFormatted, err := convert.ToFormattedBool(d.Config.SnapshotDir)
 		if err != nil {
 			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", d.Config.SnapshotDir)
 		}
@@ -355,7 +359,7 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 
 		pool.InternalAttributes()[Size] = d.Config.Size
 		pool.InternalAttributes()[UnixPermissions] = d.Config.UnixPermissions
-		pool.InternalAttributes()[ServiceLevel] = utils.Title(d.Config.ServiceLevel)
+		pool.InternalAttributes()[ServiceLevel] = convert.ToTitle(d.Config.ServiceLevel)
 		pool.InternalAttributes()[SnapshotDir] = d.Config.SnapshotDir
 		pool.InternalAttributes()[ExportRule] = d.Config.ExportRule
 		pool.InternalAttributes()[VirtualNetwork] = d.Config.VirtualNetwork
@@ -423,7 +427,7 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 
 			snapshotDir := d.Config.SnapshotDir
 			if vpool.SnapshotDir != "" {
-				snapDirFormatted, err := utils.GetFormattedBool(vpool.SnapshotDir)
+				snapDirFormatted, err := convert.ToFormattedBool(vpool.SnapshotDir)
 				if err != nil {
 					Logc(ctx).WithError(err).Errorf("Invalid boolean value for vpool's snapshotDir: %v.",
 						vpool.SnapshotDir)
@@ -481,7 +485,7 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 
 			pool.InternalAttributes()[Size] = size
 			pool.InternalAttributes()[UnixPermissions] = unixPermissions
-			pool.InternalAttributes()[ServiceLevel] = utils.Title(serviceLevel)
+			pool.InternalAttributes()[ServiceLevel] = convert.ToTitle(serviceLevel)
 			pool.InternalAttributes()[SnapshotDir] = snapshotDir
 			pool.InternalAttributes()[ExportRule] = exportRule
 			pool.InternalAttributes()[VirtualNetwork] = vnet
@@ -553,7 +557,7 @@ func (d *NASStorageDriver) initializeAzureSDKClient(
 
 	sdkTimeout := api.DefaultSDKTimeout
 	if config.SDKTimeout != "" {
-		i, parseErr := utils.ParsePositiveInt64(d.Config.SDKTimeout)
+		i, parseErr := convert.ToPositiveInt64(d.Config.SDKTimeout)
 		if parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.SDKTimeout).WithError(parseErr).Error(
 				"Invalid value for SDK timeout.")
@@ -565,7 +569,7 @@ func (d *NASStorageDriver) initializeAzureSDKClient(
 
 	maxCacheAge := api.DefaultMaxCacheAge
 	if config.MaxCacheAge != "" {
-		i, parseErr := utils.ParsePositiveInt64(d.Config.MaxCacheAge)
+		i, parseErr := convert.ToPositiveInt64(d.Config.MaxCacheAge)
 		if parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.MaxCacheAge).WithError(parseErr).Error(
 				"Invalid value for max cache age.")
@@ -685,14 +689,14 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 
 		// Validate unix permissions
 		if pool.InternalAttributes()[UnixPermissions] != "" {
-			err := utils.ValidateOctalUnixPermissions(pool.InternalAttributes()[UnixPermissions])
+			err := filesystem.ValidateOctalUnixPermissions(pool.InternalAttributes()[UnixPermissions])
 			if err != nil {
 				return fmt.Errorf("invalid value for unixPermissions in pool %s; %v", poolName, err)
 			}
 		}
 
 		// Validate default size
-		if _, err := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size]); err != nil {
+		if _, err := capacity.ToBytes(pool.InternalAttributes()[Size]); err != nil {
 			return fmt.Errorf("invalid value for default volume size in pool %s; %v", poolName, err)
 		}
 
@@ -799,7 +803,7 @@ func (d *NASStorageDriver) Create(
 	}
 
 	// Determine volume size in bytes
-	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	requestedSize, err := capacity.ToBytes(volConfig.Size)
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s; %v", volConfig.Size, err)
 	}
@@ -808,7 +812,7 @@ func (d *NASStorageDriver) Create(
 		return fmt.Errorf("%v is an invalid volume size; %v", volConfig.Size, err)
 	}
 	if sizeBytes == 0 {
-		defaultSize, _ := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size])
+		defaultSize, _ := capacity.ToBytes(pool.InternalAttributes()[Size])
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
 	if err = drivers.CheckMinVolumeSize(sizeBytes, MinimumVolumeSizeBytes); err != nil {
@@ -830,7 +834,7 @@ func (d *NASStorageDriver) Create(
 	}
 
 	// Take service level from volume config first (handles Docker case), then from pool
-	serviceLevel := utils.Title(volConfig.ServiceLevel)
+	serviceLevel := convert.ToTitle(volConfig.ServiceLevel)
 	if serviceLevel == "" {
 		serviceLevel = pool.InternalAttributes()[ServiceLevel]
 	}
@@ -874,7 +878,7 @@ func (d *NASStorageDriver) Create(
 	if d.Config.NASType == sa.SMB {
 		protocolTypes = []string{api.ProtocolTypeCIFS}
 	} else {
-		nfsVersion, err = utils.GetNFSVersionFromMountOptions(mountOptions, nfsVersion3, supportedNFSVersions)
+		nfsVersion, err = nfs.GetNFSVersionFromMountOptions(mountOptions, nfsVersion3, supportedNFSVersions)
 		if err != nil {
 			return err
 		}
@@ -1416,7 +1420,7 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 				unixPermissions = volume.UnixPermissions
 			}
 			if unixPermissions != "" {
-				if err = utils.ValidateOctalUnixPermissions(unixPermissions); err != nil {
+				if err = filesystem.ValidateOctalUnixPermissions(unixPermissions); err != nil {
 					return fmt.Errorf("could not import volume %s; %v", originalName, err)
 				}
 			}
@@ -1810,7 +1814,7 @@ func (d *NASStorageDriver) GetSnapshot(
 		return nil, fmt.Errorf("snapshot %s state is %s", internalSnapName, snapshot.ProvisioningState)
 	}
 
-	created := snapshot.Created.UTC().Format(utils.TimestampFormat)
+	created := snapshot.Created.UTC().Format(convert.TimestampFormat)
 
 	Logc(ctx).WithFields(LogFields{
 		"snapshotName": internalSnapName,
@@ -1872,7 +1876,7 @@ func (d *NASStorageDriver) GetSnapshots(
 				VolumeName:         volConfig.Name,
 				VolumeInternalName: volConfig.InternalName,
 			},
-			Created:   snapshot.Created.UTC().Format(utils.TimestampFormat),
+			Created:   snapshot.Created.UTC().Format(convert.TimestampFormat),
 			SizeBytes: 0,
 			State:     storage.SnapshotStateOnline,
 		})
@@ -1930,7 +1934,7 @@ func (d *NASStorageDriver) CreateSnapshot(
 
 	return &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   snapshot.Created.UTC().Format(utils.TimestampFormat),
+		Created:   snapshot.Created.UTC().Format(convert.TimestampFormat),
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}, nil
@@ -2301,10 +2305,10 @@ func (d *NASStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.AzureNASStorageDriverConfig
 	drivers.Clone(ctx, d.Config, &cloneConfig)
-	cloneConfig.ClientSecret = utils.REDACTED // redact the Secret
+	cloneConfig.ClientSecret = tridentconfig.REDACTED // redact the Secret
 	cloneConfig.Credentials = map[string]string{
-		drivers.KeyName: utils.REDACTED,
-		drivers.KeyType: utils.REDACTED,
+		drivers.KeyName: tridentconfig.REDACTED,
+		drivers.KeyType: tridentconfig.REDACTED,
 	} // redact the credentials
 	return cloneConfig
 }
@@ -2403,7 +2407,7 @@ func (d *NASStorageDriver) getVolumeExternal(volumeAttrs *api.FileSystem) *stora
 
 // String implements stringer interface for the NASStorageDriver driver.
 func (d *NASStorageDriver) String() string {
-	return utils.ToStringRedacted(d, []string{"SDK"}, d.GetExternalConfig(context.Background()))
+	return convert.ToStringRedacted(d, []string{"SDK"}, d.GetExternalConfig(context.Background()))
 }
 
 // GoString implements GoStringer interface for the NASStorageDriver driver.

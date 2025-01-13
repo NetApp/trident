@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -18,6 +18,9 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -273,17 +276,17 @@ func (d *NVMeStorageDriver) Create(
 	// see also: ontap_common.go#PopulateConfigurationDefaults
 
 	spaceAllocation, _ := strconv.ParseBool(
-		utils.GetV(opts, "spaceAllocation", storagePool.InternalAttributes()[SpaceAllocation]))
+		collection.GetV(opts, "spaceAllocation", storagePool.InternalAttributes()[SpaceAllocation]))
 	var (
-		spaceReserve      = utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
-		snapshotPolicy    = utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
-		snapshotReserve   = utils.GetV(opts, "snapshotReserve", storagePool.InternalAttributes()[SnapshotReserve])
-		unixPermissions   = utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
+		spaceReserve      = collection.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
+		snapshotPolicy    = collection.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
+		snapshotReserve   = collection.GetV(opts, "snapshotReserve", storagePool.InternalAttributes()[SnapshotReserve])
+		unixPermissions   = collection.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
 		snapshotDir       = "false"
-		exportPolicy      = utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
-		securityStyle     = utils.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
-		encryption        = utils.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
-		tieringPolicy     = utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+		exportPolicy      = collection.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
+		securityStyle     = collection.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
+		encryption        = collection.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
+		tieringPolicy     = collection.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
 		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
 		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
 		luksEncryption    = storagePool.InternalAttributes()[LUKSEncryption]
@@ -295,7 +298,7 @@ func (d *NVMeStorageDriver) Create(
 	}
 
 	// Determine volume size in bytes.
-	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	requestedSize, err := capacity.ToBytes(volConfig.Size)
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
@@ -331,7 +334,7 @@ func (d *NVMeStorageDriver) Create(
 	}
 
 	fstype, err := drivers.CheckSupportedFilesystem(
-		ctx, utils.GetV(opts, "fstype|fileSystemType", storagePool.InternalAttributes()[FileSystemType]), name)
+		ctx, collection.GetV(opts, "fstype|fileSystemType", storagePool.InternalAttributes()[FileSystemType]), name)
 	if err != nil {
 		return err
 	}
@@ -373,7 +376,7 @@ func (d *NVMeStorageDriver) Create(
 		"exportPolicy":      exportPolicy,
 		"securityStyle":     securityStyle,
 		"LUKSEncryption":    luksEncryption,
-		"encryption":        utils.GetPrintableBoolPtrValue(enableEncryption),
+		"encryption":        convert.ToPrintableBoolPtr(enableEncryption),
 		"qosPolicy":         qosPolicy,
 		"adaptiveQosPolicy": adaptiveQosPolicy,
 	}).Debug("Creating FlexVol.")
@@ -571,7 +574,7 @@ func (d *NVMeStorageDriver) CreateClone(
 		storagePoolSplitOnCloneVal = d.Config.SplitOnClone
 	}
 
-	split, err := strconv.ParseBool(utils.GetV(opts, "splitOnClone", storagePoolSplitOnCloneVal))
+	split, err := strconv.ParseBool(collection.GetV(opts, "splitOnClone", storagePoolSplitOnCloneVal))
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for splitOnClone: %v", err)
 	}
@@ -664,7 +667,7 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 
 	// If the import is a LUKS encrypted volume, then remove the LUKS metadata overhead from the reported
 	// size on the volConfig.
-	if utils.ParseBool(volConfig.LUKSEncryption) {
+	if convert.ToBool(volConfig.LUKSEncryption) {
 		newSize, err := subtractUintFromSizeString(volConfig.Size, luks.LUKSMetadataSize)
 		if err != nil {
 			return err
@@ -1328,7 +1331,7 @@ func (d *NVMeStorageDriver) Resize(
 		return fmt.Errorf("error while checking namespace size, %v", err)
 	}
 
-	nsSizeBytes, err := utils.ParsePositiveInt64(ns.Size)
+	nsSizeBytes, err := convert.ToPositiveInt64(ns.Size)
 	if err != nil {
 		return fmt.Errorf("error while parsing namespace size, %v", err)
 	}
@@ -1348,10 +1351,10 @@ func (d *NVMeStorageDriver) Resize(
 	newFlexVolSize := drivers.CalculateVolumeSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
 	newFlexVolSize = uint64(LUNMetadataBufferMultiplier * float64(newFlexVolSize))
 
-	sameNamespaceSize := utils.VolumeSizeWithinTolerance(int64(requestedSizeBytes), nsSizeBytes,
+	sameNamespaceSize := capacity.VolumeSizeWithinTolerance(int64(requestedSizeBytes), nsSizeBytes,
 		tridentconfig.SANResizeDelta)
 
-	sameFlexVolSize := utils.VolumeSizeWithinTolerance(int64(newFlexVolSize), int64(currentFlexVolSize),
+	sameFlexVolSize := capacity.VolumeSizeWithinTolerance(int64(newFlexVolSize), int64(currentFlexVolSize),
 		tridentconfig.SANResizeDelta)
 
 	if sameNamespaceSize && sameFlexVolSize {
@@ -1443,7 +1446,7 @@ func (d *NVMeStorageDriver) GetBackendState(ctx context.Context) (string, *roari
 
 // String makes NVMeStorageDriver satisfy the Stringer interface.
 func (d *NVMeStorageDriver) String() string {
-	return utils.ToStringRedacted(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
+	return convert.ToStringRedacted(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
 }
 
 // GoString makes SANStorageDriver satisfy the GoStringer interface.

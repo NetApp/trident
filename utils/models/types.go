@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package models
 
@@ -9,8 +9,10 @@ import (
 
 	"github.com/mitchellh/copystructure"
 
+	"github.com/netapp/trident/internal/crypto"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils/crypto"
+	"github.com/netapp/trident/pkg/convert"
+	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -39,7 +41,7 @@ type IscsiChapInfo struct {
 
 // String implements the stringer interface and ensures that sensitive fields are redacted before being logged/printed
 func (i IscsiChapInfo) String() string {
-	return ToStringRedacted(&i,
+	return convert.ToStringRedacted(&i,
 		[]string{"IscsiUsername", "IscsiInitiatorSecret", "IscsiTargetUsername", "IscsiTargetSecret"}, nil)
 }
 
@@ -242,7 +244,7 @@ func (n *Node) ConstructExternal() *NodeExternal {
 		TopologyLabels:   node.TopologyLabels,
 		NodePrep:         node.NodePrep,
 		HostInfo:         node.HostInfo,
-		Deleted:          Ptr(node.Deleted),
+		Deleted:          convert.ToPtr(node.Deleted),
 		PublicationState: node.PublicationState,
 		LogLevel:         node.LogLevel,
 		LogWorkflows:     node.LogWorkflows,
@@ -290,8 +292,8 @@ func (f *NodePublicationStateFlags) IsNodeCleaned() bool {
 
 func (f *NodePublicationStateFlags) String() string {
 	return fmt.Sprintf("OrchestratorReady: %s; AdministratorReady: %s; ProvisionerReady: %s",
-		PtrToString(f.OrchestratorReady), PtrToString(f.AdministratorReady),
-		PtrToString(f.ProvisionerReady))
+		convert.PtrToString(f.OrchestratorReady), convert.PtrToString(f.AdministratorReady),
+		convert.PtrToString(f.ProvisionerReady))
 }
 
 // NodePrep struct is deprecated and only here for backwards compatibility
@@ -607,7 +609,7 @@ func (p *ISCSISessions) ISCSISessionData(portal string) (*ISCSISessionData, erro
 		return nil, fmt.Errorf("portal value cannot be empty")
 	}
 
-	if iSCSISessionData, found := p.Info[ParseHostportIP(portal)]; found {
+	if iSCSISessionData, found := p.Info[network.ParseHostportIP(portal)]; found {
 		return iSCSISessionData, nil
 	}
 
@@ -643,7 +645,7 @@ func (p *ISCSISessions) AddPortal(portal string, portalInfo PortalInfo) error {
 		PortalInfo: portalInfo,
 		LUNs:       newLUNInfo,
 	}
-	p.Info[ParseHostportIP(portal)] = &iSCSISessionData
+	p.Info[network.ParseHostportIP(portal)] = &iSCSISessionData
 
 	return nil
 }
@@ -744,7 +746,7 @@ func (p *ISCSISessions) RemoveLUNFromPortal(portal string, lunID int32) {
 // RemovePortal removes portal (along with its PortalInfo and LUNInfo) from the map
 func (p *ISCSISessions) RemovePortal(portal string) {
 	if p != nil {
-		delete(p.Info, ParseHostportIP(portal))
+		delete(p.Info, network.ParseHostportIP(portal))
 	}
 }
 
@@ -887,7 +889,7 @@ func (p *ISCSISessions) GeneratePublishInfo(portal string) (*VolumePublishInfo, 
 	var lunID int32
 	sessionLUNs := iSCSISessionData.LUNs.AllLUNs()
 	if len(sessionLUNs) > 0 {
-		lunID = sessionLUNs[crypto.GetRandomNumber(len(sessionLUNs))]
+		lunID = sessionLUNs[crypto.RandomNumber(len(sessionLUNs))]
 	}
 
 	return &VolumePublishInfo{
@@ -933,28 +935,6 @@ func (p *ISCSISessions) GoString() string {
 	return p.String()
 }
 
-// ParseHostportIP returns just the IP address part of the given input IP address and strips any port information
-func ParseHostportIP(hostport string) string {
-	ipAddress := ""
-	if IPv6Check(hostport) {
-		// this is an IPv6 address, remove port value and add square brackets around the IP address
-		if hostport[0] == '[' {
-			ipAddress = strings.Split(hostport, "]")[0] + "]"
-		} else {
-			// assumption here is that without the square brackets its only IP address without port information
-			ipAddress = "[" + hostport + "]"
-		}
-	} else {
-		ipAddress = strings.Split(hostport, ":")[0]
-	}
-
-	return ipAddress
-}
-
-func IPv6Check(ip string) bool {
-	return strings.Count(ip, ":") >= 2
-}
-
 // MountPoint represents a single line in /proc/mounts or /etc/fstab.
 type MountPoint struct {
 	Device string
@@ -976,4 +956,8 @@ type MountInfo struct {
 	FsType       string
 	MountSource  string
 	SuperOptions []string
+}
+
+func GenerateVolumePublishName(volumeID, nodeID string) string {
+	return fmt.Sprintf(volumeID + "." + nodeID)
 }

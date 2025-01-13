@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -25,6 +25,8 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/devices"
@@ -35,6 +37,7 @@ import (
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/osutils"
+	"github.com/netapp/trident/utils/smb"
 )
 
 const (
@@ -103,7 +106,7 @@ func (p *Plugin) NodeStageVolume(
 	}
 	switch req.PublishContext["protocol"] {
 	case string(tridentconfig.File):
-		if req.PublishContext["filesystemType"] == utils.SMB {
+		if req.PublishContext["filesystemType"] == smb.SMB {
 			return p.nodeStageSMBVolume(ctx, req)
 		} else {
 			return p.nodeStageNFSVolume(ctx, req)
@@ -180,7 +183,7 @@ func (p *Plugin) nodeUnstageVolume(
 
 	switch protocol {
 	case tridentconfig.File:
-		if publishInfo.FilesystemType == utils.SMB {
+		if publishInfo.FilesystemType == smb.SMB {
 			if force {
 				Logc(ctx).WithFields(fields).WithField("protocol", tridentconfig.File).
 					Warning("forced unstage not supported for this protocol")
@@ -226,7 +229,7 @@ func (p *Plugin) NodePublishVolume(
 				return nil, status.Error(codes.Internal, err.Error())
 			}
 		}
-		if trackingInfo.VolumePublishInfo.FilesystemType == utils.SMB {
+		if trackingInfo.VolumePublishInfo.FilesystemType == smb.SMB {
 			return p.nodePublishSMBVolume(ctx, req)
 		} else {
 			return p.nodePublishNFSVolume(ctx, req)
@@ -508,7 +511,7 @@ func (p *Plugin) nodeExpandVolume(
 	}
 
 	devicePath := publishInfo.DevicePath
-	if utils.ParseBool(publishInfo.LUKSEncryption) {
+	if convert.ToBool(publishInfo.LUKSEncryption) {
 		if !luks.IsLegacyLUKSDevicePath(devicePath) {
 			devicePath, err = p.devices.GetLUKSDeviceForMultipathDevice(devicePath)
 			if err != nil {
@@ -911,7 +914,7 @@ func (p *Plugin) nodePublishNFSVolume(
 	publishInfo := &trackingInfo.VolumePublishInfo
 
 	if req.GetReadonly() {
-		publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "ro", ",")
+		publishInfo.MountOptions = collection.AppendToStringList(publishInfo.MountOptions, "ro", ",")
 	}
 
 	err = p.mount.AttachNFSVolume(ctx, req.VolumeContext["internalName"], req.TargetPath, publishInfo)
@@ -938,7 +941,7 @@ func (p *Plugin) nodeStageSMBVolume(
 ) (*csi.NodeStageVolumeResponse, error) {
 	publishInfo := &models.VolumePublishInfo{
 		Localhost:      true,
-		FilesystemType: utils.SMB,
+		FilesystemType: smb.SMB,
 	}
 
 	if err := p.mount.IsCompatible(ctx, publishInfo.FilesystemType); err != nil {
@@ -1133,12 +1136,12 @@ func (p *Plugin) nodeStageFCPVolume(
 	defer Logc(ctx).Debug("<<<< nodeStageFCPVolume")
 
 	var lunID int32
-	lunID, err = utils.ParsePositiveInt32(req.PublishContext["fcpLunNumber"])
+	lunID, err = convert.ToPositiveInt32(req.PublishContext["fcpLunNumber"])
 	if err != nil {
 		return err
 	}
 
-	isLUKS := utils.ParseBool(req.PublishContext["LUKSEncryption"])
+	isLUKS := convert.ToBool(req.PublishContext["LUKSEncryption"])
 	publishInfo.LUKSEncryption = strconv.FormatBool(isLUKS)
 
 	publishInfo.MountOptions = req.PublishContext["mountOptions"]
@@ -1254,7 +1257,7 @@ func (p *Plugin) nodeUnstageFCPVolume(
 	}
 
 	var luksMapperPath string
-	if utils.ParseBool(publishInfo.LUKSEncryption) {
+	if convert.ToBool(publishInfo.LUKSEncryption) {
 		fields := LogFields{"luksDevicePath": publishInfo.DevicePath, "lunID": publishInfo.FCPLunNumber}
 
 		// Before closing the LUKS device, get the underlying mapper device from cryptsetup.
@@ -1393,10 +1396,10 @@ func (p *Plugin) nodePublishFCPVolume(
 	publishInfo := &trackingInfo.VolumePublishInfo
 
 	if req.GetReadonly() {
-		publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "ro", ",")
+		publishInfo.MountOptions = collection.AppendToStringList(publishInfo.MountOptions, "ro", ",")
 	}
 
-	if utils.ParseBool(publishInfo.LUKSEncryption) {
+	if convert.ToBool(publishInfo.LUKSEncryption) {
 		// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
 		luksDevice, err := luks.NewLUKSDeviceFromMappingPath(ctx, p.command, publishInfo.DevicePath,
 			req.VolumeContext["internalName"])
@@ -1412,7 +1415,7 @@ func (p *Plugin) nodePublishFCPVolume(
 	if publishInfo.FilesystemType == filesystem.Raw {
 
 		if len(publishInfo.MountOptions) > 0 {
-			publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "bind", ",")
+			publishInfo.MountOptions = collection.AppendToStringList(publishInfo.MountOptions, "bind", ",")
 		} else {
 			publishInfo.MountOptions = "bind"
 		}
@@ -1449,12 +1452,12 @@ func (p *Plugin) nodeStageISCSIVolume(
 	publishInfo.UseCHAP = useCHAP
 
 	var lunID int32
-	lunID, err = utils.ParsePositiveInt32(req.PublishContext["iscsiLunNumber"])
+	lunID, err = convert.ToPositiveInt32(req.PublishContext["iscsiLunNumber"])
 	if err != nil {
 		return err
 	}
 
-	isLUKS := utils.ParseBool(req.PublishContext["LUKSEncryption"])
+	isLUKS := convert.ToBool(req.PublishContext["LUKSEncryption"])
 	publishInfo.LUKSEncryption = strconv.FormatBool(isLUKS)
 
 	err = unstashIscsiTargetPortals(publishInfo, req.PublishContext)
@@ -1660,7 +1663,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 
 	var luksMapperPath string
 	// If the multipath device is not present, the LUKS device should not exist.
-	if utils.ParseBool(publishInfo.LUKSEncryption) && deviceInfo.MultipathDevice != "" {
+	if convert.ToBool(publishInfo.LUKSEncryption) && deviceInfo.MultipathDevice != "" {
 		fields := LogFields{
 			"lunID":           publishInfo.IscsiLunNumber,
 			"publishedDevice": publishInfo.DevicePath,
@@ -1841,11 +1844,11 @@ func (p *Plugin) nodePublishISCSIVolume(
 	publishInfo := &trackingInfo.VolumePublishInfo
 
 	if req.GetReadonly() {
-		publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "ro", ",")
+		publishInfo.MountOptions = collection.AppendToStringList(publishInfo.MountOptions, "ro", ",")
 	}
 
 	devicePath := publishInfo.DevicePath
-	if utils.ParseBool(publishInfo.LUKSEncryption) {
+	if convert.ToBool(publishInfo.LUKSEncryption) {
 		// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
 		var luksDevice luks.Device
 		var err error
@@ -1873,7 +1876,7 @@ func (p *Plugin) nodePublishISCSIVolume(
 	if isRawBlock {
 
 		if len(publishInfo.MountOptions) > 0 {
-			publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "bind", ",")
+			publishInfo.MountOptions = collection.AppendToStringList(publishInfo.MountOptions, "bind", ",")
 		} else {
 			publishInfo.MountOptions = "bind"
 		}
@@ -2163,7 +2166,7 @@ func (p *Plugin) updateNodePublicationState(ctx context.Context, nodeState model
 
 	Logc(ctx).Debug("Updating node publication state.")
 	nodeStateFlags := &models.NodePublicationStateFlags{
-		ProvisionerReady: utils.Ptr(true),
+		ProvisionerReady: convert.ToPtr(true),
 	}
 	if err := p.restClient.UpdateNode(ctx, p.nodeName, nodeStateFlags); err != nil {
 		Logc(ctx).WithError(err).Error("Failed to update node publication state.")
@@ -2461,7 +2464,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 	publishInfo *models.VolumePublishInfo,
 ) error {
-	isLUKS := utils.ParseBool(req.PublishContext["LUKSEncryption"])
+	isLUKS := convert.ToBool(req.PublishContext["LUKSEncryption"])
 	publishInfo.LUKSEncryption = strconv.FormatBool(isLUKS)
 	publishInfo.MountOptions = req.PublishContext["mountOptions"]
 	publishInfo.NVMeSubsystemNQN = req.PublishContext["nvmeSubsystemNqn"]
@@ -2531,7 +2534,7 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 	}
 
 	var luksMapperPath string
-	if utils.ParseBool(publishInfo.LUKSEncryption) && devicePath != "" {
+	if convert.ToBool(publishInfo.LUKSEncryption) && devicePath != "" {
 		fields := LogFields{
 			"namespace":     publishInfo.NVMeNamespaceUUID,
 			"devicePath":    devicePath,
@@ -2658,11 +2661,11 @@ func (p *Plugin) nodePublishNVMeVolume(
 	publishInfo := &trackingInfo.VolumePublishInfo
 
 	if req.GetReadonly() {
-		publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "ro", ",")
+		publishInfo.MountOptions = collection.AppendToStringList(publishInfo.MountOptions, "ro", ",")
 	}
 
 	devicePath := publishInfo.DevicePath
-	if utils.ParseBool(publishInfo.LUKSEncryption) {
+	if convert.ToBool(publishInfo.LUKSEncryption) {
 		// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
 		luksDevice := luks.NewLUKSDevice(devicePath, req.VolumeContext["internalName"], p.command)
 
@@ -2678,7 +2681,7 @@ func (p *Plugin) nodePublishNVMeVolume(
 	isRawBlock := publishInfo.FilesystemType == filesystem.Raw
 	if isRawBlock {
 		if len(publishInfo.MountOptions) > 0 {
-			publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "bind", ",")
+			publishInfo.MountOptions = collection.AppendToStringList(publishInfo.MountOptions, "bind", ",")
 		} else {
 			publishInfo.MountOptions = "bind"
 		}

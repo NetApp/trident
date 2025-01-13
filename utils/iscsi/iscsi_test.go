@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package iscsi
 
@@ -21,6 +21,7 @@ import (
 	"github.com/netapp/trident/mocks/mock_utils/mock_filesystem"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	"github.com/netapp/trident/mocks/mock_utils/mock_mount"
+	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
@@ -4794,7 +4795,7 @@ func TestEnsureHostportFormatted(t *testing.T) {
 	}
 	for _, testCase := range tests {
 		t.Run(testCase.InputIP, func(t *testing.T) {
-			assert.Equal(t, testCase.OutputIP, ensureHostportFormatted(testCase.InputIP),
+			assert.Equal(t, testCase.OutputIP, network.EnsureHostportFormatted(testCase.InputIP),
 				"Hostport not correctly formatted")
 		})
 	}

@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 // Package api provides a high-level interface to the Azure NetApp Files SDK
 package api
@@ -17,10 +17,10 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"go.uber.org/multierr"
 
+	"github.com/netapp/trident/internal/crypto"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
-	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -279,8 +279,8 @@ func (c Client) checkForNonexistentResourceGroups(ctx context.Context) (anyMisma
 		}
 
 		// Find any resource group value in this storage pool that doesn't match known resource groups
-		for _, configRG := range utils.SplitString(ctx, sPool.InternalAttributes()[resourceGroups], ",") {
-			if !utils.StringInSlice(configRG, rgNames) {
+		for _, configRG := range collection.SplitString(ctx, sPool.InternalAttributes()[resourceGroups], ",") {
+			if !collection.StringInSlice(configRG, rgNames) {
 				anyMismatches = true
 
 				Logc(ctx).WithFields(LogFields{
@@ -307,8 +307,8 @@ func (c Client) checkForNonexistentNetAppAccounts(ctx context.Context) (anyMisma
 		}
 
 		// Find any netapp account value in this storage pool that doesn't match known netapp accounts
-		for _, configNA := range utils.SplitString(ctx, sPool.InternalAttributes()[netappAccounts], ",") {
-			if !utils.StringInSlice(configNA, naNames) {
+		for _, configNA := range collection.SplitString(ctx, sPool.InternalAttributes()[netappAccounts], ",") {
+			if !collection.StringInSlice(configNA, naNames) {
 				anyMismatches = true
 
 				Logc(ctx).WithFields(LogFields{
@@ -335,8 +335,8 @@ func (c Client) checkForNonexistentCapacityPools(ctx context.Context) (anyMismat
 		}
 
 		// Find any capacity pools value in this storage pool that doesn't match known capacity pools
-		for _, configCP := range utils.SplitString(ctx, sPool.InternalAttributes()[capacityPools], ",") {
-			if !utils.StringInSlice(configCP, cpNames) {
+		for _, configCP := range collection.SplitString(ctx, sPool.InternalAttributes()[capacityPools], ",") {
+			if !collection.StringInSlice(configCP, cpNames) {
 				anyMismatches = true
 
 				Logc(ctx).WithFields(LogFields{
@@ -364,7 +364,7 @@ func (c Client) checkForNonexistentVirtualNetworks(ctx context.Context) (anyMism
 
 		// Find any virtual network value in this storage pool that doesn't match known virtual networks
 		configVN := sPool.InternalAttributes()[virtualNetwork]
-		if configVN != "" && !utils.StringInSlice(configVN, vnNames) {
+		if configVN != "" && !collection.StringInSlice(configVN, vnNames) {
 			anyMismatches = true
 
 			Logc(ctx).WithFields(LogFields{
@@ -391,7 +391,7 @@ func (c Client) checkForNonexistentSubnets(ctx context.Context) (anyMismatches b
 
 		// Find any subnet value in this storage pool that doesn't match known subnets
 		configSN := sPool.InternalAttributes()[subnet]
-		if configSN != "" && !utils.StringInSlice(configSN, snNames) {
+		if configSN != "" && !collection.StringInSlice(configSN, snNames) {
 			anyMismatches = true
 
 			Logc(ctx).WithFields(LogFields{
@@ -832,10 +832,10 @@ func (c Client) CapacityPoolsForStoragePool(
 	}
 
 	// If resource groups were specified, filter out non-matching capacity pools
-	rgList := utils.SplitString(ctx, sPool.InternalAttributes()[resourceGroups], ",")
+	rgList := collection.SplitString(ctx, sPool.InternalAttributes()[resourceGroups], ",")
 	if len(rgList) > 0 {
 		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
-			if !utils.SliceContainsString(rgList, cPool.ResourceGroup) {
+			if !collection.ContainsString(rgList, cPool.ResourceGroup) {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring capacity pool %s, not in resource groups [%s].",
 					cPoolFullName, rgList)
 				filteredCapacityPoolMap[cPoolFullName] = false
@@ -844,12 +844,12 @@ func (c Client) CapacityPoolsForStoragePool(
 	}
 
 	// If netapp accounts were specified, filter out non-matching capacity pools
-	naList := utils.SplitString(ctx, sPool.InternalAttributes()[netappAccounts], ",")
+	naList := collection.SplitString(ctx, sPool.InternalAttributes()[netappAccounts], ",")
 	if len(naList) > 0 {
 		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
 			naName := cPool.NetAppAccount
 			naFullName := CreateNetappAccountFullName(cPool.ResourceGroup, cPool.NetAppAccount)
-			if !utils.SliceContainsString(naList, naName) && !utils.SliceContainsString(naList, naFullName) {
+			if !collection.ContainsString(naList, naName) && !collection.ContainsString(naList, naFullName) {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring capacity pool %s, not in netapp accounts [%s].",
 					cPoolFullName, naList)
 				filteredCapacityPoolMap[cPoolFullName] = false
@@ -858,10 +858,10 @@ func (c Client) CapacityPoolsForStoragePool(
 	}
 
 	// If capacity pools were specified, filter out non-matching capacity pools
-	cpList := utils.SplitString(ctx, sPool.InternalAttributes()[capacityPools], ",")
+	cpList := collection.SplitString(ctx, sPool.InternalAttributes()[capacityPools], ",")
 	if len(cpList) > 0 {
 		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
-			if !utils.SliceContainsString(cpList, cPool.Name) && !utils.SliceContainsString(cpList, cPoolFullName) {
+			if !collection.ContainsString(cpList, cPool.Name) && !collection.ContainsString(cpList, cPoolFullName) {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring capacity pool %s, not in capacity pools [%s].",
 					cPoolFullName, cpList)
 				filteredCapacityPoolMap[cPoolFullName] = false
@@ -940,10 +940,10 @@ func (c Client) SubnetsForStoragePool(ctx context.Context, sPool storage.Pool) [
 	}
 
 	// If resource groups were specified, filter out non-matching subnets
-	rgList := utils.SplitString(ctx, sPool.InternalAttributes()[resourceGroups], ",")
+	rgList := collection.SplitString(ctx, sPool.InternalAttributes()[resourceGroups], ",")
 	if len(rgList) > 0 {
 		for subnetFullName, subnet := range c.sdkClient.SubnetMap {
-			if !utils.SliceContainsString(rgList, subnet.ResourceGroup) {
+			if !collection.ContainsString(rgList, subnet.ResourceGroup) {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring subnet %s, not in resource groups [%s].",
 					subnetFullName, rgList)
 				filteredSubnetMap[subnetFullName] = false
@@ -997,7 +997,7 @@ func (c Client) RandomSubnetForStoragePool(ctx context.Context, sPool storage.Po
 		return nil
 	}
 
-	return filteredSubnets[crypto.GetRandomNumber(len(filteredSubnets))]
+	return filteredSubnets[crypto.RandomNumber(len(filteredSubnets))]
 }
 
 // AZ Client Functions for AKS Extension
@@ -1015,7 +1015,7 @@ func (c Client) FilteredCapacityPoolMap(
 
 	if len(rgFilter) > 0 {
 		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
-			if !utils.SliceContainsString(rgFilter, cPool.ResourceGroup) {
+			if !collection.ContainsString(rgFilter, cPool.ResourceGroup) {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).
 					Debugf("Ignoring capacity pool %s, not in resource groups [%s].", cPoolFullName, rgFilter)
 				filteredCapacityPoolMap[cPoolFullName] = false
@@ -1027,7 +1027,7 @@ func (c Client) FilteredCapacityPoolMap(
 		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
 			naName := cPool.NetAppAccount
 			naFullName := CreateNetappAccountFullName(cPool.ResourceGroup, cPool.NetAppAccount)
-			if !utils.SliceContainsString(naFilter, naName) && !utils.SliceContainsString(naFilter, naFullName) {
+			if !collection.ContainsString(naFilter, naName) && !collection.ContainsString(naFilter, naFullName) {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).
 					Debugf("Ignoring capacity pool %s, not in netapp accounts [%s].", cPoolFullName, naFilter)
 				filteredCapacityPoolMap[cPoolFullName] = false
@@ -1037,7 +1037,7 @@ func (c Client) FilteredCapacityPoolMap(
 
 	if len(cpFilter) > 0 {
 		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
-			if !utils.SliceContainsString(cpFilter, cPool.Name) && !utils.SliceContainsString(cpFilter, cPoolFullName) {
+			if !collection.ContainsString(cpFilter, cPool.Name) && !collection.ContainsString(cpFilter, cPoolFullName) {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).
 					Debugf("Ignoring capacity pool %s, not in capacity pools [%s].", cPoolFullName, cpFilter)
 				filteredCapacityPoolMap[cPoolFullName] = false
@@ -1066,7 +1066,7 @@ func (c Client) FilteredSubnetMap(
 
 	if len(rgFilter) > 0 {
 		for subnetFullName, subnet := range c.sdkClient.SubnetMap {
-			if !utils.SliceContainsString(rgFilter, subnet.ResourceGroup) {
+			if !collection.ContainsString(rgFilter, subnet.ResourceGroup) {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).
 					Tracef("Ignoring subnet %s, not in resource groups [%s].", subnetFullName, rgFilter)
 				filteredSubnetMap[subnetFullName] = false

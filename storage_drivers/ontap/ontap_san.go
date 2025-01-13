@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -15,12 +15,14 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/iscsi"
@@ -342,17 +344,17 @@ func (d *SANStorageDriver) Create(
 	// see also: ontap_common.go#PopulateConfigurationDefaults
 
 	spaceAllocation, _ := strconv.ParseBool(
-		utils.GetV(opts, "spaceAllocation", storagePool.InternalAttributes()[SpaceAllocation]))
+		collection.GetV(opts, "spaceAllocation", storagePool.InternalAttributes()[SpaceAllocation]))
 	var (
-		spaceReserve      = utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
-		snapshotPolicy    = utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
-		snapshotReserve   = utils.GetV(opts, "snapshotReserve", storagePool.InternalAttributes()[SnapshotReserve])
-		unixPermissions   = utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
-		exportPolicy      = utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
-		securityStyle     = utils.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
-		encryption        = utils.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
-		tieringPolicy     = utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
-		formatOptions     = utils.GetV(opts, "formatOptions", storagePool.InternalAttributes()[FormatOptions])
+		spaceReserve      = collection.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
+		snapshotPolicy    = collection.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
+		snapshotReserve   = collection.GetV(opts, "snapshotReserve", storagePool.InternalAttributes()[SnapshotReserve])
+		unixPermissions   = collection.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
+		exportPolicy      = collection.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
+		securityStyle     = collection.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
+		encryption        = collection.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
+		tieringPolicy     = collection.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+		formatOptions     = collection.GetV(opts, "formatOptions", storagePool.InternalAttributes()[FormatOptions])
 		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
 		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
 		luksEncryption    = storagePool.InternalAttributes()[LUKSEncryption]
@@ -364,7 +366,7 @@ func (d *SANStorageDriver) Create(
 	}
 
 	// Determine volume size in bytes
-	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	requestedSize, err := capacity.ToBytes(volConfig.Size)
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
@@ -400,7 +402,7 @@ func (d *SANStorageDriver) Create(
 	}
 
 	fstype, err = drivers.CheckSupportedFilesystem(
-		ctx, utils.GetV(opts, "fstype|fileSystemType", storagePool.InternalAttributes()[FileSystemType]), name)
+		ctx, collection.GetV(opts, "fstype|fileSystemType", storagePool.InternalAttributes()[FileSystemType]), name)
 	if err != nil {
 		return err
 	}
@@ -441,7 +443,7 @@ func (d *SANStorageDriver) Create(
 		"exportPolicy":      exportPolicy,
 		"securityStyle":     securityStyle,
 		"LUKSEncryption":    luksEncryption,
-		"encryption":        utils.GetPrintableBoolPtrValue(enableEncryption),
+		"encryption":        convert.ToPrintableBoolPtr(enableEncryption),
 		"qosPolicy":         qosPolicy,
 		"adaptiveQosPolicy": adaptiveQosPolicy,
 		"formatOptions":     formatOptions,
@@ -523,8 +525,8 @@ func (d *SANStorageDriver) Create(
 					Qos:            qosPolicyGroup,
 					Size:           lunSize,
 					OsType:         osType,
-					SpaceReserved:  utils.Ptr(false),
-					SpaceAllocated: utils.Ptr(spaceAllocation),
+					SpaceReserved:  convert.ToPtr(false),
+					SpaceAllocated: convert.ToPtr(spaceAllocation),
 				})
 			if err != nil {
 				errMessage := fmt.Sprintf(
@@ -653,13 +655,13 @@ func (d *SANStorageDriver) CreateClone(
 		storagePoolSplitOnCloneVal = d.Config.SplitOnClone
 	}
 
-	split, err := strconv.ParseBool(utils.GetV(opts, "splitOnClone", storagePoolSplitOnCloneVal))
+	split, err := strconv.ParseBool(collection.GetV(opts, "splitOnClone", storagePoolSplitOnCloneVal))
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for splitOnClone: %v", err)
 	}
 
-	qosPolicy := utils.GetV(opts, "qosPolicy", "")
-	adaptiveQosPolicy := utils.GetV(opts, "adaptiveQosPolicy", "")
+	qosPolicy := collection.GetV(opts, "qosPolicy", "")
+	adaptiveQosPolicy := collection.GetV(opts, "adaptiveQosPolicy", "")
 	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
 	if err != nil {
 		return err
@@ -731,7 +733,7 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 	// Use the LUN size
 	volConfig.Size = lunInfo.Size
 
-	if utils.ParseBool(volConfig.LUKSEncryption) {
+	if convert.ToBool(volConfig.LUKSEncryption) {
 		newSize, err := subtractUintFromSizeString(volConfig.Size, luks.LUKSMetadataSize)
 		if err != nil {
 			return err
@@ -1437,10 +1439,10 @@ func (d *SANStorageDriver) Resize(
 
 	newFlexvolSize = uint64(LUNMetadataBufferMultiplier * float64(newFlexvolSize))
 
-	sameLUNSize := utils.VolumeSizeWithinTolerance(int64(requestedSizeBytes), int64(currentLunSize),
+	sameLUNSize := capacity.VolumeSizeWithinTolerance(int64(requestedSizeBytes), int64(currentLunSize),
 		tridentconfig.SANResizeDelta)
 
-	sameFlexvolSize := utils.VolumeSizeWithinTolerance(int64(newFlexvolSize), int64(currentFlexvolSize),
+	sameFlexvolSize := capacity.VolumeSizeWithinTolerance(int64(newFlexvolSize), int64(currentFlexvolSize),
 		tridentconfig.SANResizeDelta)
 
 	if sameLUNSize && sameFlexvolSize {
@@ -1544,7 +1546,7 @@ func (d *SANStorageDriver) GetBackendState(ctx context.Context) (string, *roarin
 
 // String makes SANStorageDriver satisfy the Stringer interface.
 func (d SANStorageDriver) String() string {
-	return utils.ToStringRedacted(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
+	return convert.ToStringRedacted(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
 }
 
 // GoString makes SANStorageDriver satisfy the GoStringer interface.

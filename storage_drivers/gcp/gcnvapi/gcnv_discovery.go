@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 // Package gcnvapi provides a high-level interface to the Google Cloud NetApp Volumes SDK
 package gcnvapi
@@ -16,9 +16,9 @@ import (
 	"google.golang.org/api/iterator"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
 	sc "github.com/netapp/trident/storage_class"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -158,8 +158,8 @@ func (c Client) checkForNonexistentCapacityPools(ctx context.Context) (anyMismat
 		}
 
 		// Find any capacity pools value in this storage pool that doesn't match known capacity pools
-		for _, configCP := range utils.SplitString(ctx, sPool.InternalAttributes()[capacityPools], ",") {
-			if !utils.StringInSlice(configCP, cpNames) {
+		for _, configCP := range collection.SplitString(ctx, sPool.InternalAttributes()[capacityPools], ",") {
+			if !collection.StringInSlice(configCP, cpNames) {
 				anyMismatches = true
 
 				Logc(ctx).WithFields(LogFields{
@@ -187,7 +187,7 @@ func (c Client) checkForNonexistentNetworks(ctx context.Context) (anyMismatches 
 
 		// Find any network value in this storage pool that doesn't match the pool's network
 		configNetwork := sPool.InternalAttributes()[network]
-		if configNetwork != "" && !utils.StringInSlice(configNetwork, networkNames) {
+		if configNetwork != "" && !collection.StringInSlice(configNetwork, networkNames) {
 			anyMismatches = true
 
 			Logc(ctx).WithFields(LogFields{
@@ -348,10 +348,10 @@ func (c Client) CapacityPoolsForStoragePool(
 	}
 
 	// If capacity pools were specified, filter out non-matching capacity pools
-	cpList := utils.SplitString(ctx, sPool.InternalAttributes()[capacityPools], ",")
+	cpList := collection.SplitString(ctx, sPool.InternalAttributes()[capacityPools], ",")
 	if len(cpList) > 0 {
 		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
-			if !utils.SliceContainsString(cpList, cPool.Name) && !utils.SliceContainsString(cpList, cPoolFullName) {
+			if !collection.ContainsString(cpList, cPool.Name) && !collection.ContainsString(cpList, cPoolFullName) {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring capacity pool %s, not in capacity pools [%s].",
 					cPoolFullName, cpList)
 				filteredCapacityPoolMap[cPoolFullName] = false

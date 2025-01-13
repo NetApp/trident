@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -16,10 +16,12 @@ import (
 	"github.com/cenkalti/backoff/v4"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
@@ -219,7 +221,7 @@ func FlexVolInfoFromRestAttrsHelper(volume *models.Volume) (*Volume, error) {
 		}
 	}
 
-	snapshotDirAccessEnabled := utils.Ptr(false)
+	snapshotDirAccessEnabled := convert.ToPtr(false)
 	if volume.SnapshotDirectoryAccessEnabled != nil {
 		snapshotDirAccessEnabled = volume.SnapshotDirectoryAccessEnabled
 	}
@@ -576,7 +578,7 @@ func (d OntapAPIREST) FlexgroupCreate(ctx context.Context, volume Volume) error 
 	defer Logd(ctx, d.driverName,
 		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< FlexgroupCreate")
 
-	volumeSize, err := utils.ParsePositiveInt(volume.Size)
+	volumeSize, err := convert.ToPositiveInt(volume.Size)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volume.Size, err)
 	}
@@ -1485,7 +1487,7 @@ func (d OntapAPIREST) VolumeWaitForStates(ctx context.Context, volumeName string
 		Logc(ctx).Debugf("Volume %v is in state:%v", volumeName, *vol.State)
 		volumeState = *vol.State
 
-		if utils.SliceContainsString(desiredStates, volumeState) {
+		if collection.ContainsString(desiredStates, volumeState) {
 			Logc(ctx).Debugf("Found volume in the desired state %v", desiredStates)
 			return nil
 		}
@@ -2081,8 +2083,8 @@ func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
 	defer Logd(ctx, d.driverName,
 		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunCreate")
 
-	sizeBytesStr, _ := utils.ConvertSizeToBytes(lun.Size)
-	sizeBytes, err := utils.ParsePositiveInt64(sizeBytesStr)
+	sizeBytesStr, _ := capacity.ToBytes(lun.Size)
+	sizeBytes, err := convert.ToPositiveInt64(sizeBytesStr)
 	if err != nil {
 		Logc(ctx).WithField("lunSize", lun.Size).WithError(err).Error("Invalid volume size.")
 		return err
@@ -2253,7 +2255,7 @@ func (d OntapAPIREST) LunCloneCreate(
 		return err
 	}
 
-	sizeBytesStr, _ := utils.ConvertSizeToBytes(lun.Size)
+	sizeBytesStr, _ := capacity.ToBytes(lun.Size)
 	sizeBytes, _ := strconv.ParseInt(sizeBytesStr, 10, 64)
 
 	return d.api.LunCloneCreate(ctx, fullCloneLunPath, fullSourceLunPath, sizeBytes, lun.OsType, qosPolicyGroup)
@@ -2934,8 +2936,8 @@ func (d OntapAPIREST) GetSLMDataLifs(ctx context.Context, ips, reportingNodeName
 				}
 
 				if nodeName != nil && *nodeName != "" && ipAddress != "" {
-					if utils.SliceContainsString(ips, ipAddress) &&
-						utils.SliceContainsString(reportingNodeNames, *nodeName) {
+					if collection.ContainsString(ips, ipAddress) &&
+						collection.ContainsString(reportingNodeNames, *nodeName) {
 						reportedDataLIFs = append(reportedDataLIFs, ipAddress)
 					}
 				}

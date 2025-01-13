@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -7,8 +7,8 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/netapp/trident/pkg/collection"
 	storageclass "github.com/netapp/trident/storage_class"
-	"github.com/netapp/trident/utils"
 )
 
 // NewTridentStorageClass creates a new storage class CRD object from a internal
@@ -76,7 +76,7 @@ func (in *TridentStorageClass) GetFinalizers() []string {
 
 func (in *TridentStorageClass) HasTridentFinalizers() bool {
 	for _, finalizerName := range GetTridentFinalizers() {
-		if utils.SliceContainsString(in.ObjectMeta.Finalizers, finalizerName) {
+		if collection.ContainsString(in.ObjectMeta.Finalizers, finalizerName) {
 			return true
 		}
 	}
@@ -85,6 +85,6 @@ func (in *TridentStorageClass) HasTridentFinalizers() bool {
 
 func (in *TridentStorageClass) RemoveTridentFinalizers() {
 	for _, finalizerName := range GetTridentFinalizers() {
-		in.ObjectMeta.Finalizers = utils.RemoveStringFromSlice(in.ObjectMeta.Finalizers, finalizerName)
+		in.ObjectMeta.Finalizers = collection.RemoveString(in.ObjectMeta.Finalizers, finalizerName)
 	}
 }

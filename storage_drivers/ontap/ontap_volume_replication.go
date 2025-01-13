@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -9,10 +9,10 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
 	storagedrivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -348,7 +348,7 @@ func checkSVMPeered(
 		return nil
 	}
 	peeredVservers, _ := d.GetSVMPeers(ctx)
-	if !utils.SliceContainsString(peeredVservers, remoteSVM) {
+	if !collection.ContainsString(peeredVservers, remoteSVM) {
 		err = fmt.Errorf("backend SVM %v is not peered with required SVM %v", svm, remoteSVM)
 		return storagedrivers.NewBackendIneligibleError(volConfig.InternalName, []error{err}, []string{})
 	}

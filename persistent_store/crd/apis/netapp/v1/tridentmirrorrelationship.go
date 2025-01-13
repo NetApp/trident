@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -8,7 +8,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/pkg/collection"
 )
 
 const (
@@ -51,7 +51,7 @@ func (in *TridentMirrorRelationship) GetFinalizers() []string {
 
 func (in *TridentMirrorRelationship) HasTridentFinalizers() bool {
 	for _, finalizerName := range GetTridentFinalizers() {
-		if utils.SliceContainsString(in.ObjectMeta.Finalizers, finalizerName) {
+		if collection.ContainsString(in.ObjectMeta.Finalizers, finalizerName) {
 			return true
 		}
 	}
@@ -60,7 +60,7 @@ func (in *TridentMirrorRelationship) HasTridentFinalizers() bool {
 
 func (in *TridentMirrorRelationship) AddTridentFinalizers() {
 	for _, finalizerName := range GetTridentFinalizers() {
-		if !utils.SliceContainsString(in.ObjectMeta.Finalizers, finalizerName) {
+		if !collection.ContainsString(in.ObjectMeta.Finalizers, finalizerName) {
 			in.ObjectMeta.Finalizers = append(in.ObjectMeta.Finalizers, finalizerName)
 		}
 	}
@@ -68,7 +68,7 @@ func (in *TridentMirrorRelationship) AddTridentFinalizers() {
 
 func (in *TridentMirrorRelationship) RemoveTridentFinalizers() {
 	for _, finalizerName := range GetTridentFinalizers() {
-		in.ObjectMeta.Finalizers = utils.RemoveStringFromSlice(in.ObjectMeta.Finalizers, finalizerName)
+		in.ObjectMeta.Finalizers = collection.RemoveString(in.ObjectMeta.Finalizers, finalizerName)
 	}
 }
 
@@ -90,7 +90,7 @@ func (in *TridentMirrorRelationship) IsValid() (isValid bool, reason string) {
 	}
 	// Check values of state in spec
 	validMirrorStates := GetValidMirrorSpecStates()
-	if in.Spec.MirrorState != "" && !utils.SliceContainsString(validMirrorStates, in.Spec.MirrorState) {
+	if in.Spec.MirrorState != "" && !collection.ContainsString(validMirrorStates, in.Spec.MirrorState) {
 		return false, fmt.Sprintf(".spec.state must be one of %v",
 			strings.Join(validMirrorStates, ", "))
 	}

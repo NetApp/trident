@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package crd
 
@@ -17,7 +17,7 @@ import (
 	mockacp "github.com/netapp/trident/mocks/mock_acp"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -295,7 +295,7 @@ func TestHandleActionMirrorUpdate_InProgress(t *testing.T) {
 	orchestrator.EXPECT().CheckMirrorTransferState(gomock.Any(), pv1).Return(nil,
 		errors.InProgressError("transferring")).Times(2)
 
-	transferTime, _ := time.Parse(utils.TimestampFormat, previousTransferTime)
+	transferTime, _ := time.Parse(convert.TimestampFormat, previousTransferTime)
 	orchestrator.EXPECT().GetMirrorTransferTime(gomock.Any(), pv1).Return(&transferTime, nil).Times(1)
 
 	// Succeed on the third call to the driver
@@ -395,7 +395,7 @@ func TestUpdateActionMirrorUpdateCRInProgress(t *testing.T) {
 	mockACP := mockacp.NewMockTridentACP(mockCtrl)
 	acp.SetAPI(mockACP)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
-	transferTime, _ := time.Parse(utils.TimestampFormat, previousTransferTime)
+	transferTime, _ := time.Parse(convert.TimestampFormat, previousTransferTime)
 
 	tridentNamespace := "trident"
 	kubeClient := GetTestKubernetesClientset()

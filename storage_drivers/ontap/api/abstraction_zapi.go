@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -16,10 +16,12 @@ import (
 	"github.com/cenkalti/backoff/v4"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -358,8 +360,8 @@ func (d OntapAPIZAPI) LunCreate(ctx context.Context, lun Lun) error {
 	defer Logd(ctx, d.driverName,
 		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunCreate")
 
-	sizeBytesStr, _ := utils.ConvertSizeToBytes(lun.Size)
-	sizeBytes, err := utils.ParsePositiveInt(sizeBytesStr)
+	sizeBytesStr, _ := capacity.ToBytes(lun.Size)
+	sizeBytes, err := convert.ToPositiveInt(sizeBytesStr)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", sizeBytes, err)
 	}
@@ -585,7 +587,7 @@ func lunInfoFromZapiAttrsHelper(lunResponse azgo.LunInfoType) (*Lun, error) {
 	}
 
 	if lunResponse.CreationTimestampPtr != nil {
-		responseCreateTime = time.Unix(int64(lunResponse.CreationTimestamp()), 0).UTC().Format(utils.TimestampFormat)
+		responseCreateTime = time.Unix(int64(lunResponse.CreationTimestamp()), 0).UTC().Format(convert.TimestampFormat)
 	}
 
 	lunInfo := &Lun{
@@ -598,8 +600,8 @@ func lunInfoFromZapiAttrsHelper(lunResponse azgo.LunInfoType) (*Lun, error) {
 		SerialNumber:   responseSerial,
 		State:          responseState,
 		VolumeName:     responseVolumeName,
-		SpaceReserved:  utils.Ptr(responseSpaceReserved),
-		SpaceAllocated: utils.Ptr(responseSpaceAllocated),
+		SpaceReserved:  convert.ToPtr(responseSpaceReserved),
+		SpaceAllocated: convert.ToPtr(responseSpaceAllocated),
 		CreateTime:     responseCreateTime,
 	}
 	return lunInfo, nil
@@ -644,11 +646,11 @@ func (d OntapAPIZAPI) LunSize(ctx context.Context, flexvolName string) (int, err
 }
 
 func (d OntapAPIZAPI) LunSetSize(ctx context.Context, lunPath, newSize string) (uint64, error) {
-	sizeBytesStr, err := utils.ConvertSizeToBytes(newSize)
+	sizeBytesStr, err := capacity.ToBytes(newSize)
 	if err != nil {
 		return 0, err
 	}
-	sizeBytes, err := utils.ParsePositiveInt(sizeBytesStr)
+	sizeBytes, err := convert.ToPositiveInt(sizeBytesStr)
 	if err != nil {
 		return 0, err
 	}
@@ -934,8 +936,8 @@ func (d OntapAPIZAPI) GetSLMDataLifs(ctx context.Context, ips, reportingNodeName
 				ipAddress := netInterface.Address()
 
 				if nodeName != "" && ipAddress != "" {
-					if utils.SliceContainsString(ips, ipAddress) &&
-						utils.SliceContainsString(reportingNodeNames, nodeName) {
+					if collection.ContainsString(ips, ipAddress) &&
+						collection.ContainsString(reportingNodeNames, nodeName) {
 						reportedDataLIFs = append(reportedDataLIFs, ipAddress)
 					}
 				}
@@ -1145,7 +1147,7 @@ func (d OntapAPIZAPI) FlexgroupCreate(ctx context.Context, volume Volume) error 
 	defer Logd(ctx, d.driverName,
 		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< FlexgroupCreate")
 
-	sizeBytes, err := utils.ParsePositiveInt(volume.Size)
+	sizeBytes, err := convert.ToPositiveInt(volume.Size)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volume.Size, err)
 	}
@@ -2045,7 +2047,7 @@ func (d OntapAPIZAPI) VolumeSnapshotInfo(ctx context.Context, snapshotName, sour
 
 	snap := snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr[0]
 	result := Snapshot{
-		CreateTime: time.Unix(int64(snap.AccessTime()), 0).UTC().Format(utils.TimestampFormat),
+		CreateTime: time.Unix(int64(snap.AccessTime()), 0).UTC().Format(convert.TimestampFormat),
 		Name:       snap.Name(),
 	}
 
@@ -2063,7 +2065,7 @@ func (d OntapAPIZAPI) VolumeSnapshotList(ctx context.Context, sourceVolume strin
 	if snapListResponse.Result.AttributesListPtr != nil {
 		for _, snap := range snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr {
 			snapshots = append(snapshots, Snapshot{
-				CreateTime: time.Unix(int64(snap.AccessTime()), 0).UTC().Format(utils.TimestampFormat),
+				CreateTime: time.Unix(int64(snap.AccessTime()), 0).UTC().Format(convert.TimestampFormat),
 				Name:       snap.Name(),
 			})
 		}
@@ -2610,7 +2612,7 @@ func (d OntapAPIZAPI) VolumeWaitForStates(
 		volumeState := *vol.VolumeStateAttributesPtr.StatePtr
 		Logc(ctx).Debugf("Volume %v is in state:%v", volumeName, volumeState)
 
-		if utils.SliceContainsString(desiredStates, volumeState) {
+		if collection.ContainsString(desiredStates, volumeState) {
 			Logc(ctx).Debugf("Found volume in the desired state %v", desiredStates)
 			return nil
 		}

@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package controllerAPI
 
@@ -16,7 +16,6 @@ import (
 
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -94,7 +93,7 @@ func (c *ControllerRestClient) InvokeAPI(
 		}
 	}
 
-	utils.LogHTTPRequest(request, prettyRequestBuffer.Bytes(), "", redactRequestBody, false)
+	RedactedHTTPRequest(request, prettyRequestBuffer.Bytes(), "", redactRequestBody, false)
 
 	response, err := c.httpClient.Do(request)
 	if err != nil {
@@ -113,7 +112,7 @@ func (c *ControllerRestClient) InvokeAPI(
 			return nil, nil, fmt.Errorf("error formating response body; %v", err)
 		}
 	}
-	utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes(), "", redactResponseBody, false)
+	RedactedHTTPResponse(ctx, response, prettyResponseBuffer.Bytes(), "", redactResponseBody, false)
 
 	return response, responseBody, err
 }

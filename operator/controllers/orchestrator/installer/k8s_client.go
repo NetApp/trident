@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package installer
 
@@ -19,7 +19,7 @@ import (
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -446,7 +446,7 @@ func (k *K8sClient) GetMultipleRoleInformation(roleNames []string, appLabel stri
 		//    exist that matches the label then remove all other roles.
 		for _, role := range roles {
 			// Found a role matching one of the allowed names
-			if utils.SliceContainsString(roleNames, role.Name) {
+			if collection.ContainsString(roleNames, role.Name) {
 				Log().WithField("role", role.Name).Infof("A Trident role found by label.")
 
 				// Allocate new memory for currentRole to avoid unintentional reassignments due to reuse of the
@@ -884,7 +884,7 @@ func (k *K8sClient) GetMultipleRoleBindingInformation(
 		// 2. If there is a role binding with any of the allowed names and one or many other  role bindings
 		//    exist that matches the label then remove all other  role bindings.
 		for _, roleBinding := range roleBindings {
-			if utils.SliceContainsString(roleBindingNames, roleBinding.Name) {
+			if collection.ContainsString(roleBindingNames, roleBinding.Name) {
 				// Found a  role binding matching one of the allowed names
 				Log().WithField("roleBinding", roleBinding.Name).Infof(
 					"A Trident role binding was found by label.")
@@ -1914,7 +1914,7 @@ func (k *K8sClient) GetMultipleServiceAccountInformation(
 		// 2. If there are service accounts matching the allowed name and one or many other service
 		//    account exist that matches the label then remove all other service accounts.
 		for _, serviceAccount := range serviceAccounts {
-			if utils.SliceContainsString(serviceAccountNames, serviceAccount.Name) {
+			if collection.ContainsString(serviceAccountNames, serviceAccount.Name) {
 				// Found a service account matching one of the valid names in the same namespace
 				Log().WithFields(LogFields{
 					"serviceAccount": serviceAccount.Name,

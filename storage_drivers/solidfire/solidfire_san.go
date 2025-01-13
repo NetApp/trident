@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package solidfire
 
@@ -19,6 +19,9 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -420,7 +423,7 @@ func (d *SANStorageDriver) populateConfigurationDefaults(
 	if config.Size == "" {
 		config.Size = drivers.DefaultVolumeSize
 	} else {
-		_, err := utils.ConvertSizeToBytes(config.Size)
+		_, err := capacity.ToBytes(config.Size)
 		if err != nil {
 			return fmt.Errorf("invalid config value for default volume size: %v", err)
 		}
@@ -737,7 +740,7 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 	// Validate pool-level attributes
 	for _, pool := range d.virtualPools {
 		// Validate default size
-		if _, err := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size]); err != nil {
+		if _, err := capacity.ToBytes(pool.InternalAttributes()[Size]); err != nil {
 			return fmt.Errorf("invalid value for default volume size in pool %s: %v", pool.Name(), err)
 		}
 
@@ -826,17 +829,17 @@ func (d *SANStorageDriver) Create(
 	}
 
 	// Determine volume size in bytes
-	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	requestedSize, err := capacity.ToBytes(volConfig.Size)
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
-	sizeBytes, err := utils.ParsePositiveInt64(requestedSize)
+	sizeBytes, err := convert.ToPositiveInt64(requestedSize)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
 	if sizeBytes == 0 {
-		defaultSize, _ := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size])
-		sizeBytes, _ = utils.ParsePositiveInt64(defaultSize)
+		defaultSize, _ := capacity.ToBytes(pool.InternalAttributes()[Size])
+		sizeBytes, _ = convert.ToPositiveInt64(defaultSize)
 	}
 	if checkMinVolumeSizeError := drivers.CheckMinVolumeSize(uint64(sizeBytes),
 		MinimumVolumeSizeBytes); checkMinVolumeSizeError != nil {
@@ -851,7 +854,7 @@ func (d *SANStorageDriver) Create(
 	// Get options
 	opts := d.GetVolumeOpts(volConfig, pool, volAttributes)
 
-	qosOpt := utils.GetV(opts, "qos", "")
+	qosOpt := collection.GetV(opts, "qos", "")
 	if qosOpt != "" {
 		qos, err = parseQOS(qosOpt)
 		if err != nil {
@@ -859,7 +862,7 @@ func (d *SANStorageDriver) Create(
 		}
 	}
 
-	typeOpt := utils.GetV(opts, "type", "")
+	typeOpt := collection.GetV(opts, "type", "")
 	if typeOpt != "" {
 		if qos.MinIOPS != 0 {
 			Logc(ctx).Warning("QoS values appear to have been set using -o qos, but " +
@@ -891,7 +894,7 @@ func (d *SANStorageDriver) Create(
 	}
 
 	// Now check if they specified a block size and use it if they did
-	blockSizeOpt := utils.GetV(opts, "blocksize", "")
+	blockSizeOpt := collection.GetV(opts, "blocksize", "")
 	if blockSizeOpt != "" {
 		if blockSizeOpt == "4096" {
 			req.Enable512e = false
@@ -905,7 +908,7 @@ func (d *SANStorageDriver) Create(
 	}).Debug("Parsed blocksize option.")
 
 	fstype, err = drivers.CheckSupportedFilesystem(
-		ctx, utils.GetV(opts, "fstype|fileSystemType", drivers.DefaultFileSystemType), name)
+		ctx, collection.GetV(opts, "fstype|fileSystemType", drivers.DefaultFileSystemType), name)
 	if err != nil {
 		return err
 	}
@@ -957,7 +960,7 @@ func (d *SANStorageDriver) CreateClone(
 
 	opts := d.GetVolumeOpts(cloneVolConfig, nil, make(map[string]sa.Request))
 
-	qosOpt := utils.GetV(opts, "qos", "")
+	qosOpt := collection.GetV(opts, "qos", "")
 	if qosOpt != "" {
 		doModify = true
 		qos, err = parseQOS(qosOpt)
@@ -966,7 +969,7 @@ func (d *SANStorageDriver) CreateClone(
 		}
 	}
 
-	typeOpt := utils.GetV(opts, "type", "")
+	typeOpt := collection.GetV(opts, "type", "")
 	if typeOpt != "" {
 		doModify = true
 		if qos.MinIOPS != 0 {
@@ -1787,12 +1790,12 @@ func (d *SANStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	if strings.Contains(cloneConfig.EndPoint, "@") {
 		endpointHalves := strings.Split(cloneConfig.EndPoint, "@")
 		if len(endpointHalves) > 0 {
-			cloneConfig.EndPoint = fmt.Sprintf("https://%s@%s", utils.REDACTED, endpointHalves[1])
+			cloneConfig.EndPoint = fmt.Sprintf("https://%s@%s", tridentconfig.REDACTED, endpointHalves[1])
 		}
 	}
 
 	// redact the credentials
-	cloneConfig.Credentials = map[string]string{drivers.KeyName: utils.REDACTED, drivers.KeyType: utils.REDACTED}
+	cloneConfig.Credentials = map[string]string{drivers.KeyName: tridentconfig.REDACTED, drivers.KeyType: tridentconfig.REDACTED}
 
 	return cloneConfig
 }
@@ -1858,7 +1861,7 @@ func (d *SANStorageDriver) GetVolumeForImport(ctx context.Context, volumeID stri
 
 // String implements stringer interface for the SANStorageDriver driver
 func (d SANStorageDriver) String() string {
-	return utils.ToStringRedacted(&d, []string{"Client", "AccountID"}, d.GetExternalConfig(context.Background()))
+	return convert.ToStringRedacted(&d, []string{"Client", "AccountID"}, d.GetExternalConfig(context.Background()))
 }
 
 // GoString implements GoStringer interface for the SANStorageDriver driver
@@ -1983,7 +1986,7 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	}
 
 	volConfig.Size = strconv.FormatUint(uint64(volume.TotalSize), 10)
-	sameSize := utils.VolumeSizeWithinTolerance(int64(sizeBytes), volume.TotalSize, tridentconfig.SANResizeDelta)
+	sameSize := capacity.VolumeSizeWithinTolerance(int64(sizeBytes), volume.TotalSize, tridentconfig.SANResizeDelta)
 
 	if sameSize {
 		Logc(ctx).WithFields(LogFields{

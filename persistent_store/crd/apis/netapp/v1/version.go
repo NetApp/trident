@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -6,7 +6,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/pkg/collection"
 )
 
 const PersistentStateVersionName = "trident"
@@ -76,7 +76,7 @@ func (in *TridentVersion) GetFinalizers() []string {
 
 func (in *TridentVersion) HasTridentFinalizers() bool {
 	for _, finalizerName := range GetTridentFinalizers() {
-		if utils.SliceContainsString(in.ObjectMeta.Finalizers, finalizerName) {
+		if collection.ContainsString(in.ObjectMeta.Finalizers, finalizerName) {
 			return true
 		}
 	}
@@ -85,6 +85,6 @@ func (in *TridentVersion) HasTridentFinalizers() bool {
 
 func (in *TridentVersion) RemoveTridentFinalizers() {
 	for _, finalizerName := range GetTridentFinalizers() {
-		in.ObjectMeta.Finalizers = utils.RemoveStringFromSlice(in.ObjectMeta.Finalizers, finalizerName)
+		in.ObjectMeta.Finalizers = collection.RemoveString(in.ObjectMeta.Finalizers, finalizerName)
 	}
 }

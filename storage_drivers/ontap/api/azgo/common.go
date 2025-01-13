@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package azgo
 
@@ -22,7 +22,7 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -112,9 +112,9 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 		secrets := make(map[string]string)
 		for _, f := range secretFields {
 			fmtString := "<%s>%s</%s>"
-			secrets[fmt.Sprintf(fmtString, f, ".*", f)] = fmt.Sprintf(fmtString, f, utils.REDACTED, f)
+			secrets[fmt.Sprintf(fmtString, f, ".*", f)] = fmt.Sprintf(fmtString, f, tridentconfig.REDACTED, f)
 		}
-		redactedRequest = utils.RedactSecretsFromString(s, secrets, true)
+		redactedRequest = convert.RedactSecretsFromString(s, secrets, true)
 		log.Debugf("sending to '%s' xml: \n%s", o.ManagementLIF, redactedRequest)
 	}
 

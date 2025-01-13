@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package storagedrivers
 
@@ -9,9 +9,10 @@ import (
 
 	trident "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage/fake"
 	sfapi "github.com/netapp/trident/storage_drivers/solidfire/api"
-	"github.com/netapp/trident/utils"
 )
 
 // DriverConfig provides a common interface for storage config related operations
@@ -87,7 +88,7 @@ type CommonStorageDriverConfigDefaults struct {
 
 // Implement stringer interface for the CommonStorageDriverConfig driver
 func (d CommonStorageDriverConfig) String() string {
-	return utils.ToStringRedacted(&d, []string{"Credentials"}, nil)
+	return convert.ToStringRedacted(&d, []string{"Credentials"}, nil)
 }
 
 // GetCredentials function returns secret name and type  (if set), otherwise empty strings
@@ -215,7 +216,7 @@ type OntapStorageDriverConfigDefaults struct {
 
 // String makes OntapStorageDriverConfig satisfy the Stringer interface.
 func (d OntapStorageDriverConfig) String() string {
-	return utils.ToStringRedacted(&d, GetOntapConfigRedactList(), nil)
+	return convert.ToStringRedacted(&d, GetOntapConfigRedactList(), nil)
 }
 
 // GoString makes OntapStorageDriverConfig satisfy the GoStringer interface.
@@ -391,7 +392,7 @@ type SolidfireStorageDriverConfigDefaults struct {
 
 // Implement stringer interface for the Solidfire driver
 func (d SolidfireStorageDriverConfig) String() string {
-	return utils.ToStringRedacted(&d, []string{"TenantName", "EndPoint"}, nil)
+	return convert.ToStringRedacted(&d, []string{"TenantName", "EndPoint"}, nil)
 }
 
 // Implement GoStringer interface for the SolidfireStorageDriverConfig driver
@@ -522,7 +523,7 @@ type AzureNASStorageDriverConfigDefaults struct {
 
 // Implement stringer interface for the AzureNASStorageDriverConfig driver
 func (d AzureNASStorageDriverConfig) String() string {
-	return utils.ToStringRedacted(&d, []string{"SubscriptionID", "TenantID", "ClientID", "ClientSecret"}, nil)
+	return convert.ToStringRedacted(&d, []string{"SubscriptionID", "TenantID", "ClientID", "ClientSecret"}, nil)
 }
 
 // Implement GoStringer interface for the AzureNASStorageDriverConfig driver
@@ -658,7 +659,7 @@ type GCPPrivateKey struct {
 
 // Implement stringer interface for the GCPNFSStorageDriverConfig driver
 func (d GCPNFSStorageDriverConfig) String() string {
-	return utils.ToStringRedacted(&d, []string{"ProjectNumber", "HostProjectNumber", "APIKey"}, nil)
+	return convert.ToStringRedacted(&d, []string{"ProjectNumber", "HostProjectNumber", "APIKey"}, nil)
 }
 
 // Implement GoStringer interface for the GCPNFSStorageDriverConfig driver
@@ -784,7 +785,7 @@ type GCNVNASStorageDriverConfigDefaults struct {
 
 // Implement stringer interface for the GCNVNASStorageDriverConfig driver
 func (d GCNVNASStorageDriverConfig) String() string {
-	return utils.ToStringRedacted(&d, []string{"ProjectNumber", "HostProjectNumber", "APIKey"}, nil)
+	return convert.ToStringRedacted(&d, []string{"ProjectNumber", "HostProjectNumber", "APIKey"}, nil)
 }
 
 // Implement GoStringer interface for the GCNVNASStorageDriverConfig driver
@@ -880,7 +881,7 @@ type FakeStorageDriverConfig struct {
 
 // Implement Stringer interface for the FakeStorageDriverConfig driver
 func (d FakeStorageDriverConfig) String() string {
-	return utils.ToStringRedacted(&d, []string{"Username", "Password"}, nil)
+	return convert.ToStringRedacted(&d, []string{"Username", "Password"}, nil)
 }
 
 // Implement GoStringer interface for the FakeStorageDriverConfig driver
@@ -1043,7 +1044,7 @@ func getCredentialNameAndType(credentials map[string]string) (string, string, er
 
 	var invalidKeys []string
 	for _, key := range credentialKeys {
-		if !utils.SliceContainsString(allowedCredentialKeys, key) {
+		if !collection.ContainsString(allowedCredentialKeys, key) {
 			invalidKeys = append(invalidKeys, key)
 		}
 	}
@@ -1068,7 +1069,7 @@ func getCredentialNameAndType(credentials map[string]string) (string, string, er
 		string(CredentialStoreAWSARN),
 	}
 
-	if !utils.SliceContainsString(allowedCredentialTypes, secretStore) {
+	if !collection.ContainsString(allowedCredentialTypes, secretStore) {
 		return "", "", fmt.Errorf("credentials field does not support type '%s'", secretStore)
 	}
 

@@ -1,3 +1,5 @@
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
+
 package filesystem
 
 import (

@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -24,10 +24,10 @@ import (
 	"github.com/netapp/trident/cli/api"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
+	"github.com/netapp/trident/internal/crypto"
 	"github.com/netapp/trident/internal/nodeprep/protocol"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
-	"github.com/netapp/trident/utils/crypto"
+	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
@@ -343,7 +343,7 @@ func discoverInstallationEnvironment() error {
 
 		// Override registry only if using the default Trident image name and an alternate registry was supplied
 		if imageRegistry != "" {
-			tridentImage = utils.ReplaceImageRegistry(tridentImage, imageRegistry)
+			tridentImage = network.ReplaceImageRegistry(tridentImage, imageRegistry)
 		}
 	}
 	Log().Debugf("Trident image: %s", tridentImage)
@@ -352,7 +352,7 @@ func discoverInstallationEnvironment() error {
 		autosupportImage = tridentconfig.DefaultAutosupportImage
 
 		if imageRegistry != "" {
-			autosupportImage = utils.ReplaceImageRegistry(autosupportImage, imageRegistry)
+			autosupportImage = network.ReplaceImageRegistry(autosupportImage, imageRegistry)
 		}
 	}
 	Log().Debugf("Autosupport image: %s", autosupportImage)
@@ -427,7 +427,7 @@ func validateInstallationArguments() error {
 	labelFormat := "a DNS-1123 label must consist of lower case alphanumeric characters or '-', " +
 		"and must start and end with an alphanumeric character"
 
-	if !utils.DNS1123LabelRegex.MatchString(TridentPodNamespace) {
+	if !network.DNS1123LabelRegex.MatchString(TridentPodNamespace) {
 		return fmt.Errorf("'%s' is not a valid namespace name; %s", TridentPodNamespace, labelFormat)
 	}
 

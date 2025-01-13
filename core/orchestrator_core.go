@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -23,6 +23,9 @@ import (
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	. "github.com/netapp/trident/logging"
 	persistentstore "github.com/netapp/trident/persistent_store"
+	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/factory"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -220,7 +223,7 @@ func (o *TridentOrchestrator) Bootstrap(monitorTransactions bool) error {
 
 	o.bootstrapped = true
 	o.bootstrapError = nil
-	Logc(ctx).Infof("%s bootstrapped successfully.", utils.Title(config.OrchestratorName))
+	Logc(ctx).Infof("%s bootstrapped successfully.", convert.ToTitle(config.OrchestratorName))
 	return nil
 }
 
@@ -353,7 +356,7 @@ func (o *TridentOrchestrator) bootstrapVolumes(ctx context.Context) error {
 		volNames = append(volNames, v.Config.Name)
 	}
 	for k := range o.volumes {
-		if !utils.SliceContainsString(volNames, k) {
+		if !collection.ContainsString(volNames, k) {
 			delete(o.volumes, k)
 		}
 	}
@@ -3410,7 +3413,7 @@ func (o *TridentOrchestrator) publishVolume(
 
 func generateVolumePublication(volName string, publishInfo *models.VolumePublishInfo) *models.VolumePublication {
 	vp := &models.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(volName, publishInfo.HostName),
+		Name:       models.GenerateVolumePublishName(volName, publishInfo.HostName),
 		VolumeName: volName,
 		NodeName:   publishInfo.HostName,
 		ReadOnly:   publishInfo.ReadOnly,
@@ -3968,7 +3971,7 @@ func (o *TridentOrchestrator) resizeSubordinateVolume(ctx context.Context, volum
 	}
 
 	// Determine volume size in bytes
-	newSizeStr, err := utils.ConvertSizeToBytes(newSize)
+	newSizeStr, err := capacity.ToBytes(newSize)
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", newSize, err)
 	}
@@ -3978,7 +3981,7 @@ func (o *TridentOrchestrator) resizeSubordinateVolume(ctx context.Context, volum
 	}
 
 	// Determine source volume size in bytes
-	sourceSizeStr, err := utils.ConvertSizeToBytes(sourceVolume.Config.Size)
+	sourceSizeStr, err := capacity.ToBytes(sourceVolume.Config.Size)
 	if err != nil {
 		return fmt.Errorf("could not convert source volume size %s: %v", sourceVolume.Config.Size, err)
 	}
@@ -4094,7 +4097,7 @@ func (o *TridentOrchestrator) CreateSnapshot(
 	// Ensure we store all potential LUKS passphrases, there may have been a passphrase rotation during the snapshot process
 	volume = o.volumes[snapshotConfig.VolumeName]
 	for _, v := range volume.Config.LUKSPassphraseNames {
-		if !utils.SliceContainsString(snapshotConfig.LUKSPassphraseNames, v) {
+		if !collection.ContainsString(snapshotConfig.LUKSPassphraseNames, v) {
 			snapshotConfig.LUKSPassphraseNames = append(snapshotConfig.LUKSPassphraseNames, v)
 		}
 	}
@@ -5586,7 +5589,7 @@ func (o *TridentOrchestrator) GetVolumePublication(
 	volumePublication, found := o.volumePublications.TryGet(volumeName, nodeName)
 	if !found {
 		return nil, errors.NotFoundError("volume publication %v was not found",
-			utils.GenerateVolumePublishName(volumeName, nodeName))
+			models.GenerateVolumePublishName(volumeName, nodeName))
 	}
 	return volumePublication, nil
 }

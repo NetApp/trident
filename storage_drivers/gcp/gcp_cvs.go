@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package gcp
 
@@ -21,11 +21,13 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/gcp/api"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 	versionutils "github.com/netapp/trident/utils/version"
@@ -251,7 +253,7 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(
 	// If snapshotDir is provided, ensure it is lower case
 	snapDir := defaultSnapshotDir
 	if config.SnapshotDir != "" {
-		snapDirFormatted, err := utils.GetFormattedBool(config.SnapshotDir)
+		snapDirFormatted, err := convert.ToFormattedBool(config.SnapshotDir)
 		if err != nil {
 			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", config.SnapshotDir)
 			return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
@@ -283,7 +285,7 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(
 	// VolumeCreateTimeoutSeconds is the timeout value in seconds.
 	volumeCreateTimeout := d.defaultCreateTimeout()
 	if config.VolumeCreateTimeout != "" {
-		i, err := utils.ParsePositiveInt64(d.Config.VolumeCreateTimeout)
+		i, err := convert.ToPositiveInt64(d.Config.VolumeCreateTimeout)
 		if err != nil {
 			Logc(ctx).WithField("interval", d.Config.VolumeCreateTimeout).WithError(err).Error(
 				"Invalid volume create timeout period.")
@@ -315,7 +317,7 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) {
 
 	// If snapshotDir is provided, ensure it is lower case
 	if d.Config.SnapshotDir != "" {
-		snapDirFormatted, err := utils.GetFormattedBool(d.Config.SnapshotDir)
+		snapDirFormatted, err := convert.ToFormattedBool(d.Config.SnapshotDir)
 		if err != nil {
 			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", d.Config.SnapshotDir)
 		}
@@ -397,7 +399,7 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) {
 
 			snapshotDir := d.Config.SnapshotDir
 			if vpool.SnapshotDir != "" {
-				snapDirFormatted, err := utils.GetFormattedBool(vpool.SnapshotDir)
+				snapDirFormatted, err := convert.ToFormattedBool(vpool.SnapshotDir)
 				if err != nil {
 					Logc(ctx).WithError(err).Errorf("Invalid boolean value for vpool's snapshotDir: %v.", vpool.SnapshotDir)
 				}
@@ -603,7 +605,7 @@ func (d *NFSStorageDriver) validate(ctx context.Context) error {
 		}
 
 		// Validate default size
-		if _, err = utils.ConvertSizeToBytes(pool.InternalAttributes()[Size]); err != nil {
+		if _, err = capacity.ToBytes(pool.InternalAttributes()[Size]); err != nil {
 			return fmt.Errorf("invalid value for default volume size in pool %s: %v", poolName, err)
 		}
 
@@ -676,7 +678,7 @@ func (d *NFSStorageDriver) Create(
 	}
 
 	// Determine volume size in bytes
-	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	requestedSize, err := capacity.ToBytes(volConfig.Size)
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
@@ -685,7 +687,7 @@ func (d *NFSStorageDriver) Create(
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
 	if requestedSizeBytes == 0 {
-		defaultSize, _ := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size])
+		defaultSize, _ := capacity.ToBytes(pool.InternalAttributes()[Size])
 		requestedSizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
 	if checkMinVolumeSizeError := drivers.CheckMinVolumeSize(requestedSizeBytes,
@@ -1455,7 +1457,7 @@ func (d *NFSStorageDriver) getSnapshot(
 	for _, snapshot := range *snapshots {
 		if snapshot.Name == internalSnapName {
 
-			created := snapshot.Created.UTC().Format(utils.TimestampFormat)
+			created := snapshot.Created.UTC().Format(convert.TimestampFormat)
 
 			Logc(ctx).WithFields(LogFields{
 				"snapshotName": internalSnapName,
@@ -1525,7 +1527,7 @@ func (d *NFSStorageDriver) getSnapshots(
 				VolumeName:         volConfig.Name,
 				VolumeInternalName: volConfig.InternalName,
 			},
-			Created:   snapshot.Created.Format(utils.TimestampFormat),
+			Created:   snapshot.Created.Format(convert.TimestampFormat),
 			SizeBytes: volume.QuotaInBytes,
 			State:     storage.SnapshotStateOnline,
 		})
@@ -1601,7 +1603,7 @@ func (d *NFSStorageDriver) createSnapshot(
 
 	return &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   snapshot.Created.Format(utils.TimestampFormat),
+		Created:   snapshot.Created.Format(convert.TimestampFormat),
 		SizeBytes: sourceVolume.QuotaInBytes,
 		State:     storage.SnapshotStateOnline,
 	}, nil
@@ -1928,20 +1930,20 @@ func (d *NFSStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	}
 
 	cloneConfig.APIKey = drivers.GCPPrivateKey{
-		Type:                    utils.REDACTED,
-		ProjectID:               utils.REDACTED,
-		PrivateKeyID:            utils.REDACTED,
-		PrivateKey:              utils.REDACTED,
-		ClientEmail:             utils.REDACTED,
-		ClientID:                utils.REDACTED,
-		AuthURI:                 utils.REDACTED,
-		TokenURI:                utils.REDACTED,
-		AuthProviderX509CertURL: utils.REDACTED,
-		ClientX509CertURL:       utils.REDACTED,
+		Type:                    tridentconfig.REDACTED,
+		ProjectID:               tridentconfig.REDACTED,
+		PrivateKeyID:            tridentconfig.REDACTED,
+		PrivateKey:              tridentconfig.REDACTED,
+		ClientEmail:             tridentconfig.REDACTED,
+		ClientID:                tridentconfig.REDACTED,
+		AuthURI:                 tridentconfig.REDACTED,
+		TokenURI:                tridentconfig.REDACTED,
+		AuthProviderX509CertURL: tridentconfig.REDACTED,
+		ClientX509CertURL:       tridentconfig.REDACTED,
 	}
 	cloneConfig.Credentials = map[string]string{
-		drivers.KeyName: utils.REDACTED,
-		drivers.KeyType: utils.REDACTED,
+		drivers.KeyName: tridentconfig.REDACTED,
+		drivers.KeyType: tridentconfig.REDACTED,
 	} // redact the credentials
 	return cloneConfig
 }
@@ -1962,7 +1964,7 @@ func (d *NFSStorageDriver) GetVolumeForImport(ctx context.Context, volumeID stri
 // String implements stringer interface for the NFSStorageDriver driver
 func (d NFSStorageDriver) String() string {
 	// Cannot use GetExternalConfig as it contains log statements
-	return utils.ToStringRedacted(&d, []string{"API"}, nil)
+	return convert.ToStringRedacted(&d, []string{"API"}, nil)
 }
 
 // GoString implements GoStringer interface for the NFSStorageDriver driver
@@ -2161,10 +2163,10 @@ func (d *NFSStorageDriver) GetGCPPoolsForStoragePool(
 	}
 
 	// If GCP pools were specified in backend, filter out non-matching GCP pools
-	poolList := utils.SplitString(ctx, sPool.InternalAttributes()[StoragePools], ",")
+	poolList := collection.SplitString(ctx, sPool.InternalAttributes()[StoragePools], ",")
 	if len(poolList) > 0 {
 		for poolID := range filteredGCPPoolMap {
-			if !utils.SliceContainsString(poolList, poolID) {
+			if !collection.ContainsString(poolList, poolID) {
 				if d.Config.DebugTraceFlags[discovery] {
 					Logc(ctx).Debugf("Ignoring GCP pool %s, not in storage pools [%s].", poolID, poolList)
 				}
@@ -2191,7 +2193,7 @@ func (d *NFSStorageDriver) GetGCPPoolsForStoragePool(
 			if d.Config.DebugTraceFlags[discovery] {
 				Logc(ctx).Debugf(errMsg)
 			}
-			if utils.SliceContainsString(poolList, pool.PoolID) {
+			if collection.ContainsString(poolList, pool.PoolID) {
 				poolErrors = append(poolErrors, errMsg)
 			}
 			filteredGCPPoolMap[pool.PoolID] = false
@@ -2202,7 +2204,7 @@ func (d *NFSStorageDriver) GetGCPPoolsForStoragePool(
 			if d.Config.DebugTraceFlags[discovery] {
 				Logc(ctx).Debugf(errMsg)
 			}
-			if utils.SliceContainsString(poolList, pool.PoolID) {
+			if collection.ContainsString(poolList, pool.PoolID) {
 				poolErrors = append(poolErrors, errMsg)
 			}
 			filteredGCPPoolMap[pool.PoolID] = false

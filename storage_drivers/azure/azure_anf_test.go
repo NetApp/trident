@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package azure
 
@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
@@ -22,13 +22,13 @@ import (
 	. "github.com/netapp/trident/logging"
 	mockacp "github.com/netapp/trident/mocks/mock_acp"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_azure"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	storagefake "github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/azure/api"
 	"github.com/netapp/trident/storage_drivers/fake"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -6907,7 +6907,7 @@ func TestGetSnapshots(t *testing.T) {
 			VolumeName:         "testvol1",
 			VolumeInternalName: "trident-testvol1",
 		},
-		Created:   snapTime.UTC().Format(utils.TimestampFormat),
+		Created:   snapTime.UTC().Format(convert.TimestampFormat),
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}
@@ -6920,7 +6920,7 @@ func TestGetSnapshots(t *testing.T) {
 			VolumeName:         "testvol1",
 			VolumeInternalName: "trident-testvol1",
 		},
-		Created:   snapTime.UTC().Format(utils.TimestampFormat),
+		Created:   snapTime.UTC().Format(convert.TimestampFormat),
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}
@@ -6997,7 +6997,7 @@ func TestCreateSnapshot(t *testing.T) {
 
 	expectedSnapshot := &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   snapTime.UTC().Format(utils.TimestampFormat),
+		Created:   snapTime.UTC().Format(convert.TimestampFormat),
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}
@@ -8488,7 +8488,7 @@ func TestUpdate_Success(t *testing.T) {
 	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil).AnyTimes()
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
-	mockAPI.EXPECT().ModifyVolume(ctx, filesystem, gomock.Any(), gomock.Any(), utils.Ptr(true),
+	mockAPI.EXPECT().ModifyVolume(ctx, filesystem, gomock.Any(), gomock.Any(), convert.ToPtr(true),
 		gomock.Any()).Return(nil).AnyTimes()
 
 	updateInfo := &models.VolumeUpdateInfo{SnapshotDirectory: "TRUE"}
@@ -8686,7 +8686,7 @@ func TestUpdateSnapshotDirectory_DifferentSnapshotDir(t *testing.T) {
 	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil).AnyTimes()
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
-	mockAPI.EXPECT().ModifyVolume(ctx, filesystem, gomock.Any(), gomock.Any(), utils.Ptr(true),
+	mockAPI.EXPECT().ModifyVolume(ctx, filesystem, gomock.Any(), gomock.Any(), convert.ToPtr(true),
 		gomock.Any()).Return(nil).AnyTimes()
 
 	allVolumes := map[string]*storage.Volume{
@@ -8748,7 +8748,7 @@ func TestUpdateSnapshotDirectory_Failure(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
 	mockAPI.EXPECT().ModifyVolume(
-		ctx, filesystem, gomock.Any(), gomock.Any(), utils.Ptr(true), gomock.Any()).Return(
+		ctx, filesystem, gomock.Any(), gomock.Any(), convert.ToPtr(true), gomock.Any()).Return(
 		errors.New("mock error")).AnyTimes()
 
 	allVolumes := map[string]*storage.Volume{
@@ -8772,7 +8772,7 @@ func TestUpdateSnapshotDirectory_Failure(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
 	mockAPI.EXPECT().ModifyVolume(
-		ctx, filesystem, gomock.Any(), gomock.Any(), utils.Ptr(true), gomock.Any()).Return(nil).AnyTimes()
+		ctx, filesystem, gomock.Any(), gomock.Any(), convert.ToPtr(true), gomock.Any()).Return(nil).AnyTimes()
 
 	allVolumes = map[string]*storage.Volume{}
 

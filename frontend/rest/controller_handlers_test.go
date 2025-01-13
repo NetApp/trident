@@ -1,3 +1,5 @@
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
+
 package rest
 
 import (
@@ -20,8 +22,8 @@ import (
 	"github.com/netapp/trident/frontend"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	mockk8scontrollerhelper "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_helpers/mock_kubernetes_helper"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -383,8 +385,8 @@ func TestUpdateNodeIsAsync(t *testing.T) {
 
 	// Setup values to return from mocked calls.
 	nodeStateFlags := &models.NodePublicationStateFlags{
-		OrchestratorReady:  utils.Ptr(true),
-		AdministratorReady: utils.Ptr(true),
+		OrchestratorReady:  convert.ToPtr(true),
+		AdministratorReady: convert.ToPtr(true),
 		ProvisionerReady:   nil,
 	}
 
@@ -438,7 +440,7 @@ func TestUpdateNodeIsAsync(t *testing.T) {
 		// Ensure this request occurs after first request.
 		time.Sleep(20 * time.Millisecond)
 
-		nodeState := models.NodePublicationStateFlags{ProvisionerReady: utils.Ptr(true)}
+		nodeState := models.NodePublicationStateFlags{ProvisionerReady: convert.ToPtr(true)}
 		data, err := json.Marshal(nodeState)
 		if err != nil {
 			t.Error("could not create request body")

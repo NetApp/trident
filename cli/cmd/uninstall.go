@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -11,7 +11,7 @@ import (
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/pkg/network"
 )
 
 func init() {
@@ -88,7 +88,7 @@ func discoverTrident() (installed bool, err error) {
 }
 
 func validateUninstallationArguments() error {
-	if !utils.DNS1123LabelRegex.MatchString(TridentPodNamespace) {
+	if !network.DNS1123LabelRegex.MatchString(TridentPodNamespace) {
 		return fmt.Errorf("%s is not a valid namespace name; a DNS-1123 label must consist "+
 			"of lower case alphanumeric characters or '-', and must start and end with an alphanumeric "+
 			"character", TridentPodNamespace)

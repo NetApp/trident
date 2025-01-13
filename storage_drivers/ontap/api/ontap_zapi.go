@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -14,8 +14,8 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
@@ -2773,7 +2773,7 @@ func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 		if destinationInfo.DestinationLocationPtr != nil {
 			destinationLocation = destinationInfo.DestinationLocationPtr
 		} else if destinationVserver != nil && destinationVolume != nil {
-			destinationLocation = utils.Ptr(ToSnapmirrorLocation(*destinationVserver, *destinationVolume))
+			destinationLocation = convert.ToPtr(ToSnapmirrorLocation(*destinationVserver, *destinationVolume))
 		} else {
 			destinationLocation = nil
 		}

@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -25,6 +25,10 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
+	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	sc "github.com/netapp/trident/storage_class"
@@ -371,7 +375,7 @@ func getDesiredExportPolicyRules(
 	rules := make([]string, 0)
 	for _, node := range nodes {
 		// Filter the IPs based on the CIDRs provided by user
-		filteredIPs, err := utils.FilterIPs(ctx, node.IPs, config.AutoExportCIDRs)
+		filteredIPs, err := network.FilterIPs(ctx, node.IPs, config.AutoExportCIDRs)
 		if err != nil {
 			return nil, err
 		}
@@ -479,7 +483,7 @@ func getSVMState(
 			// For the case where config.Aggregate is "", but due to configAggrs being a variadic parameter,
 			// it will be passed as []string{""}.
 			if strings.Join(configAggrs, "") != "" {
-				if containsAll, _ := utils.SliceContainsElements(aggrList, configAggrs); !containsAll {
+				if containsAll, _ := collection.ContainsElements(aggrList, configAggrs); !containsAll {
 					return StateReasonMissingAggregate, changeMap
 				}
 			}
@@ -587,7 +591,7 @@ func resizeValidation(
 	volSizeBytes := uint64(volSize)
 
 	// Determine original volume size in bytes
-	volConfigSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	volConfigSize, err := capacity.ToBytes(volConfig.Size)
 	if err != nil {
 		return 0, fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
@@ -1247,7 +1251,7 @@ func InitializeOntapDriver(
 
 	// Splitting config.ManagementLIF with colon allows to provide managementLIF value as address:port format
 	mgmtLIF := ""
-	if utils.IPv6Check(config.ManagementLIF) {
+	if network.IPv6Check(config.ManagementLIF) {
 		// This is an IPv6 address
 
 		mgmtLIF = strings.Split(config.ManagementLIF, "[")[1]
@@ -1523,7 +1527,7 @@ func ValidateNASDriver(
 
 	// If they didn't set a LIF to use in the config, we'll set it to the first NFS/SMB LIF we happen to find
 	if config.DataLIF == "" {
-		if utils.IPv6Check(dataLIFs[0]) {
+		if network.IPv6Check(dataLIFs[0]) {
 			config.DataLIF = "[" + dataLIFs[0] + "]"
 		} else {
 			config.DataLIF = dataLIFs[0]
@@ -1537,7 +1541,7 @@ func ValidateNASDriver(
 	}
 
 	// Ensure config has a set of valid autoExportCIDRs
-	if err := utils.ValidateCIDRs(ctx, config.AutoExportCIDRs); err != nil {
+	if err := network.ValidateCIDRs(ctx, config.AutoExportCIDRs); err != nil {
 		return fmt.Errorf("failed to validate auto-export CIDR(s): %w", err)
 	}
 
@@ -1601,7 +1605,7 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 	if config.Size == "" {
 		config.Size = drivers.DefaultVolumeSize
 	} else {
-		_, err := utils.ConvertSizeToBytes(config.Size)
+		_, err := capacity.ToBytes(config.Size)
 		if err != nil {
 			return fmt.Errorf("invalid config value for default volume size: %v", err)
 		}
@@ -1635,7 +1639,7 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 	// If snapshotDir is provided, ensure it is lower case
 	snapDir := DefaultSnapshotDir
 	if config.SnapshotDir != "" {
-		if snapDir, err = utils.GetFormattedBool(config.SnapshotDir); err != nil {
+		if snapDir, err = convert.ToFormattedBool(config.SnapshotDir); err != nil {
 			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", config.SnapshotDir)
 			return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
 		}
@@ -1892,7 +1896,7 @@ func checkAggregateLimits(
 
 func GetVolumeSize(sizeBytes uint64, poolDefaultSizeBytes string) uint64 {
 	if sizeBytes == 0 {
-		defaultSize, _ := utils.ConvertSizeToBytes(poolDefaultSizeBytes)
+		defaultSize, _ := capacity.ToBytes(poolDefaultSizeBytes)
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
 	if sizeBytes < MinimumVolumeSizeBytes {
@@ -1920,7 +1924,7 @@ func CheckVolumePoolSizeLimits(
 	}
 
 	var volumePoolSizeLimit uint64
-	volumePoolSizeLimitStr, parseErr := utils.ConvertSizeToBytes(limitVolumePoolSize)
+	volumePoolSizeLimitStr, parseErr := capacity.ToBytes(limitVolumePoolSize)
 	if parseErr != nil {
 		return false, 0, fmt.Errorf("error parsing limitVolumePoolSize: %v", parseErr)
 	}
@@ -1945,7 +1949,7 @@ func GetSnapshotReserve(snapshotPolicy, snapshotReserve string) (int, error) {
 	if snapshotReserve != "" {
 		// snapshotReserve defaults to "", so if it is explicitly set
 		// (either in config or create options), honor the value.
-		snapshotReserve, err := utils.ParsePositiveInt(snapshotReserve)
+		snapshotReserve, err := convert.ToPositiveInt(snapshotReserve)
 		if err != nil {
 			return api.NumericalValueNotSet, err
 		}
@@ -1956,7 +1960,7 @@ func GetSnapshotReserve(snapshotPolicy, snapshotReserve string) (int, error) {
 		if snapshotPolicy == "none" || snapshotPolicy == "" {
 			return 0, nil
 		} else {
-			snapshotReserve, err := utils.ParsePositiveInt(DefaultSnapshotReserve)
+			snapshotReserve, err := convert.ToPositiveInt(DefaultSnapshotReserve)
 			if err != nil {
 				return api.NumericalValueNotSet, err
 			}
@@ -2381,7 +2385,7 @@ func InitializeStoragePoolsCommon(
 		}
 
 		if config.SnapshotDir != "" {
-			config.SnapshotDir, err = utils.GetFormattedBool(config.SnapshotDir)
+			config.SnapshotDir, err = convert.ToFormattedBool(config.SnapshotDir)
 			if err != nil {
 				Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", config.SnapshotDir)
 				return nil, nil, fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
@@ -2486,7 +2490,7 @@ func InitializeStoragePoolsCommon(
 
 		snapshotDir := config.SnapshotDir
 		if vpool.SnapshotDir != "" {
-			snapshotDir, err = utils.GetFormattedBool(vpool.SnapshotDir)
+			snapshotDir, err = convert.ToFormattedBool(vpool.SnapshotDir)
 			if err != nil {
 				Logc(ctx).WithError(err).Errorf("Invalid boolean value for vpool's snapshotDir: %v.", vpool.SnapshotDir)
 				return nil, nil, fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
@@ -2745,7 +2749,7 @@ func ValidateStoragePools(
 		}
 
 		// Validate default size
-		if defaultSize, err := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size]); err != nil {
+		if defaultSize, err := capacity.ToBytes(pool.InternalAttributes()[Size]); err != nil {
 			return fmt.Errorf("invalid value for default volume size in pool %s: %v", poolName, err)
 		} else {
 			sizeBytes, _ := strconv.ParseUint(defaultSize, 10, 64)
@@ -2913,7 +2917,7 @@ func getVolumeOptsCommon(
 
 	// If snapshotDir is provided, ensure it is lower case
 	if volConfig.SnapshotDir != "" {
-		snapshotDirFormatted, err := utils.GetFormattedBool(volConfig.SnapshotDir)
+		snapshotDirFormatted, err := convert.ToFormattedBool(volConfig.SnapshotDir)
 		if err != nil {
 			Logc(ctx).WithError(err).Errorf(
 				"Invalid boolean value for volume '%v' snapshotDir: %v.", volConfig.Name, volConfig.SnapshotDir)
@@ -3087,23 +3091,23 @@ func getExternalConfig(ctx context.Context, config drivers.OntapStorageDriverCon
 
 	drivers.SanitizeCommonStorageDriverConfig(cloneConfig.CommonStorageDriverConfig)
 
-	cloneConfig.Username = utils.REDACTED         // redact the username
-	cloneConfig.Password = utils.REDACTED         // redact the password
-	cloneConfig.ClientPrivateKey = utils.REDACTED // redact the client private key
-	cloneConfig.ChapInitiatorSecret = utils.REDACTED
-	cloneConfig.ChapTargetInitiatorSecret = utils.REDACTED
-	cloneConfig.ChapTargetUsername = utils.REDACTED
-	cloneConfig.ChapUsername = utils.REDACTED
+	cloneConfig.Username = tridentconfig.REDACTED         // redact the username
+	cloneConfig.Password = tridentconfig.REDACTED         // redact the password
+	cloneConfig.ClientPrivateKey = tridentconfig.REDACTED // redact the client private key
+	cloneConfig.ChapInitiatorSecret = tridentconfig.REDACTED
+	cloneConfig.ChapTargetInitiatorSecret = tridentconfig.REDACTED
+	cloneConfig.ChapTargetUsername = tridentconfig.REDACTED
+	cloneConfig.ChapUsername = tridentconfig.REDACTED
 	cloneConfig.Credentials = map[string]string{
-		drivers.KeyName: utils.REDACTED,
-		drivers.KeyType: utils.REDACTED,
+		drivers.KeyName: tridentconfig.REDACTED,
+		drivers.KeyType: tridentconfig.REDACTED,
 	} // redact the credentials
 
 	// https://github.com/golang/go/issues/4609
 	// It's how gob encoding-decoding works, it flattens the pointer while encoding,
 	// and during the decoding phase, if the default value is encountered, it is assigned as nil.
 	if config.UseREST != nil {
-		cloneConfig.UseREST = utils.Ptr(*config.UseREST)
+		cloneConfig.UseREST = convert.ToPtr(*config.UseREST)
 	}
 
 	return cloneConfig
@@ -3629,8 +3633,8 @@ func ConstructOntapNASVolumeAccessPath(
 			}
 			return fmt.Sprintf("/%s/%s/%s", volConfig.CloneSourceVolumeInternal, ".snapshot",
 				volConfig.CloneSourceSnapshot)
-		} else if volumeName != utils.UnixPathSeparator+volConfig.InternalName && strings.HasPrefix(volumeName,
-			utils.UnixPathSeparator) {
+		} else if volumeName != tridentconfig.UnixPathSeparator+volConfig.InternalName && strings.HasPrefix(volumeName,
+			tridentconfig.UnixPathSeparator) {
 			// For managed import, return the original junction path
 			return volumeName
 		}
@@ -3652,7 +3656,7 @@ func ConstructOntapNASVolumeAccessPath(
 		}
 	}
 	// Replace unix styled path separator, if exists
-	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)
+	return strings.Replace(completeVolumePath, tridentconfig.UnixPathSeparator, tridentconfig.WindowsPathSeparator, -1)
 }
 
 // ConstructOntapNASFlexGroupSMBVolumePath returns windows compatible volume path for Ontap NAS FlexGroup
@@ -3666,14 +3670,14 @@ func ConstructOntapNASFlexGroupSMBVolumePath(ctx context.Context, smbShare, volu
 
 	var completeVolumePath string
 	if smbShare != "" {
-		completeVolumePath = utils.WindowsPathSeparator + smbShare + volumeName
+		completeVolumePath = tridentconfig.WindowsPathSeparator + smbShare + volumeName
 	} else {
 		// If the user does not specify an SMB Share, Trident creates it with the same name as the flexGroup volume name.
 		completeVolumePath = volumeName
 	}
 
 	// Replace unix styled path separator, if exists
-	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)
+	return strings.Replace(completeVolumePath, tridentconfig.UnixPathSeparator, tridentconfig.WindowsPathSeparator, -1)
 }
 
 // ConstructOntapNASQTreeVolumePath returns volume path for Ontap NAS QTree
@@ -3701,7 +3705,7 @@ func ConstructOntapNASQTreeVolumePath(
 	case sa.SMB:
 		var smbSharePath string
 		if smbShare != "" {
-			smbSharePath = smbShare + utils.WindowsPathSeparator
+			smbSharePath = smbShare + tridentconfig.WindowsPathSeparator
 		}
 		if volConfig.ReadOnlyClone {
 			completeVolumePath = fmt.Sprintf("\\%s%s\\%s\\%s\\%s", smbSharePath, flexvol,
@@ -3711,7 +3715,8 @@ func ConstructOntapNASQTreeVolumePath(
 		}
 
 		// Replace unix styled path separator, if exists
-		completeVolumePath = strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator,
+		completeVolumePath = strings.Replace(completeVolumePath, tridentconfig.UnixPathSeparator,
+			tridentconfig.WindowsPathSeparator,
 			-1)
 	}
 
@@ -3763,7 +3768,7 @@ func ConstructPoolForLabels(nameTemplate string, labels map[string]string) *stor
 }
 
 func subtractUintFromSizeString(size string, val uint64) (string, error) {
-	sizeBytesString, _ := utils.ConvertSizeToBytes(size)
+	sizeBytesString, _ := capacity.ToBytes(size)
 	sizeBytes, err := strconv.ParseUint(sizeBytesString, 10, 64)
 	if err != nil {
 		return "", fmt.Errorf("invalid size string: %v", err)

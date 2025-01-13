@@ -429,30 +429,3 @@ func TestEnsureLUKSVolumePassphrase_NoCorrectPassphraseProvided(t *testing.T) {
 	assert.Error(t, err)
 	mockCtrl.Finish()
 }
-
-func TestParseBool(t *testing.T) {
-	tests := []struct {
-		b        string
-		expected bool
-	}{
-		{
-			b:        "true",
-			expected: true,
-		},
-		{
-			b:        "false",
-			expected: false,
-		},
-		{
-			b:        "not a value",
-			expected: false,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.b, func(t *testing.T) {
-			actual := utils.ParseBool(test.b)
-			assert.Equal(t, test.expected, actual)
-		})
-	}
-}

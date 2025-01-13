@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package iscsi
 
@@ -23,6 +23,8 @@ import (
 
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
@@ -243,10 +245,10 @@ func (client *Client) AttachVolume(
 	// IscsiTargetPortal is one of the ports on the target and IscsiPortals
 	// are rest of the target ports for establishing iSCSI session.
 	// If the target has multiple portals, then there will be multiple iSCSI sessions.
-	portals = append(portals, ensureHostportFormatted(publishInfo.IscsiTargetPortal))
+	portals = append(portals, network.EnsureHostportFormatted(publishInfo.IscsiTargetPortal))
 
 	for _, p := range publishInfo.IscsiPortals {
-		portals = append(portals, ensureHostportFormatted(p))
+		portals = append(portals, network.EnsureHostportFormatted(p))
 	}
 
 	if publishInfo.IscsiInterface == "" {
@@ -1068,14 +1070,14 @@ func (client *Client) portalsToLogin(ctx context.Context, targetIQN string, port
 		// Portals (portalsNotLoggedIn) may/may not contain anything after ":", so instead of matching complete
 		// portal value (with e.Portal), check if e.Portal's IP address matches portal's IP address
 		matchFunc := func(main, val string) bool {
-			mainIpAddress := models.ParseHostportIP(main)
-			valIpAddress := models.ParseHostportIP(val)
+			mainIpAddress := network.ParseHostportIP(main)
+			valIpAddress := network.ParseHostportIP(val)
 
 			return mainIpAddress == valIpAddress
 		}
 
 		lenBeforeCheck := len(portalsNotLoggedIn)
-		portalsNotLoggedIn = RemoveStringFromSliceConditionally(portalsNotLoggedIn, e.Portal, matchFunc)
+		portalsNotLoggedIn = collection.RemoveStringConditionally(portalsNotLoggedIn, e.Portal, matchFunc)
 		lenAfterCheck := len(portalsNotLoggedIn)
 
 		// If the portal is logged in ensure it is not stale
@@ -1171,7 +1173,7 @@ func (client *Client) getSessionInfo(ctx context.Context) ([]SessionInfo, error)
 			sid = sid[1 : len(sid)-1]
 
 			portalIP := ""
-			if IPv6Check(a[2]) {
+			if network.IPv6Check(a[2]) {
 				// This is an IPv6 address
 				portalIP = strings.Split(a[2], "]")[0]
 				portalIP += "]"
@@ -1196,18 +1198,6 @@ func (client *Client) getSessionInfo(ctx context.Context) ([]SessionInfo, error)
 	}
 
 	return sessionInfo, nil
-}
-
-// ensureHostportFormatted ensures IPv6 hostport is in correct format
-func ensureHostportFormatted(hostport string) string {
-	// If this is an IPv6 address, ensure IP address is enclosed in square
-	// brackets, as in "[::1]:80".
-	if IPv6Check(hostport) && hostport[0] != '[' {
-		// assumption here is that without the square brackets its only IP address without port information
-		return "[" + hostport + "]"
-	}
-
-	return hostport
 }
 
 // verifyMultipathDeviceSerial compares the serial number of the DM device with the serial
@@ -1348,7 +1338,7 @@ func (client *Client) EnsureSessions(ctx context.Context, publishInfo *models.Vo
 
 	for _, portalInfo := range loggedInPortals {
 		// Recheck to ensure a session is now open
-		sessionExists, err := client.sessionExists(ctx, models.ParseHostportIP(portalInfo))
+		sessionExists, err := client.sessionExists(ctx, network.ParseHostportIP(portalInfo))
 		if err != nil {
 			Logc(ctx).WithFields(LogFields{
 				"err":      err,

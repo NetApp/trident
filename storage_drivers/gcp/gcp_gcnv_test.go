@@ -1,3 +1,5 @@
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
+
 package gcp
 
 import (
@@ -9,19 +11,19 @@ import (
 	"testing"
 	"time"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
 	tridentconfig "github.com/netapp/trident/config"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_gcp"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	storagefake "github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/storage_drivers/gcp/gcnvapi"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -5558,7 +5560,7 @@ func TestGCNVGetSnapshots(t *testing.T) {
 			VolumeName:         "testvol1",
 			VolumeInternalName: "trident-testvol1",
 		},
-		Created:   snapTime.UTC().Format(utils.TimestampFormat),
+		Created:   snapTime.UTC().Format(convert.TimestampFormat),
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}
@@ -5571,7 +5573,7 @@ func TestGCNVGetSnapshots(t *testing.T) {
 			VolumeName:         "testvol1",
 			VolumeInternalName: "trident-testvol1",
 		},
-		Created:   snapTime.UTC().Format(utils.TimestampFormat),
+		Created:   snapTime.UTC().Format(convert.TimestampFormat),
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}
@@ -5653,7 +5655,7 @@ func TestGCNVCreateSnapshot(t *testing.T) {
 
 	expectedSnapshot := &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   snapTime.UTC().Format(utils.TimestampFormat),
+		Created:   snapTime.UTC().Format(convert.TimestampFormat),
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}

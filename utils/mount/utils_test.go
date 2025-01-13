@@ -59,3 +59,24 @@ func TestCheckMountOptions(t *testing.T) {
 		})
 	}
 }
+
+func TestAreMountOptionsInList(t *testing.T) {
+	tests := []struct {
+		mountOptions string
+		optionList   []string
+		found        bool
+	}{
+		{"", []string{"ro"}, false},
+		{"ro", []string{"ro"}, true},
+		{"rw", []string{"ro"}, false},
+		{"ro,nfsvers=3", []string{"ro"}, true},
+		{"nouuid,ro,loop,nfsvers=4", []string{"ro"}, true},
+		{"nouuid,ro,loop,nfsvers=4", []string{"bind"}, false},
+		{"nouuid,ro,loop,bind,nfsvers=4", []string{"bind"}, true},
+		{"-o nouuid,ro,loop,bind,nfsvers=4", []string{"bind"}, true},
+	}
+
+	for _, test := range tests {
+		assert.Equal(t, test.found, areMountOptionsInList(test.mountOptions, test.optionList))
+	}
+}
