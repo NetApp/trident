@@ -24,6 +24,7 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/fiji"
+	"github.com/netapp/trident/internal/syswrap"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/pkg/convert"
@@ -54,6 +55,7 @@ const (
 	maximumNodeReconciliationJitter = 5000 * time.Millisecond
 	nvmeMaxFlushWaitDuration        = 6 * time.Minute
 	csiNodeLockTimeout              = 60 * time.Second
+	fsUnavailableTimeout            = 5 * time.Second
 )
 
 var (
@@ -350,7 +352,7 @@ func (p *Plugin) NodeGetVolumeStats(
 	}
 
 	// Ensure volume is published at path
-	exists, err := p.osutils.PathExists(req.GetVolumePath())
+	exists, err := syswrap.Exists(ctx, req.GetVolumePath(), fsUnavailableTimeout)
 	if !exists || err != nil {
 		return nil, status.Error(codes.NotFound,
 			fmt.Sprintf("could not find volume mount at path: %s; %v", req.GetVolumePath(), err))

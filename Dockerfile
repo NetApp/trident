@@ -23,10 +23,12 @@ ARG BIN=trident_orchestrator
 ARG CLI_BIN=tridentctl
 ARG CHWRAP_BIN=chwrap.tar
 ARG NODE_PREP_BIN=node_prep
+ARG SYSWRAP_BIN=syswrap
 
 COPY ${BIN} /trident_orchestrator
 COPY ${CLI_BIN} /bin/tridentctl
 COPY ${NODE_PREP_BIN} /node_prep
+COPY ${SYSWRAP_BIN} /syswrap
 ADD ${CHWRAP_BIN} /
 
 ENTRYPOINT ["/bin/tridentctl"]

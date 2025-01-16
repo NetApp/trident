@@ -9,17 +9,11 @@ import (
 	"fmt"
 	"time"
 
-	"golang.org/x/sys/unix"
-
+	"github.com/netapp/trident/internal/syswrap"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
-
-type statFSResult struct {
-	Output unix.Statfs_t
-	Error  error
-}
 
 // GetFilesystemStats returns the size of the filesystem for the given path.
 // The caller of the func is responsible for verifying the mountPoint existence and readiness.
@@ -29,35 +23,12 @@ func (f *FSClient) GetFilesystemStats(
 	Logc(ctx).Debug(">>>> filesystem_linux.GetFilesystemStats")
 	defer Logc(ctx).Debug("<<<< filesystem_linux.GetFilesystemStats")
 
-	timedOut := false
-	timeout := 30 * time.Second
-	done := make(chan statFSResult, 1)
-	var result statFSResult
-
-	go func() {
-		// Warning: syscall.Statfs_t uses types that are OS and arch dependent. The following code has been
-		// confirmed to work with Linux/amd64 and Darwin/amd64.
-		var buf unix.Statfs_t
-		err := unix.Statfs(path, &buf)
-		done <- statFSResult{Output: buf, Error: err}
-	}()
-
-	select {
-	case <-time.After(timeout):
-		timedOut = true
-	case result = <-done:
-		break
+	buf, err := syswrap.Statfs(ctx, path, 30*time.Second)
+	if err != nil {
+		Logc(ctx).WithField("path", path).Errorf("Failed to statfs: %s", err)
+		return 0, 0, 0, 0, 0, 0, fmt.Errorf("couldn't get filesystem stats %s: %s", path, err)
 	}
 
-	if result.Error != nil {
-		Logc(ctx).WithField("path", path).Errorf("Failed to statfs: %s", result.Error)
-		return 0, 0, 0, 0, 0, 0, fmt.Errorf("couldn't get filesystem stats %s: %s", path, result.Error)
-	} else if timedOut {
-		Logc(ctx).WithField("path", path).Errorf("Failed to statfs due to timeout")
-		return 0, 0, 0, 0, 0, 0, fmt.Errorf("couldn't get filesystem stats %s: timeout", path)
-	}
-
-	buf := result.Output
 	//goland:noinspection GoRedundantConversion
 	size := int64(buf.Blocks) * int64(buf.Bsize)
 

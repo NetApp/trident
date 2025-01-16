@@ -17,6 +17,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/spf13/afero"
 
+	"github.com/netapp/trident/internal/syswrap"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/models"
@@ -37,6 +38,7 @@ type Utils interface {
 	GetHostSystemInfo(ctx context.Context) (*models.HostSystem, error)
 	GetIPAddresses(ctx context.Context) ([]string, error)
 	PathExists(path string) (bool, error)
+	PathExistsWithTimeout(ctx context.Context, path string, timeout time.Duration) (bool, error)
 	IsLikelyDir(mountpoint string) (bool, error)
 	DeleteResourceAtPath(ctx context.Context, resource string) error
 	WaitForResourceDeletionAtPath(ctx context.Context, resource string, maxDuration time.Duration) error
@@ -107,11 +109,18 @@ func (o *OSUtils) GetIPAddresses(ctx context.Context) ([]string, error) {
 	return ipAddrs, nil
 }
 
+// PathExists returns if path exists. This should only be used if the call will not block if the path or volume is
+// inaccessible.
 func (o *OSUtils) PathExists(path string) (bool, error) {
-	if _, err := o.osFs.Stat(path); err == nil {
-		return true, nil
-	}
-	return false, nil
+	_, err := o.osFs.Stat(path)
+	return err == nil, nil
+}
+
+// PathExistsWithTimeout returns if path exists, and can return a timeout error on linux; windows ignores the timeout.
+// Context timeouts may be ignored and are handled by the underlying implementation. This should be used instead of
+// PathExists if there is a chance the call will block if the path or volume is inaccessible, such as on an NFS mount.
+func (o *OSUtils) PathExistsWithTimeout(ctx context.Context, path string, timeout time.Duration) (bool, error) {
+	return syswrap.Exists(ctx, path, timeout)
 }
 
 // EnsureFileExists makes sure that file of given name exists

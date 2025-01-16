@@ -158,6 +158,21 @@ func (mr *MockUtilsMockRecorder) PathExists(arg0 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PathExists", reflect.TypeOf((*MockUtils)(nil).PathExists), arg0)
 }
 
+// PathExistsWithTimeout mocks base method.
+func (m *MockUtils) PathExistsWithTimeout(arg0 context.Context, arg1 string, arg2 time.Duration) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PathExistsWithTimeout", arg0, arg1, arg2)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PathExistsWithTimeout indicates an expected call of PathExistsWithTimeout.
+func (mr *MockUtilsMockRecorder) PathExistsWithTimeout(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PathExistsWithTimeout", reflect.TypeOf((*MockUtils)(nil).PathExistsWithTimeout), arg0, arg1, arg2)
+}
+
 // ServiceActiveOnHost mocks base method.
 func (m *MockUtils) ServiceActiveOnHost(arg0 context.Context, arg1 string) (bool, error) {
 	m.ctrl.T.Helper()

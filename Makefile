@@ -200,6 +200,7 @@ binaries_for_platform = $(call go_build,tridentctl,./cli,$1,$2)\
 	$(if $(findstring darwin,$1),,\
 		&& $(call go_build,trident_orchestrator,.,$1,$2)\
 		$(if $(findstring linux,$1),\
+			&& $(call go_build,syswrap,./cmd/syswrap,$1,$2) \
 			&& $(call chwrap_build,$1,$2) \
 			&& $(call node_prep_build,$1,$2) ))
 
@@ -239,6 +240,7 @@ docker_build_linux = $1 build \
 	--build-arg CLI_BIN=$(call binary_path,tridentctl,$2) \
 	--build-arg NODE_PREP_BIN=$(call binary_path,node_prep,$2) \
 	--build-arg CHWRAP_BIN=$(call binary_path,chwrap.tar,$2) \
+	--build-arg SYSWRAP_BIN=${call binary_path,syswrap,$2} \
 	--tag $3 \
 	--rm \
 	$(if $(findstring $(DOCKER_BUILDX_BUILD_CLI),$1),--builder trident-builder) \
