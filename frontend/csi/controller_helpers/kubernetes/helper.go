@@ -336,6 +336,11 @@ func (h *helper) getSnapshotCloneSourceInfo(
 		if !h.matchNamespaceToAnnotation(clonePVC.Namespace, sourceCloneToNamespaces) {
 			return "", "", fmt.Errorf("cloning to namespace %s is not allowed, it is not listed in cloneToNamespace annotation", clonePVC.Namespace)
 		}
+		// Get the volume reference CR
+		_, err = h.getCachedVolumeReference(ctx, clonePVC.Namespace, snapSourcePVC.Name, namespace)
+		if err != nil {
+			return "", "", fmt.Errorf("volume reference not found: %v", err)
+		}
 
 	}
 	// If the clone from PVC annotation is also set, ensure it matches the snapshot
@@ -422,6 +427,11 @@ func (h *helper) getCloneSourceInfo(ctx context.Context, clonePVC *v1.Persistent
 		// Ensure the source PVC has been explicitly allowed to clone to the subordinate PVC namespace
 		if !h.matchNamespaceToAnnotation(clonePVC.Namespace, sourceCloneToNamespaces) {
 			return "", fmt.Errorf("cloning to namespace %s is not allowed, it is not listed in cloneToNamespace annotation", clonePVC.Namespace)
+		}
+		// Get the volume reference CR
+		_, err := h.getCachedVolumeReference(ctx, clonePVC.Namespace, sourcePVCName, namespace)
+		if err != nil {
+			return "", fmt.Errorf("volume reference not found: %v", err)
 		}
 	}
 
