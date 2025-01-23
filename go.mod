@@ -46,14 +46,14 @@ require (
 	github.com/spf13/afero v1.11.0
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
-	github.com/vishvananda/netlink v1.1.0
+	github.com/vishvananda/netlink v1.3.0
 	github.com/zcalusic/sysinfo v1.1.2
 	go.uber.org/mock v0.4.0
 	go.uber.org/multierr v1.11.0 // github.com/uber-go/multierr
 	golang.org/x/crypto v0.28.0 // github.com/golang/crypto
 	golang.org/x/net v0.30.0 // github.com/golang/net
 	golang.org/x/oauth2 v0.23.0 // github.com/golang/oauth2
-	golang.org/x/sys v0.26.0 // github.com/golang/sys
+	golang.org/x/sys v0.29.0 // github.com/golang/sys
 	golang.org/x/text v0.19.0 // github.com/golang/text
 	golang.org/x/time v0.7.0 // github.com/golang/time
 	google.golang.org/api v0.200.0
@@ -159,7 +159,7 @@ require (
 	github.com/rivo/uniseg v0.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/vishvananda/netns v0.0.4 // indirect
+	github.com/vishvananda/netns v0.0.5 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.mongodb.org/mongo-driver v1.14.0 // indirect
 	go.opencensus.io v0.24.0 // indirect

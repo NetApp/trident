@@ -157,12 +157,32 @@ func (o *OSUtils) getIPAddressesExceptingNondefaultRoutes(ctx context.Context) (
 	Logc(ctx).Debug(">>>> osutils_linux.getAddressesExceptingNondefaultRoutes")
 	defer Logc(ctx).Debug("<<<< osutils_linux.getAddressesExceptingNondefaultRoutes")
 
-	// Get all default routes (nil destination)
-	routes, err := netLink.RouteListFiltered(netlink.FAMILY_ALL, &netlink.Route{}, netlink.RT_FILTER_DST)
+	// Get all default routes
+	var routes []netlink.Route
+
+	getRoutesByDestination := func(family int, dst *net.IPNet) ([]netlink.Route, error) {
+		return netLink.RouteListFiltered(family, &netlink.Route{Dst: dst}, netlink.RT_FILTER_DST)
+	}
+
+	ipv4Routes, err := getRoutesByDestination(netlink.FAMILY_ALL, &net.IPNet{
+		IP:   net.IPv4zero,
+		Mask: net.CIDRMask(0, 32),
+	})
 	if err != nil {
 		Logc(ctx).Error(err)
 		return nil, err
 	}
+	routes = append(routes, ipv4Routes...)
+
+	ipv6Routes, err := getRoutesByDestination(netlink.FAMILY_ALL, &net.IPNet{
+		IP:   net.IPv6zero,
+		Mask: net.CIDRMask(0, 128),
+	})
+	if err != nil {
+		Logc(ctx).Error(err)
+		return nil, err
+	}
+	routes = append(routes, ipv6Routes...)
 
 	// Get deduplicated set of links associated with default routes
 	intfIndexMap := make(map[int]struct{})
