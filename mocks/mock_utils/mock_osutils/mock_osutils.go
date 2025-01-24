@@ -83,6 +83,21 @@ func (mr *MockUtilsMockRecorder) EnsureFileExists(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureFileExists", reflect.TypeOf((*MockUtils)(nil).EnsureFileExists), arg0, arg1)
 }
 
+// EvalSymlinks mocks base method.
+func (m *MockUtils) EvalSymlinks(arg0 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EvalSymlinks", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EvalSymlinks indicates an expected call of EvalSymlinks.
+func (mr *MockUtilsMockRecorder) EvalSymlinks(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EvalSymlinks", reflect.TypeOf((*MockUtils)(nil).EvalSymlinks), arg0)
+}
+
 // GetHostSystemInfo mocks base method.
 func (m *MockUtils) GetHostSystemInfo(arg0 context.Context) (*models.HostSystem, error) {
 	m.ctrl.T.Helper()

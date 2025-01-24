@@ -39,7 +39,7 @@ const (
 var (
 	iqnRegex       = regexp.MustCompile(`^\s*InitiatorName\s*=\s*(?P<iqn>\S+)(|\s+.*)$`)
 	mountClient, _ = mount.New()
-	IscsiUtils     = iscsi.NewReconcileUtils(osutils.ChrootPathPrefix, osutils.New())
+	IscsiUtils     = iscsi.NewReconcileUtils()
 	devicesClient  = devices.New()
 	iscsiClient    = iscsi.NewDetailed(osutils.ChrootPathPrefix, command, iscsi.DefaultSelfHealingExclusion, osutils.New(),
 		devicesClient, filesystem.New(mountClient), mountClient, IscsiUtils, afero.Afero{Fs: afero.NewOsFs()}, nil)

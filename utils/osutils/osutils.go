@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -44,6 +45,7 @@ type Utils interface {
 	WaitForResourceDeletionAtPath(ctx context.Context, resource string, maxDuration time.Duration) error
 	EnsureFileExists(ctx context.Context, path string) error
 	EnsureDirExists(ctx context.Context, path string) error
+	EvalSymlinks(path string) (string, error)
 }
 
 type OSUtils struct {
@@ -228,4 +230,8 @@ func (o *OSUtils) EnsureDirExists(ctx context.Context, path string) error {
 // Detect if code is running in a container or not
 func runningInContainer() bool {
 	return os.Getenv("CSI_ENDPOINT") != ""
+}
+
+func (o *OSUtils) EvalSymlinks(path string) (string, error) {
+	return filepath.EvalSymlinks(path)
 }

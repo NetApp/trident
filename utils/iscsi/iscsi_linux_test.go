@@ -355,7 +355,8 @@ func TestISCSIActiveOnHost(t *testing.T) {
 			).Return([]byte(""), tt.expected.err)
 
 			osUtils := osutils.NewDetailed(mockExec, afero.NewMemMapFs())
-			iscsiClient := NewDetailed("", mockExec, nil, nil, nil, nil, nil, nil, afero.Afero{Fs: afero.NewMemMapFs()}, osUtils)
+			iscsiClient := NewDetailed("", mockExec, nil, nil, nil, nil, nil, nil,
+				afero.Afero{Fs: afero.NewMemMapFs()}, osUtils)
 			active, err := iscsiClient.ISCSIActiveOnHost(tt.args.ctx, tt.args.host)
 			if tt.expected.err != nil {
 				assert.Error(t, err)

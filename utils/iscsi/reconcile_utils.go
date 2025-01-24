@@ -7,12 +7,14 @@ package iscsi
 import (
 	"context"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 
+	"github.com/spf13/afero"
+
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/osutils"
 )
 
 type IscsiReconcileUtils interface {
@@ -25,12 +27,18 @@ type IscsiReconcileUtils interface {
 type IscsiReconcileHelper struct {
 	chrootPathPrefix string
 	osClient         OS
+	osFs             afero.Afero
 }
 
-func NewReconcileUtils(chrootPathPrefix string, osClient OS) IscsiReconcileUtils {
+func NewReconcileUtils() IscsiReconcileUtils {
+	return NewReconcileUtilsDetailed(osutils.ChrootPathPrefix, osutils.New(), afero.Afero{Fs: afero.NewOsFs()})
+}
+
+func NewReconcileUtilsDetailed(chrootPathPrefix string, osClient OS, osFs afero.Afero) IscsiReconcileUtils {
 	return &IscsiReconcileHelper{
 		chrootPathPrefix: chrootPathPrefix,
 		osClient:         osClient,
+		osFs:             osFs,
 	}
 }
 
@@ -75,7 +83,7 @@ func (h *IscsiReconcileHelper) GetISCSIHostSessionMapForTarget(ctx context.Conte
 	hostSessionMap := make(map[int]int)
 
 	sysPath := h.chrootPathPrefix + "/sys/class/iscsi_host/"
-	if hostDirs, err := os.ReadDir(sysPath); err != nil {
+	if hostDirs, err := h.osFs.ReadDir(sysPath); err != nil {
 		Logc(ctx).WithField("error", err).Errorf("Could not read %s", sysPath)
 		return hostSessionMap
 	} else {
@@ -90,7 +98,7 @@ func (h *IscsiReconcileHelper) GetISCSIHostSessionMapForTarget(ctx context.Conte
 			}
 
 			devicePath := sysPath + hostName + "/device/"
-			if deviceDirs, err := os.ReadDir(devicePath); err != nil {
+			if deviceDirs, err := h.osFs.ReadDir(devicePath); err != nil {
 				Logc(ctx).WithFields(LogFields{
 					"error":         err,
 					"rawDevicePath": devicePath,
@@ -109,7 +117,7 @@ func (h *IscsiReconcileHelper) GetISCSIHostSessionMapForTarget(ctx context.Conte
 					}
 
 					targetNamePath := devicePath + sessionName + "/iscsi_session/" + sessionName + "/targetname"
-					if targetName, err := os.ReadFile(targetNamePath); err != nil {
+					if targetName, err := h.osFs.ReadFile(targetNamePath); err != nil {
 						Logc(ctx).WithFields(LogFields{
 							"path":  targetNamePath,
 							"error": err,
@@ -154,7 +162,7 @@ func (h *IscsiReconcileHelper) GetDevicesForLUN(paths []string) ([]string, error
 		if !exists || err != nil {
 			continue
 		}
-		dirFd, err := os.Open(dirname)
+		dirFd, err := h.osFs.Open(dirname)
 		if err != nil {
 			return nil, err
 		}

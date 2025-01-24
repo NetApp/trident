@@ -423,7 +423,7 @@ func TestListSubsystemsFromSysFs(t *testing.T) {
 	osFs := afero.NewMemMapFs()
 	mockFsClient := filesystem.NewDetailed(nil, osFs, nil)
 	_, err := listSubsystemsFromSysFs(*mockFsClient, ctx())
-	assert.Nil(t, err)
+	assert.Error(t, err)
 
 	filePath := "/sys/class/nvme-subsystem/nvme1/subsysnqn"
 	fileContent := []byte("This is a test file")

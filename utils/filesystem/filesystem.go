@@ -346,9 +346,7 @@ func (f *FSClient) DeleteFile(ctx context.Context, filepath, fileDescription str
 }
 
 func (f *FSClient) ScanFile(filename string) ([]byte, error) {
-	fs := afero.NewOsFs()
-
-	file, err := fs.Open(filename)
+	file, err := f.osFs.Open(filename)
 	if err != nil {
 		fmt.Println("Failed to open file:", err)
 		return nil, err
@@ -364,9 +362,7 @@ func (f *FSClient) ScanFile(filename string) ([]byte, error) {
 }
 
 func (f *FSClient) ScanDir(path string) ([]os.FileInfo, error) {
-	fs := afero.NewOsFs()
-
-	dirEntries, err := afero.ReadDir(fs, path)
+	dirEntries, err := afero.ReadDir(f.osFs, path)
 	if err != nil {
 		fmt.Println("Failed to read  directory:", err)
 		return nil, err

@@ -97,21 +97,6 @@ func (mr *MockNVMeInterfaceMockRecorder) NVMeActiveOnHost(arg0 any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeActiveOnHost", reflect.TypeOf((*MockNVMeInterface)(nil).NVMeActiveOnHost), arg0)
 }
 
-// NewNVMeDevice mocks base method.
-func (m *MockNVMeInterface) NewNVMeDevice(arg0 context.Context, arg1 string) (utils.NVMeDeviceInterface, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewNVMeDevice", arg0, arg1)
-	ret0, _ := ret[0].(utils.NVMeDeviceInterface)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NewNVMeDevice indicates an expected call of NewNVMeDevice.
-func (mr *MockNVMeInterfaceMockRecorder) NewNVMeDevice(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewNVMeDevice", reflect.TypeOf((*MockNVMeInterface)(nil).NewNVMeDevice), arg0, arg1)
-}
-
 // NewNVMeSubsystem mocks base method.
 func (m *MockNVMeInterface) NewNVMeSubsystem(arg0 context.Context, arg1 string) utils.NVMeSubsystemInterface {
 	m.ctrl.T.Helper()

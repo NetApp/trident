@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -154,7 +153,7 @@ func New() (*Client, error) {
 	chrootPathPrefix := osutils.ChrootPathPrefix
 
 	osUtils := osutils.New()
-	reconcileutils := NewReconcileUtils(chrootPathPrefix, osUtils)
+	reconcileutils := NewReconcileUtils()
 	osFs := afero.Afero{Fs: afero.NewOsFs()}
 	mountClient, err := mount.New()
 	if err != nil {
@@ -170,8 +169,7 @@ func New() (*Client, error) {
 
 func NewDetailed(chrootPathPrefix string, command tridentexec.Command, selfHealingExclusion []string, osClient OS,
 	devices devices.Devices, fileSystemClient filesystem.Filesystem, mountClient mount.Mount,
-	iscsiUtils IscsiReconcileUtils,
-	os afero.Afero, osUtils osutils.Utils,
+	iscsiUtils IscsiReconcileUtils, os afero.Afero, osUtils osutils.Utils,
 ) *Client {
 	return &Client{
 		chrootPathPrefix:     chrootPathPrefix,
@@ -1896,7 +1894,7 @@ func (client *Client) SafeToLogOut(ctx context.Context, hostNumber, sessionNumbe
 	// See drivers/scsi/scsi_scan.c in Linux
 	// We assume the channel/bus and device/controller are always zero for iSCSI
 	targetPath := devicePath + fmt.Sprintf("/session%d/target%d:0:0", sessionNumber, hostNumber)
-	dirs, err := os.ReadDir(targetPath)
+	dirs, err := client.os.ReadDir(targetPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return true
@@ -1970,7 +1968,7 @@ func (c *Client) GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*m
 
 	// Start by reading the sessions from /sys/class/iscsi_session
 	sysPath := c.chrootPathPrefix + "/sys/class/iscsi_session/"
-	sessionDirs, err := os.ReadDir(sysPath)
+	sessionDirs, err := c.os.ReadDir(sysPath)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Errorf("Could not read %s", sysPath)
 		return nil, err
@@ -2003,7 +2001,7 @@ func (c *Client) GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*m
 		sessionValues := make(map[string]string, len(sessionFiles))
 		for file, value := range sessionFiles {
 			path := sessionPath + "/" + file
-			fileBytes, err := os.ReadFile(path)
+			fileBytes, err := c.os.ReadFile(path)
 			if err != nil {
 				Logc(ctx).WithFields(LogFields{
 					"path":  path,
@@ -2044,7 +2042,7 @@ func (c *Client) GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*m
 
 		// Find the one target at /sys/class/iscsi_session/sessionXXX/device/targetHH:BB:DD (host:bus:device)
 		sessionDevicePath := sessionPath + "/device/"
-		targetDirs, err := os.ReadDir(sessionDevicePath)
+		targetDirs, err := c.os.ReadDir(sessionDevicePath)
 		if err != nil {
 			Logc(ctx).WithField("error", err).Errorf("Could not read %s", sessionDevicePath)
 			return nil, err
@@ -2076,7 +2074,7 @@ func (c *Client) GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*m
 		}).Debug("Found host/bus/device path.")
 
 		// Find the devices at /sys/class/iscsi_session/sessionXXX/device/targetHH:BB:DD/HH:BB:DD:LL (host:bus:device:lun)
-		hostBusDeviceLunDirs, err := os.ReadDir(sessionDeviceHBDPath)
+		hostBusDeviceLunDirs, err := c.os.ReadDir(sessionDeviceHBDPath)
 		if err != nil {
 			Logc(ctx).WithField("error", err).Errorf("Could not read %s", sessionDeviceHBDPath)
 			return nil, err
@@ -2110,7 +2108,7 @@ func (c *Client) GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*m
 			blockPath := sessionDeviceHBDLPath + "/block/"
 
 			// Find the block device at /sys/class/iscsi_session/sessionXXX/device/targetHH:BB:DD/HH:BB:DD:LL/block
-			blockDeviceDirs, err := os.ReadDir(blockPath)
+			blockDeviceDirs, err := c.os.ReadDir(blockPath)
 			if err != nil {
 				Logc(ctx).WithField("error", err).Errorf("Could not read %s", blockPath)
 				return nil, err
@@ -2195,7 +2193,7 @@ func (client *Client) GetMountedISCSIDevices(ctx context.Context) ([]*models.Scs
 		var mountedDevice string
 		// Resolve any symlinks to get the real device
 		if hasDevMountSourcePrefix {
-			device, err := filepath.EvalSymlinks(procMount.MountSource)
+			device, err := client.osUtils.EvalSymlinks(procMount.MountSource)
 			if err != nil {
 				Logc(ctx).Error(err)
 				continue

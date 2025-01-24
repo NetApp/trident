@@ -21,6 +21,7 @@ import (
 	"github.com/netapp/trident/mocks/mock_utils/mock_filesystem"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	"github.com/netapp/trident/mocks/mock_utils/mock_mount"
+	"github.com/netapp/trident/mocks/mock_utils/mock_osutils"
 	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/devices/luks"
@@ -29,9 +30,35 @@ import (
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
+	"github.com/netapp/trident/utils/osutils"
 )
 
+var mockPublushInfo models.VolumePublishInfo = models.VolumePublishInfo{
+	FilesystemType: filesystem.Ext4,
+	VolumeAccessInfo: models.VolumeAccessInfo{
+		IscsiAccessInfo: models.IscsiAccessInfo{
+			IscsiLunNumber:    1,
+			IscsiTargetIQN:    "iqn.1992-08.com.netapp:sn.a57de312358411ef8730005056b33111:vs.2",
+			IscsiTargetPortal: "10.0.0.1:3260",
+			IscsiPortals:      []string{""},
+			IscsiChapInfo: models.IscsiChapInfo{
+				UseCHAP:              true,
+				IscsiUsername:        "testUser",
+				IscsiInitiatorSecret: "testSecret",
+				IscsiTargetUsername:  "targetUser",
+				IscsiTargetSecret:    "targetSecret",
+			},
+		},
+	},
+}
+
 func TestNew(t *testing.T) {
+	originalPluginMode := os.Getenv("DOCKER_PLUGIN_MODE")
+	defer func(pluginMode string) {
+		err := os.Setenv("DOCKER_PLUGIN_MODE", pluginMode)
+		assert.NoError(t, err)
+	}(originalPluginMode)
+
 	type parameters struct {
 		setUpEnvironment func()
 	}
@@ -2271,7 +2298,7 @@ func TestClient_RescanDevices(t *testing.T) {
 		"error getting device information": {
 			targetIQN: targetIQN,
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				return NewReconcileUtils("", nil)
+				return NewReconcileUtils()
 			},
 			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
@@ -4801,6 +4828,813 @@ func TestEnsureHostportFormatted(t *testing.T) {
 	}
 }
 
+func TestLoginTarget(t *testing.T) {
+	tests := map[string]struct {
+		publishInfo    *models.VolumePublishInfo
+		getMockDevices func(controller *gomock.Controller) devices.Devices
+		getMockCommand func(controller *gomock.Controller) tridentexec.Command
+		expectErr      bool
+	}{
+		"Login success CHAP": {
+			publishInfo: &mockPublushInfo,
+			getMockDevices: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().ListAllDevices(gomock.Any()).Times(2)
+				return mockDevices
+			},
+			getMockCommand: func(controller *gomock.Controller) tridentexec.Command {
+				mockCommand := mockexec.NewMockCommand(controller)
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m", "node", "-T",
+					"iqn.1992-08.com.netapp:sn.a57de312358411ef8730005056b33111:vs.2", "-p", "1.2.3.4:9600", "--op=update", "--name",
+					"node.session.auth.authmethod", "--value=CHAP")
+				mockCommand.EXPECT().ExecuteRedacted(gomock.Any(), "iscsiadm", []string{
+					"-m", "node", "-T",
+					"iqn.1992-08.com.netapp:sn.a57de312358411ef8730005056b33111:vs.2", "-p", "1.2.3.4:9600", "--op=update", "--name",
+					"node.session.auth.username", "--value=testUser",
+				}, gomock.Any())
+				mockCommand.EXPECT().ExecuteRedacted(gomock.Any(), "iscsiadm", []string{
+					"-m", "node", "-T",
+					"iqn.1992-08.com.netapp:sn.a57de312358411ef8730005056b33111:vs.2", "-p", "1.2.3.4:9600", "--op=update", "--name",
+					"node.session.auth.password", "--value=testSecret",
+				}, gomock.Any())
+				mockCommand.EXPECT().ExecuteRedacted(gomock.Any(), "iscsiadm", []string{
+					"-m", "node", "-T",
+					"iqn.1992-08.com.netapp:sn.a57de312358411ef8730005056b33111:vs.2", "-p", "1.2.3.4:9600", "--op=update", "--name",
+					"node.session.auth.username_in", "--value=targetUser",
+				}, gomock.Any())
+				mockCommand.EXPECT().ExecuteRedacted(gomock.Any(), "iscsiadm", []string{
+					"-m", "node", "-T",
+					"iqn.1992-08.com.netapp:sn.a57de312358411ef8730005056b33111:vs.2", "-p", "1.2.3.4:9600", "--op=update", "--name",
+					"node.session.auth.password_in", "--value=targetSecret",
+				}, gomock.Any())
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m", "node", "-T",
+					"iqn.1992-08.com.netapp:sn.a57de312358411ef8730005056b33111:vs.2", "-p", "1.2.3.4:9600", "--op=update", "--name",
+					"node.conn[0].timeo.login_timeout", "--value=10")
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m", "node", "-T",
+					"iqn.1992-08.com.netapp:sn.a57de312358411ef8730005056b33111:vs.2", "-p", "1.2.3.4:9600", "--op=update", "--name",
+					"node.session.initial_login_retry_max", "--value=1")
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "iscsiadm", 10*time.Second, true, "-m", "node",
+					"-T", "iqn.1992-08.com.netapp:sn.a57de312358411ef8730005056b33111:vs.2", "-p", "1.2.3.4:9600", "--login")
+				return mockCommand
+			},
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			client := NewDetailed("/host", params.getMockCommand(ctrl), nil, nil, params.getMockDevices(ctrl), nil,
+				nil, nil, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+			err := client.LoginTarget(context.Background(), params.publishInfo, "1.2.3.4:9600")
+			if params.expectErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestSafeToLogOut(t *testing.T) {
+	tests := map[string]struct {
+		hostNum    int
+		sessionNum int
+		expected   bool
+		getOsFs    func() afero.Afero
+	}{
+		"Unsafe to logout": {
+			hostNum:    1,
+			sessionNum: 2,
+			getOsFs: func() afero.Afero {
+				fs := afero.NewMemMapFs()
+				_ = fs.MkdirAll("/sys/class/iscsi_host/host1/device/session2/target1:0:0/6:0:0:0", 0o755)
+				return afero.Afero{Fs: fs}
+			},
+			expected: false,
+		},
+		"Safe to logout": {
+			hostNum:    1,
+			sessionNum: 2,
+			getOsFs: func() afero.Afero {
+				fs := afero.NewMemMapFs()
+				return afero.Afero{Fs: fs}
+			},
+			expected: true,
+		},
+		"Safe to logout, no target dirs": {
+			hostNum:    1,
+			sessionNum: 2,
+			getOsFs: func() afero.Afero {
+				fs := afero.NewMemMapFs()
+				_ = fs.MkdirAll("/sys/class/iscsi_host/host1/device/session2/target1:0:0", 0o755)
+				return afero.Afero{Fs: fs}
+			},
+			expected: true,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			client := NewDetailed("/host", nil, nil, nil, nil, nil,
+				nil, nil, params.getOsFs(), nil)
+			isSafe := client.SafeToLogOut(context.Background(), params.hostNum, params.sessionNum)
+			assert.Equal(t, params.expected, isSafe)
+		})
+	}
+}
+
+func TestRemovePortalsFromSession(t *testing.T) {
+	tests := map[string]struct {
+		publishInfo *models.VolumePublishInfo
+		sessions    *models.ISCSISessions
+	}{
+		"Successful Remove": {
+			publishInfo: &models.VolumePublishInfo{
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiPortals:      []string{"192.168.1.100:3260"},
+						IscsiTargetPortal: "192.168.1.100:3260",
+					},
+				},
+			},
+			sessions: &models.ISCSISessions{
+				Info: map[string]*models.ISCSISessionData{
+					"192.168.1.100": {
+						PortalInfo:  models.PortalInfo{},
+						LUNs:        models.LUNs{},
+						Remediation: models.Scan,
+					},
+				},
+			},
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, 1, len(params.sessions.Info))
+			client := NewDetailed("/host", nil, nil, nil, nil, nil,
+				nil, nil, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+			client.RemovePortalsFromSession(context.Background(), params.publishInfo, params.sessions)
+			assert.Equal(t, 0, len(params.sessions.Info))
+		})
+	}
+}
+
+func TestLogout(t *testing.T) {
+	tests := map[string]struct {
+		getMockDevices func(controller *gomock.Controller) devices.Devices
+		getMockCommand func(controller *gomock.Controller) tridentexec.Command
+		expectError    bool
+	}{
+		"Successful logout": {
+			getMockDevices: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().ListAllDevices(gomock.Any()).Times(2)
+				return mockDevices
+			},
+			getMockCommand: func(controller *gomock.Controller) tridentexec.Command {
+				mockCommand := mockexec.NewMockCommand(controller)
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m", "node", "-T", gomock.Any(), "--portal",
+					gomock.Any(), "-u").Return(nil, nil)
+				return mockCommand
+			},
+			expectError: false,
+		},
+		"Logout error": {
+			getMockDevices: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().ListAllDevices(gomock.Any()).Times(2)
+				return mockDevices
+			},
+			getMockCommand: func(controller *gomock.Controller) tridentexec.Command {
+				mockCommand := mockexec.NewMockCommand(controller)
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m", "node", "-T", gomock.Any(), "--portal",
+					gomock.Any(), "-u").Return(nil, fmt.Errorf("error"))
+				return mockCommand
+			},
+			expectError: false,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			client := NewDetailed("/host", params.getMockCommand(mockCtrl), nil, nil, params.getMockDevices(mockCtrl), nil,
+				nil, nil,
+				afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+			err := client.Logout(context.Background(), "iqn.2023-10.com.example:target", "192.168.1.100:3260")
+
+			if params.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestPrepareDeviceForRemoval(t *testing.T) {
+	tests := map[string]struct {
+		getDevicesClient  func(controller *gomock.Controller) devices.Devices
+		deviceInfo        *models.ScsiDeviceInfo
+		publishInfo       *models.VolumePublishInfo
+		allPublishInfos   []models.VolumePublishInfo
+		ignoreErrors      bool
+		force             bool
+		expectedMultipath string
+		expectedError     bool
+	}{
+		"Successful removal": {
+			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any()).Return(true, nil)
+				mockDevices.EXPECT().ListAllDevices(gomock.Any()).Times(2)
+				mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any()).Return(nil)
+				mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockDevices.EXPECT().RemoveDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockDevices.EXPECT().WaitForDevicesRemoval(gomock.Any(), DevPrefix, gomock.Any(),
+					devicesRemovalMaxWaitTime).Return(nil)
+				return mockDevices
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "dm-0",
+				Devices:         []string{"sda", "sdb"},
+			},
+			publishInfo:       &mockPublushInfo,
+			allPublishInfos:   []models.VolumePublishInfo{},
+			ignoreErrors:      false,
+			force:             false,
+			expectedMultipath: "",
+			expectedError:     false,
+		},
+		"Deferred device removal": {
+			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any()).Return(true, nil)
+				mockDevices.EXPECT().ListAllDevices(gomock.Any()).Times(2)
+				mockDevices.EXPECT().RemoveDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockDevices.EXPECT().WaitForDevicesRemoval(gomock.Any(), DevPrefix, gomock.Any(),
+					devicesRemovalMaxWaitTime).Return(nil)
+				return mockDevices
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "dm-0",
+				Devices:         []string{"sda", "sdb"},
+			},
+			publishInfo:       &mockPublushInfo,
+			allPublishInfos:   []models.VolumePublishInfo{},
+			ignoreErrors:      false,
+			force:             true,
+			expectedMultipath: "/dev/dm-0",
+			expectedError:     false,
+		},
+		"Verify mPath device error": {
+			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any()).Return(true, fmt.Errorf("error"))
+				return mockDevices
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "dm-0",
+				Devices:         []string{"sda", "sdb"},
+			},
+			publishInfo:       &mockPublushInfo,
+			allPublishInfos:   []models.VolumePublishInfo{},
+			ignoreErrors:      false,
+			force:             false,
+			expectedMultipath: "",
+			expectedError:     true,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			client := NewDetailed("/host", nil, nil, nil, params.getDevicesClient(mockCtrl), nil, nil, nil,
+				afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+
+			multipath, err := client.PrepareDeviceForRemoval(
+				context.TODO(),
+				params.deviceInfo,
+				params.publishInfo,
+				params.allPublishInfos,
+				params.ignoreErrors,
+				params.force,
+			)
+
+			if params.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.Equal(t, params.expectedMultipath, multipath)
+		})
+	}
+}
+
+func TestRemoveSCSIDevice(t *testing.T) {
+	tests := map[string]struct {
+		getDevicesClient func(controller *gomock.Controller) devices.Devices
+		deviceInfo       *models.ScsiDeviceInfo
+		ignoreErrors     bool
+		skipFlush        bool
+		expectedReturn   bool
+		expectedError    bool
+	}{
+		"Timeout error": {
+			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().ListAllDevices(gomock.Any()).Times(2)
+				mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any()).Return(errors.TimeoutError("timeout"))
+				mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockDevices.EXPECT().RemoveDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockDevices.EXPECT().WaitForDevicesRemoval(gomock.Any(), DevPrefix, gomock.Any(),
+					devicesRemovalMaxWaitTime).Return(nil)
+				return mockDevices
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "dm-0",
+				Devices:         []string{"sda", "sdb"},
+			},
+			ignoreErrors:   false,
+			expectedReturn: true,
+			expectedError:  false,
+		},
+		"Multipath flush error": {
+			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().ListAllDevices(gomock.Any())
+				mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
+				return mockDevices
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "dm-0",
+				Devices:         []string{"sda", "sdb"},
+			},
+			ignoreErrors:   false,
+			expectedReturn: false,
+			expectedError:  true,
+		},
+		"Device flush error": {
+			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().ListAllDevices(gomock.Any())
+				mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any()).Return(nil)
+				mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
+				return mockDevices
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "dm-0",
+				Devices:         []string{"sda", "sdb"},
+			},
+			ignoreErrors:   false,
+			expectedReturn: false,
+			expectedError:  true,
+		},
+		"Remove error": {
+			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().ListAllDevices(gomock.Any())
+				mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any())
+				mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockDevices.EXPECT().RemoveDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
+				return mockDevices
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "dm-0",
+				Devices:         []string{"sda", "sdb"},
+			},
+			ignoreErrors:   false,
+			expectedReturn: false,
+			expectedError:  true,
+		},
+		"Wait for removal error": {
+			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().ListAllDevices(gomock.Any())
+				mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any())
+				mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockDevices.EXPECT().RemoveDevice(gomock.Any(), gomock.Any(), gomock.Any())
+				mockDevices.EXPECT().WaitForDevicesRemoval(gomock.Any(), DevPrefix, gomock.Any(),
+					devicesRemovalMaxWaitTime).Return(fmt.Errorf("error"))
+				return mockDevices
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "dm-0",
+				Devices:         []string{"sda", "sdb"},
+			},
+			ignoreErrors:   false,
+			expectedReturn: false,
+			expectedError:  true,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			client := NewDetailed("/host", nil, nil, nil, params.getDevicesClient(mockCtrl), nil, nil, nil,
+				afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+
+			ignoreErrors, err := client.removeSCSIDevice(context.TODO(), params.deviceInfo, params.ignoreErrors, params.skipFlush)
+
+			if params.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.Equal(t, params.expectedReturn, ignoreErrors)
+		})
+	}
+}
+
+func TestRemoveLUNFromSessions(t *testing.T) {
+	tests := map[string]struct {
+		publishInfo *models.VolumePublishInfo
+		sessions    *models.ISCSISessions
+		beforeLen   int
+		afterLen    int
+	}{
+		"LUN removed sucessfully": {
+			sessions: &models.ISCSISessions{
+				Info: map[string]*models.ISCSISessionData{
+					"192.168.1.100": {
+						PortalInfo: models.PortalInfo{},
+						LUNs: models.LUNs{
+							Info: map[int32]string{
+								0: "iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.25",
+							},
+						},
+						Remediation: models.Scan,
+					},
+				},
+			},
+			publishInfo: &models.VolumePublishInfo{
+				FilesystemType: filesystem.Ext4,
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiTargetPortal: "192.168.1.100",
+						IscsiPortals:      []string{""},
+						IscsiTargetIQN:    "iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.25",
+					},
+				},
+			},
+			beforeLen: 1,
+			afterLen:  0,
+		},
+		"No sessions": {
+			sessions: &models.ISCSISessions{},
+			publishInfo: &models.VolumePublishInfo{
+				FilesystemType:   filesystem.Ext4,
+				VolumeAccessInfo: mockPublushInfo.VolumeAccessInfo,
+			},
+			beforeLen: 0,
+			afterLen:  0,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, params.beforeLen, len(params.sessions.Info))
+			client := NewDetailed("/host", nil, nil, nil, nil, nil, nil, nil,
+				afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+			client.RemoveLUNFromSessions(context.Background(), params.publishInfo, params.sessions)
+			assert.Equal(t, params.afterLen, len(params.sessions.Info))
+		})
+	}
+}
+
+func TestTargetHasMountedDevice(t *testing.T) {
+	tests := map[string]struct {
+		getMockFs         func() (afero.Afero, error)
+		targetIQN         string
+		getMockIscsiUtils func(controller *gomock.Controller) IscsiReconcileUtils
+		getMountClient    func(controller *gomock.Controller) mount.Mount
+		getMockOsUtils    func(controller *gomock.Controller) osutils.Utils
+		expectedResult    bool
+		expectedError     bool
+	}{
+		"Target has mounted device": {
+			getMockFs: func() (afero.Afero, error) {
+				fs := afero.NewMemMapFs()
+				err := createMockIscsiSessions(fs)
+				if err != nil {
+					return afero.Afero{Fs: fs}, err
+				}
+				return afero.Afero{Fs: fs}, nil
+			},
+			getMockIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
+				iscsiClient := mock_iscsi.NewMockIscsiReconcileUtils(controller)
+				iscsiClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{1: 2})
+				iscsiClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{3: 4})
+				return iscsiClient
+			},
+			getMockOsUtils: func(controller *gomock.Controller) osutils.Utils {
+				mockUtils := mock_osutils.NewMockUtils(controller)
+				mockUtils.EXPECT().EvalSymlinks(gomock.Any()).Return("/dev/dm-0", nil)
+				mockUtils.EXPECT().EvalSymlinks(gomock.Any()).Return("/dev/dm-1", nil)
+				return mockUtils
+			},
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				client := mock_mount.NewMockMount(controller)
+				client.EXPECT().ListProcMountinfo().Return([]models.MountInfo{
+					{MountSource: "/dev/dm-0", MountPoint: "/pvc-123"},
+					{MountSource: "/dev/dm-1", MountPoint: "/pvc-456"},
+				}, nil)
+				return client
+			},
+			targetIQN:      "iqn.1992-08.com.netapp:sn.a57de312358411ef8730005056b33111:vs.2",
+			expectedResult: true,
+			expectedError:  false,
+		},
+		"Target device not mounted": {
+			getMockFs: func() (afero.Afero, error) {
+				fs := afero.NewMemMapFs()
+				fs.MkdirAll(osutils.ChrootPathPrefix+"/sys/class/iscsi_session", 0o755)
+				return afero.Afero{Fs: fs}, nil
+			},
+			getMockIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
+				iscsiClient := mock_iscsi.NewMockIscsiReconcileUtils(controller)
+				return iscsiClient
+			},
+			getMockOsUtils: func(controller *gomock.Controller) osutils.Utils {
+				return mock_osutils.NewMockUtils(controller)
+			},
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				client := mock_mount.NewMockMount(controller)
+				client.EXPECT().ListProcMountinfo().Return([]models.MountInfo{}, nil)
+				return client
+			},
+			targetIQN:      "iqn.1992-08.com.netapp:sn.a57de312358411ef8730005056b33333:vs.2",
+			expectedResult: false,
+			expectedError:  false,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+
+			command := tridentexec.NewCommand()
+			fs, err := params.getMockFs()
+			assert.NoError(t, err)
+
+			fsClient := filesystem.NewDetailed(command, fs, nil)
+			deviceClient := devices.NewDetailed(command, fs, nil)
+			iscsiUtils := params.getMockIscsiUtils(mockCtrl)
+
+			client := NewDetailed(osutils.ChrootPathPrefix, nil, nil, osutils.NewDetailed(command, fs), deviceClient, fsClient,
+				params.getMountClient(mockCtrl), iscsiUtils, afero.Afero{Fs: fs}, params.getMockOsUtils(mockCtrl))
+
+			mounted, err := client.TargetHasMountedDevice(context.Background(), params.targetIQN)
+
+			if params.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.Equal(t, params.expectedResult, mounted)
+		})
+	}
+}
+
+func TestGetMountedISCSIDevices(t *testing.T) {
+	tests := map[string]struct {
+		getMockFs         func() (afero.Afero, error)
+		getMockIscsiUtils func(controller *gomock.Controller) IscsiReconcileUtils
+		getMockOsUtils    func(controller *gomock.Controller) osutils.Utils
+		getMountClient    func(controller *gomock.Controller) mount.Mount
+		expectedResult    []*models.ScsiDeviceInfo
+		expectedResultLen int
+		expectedError     bool
+	}{
+		"Get devices happy path": {
+			getMockFs: func() (afero.Afero, error) {
+				fs := afero.NewMemMapFs()
+				err := createMockIscsiSessions(fs)
+				if err != nil {
+					return afero.Afero{Fs: fs}, err
+				}
+				return afero.Afero{Fs: fs}, nil
+			},
+			getMockIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
+				iscsiClient := mock_iscsi.NewMockIscsiReconcileUtils(controller)
+				iscsiClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{1: 2})
+				iscsiClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{3: 4})
+				return iscsiClient
+			},
+			getMockOsUtils: func(controller *gomock.Controller) osutils.Utils {
+				mockUtils := mock_osutils.NewMockUtils(controller)
+				mockUtils.EXPECT().EvalSymlinks(gomock.Any()).Return("/dev/dm-0", nil)
+				mockUtils.EXPECT().EvalSymlinks(gomock.Any()).Return("/dev/dm-1", nil)
+				return mockUtils
+			},
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				client := mock_mount.NewMockMount(controller)
+				client.EXPECT().ListProcMountinfo().Return([]models.MountInfo{
+					{MountSource: "/dev/dm-0", MountPoint: "/pvc-123"},
+					{MountSource: "/dev/dm-1", MountPoint: "/pvc-456"},
+				}, nil)
+				return client
+			},
+			expectedResult: []*models.ScsiDeviceInfo{
+				{
+					IQN:             "iqn.1992-08.com.netapp:sn.a57de312358411ef8730005056b33111:vs.2",
+					MultipathDevice: "dm-0",
+					Host:            "6",
+					LUN:             "1",
+					SessionNumber:   1,
+				},
+				{
+					IQN:             "iqn.1992-08.com.netapp:sn.a57de312358411ef8730005056b33111:vs.2",
+					MultipathDevice: "dm-1",
+					Host:            "6",
+					LUN:             "0",
+					SessionNumber:   1,
+				},
+			},
+			expectedError:     false,
+			expectedResultLen: 2,
+		},
+		"No mounted devices": {
+			getMockFs: func() (afero.Afero, error) {
+				fs := afero.NewMemMapFs()
+				fs.MkdirAll("/sys/class/iscsi_session", 0o755)
+				return afero.Afero{Fs: fs}, nil
+			},
+			getMockIscsiUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
+				iscsiClient := mock_iscsi.NewMockIscsiReconcileUtils(controller)
+				return iscsiClient
+			},
+			getMockOsUtils: func(controller *gomock.Controller) osutils.Utils {
+				return mock_osutils.NewMockUtils(controller)
+			},
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				client := mock_mount.NewMockMount(controller)
+				client.EXPECT().ListProcMountinfo().Return([]models.MountInfo{}, nil)
+				return client
+			},
+			expectedResult:    []*models.ScsiDeviceInfo{},
+			expectedError:     false,
+			expectedResultLen: 0,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+
+			command := tridentexec.NewCommand()
+			fs, err := params.getMockFs()
+			assert.NoError(t, err)
+
+			fsClient := filesystem.NewDetailed(command, fs, nil)
+			deviceClient := devices.NewDetailed(command, fs, nil)
+			iscsiUtils := params.getMockIscsiUtils(mockCtrl)
+
+			client := NewDetailed(osutils.ChrootPathPrefix, nil, nil, osutils.NewDetailed(command, fs), deviceClient, fsClient,
+				params.getMountClient(mockCtrl), iscsiUtils, afero.Afero{Fs: fs}, params.getMockOsUtils(mockCtrl))
+
+			results, err := client.GetMountedISCSIDevices(context.Background())
+
+			if params.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.Equal(t, params.expectedResultLen, len(results))
+			for i, result := range results {
+				assert.Equal(t, params.expectedResult[i].IQN, result.IQN)
+				assert.Equal(t, params.expectedResult[i].MultipathDevice, result.MultipathDevice)
+				assert.Equal(t, params.expectedResult[i].Host, result.Host)
+				assert.Equal(t, params.expectedResult[i].LUN, result.LUN)
+				assert.Equal(t, params.expectedResult[i].SessionNumber, result.SessionNumber)
+			}
+		})
+	}
+}
+
+func TestReconcileISCSIVolumeInfo(t *testing.T) {
+	tests := map[string]struct {
+		trackingInfo *models.VolumeTrackingInfo
+		getOsFs      func() (afero.Afero, error)
+		expectBool   bool
+		shouldErr    bool
+	}{
+		"Successful using host session map": {
+			trackingInfo: &models.VolumeTrackingInfo{
+				VolumePublishInfo: mockPublushInfo,
+			},
+			getOsFs: func() (afero.Afero, error) {
+				fs := afero.NewMemMapFs()
+				err := createMockIscsiSessions(fs)
+				return afero.Afero{Fs: fs}, err
+			},
+			expectBool: true,
+			shouldErr:  false,
+		},
+		"Unsuccessful": {
+			trackingInfo: &models.VolumeTrackingInfo{
+				VolumePublishInfo: mockPublushInfo,
+			},
+			getOsFs: func() (afero.Afero, error) {
+				fs := afero.NewMemMapFs()
+				return afero.Afero{Fs: fs}, nil
+			},
+			expectBool: false,
+			shouldErr:  false,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			// mockCtrl := gomock.NewController(t)
+			osFs, err := params.getOsFs()
+			assert.NoError(t, err)
+			reconcileHelper := NewReconcileUtilsDetailed(osutils.ChrootPathPrefix, osutils.New(), osFs)
+			reconciled, err := reconcileHelper.ReconcileISCSIVolumeInfo(context.Background(), params.trackingInfo)
+			assert.Equal(t, params.expectBool, reconciled)
+			if params.shouldErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestGetDevicesForLUN(t *testing.T) {
+	prefix := osutils.ChrootPathPrefix
+	tests := map[string]struct {
+		paths   []string
+		getOsFs func() (afero.Afero, error)
+		expect  []string
+	}{
+		"Success": {
+			getOsFs: func() (afero.Afero, error) {
+				fs := afero.NewMemMapFs()
+				fs.MkdirAll(prefix+"/sys/class/iscsi_session/session1/device/target6:0:0/6:0:0:1/block/", 0o755)
+				fs.MkdirAll(prefix+"/sys/class/iscsi_session/session1/device/target6:0:0/6:0:0:1/block/sdb/holders/dm-0", 0o755)
+				fs.MkdirAll(prefix+"/sys/class/iscsi_session/session1/device/target6:0:0/6:0:0:0/block/sdc/holders/dm-1", 0o755)
+				return afero.Afero{Fs: fs}, nil
+			},
+			paths: []string{
+				prefix + "/sys/class/iscsi_session/session1/device/doesnt-exist",
+				prefix + "/sys/class/iscsi_session/session1/device/target6:0:0/6:0:0:1",
+				prefix + "/sys/class/iscsi_session/session1/device/target6:0:0/6:0:0:0",
+			},
+			expect: []string{"sdb", "sdc"},
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			osFs, err := params.getOsFs()
+			assert.NoError(t, err)
+			reconcileHelper := NewReconcileUtilsDetailed(osutils.ChrootPathPrefix, osutils.NewDetailed(nil, osFs), osFs)
+			deviceNames, err := reconcileHelper.GetDevicesForLUN(params.paths)
+			assert.Equal(t, params.expect, deviceNames)
+		})
+	}
+}
+
+func TestGetSysfsBlockDirsForLUN(t *testing.T) {
+	prefix := osutils.ChrootPathPrefix
+	tests := map[string]struct {
+		lunID          int
+		hostSessionMap map[int]int
+		expect         []string
+	}{
+		"Happy Path": {
+			lunID: 1,
+			hostSessionMap: map[int]int{
+				1: 2,
+			},
+			expect: []string{
+				prefix + "/sys/class/scsi_host/host1/device/session2/iscsi_session/session2/device/target1:0:0/1:0:0:1",
+			},
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			reconcileHelper := NewReconcileUtils()
+			dirs := reconcileHelper.GetSysfsBlockDirsForLUN(params.lunID, params.hostSessionMap)
+			assert.Equal(t, params.expect, dirs)
+		})
+	}
+}
+
 // ---- helpers
 func multipathConfig(findMultipathsValue string, ValueCommented bool) string {
 	const multipathConf = `
@@ -4850,4 +5684,60 @@ type aferoFileWrapper struct {
 
 func (a *aferoFileWrapper) WriteString(_ string) (ret int, err error) {
 	return a.WriteStringCount, a.WriteStringError
+}
+
+func writeToFile(fs afero.Fs, path, content string) error {
+	file, err := fs.Create(path)
+	if err != nil {
+		return fmt.Errorf("failed to open file: %v", err)
+	}
+	defer file.Close()
+
+	// Write to the file
+	_, err = file.WriteString(content)
+	if err != nil {
+		return fmt.Errorf("failed to write to file: %v", err)
+	}
+	return nil
+}
+
+func createMockIscsiSessions(fs afero.Fs) error {
+	prefix := osutils.ChrootPathPrefix
+	dirs := []string{
+		"/dev/sdb",
+		prefix + "/sys/block/sdb/holders/dm-0",
+		"/dev/sdc",
+		prefix + "/sys/block/sdc/holders/dm-1",
+		"/dev/sdd",
+		prefix + "/sys/block/sdd/holders/dm-2",
+		"/dev/sde",
+		prefix + "/sys/block/sde/holders/dm-3",
+		prefix + "/sys/class/iscsi_session/session1/device/target6:0:0/6:0:0:0/block/sdc/holders/dm-1",
+		prefix + "/sys/class/iscsi_session/session1/device/target6:0:0/6:0:0:1/block/sdb/holders/dm-0",
+		prefix + "/sys/class/iscsi_session/session2/device/target7:0:0/7:0:0:0/block/sde/holders/dm-3",
+		prefix + "/sys/class/iscsi_session/session2/device/target7:0:0/7:0:0:1/block/sdd/holders/dm-2",
+		prefix + "/sys/class/iscsi_host/host1/device/session1",
+	}
+	for _, dir := range dirs {
+		err := fs.MkdirAll(dir, 0o755)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Create iscsi session files
+	files := map[string]string{
+		prefix + "/sys/class/iscsi_session/session1/targetname": "iqn.1992-08.com.netapp:sn.a57de312358411ef8730005056b33111:vs.2",
+		prefix + "/sys/class/iscsi_host/host1/device/session1/iscsi_session/session1/targetname": "iqn.1992-08.com.netapp:sn." +
+			"a57de312358411ef8730005056b33111:vs.2",
+		prefix + "/sys/class/iscsi_session/session2/targetname": "iqn.1992-08.com.netapp:sn.a57de312358411ef8730005056b33222:vs.2",
+	}
+	for file, content := range files {
+		err := writeToFile(fs, file, content)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
