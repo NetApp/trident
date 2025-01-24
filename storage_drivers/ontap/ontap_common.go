@@ -3370,7 +3370,7 @@ func cloneFlexvol(
 		return fmt.Errorf("error checking for existing volume: %v", err)
 	}
 	if volExists {
-		return fmt.Errorf("volume %s already exists", name)
+		return drivers.NewVolumeExistsError(name)
 	}
 
 	// If no specific snapshot was requested, create one
