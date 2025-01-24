@@ -2984,26 +2984,22 @@ func (c Client) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([
 	return dataLIFs, nil
 }
 
-func (c Client) NetFcpInterfaceGet() (*azgo.FcpInterfaceGetIterResponse, error) {
-	response, err := azgo.NewFcpInterfaceGetIterRequest().
-		SetMaxRecords(DefaultZapiRecords).
-		SetQuery(azgo.FcpInterfaceGetIterRequestQuery{
-			FcpInterfaceInfoPtr: &azgo.FcpInterfaceInfoType{},
-		}).ExecuteUsing(c.zr)
-
-	return response, err
-}
-
 func (c Client) NetFcpInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
-	lifResponse, err := c.NetFcpInterfaceGet()
+	lifResponse, err := c.NetInterfaceGet()
 	if err = azgo.GetError(ctx, lifResponse, err); err != nil {
 		return nil, fmt.Errorf("error checking network interfaces: %v", err)
 	}
 
 	dataLIFs := make([]string, 0)
 	if lifResponse.Result.AttributesListPtr != nil {
-		for _, attrs := range lifResponse.Result.AttributesListPtr.FcpInterfaceInfoPtr {
-			dataLIFs = append(dataLIFs, attrs.PortName())
+		for _, attrs := range lifResponse.Result.AttributesListPtr.NetInterfaceInfoPtr {
+			if attrs.OperationalStatus() == LifOperationalStatusUp {
+				for _, proto := range attrs.DataProtocols().DataProtocolPtr {
+					if proto == protocol {
+						dataLIFs = append(dataLIFs, attrs.Wwpn())
+					}
+				}
+			}
 		}
 	}
 
