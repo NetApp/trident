@@ -14,7 +14,6 @@ import (
 	reflect "reflect"
 	time "time"
 
-	fcp "github.com/netapp/trident/utils/fcp"
 	models "github.com/netapp/trident/utils/models"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -58,10 +57,10 @@ func (mr *MockFCPMockRecorder) AttachVolumeRetry(arg0, arg1, arg2, arg3, arg4, a
 }
 
 // GetDeviceInfoForLUN mocks base method.
-func (m *MockFCP) GetDeviceInfoForLUN(arg0 context.Context, arg1 int, arg2 string, arg3, arg4 bool) (*fcp.ScsiDeviceInfo, error) {
+func (m *MockFCP) GetDeviceInfoForLUN(arg0 context.Context, arg1 int, arg2 string, arg3, arg4 bool) (*models.ScsiDeviceInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeviceInfoForLUN", arg0, arg1, arg2, arg3, arg4)
-	ret0, _ := ret[0].(*fcp.ScsiDeviceInfo)
+	ret0, _ := ret[0].(*models.ScsiDeviceInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -382,7 +382,7 @@ func RemoveSCSIDeviceByPublishInfo(ctx context.Context, publishInfo *tridentmode
 			return
 		}
 
-		deviceInfo, err := utils.GetDeviceInfoForFCPLUN(ctx, nil, int(publishInfo.FCPLunNumber),
+		deviceInfo, err := utils.GetDeviceInfoForFCPLUN(ctx, hostSessionMap, int(publishInfo.FCPLunNumber),
 			publishInfo.FCTargetWWNN, false)
 		if err != nil {
 			Logc(ctx).WithError(err).WithFields(fields).Error("Error getting device info.")

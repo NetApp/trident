@@ -1148,6 +1148,7 @@ func (p *Plugin) nodeStageFCPVolume(
 
 	publishInfo.MountOptions = req.PublishContext["mountOptions"]
 	publishInfo.FCTargetWWNN = req.PublishContext["fcTargetWWNN"]
+	publishInfo.FormatOptions = req.PublishContext["formatOptions"]
 	publishInfo.FCPLunNumber = lunID
 	publishInfo.FCPLunSerial = req.PublishContext["fcpLunSerial"]
 	publishInfo.FCPIgroup = req.PublishContext["fcpIgroup"]
@@ -1158,6 +1159,22 @@ func (p *Plugin) nodeStageFCPVolume(
 		return err
 	}
 
+	volTrackingInfo := &models.VolumeTrackingInfo{
+		VolumePublishInfo: *publishInfo,
+		StagingTargetPath: stagingTargetPath,
+		PublishedPaths:    map[string]struct{}{},
+	}
+	if err := p.nodeHelper.WriteTrackingInfo(ctx, volumeId, volTrackingInfo); err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"volumeID":          volumeId,
+			"stagingTargetPath": stagingTargetPath,
+		}).WithError(err).Error("Could not write tracking file.")
+		return err
+	}
+
+	if err := afterInitialTrackingInfoWrite.Inject(); err != nil {
+		return err
+	}
 	// In the case of a failed CSI NodeStageVolume call, CSI node clients may call NodeStageVolume or NodeUnstageVolume.
 	// To ensure Trident can handle a subsequent CSI NodeUnstageVolume call, Trident always writes a tracking file.
 	// This should result in Trident having all it needs to for CSI NodeUnstageVolume should an attachment fail.
@@ -1190,14 +1207,12 @@ func (p *Plugin) nodeStageFCPVolume(
 	}
 
 	if isLUKS {
-		var luksDevice luks.Device
-		luksDevice, err = luks.NewLUKSDeviceFromMappingPath(
-			ctx, p.command, publishInfo.DevicePath,
-			req.VolumeContext["internalName"],
-		)
-		if err != nil {
+		if err := betweenAttachAndLUKSPassphrase.Inject(); err != nil {
 			return err
 		}
+
+		var luksDevice luks.Device
+		luksDevice = luks.NewLUKSDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
 
 		// Ensure we update the passphrase in case it has never been set before
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
@@ -1247,8 +1262,14 @@ func (p *Plugin) ensureAttachFCPVolume(
 func (p *Plugin) nodeUnstageFCPVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *models.VolumePublishInfo, force bool,
 ) error {
-	deviceInfo, err := utils.GetDeviceInfoForFCPLUN(ctx, nil, int(publishInfo.FCPLunNumber), publishInfo.FCTargetWWNN,
-		false)
+	hostSessionMap := fcpUtils.GetFCPHostSessionMapForTarget(ctx, publishInfo.FCTargetWWNN)
+	if len(hostSessionMap) == 0 {
+		Logc(ctx).Debug("No host sessions found, nothing to do.")
+		return nil
+	}
+
+	deviceInfo, err := p.fcp.GetDeviceInfoForLUN(ctx, hostSessionMap, int(publishInfo.FCPLunNumber),
+		publishInfo.FCTargetWWNN, false)
 	if err != nil {
 		return fmt.Errorf("could not get device info: %v", err)
 	}
@@ -1259,48 +1280,52 @@ func (p *Plugin) nodeUnstageFCPVolume(
 	}
 
 	var luksMapperPath string
-	if convert.ToBool(publishInfo.LUKSEncryption) {
-		fields := LogFields{"luksDevicePath": publishInfo.DevicePath, "lunID": publishInfo.FCPLunNumber}
-
-		// Before closing the LUKS device, get the underlying mapper device from cryptsetup.
-		mapperPath, err := luks.GetUnderlyingDevicePathForLUKSDevice(ctx, p.command, publishInfo.DevicePath)
-		if err != nil {
-			// No need to return an error
-			Logc(ctx).WithFields(fields).WithError(err).Error("Could not determine underlying device for LUKS.")
+	// If the multipath device is not present, the LUKS device should not exist.
+	if convert.ToBool(publishInfo.LUKSEncryption) && deviceInfo.MultipathDevice != "" {
+		fields := LogFields{
+			"luksDevicePath":  publishInfo.DevicePath,
+			"lunID":           publishInfo.FCPLunNumber,
+			"multipathDevice": deviceInfo.MultipathDevice,
 		}
-		fields["mapperPath"] = mapperPath
 
-		err = p.devices.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, publishInfo.DevicePath)
+		luksMapperPath, err = p.devices.GetLUKSDeviceForMultipathDevice(deviceInfo.MultipathDevice)
 		if err != nil {
-			if errors.IsMaxWaitExceededError(err) {
-				Logc(ctx).WithFields(LogFields{
-					"devicePath": publishInfo.DevicePath,
-					"lun":        publishInfo.FCPLunNumber,
-					"err":        err,
-				}).Debug("LUKS close wait time exceeded, continuing with device removal.")
-			} else {
+			if !errors.IsNotFoundError(err) {
+				Logc(ctx).WithFields(fields).
+					WithError(err).Error("Failed to get LUKS device path from multipath device.")
 				return err
+			}
+			Logc(ctx).WithFields(fields).Info("No LUKS device path found from multipath device.")
+		}
+
+		// Ensure the LUKS device is closed if the luksMapperPath is set.
+		if luksMapperPath != "" {
+
+			fields["mapperPath"] = luksMapperPath
+			err = p.devices.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath)
+			if err != nil {
+				if !errors.IsMaxWaitExceededError(err) {
+					Logc(ctx).WithFields(fields).WithError(err).Error("Failed to close LUKS device.")
+					return err
+				}
+				Logc(ctx).WithFields(fields).WithError(err).
+					Debug("LUKS close wait time exceeded continuing with device removal.")
 			}
 		}
 
-		// Get the underlying device mapper device for the block device used by LUKS.
-		dmDevicePath, err := utils.GetDMDeviceForMapperPath(ctx, mapperPath)
-		if err != nil {
-			Logc(ctx).WithFields(fields).WithError(err).Error("Failed to determine dm device from device mapper.")
+		// Set device path to dm device to correctly verify legacy volumes.
+		if luks.IsLegacyLUKSDevicePath(publishInfo.DevicePath) {
+			publishInfo.DevicePath = deviceInfo.MultipathDevice
 		}
-
-		luksMapperPath = publishInfo.DevicePath
-		// Save device mapper path to publishInfo for the subsequent removal steps.
-		publishInfo.DevicePath = dmDevicePath
 	}
 
 	// Delete the device from the host.
-	unmappedMpathDevice, err := p.iscsi.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, p.unsafeDetach,
+	unmappedMpathDevice, err := p.fcp.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, p.unsafeDetach,
 		force)
 	if err != nil {
 		if errors.IsFCPSameLunNumberError(err) {
 			// There is a need to pass all the publish infos this time
-			unmappedMpathDevice, err = p.iscsi.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo,
+			unmappedMpathDevice, err = p.fcp.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo,
 				p.readAllTrackingFiles(ctx),
 				p.unsafeDetach, force)
 		}
@@ -1337,11 +1362,12 @@ func (p *Plugin) nodeUnstageFCPVolume(
 			}).WithError(err).Warning("Unable to remove LUKS mapper device.")
 		}
 		// Clear the time duration for the LUKS device.
-		delete(devices.LuksCloseDurations, luksMapperPath)
+		devices.LuksCloseDurations.RemoveDurationTracking(luksMapperPath)
 	}
 
 	// If there is multipath device, flush(remove) mappings
-	if err := p.devices.RemoveMultipathDeviceMapping(ctx, unmappedMpathDevice); err != nil {
+	if err := p.devices.RemoveMultipathDeviceMappingWithRetries(ctx, unmappedMpathDevice,
+		removeMultipathDeviceMappingRetries, removeMultipathDeviceMappingRetryDelay); err != nil {
 		return err
 	}
 
@@ -1361,8 +1387,7 @@ func (p *Plugin) nodeUnstageFCPVolumeRetry(
 	}
 
 	nodeUnstageFCPVolumeAttempt := func() error {
-		return p.
-			nodeUnstageFCPVolume(ctx, req, publishInfo, force)
+		return p.nodeUnstageFCPVolume(ctx, req, publishInfo, force)
 	}
 
 	nodeUnstageFCPVolumeBackoff := backoff.NewExponentialBackOff()
@@ -1401,17 +1426,30 @@ func (p *Plugin) nodePublishFCPVolume(
 		publishInfo.MountOptions = collection.AppendToStringList(publishInfo.MountOptions, "ro", ",")
 	}
 
+	devicePath := publishInfo.DevicePath
 	if convert.ToBool(publishInfo.LUKSEncryption) {
 		// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
-		luksDevice, err := luks.NewLUKSDeviceFromMappingPath(ctx, p.command, publishInfo.DevicePath,
-			req.VolumeContext["internalName"])
-		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
+
+		var luksDevice luks.Device
+		if luks.IsLegacyLUKSDevicePath(devicePath) {
+			// Supports legacy volumes that store the LUKS device path
+			luksDevice, err = luks.NewLUKSDeviceFromMappingPath(
+				ctx, p.command, devicePath, req.VolumeContext["internalName"],
+			)
+			if err != nil {
+				return nil, status.Error(codes.Internal, err.Error())
+			}
+		} else {
+			luksDevice = luks.NewLUKSDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
 		}
+
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, req.GetVolumeId(), req.GetSecrets(), false)
 		if err != nil {
 			Logc(ctx).WithError(err).Error("Failed to ensure current LUKS passphrase.")
 		}
+
+		// Mount LUKS device instead of mpath.
+		devicePath = luksDevice.MappedDevicePath()
 	}
 
 	if publishInfo.FilesystemType == filesystem.Raw {
@@ -1423,13 +1461,13 @@ func (p *Plugin) nodePublishFCPVolume(
 		}
 
 		// Place the block device at the target path for the raw-block.
-		err = p.mount.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, true)
+		err = p.mount.MountDevice(ctx, devicePath, req.TargetPath, publishInfo.MountOptions, true)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "unable to bind mount raw device; %s", err)
 		}
 	} else {
 		// Mount the device.
-		err = p.mount.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, false)
+		err = p.mount.MountDevice(ctx, devicePath, req.TargetPath, publishInfo.MountOptions, false)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "unable to mount device; %s", err)
 		}
@@ -2313,7 +2351,8 @@ func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
 	}
 
 	if err := utils.PopulateCurrentSessions(ctx, &currentISCSISessions); err != nil {
-		Logc(ctx).WithError(err).Error("Failed to get current state of iSCSI Sessions LUN mappings; skipping iSCSI self-heal cycle.")
+		Logc(ctx).WithError(err).
+			Error("Failed to get current state of iSCSI Sessions LUN mappings; skipping iSCSI self-heal cycle.")
 		return
 	}
 

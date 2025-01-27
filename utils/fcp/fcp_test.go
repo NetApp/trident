@@ -102,66 +102,66 @@ func TestPidRunningOrIdleRegex(t *testing.T) {
 func TestGetFindMultipathValue(t *testing.T) {
 	Log().Debug("Running TestGetFindMultipathValue...")
 
-	findMultipathsValue := GetFindMultipathValue(multipathConf)
+	findMultipathsValue := getFindMultipathValue(multipathConf)
 	assert.Equal(t, "no", findMultipathsValue)
 
 	inputStringCopy := strings.ReplaceAll(multipathConf, "find_multipaths", "#find_multipaths")
 
-	findMultipathsValue = GetFindMultipathValue(inputStringCopy)
+	findMultipathsValue = getFindMultipathValue(inputStringCopy)
 	assert.Equal(t, "", findMultipathsValue)
 
 	inputStringCopy = strings.ReplaceAll(multipathConf, "find_multipaths no", "")
 
-	findMultipathsValue = GetFindMultipathValue(inputStringCopy)
+	findMultipathsValue = getFindMultipathValue(inputStringCopy)
 	assert.Equal(t, "", findMultipathsValue)
 
 	inputStringCopy = strings.ReplaceAll(multipathConf, "no", "yes")
 
-	findMultipathsValue = GetFindMultipathValue(inputStringCopy)
+	findMultipathsValue = getFindMultipathValue(inputStringCopy)
 	assert.Equal(t, "yes", findMultipathsValue)
 
 	inputStringCopy = strings.ReplaceAll(multipathConf, "no", "'yes'")
 
-	findMultipathsValue = GetFindMultipathValue(inputStringCopy)
+	findMultipathsValue = getFindMultipathValue(inputStringCopy)
 	assert.Equal(t, "yes", findMultipathsValue)
 
 	inputStringCopy = strings.ReplaceAll(multipathConf, "no", "'on'")
 
-	findMultipathsValue = GetFindMultipathValue(inputStringCopy)
+	findMultipathsValue = getFindMultipathValue(inputStringCopy)
 	assert.Equal(t, "yes", findMultipathsValue)
 
 	inputStringCopy = strings.ReplaceAll(multipathConf, "no", "'off'")
 
-	findMultipathsValue = GetFindMultipathValue(inputStringCopy)
+	findMultipathsValue = getFindMultipathValue(inputStringCopy)
 	assert.Equal(t, "no", findMultipathsValue)
 
 	inputStringCopy = strings.ReplaceAll(multipathConf, "no", "on")
 
-	findMultipathsValue = GetFindMultipathValue(inputStringCopy)
+	findMultipathsValue = getFindMultipathValue(inputStringCopy)
 	assert.Equal(t, "yes", findMultipathsValue)
 
 	inputStringCopy = strings.ReplaceAll(multipathConf, "no", "off")
 
-	findMultipathsValue = GetFindMultipathValue(inputStringCopy)
+	findMultipathsValue = getFindMultipathValue(inputStringCopy)
 	assert.Equal(t, "no", findMultipathsValue)
 
 	inputStringCopy = strings.ReplaceAll(multipathConf, "no", "random")
 
-	findMultipathsValue = GetFindMultipathValue(inputStringCopy)
+	findMultipathsValue = getFindMultipathValue(inputStringCopy)
 	assert.Equal(t, "random", findMultipathsValue)
 
 	inputStringCopy = strings.ReplaceAll(multipathConf, "no", "smart")
 
-	findMultipathsValue = GetFindMultipathValue(inputStringCopy)
+	findMultipathsValue = getFindMultipathValue(inputStringCopy)
 	assert.Equal(t, "smart", findMultipathsValue)
 
 	inputStringCopy = strings.ReplaceAll(multipathConf, "no", "greedy")
 
-	findMultipathsValue = GetFindMultipathValue(inputStringCopy)
+	findMultipathsValue = getFindMultipathValue(inputStringCopy)
 	assert.Equal(t, "greedy", findMultipathsValue)
 
 	inputStringCopy = strings.ReplaceAll(multipathConf, "no", "'no'")
 
-	findMultipathsValue = GetFindMultipathValue(inputStringCopy)
+	findMultipathsValue = getFindMultipathValue(inputStringCopy)
 	assert.Equal(t, "no", findMultipathsValue)
 }

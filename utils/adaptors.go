@@ -17,10 +17,9 @@ func GetDeviceInfoForLUN(
 }
 
 func GetDeviceInfoForFCPLUN(
-	ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string, isDetachCall bool,
+	ctx context.Context, hostSessionMap []map[string]int, lunID int, iSCSINodeName string, isDetachCall bool,
 ) (*models.ScsiDeviceInfo, error) {
-	// TODO: check if we require both isDetachCall and needFSType
-	deviceInfo, err := fcpClient.GetDeviceInfoForLUN(ctx, lunID, iSCSINodeName, false, isDetachCall)
+	deviceInfo, err := fcpClient.GetDeviceInfoForLUN(ctx, hostSessionMap, lunID, iSCSINodeName, false)
 	if err != nil {
 		return nil, err
 	}

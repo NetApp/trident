@@ -16,6 +16,8 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 
+	"github.com/netapp/trident/internal/fiji"
+
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/devices/luks"
@@ -28,8 +30,9 @@ import (
 )
 
 const (
-	DevPrefix     = "/dev/"
-	DevMapperRoot = "/dev/mapper/"
+	DevPrefix                 = "/dev/"
+	DevMapperRoot             = "/dev/mapper/"
+	devicesRemovalMaxWaitTime = 5 * time.Second
 
 	// REDACTED is a copy of what is in utils package.
 	// we can reference that once we do not have any references into the utils package
@@ -40,10 +43,7 @@ var (
 	pidRegex                 = regexp.MustCompile(`^\d+$`)
 	pidRunningOrIdleRegex    = regexp.MustCompile(`pid \d+ (running|idle)`)
 	tagsWithIndentationRegex = regexp.MustCompile(`(?m)^[\t ]*find_multipaths[\t ]*["|']?(?P<tagName>[\w-_]+)["|']?[\t ]*$`)
-
-	// duringScanTargetLunAfterFileOpen          = fiji.Register("duringFCPScanTargetLunAfterFileOpen", "fcp")
-	// duringConfigureTargetBeforeFCPAdmUpdate = fiji.Register("duringConfigureFCPTargetBeforeFCPAdmUpdate", "fcp")
-	// duringPurgeOneLunBeforeFileWrite          = fiji.Register("duringPurgeOneLunBeforeFileWrite", "fcp")
+	beforeFlushDevice        = fiji.Register("beforeFlushDevice", "devices")
 )
 
 type FCP interface {
@@ -55,8 +55,12 @@ type FCP interface {
 	RescanDevices(ctx context.Context, targetWWNN string, lunID int32, minSize int64) error
 	IsAlreadyAttached(ctx context.Context, lunID int, targetWWNN string) bool
 	GetDeviceInfoForLUN(
-		ctx context.Context, lunID int, fcpNodeName string, needFSType, isDetachCall bool,
-	) (*ScsiDeviceInfo, error)
+		ctx context.Context, hostSessionMap []map[string]int, lunID int, fcpNodeName string, needFSType bool,
+	) (*models.ScsiDeviceInfo, error)
+	PrepareDeviceForRemoval(
+		ctx context.Context, deviceInfo *models.ScsiDeviceInfo, publishInfo *models.VolumePublishInfo,
+		allPublishInfos []models.VolumePublishInfo, ignoreErrors, force bool,
+	) (string, error)
 }
 
 // DefaultSelfHealingExclusion Exclusion list contains keywords if found in any Target WWNN should not be considered for
@@ -92,8 +96,8 @@ type Client struct {
 	selfHealingExclusion []string
 	osClient             OS
 	deviceClient         devices.Devices
-	fs                   FileSystem
-	mount                Mount
+	fileSystemClient     FileSystem
+	mountClient          Mount
 	fcpUtils             FcpReconcileUtils
 }
 
@@ -110,8 +114,10 @@ func New() (*Client, error) {
 
 	fileSystemClient := filesystem.New(mountClient)
 
-	return NewDetailed(chrootPathPrefix, tridentexec.NewCommand(), DefaultSelfHealingExclusion, osClient,
-		devices.New(), fileSystemClient, mountClient, reconcileutils), nil
+	return NewDetailed(
+		chrootPathPrefix, tridentexec.NewCommand(), DefaultSelfHealingExclusion, osClient,
+		devices.New(), fileSystemClient, mountClient, reconcileutils,
+	), nil
 }
 
 func NewDetailed(
@@ -124,8 +130,8 @@ func NewDetailed(
 		command:              command,
 		osClient:             osClient,
 		deviceClient:         deviceClient,
-		fs:                   fs,
-		mount:                mount,
+		fileSystemClient:     fs,
+		mountClient:          mount,
 		fcpUtils:             fcpUtils,
 		selfHealingExclusion: selfHealingExclusion,
 	}
@@ -174,7 +180,12 @@ func (client *Client) RescanDevices(ctx context.Context, targetWWNN string, lunI
 	Logc(ctx).WithFields(fields).Debug(">>>> fcp.RescanDevices")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< fcp.RescanDevices")
 
-	deviceInfo, err := client.GetDeviceInfoForLUN(ctx, int(lunID), targetWWNN, false, false)
+	hostSessionMap := client.fcpUtils.GetFCPHostSessionMapForTarget(ctx, targetWWNN)
+	if len(hostSessionMap) == 0 {
+		return fmt.Errorf("no FCP hosts found for target %s", targetWWNN)
+	}
+
+	deviceInfo, err := client.GetDeviceInfoForLUN(ctx, hostSessionMap, int(lunID), targetWWNN, false)
 	if err != nil {
 		return fmt.Errorf("error getting FCP device information: %s", err)
 	} else if deviceInfo == nil {
@@ -228,7 +239,6 @@ func (client *Client) RescanDevices(ctx context.Context, targetWWNN string, lunI
 			if err != nil {
 				return err
 			}
-			// TODO (vhs): Introduce a backoff rather than a fixed delay.
 			time.Sleep(time.Second)
 			size, err = client.deviceClient.GetDiskSize(ctx, DevPrefix+multipathDevice)
 			if err != nil {
@@ -262,7 +272,10 @@ func (client *Client) rescanDisk(ctx context.Context, deviceName string) error {
 		Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
 		return err
 	}
-	defer f.Close()
+
+	defer func() {
+		_ = f.Close()
+	}()
 
 	written, err := f.WriteString("1")
 	if err != nil {
@@ -355,21 +368,27 @@ func (client *Client) AttachVolume(
 		return mpathSize, err
 	}
 
+	hostSessionMap := client.fcpUtils.GetFCPHostSessionMapForTarget(ctx, publishInfo.FCTargetWWNN)
+	if len(hostSessionMap) == 0 {
+		return mpathSize, fmt.Errorf("no FCP hosts found for target %s", publishInfo.FCTargetWWNN)
+	}
 	// First attempt to fix invalid serials by rescanning them
-	err = client.handleInvalidSerials(ctx, lunID, publishInfo.FCTargetWWNN, publishInfo.FCPLunSerial, rescanOneLun)
+	err = client.handleInvalidSerials(ctx, hostSessionMap, lunID, publishInfo.FCTargetWWNN, publishInfo.FCPLunSerial,
+		rescanOneLun)
 	if err != nil {
 		return mpathSize, err
 	}
 
 	// Then attempt to fix invalid serials by purging them (to be scanned
 	// again later)
-	err = client.handleInvalidSerials(ctx, lunID, publishInfo.FCTargetWWNN, publishInfo.FCPLunSerial, purgeOneLun)
+	err = client.handleInvalidSerials(ctx, hostSessionMap, lunID, publishInfo.FCTargetWWNN, publishInfo.FCPLunSerial,
+		purgeOneLun)
 	if err != nil {
 		return mpathSize, err
 	}
 
 	// Scan the target and wait for the device(s) to appear
-	err = client.waitForDeviceScan(ctx, lunID, publishInfo.FCTargetWWNN)
+	err = client.waitForDeviceScan(ctx, hostSessionMap, lunID, publishInfo.FCTargetWWNN)
 	if err != nil {
 		Logc(ctx).Errorf("Could not find FCP SCSI device: %+v", err)
 		return mpathSize, err
@@ -382,19 +401,20 @@ func (client *Client) AttachVolume(
 		Logc(ctx).Error("Detected LUN serial number mismatch, attaching volume would risk data corruption, giving up")
 		return fmt.Errorf("LUN serial number mismatch, kernel has stale cached data")
 	}
-	err = client.handleInvalidSerials(ctx, lunID, publishInfo.FCTargetWWNN, publishInfo.FCPLunSerial, failHandler)
+	err = client.handleInvalidSerials(ctx, hostSessionMap, lunID, publishInfo.FCTargetWWNN, publishInfo.FCPLunSerial,
+		failHandler)
 	if err != nil {
 		return mpathSize, err
 	}
 
 	// Wait for multipath device i.e. /dev/dm-* for the given LUN
-	err = client.waitForMultipathDeviceForLUN(ctx, lunID, publishInfo.FCTargetWWNN)
+	err = client.waitForMultipathDeviceForLUN(ctx, hostSessionMap, lunID, publishInfo.FCTargetWWNN)
 	if err != nil {
 		return mpathSize, err
 	}
 
 	// Lookup all the SCSI device information
-	deviceInfo, err := client.GetDeviceInfoForLUN(ctx, lunID, publishInfo.FCTargetWWNN, false, false)
+	deviceInfo, err := client.GetDeviceInfoForLUN(ctx, hostSessionMap, lunID, publishInfo.FCTargetWWNN, false)
 	if err != nil {
 		return mpathSize, fmt.Errorf("error getting FCP device information: %v", err)
 	} else if deviceInfo == nil {
@@ -409,62 +429,58 @@ func (client *Client) AttachVolume(
 	}).Debug("Found device.")
 
 	// Make sure we use the proper device
-	deviceToUse := deviceInfo.Devices[0]
-	if deviceInfo.MultipathDevice != "" {
-		deviceToUse = deviceInfo.MultipathDevice
+	deviceToUse := deviceInfo.MultipathDevice
 
-		// To avoid LUN ID conflict with a ghost device below checks
-		// are necessary:
-		// Conflict 1: Due to race conditions, it is possible a ghost
-		//             DM device is discovered instead of the actual
-		//             DM device.
-		// Conflict 2: Some OS like RHEL displays the ghost device size
-		//             instead of the actual LUN size.
-		//
-		// Below check ensures that the correct device with the correct
-		// size is being discovered.
+	// To avoid LUN ID conflict with a ghost device below checks
+	// are necessary:
+	// Conflict 1: Due to race conditions, it is possible a ghost
+	//             DM device is discovered instead of the actual
+	//             DM device.
+	// Conflict 2: Some OS like RHEL displays the ghost device size
+	//             instead of the actual LUN size.
+	//
+	// Below check ensures that the correct device with the correct
+	// size is being discovered.
 
-		// If LUN Serial Number exists, then compare it with DM
-		// device's UUID in sysfs
-		if err = client.verifyMultipathDeviceSerial(ctx, deviceToUse, publishInfo.FCPLunSerial); err != nil {
-			return mpathSize, err
-		}
+	// If LUN Serial Number exists, then compare it with DM
+	// device's UUID in sysfs
+	if err = client.verifyMultipathDeviceSerial(ctx, deviceToUse, publishInfo.FCPLunSerial); err != nil {
+		return mpathSize, err
+	}
 
-		// Once the multipath device has been found, compare its size with
-		// the size of one of the devices, if it differs then mark it for
-		// resize after the staging.
-		correctMpathSize, mpathSizeCorrect, err := client.deviceClient.VerifyMultipathDeviceSize(ctx, deviceToUse,
-			deviceInfo.Devices[0])
-		if err != nil {
-			Logc(ctx).WithFields(LogFields{
-				"scsiLun":         deviceInfo.LUN,
-				"multipathDevice": deviceInfo.MultipathDevice,
-				"device":          deviceInfo.Devices[0],
-				"WWNN":            deviceInfo.WWNN,
-				"err":             err,
-			}).Error("Failed to verify multipath device size.")
+	// Once the multipath device has been found, compare its size with
+	// the size of one of the devices, if it differs then mark it for
+	// resize after the staging.
+	correctMpathSize, mpathSizeCorrect, err := client.deviceClient.VerifyMultipathDeviceSize(ctx, deviceToUse,
+		deviceInfo.Devices[0])
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"scsiLun":         deviceInfo.LUN,
+			"multipathDevice": deviceInfo.MultipathDevice,
+			"device":          deviceInfo.Devices[0],
+			"WWNN":            deviceInfo.WWNN,
+			"err":             err,
+		}).Error("Failed to verify multipath device size.")
 
-			return mpathSize, fmt.Errorf("failed to verify multipath device %s size", deviceInfo.MultipathDevice)
-		}
+		return mpathSize, fmt.Errorf("failed to verify multipath device %s size", deviceInfo.MultipathDevice)
+	}
 
-		if !mpathSizeCorrect {
-			mpathSize = correctMpathSize
+	if !mpathSizeCorrect {
+		mpathSize = correctMpathSize
 
-			Logc(ctx).WithFields(LogFields{
-				"scsiLun":         deviceInfo.LUN,
-				"multipathDevice": deviceInfo.MultipathDevice,
-				"device":          deviceInfo.Devices[0],
-				"WWNN":            deviceInfo.WWNN,
-				"mpathSize":       mpathSize,
-			}).Error("Multipath device size does not match device size.")
-		}
-	} else {
-		return mpathSize, fmt.Errorf("could not find multipath device for LUN %d", lunID)
+		Logc(ctx).WithFields(LogFields{
+			"scsiLun":         deviceInfo.LUN,
+			"multipathDevice": deviceInfo.MultipathDevice,
+			"device":          deviceInfo.Devices[0],
+			"WWNN":            deviceInfo.WWNN,
+			"mpathSize":       mpathSize,
+		}).Error("Multipath device size does not match device size.")
 	}
 
 	if deviceToUse == "" {
 		return mpathSize, fmt.Errorf("could not determine device to use for %v", name)
 	}
+
 	devicePath := "/dev/" + deviceToUse
 	if err := client.deviceClient.WaitForDevice(ctx, devicePath); err != nil {
 		return mpathSize, fmt.Errorf("could not find device %v; %s", devicePath, err)
@@ -478,6 +494,8 @@ func (client *Client) AttachVolume(
 				publishInfo.LUKSEncryption)
 		}
 	}
+	// Return the device in the publish info in case the mount will be done later
+	publishInfo.DevicePath = devicePath
 
 	if isLUKSDevice {
 		luksDevice := luks.NewLUKSDevice(devicePath, name, client.command)
@@ -487,9 +505,6 @@ func (client *Client) AttachVolume(
 		}
 		devicePath = luksDevice.MappedDevicePath()
 	}
-
-	// Return the device in the publish info in case the mount will be done later
-	publishInfo.DevicePath = devicePath
 
 	if publishInfo.FilesystemType == filesystem.Raw {
 		return mpathSize, nil
@@ -502,24 +517,29 @@ func (client *Client) AttachVolume(
 	if existingFstype == "" {
 		if !isLUKSDevice {
 			if unformatted, err := client.deviceClient.IsDeviceUnformatted(ctx, devicePath); err != nil {
-				Logc(ctx).WithField("device",
-					devicePath).Errorf("Unable to identify if the device is unformatted; err: %v", err)
+				Logc(ctx).WithField(
+					"device", devicePath,
+				).WithError(err).Errorf("Unable to identify if the device is unformatted; err: %v", err)
 				return mpathSize, err
 			} else if !unformatted {
-				Logc(ctx).WithField("device", devicePath).Errorf("Device is not unformatted; err: %v", err)
+				Logc(ctx).WithError(err).
+					WithField("device", devicePath).Errorf("Device is not unformatted; err: %v", err)
 				return mpathSize, fmt.Errorf("device %v is not unformatted", devicePath)
 			}
 		} else {
 			// We can safely assume if we just luksFormatted the device, we can also add a filesystem without dataloss
 			if !luksFormatted {
-				Logc(ctx).WithField("device",
-					devicePath).Errorf("Unable to identify if the luks device is empty; err: %v", err)
+				Logc(ctx).WithField(
+					"device", devicePath,
+				).Errorf("Unable to identify if the luks device is empty; err: %v", err)
 				return mpathSize, err
 			}
 		}
 
 		Logc(ctx).WithFields(LogFields{"volume": name, "fstype": publishInfo.FilesystemType}).Debug("Formatting LUN.")
-		err := client.fs.FormatVolume(ctx, devicePath, publishInfo.FilesystemType, publishInfo.FormatOptions)
+		err := client.fileSystemClient.FormatVolume(
+			ctx, devicePath, publishInfo.FilesystemType, publishInfo.FormatOptions,
+		)
 		if err != nil {
 			return mpathSize, fmt.Errorf("error formatting LUN %s, device %s: %v", name, deviceToUse, err)
 		}
@@ -542,17 +562,17 @@ func (client *Client) AttachVolume(
 	// in-use volumes, or creating volumes from snapshots taken from in-use volumes.  This is only safe to do
 	// if a device is not mounted.  The fsck command returns a non-zero exit code if filesystem errors are found,
 	// even if they are completely and automatically fixed, so we don't return any error here.
-	mounted, err := client.mount.IsMounted(ctx, devicePath, "", "")
+	mounted, err := client.mountClient.IsMounted(ctx, devicePath, "", "")
 	if err != nil {
 		return mpathSize, err
 	}
 	if !mounted {
-		client.fs.RepairVolume(ctx, devicePath, publishInfo.FilesystemType)
+		client.fileSystemClient.RepairVolume(ctx, devicePath, publishInfo.FilesystemType)
 	}
 
 	// Optionally mount the device
 	if mountPoint != "" {
-		if err := client.mount.MountDevice(ctx, devicePath, mountPoint, publishInfo.MountOptions,
+		if err := client.mountClient.MountDevice(ctx, devicePath, mountPoint, publishInfo.MountOptions,
 			false); err != nil {
 			return mpathSize, fmt.Errorf("error mounting LUN %v, device %v, mountpoint %v; %s",
 				name, deviceToUse, mountPoint, err)
@@ -562,26 +582,11 @@ func (client *Client) AttachVolume(
 	return mpathSize, nil
 }
 
-// ScsiDeviceInfo contains information about SCSI devices
-type ScsiDeviceInfo struct {
-	Host            string
-	Channel         string
-	Target          string
-	LUN             string
-	Devices         []string
-	DevicePaths     []string
-	MultipathDevice string
-	Filesystem      string
-	WWNN            string
-	SessionNumber   int
-	HostSessionMap  map[int]int
-}
-
 // GetDeviceInfoForLUN finds FCP devices using /dev/disk/by-path values.  This method should be
 // called after calling waitForDeviceScan so that the device paths are known to exist.
 func (client *Client) GetDeviceInfoForLUN(
-	ctx context.Context, lunID int, fcpNodeName string, needFSType, isDetachCall bool,
-) (*ScsiDeviceInfo, error) {
+	ctx context.Context, hostSessionMap []map[string]int, lunID int, fcpNodeName string, needFSType bool,
+) (*models.ScsiDeviceInfo, error) {
 	fields := LogFields{
 		"lunID":       lunID,
 		"fcpNodeName": fcpNodeName,
@@ -590,29 +595,17 @@ func (client *Client) GetDeviceInfoForLUN(
 	Logc(ctx).WithFields(fields).Debug(">>>> fcp.getDeviceInfoForLUN")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< fcp.getDeviceInfoForLUN")
 
-	hostSessionMap := client.fcpUtils.GetFCPHostSessionMapForTarget(ctx, fcpNodeName)
-
-	// During detach if hostSessionMap count is zero, we should be fine
-	if len(hostSessionMap) == 0 {
-		if isDetachCall {
-			Logc(ctx).WithFields(fields).Debug("No fcp hosts found for target.")
-			return nil, nil
-		} else {
-			return nil, fmt.Errorf("no fcp hosts found for target %s", fcpNodeName)
-		}
-	}
-
 	paths := client.fcpUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
 
-	devices, err := client.fcpUtils.GetDevicesForLUN(paths)
+	devicesForLUN, err := client.fcpUtils.GetDevicesForLUN(paths)
 	if err != nil {
 		return nil, err
-	} else if 0 == len(devices) {
+	} else if 0 == len(devicesForLUN) {
 		return nil, fmt.Errorf("scan not completed for LUN %d on target %s", lunID, fcpNodeName)
 	}
 
 	multipathDevice := ""
-	for _, device := range devices {
+	for _, device := range devicesForLUN {
 		multipathDevice = client.deviceClient.FindMultipathDeviceForDevice(ctx, device)
 		if multipathDevice != "" {
 			break
@@ -623,7 +616,7 @@ func (client *Client) GetDeviceInfoForLUN(
 	if multipathDevice != "" {
 		devicePath = DevPrefix + multipathDevice
 	} else {
-		devicePath = DevPrefix + devices[0]
+		devicePath = DevPrefix + devicesForLUN[0]
 	}
 
 	fsType := ""
@@ -643,19 +636,17 @@ func (client *Client) GetDeviceInfoForLUN(
 		"lun":             strconv.Itoa(lunID),
 		"multipathDevice": multipathDevice,
 		"fsType":          fsType,
-		"deviceNames":     devices,
+		"deviceNames":     devicesForLUN,
 		"hostSessionMap":  hostSessionMap,
 	}).Debug("Found SCSI device.")
 
-	info := &ScsiDeviceInfo{
+	info := &models.ScsiDeviceInfo{
 		LUN:             strconv.Itoa(lunID),
 		MultipathDevice: multipathDevice,
-		Devices:         devices,
+		Devices:         devicesForLUN,
 		DevicePaths:     paths,
 		Filesystem:      fsType,
 		WWNN:            fcpNodeName,
-		// TODO (vhs): Check hostSessionMap is really required
-		// HostSessionMap:  hostSessionMap,
 	}
 
 	return info, nil
@@ -716,18 +707,15 @@ func rescanOneLun(ctx context.Context, path string) error {
 // for the given LUN, this function waits for the associated multipath device to be present
 // first find the /dev/sd* devices assocaited with the LUN
 // Wait for the maultipath device dm-* for the /dev/sd* devices.
-func (client *Client) waitForMultipathDeviceForLUN(ctx context.Context, lunID int, fcpNodeName string) error {
+func (client *Client) waitForMultipathDeviceForLUN(ctx context.Context, hostSessionMap []map[string]int, lunID int,
+	fcpNodeName string,
+) error {
 	fields := LogFields{
 		"lunID":       lunID,
 		"fcpNodeName": fcpNodeName,
 	}
 	Logc(ctx).WithFields(fields).Debug(">>>> fcp.waitForMultipathDeviceForLUN")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< fcp.waitForMultipathDeviceForLUN")
-
-	hostSessionMap := client.fcpUtils.GetFCPHostSessionMapForTarget(ctx, fcpNodeName)
-	if len(hostSessionMap) == 0 {
-		return fmt.Errorf("no FCP hosts found for target %s", fcpNodeName)
-	}
 
 	paths := client.fcpUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
 
@@ -772,7 +760,9 @@ func (client *Client) waitForMultipathDeviceForDevices(ctx context.Context, devi
 
 // waitForDeviceScan scans all paths to a specific LUN and waits until all
 // SCSI disk-by-path devices for that LUN are present on the host.
-func (client *Client) waitForDeviceScan(ctx context.Context, lunID int, fcpNodeName string) error {
+func (client *Client) waitForDeviceScan(ctx context.Context, hostSessionMap []map[string]int, lunID int,
+	fcpNodeName string,
+) error {
 	fields := LogFields{
 		"lunID":       lunID,
 		"fcpNodeName": fcpNodeName,
@@ -780,12 +770,6 @@ func (client *Client) waitForDeviceScan(ctx context.Context, lunID int, fcpNodeN
 	Logc(ctx).WithFields(fields).Debug(">>>> fcp.waitForDeviceScan")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< fcp.waitForDeviceScan")
 
-	hostSessionMap := client.fcpUtils.GetFCPHostSessionMapForTarget(ctx, fcpNodeName)
-	if len(hostSessionMap) == 0 {
-		return fmt.Errorf("no FCP hosts found for target %s", fcpNodeName)
-	}
-
-	Logc(ctx).WithField("hostSessionMap", hostSessionMap).Debug("Built FCP host/session map.")
 	hosts := make([]int, 0)
 	var hostNum int
 	var err error
@@ -867,7 +851,7 @@ func (client *Client) waitForDeviceScan(ctx context.Context, lunID int, fcpNodeN
 // handleInvalidSerials checks the LUN serial number for each path of a given LUN, and
 // if it doesn't match the expected value, runs a handler function.
 func (client *Client) handleInvalidSerials(
-	ctx context.Context, lunID int, targetWWNN, expectedSerial string,
+	ctx context.Context, hostSessionMap []map[string]int, lunID int, targetWWNN, expectedSerial string,
 	handler func(ctx context.Context, path string) error,
 ) error {
 	if "" == expectedSerial {
@@ -875,7 +859,6 @@ func (client *Client) handleInvalidSerials(
 		return nil
 	}
 
-	hostSessionMap := client.fcpUtils.GetFCPHostSessionMapForTarget(ctx, targetWWNN)
 	paths := client.fcpUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
 	for _, path := range paths {
 		serial, err := client.deviceClient.GetLunSerial(ctx, path)
@@ -988,8 +971,10 @@ func (client *Client) PreChecks(ctx context.Context) error {
 	}
 
 	if findMultipathsValue == "yes" || findMultipathsValue == "smart" {
-		return fmt.Errorf("multipathd: unsupported find_multipaths: %s value;"+
-			" please set the value to no in /etc/multipath.conf file", findMultipathsValue)
+		return fmt.Errorf(
+			"multipathd: unsupported find_multipaths: %s value;"+
+				" please set the value to no in /etc/multipath.conf file", findMultipathsValue,
+		)
 	}
 
 	return nil
@@ -1036,7 +1021,7 @@ func (client *Client) identifyFindMultipathsValue(ctx context.Context) (string, 
 		return "", fmt.Errorf("could not read multipathd configuration: %v", err)
 	}
 
-	findMultipathsValue := GetFindMultipathValue(string(output))
+	findMultipathsValue := getFindMultipathValue(string(output))
 	Logc(ctx).WithField("findMultipathsValue", findMultipathsValue).Debug("Multipath find_multipaths value found.")
 	return findMultipathsValue, nil
 }
@@ -1046,9 +1031,8 @@ func (client *Client) identifyFindMultipathsValue(ctx context.Context) (string, 
 // no (or off): Create a multipath device for every path that is not explicitly disabled
 // yes (or on): Create a device if one of some conditions are met
 // other possible values: smart, greedy, strict
-func GetFindMultipathValue(text string) string {
+func getFindMultipathValue(text string) string {
 	tag := tagsWithIndentationRegex.FindStringSubmatch(text)
-
 	// Since we have two of `()` in the pattern, we want to use the tag identified by the second `()`.
 	if len(tag) > 1 {
 		if tag[1] == "off" {
@@ -1061,4 +1045,115 @@ func GetFindMultipathValue(text string) string {
 	}
 
 	return ""
+}
+
+// PrepareDeviceForRemoval informs Linux that a device will be removed, the function
+// also verifies that device being removed is correct based on published device path,
+// device serial number (if present) or comparing all publications (allPublishInfos) for
+// LUN number uniqueness.
+func (client *Client) PrepareDeviceForRemoval(
+	ctx context.Context, deviceInfo *models.ScsiDeviceInfo, publishInfo *models.VolumePublishInfo,
+	allPublishInfos []models.VolumePublishInfo, ignoreErrors, force bool,
+) (string, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
+	lunID := int(publishInfo.FCPLunNumber)
+	fcpNodeName := publishInfo.FCTargetWWNN
+
+	fields := LogFields{
+		"lunID":            lunID,
+		"fcpNodeName":      fcpNodeName,
+		"chrootPathPrefix": client.chrootPathPrefix,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> fcp.PrepareDeviceForRemoval")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< fcp.PrepareDeviceForRemoval")
+
+	// CSI Case
+	// We can't verify a multipath device if we couldn't find it in sysfs.
+	if deviceInfo.MultipathDevice != "" {
+		_, err := client.deviceClient.VerifyMultipathDevice(ctx, publishInfo, allPublishInfos, deviceInfo)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	var multipathDevice string
+	performDeferredDeviceRemoval, err := client.removeSCSIDevice(ctx, deviceInfo, ignoreErrors, force)
+	if performDeferredDeviceRemoval && deviceInfo.MultipathDevice != "" {
+		multipathDevice = DevPrefix + deviceInfo.MultipathDevice
+		Logc(ctx).WithFields(LogFields{
+			"lunID":           lunID,
+			"multipathDevice": multipathDevice,
+		}).Debug("Discovered unmapped multipath device when removing SCSI device.")
+	}
+
+	return multipathDevice, err
+}
+
+// removeSCSIDevice informs Linux that a device will be removed.  The deviceInfo provided only needs
+// the devices and multipathDevice fields set.
+// IMPORTANT: The unsafe and force arguments have significant ramifications. Setting ignoreErrors=true will cause the
+// function to ignore errors, and try to the remove the device even if that results in data loss, data corruption,
+// or putting the system into an invalid state. Setting skipFlush=true will cause data loss, as it does not wait for the
+// device to flush any remaining data, but this option is provided to avoid an indefinite hang of flush operation in
+// case of an end device is in bad state. Setting ignoreErrors=false and skipFlush=false will fail at the first problem
+// encountered, so that callers can be assured that a successful return indicates that the device was cleanly removed.
+// This is important because while most of the time the top priority is to avoid data
+// loss or data corruption, there are times when data loss is unavoidable, or has already
+// happened, and in those cases it's better to be able to clean up than to be stuck in an
+// endless retry loop.
+func (client *Client) removeSCSIDevice(ctx context.Context, deviceInfo *models.ScsiDeviceInfo, ignoreErrors,
+	skipFlush bool,
+) (bool, error) {
+	client.deviceClient.ListAllDevices(ctx)
+
+	// Flush multipath device
+	if !skipFlush {
+		err := client.deviceClient.MultipathFlushDevice(ctx, deviceInfo)
+		if err != nil {
+			if errors.IsTimeoutError(err) {
+				// Proceed to removeDevice(), ignore any errors.
+				ignoreErrors = true
+			} else if !ignoreErrors {
+				return false, err
+			}
+		}
+	}
+
+	// Flush devices
+	if !skipFlush {
+		if err := beforeFlushDevice.Inject(); err != nil {
+			return false, err
+		}
+		err := client.deviceClient.FlushDevice(ctx, deviceInfo, ignoreErrors)
+		if err != nil && !ignoreErrors {
+			return false, err
+		}
+	}
+
+	// Remove device
+	err := client.deviceClient.RemoveDevice(ctx, deviceInfo.Devices, ignoreErrors)
+	if err != nil && !ignoreErrors {
+		return false, err
+	}
+
+	// Wait for device to be removed. Do not ignore errors here as we need the device removed
+	// for the force removal of the multipath device to succeed.
+	err = client.deviceClient.WaitForDevicesRemoval(ctx, DevPrefix, deviceInfo.Devices,
+		devicesRemovalMaxWaitTime)
+	if err != nil {
+		return false, err
+	}
+
+	client.deviceClient.ListAllDevices(ctx)
+
+	// If ignoreErrors was set to true while entering into this function and
+	// multipathFlushDevice above is executed successfully then multipath device
+	// mapping would have been removed there. However, we still may attempt
+	// executing RemoveMultipathDeviceMapping() one more time because of below
+	// bool return. In RemoveMultipathDeviceMapping() we swallow error for now.
+	// In case RemoveMultipathDeviceMapping() changes in future to handle error,
+	// one may need to revisit the below bool ignoreErrors being set on timeout error
+	// resulting from multipathFlushDevice() call at the start of this function.
+	return ignoreErrors || skipFlush, nil
 }

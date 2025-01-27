@@ -387,6 +387,10 @@ func (client *Client) AttachVolume(
 		}).Error("Multipath device size does not match device size.")
 	}
 
+	if deviceToUse == "" {
+		return mpathSize, fmt.Errorf("could not determine device to use for %v", name)
+	}
+
 	devicePath := "/dev/" + deviceToUse
 	if err := client.devices.WaitForDevice(ctx, devicePath); err != nil {
 		return mpathSize, fmt.Errorf("could not find device %v; %s", devicePath, err)
