@@ -21,7 +21,7 @@ import (
 	"github.com/netapp/trident/internal/crypto"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/capacity"
-	collection2 "github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/storage"
@@ -381,17 +381,17 @@ func (d *NASQtreeStorageDriver) Create(
 	// Get Flexvol options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
 	var (
-		spaceReserve    = collection2.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
-		snapshotPolicy  = collection2.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
+		spaceReserve    = collection.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
+		snapshotPolicy  = collection.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
 		snapshotReserve = storagePool.InternalAttributes()[SnapshotReserve]
-		snapshotDir     = collection2.GetV(opts, "snapshotDir", storagePool.InternalAttributes()[SnapshotDir])
-		encryption      = collection2.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
+		snapshotDir     = collection.GetV(opts, "snapshotDir", storagePool.InternalAttributes()[SnapshotDir])
+		encryption      = collection.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
 
 		// Get qtree options with default fallback values
-		unixPermissions = collection2.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
-		exportPolicy    = collection2.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
-		securityStyle   = collection2.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
-		tieringPolicy   = collection2.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+		unixPermissions = collection.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
+		exportPolicy    = collection.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
+		securityStyle   = collection.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
+		tieringPolicy   = collection.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
 		qosPolicy       = storagePool.InternalAttributes()[QosPolicy]
 	)
 
@@ -1773,7 +1773,7 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols(ctx context.Context) {
 	for flexvol, initialEmptyTime := range d.emptyFlexvolMap {
 
 		// If Flexvol is no longer known to the driver, remove from map and move on
-		if !collection2.StringInSlice(flexvol, flexvols) {
+		if !collection.StringInSlice(flexvol, flexvols) {
 			Logc(ctx).WithField("flexvol", flexvol).Debug(
 				"Flexvol no longer extant, removing from delete deferral map.")
 			delete(d.emptyFlexvolMap, flexvol)

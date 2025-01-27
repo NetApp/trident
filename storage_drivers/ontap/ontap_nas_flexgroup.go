@@ -17,7 +17,7 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/capacity"
-	collection2 "github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -474,7 +474,7 @@ func (d *NASFlexGroupStorageDriver) validate(ctx context.Context) error {
 	}
 
 	if len(d.Config.FlexGroupAggregateList) > 0 {
-		containsAll, _ := collection2.ContainsElements(vserverAggrs, d.Config.FlexGroupAggregateList)
+		containsAll, _ := collection.ContainsElements(vserverAggrs, d.Config.FlexGroupAggregateList)
 		if !containsAll {
 			return fmt.Errorf("not all aggregates specified in the flexgroupAggregateList are assigned to the SVM;  flexgroupAggregateList: %v assigned aggregates: %v",
 				d.Config.FlexGroupAggregateList, vserverAggrs)
@@ -540,15 +540,15 @@ func (d *NASFlexGroupStorageDriver) Create(
 	// get options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
 	var (
-		spaceReserve      = collection2.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
-		snapshotPolicy    = collection2.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
-		snapshotReserve   = collection2.GetV(opts, "snapshotReserve", storagePool.InternalAttributes()[SnapshotReserve])
-		unixPermissions   = collection2.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
-		snapshotDir       = collection2.GetV(opts, "snapshotDir", storagePool.InternalAttributes()[SnapshotDir])
-		exportPolicy      = collection2.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
-		securityStyle     = collection2.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
-		encryption        = collection2.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
-		tieringPolicy     = collection2.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+		spaceReserve      = collection.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
+		snapshotPolicy    = collection.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
+		snapshotReserve   = collection.GetV(opts, "snapshotReserve", storagePool.InternalAttributes()[SnapshotReserve])
+		unixPermissions   = collection.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
+		snapshotDir       = collection.GetV(opts, "snapshotDir", storagePool.InternalAttributes()[SnapshotDir])
+		exportPolicy      = collection.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
+		securityStyle     = collection.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
+		encryption        = collection.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
+		tieringPolicy     = collection.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
 		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
 		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
 	)
@@ -865,13 +865,13 @@ func (d *NASFlexGroupStorageDriver) CreateClone(
 		storagePoolSplitOnCloneVal = d.Config.SplitOnClone
 	}
 
-	split, err := strconv.ParseBool(collection2.GetV(opts, "splitOnClone", storagePoolSplitOnCloneVal))
+	split, err := strconv.ParseBool(collection.GetV(opts, "splitOnClone", storagePoolSplitOnCloneVal))
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for splitOnClone: %v", err)
 	}
 
-	qosPolicy := collection2.GetV(opts, "qosPolicy", "")
-	adaptiveQosPolicy := collection2.GetV(opts, "adaptiveQosPolicy", "")
+	qosPolicy := collection.GetV(opts, "qosPolicy", "")
+	adaptiveQosPolicy := collection.GetV(opts, "adaptiveQosPolicy", "")
 	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
 	if err != nil {
 		return err
