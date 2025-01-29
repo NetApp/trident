@@ -33,7 +33,7 @@ func TestRegisterStoragePools(t *testing.T) {
 
 func TestCreateBaseId(t *testing.T) {
 	sdk := getFakeSDK()
-	actual := sdk.createBaseID()
+	actual := sdk.createBaseID("fake-location")
 
 	expected := "projects/123456789/locations/fake-location"
 
@@ -42,7 +42,7 @@ func TestCreateBaseId(t *testing.T) {
 
 func TestCreateCapacityPoolId(t *testing.T) {
 	sdk := getFakeSDK()
-	actual := sdk.createCapacityPoolID("cPool1")
+	actual := sdk.createCapacityPoolID("fake-location", "cPool1")
 
 	expected := "projects/123456789/locations/fake-location/storagePools/cPool1"
 
@@ -97,7 +97,7 @@ func TestParseCapacityPoolIDNegative(t *testing.T) {
 
 func TestCreateVolumeId(t *testing.T) {
 	sdk := getFakeSDK()
-	actual := sdk.createVolumeID("vol1")
+	actual := sdk.createVolumeID("fake-location", "vol1")
 
 	expected := "projects/123456789/locations/fake-location/volumes/vol1"
 
@@ -153,7 +153,7 @@ func TestParseVolumeIDNegative(t *testing.T) {
 
 func TestCreateSnapshotID(t *testing.T) {
 	sdk := getFakeSDK()
-	actual := sdk.createSnapshotID("vol1", "snap1")
+	actual := sdk.createSnapshotID("fake-location", "vol1", "snap1")
 
 	expected := "projects/123456789/locations/fake-location/volumes/vol1/snapshots/snap1"
 

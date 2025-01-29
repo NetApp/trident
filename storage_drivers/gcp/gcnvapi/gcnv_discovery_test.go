@@ -396,6 +396,7 @@ func TestEnsureVolumeInValidCapacityPool(t *testing.T) {
 	volume := &Volume{
 		Name:         "V1",
 		CapacityPool: "CP1",
+		Location:     "fake-location",
 	}
 	assert.Nil(t, sdk.EnsureVolumeInValidCapacityPool(context.TODO(), volume),
 		"ensureVolumeInvalidCapacityPool result not nil")

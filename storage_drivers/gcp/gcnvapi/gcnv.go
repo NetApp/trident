@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"time"
 
+	compute "cloud.google.com/go/compute/apiv1"
 	netapp "cloud.google.com/go/netapp/apiv1"
 	"cloud.google.com/go/netapp/apiv1/netapppb"
 	"github.com/cenkalti/backoff/v4"
@@ -68,7 +69,8 @@ type ClientConfig struct {
 }
 
 type GCNVClient struct {
-	gcnv *netapp.Client
+	gcnv    *netapp.Client
+	compute *compute.RegionZonesClient
 	GCNVResources
 }
 
@@ -78,41 +80,45 @@ type Client struct {
 	sdkClient *GCNVClient
 }
 
-func createGCNVClient(ctx context.Context, config *ClientConfig) (*netapp.Client, error) {
-	// Check if the config is empty
+// NewDriver is a factory method for creating a new SDK interface.
+func NewDriver(ctx context.Context, config *ClientConfig) (GCNV, error) {
+	var credentials *google.Credentials
+	var err error
 	if reflect.ValueOf(*config.APIKey).IsZero() {
-		credentials, err := google.FindDefaultCredentials(ctx)
+		credentials, err = google.FindDefaultCredentials(ctx)
 		if err != nil {
 			return nil, err
 		}
-		return netapp.NewClient(ctx, option.WithCredentials(credentials))
 	} else if config.APIKey != nil {
 		keyBytes, jsonErr := json.Marshal(config.APIKey)
 		if jsonErr != nil {
 			return nil, jsonErr
 		}
-		creds, credsErr := google.CredentialsFromJSON(ctx, keyBytes, netapp.DefaultAuthScopes()...)
-		if credsErr != nil {
-			return nil, credsErr
+		credentials, err = google.CredentialsFromJSON(ctx, keyBytes, netapp.DefaultAuthScopes()...)
+		if err != nil {
+			return nil, err
 		}
-		return netapp.NewClient(ctx, option.WithCredentials(creds))
 	} else {
 		return nil, errors.New("apiKey in config must be specified")
 	}
-}
 
-// NewDriver is a factory method for creating a new SDK interface.
-func NewDriver(ctx context.Context, config *ClientConfig) (GCNV, error) {
-	gcnvClient, err := createGCNVClient(ctx, config)
+	computeClient, computeErr := compute.NewRegionZonesRESTClient(ctx, option.WithCredentials(credentials))
+	if computeErr != nil {
+		return nil, computeErr
+	}
+	gcnvClient, err := netapp.NewClient(ctx, option.WithCredentials(credentials))
 	if err != nil {
 		return nil, err
 	}
 
+	sdkClient := &GCNVClient{
+		gcnv:    gcnvClient,
+		compute: computeClient,
+	}
+
 	return Client{
-		config: config,
-		sdkClient: &GCNVClient{
-			gcnv: gcnvClient,
-		},
+		config:    config,
+		sdkClient: sdkClient,
 	}, nil
 }
 
@@ -139,14 +145,14 @@ func (c Client) registerStoragePools(sPools map[string]storage.Pool) {
 // ///////////////////////////////////////////////////////////////////////////////
 
 // createBaseID creates the base GCNV-style ID for a project & location.
-func (c Client) createBaseID() string {
-	return fmt.Sprintf("projects/%s/locations/%s", c.config.ProjectNumber, c.config.Location)
+func (c Client) createBaseID(location string) string {
+	return fmt.Sprintf("projects/%s/locations/%s", c.config.ProjectNumber, location)
 }
 
 // createCapacityPoolID creates the GCNV-style ID for a capacity pool.
-func (c Client) createCapacityPoolID(capacityPool string) string {
+func (c Client) createCapacityPoolID(location, capacityPool string) string {
 	return fmt.Sprintf("projects/%s/locations/%s/storagePools/%s",
-		c.config.ProjectNumber, c.config.Location, capacityPool)
+		c.config.ProjectNumber, location, capacityPool)
 }
 
 // parseCapacityPoolID parses the GCNV-style full name for a capacity pool.
@@ -173,8 +179,8 @@ func parseCapacityPoolID(fullName string) (projectNumber, location, capacityPool
 }
 
 // createVolumeID creates the GCNV-style ID for a volume.
-func (c Client) createVolumeID(volume string) string {
-	return fmt.Sprintf("projects/%s/locations/%s/volumes/%s", c.config.ProjectNumber, c.config.Location, volume)
+func (c Client) createVolumeID(location, volume string) string {
+	return fmt.Sprintf("projects/%s/locations/%s/volumes/%s", c.config.ProjectNumber, location, volume)
 }
 
 // parseVolumeID parses the GCNV-style full name for a volume.
@@ -201,9 +207,9 @@ func parseVolumeID(fullName string) (projectNumber, location, volume string, err
 }
 
 // createSnapshotID creates the GCNV-style ID for a snapshot.
-func (c Client) createSnapshotID(volume, snapshot string) string {
+func (c Client) createSnapshotID(location, volume, snapshot string) string {
 	return fmt.Sprintf("projects/%s/locations/%s/volumes/%s/snapshots/%s",
-		c.config.ProjectNumber, c.config.Location, volume, snapshot)
+		c.config.ProjectNumber, location, volume, snapshot)
 }
 
 // parseSnapshotID parses the GCNV-style full name for a snapshot.
@@ -255,6 +261,31 @@ func parseNetworkID(fullName string) (projectNumber, network string, err error) 
 	network = paramsMap["network"]
 
 	return
+}
+
+// flexPoolCount returns the number of Flex pools in the StoragePoolMap.
+func (c Client) flexPoolCount() int {
+	flexPoolsCount := 0
+	for _, storagePool := range c.sdkClient.GCNVResources.StoragePoolMap {
+		if storagePool.InternalAttributes()[serviceLevel] == ServiceLevelFlex {
+			flexPoolsCount++
+		}
+	}
+	return flexPoolsCount
+}
+
+// findAllLocationsFromCapacityPool returns map of locations of all the CapacityPools
+// that trident backend recognises.
+func (c Client) findAllLocationsFromCapacityPool(flexPoolsCount int) map[string]struct{} {
+	locations := make(map[string]struct{})
+	if flexPoolsCount != 0 {
+		for _, cPool := range c.sdkClient.GCNVResources.CapacityPoolMap {
+			locations[cPool.Location] = struct{}{}
+		}
+	} else {
+		locations[c.config.Location] = struct{}{}
+	}
+	return locations
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -383,33 +414,39 @@ func (c Client) Volumes(ctx context.Context) (*[]*Volume, error) {
 
 	var volumes []*Volume
 
+	flexPoolsCount := c.flexPoolCount()
+	locations := c.findAllLocationsFromCapacityPool(flexPoolsCount)
+
 	sdkCtx, sdkCancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer sdkCancel()
-	req := &netapppb.ListVolumesRequest{
-		Parent:   c.createBaseID(),
-		PageSize: PaginationLimit,
-	}
-	it := c.sdkClient.gcnv.ListVolumes(sdkCtx, req)
-	for {
-		gcnvVolume, err := it.Next()
-		if errors.Is(err, iterator.Done) {
-			break
-		}
-		if err != nil {
-			Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
-				WithFields(logFields).WithError(err).Error("Could not read volumes.")
-			return nil, err
-		}
-		Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
-			WithFields(logFields).WithError(err).Debug("Volume: %v.", gcnvVolume)
+	for location := range locations {
 
-		volume, err := c.newVolumeFromGCNVVolume(ctx, gcnvVolume)
-		if err != nil {
-			Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
-				WithError(err).Warning("Skipping volume.")
-			continue
+		req := &netapppb.ListVolumesRequest{
+			Parent:   c.createBaseID(location),
+			PageSize: PaginationLimit,
 		}
-		volumes = append(volumes, volume)
+		it := c.sdkClient.gcnv.ListVolumes(sdkCtx, req)
+		for {
+			gcnvVolume, err := it.Next()
+			if errors.Is(err, iterator.Done) {
+				break
+			}
+			if err != nil {
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
+					WithFields(logFields).WithError(err).Error("Could not read volumes.")
+				return nil, err
+			}
+			Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
+				WithFields(logFields).WithError(err).Debug("Volume: %v.", gcnvVolume)
+
+			volume, err := c.newVolumeFromGCNVVolume(ctx, gcnvVolume)
+			if err != nil {
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
+					WithError(err).Warning("Skipping volume.")
+				continue
+			}
+			volumes = append(volumes, volume)
+		}
 	}
 
 	return &volumes, nil
@@ -417,6 +454,12 @@ func (c Client) Volumes(ctx context.Context) (*[]*Volume, error) {
 
 // Volume uses a volume config record to fetch a volume by the most efficient means.
 func (c Client) Volume(ctx context.Context, volConfig *storage.VolumeConfig) (*Volume, error) {
+	// When we know the internal ID, use that as it is vastly more efficient
+	if volConfig.InternalID != "" {
+		return c.VolumeByID(ctx, volConfig.InternalID)
+	}
+
+	// Fall back to the name
 	return c.VolumeByName(ctx, volConfig.InternalName)
 }
 
@@ -431,14 +474,87 @@ func (c Client) VolumeByName(ctx context.Context, name string) (*Volume, error) 
 
 	sdkCtx, sdkCancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer sdkCancel()
+
+	flexPoolsCount := c.flexPoolCount()
+	locations := c.findAllLocationsFromCapacityPool(flexPoolsCount)
+
+	var gcnvVolume *netapppb.Volume
+	var err error
+	// We iterate over a list of region and zones to check if the volume is in that region or zone.
+	// We use this logic to reduce the number of API calls to the GCNV API
+	for location := range locations {
+
+		req := &netapppb.GetVolumeRequest{
+			Name: c.createVolumeID(location, name),
+		}
+		gcnvVolume, err = c.sdkClient.gcnv.GetVolume(sdkCtx, req)
+		if gcnvVolume != nil {
+			break
+		} else if err != nil {
+			if IsGCNVNotFoundError(err) {
+				Logc(ctx).WithFields(logFields).Debugf("Volume not found in '%s' location.", location)
+				continue
+			}
+
+			Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching volume.")
+		}
+	}
+
+	if gcnvVolume == nil {
+		if IsGCNVNotFoundError(err) {
+			return nil, errors.WrapWithNotFoundError(err, "volume '%s' not found", name)
+		}
+		return nil, err
+	}
+	Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
+		WithFields(logFields).Debug("Found volume by name.")
+
+	return c.newVolumeFromGCNVVolume(ctx, gcnvVolume)
+}
+
+// VolumeExistsByName checks whether a volume exists using its volume name as a key.
+func (c Client) VolumeExistsByName(ctx context.Context, name string) (bool, *Volume, error) {
+	volume, err := c.VolumeByName(ctx, name)
+	if err != nil {
+		if IsGCNVNotFoundError(err) {
+			return false, nil, nil
+		} else {
+			return false, nil, err
+		}
+	}
+	return true, volume, nil
+}
+
+// VolumeExists uses a volume config record to look for a Filesystem by the most efficient means.
+func (c Client) VolumeExists(ctx context.Context, volConfig *storage.VolumeConfig) (bool, *Volume, error) {
+	// When we know the internal ID, use that as it is vastly more efficient
+	if volConfig.InternalID != "" {
+		return c.VolumeExistsByID(ctx, volConfig.InternalID)
+	}
+	// Fall back to the creation token
+	return c.VolumeExistsByName(ctx, volConfig.InternalName)
+}
+
+// VolumeByID returns a Filesystem based on its GCNV-style ID.
+func (c Client) VolumeByID(ctx context.Context, id string) (*Volume, error) {
+	logFields := LogFields{
+		"API":    "GCNV.GetVolume",
+		"volume": id,
+	}
+
+	Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
+		WithFields(logFields).Trace("Fetching volume by id.")
+
+	sdkCtx, sdkCancel := context.WithTimeout(ctx, c.config.SDKTimeout)
+	defer sdkCancel()
 	req := &netapppb.GetVolumeRequest{
-		Name: c.createVolumeID(name),
+		Name: id,
 	}
 	gcnvVolume, err := c.sdkClient.gcnv.GetVolume(sdkCtx, req)
 	if err != nil {
 		if IsGCNVNotFoundError(err) {
 			Logc(ctx).WithFields(logFields).Debug("Volume not found.")
-			return nil, errors.WrapWithNotFoundError(err, "volume '%s' not found", name)
+			return nil, errors.WrapWithNotFoundError(err, "volume '%s' not found", id)
 		}
 
 		Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching volume.")
@@ -446,14 +562,14 @@ func (c Client) VolumeByName(ctx context.Context, name string) (*Volume, error) 
 	}
 
 	Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
-		WithFields(logFields).Debug("Found volume by name.")
+		WithFields(logFields).Debug("Found volume by id.")
 
 	return c.newVolumeFromGCNVVolume(ctx, gcnvVolume)
 }
 
-// VolumeExists uses a volume config record to look for a Filesystem by the most efficient means.
-func (c Client) VolumeExists(ctx context.Context, volConfig *storage.VolumeConfig) (bool, *Volume, error) {
-	volume, err := c.Volume(ctx, volConfig)
+// VolumeExistsByID checks whether a volume exists using its volume id as a key.
+func (c Client) VolumeExistsByID(ctx context.Context, id string) (bool, *Volume, error) {
+	volume, err := c.VolumeByID(ctx, id)
 	if err != nil {
 		if IsGCNVNotFoundError(err) {
 			return false, nil, nil
@@ -472,7 +588,7 @@ func (c Client) WaitForVolumeState(
 	volumeState := ""
 
 	checkVolumeState := func() error {
-		v, err := c.VolumeByName(ctx, volume.Name)
+		v, err := c.VolumeByID(ctx, volume.FullName)
 		if err != nil {
 
 			// There is no 'Deleted' state in GCNV -- the volume just vanishes.  If we failed to query
@@ -596,7 +712,7 @@ func (c Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest) 
 	sdkCtx, sdkCancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer sdkCancel()
 	req := &netapppb.CreateVolumeRequest{
-		Parent:   c.createBaseID(),
+		Parent:   c.createBaseID(cPool.Location),
 		VolumeId: request.Name,
 		Volume:   newVol,
 	}
@@ -612,7 +728,7 @@ func (c Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest) 
 		return nil, pollErr
 	} else {
 		// The volume doesn't exist yet, so forge the name & network IDs to enable conversion to a Volume struct
-		newVol.Name = c.createVolumeID(request.Name)
+		newVol.Name = c.createVolumeID(cPool.Location, request.Name)
 		newVol.Network = cPool.NetworkFullName
 		return c.newVolumeFromGCNVVolume(ctx, newVol)
 	}
@@ -725,8 +841,9 @@ func (c Client) DeleteVolume(ctx context.Context, volume *Volume) error {
 
 	sdkCtx, sdkCancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer sdkCancel()
+
 	req := &netapppb.DeleteVolumeRequest{
-		Name:  c.createVolumeID(name),
+		Name:  c.createVolumeID(volume.Location, name),
 		Force: true,
 	}
 	_, err := c.sdkClient.gcnv.DeleteVolume(sdkCtx, req)
@@ -784,7 +901,7 @@ func (c Client) SnapshotsForVolume(ctx context.Context, volume *Volume) (*[]*Sna
 	sdkCtx, sdkCancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer sdkCancel()
 	req := &netapppb.ListSnapshotsRequest{
-		Parent:   c.createVolumeID(volume.Name),
+		Parent:   c.createVolumeID(volume.Location, volume.Name),
 		PageSize: PaginationLimit,
 	}
 	it := c.sdkClient.gcnv.ListSnapshots(sdkCtx, req)
@@ -831,7 +948,7 @@ func (c Client) SnapshotForVolume(
 	sdkCtx, sdkCancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer sdkCancel()
 	req := &netapppb.GetSnapshotRequest{
-		Name: c.createSnapshotID(volume.Name, snapshotName),
+		Name: c.createSnapshotID(volume.Location, volume.Name, snapshotName),
 	}
 	gcnvSnapshot, err := c.sdkClient.gcnv.GetSnapshot(sdkCtx, req)
 	if err != nil {
@@ -948,7 +1065,7 @@ func (c Client) CreateSnapshot(ctx context.Context, volume *Volume, snapshotName
 		return nil, pollErr
 	} else {
 		// The snapshot doesn't exist yet, so forge the name ID to enable conversion to a Snapshot struct
-		newSnapshot.Name = c.createSnapshotID(volume.Name, snapshotName)
+		newSnapshot.Name = c.createSnapshotID(volume.Location, volume.Name, snapshotName)
 		return c.newSnapshotFromGCNVSnapshot(ctx, newSnapshot)
 	}
 }
@@ -1001,7 +1118,7 @@ func (c Client) DeleteSnapshot(ctx context.Context, volume *Volume, snapshot *Sn
 	sdkCtx, sdkCancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer sdkCancel()
 	req := &netapppb.DeleteSnapshotRequest{
-		Name: c.createSnapshotID(volume.Name, snapshot.Name),
+		Name: c.createSnapshotID(volume.Location, volume.Name, snapshot.Name),
 	}
 	_, err := c.sdkClient.gcnv.DeleteSnapshot(sdkCtx, req)
 	if err != nil {

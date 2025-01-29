@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"cloud.google.com/go/compute/apiv1/computepb"
 	"cloud.google.com/go/netapp/apiv1/netapppb"
 	"github.com/cenkalti/backoff/v4"
 	"go.uber.org/multierr"
@@ -237,49 +238,62 @@ func (c Client) discoverCapacityPools(ctx context.Context) (*[]*CapacityPool, er
 	logFields := LogFields{
 		"API": "GCNV.ListStoragePools",
 	}
+	var locations []string
+	locations = append(locations, c.config.Location)
+
+	flexPoolsCount := c.flexPoolCount()
+	if flexPoolsCount != 0 {
+		locations = append(locations, c.ListComputeZones(ctx)...)
+	}
 
 	var pools []*CapacityPool
+	// We iterate over a list of region and zones to get the storage pools
+	// created in those regions and zones.
+	for _, location := range locations {
+		req := &netapppb.ListStoragePoolsRequest{
+			Parent:   fmt.Sprintf("projects/%s/locations/%s", c.config.ProjectNumber, location),
+			PageSize: PaginationLimit,
+		}
+		it := c.sdkClient.gcnv.ListStoragePools(ctx, req)
+		for {
+			pool, err := it.Next()
+			if errors.Is(err, iterator.Done) {
+				break
+			}
+			if err != nil {
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
+					WithFields(logFields).WithError(err).Error("Could not read pools.")
+				break
+			}
 
-	req := &netapppb.ListStoragePoolsRequest{
-		Parent:   fmt.Sprintf("projects/%s/locations/%s", c.config.ProjectNumber, c.config.Location),
-		PageSize: PaginationLimit,
+			_, location, capacityPool, err := parseCapacityPoolID(pool.Name)
+			if err != nil {
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
+					WithFields(logFields).WithError(err).Warning("Skipping pool.")
+			}
+
+			_, network, err := parseNetworkID(pool.Network)
+			if err != nil {
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
+					WithFields(logFields).WithError(err).Warning("Skipping pool.")
+			}
+
+			pools = append(pools, &CapacityPool{
+				Name:            capacityPool,
+				FullName:        pool.Name,
+				Location:        location,
+				ServiceLevel:    ServiceLevelFromGCNVServiceLevel(pool.ServiceLevel),
+				State:           StoragePoolStateFromGCNVState(pool.State),
+				NetworkName:     network,
+				NetworkFullName: pool.Network,
+				Zone:            pool.Zone,
+			})
+		}
 	}
-	it := c.sdkClient.gcnv.ListStoragePools(ctx, req)
-	for {
-		pool, err := it.Next()
-		if errors.Is(err, iterator.Done) {
-			break
-		}
-		if err != nil {
-			Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
-				WithFields(logFields).WithError(err).Error("Could not read pools.")
-			return nil, err
-		}
 
-		_, location, capacityPool, err := parseCapacityPoolID(pool.Name)
-		if err != nil {
-			Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
-				WithFields(logFields).WithError(err).Warning("Skipping pool.")
-		}
-
-		_, network, err := parseNetworkID(pool.Network)
-		if err != nil {
-			Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
-				WithFields(logFields).WithError(err).Warning("Skipping pool.")
-		}
-
-		pools = append(pools, &CapacityPool{
-			Name:            capacityPool,
-			FullName:        pool.Name,
-			Location:        location,
-			ServiceLevel:    ServiceLevelFromGCNVServiceLevel(pool.ServiceLevel),
-			State:           StoragePoolStateFromGCNVState(pool.State),
-			NetworkName:     network,
-			NetworkFullName: pool.Network,
-			Zone:            pool.Zone,
-		})
+	if len(pools) == 0 {
+		return nil, errors.NotFoundError("no capacity pools found for the given region")
 	}
-
 	return &pools, nil
 }
 
@@ -419,6 +433,10 @@ func (c Client) FilterCapacityPoolsOnTopology(
 				if (zone == "" || strings.EqualFold(cPool.Zone, zone)) && (region == "" ||
 					strings.EqualFold(cPool.Location, region)) {
 					filteredCPools = append(filteredCPools, cPool)
+				} else if strings.EqualFold(cPool.Zone, zone) && strings.EqualFold(cPool.Location, zone) {
+					// If location and zone of a capacity pool are same, we assume that the capacity pool is
+					// a zonal capacity pool and is matched with the zone specified in the topology.
+					filteredCPools = append(filteredCPools, cPool)
 				}
 			}
 		} else {
@@ -480,7 +498,7 @@ func (c Client) EnsureVolumeInValidCapacityPool(ctx context.Context, volume *Vol
 	}
 
 	// Always match by capacity pool full name
-	cPoolFullName := c.createCapacityPoolID(volume.CapacityPool)
+	cPoolFullName := c.createCapacityPoolID(volume.Location, volume.CapacityPool)
 
 	for _, cPool := range allCapacityPools {
 		if cPoolFullName == cPool.FullName {
@@ -490,4 +508,29 @@ func (c Client) EnsureVolumeInValidCapacityPool(ctx context.Context, volume *Vol
 
 	return errors.NotFoundError("volume %s is part of another storage pool not referenced "+
 		"by this backend", volume.Name)
+}
+
+func (c Client) ListComputeZones(ctx context.Context) []string {
+	logFields := LogFields{
+		"API": "Compute.List",
+	}
+	var locations []string
+	req1 := &computepb.ListRegionZonesRequest{
+		Project: c.config.ProjectNumber,
+		Region:  c.config.Location,
+	}
+	zoneIterator := c.sdkClient.compute.List(ctx, req1)
+	for {
+		zone, err := zoneIterator.Next()
+		if errors.Is(err, iterator.Done) {
+			break
+		}
+		if err != nil {
+			Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
+				WithFields(logFields).WithError(err).Error("Could not read zones.")
+			break
+		}
+		locations = append(locations, *zone.Name)
+	}
+	return locations
 }

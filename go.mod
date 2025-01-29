@@ -3,6 +3,7 @@ module github.com/netapp/trident
 go 1.23.0
 
 require (
+	cloud.google.com/go/compute v1.28.1
 	cloud.google.com/go/netapp v1.4.0 // https://pkg.go.dev/cloud.google.com/go/netapp
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.14.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp/v7 v7.2.0

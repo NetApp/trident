@@ -28,6 +28,9 @@ type GCNV interface {
 	Volume(context.Context, *storage.VolumeConfig) (*Volume, error)
 	VolumeByName(context.Context, string) (*Volume, error)
 	VolumeExists(context.Context, *storage.VolumeConfig) (bool, *Volume, error)
+	VolumeExistsByName(context.Context, string) (bool, *Volume, error)
+	VolumeByID(context.Context, string) (*Volume, error)
+	VolumeExistsByID(context.Context, string) (bool, *Volume, error)
 	WaitForVolumeState(context.Context, *Volume, string, []string, time.Duration) (string, error)
 	CreateVolume(context.Context, *VolumeCreateRequest) (*Volume, error)
 	ModifyVolume(context.Context, *Volume, map[string]string, *string, *bool, *ExportRule) error
