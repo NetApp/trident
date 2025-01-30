@@ -286,37 +286,6 @@ func ensureExportPolicyExists(ctx context.Context, policyName string, clientAPI 
 	return clientAPI.ExportPolicyCreate(ctx, policyName)
 }
 
-// publishShare ensures that the volume has the correct export policy applied.
-func publishShare(
-	ctx context.Context, clientAPI api.OntapAPI, config *drivers.OntapStorageDriverConfig,
-	publishInfo *tridentmodels.VolumePublishInfo, volumeName string,
-	ModifyVolumeExportPolicy func(ctx context.Context, volumeName, policyName string) error,
-) error {
-	fields := LogFields{
-		"Method": "publishFlexVolShare",
-		"Type":   "ontap_common",
-		"Share":  volumeName,
-	}
-	Logd(ctx, config.StorageDriverName,
-		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> publishFlexVolShare")
-	defer Logd(ctx, config.StorageDriverName,
-		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< publishFlexVolShare")
-
-	if !config.AutoExportPolicy || publishInfo.Unmanaged {
-		// Nothing to do if we're not configuring export policies automatically or volume is not managed
-		return nil
-	}
-
-	if err := ensureNodeAccess(ctx, publishInfo, clientAPI, config); err != nil {
-		return err
-	}
-
-	// Update volume to use the correct export policy
-	policyName := getExportPolicyName(publishInfo.BackendUUID)
-	err := ModifyVolumeExportPolicy(ctx, volumeName, policyName)
-	return err
-}
-
 func getExportPolicyName(backendUUID string) string {
 	return fmt.Sprintf("trident-%s", backendUUID)
 }
@@ -366,6 +335,61 @@ func reconcileNASNodeAccess(
 		Logc(ctx).WithField("ExportPolicy", policyName).Error(err)
 		return err
 	}
+	return nil
+}
+
+// ensureNodeAccessForPolicy check to see if export policy exists and if not it will create it.
+// Add the desired rule(s) to the policy.
+func ensureNodeAccessForPolicy(
+	ctx context.Context, targetNode *tridentmodels.Node, clientAPI api.OntapAPI,
+	config *drivers.OntapStorageDriverConfig, policyName string,
+) error {
+	if exists, err := clientAPI.ExportPolicyExists(ctx, policyName); err != nil {
+		return err
+	} else if !exists {
+		Logc(ctx).WithField("exportPolicy", policyName).Debug("Export policy missing, will create it.")
+
+		if err = ensureExportPolicyExists(ctx, policyName, clientAPI); err != nil {
+			return err
+		}
+	}
+
+	desiredRules, err := network.FilterIPs(ctx, targetNode.IPs, config.AutoExportCIDRs)
+	if err != nil {
+		err = fmt.Errorf("unable to determine desired export policy rules; %v", err)
+		Logc(ctx).Error(err)
+		return err
+	}
+
+	// first grab all existing rules
+	existingRules, err := clientAPI.ExportRuleList(ctx, policyName)
+	if err != nil {
+		// Could not list rules, just log it, no action required.
+		Logc(ctx).WithField("error", err).Debug("Export policy rules could not be listed.")
+	}
+
+	for _, desiredRule := range desiredRules {
+
+		// Loop through the existing rules one by one and compare to make sure we cover the scenario where the
+		// existing rule is of format "10.193.112.26, 10.244.2.0" and the desired rule is format "10.193.112.26".
+		// This can happen because of the difference in how ONTAP ZAPI and ONTAP REST creates export rule.
+
+		ruleFound := false
+		for existingRule := range existingRules {
+			if strings.Contains(existingRule, desiredRule) {
+				ruleFound = true
+				break
+			}
+		}
+
+		// Rule does not exist, so create it
+		if !ruleFound {
+			if err = clientAPI.ExportRuleCreate(ctx, policyName, desiredRule, config.NASType); err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -3863,4 +3887,59 @@ func deleteAutomaticSnapshot(
 				"Any automatic snapshot must be manually deleted.")
 		}
 	}
+}
+
+// removeExportPolicyRules takes an export policy name,
+// retrieves its rules and matches the rules that exist to the IP addresses from the node.
+// Any matched IP addresses will be removed from the export policy.
+func removeExportPolicyRules(
+	ctx context.Context, exportPolicy string, publishInfo *tridentmodels.VolumePublishInfo, clientAPI api.OntapAPI,
+) error {
+	var removeRuleIndexes []int
+
+	nodeIPRules := make(map[string]struct{})
+	for _, ip := range publishInfo.HostIP {
+		nodeIPRules[ip] = struct{}{}
+	}
+	// Get export policy rules from given policy
+	allExportRules, err := clientAPI.ExportRuleList(ctx, exportPolicy)
+	if err != nil {
+		return err
+	}
+
+	// Match list of rules to rule index based on clientMatch address
+	// ONTAP expects the rule index to delete
+	for clientMatch, ruleIndex := range allExportRules {
+		// For the policy, match the node IP addresses to the clientMatch to remove the matched items.
+		// Example:
+		// trident_pvc_123 is attached to node1 and node2. The policy is being unpublished from node1.
+		// node1 IP addresses [1.1.1.0, 1.1.1.1] node2 IP addresses [2.2.2.0, 2.2.2.2].
+		// export policy "trident_pvc_123" should have the export rules:
+		// index 1: "1.1.1.0"
+		// index 2: "1.1.1.1"
+		// index 3: "2.2.2.0"
+		// index 4: "2.2.2.2"
+		// When the clientMatch is the same as the node IP that export rule index will be added to the list of
+		// indexes to be removed. For this example indexes 1 and 2 will be removed.
+
+		// Legacy export policies created via ZAPI will have multiple clientMatch IPs for a node in a single rule.
+		// index 1: "1.1.1.0, 1.1.1.1"
+		// index 2: "2.2.2.0, 2.2.2.2"
+		// For this example, index 1 will be removed.
+		for _, singleClientMatch := range strings.Split(clientMatch, ",") {
+			if _, match := nodeIPRules[singleClientMatch]; match {
+				removeRuleIndexes = append(removeRuleIndexes, ruleIndex)
+			}
+		}
+	}
+
+	// Attempt to remove node IP addresses from export policy rules
+	for _, ruleIndex := range removeRuleIndexes {
+		if err = clientAPI.ExportRuleDestroy(ctx, exportPolicy, ruleIndex); err != nil {
+			Logc(ctx).WithError(err).Error("Error deleting export policy rule.")
+			return err
+		}
+	}
+
+	return nil
 }

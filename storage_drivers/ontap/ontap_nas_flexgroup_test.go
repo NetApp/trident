@@ -4308,3 +4308,43 @@ func TestOntapNasFlexgroupGetVserverAggrMediaType(t *testing.T) {
 		})
 	}
 }
+
+func TestPublishShare(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+	config := &drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: commonConfig,
+		SVM:                       "testSVM",
+		AutoExportPolicy:          true,
+	}
+
+	publishInfo := &models.VolumePublishInfo{
+		BackendUUID: "fakeBackendUUID",
+		Unmanaged:   false,
+	}
+	policyName := "trident-fakeBackendUUID"
+	volumeName := "fakeVolumeName"
+
+	// Test1: Positive flow
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
+
+	err := publishFlexgroupShare(ctx, mockAPI, config, publishInfo, volumeName, MockModifyVolumeExportPolicy)
+
+	assert.NoError(t, err)
+
+	// Test2: Error flow: PolicyDoesn't exist
+	ruleList := make(map[string]int)
+	ruleList["0.0.0.1/0"] = 0
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(false, nil)
+	mockAPI.EXPECT().ExportPolicyCreate(ctx, policyName).Return(fmt.Errorf("Error Creating Policy"))
+
+	err = publishFlexgroupShare(ctx, mockAPI, config, publishInfo, volumeName, MockModifyVolumeExportPolicy)
+
+	assert.Error(t, err)
+}

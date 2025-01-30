@@ -2151,6 +2151,12 @@ func (c Client) ExportRuleDestroy(policy string, ruleIndex int) (*azgo.ExportRul
 		SetPolicyName(policy).
 		SetRuleIndex(ruleIndex).
 		ExecuteUsing(c.zr)
+	if zerr := azgo.NewZapiError(response); !zerr.IsPassed() {
+		// It's not an error if the export rule doesn't exist
+		if zerr.Code() == azgo.EOBJECTNOTFOUND {
+			return response, nil
+		}
+	}
 	return response, err
 }
 

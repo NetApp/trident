@@ -1070,7 +1070,38 @@ func (d *NASFlexGroupStorageDriver) Publish(
 		publishInfo.MountOptions = mountOptions
 	}
 
-	return publishShare(ctx, d.API, &d.Config, publishInfo, name, d.API.FlexgroupModifyExportPolicy)
+	return publishFlexgroupShare(ctx, d.API, &d.Config, publishInfo, name, d.API.FlexgroupModifyExportPolicy)
+}
+
+// publishFlexgroupShare ensures that the volume has the correct export policy applied.
+func publishFlexgroupShare(
+	ctx context.Context, clientAPI api.OntapAPI, config *drivers.OntapStorageDriverConfig,
+	publishInfo *models.VolumePublishInfo, volumeName string,
+	ModifyVolumeExportPolicy func(ctx context.Context, volumeName, policyName string) error,
+) error {
+	fields := LogFields{
+		"Method": "publishFlexgroupShare",
+		"Type":   "ontap_common",
+		"Share":  volumeName,
+	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> publishFlexgroupShare")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< publishFlexgroupShare")
+
+	if !config.AutoExportPolicy || publishInfo.Unmanaged {
+		// Nothing to do if we're not configuring export policies automatically or volume is not managed
+		return nil
+	}
+
+	if err := ensureNodeAccess(ctx, publishInfo, clientAPI, config); err != nil {
+		return err
+	}
+
+	// Update volume to use the correct export policy
+	policyName := getExportPolicyName(publishInfo.BackendUUID)
+	err := ModifyVolumeExportPolicy(ctx, volumeName, policyName)
+	return err
 }
 
 // getFlexgroupSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot

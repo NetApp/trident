@@ -310,7 +310,14 @@ func (d *NASStorageDriver) Create(
 	}
 
 	if d.Config.AutoExportPolicy {
-		exportPolicy = getExportPolicyName(storagePool.Backend().BackendUUID())
+		// set empty export policy on flexVol creation
+		exportPolicy = getEmptyExportPolicyName(*d.Config.StoragePrefix)
+
+		// only create the empty policy if autoExportPolicy = true
+		err = ensureExportPolicyExists(ctx, exportPolicy, d.API)
+		if err != nil {
+			return fmt.Errorf("error ensuring export policy exists: %v", err)
+		}
 	}
 
 	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
@@ -766,7 +773,161 @@ func (d *NASStorageDriver) Publish(
 		publishInfo.MountOptions = mountOptions
 	}
 
-	return publishShare(ctx, d.API, &d.Config, publishInfo, name, d.API.VolumeModifyExportPolicy)
+	return d.publishFlexVolShare(ctx, name, volConfig, publishInfo)
+}
+
+// Unpublish the volume from the host specified in publishInfo.  This method may or may not be running on the host
+// where the volume will be mounted, so it should limit itself to updating access rules, export policies, etc.
+// that require some host identity (but not locality) as well as storage controller API access.
+func (d *NASStorageDriver) Unpublish(
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
+) error {
+	if !d.Config.AutoExportPolicy {
+		Logc(ctx).Debug("Auto export policies are not turned on.")
+		return nil
+	}
+
+	volExportPolicyName := volConfig.InternalName
+
+	fields := LogFields{
+		"Method":  "Unpublish",
+		"Type":    "NASStorageDriver",
+		"volName": volExportPolicyName,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Unpublish")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Unpublish")
+
+	if tridentconfig.CurrentDriverContext != tridentconfig.ContextCSI {
+		return nil
+	}
+
+	exists, err := d.API.VolumeExists(ctx, volConfig.InternalName)
+	if err != nil {
+		Logc(ctx).WithError(err).Error("Error checking for existing volume.")
+		return err
+	}
+	if !exists {
+		Logc(ctx).WithField("volume", volConfig.InternalName).Debug("Volume not found.")
+		return errors.NotFoundError("volume not found")
+	}
+
+	exportPolicy := volConfig.ExportPolicy
+	if exportPolicy == volExportPolicyName {
+		// Remove export policy rules matching the node IP address from the volume level policy
+		if err = removeExportPolicyRules(ctx, exportPolicy, publishInfo, d.API); err != nil {
+			Logc(ctx).WithError(err).Errorf("Error cleaning up export policy rules in %s.", exportPolicy)
+			return err
+		}
+
+		// Check for other rules in the export policy
+		allExportRules, err := d.API.ExportRuleList(ctx, exportPolicy)
+		if err != nil {
+			Logc(ctx).Errorf("Could not list export rules for policy %s.", exportPolicy)
+			return err
+		}
+		if len(allExportRules) == 0 {
+			// Set volume to the empty policy
+			if err = d.setVolToEmptyPolicy(ctx, volConfig.InternalName); err != nil {
+				return err
+			}
+
+			volConfig.ExportPolicy = getEmptyExportPolicyName(*d.Config.StoragePrefix)
+
+			// Remove export policy if no rules exist
+			if err = d.API.ExportPolicyDestroy(ctx, exportPolicy); err != nil {
+				Logc(ctx).WithError(err).Errorf("Error deleting export policy %s.", exportPolicy)
+			}
+		}
+
+	} else if exportPolicy == getExportPolicyName(publishInfo.BackendUUID) {
+		// volume using backend-based export policy.
+		if len(publishInfo.Nodes) == 0 {
+			if err = d.setVolToEmptyPolicy(ctx, volConfig.InternalName); err != nil {
+				return err
+			}
+			volConfig.ExportPolicy = getEmptyExportPolicyName(*d.Config.StoragePrefix)
+		}
+	}
+
+	return nil
+}
+
+// setVolToEmptyPolicy  set export policy to the empty policy.
+func (d *NASStorageDriver) setVolToEmptyPolicy(ctx context.Context, volName string) error {
+	emptyExportPolicy := getEmptyExportPolicyName(*d.Config.StoragePrefix)
+	exists, err := d.API.ExportPolicyExists(ctx, emptyExportPolicy)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		Logc(ctx).WithField("exportPolicy", emptyExportPolicy).
+			Debug("Export policy not found, attempting to create it.")
+		if err = ensureExportPolicyExists(ctx, emptyExportPolicy, d.API); err != nil {
+			Logc(ctx).WithError(err).Errorf("Could not create empty export policy %s.", emptyExportPolicy)
+			return err
+		}
+	}
+	err = d.API.VolumeModifyExportPolicy(ctx, volName, emptyExportPolicy)
+	if err != nil {
+		Logc(ctx).WithError(err).Errorf("Error setting volume %s to empty export policy.", volName)
+	}
+	return err
+}
+
+func (d *NASStorageDriver) publishFlexVolShare(
+	ctx context.Context, flexvol string, volConfig *storage.VolumeConfig,
+	publishInfo *models.VolumePublishInfo,
+) error {
+	fields := LogFields{
+		"Method": "publishShare",
+		"Type":   "ontap_nas",
+		"Share":  flexvol,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> publishFlexVolShare")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< publishFlexVolShare")
+
+	if !d.Config.AutoExportPolicy || publishInfo.Unmanaged {
+		return nil
+	}
+
+	var targetNode *models.Node
+	for _, node := range publishInfo.Nodes {
+		if node.Name == publishInfo.HostName {
+			targetNode = node
+			break
+		}
+	}
+	if targetNode == nil {
+		err := fmt.Errorf("node %s has not registered with Trident", publishInfo.HostName)
+		Logc(ctx).Error(err)
+		return err
+	}
+
+	// Ensure the flexVol has the correct export policy and rules applied.
+	// If the flexVol already have backend policy, leave it as it is. We will have an opportunity to migrate it
+	// to flexVol policy during unpublish.
+	flexVolPolicyName := flexvol
+	if volConfig.ExportPolicy == getExportPolicyName(publishInfo.BackendUUID) {
+		flexVolPolicyName = volConfig.ExportPolicy
+	}
+
+	volConfig.ExportPolicy = flexVolPolicyName
+
+	if err := ensureNodeAccessForPolicy(ctx, targetNode, d.API, &d.Config, flexVolPolicyName); err != nil {
+		return err
+	}
+
+	err := d.API.VolumeModifyExportPolicy(ctx, flexvol, flexVolPolicyName)
+	if err != nil {
+		err = fmt.Errorf("error modifying flexvol export policy; %v", err)
+		Logc(ctx).WithFields(LogFields{
+			"FlexVol":      flexvol,
+			"ExportPolicy": flexVolPolicyName,
+		}).Error(err)
+		return err
+	}
+
+	return nil
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
@@ -1298,7 +1459,36 @@ func (d *NASStorageDriver) ReconcileNodeAccess(
 
 	policyName := getExportPolicyName(backendUUID)
 
-	return reconcileNASNodeAccess(ctx, nodes, &d.Config, d.API, policyName)
+	return d.reconcileNodeAccessForBackendPolicy(ctx, nodes, policyName)
+}
+
+func (d *NASStorageDriver) reconcileNodeAccessForBackendPolicy(
+	ctx context.Context, nodes []*models.Node, policyName string,
+) error {
+	if !d.Config.AutoExportPolicy {
+		return nil
+	}
+
+	if exists, err := d.API.ExportPolicyExists(ctx, policyName); err != nil {
+		return err
+	} else if !exists {
+		Logc(ctx).WithField("ExportPolicy", policyName).Debug("Export policy not found.")
+		return nil
+	}
+
+	desiredRules, err := getDesiredExportPolicyRules(ctx, nodes, &d.Config)
+	if err != nil {
+		err = fmt.Errorf("unable to determine desired export policy rules; %v", err)
+		Logc(ctx).Error(err)
+		return err
+	}
+	err = reconcileExportPolicyRules(ctx, policyName, desiredRules, d.API, &d.Config)
+	if err != nil {
+		err = fmt.Errorf("unabled to reconcile export policy rules; %v", err)
+		Logc(ctx).WithField("ExportPolicy", policyName).Error(err)
+		return err
+	}
+	return nil
 }
 
 func (d *NASStorageDriver) ReconcileVolumeNodeAccess(ctx context.Context, _ *storage.VolumeConfig, _ []*models.Node) error {
@@ -1537,4 +1727,15 @@ func (d *NASStorageDriver) DestroySMBShare(
 		}
 	}
 	return nil
+}
+
+// EnablePublishEnforcement prepares a volume for per-volume export policy allowing greater access control.
+func (d *NASStorageDriver) EnablePublishEnforcement(ctx context.Context, volume *storage.Volume) error {
+	// NOTE: This logic is currently handled in the Unpublish code.
+	return nil
+}
+
+func (d *NASStorageDriver) CanEnablePublishEnforcement() bool {
+	// Only do publish enforcement if the auto export policy is turned on
+	return d.Config.AutoExportPolicy
 }

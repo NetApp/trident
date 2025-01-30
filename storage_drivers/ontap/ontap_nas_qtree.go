@@ -23,7 +23,6 @@ import (
 	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/pkg/convert"
-	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -763,61 +762,6 @@ func (d *NASQtreeStorageDriver) publishQtreeShare(
 	return nil
 }
 
-// ensureNodeAccessForPolicy check to see if export policy exists and if not it will create it.
-// Add the desired rule(s) to the policy.
-func ensureNodeAccessForPolicy(
-	ctx context.Context, targetNode *models.Node, clientAPI api.OntapAPI,
-	config *drivers.OntapStorageDriverConfig, policyName string,
-) error {
-	if exists, err := clientAPI.ExportPolicyExists(ctx, policyName); err != nil {
-		return err
-	} else if !exists {
-		Logc(ctx).WithField("exportPolicy", policyName).Debug("Export policy missing, will create it.")
-
-		if err = ensureExportPolicyExists(ctx, policyName, clientAPI); err != nil {
-			return err
-		}
-	}
-
-	desiredRules, err := network.FilterIPs(ctx, targetNode.IPs, config.AutoExportCIDRs)
-	if err != nil {
-		err = fmt.Errorf("unable to determine desired export policy rules; %v", err)
-		Logc(ctx).Error(err)
-		return err
-	}
-
-	// first grab all existing rules
-	existingRules, err := clientAPI.ExportRuleList(ctx, policyName)
-	if err != nil {
-		// Could not list rules, just log it, no action required.
-		Logc(ctx).WithField("error", err).Debug("Export policy rules could not be listed.")
-	}
-
-	for _, desiredRule := range desiredRules {
-
-		// Loop through the existing rules one by one and compare to make sure we cover the scenario where the
-		// existing rule is of format "10.193.112.26, 10.244.2.0" and the desired rule is format "10.193.112.26".
-		// This can happen because of the difference in how ONTAP ZAPI and ONTAP REST creates export rule.
-
-		ruleFound := false
-		for existingRule := range existingRules {
-			if strings.Contains(existingRule, desiredRule) {
-				ruleFound = true
-				break
-			}
-		}
-
-		// Rule does not exist, so create it
-		if !ruleFound {
-			if err = clientAPI.ExportRuleCreate(ctx, policyName, desiredRule, config.NASType); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
 // Unpublish the volume from the host specified in publishInfo.  This method may or may not be running on the host
 // where the volume will be mounted, so it should limit itself to updating access rules, export policies, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
@@ -865,7 +809,7 @@ func (d *NASQtreeStorageDriver) Unpublish(
 	exportPolicy := volConfig.ExportPolicy
 	if exportPolicy == qtreeName {
 		// Remove export policy rules matching the node IP address from qtree level policy
-		if err = d.removeExportPolicyRules(ctx, exportPolicy, publishInfo); err != nil {
+		if err = removeExportPolicyRules(ctx, exportPolicy, publishInfo, d.API); err != nil {
 			Logc(ctx).WithError(err).Errorf("Error cleaning up export policy rules in %s.", exportPolicy)
 			return err
 		}
@@ -897,59 +841,6 @@ func (d *NASQtreeStorageDriver) Unpublish(
 				return err
 			}
 			volConfig.ExportPolicy = getEmptyExportPolicyName(*d.Config.StoragePrefix)
-		}
-	}
-
-	return nil
-}
-
-// removeExportPolicyRules takes an export policy name,
-// retrieves its rules and matches the rules that exist to the IP addresses from the node.
-// Any matched IP addresses will be removed from the export policy.
-func (d *NASQtreeStorageDriver) removeExportPolicyRules(
-	ctx context.Context, exportPolicy string, publishInfo *models.VolumePublishInfo,
-) error {
-	var removeRuleIndexes []int
-
-	nodeIPRules := make(map[string]struct{})
-	for _, ip := range publishInfo.HostIP {
-		nodeIPRules[ip] = struct{}{}
-	}
-	// Get export policy rules from given policy
-	allExportRules, err := d.API.ExportRuleList(ctx, exportPolicy)
-	if err != nil {
-		return err
-	}
-	// Match list of rules to rule index based on clientMatch address
-	// ONTAP expects the rule index to delete
-	for clientMatch, ruleIndex := range allExportRules {
-		// For the qtree level policy, match the node IP addresses to the clientMatch to remove the matched items.
-		// Example:
-		// qtree trident_pvc_123 is attached to node1 and node2. The qtree is being unpublished from node1.
-		// node1 IP addresses [1.1.1.0, 1.1.1.1] node2 IP addresses [2.2.2.0, 2.2.2.2].
-		// export policy "trident_pvc_123" should have the export rules:
-		// index 1: "1.1.1.0"
-		// index 2: "1.1.1.1"
-		// index 3: "2.2.2.0"
-		// index 4: "2.2.2.2"
-		// When the clientMatch is the same as the node IP that export rule index will be added to the list of
-		// indexes to be removed. For this example indexes 1 and 2 will be removed.
-
-		// Legacy export policies created via ZAPI will have multiple clientMatch IPs for a node in a single rule.
-		// index 1: "1.1.1.0, 1.1.1.1"
-		// index 2: "2.2.2.0, 2.2.2.2"
-		// For this example, index 1 will be removed.
-		for _, singleClientMatch := range strings.Split(clientMatch, ",") {
-			if _, match := nodeIPRules[singleClientMatch]; match {
-				removeRuleIndexes = append(removeRuleIndexes, ruleIndex)
-			}
-		}
-	}
-
-	// Attempt to remove node IP addresses from export policy rules
-	for _, ruleIndex := range removeRuleIndexes {
-		if err = d.API.ExportRuleDestroy(ctx, exportPolicy, ruleIndex); err != nil {
-			Logc(ctx).WithError(err).Error("Error deleting export policy rule.")
 		}
 	}
 

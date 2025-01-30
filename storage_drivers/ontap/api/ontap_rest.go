@@ -4116,7 +4116,18 @@ func (c RestClient) ExportRuleDestroy(
 	params.PolicyID = *exportPolicy.ID
 	params.Index = int64(ruleIndex)
 
-	return c.api.Nas.ExportRuleDelete(params, c.authInfo)
+	ok, err := c.api.Nas.ExportRuleDelete(params, c.authInfo)
+	if err != nil {
+		if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
+			if restErr.Error != nil && restErr.Error.Code != nil && *restErr.Error.Code != ENTRY_DOESNT_EXIST &&
+				restErr.Error.Message != nil {
+				return ok, fmt.Errorf(*restErr.Error.Message)
+			}
+		} else {
+			return ok, err
+		}
+	}
+	return ok, nil
 }
 
 // ///////////////////////////////////////////////////////////////////////////
