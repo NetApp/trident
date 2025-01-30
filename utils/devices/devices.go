@@ -823,9 +823,9 @@ func (c *Client) ScanTargetLUN(ctx context.Context, lunID int, hosts []int) erro
 	)
 
 	// By default, scan for all the LUNs
-	scanCmd := "0 0 -"
+	scanCmd := "- - -"
 	if lunID >= 0 {
-		scanCmd = fmt.Sprintf("0 0 %d", lunID)
+		scanCmd = fmt.Sprintf("- - %d", lunID)
 	}
 
 	c.ListAllDevices(ctx)
