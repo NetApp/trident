@@ -5913,7 +5913,7 @@ func TestDestroyUnmappedIgroup_Succeeds(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestEnableSANPublishEnforcement_DoesNotEnableForUnmangedImport(t *testing.T) {
+func TestEnableSANPublishEnforcement_DoesNotEnableForUnmangedImport_ISCSI(t *testing.T) {
 	ctx := context.Background()
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
@@ -5941,7 +5941,7 @@ func TestEnableSANPublishEnforcement_DoesNotEnableForUnmangedImport(t *testing.T
 	assert.NotEqual(t, -1, volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber)
 }
 
-func TestEnableSANPublishEnforcement_FailsToUnmapLunFromAllIgroups(t *testing.T) {
+func TestEnableSANPublishEnforcement_FailsToUnmapLunFromAllIgroups_ISCSI(t *testing.T) {
 	ctx := context.Background()
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
@@ -5970,7 +5970,7 @@ func TestEnableSANPublishEnforcement_FailsToUnmapLunFromAllIgroups(t *testing.T)
 	assert.NotEqual(t, -1, volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber)
 }
 
-func TestEnableSANPublishEnforcement_Succeeds(t *testing.T) {
+func TestEnableSANPublishEnforcement_Succeeds_ISCSI(t *testing.T) {
 	ctx := context.Background()
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
@@ -5997,6 +5997,92 @@ func TestEnableSANPublishEnforcement_Succeeds(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, volume.Config.AccessInfo.PublishEnforcement)
 	assert.Equal(t, int32(-1), volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber)
+}
+
+func TestEnableSANPublishEnforcement_DoesNotEnableForUnmangedImport_FCP(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	volName := "trident_pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	internalVolName := "pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	lunPath := fmt.Sprintf("/vol/myBucket/storagePrefix_vol1_%s", internalVolName)
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:         volName,
+			InternalName: internalVolName,
+			AccessInfo: tridentmodels.VolumeAccessInfo{
+				PublishEnforcement: false,
+				FCPAccessInfo: tridentmodels.FCPAccessInfo{
+					FCPLunNumber: 1,
+				},
+			},
+			ImportNotManaged: true,
+		},
+	}
+
+	err := EnableSANPublishEnforcement(ctx, mockAPI, volume.Config, lunPath)
+	assert.NoError(t, err)
+	assert.False(t, volume.Config.AccessInfo.PublishEnforcement)
+	assert.NotEqual(t, -1, volume.Config.AccessInfo.FCPAccessInfo.FCPLunNumber)
+}
+
+func TestEnableSANPublishEnforcement_FailsToUnmapLunFromAllIgroups_FCP(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	volName := "trident_pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	internalVolName := "pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	lunPath := fmt.Sprintf("/vol/myBucket/storagePrefix_vol1_%s", internalVolName)
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:         volName,
+			InternalName: internalVolName,
+			AccessInfo: tridentmodels.VolumeAccessInfo{
+				PublishEnforcement: false,
+				FCPAccessInfo: tridentmodels.FCPAccessInfo{
+					FCPLunNumber: 1,
+				},
+			},
+			ImportNotManaged: false,
+		},
+	}
+	mockAPI.EXPECT().LunListIgroupsMapped(ctx, gomock.Any()).Return(nil, fmt.Errorf("ontap api error"))
+
+	err := EnableSANPublishEnforcement(ctx, mockAPI, volume.Config, lunPath)
+	assert.Error(t, err)
+	assert.False(t, volume.Config.AccessInfo.PublishEnforcement)
+	assert.NotEqual(t, -1, volume.Config.AccessInfo.FCPAccessInfo.FCPLunNumber)
+}
+
+func TestEnableSANPublishEnforcement_Succeeds_FCP(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	volName := "trident_pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	internalVolName := "pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	lunPath := fmt.Sprintf("/vol/myBucket/storagePrefix_vol1_%s", internalVolName)
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:         volName,
+			InternalName: internalVolName,
+			AccessInfo: tridentmodels.VolumeAccessInfo{
+				PublishEnforcement: false,
+				FCPAccessInfo: tridentmodels.FCPAccessInfo{
+					FCPLunNumber: 1,
+				},
+			},
+			ImportNotManaged: false,
+		},
+	}
+	mockAPI.EXPECT().LunListIgroupsMapped(ctx, gomock.Any()).Return(nil, nil)
+
+	err := EnableSANPublishEnforcement(ctx, mockAPI, volume.Config, lunPath)
+	assert.NoError(t, err)
+	assert.True(t, volume.Config.AccessInfo.PublishEnforcement)
+	assert.Equal(t, int32(-1), volume.Config.AccessInfo.FCPAccessInfo.FCPLunNumber)
 }
 
 func TestGetNodeSpecificIgroup(t *testing.T) {

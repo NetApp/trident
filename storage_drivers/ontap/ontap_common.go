@@ -3548,10 +3548,10 @@ func EnableSANPublishEnforcement(
 		return fmt.Errorf(msg)
 	}
 
-	// TODO: Check if it needs to handled for FCP
-
-	volumeConfig.AccessInfo.IscsiLunNumber = -1
 	volumeConfig.AccessInfo.PublishEnforcement = true
+	volumeConfig.AccessInfo.FCPLunNumber = -1
+	volumeConfig.AccessInfo.FCPIgroup = ""
+	volumeConfig.AccessInfo.IscsiLunNumber = -1
 	volumeConfig.AccessInfo.IscsiIgroup = ""
 
 	return nil
