@@ -40,8 +40,8 @@ type VolumePublishManager struct {
 	osFs                   afero.Fs
 }
 
-func NewVolumePublishManager() (*VolumePublishManager, error) {
-	infoPath := config.VolumeTrackingInfoPath
+func NewVolumePublishManager(volumeTrackingInfoPath string) (*VolumePublishManager, error) {
+	infoPath := volumeTrackingInfoPath
 	mountClient, err := mount.New()
 	if err != nil {
 		return nil, err

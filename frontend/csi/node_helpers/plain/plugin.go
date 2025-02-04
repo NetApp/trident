@@ -25,7 +25,7 @@ func NewHelper(orchestrator core.Orchestrator) (frontend.Plugin, error) {
 
 	Logc(ctx).Info("Initializing plain CSI helper frontend.")
 
-	publishManager, err := csi.NewVolumePublishManager()
+	publishManager, err := csi.NewVolumePublishManager("")
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize VolumePublishManager; %v", err)
 	}

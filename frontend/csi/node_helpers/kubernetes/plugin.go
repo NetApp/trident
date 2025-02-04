@@ -53,7 +53,7 @@ func NewHelper(orchestrator core.Orchestrator, kubeConfigPath string, enableForc
 		return nil, fmt.Errorf("could not initialize mount client; %v", err)
 	}
 
-	publishManager, err := csi.NewVolumePublishManager()
+	publishManager, err := csi.NewVolumePublishManager(config.VolumeTrackingInfoPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize VolumePublishManager; %v", err)
 	}
