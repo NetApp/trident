@@ -329,6 +329,21 @@ func (mr *MockGCNVMockRecorder) VolumeByName(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeByName", reflect.TypeOf((*MockGCNV)(nil).VolumeByName), arg0, arg1)
 }
 
+// VolumeByNameOrID mocks base method.
+func (m *MockGCNV) VolumeByNameOrID(arg0 context.Context, arg1 string) (*gcnvapi.Volume, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeByNameOrID", arg0, arg1)
+	ret0, _ := ret[0].(*gcnvapi.Volume)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VolumeByNameOrID indicates an expected call of VolumeByNameOrID.
+func (mr *MockGCNVMockRecorder) VolumeByNameOrID(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeByNameOrID", reflect.TypeOf((*MockGCNV)(nil).VolumeByNameOrID), arg0, arg1)
+}
+
 // VolumeExists mocks base method.
 func (m *MockGCNV) VolumeExists(arg0 context.Context, arg1 *storage.VolumeConfig) (bool, *gcnvapi.Volume, error) {
 	m.ctrl.T.Helper()

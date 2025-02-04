@@ -1102,11 +1102,13 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 	}
 
 	// Get the volume
-	volume, err := d.API.VolumeByName(ctx, originalName)
+	volume, err := d.API.VolumeByNameOrID(ctx, originalName)
 	if err != nil {
 		return fmt.Errorf("could not find volume %s; %v", originalName, err)
 	}
-
+	if volume.State != gcnvapi.VolumeStateReady {
+		return fmt.Errorf("volume %s is in state %s and is not available", originalName, volume.State)
+	}
 	// Don't allow import for dual-protocol volume.
 	// For dual-protocol volume the ProtocolTypes has two values [NFSv3, CIFS]
 	if d.isDualProtocolVolume(volume) {
@@ -2118,7 +2120,7 @@ func (d *NASStorageDriver) GetVolumeForImport(ctx context.Context, volumeID stri
 		return nil, fmt.Errorf("could not update GCNV resource cache; %v", err)
 	}
 
-	filesystem, err := d.API.VolumeByName(ctx, volumeID)
+	filesystem, err := d.API.VolumeByNameOrID(ctx, volumeID)
 	if err != nil {
 		return nil, err
 	}

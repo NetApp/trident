@@ -478,18 +478,18 @@ func (c Client) VolumeByName(ctx context.Context, name string) (*Volume, error) 
 	flexPoolsCount := c.flexPoolCount()
 	locations := c.findAllLocationsFromCapacityPool(flexPoolsCount)
 
+	gcnvVolumes := make(map[string]*netapppb.Volume)
 	var gcnvVolume *netapppb.Volume
 	var err error
 	// We iterate over a list of region and zones to check if the volume is in that region or zone.
 	// We use this logic to reduce the number of API calls to the GCNV API
 	for location := range locations {
-
 		req := &netapppb.GetVolumeRequest{
 			Name: c.createVolumeID(location, name),
 		}
 		gcnvVolume, err = c.sdkClient.gcnv.GetVolume(sdkCtx, req)
 		if gcnvVolume != nil {
-			break
+			gcnvVolumes[gcnvVolume.Name] = gcnvVolume
 		} else if err != nil {
 			if IsGCNVNotFoundError(err) {
 				Logc(ctx).WithFields(logFields).Debugf("Volume not found in '%s' location.", location)
@@ -500,14 +500,19 @@ func (c Client) VolumeByName(ctx context.Context, name string) (*Volume, error) 
 		}
 	}
 
-	if gcnvVolume == nil {
+	if len(gcnvVolumes) == 0 {
 		if IsGCNVNotFoundError(err) {
 			return nil, errors.WrapWithNotFoundError(err, "volume '%s' not found", name)
 		}
 		return nil, err
+	} else if len(gcnvVolumes) > 1 {
+		return nil, errors.New("found multiple volumes with the same name in the given location")
 	}
 	Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
 		WithFields(logFields).Debug("Found volume by name.")
+	for _, volume := range gcnvVolumes {
+		gcnvVolume = volume
+	}
 
 	return c.newVolumeFromGCNVVolume(ctx, gcnvVolume)
 }
@@ -543,7 +548,7 @@ func (c Client) VolumeByID(ctx context.Context, id string) (*Volume, error) {
 	}
 
 	Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"]).
-		WithFields(logFields).Trace("Fetching volume by id.")
+		WithFields(logFields).Trace("Fetching volume by volumeID.")
 
 	sdkCtx, sdkCancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer sdkCancel()
@@ -860,6 +865,22 @@ func (c Client) DeleteVolume(ctx context.Context, volume *Volume) error {
 	Logc(ctx).WithFields(logFields).Debug("Volume deleted.")
 
 	return nil
+}
+
+// VolumeByNameOrID retrieves a gcnv volume for import by volumeName or volumeID
+func (c Client) VolumeByNameOrID(ctx context.Context, volumeID string) (*Volume, error) {
+	var volume *Volume
+	var err error
+	match := volumeNameRegex.FindStringSubmatch(volumeID)
+	if match == nil {
+		volume, err = c.VolumeByName(ctx, volumeID)
+	} else {
+		volume, err = c.VolumeByID(ctx, volumeID)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return volume, nil
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
