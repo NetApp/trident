@@ -792,12 +792,12 @@ func (client *Client) GetDeviceInfoForLUN(
 	}).Debug("Found SCSI device.")
 
 	info := &models.ScsiDeviceInfo{
-		LUN:             strconv.Itoa(lunID),
-		MultipathDevice: multipathDevice,
-		Devices:         devicesForLUN,
-		DevicePaths:     paths,
-		Filesystem:      fsType,
-		IQN:             iSCSINodeName,
+		ScsiDeviceAddress: models.ScsiDeviceAddress{LUN: strconv.Itoa(lunID)},
+		MultipathDevice:   multipathDevice,
+		Devices:           devicesForLUN,
+		DevicePaths:       paths,
+		Filesystem:        fsType,
+		IQN:               iSCSINodeName,
 	}
 
 	return info, nil
@@ -921,12 +921,17 @@ func (client *Client) waitForDeviceScan(ctx context.Context, hostSessionMap map[
 	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.waitForDeviceScan")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.waitForDeviceScan")
 
-	hosts := make([]int, 0)
+	deviceAddresses := make([]models.ScsiDeviceAddress, 0)
 	for hostNumber := range hostSessionMap {
-		hosts = append(hosts, hostNumber)
+		deviceAddresses = append(deviceAddresses, models.ScsiDeviceAddress{
+			Host:    strconv.Itoa(hostNumber),
+			Channel: models.ScanSCSIDeviceAddressZero,
+			Target:  models.ScanSCSIDeviceAddressZero,
+			LUN:     strconv.Itoa(lunID),
+		})
 	}
 
-	if err := client.devices.ScanTargetLUN(ctx, lunID, hosts); err != nil {
+	if err := client.devices.ScanTargetLUN(ctx, deviceAddresses); err != nil {
 		Logc(ctx).WithField("scanError", err).Error("Could not scan for new LUN.")
 	}
 
@@ -2152,10 +2157,12 @@ func (c *Client) GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*m
 				}).Debug("Found iSCSI device.")
 
 				device := &models.ScsiDeviceInfo{
-					Host:            hostNum,
-					Channel:         busNum,
-					Target:          deviceNum,
-					LUN:             lunNum,
+					ScsiDeviceAddress: models.ScsiDeviceAddress{
+						Host:    hostNum,
+						Channel: busNum,
+						Target:  deviceNum,
+						LUN:     lunNum,
+					},
 					Devices:         slaveDevices,
 					MultipathDevice: multipathDevice,
 					IQN:             targetIQN,

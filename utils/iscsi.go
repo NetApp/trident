@@ -483,12 +483,17 @@ func InitiateScanForLun(ctx context.Context, lunID int, iSCSINodeName string) er
 	}
 
 	Logc(ctx).WithField("hostSessionMap", hostSessionMap).Debug("Built iSCSI host/session map.")
-	hosts := make([]int, 0)
+	deviceAddresses := make([]models.ScsiDeviceAddress, 0)
 	for hostNumber := range hostSessionMap {
-		hosts = append(hosts, hostNumber)
+		deviceAddresses = append(deviceAddresses, models.ScsiDeviceAddress{
+			Host:    strconv.Itoa(hostNumber),
+			Channel: models.ScanSCSIDeviceAddressZero,
+			Target:  models.ScanSCSIDeviceAddressZero,
+			LUN:     strconv.Itoa(lunID),
+		})
 	}
 
-	if err := iSCSIScanTargetLUN(ctx, lunID, hosts); err != nil {
+	if err := iSCSIScanTargetLUN(ctx, deviceAddresses); err != nil {
 		Logc(ctx).WithField("scanError", err).Error("Could not scan for new LUN.")
 	}
 
@@ -502,8 +507,8 @@ func InitiateScanForAllLUNs(ctx context.Context, iSCSINodeName string) error {
 	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.InitiateScanForAllLUNs")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.InitiateScanForAllLUNs")
 
-	// Setting lunID to -1 so that all the LUNs are scanned.
-	lunID := -1
+	// Setting lunID to - so that all the LUNs are scanned.
+	lunID := models.ScanAllSCSIDeviceAddress
 
 	hostSessionMap := IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
 	if len(hostSessionMap) == 0 {
@@ -511,12 +516,17 @@ func InitiateScanForAllLUNs(ctx context.Context, iSCSINodeName string) error {
 	}
 
 	Logc(ctx).WithField("hostSessionMap", hostSessionMap).Debug("Built iSCSI host/session map.")
-	hosts := make([]int, 0)
+	deviceAddresses := make([]models.ScsiDeviceAddress, 0)
 	for hostNumber := range hostSessionMap {
-		hosts = append(hosts, hostNumber)
+		deviceAddresses = append(deviceAddresses, models.ScsiDeviceAddress{
+			Host:    strconv.Itoa(hostNumber),
+			Channel: models.ScanSCSIDeviceAddressZero,
+			Target:  models.ScanSCSIDeviceAddressZero,
+			LUN:     lunID,
+		})
 	}
 
-	if err := iSCSIScanTargetLUN(ctx, lunID, hosts); err != nil {
+	if err := iSCSIScanTargetLUN(ctx, deviceAddresses); err != nil {
 		Logc(ctx).WithError(err).Error("Could not scan for new LUN.")
 	}
 
@@ -882,8 +892,8 @@ func LoginISCSITarget(ctx context.Context, publishInfo *models.VolumePublishInfo
 	return iscsiClient.LoginTarget(ctx, publishInfo, portal)
 }
 
-func iSCSIScanTargetLUN(ctx context.Context, lunID int, hosts []int) error {
-	return devicesClient.ScanTargetLUN(ctx, lunID, hosts)
+func iSCSIScanTargetLUN(ctx context.Context, deviceAddresses []models.ScsiDeviceAddress) error {
+	return devicesClient.ScanTargetLUN(ctx, deviceAddresses)
 }
 
 func IsISCSISessionStale(ctx context.Context, sessionNumber string) bool {

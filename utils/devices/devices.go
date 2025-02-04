@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -66,7 +67,7 @@ type Devices interface {
 	GetLunSerial(ctx context.Context, path string) (string, error)
 	GetMultipathDeviceUUID(multipathDevicePath string) (string, error)
 	GetLUKSDeviceForMultipathDevice(multipathDevice string) (string, error)
-	ScanTargetLUN(ctx context.Context, lunID int, hosts []int) error
+	ScanTargetLUN(ctx context.Context, deviceAddresses []models.ScsiDeviceAddress) error
 	CloseLUKSDevice(ctx context.Context, devicePath string) error
 	EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx context.Context, luksDevicePath string) error
 	EnsureLUKSDeviceClosed(ctx context.Context, devicePath string) error
@@ -812,8 +813,8 @@ func (c *Client) GetLUKSDeviceForMultipathDevice(multipathDevice string) (string
 
 // ScanTargetLUN scans a single LUN or all the LUNs on an iSCSI target to discover it.
 // If all the LUNs are to be scanned please pass -1 for lunID.
-func (c *Client) ScanTargetLUN(ctx context.Context, lunID int, hosts []int) error {
-	fields := LogFields{"hosts": hosts, "lunID": lunID}
+func (c *Client) ScanTargetLUN(ctx context.Context, deviceAddresses []models.ScsiDeviceAddress) error {
+	fields := LogFields{"deviceAddresses": deviceAddresses}
 	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.scanTargetLUN")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.scanTargetLUN")
 
@@ -822,16 +823,11 @@ func (c *Client) ScanTargetLUN(ctx context.Context, lunID int, hosts []int) erro
 		err error
 	)
 
-	// By default, scan for all the LUNs
-	scanCmd := "0 0 -"
-	if lunID >= 0 {
-		scanCmd = fmt.Sprintf("0 0 %d", lunID)
-	}
-
 	c.ListAllDevices(ctx)
-	for _, hostNumber := range hosts {
+	for _, deviceAddress := range deviceAddresses {
+		scanCmd := fmt.Sprintf("%s %s %s", deviceAddress.Channel, deviceAddress.Target, deviceAddress.LUN)
 
-		filename := fmt.Sprintf(c.chrootPathPrefix+"/sys/class/scsi_host/host%d/scan", hostNumber)
+		filename := fmt.Sprintf(c.chrootPathPrefix+"/sys/class/scsi_host/host%s/scan", deviceAddress.Host)
 		if f, err = c.osFs.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0o200); err != nil {
 			Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
 			return err
@@ -857,9 +853,18 @@ func (c *Client) ScanTargetLUN(ctx context.Context, lunID int, hosts []int) erro
 		Logc(ctx).WithFields(LogFields{
 			"scanCmd":  scanCmd,
 			"scanFile": filename,
-			"host":     hostNumber,
+			"host":     deviceAddress.Host,
 		}).Debug("Invoked SCSI scan for host.")
+
 	}
 
 	return nil
+}
+
+// convertToDeviceAddressValue converts the device address value to string.
+func convertToDeviceAddressValue(value int) string {
+	if value < 0 {
+		return "-"
+	}
+	return strconv.Itoa(value)
 }

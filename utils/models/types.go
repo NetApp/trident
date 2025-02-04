@@ -69,10 +69,7 @@ type IscsiAccessInfo struct {
 
 // ScsiDeviceInfo contains information about SCSI devices
 type ScsiDeviceInfo struct {
-	Host            string
-	Channel         string
-	Target          string
-	LUN             string
+	ScsiDeviceAddress
 	Devices         []string
 	DevicePaths     []string
 	MultipathDevice string
@@ -82,6 +79,21 @@ type ScsiDeviceInfo struct {
 	SessionNumber   int
 	CHAPInfo        IscsiChapInfo
 }
+
+//
+
+// ScsiDeviceAddress is a data structure for representing a SCSI device address
+type ScsiDeviceAddress struct {
+	Host    string
+	Channel string
+	Target  string
+	LUN     string
+}
+
+const (
+	ScanAllSCSIDeviceAddress  = "-"
+	ScanSCSIDeviceAddressZero = "0"
+)
 
 type NfsAccessInfo struct {
 	NfsServerIP string `json:"nfsServerIp,omitempty"`

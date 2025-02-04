@@ -33,6 +33,8 @@ import (
 	"github.com/netapp/trident/utils/osutils"
 )
 
+var ScsiScanZeros = []models.ScsiDeviceAddress{{Host: "0", Channel: "0", Target: "0", LUN: "0"}}
+
 var mockPublushInfo models.VolumePublishInfo = models.VolumePublishInfo{
 	FilesystemType: filesystem.Ext4,
 	VolumeAccessInfo: models.VolumeAccessInfo{
@@ -165,7 +167,7 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(4)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
 				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
 					nil)
@@ -780,7 +782,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(2)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				return mockDevices
 			},
 			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
@@ -850,7 +852,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				return mockDevices
 			},
 			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
@@ -920,7 +922,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				return mockDevices
 			},
 			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
@@ -991,7 +993,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(1)
 				return mockDevices
 			},
@@ -1068,7 +1070,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("", errors.New("some error"))
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
 				return mockDevices
 			},
@@ -1144,7 +1146,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
 				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
 					nil)
@@ -1224,7 +1226,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().WaitForDevice(context.TODO(), "/dev/dm-0").Return(errors.New("some error"))
 				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
 				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
 					nil)
@@ -1303,7 +1305,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().WaitForDevice(context.TODO(), "/dev/dm-0").Return(nil)
 				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
 				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
 					nil)
@@ -1383,7 +1385,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().WaitForDevice(context.TODO(), "/dev/dm-0").Return(nil)
 				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
 				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
 					nil)
@@ -1469,7 +1471,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().WaitForDevice(context.TODO(), "/dev/dm-0").Return(nil)
 				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
 				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
 					nil)
@@ -1558,7 +1560,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().IsDeviceUnformatted(context.TODO(), "/dev/dm-0").Return(false, errors.New("some error"))
 				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
 				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
 					nil)
@@ -1635,7 +1637,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
 				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
 					nil)
@@ -1720,7 +1722,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().IsDeviceUnformatted(context.TODO(), "/dev/dm-0").Return(true, nil)
 				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
 				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
 					nil)
@@ -1801,7 +1803,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().GetDeviceFSType(context.TODO(), "/dev/dm-0").Return(filesystem.Ext3, nil)
 				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
 				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
 					nil)
@@ -1881,7 +1883,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().GetDeviceFSType(context.TODO(), "/dev/dm-0").Return(filesystem.UnknownFstype, nil)
 				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
 				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
 					nil)
@@ -1962,7 +1964,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().GetDeviceFSType(context.TODO(), "/dev/dm-0").Return(filesystem.UnknownFstype, nil)
 				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
 				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
 					nil)
@@ -2044,7 +2046,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 				mockDevices.EXPECT().GetDeviceFSType(context.TODO(), "/dev/dm-0").Return(filesystem.UnknownFstype, nil)
 				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
 				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
 					nil)
@@ -2125,7 +2127,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
 				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
 					nil)
@@ -3055,10 +3057,10 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 			},
 			assertError: assert.NoError,
 			expectedDeviceInfo: &models.ScsiDeviceInfo{
-				LUN:         "0",
-				Devices:     []string{deviceName},
-				DevicePaths: []string{devicePath},
-				IQN:         iscisNodeName,
+				ScsiDeviceAddress: models.ScsiDeviceAddress{LUN: "0"},
+				Devices:           []string{deviceName},
+				DevicePaths:       []string{devicePath},
+				IQN:               iscisNodeName,
 			},
 		},
 		"error ensuring multipath device is readable": {
@@ -3138,12 +3140,12 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 			},
 			assertError: assert.NoError,
 			expectedDeviceInfo: &models.ScsiDeviceInfo{
-				LUN:             "0",
-				Devices:         []string{deviceName},
-				DevicePaths:     []string{devicePath},
-				MultipathDevice: multipathDeviceName,
-				IQN:             iscisNodeName,
-				Filesystem:      filesystem.Ext4,
+				ScsiDeviceAddress: models.ScsiDeviceAddress{LUN: "0"},
+				Devices:           []string{deviceName},
+				DevicePaths:       []string{devicePath},
+				MultipathDevice:   multipathDeviceName,
+				IQN:               iscisNodeName,
+				Filesystem:        filesystem.Ext4,
 			},
 		},
 	}
@@ -3453,7 +3455,7 @@ func TestClient_waitForDeviceScan(t *testing.T) {
 			},
 			getDevices: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(gomock.NewController(t))
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), []models.ScsiDeviceAddress{})
 				return mockDevices
 			},
 			assertError: assert.Error,
@@ -3481,7 +3483,7 @@ func TestClient_waitForDeviceScan(t *testing.T) {
 			},
 			getDevices: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				return mockDevices
 			},
 			assertError: assert.NoError,
@@ -3508,7 +3510,7 @@ func TestClient_waitForDeviceScan(t *testing.T) {
 			},
 			getDevices: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				return mockDevices
 			},
 			assertError: assert.NoError,
@@ -3538,7 +3540,7 @@ func TestClient_waitForDeviceScan(t *testing.T) {
 			},
 			getDevices: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), 0, []int{0})
+				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
 				return mockDevices
 			},
 			assertError: assert.Error,
@@ -5448,17 +5450,21 @@ func TestGetMountedISCSIDevices(t *testing.T) {
 			},
 			expectedResult: []*models.ScsiDeviceInfo{
 				{
+					ScsiDeviceAddress: models.ScsiDeviceAddress{
+						Host: "6",
+						LUN:  "1",
+					},
 					IQN:             "iqn.1992-08.com.netapp:sn.a57de312358411ef8730005056b33111:vs.2",
 					MultipathDevice: "dm-0",
-					Host:            "6",
-					LUN:             "1",
 					SessionNumber:   1,
 				},
 				{
+					ScsiDeviceAddress: models.ScsiDeviceAddress{
+						Host: "6",
+						LUN:  "0",
+					},
 					IQN:             "iqn.1992-08.com.netapp:sn.a57de312358411ef8730005056b33111:vs.2",
 					MultipathDevice: "dm-1",
-					Host:            "6",
-					LUN:             "0",
 					SessionNumber:   1,
 				},
 			},

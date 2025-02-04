@@ -17,8 +17,10 @@ import (
 	"github.com/cenkalti/backoff/v4"
 
 	"github.com/netapp/trident/internal/fiji"
+	"github.com/netapp/trident/pkg/collection"
 
 	. "github.com/netapp/trident/logging"
+
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
@@ -641,7 +643,9 @@ func (client *Client) GetDeviceInfoForLUN(
 	}).Debug("Found SCSI device.")
 
 	info := &models.ScsiDeviceInfo{
-		LUN:             strconv.Itoa(lunID),
+		ScsiDeviceAddress: models.ScsiDeviceAddress{
+			LUN: strconv.Itoa(lunID),
+		},
 		MultipathDevice: multipathDevice,
 		Devices:         devicesForLUN,
 		DevicePaths:     paths,
@@ -770,9 +774,13 @@ func (client *Client) waitForDeviceScan(ctx context.Context, hostSessionMap []ma
 	Logc(ctx).WithFields(fields).Debug(">>>> fcp.waitForDeviceScan")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< fcp.waitForDeviceScan")
 
-	hosts := make([]int, 0)
-	var hostNum int
+	Logc(ctx).WithField("hostSessionMap", hostSessionMap).Debug("Built FCP host/session map.")
+
+	deviceAddresses := make([]models.ScsiDeviceAddress, 0)
+	var hostNum, targetID int
 	var err error
+
+	// Construct the host and target lists required for the scan.
 	for _, hostNumber := range hostSessionMap {
 		for host := range hostNumber {
 			re := regexp.MustCompile(`rport-(\d+):`)
@@ -783,11 +791,33 @@ func (client *Client) waitForDeviceScan(ctx context.Context, hostSessionMap []ma
 					continue
 				}
 			}
-			hosts = append(hosts, hostNum)
+
+			// Read the target IDs from the sysfs path.
+			targetIDFile := fmt.Sprintf("/sys/class/fc_host/host%d/device/%s/fc_remote_ports/%s/scsi_target_id",
+				hostNum, host, host)
+			if targetIDRaw, err := os.ReadFile(targetIDFile); err != nil {
+				Logc(ctx).WithField("targetIDFile", targetIDFile).Error("Could not find the target ID file")
+			} else {
+				targetIDStr := strings.TrimSpace(string(targetIDRaw))
+				if targetID, err = strconv.Atoi(targetIDStr); err != nil {
+					Logc(ctx).WithField("targetID", targetIDStr).Error("Could not parse target ID")
+					continue
+				}
+
+				deviceAddress := models.ScsiDeviceAddress{
+					Host:    strconv.Itoa(hostNum),
+					Channel: models.ScanAllSCSIDeviceAddress,
+					Target:  strconv.Itoa(targetID),
+					LUN:     strconv.Itoa(lunID),
+				}
+				if !collection.Contains(deviceAddresses, deviceAddress) {
+					deviceAddresses = append(deviceAddresses, deviceAddress)
+				}
+			}
 		}
 	}
 
-	if err := client.deviceClient.ScanTargetLUN(ctx, lunID, hosts); err != nil {
+	if err := client.deviceClient.ScanTargetLUN(ctx, deviceAddresses); err != nil {
 		Logc(ctx).WithField("scanError", err).Error("Could not scan for new LUN.")
 	}
 

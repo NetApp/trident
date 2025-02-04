@@ -25,10 +25,12 @@ func GetDeviceInfoForFCPLUN(
 	}
 
 	return &models.ScsiDeviceInfo{
-		Host:            deviceInfo.Host,
-		Channel:         deviceInfo.Channel,
-		Target:          deviceInfo.Target,
-		LUN:             deviceInfo.LUN,
+		ScsiDeviceAddress: models.ScsiDeviceAddress{
+			Host:    deviceInfo.Host,
+			Channel: deviceInfo.Channel,
+			Target:  deviceInfo.Target,
+			LUN:     deviceInfo.LUN,
+		},
 		Devices:         deviceInfo.Devices,
 		MultipathDevice: deviceInfo.MultipathDevice,
 		WWNN:            deviceInfo.WWNN,

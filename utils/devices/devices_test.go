@@ -114,6 +114,9 @@ func TestClient_scanTargetLUN(t *testing.T) {
 	const lunID = 0
 	const host1 = 1
 	const host2 = 2
+	const lunIDStr = "0"
+	const host1Str = "1"
+	const host2Str = "2"
 
 	tests := map[string]parameters{
 		"scan files not present": {
@@ -185,7 +188,10 @@ func TestClient_scanTargetLUN(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewDetailed(nil, afero.Afero{Fs: params.getFileSystemUtils()}, NewDiskSizeGetter())
 
-			err := client.ScanTargetLUN(context.TODO(), lunID, []int{host1, host2})
+			deviceAddresses := make([]models.ScsiDeviceAddress, 0)
+			deviceAddresses = append(deviceAddresses, models.ScsiDeviceAddress{Host: host1Str, LUN: lunIDStr})
+			deviceAddresses = append(deviceAddresses, models.ScsiDeviceAddress{Host: host2Str, LUN: lunIDStr})
+			err := client.ScanTargetLUN(context.TODO(), deviceAddresses)
 			if params.assertError != nil {
 				params.assertError(t, err)
 			}
