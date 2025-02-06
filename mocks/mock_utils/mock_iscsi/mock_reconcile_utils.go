@@ -40,6 +40,21 @@ func (m *MockIscsiReconcileUtils) EXPECT() *MockIscsiReconcileUtilsMockRecorder 
 	return m.recorder
 }
 
+// DiscoverSCSIAddressMapForTarget mocks base method.
+func (m *MockIscsiReconcileUtils) DiscoverSCSIAddressMapForTarget(arg0 context.Context, arg1 string) (map[string]models.ScsiDeviceAddress, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DiscoverSCSIAddressMapForTarget", arg0, arg1)
+	ret0, _ := ret[0].(map[string]models.ScsiDeviceAddress)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DiscoverSCSIAddressMapForTarget indicates an expected call of DiscoverSCSIAddressMapForTarget.
+func (mr *MockIscsiReconcileUtilsMockRecorder) DiscoverSCSIAddressMapForTarget(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoverSCSIAddressMapForTarget", reflect.TypeOf((*MockIscsiReconcileUtils)(nil).DiscoverSCSIAddressMapForTarget), arg0, arg1)
+}
+
 // GetDevicesForLUN mocks base method.
 func (m *MockIscsiReconcileUtils) GetDevicesForLUN(arg0 []string) ([]string, error) {
 	m.ctrl.T.Helper()

@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 //go:generate mockgen -destination=../../mocks/mock_utils/mock_devices/mock_devices_client.go github.com/netapp/trident/utils/devices Devices
 //go:generate mockgen -destination=../../mocks/mock_utils/mock_devices/mock_size_getter_client.go github.com/netapp/trident/utils/devices SizeGetter
@@ -855,7 +855,6 @@ func (c *Client) ScanTargetLUN(ctx context.Context, deviceAddresses []models.Scs
 			"scanFile": filename,
 			"host":     deviceAddress.Host,
 		}).Debug("Invoked SCSI scan for host.")
-
 	}
 
 	return nil

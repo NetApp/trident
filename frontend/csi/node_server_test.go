@@ -1653,7 +1653,7 @@ func TestAttemptLock_Success(t *testing.T) {
 	wg.Wait()
 }
 
-func TestOutdatedAccessControlInUse(t *testing.T) {
+func TestDeprecatedIgroupsInUse(t *testing.T) {
 	tt := map[string]struct {
 		tracking map[string]*models.VolumeTrackingInfo
 		expected bool

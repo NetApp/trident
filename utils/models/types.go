@@ -898,6 +898,8 @@ func (p *ISCSISessions) GeneratePublishInfo(portal string) (*VolumePublishInfo, 
 		return nil, fmt.Errorf("cannot generate publish info; portal '%v' is missing target IQN", portal)
 	}
 
+	// Trident will Scan for all LUNs in this portal after a Login, and this LUN ID is only used during Login to
+	// simulate a CSI request. As a result, just select a LUN ID at random.
 	var lunID int32
 	sessionLUNs := iSCSISessionData.LUNs.AllLUNs()
 	if len(sessionLUNs) > 0 {

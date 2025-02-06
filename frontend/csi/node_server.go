@@ -2229,12 +2229,11 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 	if err != nil {
 		return fmt.Errorf("failed to get publish info for session on portal '%s'; %v", portal, err)
 	}
-	lunID, targetIQN := publishInfo.IscsiLunNumber, publishInfo.IscsiTargetIQN
 
 	switch action {
 	case models.LogoutLoginScan:
-		if err = p.iscsi.Logout(ctx, targetIQN, portal); err != nil {
-			return fmt.Errorf("error while logging out of target %s", targetIQN)
+		if err = p.iscsi.Logout(ctx, publishInfo.IscsiTargetIQN, portal); err != nil {
+			return fmt.Errorf("error while logging out of target %s", publishInfo.IscsiTargetIQN)
 		} else {
 			Logc(ctx).Debug("Logout is successful.")
 		}
@@ -2244,8 +2243,7 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 		// Set FilesystemType to "raw" so that we only heal the session connectivity and not perform the mount and
 		// filesystem related operations.
 		publishInfo.FilesystemType = filesystem.Raw
-
-		volumeID, err := publishedISCSISessions.VolumeIDForPortalAndLUN(portal, lunID)
+		volumeID, err := publishedISCSISessions.VolumeIDForPortalAndLUN(portal, publishInfo.IscsiLunNumber)
 		if err != nil {
 			return fmt.Errorf("failed to get volume ID for lun ID; %v", err)
 		}
@@ -2274,23 +2272,25 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 		// Login is successful, fallthrough to perform scan
 		fallthrough
 	case models.Scan:
-		if p.deprecatedIgroupInUse(ctx) {
-			Logc(ctx).WithField("lunID", lunID).Debug("Initiating SCSI scan for exact LUN.")
+		// This detection may be useful for support in the future.
+		// Retain this until there is a good reason to remove it.
+		_ = p.deprecatedIgroupInUse(ctx)
 
-			if err := utils.InitiateScanForLun(ctx, int(lunID), targetIQN); err != nil {
-				Logc(ctx).WithError(err).Debug("Error while initiating SCSI scan for LUN.")
-			} else {
-				Logc(ctx).WithField("lunID", lunID).Debug("Successfully initiated SCSI scan for LUN.")
-			}
-		} else {
-			Logc(ctx).Debug("Initiating SCSI scan for all LUNs.")
-
-			if err := utils.InitiateScanForAllLUNs(ctx, targetIQN); err != nil {
-				Logc(ctx).WithError(err).Debug("Error while initiating SCSI scan for LUNs.")
-			} else {
-				Logc(ctx).Debug("Successfully initiated SCSI scan for all LUNs.")
-			}
+		luns, err := publishedISCSISessions.LUNsForPortal(portal)
+		if err != nil {
+			return fmt.Errorf("failed to get LUNs for portal: %s; %w", portal, err)
 		}
+
+		if err = utils.InitiateScanForLuns(ctx, luns, publishInfo.IscsiTargetIQN); err != nil {
+			Logc(ctx).WithError(err).Error("Could not initiate scan for some LUNs.")
+			return fmt.Errorf("failed to initiate scan for LUNs in portal: %s; %w", portal, err)
+		}
+
+		Logc(ctx).WithFields(LogFields{
+			"portal": portal,
+			"luns":   luns,
+			"target": publishInfo.IscsiTargetIQN,
+		}).Debug("Successfully initiated iSCSI scan(s).")
 	default:
 		Logc(ctx).Debug("No valid action to be taken in iSCSI self-healing.")
 	}
@@ -2299,6 +2299,8 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 }
 
 // deprecatedIgroupInUse looks through the tracking files for deprecated igroups and reports if any are in use.
+// NOTE: Precise LUN scanning removes the requirement for this logic, but this information may be useful for debugging
+// and support cases. Additionally, this calculation is cheap so keep it in for now.
 func (p *Plugin) deprecatedIgroupInUse(ctx context.Context) bool {
 	volumeTrackingInfo, _ := p.nodeHelper.ListVolumeTrackingInfo(ctx)
 	for id, info := range volumeTrackingInfo {

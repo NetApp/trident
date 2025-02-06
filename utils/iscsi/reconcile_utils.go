@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package iscsi
 
@@ -7,6 +7,7 @@ package iscsi
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -19,6 +20,7 @@ import (
 
 type IscsiReconcileUtils interface {
 	GetISCSIHostSessionMapForTarget(context.Context, string) map[int]int
+	DiscoverSCSIAddressMapForTarget(ctx context.Context, targetIQN string) (map[string]models.ScsiDeviceAddress, error)
 	GetSysfsBlockDirsForLUN(int, map[int]int) []string
 	GetDevicesForLUN(paths []string) ([]string, error)
 	ReconcileISCSIVolumeInfo(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (bool, error)
@@ -66,6 +68,132 @@ func (h *IscsiReconcileHelper) ReconcileISCSIVolumeInfo(
 	}
 
 	return false, nil
+}
+
+// DiscoverSCSIAddressMapForTarget creates a map of unique "host:channel:targetID" to ScsiDeviceAddresses that
+// exist for active sessions on a given target IQN. We can rely on "host:channel:targetID" for our keys safely because
+// we filter by target IQN. The resulting map should be used with a set of LUN IDs to initiate precise LUN scanning.
+func (h *IscsiReconcileHelper) DiscoverSCSIAddressMapForTarget(
+	ctx context.Context, targetIQN string,
+) (map[string]models.ScsiDeviceAddress, error) {
+	fields := LogFields{"iSCSINodeName": targetIQN}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.DiscoverSCSIAddressMapForTarget")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.DiscoverSCSIAddressMapForTarget")
+
+	// deviceMap is a map of "h:c:t" -> ScsiDeviceAddress.
+	deviceMap := make(map[string]models.ScsiDeviceAddress)
+
+	// Read in everything under: '/sys/class/scsi_host/'.
+	scsiHostPath := filepath.Join(h.chrootPathPrefix, "sys", "class", "scsi_host")
+	hostEntries, err := h.osFs.ReadDir(scsiHostPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list hosts; %w", err)
+	}
+
+	// Search through each dir under: '/sys/class/scsi_host/'.
+	for _, hostEntry := range hostEntries {
+		hostName := hostEntry.Name() // example: "host10" from "/sys/class/scsi_host/host10"
+		if !strings.HasPrefix(hostName, "host") {
+			continue
+		}
+
+		// Read in all dirs under: '/sys/class/scsi_host/host#/device'.
+		hostDevicePath := filepath.Join(scsiHostPath, hostName, "device")
+		hostDeviceEntries, err := h.osFs.ReadDir(hostDevicePath)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Could not read host device entries at: '%s'.", hostDevicePath)
+			continue
+		}
+
+		// Look for "session#" within the device directory entries.
+		// It's possible that multiple sessions that Trident setup can exist for a given host.
+		// Example:
+		//  '/sys/class/scsi_host/host10/device/session1'
+		//  '/sys/class/scsi_host/host10/device/session2'
+		for _, hostDeviceEntry := range hostDeviceEntries {
+			sessionName := hostDeviceEntry.Name()
+			if !strings.HasPrefix(hostDeviceEntry.Name(), "session") {
+				continue
+			}
+
+			// Check if the iscsi session exists: '/sys/class/iscsi_host/host#/device/session#/iscsi_session/session#'.
+			sessionPath := filepath.Join(hostDevicePath, sessionName, "iscsi_session", sessionName)
+			if sessionExists, err := h.osFs.Exists(sessionPath); err != nil {
+				Logc(ctx).WithError(err).Errorf("Could not read iscsi session path at: '%s'", sessionPath)
+				continue
+			} else if !sessionExists {
+				Logc(ctx).Debugf("iSCSI session path '%s' does not exist.", sessionPath)
+				continue
+			}
+
+			// Read in target IQN from: '/sys/class/iscsi_host/host#/device/session#/iscsi_session/session#/targetname'.
+			targetNamePath := filepath.Join(sessionPath, "targetname")
+			contents, err := h.osFs.ReadFile(targetNamePath)
+			if err != nil {
+				Logc(ctx).WithError(err).Errorf("Could not read target IQN at: '%s'", targetNamePath)
+				continue
+			}
+
+			// Ignore sessions that aren't connected to the expected target IQN.
+			targetName := strings.TrimSpace(string(contents))
+			if targetName != targetIQN {
+				Logc(ctx).Debugf("IQN mismatch. '%s' != '%s'; ignoring session.", targetName, targetIQN)
+				continue
+			}
+
+			// At this point, we know this session is for a NetApp target.
+			// Read in all entries under: '/sys/class/iscsi_host/host#/device/session#/iscsi_session/session#/device'
+			sessionDevicePath := filepath.Join(sessionPath, "device")
+			sessionDeviceEntries, err := h.osFs.ReadDir(sessionDevicePath)
+			if err != nil {
+				Logc(ctx).WithError(err).Errorf("Could not read session device entries at: '%s'.", sessionDevicePath)
+				continue
+			}
+
+			// Search for the 'target<H:C:T>' directory under:
+			// `/sys/class/iscsi_host/host#/device/session#/iscsi_session/session#/device`.
+			for _, entry := range sessionDeviceEntries {
+				entryName := entry.Name()
+				if !strings.HasPrefix(entryName, "target") {
+					continue
+				}
+				Logc(ctx).WithField("scsiTargetDevice", entryName).Debug("Found SCSI target device directory.")
+
+				// At this point, we know we're looking at a target device directory.
+				// '/sys/class/iscsi_host/host#/device/session#/iscsi_session/session#/device/target<H:C:T>'
+				var hostID, channelID, targetID string
+				hctSuffix := strings.TrimPrefix(entryName, "target") // "targetH:C:T" -> "H:C:T"
+				hctElems := strings.Split(hctSuffix, ":")            // "H:C:T" -> ["H","C","T"]
+				if len(hctElems) != 3 {
+					Logc(ctx).Errorf("Invalid format detected with: '%s'; expected 'target<H:C:T>'", entryName)
+					continue
+				}
+				// It can be safely assumed that if these elements exist, the kernel has assigned them valid values.
+				hostID, channelID, targetID = hctElems[0], hctElems[1], hctElems[2]
+				fields := LogFields{
+					"hostID":    hostID,
+					"channelID": channelID,
+					"targetID":  targetID,
+				}
+
+				// Build unique key "hostID:channelID:targetID"
+				// Filtering by targetIQN above should remove chances of tracking scsi addresses not owned by Trident.
+				// It is technically possible for a given host to have multiple channels and multiple targetIDs, we
+				// can probably safely assume the targetID will remain the same for a given backend.
+				Logc(ctx).WithFields(fields).Debug("Discovered host, channel and target ID.")
+				key := fmt.Sprintf("%s:%s:%s", hostID, channelID, targetID)
+				if _, exists := deviceMap[key]; !exists {
+					deviceMap[key] = models.ScsiDeviceAddress{
+						Host:    hostID,
+						Channel: channelID,
+						Target:  targetID,
+					}
+				}
+			}
+		}
+	}
+
+	return deviceMap, nil
 }
 
 // GetISCSIHostSessionMapForTarget returns a map of iSCSI host numbers to iSCSI session numbers

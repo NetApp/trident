@@ -500,6 +500,47 @@ func InitiateScanForLun(ctx context.Context, lunID int, iSCSINodeName string) er
 	return nil
 }
 
+// InitiateScanForLuns initiates scans for LUNs in a given target against all hosts.
+func InitiateScanForLuns(ctx context.Context, luns []int32, target string) error {
+	fields := LogFields{
+		"luns":   luns,
+		"target": target,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.InitiateScanForLuns")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.InitiateScanForLuns")
+
+	deviceAddresses, err := IscsiUtils.DiscoverSCSIAddressMapForTarget(ctx, target)
+	if err != nil {
+		return fmt.Errorf("failed to discover SCSI address map for target: '%s'; %w", target, err)
+	} else if len(deviceAddresses) == 0 {
+		return fmt.Errorf("no SCSI addresses found for target: '%s'", target)
+	}
+
+	// Build a set of all device addresses -> luns.
+	// This should have entries like so: "10:0:0:0", "10:0:0:1", "11:0:0:0", "11:0:0:1", etc.
+	// As an example, if 10 LUNs require scan:
+	//  "10:0:0:0", "10:0:0:1",...,"10:0:0:9"
+	//  "11:0:0:0", "11:0:0:0",...,"11:0:0:9"
+	deviceAddressesWithLUNs := make([]models.ScsiDeviceAddress, 0)
+	for _, lun := range luns {
+		for _, address := range deviceAddresses {
+			deviceAddressesWithLUNs = append(deviceAddressesWithLUNs, models.ScsiDeviceAddress{
+				Host:    address.Host,
+				Channel: address.Channel,
+				Target:  address.Target,
+				LUN:     strconv.Itoa(int(lun)),
+			})
+		}
+	}
+
+	if err := iSCSIScanTargetLUN(ctx, deviceAddressesWithLUNs); err != nil {
+		Logc(ctx).WithError(err).Error("Could not initiate scan.")
+		return fmt.Errorf("failed to initiate scan; %w", err)
+	}
+
+	return nil
+}
+
 // InitiateScanForAllLUNs scans all paths to each of the LUNs passed.
 func InitiateScanForAllLUNs(ctx context.Context, iSCSINodeName string) error {
 	fields := LogFields{"iSCSINodeName": iSCSINodeName}
