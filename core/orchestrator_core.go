@@ -32,13 +32,13 @@ import (
 	storageclass "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/fake"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/fcp"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
+	"github.com/netapp/trident/utils/nvme"
 )
 
 const (
@@ -3643,7 +3643,9 @@ func (o *TridentOrchestrator) AttachVolume(
 	} else {
 		var err error
 		if publishInfo.SANType == sa.NVMe {
-			err = utils.AttachNVMeVolumeRetry(ctx, volumeName, mountpoint, publishInfo, map[string]string{}, utils.NVMeAttachTimeout)
+			nvmeHandler := nvme.NewNVMeHandler()
+			err = nvmeHandler.AttachNVMeVolumeRetry(ctx, volumeName, mountpoint, publishInfo, map[string]string{},
+				nvme.NVMeAttachTimeout)
 		}
 
 		if publishInfo.SANType == sa.ISCSI {

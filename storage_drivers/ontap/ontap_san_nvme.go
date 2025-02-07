@@ -26,11 +26,11 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/nvme"
 )
 
 // NVMeNamespaceRegExp RegExp to match the namespace path either empty string or
@@ -807,7 +807,8 @@ func (d *NVMeStorageDriver) Publish(
 
 	if publishInfo.Localhost {
 		// Get its HostNQN and populate it in publishInfo.
-		nqn, err := utils.GetHostNqn(ctx)
+		nvmeHandler := nvme.NewNVMeHandler()
+		nqn, err := nvmeHandler.GetHostNqn(ctx)
 		if err != nil {
 			return err
 		}

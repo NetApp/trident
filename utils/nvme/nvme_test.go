@@ -1,8 +1,11 @@
 // Copyright 2023 NetApp, Inc. All Rights Reserved.
 
-package utils
+package nvme
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -170,7 +173,7 @@ func TestNVMeHandler_InspectNVMeSessions_EmptyPublishedSessions(t *testing.T) {
 	nh := NewNVMeHandler()
 	pubSessions := NewNVMeSessions()
 
-	subs := nh.InspectNVMeSessions(ctx(), pubSessions, nil)
+	subs := nh.InspectNVMeSessions(context.Background(), pubSessions, nil)
 
 	assert.Equal(t, 0, len(subs), "Got few subsystems even though nothing is published.")
 }
@@ -180,7 +183,7 @@ func TestNVMeHandler_InspectNVMeSessions_NilPublishedSessionData(t *testing.T) {
 	pubSessions := NewNVMeSessions()
 	pubSessions.Info[testSubsystem1.NQN] = nil
 
-	subs := nh.InspectNVMeSessions(ctx(), pubSessions, nil)
+	subs := nh.InspectNVMeSessions(context.Background(), pubSessions, nil)
 
 	assert.Equal(t, 0, len(subs), "Valid published session found.")
 }
@@ -191,7 +194,7 @@ func TestNVMeHandler_InspectNVMeSessions_PublishedNotPresentInCurrent(t *testing
 	currSessions := NewNVMeSessions()
 	pubSessions.AddNVMeSession(testSubsystem1, []string{})
 
-	subs := nh.InspectNVMeSessions(ctx(), pubSessions, currSessions)
+	subs := nh.InspectNVMeSessions(context.Background(), pubSessions, currSessions)
 
 	assert.Equal(t, 0, len(subs), "Published session found in current session list.")
 }
@@ -203,7 +206,7 @@ func TestNVMeHandler_InspectNVMeSessions_NilCurrentSessionData(t *testing.T) {
 	pubSessions.AddNVMeSession(testSubsystem1, []string{})
 	currSessions.Info[testSubsystem1.NQN] = nil
 
-	subs := nh.InspectNVMeSessions(ctx(), pubSessions, currSessions)
+	subs := nh.InspectNVMeSessions(context.Background(), pubSessions, currSessions)
 
 	assert.Equal(t, 0, len(subs), "Published session found in current with a valid entry.")
 }
@@ -215,7 +218,7 @@ func TestNVMeHandler_InspectNVMeSessions_DisconnectedSubsystem(t *testing.T) {
 	pubSessions.AddNVMeSession(testSubsystem1, []string{})
 	currSessions.AddNVMeSession(NVMeSubsystem{NQN: testSubsystem1.NQN}, []string{})
 
-	subs := nh.InspectNVMeSessions(ctx(), pubSessions, currSessions)
+	subs := nh.InspectNVMeSessions(context.Background(), pubSessions, currSessions)
 
 	assert.Equal(t, 0, len(subs), "Disconnected subsystem present in subsystems to fix.")
 }
@@ -227,7 +230,7 @@ func TestNVMeHandler_InspectNVMeSessions_PartiallyConnectedSubsystem(t *testing.
 	pubSessions.AddNVMeSession(testSubsystem1, []string{})
 	currSessions.AddNVMeSession(testSubsystem1, []string{})
 
-	subs := nh.InspectNVMeSessions(ctx(), pubSessions, currSessions)
+	subs := nh.InspectNVMeSessions(context.Background(), pubSessions, currSessions)
 
 	assert.Equal(t, 1, len(subs), "No subsystems found.")
 	assert.Equal(t, testSubsystem1, subs[0], "No subsystems found which needs remediation.")
@@ -239,23 +242,201 @@ func TestNVMeHandler_RectifyNVMeSession(t *testing.T) {
 	pubSessions := NewNVMeSessions()
 
 	// Empty published sessions case.
-	nh.RectifyNVMeSession(ctx(), testSubsystem1, pubSessions)
+	nh.RectifyNVMeSession(context.Background(), testSubsystem1, pubSessions)
 
 	// Nil published session data case.
 	pubSessions.Info[testSubsystem1.NQN] = nil
-	nh.RectifyNVMeSession(ctx(), testSubsystem1, pubSessions)
+	nh.RectifyNVMeSession(context.Background(), testSubsystem1, pubSessions)
 
 	// NoOp remediation case.
 	pubSessions.RemoveNVMeSession(testSubsystem1.NQN)
 	pubSessions.AddNVMeSession(testSubsystem1, []string{})
-	nh.RectifyNVMeSession(ctx(), testSubsystem1, pubSessions)
+	nh.RectifyNVMeSession(context.Background(), testSubsystem1, pubSessions)
+
+	// Happy path connect remediation
+	pubSessions.RemoveNVMeSession(testSubsystem1.NQN)
+	pubSessions.AddNVMeSession(testSubsystem1, []string{})
+	pubSessions.Info[testSubsystem1.NQN].Remediation = ConnectOp
+	nh.RectifyNVMeSession(context.Background(), testSubsystem1, pubSessions)
 }
 
 func TestNVMeHandler_PopulateCurrentNVMeSessions_NilCurrentSessions(t *testing.T) {
 	nh := NewNVMeHandler()
 
-	err := nh.PopulateCurrentNVMeSessions(ctx(), nil)
+	err := nh.PopulateCurrentNVMeSessions(context.Background(), nil)
 
 	assert.ErrorContains(t, err, "current NVMeSessions not initialized",
 		"Populated current sessions successfully.")
+}
+
+func TestGetConnectionStatus(t *testing.T) {
+	tests := map[string]struct {
+		subsystem NVMeSubsystem
+		expect    NVMeSubsystemConnectionStatus
+	}{
+		"Partially connected subsystem": {
+			subsystem: NVMeSubsystem{NQN: "mock-nqn", Paths: []Path{{Address: "mock-address"}}},
+			expect:    NVMeSubsystemPartiallyConnected,
+		},
+		"Connected subsystem": {
+			subsystem: NVMeSubsystem{
+				NQN:   "mock-nqn",
+				Paths: []Path{{Address: "mock-address"}, {Address: "mock-address2"}},
+			},
+			expect: NVMeSubsystemConnected,
+		},
+		"Disconnected subsystem": {
+			subsystem: NVMeSubsystem{NQN: "mock-nqn", Paths: nil},
+			expect:    NVMeSubsystemDisconnected,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, params.expect, params.subsystem.GetConnectionStatus(), "Unexpected connection status found.")
+		})
+	}
+}
+
+func TestIsNetworkPathPresent(t *testing.T) {
+	tests := map[string]struct {
+		ip     string
+		path   []Path
+		expect bool
+	}{
+		"Ubuntu format": {
+			ip: "10.193.108.74",
+			path: []Path{
+				{Address: "traddr=10.193.108.74 trsvcid=4420"},
+			},
+			expect: true,
+		},
+		"RHEL format": {
+			ip: "10.193.108.74",
+			path: []Path{
+				{Address: "traddr=10.193.108.74,trsvcid=4420"},
+			},
+			expect: true,
+		},
+		"Invalid format": {
+			ip: "1.2.3.4",
+			path: []Path{
+				{Address: "invalid"},
+			},
+			expect: false,
+		},
+		"Not Found": {
+			ip: "1.2.3.4",
+			path: []Path{
+				{Address: "traddr=10.193.108.74,trsvcid=4420"},
+			},
+			expect: false,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			subsystem := NewNVMeSubsystemDetailed("mock-nqn", "mock-name", params.path, nil, nil)
+			isPresent := subsystem.IsNetworkPathPresent(params.ip)
+			assert.Equal(t, params.expect, isPresent)
+		})
+	}
+}
+
+func toBytes(data interface{}) []byte {
+	bytesBuffer := new(bytes.Buffer)
+	json.NewEncoder(bytesBuffer).Encode(data)
+	return bytesBuffer.Bytes()
+}
+
+func getMockNNVMeDevices() NVMeDevices {
+	mockDevices := NVMeDevices{
+		Devices: []NVMeDevice{
+			{
+				Device: "mock-device",
+				UUID:   "1234",
+			},
+		},
+	}
+	return mockDevices
+}
+
+func getMockNvmeListRHELOutput() []byte {
+	return []byte(`[
+  {
+    "HostNQN":"nqn.2014-08.org.mock:uuid:a48f0944-3ab0-4e5b-8019-79192500a44e",
+    "Subsystems":[
+      {
+        "Name":"nvme-subsys0",
+        "NQN":"mock-nqn",
+        "IOPolicy":"numa",
+        "Paths":[
+			{"Address": "mock-address-1"},
+			{"Address": "mock-address-2"}
+		]
+      }
+    ]
+  }
+]`)
+}
+
+func getMockNvmeListUnuntuOutput() []byte {
+	return []byte(`{
+    "HostNQN":"nqn.2014-08.org.mock:uuid:a48f0944-3ab0-4e5b-8019-79192500a44e",
+    "Subsystems":[
+      {
+        "Name":"nvme-subsys0",
+        "NQN":"mock-nqn",
+        "IOPolicy":"numa",
+        "Paths":[
+			{"Address": "mock-address-1"},
+			{"Address": "mock-address-2"}
+		]
+      }
+    ]
+  }`)
+}
+
+func TestIsNil(t *testing.T) {
+	tests := map[string]struct {
+		device *NVMeDevice
+		expect bool
+	}{
+		"Nil device": {
+			device: nil,
+			expect: true,
+		},
+		"Valid device": {
+			device: &NVMeDevice{Device: "mock-device"},
+			expect: false,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, params.expect, params.device.IsNil())
+		})
+	}
+}
+
+func TestGetPath(t *testing.T) {
+	tests := map[string]struct {
+		device *NVMeDevice
+		expect string
+	}{
+		"Valid path": {
+			device: &NVMeDevice{Device: "mock-device"},
+			expect: "mock-device",
+		},
+		"Nil device": {
+			device: nil,
+			expect: "",
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, params.expect, params.device.GetPath(), "Unexpected path found.")
+		})
+	}
 }

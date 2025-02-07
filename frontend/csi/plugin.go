@@ -21,7 +21,6 @@ import (
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/errors"
 	execCmd "github.com/netapp/trident/utils/exec"
@@ -30,6 +29,7 @@ import (
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
+	"github.com/netapp/trident/utils/nvme"
 	"github.com/netapp/trident/utils/osutils"
 )
 
@@ -81,7 +81,7 @@ type Plugin struct {
 	stopNodePublicationLoop chan bool
 	nodePublicationTimer    *time.Timer
 
-	nvmeHandler utils.NVMeInterface
+	nvmeHandler nvme.NVMeInterface
 
 	nvmeSelfHealingTicker   *time.Ticker
 	nvmeSelfHealingChannel  chan struct{}
@@ -198,7 +198,7 @@ func NewNodePlugin(
 		opCache:                  sync.Map{},
 		iSCSISelfHealingInterval: iSCSISelfHealingInterval,
 		iSCSISelfHealingWaitTime: iSCSIStaleSessionWaitTime,
-		nvmeHandler:              utils.NewNVMeHandler(),
+		nvmeHandler:              nvme.NewNVMeHandler(),
 		nvmeSelfHealingInterval:  nvmeSelfHealingInterval,
 		iscsi:                    iscsiClient,
 		// NewClient() must plugin default implementation of the various package clients.
@@ -308,7 +308,7 @@ func NewAllInOnePlugin(
 		opCache:                  sync.Map{},
 		iSCSISelfHealingInterval: iSCSISelfHealingInterval,
 		iSCSISelfHealingWaitTime: iSCSIStaleSessionWaitTime,
-		nvmeHandler:              utils.NewNVMeHandler(),
+		nvmeHandler:              nvme.NewNVMeHandler(),
 		nvmeSelfHealingInterval:  nvmeSelfHealingInterval,
 		iscsi:                    iscsiClient,
 		fcp:                      fcpClient,

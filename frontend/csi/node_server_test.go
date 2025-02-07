@@ -21,10 +21,10 @@ import (
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
-	mockUtils "github.com/netapp/trident/mocks/mock_utils"
 	"github.com/netapp/trident/mocks/mock_utils/mock_devices"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	"github.com/netapp/trident/mocks/mock_utils/mock_mount"
+	mock_nvme "github.com/netapp/trident/mocks/mock_utils/nvme"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/pkg/convert"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -35,6 +35,7 @@ import (
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
+	"github.com/netapp/trident/utils/nvme"
 	"github.com/netapp/trident/utils/osutils"
 )
 
@@ -1543,14 +1544,14 @@ func TestUpdateNodePublicationState_SuccessfullyUpdatesNodeAsCleaned(t *testing.
 
 func TestPerformNVMeSelfHealing(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	mockNVMeHandler := mockUtils.NewMockNVMeInterface(mockCtrl)
+	mockNVMeHandler := mock_nvme.NewMockNVMeInterface(mockCtrl)
 	nodeServer := &Plugin{nvmeHandler: mockNVMeHandler}
 
 	// Empty Published sessions case.
 	nodeServer.performNVMeSelfHealing(ctx)
 
 	// Error populating current sessions.
-	publishedNVMeSessions.AddNVMeSession(utils.NVMeSubsystem{NQN: "nqn"}, []string{})
+	publishedNVMeSessions.AddNVMeSession(nvme.NVMeSubsystem{NQN: "nqn"}, []string{})
 	mockNVMeHandler.EXPECT().PopulateCurrentNVMeSessions(ctx, gomock.Any()).
 		Return(errors.New("failed to populate current sessions"))
 
@@ -1558,7 +1559,7 @@ func TestPerformNVMeSelfHealing(t *testing.T) {
 
 	// Self-healing process done.
 	mockNVMeHandler.EXPECT().PopulateCurrentNVMeSessions(ctx, gomock.Any()).Return(nil)
-	mockNVMeHandler.EXPECT().InspectNVMeSessions(ctx, gomock.Any(), gomock.Any()).Return([]utils.NVMeSubsystem{})
+	mockNVMeHandler.EXPECT().InspectNVMeSessions(ctx, gomock.Any(), gomock.Any()).Return([]nvme.NVMeSubsystem{})
 
 	nodeServer.performNVMeSelfHealing(ctx)
 	// Cleanup of global objects.
@@ -1567,10 +1568,10 @@ func TestPerformNVMeSelfHealing(t *testing.T) {
 
 func TestFixNVMeSessions(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	mockNVMeHandler := mockUtils.NewMockNVMeInterface(mockCtrl)
+	mockNVMeHandler := mock_nvme.NewMockNVMeInterface(mockCtrl)
 	nodeServer := &Plugin{nvmeHandler: mockNVMeHandler}
-	subsystem1 := utils.NVMeSubsystem{NQN: "nqn1"}
-	subsystems := []utils.NVMeSubsystem{subsystem1}
+	subsystem1 := nvme.NVMeSubsystem{NQN: "nqn1"}
+	subsystems := []nvme.NVMeSubsystem{subsystem1}
 
 	// Subsystem not present in published sessions case.
 	nodeServer.fixNVMeSessions(ctx, time.UnixMicro(0), subsystems)
@@ -1751,7 +1752,7 @@ func TestNodeRegisterWithController_Success(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
-	mockNVMeHandler := mockUtils.NewMockNVMeInterface(mockCtrl)
+	mockNVMeHandler := mock_nvme.NewMockNVMeInterface(mockCtrl)
 
 	iscsiClient, _ := iscsi.New()
 	// Create a node server plugin
@@ -1796,7 +1797,7 @@ func TestNodeRegisterWithController_TopologyLabels(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
-	mockNVMeHandler := mockUtils.NewMockNVMeInterface(mockCtrl)
+	mockNVMeHandler := mock_nvme.NewMockNVMeInterface(mockCtrl)
 	iscsiClient, _ := iscsi.New()
 
 	// Create a node server plugin
@@ -1882,7 +1883,7 @@ func TestNodeRegisterWithController_Failure(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
-	mockNVMeHandler := mockUtils.NewMockNVMeInterface(mockCtrl)
+	mockNVMeHandler := mock_nvme.NewMockNVMeInterface(mockCtrl)
 	iscsiClient, _ := iscsi.New()
 
 	// Create a node server plugin

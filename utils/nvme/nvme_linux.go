@@ -1,20 +1,21 @@
 // Copyright 2024 NetApp, Inc. All Rights Reserved.
 
-package utils
+package nvme
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"regexp"
 	"strings"
 	"time"
 
+	"github.com/spf13/afero"
+
 	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils/errors"
-	"github.com/netapp/trident/utils/filesystem"
+	"github.com/netapp/trident/utils/exec"
 )
 
 var (
@@ -28,28 +29,12 @@ const (
 	SUBSYSNQN = "/subsysnqn"
 )
 
-func ReadFile(fs filesystem.FSClient, filename string) ([]byte, error) {
-	data, err := fs.ScanFile(filename)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
-}
-
-func ReadDir(fs filesystem.FSClient, path string) ([]os.FileInfo, error) {
-	dir, err := fs.ScanDir(path)
-	if err != nil {
-		return nil, err
-	}
-	return dir, nil
-}
-
 // GetHostNqn returns the Nqn string of the k8s node.
-func GetHostNqn(ctx context.Context) (string, error) {
+func (nh *NVMeHandler) GetHostNqn(ctx context.Context) (string, error) {
 	Logc(ctx).Debug(">>>> nvme_linux.GetHostNqn")
 	defer Logc(ctx).Debug("<<<< nvme_linux.GetHostNqn")
 
-	out, err := command.Execute(ctx, "cat", "/etc/nvme/hostnqn")
+	out, err := nh.command.Execute(ctx, "cat", "/etc/nvme/hostnqn")
 	if err != nil {
 		Logc(ctx).WithError(err).Warn("Could not read hostnqn; perhaps NVMe is not installed?")
 		return "", fmt.Errorf("failed to get hostnqn; %v", err)
@@ -59,18 +44,18 @@ func GetHostNqn(ctx context.Context) (string, error) {
 	return newout[0], nil
 }
 
-func NVMeActiveOnHost(ctx context.Context) (bool, error) {
+func (nh *NVMeHandler) NVMeActiveOnHost(ctx context.Context) (bool, error) {
 	Logc(ctx).Debug(">>>> nvme_linux.NVMeActiveOnHost")
 	defer Logc(ctx).Debug("<<<< nvme_linux.NVMeActiveOnHost")
 
-	_, err := command.ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
+	_, err := nh.command.ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
 		false, "version")
 	if err != nil {
 		Logc(ctx).WithError(err).Warn("Could not read NVMe CLI version; perhaps NVMe CLI is not installed?")
 		return false, fmt.Errorf("failed to get hostnqn: %v", err)
 	}
 
-	out, err := command.ExecuteWithTimeout(ctx, "lsmod", NVMeListCmdTimeoutInSeconds*time.Second, false)
+	out, err := nh.command.ExecuteWithTimeout(ctx, "lsmod", NVMeListCmdTimeoutInSeconds*time.Second, false)
 	if err != nil {
 		Logc(ctx).WithError(err).Warn("Could not read the modules loaded on the host.")
 		return false, fmt.Errorf("failed to get NVMe driver info; %v", err)
@@ -86,12 +71,12 @@ func NVMeActiveOnHost(ctx context.Context) (bool, error) {
 	return false, fmt.Errorf("NVMe driver is not loaded on the host")
 }
 
-func listSubsystemsFromSysFs(fs filesystem.FSClient, ctx context.Context) (Subsystems, error) {
+func (nh *NVMeHandler) listSubsystemsFromSysFs(ctx context.Context) (Subsystems, error) {
 	Logc(ctx).Trace(">>>> nvme_linux.listSubsystemsFromSysFs")
 	defer Logc(ctx).Trace("<<<< nvme_linux.listSubsystemsFromSysFs")
 
 	var subsystems Subsystems
-	subsystemDirs, err := ReadDir(fs, NVME_PATH)
+	subsystemDirs, err := afero.ReadDir(nh.osFs, NVME_PATH)
 	if err != nil {
 		return subsystems, fmt.Errorf("failed to open nvme subsystems directory: %v", err)
 	}
@@ -99,7 +84,7 @@ func listSubsystemsFromSysFs(fs filesystem.FSClient, ctx context.Context) (Subsy
 	for _, subsystemDir := range subsystemDirs {
 		subsystemDirPath := NVME_PATH + "/" + subsystemDir.Name()
 		subsystemNqnPath := subsystemDirPath + SUBSYSNQN
-		fileBytes, err := ReadFile(fs, subsystemNqnPath)
+		fileBytes, err := afero.ReadFile(nh.osFs, subsystemNqnPath)
 		if err != nil {
 			return subsystems, fmt.Errorf("failed to read subsystem nqn: %v", err)
 		}
@@ -107,7 +92,7 @@ func listSubsystemsFromSysFs(fs filesystem.FSClient, ctx context.Context) (Subsy
 		fileContent := strings.TrimSpace(string(fileBytes))
 
 		sub := NVMeSubsystem{NQN: fileContent, Name: subsystemDirPath}
-		paths, err := GetNVMeSubsystemPaths(ctx, fs, subsystemDirPath)
+		paths, err := GetNVMeSubsystemPaths(ctx, nh.osFs, subsystemDirPath)
 		if err != nil {
 			return subsystems, err
 		}
@@ -119,7 +104,7 @@ func listSubsystemsFromSysFs(fs filesystem.FSClient, ctx context.Context) (Subsy
 }
 
 // GetNVMeSubsystemList returns the list of subsystems connected to the k8s node.
-func GetNVMeSubsystemList(ctx context.Context) (Subsystems, error) {
+func GetNVMeSubsystemList(ctx context.Context, command exec.Command) (Subsystems, error) {
 	Logc(ctx).Debug(">>>> nvme_linux.GetNVMeSubsystemList")
 	defer Logc(ctx).Debug("<<<< nvme_linux.GetNVMeSubsystemList")
 
@@ -156,42 +141,42 @@ func GetNVMeSubsystemList(ctx context.Context) (Subsystems, error) {
 }
 
 // ConnectSubsystemToHost creates a path (or session) from the subsystem to the k8s node for the provided IP.
-func ConnectSubsystemToHost(ctx context.Context, subsNqn, IP string) error {
+func (s *NVMeSubsystem) ConnectSubsystemToHost(ctx context.Context, IP string) error {
 	Logc(ctx).Debug(">>>> nvme_linux.ConnectSubsystemToHost")
 	defer Logc(ctx).Debug("<<<< nvme_linux.ConnectSubsystemToHost")
 
 	// Specifying value of "l" (ctrl-loss-tmo) to -1 makes the NVMe session undroppable even if the IP goes down for infinity.
-	_, err := command.Execute(ctx, "nvme", "connect", "-t", "tcp", "-n", subsNqn, "-a", IP,
+	_, err := s.command.Execute(ctx, "nvme", "connect", "-t", "tcp", "-n", s.NQN, "-a", IP,
 		"-s", "4420", "-l", "-1")
 	if err != nil {
-		Logc(ctx).WithError(err).Errorf("Failed to connect subsystem %s to host.", subsNqn)
-		return fmt.Errorf("failed to connect subsystem %s to %s; %v", subsNqn, IP, err)
+		Logc(ctx).WithError(err).Errorf("Failed to connect subsystem %s to host.", s.NQN)
+		return fmt.Errorf("failed to connect subsystem %s to %s; %v", s.NQN, IP, err)
 	}
 
 	return nil
 }
 
 // DisconnectSubsystemFromHost removes the subsystem from the k8s node.
-func DisconnectSubsystemFromHost(ctx context.Context, subsysNqn string) error {
+func (s *NVMeSubsystem) DisconnectSubsystemFromHost(ctx context.Context) error {
 	Logc(ctx).Debug(">>>> nvme_linux.DisconnectSubsystemFromHost")
 	defer Logc(ctx).Debug("<<<< nvme_linux.DisconnectSubsystemFromHost")
 
-	_, err := command.Execute(ctx, "nvme", "disconnect", "-n", subsysNqn)
+	_, err := s.command.Execute(ctx, "nvme", "disconnect", "-n", s.NQN)
 	if err != nil {
-		Logc(ctx).WithError(err).Errorf("Failed to disconnect subsystem %s.", subsysNqn)
-		return fmt.Errorf("failed to disconnect subsystem %s; %v", subsysNqn, err)
+		Logc(ctx).WithError(err).Errorf("Failed to disconnect subsystem %s.", s.NQN)
+		return fmt.Errorf("failed to disconnect subsystem %s; %v", s.NQN, err)
 	}
 
 	return nil
 }
 
 // GetNamespaceCountForSubsDevice returns the number of namespaces present in a given subsystem device.
-func GetNamespaceCountForSubsDevice(ctx context.Context, subsDevice string) (int, error) {
+func (s *NVMeSubsystem) GetNamespaceCountForSubsDevice(ctx context.Context) (int, error) {
 	Logc(ctx).Debug(">>>> nvme_linux.GetNamespaceCount")
 	defer Logc(ctx).Debug("<<<< nvme_linux.GetNamespaceCount")
 
-	out, err := command.ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
-		false, "list-ns", subsDevice)
+	out, err := s.command.ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
+		false, "list-ns", s.Name)
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Failed to get namespace count.")
 		return 0, fmt.Errorf("failed to get namespace count; %v", err)
@@ -200,12 +185,12 @@ func GetNamespaceCountForSubsDevice(ctx context.Context, subsDevice string) (int
 	return strings.Count(string(out), "["), nil
 }
 
-func GetNVMeSubsystem(ctx context.Context, fs filesystem.FSClient, nqn string) (NVMeSubsystem, error) {
+func (nh *NVMeHandler) GetNVMeSubsystem(ctx context.Context, nqn string) (*NVMeSubsystem, error) {
 	Logc(ctx).Trace(">>>> nvme_linux.GetNVMeSubsystem")
 	defer Logc(ctx).Trace("<<<< nvme_linux.GetNVMeSubsystem")
 
-	sub := NVMeSubsystem{NQN: nqn}
-	subsystemDirs, err := ReadDir(fs, NVME_PATH)
+	sub := NewNVMeSubsystem(nqn, nh.command, nh.osFs)
+	subsystemDirs, err := afero.ReadDir(nh.osFs, NVME_PATH)
 	if err != nil {
 		return sub, fmt.Errorf("failed to open nvme subsystems directory: %v", err)
 	}
@@ -216,7 +201,7 @@ func GetNVMeSubsystem(ctx context.Context, fs filesystem.FSClient, nqn string) (
 		subsystemNqnPath := subsystemDirPath + SUBSYSNQN
 
 		// Example of subsysnqn file : nqn.1992-08.com.netapp:sn.6628417f7bec11ef9bf2005056b3e634:subsystem.scspa3014048001-b06e4d9a-6817-446b-8dc6-e819c100f935
-		fileBytes, err := ReadFile(fs, subsystemNqnPath)
+		fileBytes, err := afero.ReadFile(nh.osFs, subsystemNqnPath)
 		if err != nil {
 			return sub, fmt.Errorf("failed to read subsystem nqn: %v", err)
 		}
@@ -229,7 +214,7 @@ func GetNVMeSubsystem(ctx context.Context, fs filesystem.FSClient, nqn string) (
 
 		// Gather the subsystem paths.
 		sub.Name = subsystemDirPath
-		paths, err := GetNVMeSubsystemPaths(ctx, fs, subsystemDirPath)
+		paths, err := GetNVMeSubsystemPaths(ctx, nh.osFs, subsystemDirPath)
 		if err != nil {
 			return sub, err
 		}
@@ -243,13 +228,13 @@ func GetNVMeSubsystem(ctx context.Context, fs filesystem.FSClient, nqn string) (
 	return sub, nil
 }
 
-func GetNVMeSubsystemPaths(ctx context.Context, fs filesystem.FSClient, subsystemDirPath string) ([]Path, error) {
+func GetNVMeSubsystemPaths(ctx context.Context, fs afero.Fs, subsystemDirPath string) ([]Path, error) {
 	Logc(ctx).Trace(">>>> nvme_linux.GetNVMeSubsystemPaths")
 	defer Logc(ctx).Trace("<<<< nvme_linux.GetNVMeSubsystemPaths")
 
 	var paths []Path
 
-	subsystemDirContents, err := ReadDir(fs, subsystemDirPath)
+	subsystemDirContents, err := afero.ReadDir(fs, subsystemDirPath)
 	if err != nil {
 		return paths, fmt.Errorf("failed to read subsystem directory contents, %v", err)
 	}
@@ -268,7 +253,7 @@ func GetNVMeSubsystemPaths(ctx context.Context, fs filesystem.FSClient, subsyste
 	return paths, nil
 }
 
-func updateNVMeSubsystemPathAttributes(ctx context.Context, fs filesystem.FSClient, path *Path) error {
+func updateNVMeSubsystemPathAttributes(ctx context.Context, fs afero.Fs, path *Path) error {
 	Logc(ctx).Trace(">>>> nvme_linux.updateNVMeSubsystemPathAttributes")
 	defer Logc(ctx).Trace("<<<< nvme_linux.updateNVMeSubsystemPathAttributes")
 
@@ -294,21 +279,21 @@ func updateNVMeSubsystemPathAttributes(ctx context.Context, fs filesystem.FSClie
 	return nil
 }
 
-func getSessionFileContent(sessionFileName, pathName string, fs filesystem.FSClient) (string, error) {
-	fileBytes, err := ReadFile(fs, pathName+"/"+sessionFileName)
+func getSessionFileContent(sessionFileName, pathName string, fs afero.Fs) (string, error) {
+	fileBytes, err := afero.ReadFile(fs, pathName+"/"+sessionFileName)
 	if err != nil {
 		return "", err
 	}
 	return strings.TrimSpace(string(fileBytes)), nil
 }
 
-func GetNVMeDeviceCountAt(ctx context.Context, fs filesystem.FSClient, path string) (int, error) {
+func (s *NVMeSubsystem) GetNVMeDeviceCountAt(ctx context.Context, path string) (int, error) {
 	Logc(ctx).Trace(">>>> nvme_linux.GetNVMeDeviceCountAt")
 	defer Logc(ctx).Trace("<<<< nvme_linux.GetNVMeDeviceCountAt")
 
 	count := 0
 
-	pathDirContents, err := ReadDir(fs, path)
+	pathDirContents, err := afero.ReadDir(s.osFs, path)
 	if err != nil {
 		return count, fmt.Errorf("failed to open %s directory, %v", path, err)
 	}
@@ -322,19 +307,19 @@ func GetNVMeDeviceCountAt(ctx context.Context, fs filesystem.FSClient, path stri
 	return count, nil
 }
 
-func GetNVMeDeviceAt(ctx context.Context, path, nsUUID string) (NVMeDeviceInterface, error) {
+func (s *NVMeSubsystem) GetNVMeDeviceAt(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error) {
 	Logc(ctx).Trace(">>>> nvme_linux.GetNVMeDeviceAt")
 	defer Logc(ctx).Trace("<<<< nvme_linux.GetNVMeDeviceAt")
 
-	pathContents, err := os.ReadDir(path)
+	pathContents, err := afero.ReadDir(s.osFs, s.Name)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open %s directory, %v", path, err)
+		return nil, fmt.Errorf("failed to open %s directory, %v", s.Name, err)
 	}
 
 	for _, pathContent := range pathContents {
 		if nvmeNQNRegex.MatchString(pathContent.Name()) {
-			uuidPath := path + "/" + pathContent.Name() + "/uuid"
-			fileBytes, err := os.ReadFile(uuidPath)
+			uuidPath := s.Name + "/" + pathContent.Name() + "/uuid"
+			fileBytes, err := afero.ReadFile(s.osFs, uuidPath)
 			if err != nil {
 				return nil, fmt.Errorf("failed to read uuid, %v", err)
 			}
@@ -351,13 +336,13 @@ func GetNVMeDeviceAt(ctx context.Context, path, nsUUID string) (NVMeDeviceInterf
 }
 
 // GetNVMeDeviceList returns the list of NVMe devices present on the k8s node.
-func GetNVMeDeviceList(ctx context.Context) (NVMeDevices, error) {
+func (nh *NVMeHandler) GetNVMeDeviceList(ctx context.Context) (NVMeDevices, error) {
 	Logc(ctx).Debug(">>>> nvme_linux.GetNVMeDeviceList")
 	defer Logc(ctx).Debug("<<<< nvme_linux.GetNVMeDeviceList")
 
 	var ontapDevs NVMeDevices
 
-	out, err := command.ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
+	out, err := nh.command.ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
 		false, "netapp", "ontapdevices", "-o", "json")
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Failed to list NVMe ONTAP devices.")
@@ -395,14 +380,14 @@ func GetNVMeDeviceList(ctx context.Context) (NVMeDevices, error) {
 }
 
 // FlushNVMeDevice flushes any ongoing IOs present on the NVMe device.
-func FlushNVMeDevice(ctx context.Context, device string) error {
+func (d *NVMeDevice) FlushNVMeDevice(ctx context.Context) error {
 	Logc(ctx).Debug(">>>> nvme_linux.FlushNVMeDevice")
 	defer Logc(ctx).Debug("<<<< nvme_linux.FlushNVMeDevice")
 
-	_, err := command.Execute(ctx, "nvme", "flush", device)
+	_, err := d.command.Execute(ctx, "nvme", "flush", d.Device)
 	if err != nil {
-		Logc(ctx).WithError(err).Errorf("Failed to flush device: %s", device)
-		return fmt.Errorf("failed to flush device: %s; %v", device, err)
+		Logc(ctx).WithError(err).Errorf("Failed to flush device: %s", d.Device)
+		return fmt.Errorf("failed to flush device: %s; %v", d.Device, err)
 	}
 
 	return nil

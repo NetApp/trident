@@ -57,7 +57,7 @@ func (mr *MockFCPMockRecorder) AttachVolumeRetry(arg0, arg1, arg2, arg3, arg4, a
 }
 
 // GetDeviceInfoForLUN mocks base method.
-func (m *MockFCP) GetDeviceInfoForLUN(arg0 context.Context, arg1 int, arg2 string, arg3, arg4 bool) (*models.ScsiDeviceInfo, error) {
+func (m *MockFCP) GetDeviceInfoForLUN(arg0 context.Context, arg1 []map[string]int, arg2 int, arg3 string, arg4 bool) (*models.ScsiDeviceInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeviceInfoForLUN", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(*models.ScsiDeviceInfo)
@@ -97,6 +97,21 @@ func (m *MockFCP) PreChecks(arg0 context.Context) error {
 func (mr *MockFCPMockRecorder) PreChecks(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PreChecks", reflect.TypeOf((*MockFCP)(nil).PreChecks), arg0)
+}
+
+// PrepareDeviceForRemoval mocks base method.
+func (m *MockFCP) PrepareDeviceForRemoval(arg0 context.Context, arg1 *models.ScsiDeviceInfo, arg2 *models.VolumePublishInfo, arg3 []models.VolumePublishInfo, arg4, arg5 bool) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PrepareDeviceForRemoval", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PrepareDeviceForRemoval indicates an expected call of PrepareDeviceForRemoval.
+func (mr *MockFCPMockRecorder) PrepareDeviceForRemoval(arg0, arg1, arg2, arg3, arg4, arg5 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareDeviceForRemoval", reflect.TypeOf((*MockFCP)(nil).PrepareDeviceForRemoval), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
 // RescanDevices mocks base method.

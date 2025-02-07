@@ -37,6 +37,7 @@ import (
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/nvme"
 	"github.com/netapp/trident/utils/osutils"
 	"github.com/netapp/trident/utils/smb"
 )
@@ -64,7 +65,7 @@ var (
 	fcpUtils       = utils.FcpUtils
 
 	publishedISCSISessions, currentISCSISessions models.ISCSISessions
-	publishedNVMeSessions, currentNVMeSessions   utils.NVMeSessions
+	publishedNVMeSessions, currentNVMeSessions   nvme.NVMeSessions
 	// NVMeNamespacesFlushRetry - Non-persistent map of Namespaces to maintain the flush errors if any.
 	// During NodeUnstageVolume, Trident shall return success after specific wait time (nvmeMaxFlushWaitDuration).
 	NVMeNamespacesFlushRetry = make(map[string]time.Time)
@@ -2515,8 +2516,8 @@ func (p *Plugin) nodeStageNVMeVolume(
 	publishInfo.NVMeTargetIPs = strings.Split(req.PublishContext["nvmeTargetIPs"], ",")
 	publishInfo.SANType = req.PublishContext["SANType"]
 
-	err := utils.AttachNVMeVolumeRetry(
-		ctx, req.VolumeContext["internalName"], "", publishInfo, req.GetSecrets(), utils.NVMeAttachTimeout,
+	err := p.nvmeHandler.AttachNVMeVolumeRetry(
+		ctx, req.VolumeContext["internalName"], "", publishInfo, req.GetSecrets(), nvme.NVMeAttachTimeout,
 	)
 	if err != nil {
 		return err
@@ -2831,7 +2832,7 @@ func (p *Plugin) performNVMeSelfHealing(ctx context.Context) {
 	publishedNVMeSessions.ResetRemediationForAll()
 
 	// Reset current sessions
-	currentNVMeSessions = utils.NVMeSessions{}
+	currentNVMeSessions = nvme.NVMeSessions{}
 
 	// Populate the current sessions
 	if err := p.nvmeHandler.PopulateCurrentNVMeSessions(ctx, &currentNVMeSessions); err != nil {
@@ -2849,7 +2850,7 @@ func (p *Plugin) performNVMeSelfHealing(ctx context.Context) {
 	Logc(ctx).Debug("NVMe healing finished.")
 }
 
-func (p *Plugin) fixNVMeSessions(ctx context.Context, stopAt time.Time, subsystems []utils.NVMeSubsystem) {
+func (p *Plugin) fixNVMeSessions(ctx context.Context, stopAt time.Time, subsystems []nvme.NVMeSubsystem) {
 	for index, sub := range subsystems {
 		// If the subsystem is not present in the published NVMe sessions, we don't need to rectify its sessions.
 		if !publishedNVMeSessions.CheckNVMeSessionExists(sub.NQN) {

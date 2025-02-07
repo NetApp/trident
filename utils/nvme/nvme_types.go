@@ -1,16 +1,21 @@
 // Copyright 2023 NetApp, Inc. All Rights Reserved.
 
-package utils
+package nvme
 
 import (
 	"context"
 	"time"
 
+	"github.com/spf13/afero"
+
+	"github.com/netapp/trident/utils/devices"
+	"github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/mount"
 )
 
-//go:generate mockgen -destination=../mocks/mock_utils/mock_nvme_utils.go github.com/netapp/trident/utils NVMeInterface
+//go:generate mockgen -destination=../../mocks/mock_utils/nvme/mock_nvme_utils.go github.com/netapp/trident/utils/nvme NVMeInterface
 
 // MaxSessionsPerSubsystem represents the total number of paths from host to ONTAP subsystem.
 // NVMe subsystem can have maximum 2 dataLIFs, so it is capped to 2.
@@ -57,6 +62,7 @@ type NVMeDevice struct {
 	UUID          string `json:"UUID"`
 	Size          string `json:"Size"`
 	NamespaceSize int64  `json:"Namespace_Size"`
+	command       exec.Command
 }
 
 type Path struct {
@@ -90,10 +96,11 @@ type Path struct {
 //	  }
 //	]
 type NVMeSubsystem struct {
-	Name  string `json:"Name"`
-	NQN   string `json:"NQN"`
-	Paths []Path `json:"Paths"`
-	FS    filesystem.FSClient
+	Name    string `json:"Name"`
+	NQN     string `json:"NQN"`
+	Paths   []Path `json:"Paths"`
+	osFs    afero.Fs
+	command exec.Command
 }
 
 type Subsystems struct {
@@ -132,19 +139,31 @@ type NVMeSubsystemInterface interface {
 	Disconnect(ctx context.Context) error
 	GetNamespaceCount(ctx context.Context) (int, error)
 	IsNetworkPathPresent(ip string) bool
+	ConnectSubsystemToHost(ctx context.Context, IP string) error
+	DisconnectSubsystemFromHost(ctx context.Context) error
+	GetNamespaceCountForSubsDevice(ctx context.Context) (int, error)
 	GetNVMeDevice(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error)
+	GetNVMeDeviceAt(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error)
+	GetNVMeDeviceCountAt(ctx context.Context, path string) (int, error)
 }
 
 type NVMeDeviceInterface interface {
 	GetPath() string
 	FlushDevice(ctx context.Context, ignoreErrors, force bool) error
 	IsNil() bool
+	FlushNVMeDevice(ctx context.Context) error
 }
 
 // NVMeHandler implements the NVMeInterface. It acts as a layer to invoke all the NVMe related
 // operations on the k8s node. This struct is currently empty as we don't need to store any
 // node or NVMe related information yet.
-type NVMeHandler struct{}
+type NVMeHandler struct {
+	command       exec.Command
+	devicesClient devices.Devices
+	mountClient   mount.Mount
+	fsClient      filesystem.Filesystem
+	osFs          afero.Fs
+}
 
 type NVMeInterface interface {
 	NVMeActiveOnHost(ctx context.Context) (bool, error)
@@ -155,4 +174,16 @@ type NVMeInterface interface {
 	PopulateCurrentNVMeSessions(ctx context.Context, currSessions *NVMeSessions) error
 	InspectNVMeSessions(ctx context.Context, pubSessions, currSessions *NVMeSessions) []NVMeSubsystem
 	RectifyNVMeSession(ctx context.Context, subsystemToFix NVMeSubsystem, pubSessions *NVMeSessions)
+	NVMeMountVolume(
+		ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
+	) error
+	AttachNVMeVolume(
+		ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
+	) error
+	AttachNVMeVolumeRetry(
+		ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
+		timeout time.Duration,
+	) error
+	GetNVMeDeviceList(ctx context.Context) (NVMeDevices, error)
+	GetNVMeSubsystem(ctx context.Context, nqn string) (*NVMeSubsystem, error)
 }
