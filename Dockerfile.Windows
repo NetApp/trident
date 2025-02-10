@@ -1,7 +1,7 @@
-ARG WINDOWS_VERSION
-ARG	ARCH
+ARG WINDOWS_VERSION=ltsc2022
+ARG	ARCH=amd64
 
-FROM --platform=windows/${ARCH} mcr.microsoft.com/windows/servercore:${WINDOWS_VERSION} as add_on
+FROM --platform=windows/${ARCH} mcr.microsoft.com/windows/servercore:${WINDOWS_VERSION} AS add_on
 FROM --platform=windows/${ARCH} mcr.microsoft.com/windows/nanoserver:${WINDOWS_VERSION}
 
 ARG BIN=trident_orchestrator.exe

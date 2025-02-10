@@ -855,6 +855,7 @@ func (c *Client) ScanTargetLUN(ctx context.Context, deviceAddresses []models.Scs
 			"scanFile": filename,
 			"host":     deviceAddress.Host,
 		}).Debug("Invoked SCSI scan for host.")
+
 	}
 
 	return nil

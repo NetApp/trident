@@ -1,23 +1,35 @@
 ARG ARCH=amd64
+# Image for dependencies such as NFS binaries
+ARG DEPS_IMAGE=alpine:3
 
-FROM --platform=linux/${ARCH} alpine:latest AS baseimage
+FROM --platform=linux/${ARCH} $DEPS_IMAGE AS deps
 
-RUN apk add nfs-utils
+ARG DEPS_IMAGE
 
-#Get the mount.nfs4 dependency
+# Installs nfs-utils based on DEPS_IMAGE
+RUN --mount=type=secret,id=activation_key,env=ACTIVATION_KEY \
+    --mount=type=secret,id=organization,env=ORGANIZATION \
+    function unregister() { subscription-manager unregister || true; }; trap unregister EXIT; \
+    if [[ $DEPS_IMAGE =~ "alpine" ]]; \
+        then apk add nfs-utils; \
+        else subscription-manager register --activationkey $ACTIVATION_KEY --org $ORGANIZATION && \
+             yum install --repo=rhel-9-*-baseos-rpms -y nfs-utils; \
+    fi
+
+# Get the mount.nfs4 dependency
 RUN ldd /sbin/mount.nfs4 | tr -s '[:space:]' '\n' | grep '^/' | xargs -I % sh -c 'mkdir -p /nfs-deps/$(dirname %) && cp -L % /nfs-deps/%'
 RUN ldd /sbin/mount.nfs | tr -s '[:space:]' '\n' | grep '^/' | xargs -I % sh -c 'mkdir -p /nfs-deps/$(dirname %) && cp -r -u -L % /nfs-deps/%'
 
-FROM --platform=linux/${ARCH} gcr.io/distroless/static@sha256:69830f29ed7545c762777507426a412f97dad3d8d32bae3e74ad3fb6160917ea
+FROM scratch
 
 LABEL maintainers="The NetApp Trident Team" \
       app="trident.netapp.io" \
       description="Trident Storage Orchestrator"
 
-COPY --from=baseimage /bin/mount /bin/umount /bin/
-COPY --from=baseimage /sbin/mount.nfs /sbin/mount.nfs4 /sbin/
-COPY --from=baseimage /etc/netconfig /etc/
-COPY --from=baseimage /nfs-deps/ /
+COPY --from=deps /bin/mount /bin/umount /bin/
+COPY --from=deps /sbin/mount.nfs /sbin/mount.nfs4 /sbin/
+COPY --from=deps /etc/netconfig /etc/
+COPY --from=deps /nfs-deps/ /
 
 ARG BIN=trident_orchestrator
 ARG CLI_BIN=tridentctl

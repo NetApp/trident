@@ -166,6 +166,12 @@ Default: `trident-operator`
 
 Trident operator image name used to create operator image tag.
 
+`TRIDENT_DEPS_IMAGE`
+
+Default: See "DEPS_IMAGE" in ./Dockerfile
+
+Image used to get dependencies such as NFS.
+
 ## Makefile Targets
 
 ### Build Targets

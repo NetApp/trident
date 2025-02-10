@@ -91,6 +91,9 @@ DEFAULT_AUTOSUPPORT_IMAGE ?=
 # DEFAULT_ACP_IMAGE override the default acp image in tridentctl and operator
 DEFAULT_ACP_IMAGE ?=
 
+# TRIDENT_DEPS_IMAGE sets the image used by the Trident dockerfile to install dependencies such as NFS
+TRIDENT_DEPS_IMAGE ?=
+
 # Constants
 ALL_PLATFORMS = linux/amd64 linux/arm64 windows/amd64/ltsc2022 windows/amd64/ltsc2019 darwin/amd64
 DEFAULT_REGISTRY = docker.io/netapp
@@ -241,6 +244,9 @@ docker_build_linux = $1 build \
 	--build-arg NODE_PREP_BIN=$(call binary_path,node_prep,$2) \
 	--build-arg CHWRAP_BIN=$(call binary_path,chwrap.tar,$2) \
 	--build-arg SYSWRAP_BIN=${call binary_path,syswrap,$2} \
+	$(if $(TRIDENT_DEPS_IMAGE),--build-arg DEPS_IMAGE=$(TRIDENT_DEPS_IMAGE)) \
+	--secret id=activation_key,env=ACTIVATION_KEY \
+	--secret id=organization,env=ORGANIZATION \
 	--tag $3 \
 	--rm \
 	$(if $(findstring $(DOCKER_BUILDX_BUILD_CLI),$1),--builder trident-builder) \
