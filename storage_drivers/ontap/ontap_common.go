@@ -1392,7 +1392,7 @@ func InitializeOntapAPI(
 		return nil, err
 	}
 
-	// Is the ONTAP version lesser than or equal to "9.17.x"?
+	// Is the ONTAP version lesser than or equal to "9.99.x"?
 	IsZAPISupported, err := api.IsZAPISupported(ontapVer)
 	if err != nil {
 		return nil, err
@@ -1410,12 +1410,12 @@ func InitializeOntapAPI(
 				A. Existing or new users, who haven't set the useREST flag or set it to false, will use the ZAPI client by default,
 					overriding the `ontapAPI` var, thereby discarding the previously created REST client above.
 				B. If the user has set the useREST flag to true, the REST client created earlier is used.
-		3. If the ONTAP version lies between "9.15.1" and "9.17.x":
+		3. If the ONTAP version lies between "9.15.1" and "9.99.x":
 				A. Both REST and ZAPI are supported. If the user has not set the useREST flag or set it to true,
 					the REST client created earlier is used.
 				B. If the user has set the useREST flag to false, a ZAPI client is created,
 					overriding the `ontapAPI` var, thereby discarding the previously created REST client above.
-		4. If the ONTAP version is greater than "9.17.x":
+		4. If the ONTAP version is greater than "9.99.x":
 				A. ZAPI calls are not supported by ONTAP. In this case, if the user has set the useREST flag to false,
 					an error is returned.
 				B. Otherwise, the REST client created earlier is used by default.
