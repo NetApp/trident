@@ -60,6 +60,7 @@ const (
 	AnnVolumeShareToNS      = annPrefix + "/shareToNamespace"
 	AnnReadOnlyClone        = annPrefix + "/readOnlyClone"
 	AnnLUKSEncryption       = annPrefix + "/luksEncryption" // import only
+	AnnSkipRecoveryQueue    = annPrefix + "/skipRecoveryQueue"
 )
 
 var features = map[controllerhelpers.Feature]*versionutils.Version{

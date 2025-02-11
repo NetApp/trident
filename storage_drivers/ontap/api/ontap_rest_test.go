@@ -4773,7 +4773,7 @@ func TestOntapRestDestroyVolumeByNameAndStyle(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			err := rs.destroyVolumeByNameAndStyle(ctx, "fakeVolume", models.VolumeStyleFlexvol)
+			err := rs.destroyVolumeByNameAndStyle(ctx, "fakeVolume", models.VolumeStyleFlexvol, false)
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not delete a volume")
 			} else {
@@ -5403,7 +5403,7 @@ func TestOntapREST_VolumeDestroy(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			err := rs.VolumeDestroy(ctx, "fakeVolume")
+			err := rs.VolumeDestroy(ctx, "fakeVolume", false)
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not delete the volume")
 			} else {
@@ -5530,24 +5530,36 @@ func TestOntapREST_FlexgroupCloneSplitStart(t *testing.T) {
 }
 
 func TestOntapREST_FlexGroupDestroy(t *testing.T) {
-	tests := []struct {
-		name            string
+	type parameters struct {
 		mockFunction    func(w http.ResponseWriter, r *http.Request)
 		isErrorExpected bool
-	}{
-		{"PositiveTest", mockGetVolumeResponseAccepted, false},
-		{"BackendReturnError", mockResourceNotFound, true},
-		{"NumRecordsFieldsNil", mockGetVolumeResponseNumRecordsNil, false},
-		{"Delete_fail", mockModifyFailed, true},
 	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+	tests := map[string]parameters{
+		"happy path": {
+			mockFunction:    mockGetVolumeResponseAccepted,
+			isErrorExpected: false,
+		},
+		"backend returns error": {
+			mockFunction:    mockResourceNotFound,
+			isErrorExpected: true,
+		},
+		"numRecords Field is nil": {
+			mockFunction:    mockGetVolumeResponseNumRecordsNil,
+			isErrorExpected: false,
+		},
+		"error deleting flexgroup": {
+			mockFunction:    mockModifyFailed,
+			isErrorExpected: true,
+		},
+	}
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(params.mockFunction))
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			err := rs.FlexGroupDestroy(ctx, "fakeVolume")
-			if !test.isErrorExpected {
+			err := rs.FlexGroupDestroy(ctx, "fakeVolume", false)
+			if !params.isErrorExpected {
 				assert.NoError(t, err, "could not delete a flexgroup volume")
 			} else {
 				assert.Error(t, err, "delete a flexgroup volume")

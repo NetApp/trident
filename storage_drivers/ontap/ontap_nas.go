@@ -264,6 +264,7 @@ func (d *NASStorageDriver) Create(
 		securityStyle     = collection.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
 		encryption        = collection.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
 		tieringPolicy     = collection.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+		skipRecoveryQueue = collection.GetV(opts, "skipRecoveryQueue", storagePool.InternalAttributes()[SkipRecoveryQueue])
 		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
 		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
 	)
@@ -309,6 +310,10 @@ func (d *NASStorageDriver) Create(
 		tieringPolicy = d.API.TieringPolicyValue(ctx)
 	}
 
+	if _, err = strconv.ParseBool(skipRecoveryQueue); skipRecoveryQueue != "" && err != nil {
+		return fmt.Errorf("invalid boolean value for skipRecoveryQueue: %v", err)
+	}
+
 	if d.Config.AutoExportPolicy {
 		// set empty export policy on flexVol creation
 		exportPolicy = getEmptyExportPolicyName(*d.Config.StoragePrefix)
@@ -335,6 +340,7 @@ func (d *NASStorageDriver) Create(
 	volConfig.ExportPolicy = exportPolicy
 	volConfig.SecurityStyle = securityStyle
 	volConfig.Encryption = configEncryption
+	volConfig.SkipRecoveryQueue = skipRecoveryQueue
 	volConfig.QosPolicy = qosPolicy
 	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
 
@@ -350,6 +356,7 @@ func (d *NASStorageDriver) Create(
 		"securityStyle":     securityStyle,
 		"encryption":        convert.ToPrintableBoolPtr(enableEncryption),
 		"tieringPolicy":     tieringPolicy,
+		"skipRecoveryQueue": skipRecoveryQueue,
 		"qosPolicy":         qosPolicy,
 		"adaptiveQosPolicy": adaptiveQosPolicy,
 	}).Debug("Creating Flexvol.")
@@ -571,11 +578,19 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 		deleteAutomaticSnapshot(ctx, d, err, volConfig, d.API.VolumeSnapshotDelete)
 	}()
 
+	skipRecoveryQueue := false
+	if skipRecoveryQueueValue, err := strconv.ParseBool(volConfig.SkipRecoveryQueue); err == nil {
+		skipRecoveryQueue = skipRecoveryQueueValue
+	}
+
 	// If volume exists and this is FSx, try the FSx SDK first so that any backup mirror relationship
 	// is cleaned up.  If the volume isn't found, then FSx may not know about it yet, so just try the
 	// underlying ONTAP delete call.  Any race condition with FSx will be resolved on a retry.
 	if d.AWSAPI != nil {
 		err = destroyFSxVolume(ctx, d.AWSAPI, volConfig, &d.Config)
+		if skipRecoveryQueue && (err == nil || errors.IsNotFoundError(err)) {
+			purgeRecoveryQueueVolume(ctx, d.API, volConfig.InternalName)
+		}
 		if err == nil || !errors.IsNotFoundError(err) {
 			return err
 		}
@@ -595,7 +610,7 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 		}
 	}
 
-	if err = d.API.VolumeDestroy(ctx, name, true); err != nil {
+	if err = d.API.VolumeDestroy(ctx, name, true, skipRecoveryQueue); err != nil {
 		return err
 	}
 

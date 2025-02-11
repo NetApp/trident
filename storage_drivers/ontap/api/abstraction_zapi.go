@@ -81,7 +81,7 @@ func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) error {
 	return err
 }
 
-func (d OntapAPIZAPI) VolumeDestroy(ctx context.Context, name string, force bool) error {
+func (d OntapAPIZAPI) VolumeDestroy(ctx context.Context, name string, force, skipRecoveryQueue bool) error {
 	volDestroyResponse, err := d.api.VolumeDestroy(name, force)
 	if err != nil {
 		return fmt.Errorf("error destroying volume %v: %v", name, err)
@@ -91,12 +91,85 @@ func (d OntapAPIZAPI) VolumeDestroy(ctx context.Context, name string, force bool
 		// It's not an error if the volume no longer exists
 		if zerr.Code() == azgo.EVOLUMEDOESNOTEXIST {
 			Logc(ctx).WithField("volume", name).Warn("Volume already deleted.")
-		} else {
-			return fmt.Errorf("error destroying volume %v: %v", name, zerr)
+			return nil
 		}
+		return fmt.Errorf("error destroying volume %v: %v", name, zerr)
 	}
 
+	if !skipRecoveryQueue {
+		return nil
+	}
+
+	recoveryQueueVolumeName, err := d.VolumeRecoveryQueueGetName(ctx, name)
+	if err != nil {
+		Logc(ctx).WithField("volume", name).Warn("Volume not found in recovery queue.")
+		return nil
+	}
+	_ = d.VolumeRecoveryQueuePurge(ctx, recoveryQueueVolumeName)
+
 	return nil
+}
+
+func (d OntapAPIZAPI) VolumeRecoveryQueuePurge(ctx context.Context, recoveryQueueVolumeName string) error {
+	volRecoveryQueuePurgeResponse, err := d.api.VolumeRecoveryQueuePurge(recoveryQueueVolumeName)
+	if err != nil {
+		Logc(ctx).WithField("volume", recoveryQueueVolumeName).WithError(err).Error(
+			"Failed to purge volume from recovery queue.")
+		return nil
+	}
+
+	if zerr := azgo.NewZapiError(volRecoveryQueuePurgeResponse); !zerr.IsPassed() {
+		// It's not an error if the volume no longer exists
+		if zerr.Code() == azgo.EOBJECTNOTFOUND {
+			Logc(ctx).WithField("volume", recoveryQueueVolumeName).Warn("Volume already purged from the recovery queue.")
+			return nil
+		}
+		if zerr.Code() == azgo.EVSERVER_OP_NOT_ALLOWED {
+			Logc(ctx).WithField("volume", recoveryQueueVolumeName).Warn("Purging volume from recovery queue not allowed.")
+			return nil
+		}
+
+		// Log the error and continue with the volume deletion, we will not reach this logic on retry,
+		// this is best-effort
+		Logc(ctx).WithField("volume", recoveryQueueVolumeName).WithError(zerr).Error(
+			"Failed to purge volume from recovery queue.")
+	}
+	return nil
+}
+
+func (d OntapAPIZAPI) VolumeRecoveryQueueGetName(ctx context.Context, name string) (string, error) {
+	volRecoveryQueueGetResponse, err := d.api.VolumeRecoveryQueueGetIter(fmt.Sprintf("%s*", name))
+	if err != nil {
+		Logc(ctx).WithField("volume", name).WithError(err).Error(
+			"Failed to get volume from recovery queue.")
+		return "", err
+	}
+
+	if zerr := azgo.NewZapiError(volRecoveryQueueGetResponse); !zerr.IsPassed() {
+		// It's not an error if the volume no longer exists
+		if zerr.Code() == azgo.EOBJECTNOTFOUND {
+			Logc(ctx).WithField("volume", name).Warn("Volume already purged from the recovery queue.")
+			return "", errors.NotFoundError("volume not found in recovery queue: %v", zerr)
+		}
+
+		Logc(ctx).WithField("volume", name).WithError(zerr).Error(
+			"Failed to get volume from recovery queue.")
+		return "", zerr
+	}
+
+	if volRecoveryQueueGetResponse.Result.AttributesListPtr == nil {
+		return "", errors.NotFoundError("volume not found in recovery queue")
+	}
+
+	volRecoveryQueueInfo := volRecoveryQueueGetResponse.Result.AttributesListPtr.VolumeRecoveryQueueInfo()
+	if len(volRecoveryQueueInfo) == 0 {
+		return "", errors.NotFoundError("volume not found in recovery queue")
+	}
+	if len(volRecoveryQueueInfo) > 1 {
+		return "", fmt.Errorf("multiple volumes found in recovery queue")
+	}
+
+	return volRecoveryQueueInfo[0].VolumeName(), nil
 }
 
 func (d OntapAPIZAPI) VolumeInfo(ctx context.Context, name string) (*Volume, error) {
@@ -1270,7 +1343,7 @@ func (d OntapAPIZAPI) FlexgroupMount(ctx context.Context, name, junctionPath str
 	return d.VolumeMount(ctx, name, junctionPath)
 }
 
-func (d OntapAPIZAPI) FlexgroupDestroy(ctx context.Context, volumeName string, force bool) error {
+func (d OntapAPIZAPI) FlexgroupDestroy(ctx context.Context, volumeName string, force, skipRecoveryQueue bool) error {
 	// TODO: If this is the parent of one or more clones, those clones have to split from this
 	// volume before it can be deleted, which means separate copies of those volumes.
 	// If there are a lot of clones on this volume, that could seriously balloon the amount of
@@ -1311,6 +1384,18 @@ func (d OntapAPIZAPI) FlexgroupDestroy(ctx context.Context, volumeName string, f
 			return fmt.Errorf("error destroying volume %v: %v", volumeName, zerr)
 		}
 	}
+
+	if !skipRecoveryQueue {
+		return nil
+	}
+
+	recoveryQueueVolumeName, err := d.VolumeRecoveryQueueGetName(ctx, volumeName)
+	if err != nil {
+		Logc(ctx).WithField("volume", volumeName).Warn("Volume not found in recovery queue.")
+		return nil
+	}
+
+	_ = d.VolumeRecoveryQueuePurge(ctx, recoveryQueueVolumeName)
 
 	return nil
 }

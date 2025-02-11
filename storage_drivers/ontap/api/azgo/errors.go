@@ -31,6 +31,7 @@ const (
 	EINVALIDINPUTERROR                 = "13115"
 	EDUPLICATEENTRY                    = "13130"
 	EAGGRDOESNOTEXIST                  = "14420"
+	EVSERVER_OP_NOT_ALLOWED            = "14719"
 	EOBJECTNOTFOUND                    = "15661"
 	EVSERVERNOTFOUND                   = "15698"
 	EDEST_ISNOT_DP_VOLUME              = "17114"

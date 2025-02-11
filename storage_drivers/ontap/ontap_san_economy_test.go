@@ -1236,9 +1236,9 @@ func TestOntapSanEconomyVolumeCreate_ResizeFailed(t *testing.T) {
 			mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 			mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("error resizing volume"))
 			if test.destroyError {
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(fmt.Errorf(test.message))
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(fmt.Errorf(test.message))
 			} else {
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(nil)
 			}
 
 			result := d.Create(ctx, volConfig, pool1, volAttrs)
@@ -1276,9 +1276,9 @@ func TestOntapSanEconomyVolumeCreate_LUNCreateFailed(t *testing.T) {
 			mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
 			mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(fmt.Errorf("failed to create lun"))
 			if test.destroyError {
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(fmt.Errorf(test.message))
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(fmt.Errorf(test.message))
 			} else {
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(nil)
 			}
 
 			result := d.Create(ctx, volConfig, pool1, volAttrs)
@@ -1376,13 +1376,13 @@ func TestOntapSanEconomyVolumeCreate_LUNSetAttributeFailed(t *testing.T) {
 			switch test.errorType {
 			case "Lun":
 				mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(fmt.Errorf(test.message))
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(nil)
 			case "Volume":
 				mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(fmt.Errorf(test.message))
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(fmt.Errorf(test.message))
 			default:
 				mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(nil)
 			}
 
 			result := d.Create(ctx, volConfig, pool1, volAttrs)
@@ -2300,7 +2300,7 @@ func TestOntapSanEconomyVolumeDeleteBucketIfEmpty(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(api.Luns{}, nil)
-	mockAPI.EXPECT().VolumeDestroy(ctx, "volumeName", true).Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(ctx, "volumeName", true, true).Return(nil)
 
 	result := d.DeleteBucketIfEmpty(ctx, "volumeName")
 
@@ -2321,7 +2321,7 @@ func TestOntapSanEconomyVolumeDeleteBucketIfEmpty_LUNDestroyFailed(t *testing.T)
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(api.Luns{}, nil)
-	mockAPI.EXPECT().VolumeDestroy(ctx, "volumeName", true).Return(fmt.Errorf("failed to destroy lun"))
+	mockAPI.EXPECT().VolumeDestroy(ctx, "volumeName", true, true).Return(fmt.Errorf("failed to destroy lun"))
 
 	result := d.DeleteBucketIfEmpty(ctx, "volumeName")
 

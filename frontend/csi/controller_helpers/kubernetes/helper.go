@@ -819,6 +819,7 @@ func getVolumeConfig(
 		PreferredTopologies: preferredTopology,
 		Namespace:           pvc.Namespace,
 		RequestName:         pvc.Name,
+		SkipRecoveryQueue:   getAnnotation(annotations, AnnSkipRecoveryQueue),
 	}
 }
 

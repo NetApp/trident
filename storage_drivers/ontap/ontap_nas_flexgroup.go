@@ -228,6 +228,7 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 	pool.InternalAttributes()[ExportPolicy] = d.Config.ExportPolicy
 	pool.InternalAttributes()[SecurityStyle] = d.Config.SecurityStyle
 	pool.InternalAttributes()[TieringPolicy] = d.Config.TieringPolicy
+	pool.InternalAttributes()[SkipRecoveryQueue] = d.Config.SkipRecoveryQueue
 	pool.InternalAttributes()[QosPolicy] = d.Config.QosPolicy
 	pool.InternalAttributes()[AdaptiveQosPolicy] = d.Config.AdaptiveQosPolicy
 
@@ -309,6 +310,11 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 				tieringPolicy = vpool.TieringPolicy
 			}
 
+			skipRecoveryQueue := d.Config.SkipRecoveryQueue
+			if vpool.SkipRecoveryQueue != "" {
+				skipRecoveryQueue = vpool.SkipRecoveryQueue
+			}
+
 			qosPolicy := d.Config.QosPolicy
 			if vpool.QosPolicy != "" {
 				qosPolicy = vpool.QosPolicy
@@ -369,6 +375,7 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 			pool.InternalAttributes()[ExportPolicy] = exportPolicy
 			pool.InternalAttributes()[SecurityStyle] = securityStyle
 			pool.InternalAttributes()[TieringPolicy] = tieringPolicy
+			pool.InternalAttributes()[SkipRecoveryQueue] = skipRecoveryQueue
 			pool.InternalAttributes()[QosPolicy] = qosPolicy
 			pool.InternalAttributes()[AdaptiveQosPolicy] = adaptiveQosPolicy
 
@@ -549,6 +556,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 		securityStyle     = collection.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
 		encryption        = collection.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
 		tieringPolicy     = collection.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+		skipRecoveryQueue = collection.GetV(opts, "skipRecoveryQueue", storagePool.InternalAttributes()[SkipRecoveryQueue])
 		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
 		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
 	)
@@ -593,6 +601,10 @@ func (d *NASFlexGroupStorageDriver) Create(
 		tieringPolicy = "none"
 	}
 
+	if _, err = strconv.ParseBool(skipRecoveryQueue); skipRecoveryQueue != "" && err != nil {
+		return fmt.Errorf("invalid boolean value for skipRecoveryQueue: %v", err)
+	}
+
 	if d.Config.AutoExportPolicy {
 		exportPolicy = getExportPolicyName(storagePool.Backend().BackendUUID())
 	}
@@ -612,22 +624,24 @@ func (d *NASFlexGroupStorageDriver) Create(
 	volConfig.ExportPolicy = exportPolicy
 	volConfig.SecurityStyle = securityStyle
 	volConfig.Encryption = configEncryption
+	volConfig.SkipRecoveryQueue = skipRecoveryQueue
 	volConfig.QosPolicy = qosPolicy
 	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
 
 	Logc(ctx).WithFields(LogFields{
-		"name":            name,
-		"size":            sizeBytes,
-		"spaceReserve":    spaceReserve,
-		"snapshotPolicy":  snapshotPolicy,
-		"snapshotReserve": snapshotReserveInt,
-		"unixPermissions": unixPermissions,
-		"snapshotDir":     enableSnapshotDir,
-		"exportPolicy":    exportPolicy,
-		"aggregates":      flexGroupAggregateList,
-		"securityStyle":   securityStyle,
-		"encryption":      convert.ToPrintableBoolPtr(enableEncryption),
-		"qosPolicy":       qosPolicy,
+		"name":              name,
+		"size":              sizeBytes,
+		"spaceReserve":      spaceReserve,
+		"snapshotPolicy":    snapshotPolicy,
+		"snapshotReserve":   snapshotReserveInt,
+		"unixPermissions":   unixPermissions,
+		"snapshotDir":       enableSnapshotDir,
+		"exportPolicy":      exportPolicy,
+		"aggregates":        flexGroupAggregateList,
+		"securityStyle":     securityStyle,
+		"encryption":        convert.ToPrintableBoolPtr(enableEncryption),
+		"skipRecoveryQueue": skipRecoveryQueue,
+		"qosPolicy":         qosPolicy,
 	}).Debug("Creating FlexGroup.")
 
 	createErrors := make([]error, 0)
@@ -1009,11 +1023,19 @@ func (d *NASFlexGroupStorageDriver) Destroy(ctx context.Context, volConfig *stor
 		deleteAutomaticSnapshot(ctx, d, err, volConfig, d.API.FlexgroupSnapshotDelete)
 	}()
 
+	skipRecoveryQueue := false
+	if skipRecoveryQueueValue, err := strconv.ParseBool(volConfig.SkipRecoveryQueue); err == nil {
+		skipRecoveryQueue = skipRecoveryQueueValue
+	}
+
 	// If volume exists and this is FSx, try the FSx SDK first so that any backup mirror relationship
 	// is cleaned up.  If the volume isn't found, then FSx may not know about it yet, so just try the
 	// underlying ONTAP delete call.  Any race condition with FSx will be resolved on a retry.
 	if d.AWSAPI != nil {
 		err = destroyFSxVolume(ctx, d.AWSAPI, volConfig, &d.Config)
+		if skipRecoveryQueue && (err == nil || errors.IsNotFoundError(err)) {
+			purgeRecoveryQueueVolume(ctx, d.API, volConfig.InternalName)
+		}
 		if err == nil || !errors.IsNotFoundError(err) {
 			return err
 		}
@@ -1022,7 +1044,7 @@ func (d *NASFlexGroupStorageDriver) Destroy(ctx context.Context, volConfig *stor
 	// This call is async, but we will receive an immediate error back for anything but very rare volume deletion
 	// failures. Failures in this category are almost certainly likely to be beyond our capability to fix or even
 	// diagnose, so we defer to the ONTAP cluster admin
-	if err = d.API.FlexgroupDestroy(ctx, name, true); err != nil {
+	if err = d.API.FlexgroupDestroy(ctx, name, true, skipRecoveryQueue); err != nil {
 		return err
 	}
 

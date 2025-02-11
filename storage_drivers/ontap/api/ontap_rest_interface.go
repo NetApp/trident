@@ -66,7 +66,11 @@ type RestClientInterface interface {
 	// VolumeCloneSplitStart starts splitting theflexvol clone
 	VolumeCloneSplitStart(ctx context.Context, volumeName string) error
 	// VolumeDestroy destroys a flexvol
-	VolumeDestroy(ctx context.Context, name string) error
+	VolumeDestroy(ctx context.Context, name string, force bool) error
+	// VolumeRecoveryQueuePurge purges the specified volume from the recovery queue
+	VolumeRecoveryQueuePurge(ctx context.Context, recoveryQueueVolumeName string) error
+	// VolumeRecoveryQueueGetName returns the name of the volume in the recovery queue for the specified volume
+	VolumeRecoveryQueueGetName(ctx context.Context, name string) (string, error)
 	// SnapshotCreate creates a snapshot
 	SnapshotCreate(ctx context.Context, volumeUUID, snapshotName string) (*storage.SnapshotCreateAccepted, error)
 	// SnapshotCreateAndWait creates a snapshot and waits on the job to complete
@@ -229,7 +233,7 @@ type RestClientInterface interface {
 	// FlexgroupCloneSplitStart starts splitting the flexgroup clone
 	FlexgroupCloneSplitStart(ctx context.Context, volumeName string) error
 	// FlexGroupDestroy destroys a FlexGroup
-	FlexGroupDestroy(ctx context.Context, name string) error
+	FlexGroupDestroy(ctx context.Context, name string, force bool) error
 	// FlexGroupExists tests for the existence of a FlexGroup
 	FlexGroupExists(ctx context.Context, volumeName string) (bool, error)
 	// FlexGroupSize retrieves the size of the specified flexgroup

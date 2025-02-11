@@ -1459,13 +1459,13 @@ func TestVolumeDestroy(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Delete volume, Positive test
-	rsi.EXPECT().VolumeDestroy(ctx, "vol1").Return(nil)
-	err := oapi.VolumeDestroy(ctx, "vol1", false)
+	rsi.EXPECT().VolumeDestroy(ctx, "vol1", false).Return(nil)
+	err := oapi.VolumeDestroy(ctx, "vol1", false, false)
 	assert.NoError(t, err, "error returned while deleting a volume")
 
 	// case 2: Delete volume, returned error.
-	rsi.EXPECT().VolumeDestroy(ctx, "vol1").Return(fmt.Errorf("failed to delete volume"))
-	err = oapi.VolumeDestroy(ctx, "vol1", false)
+	rsi.EXPECT().VolumeDestroy(ctx, "vol1", false).Return(fmt.Errorf("failed to delete volume"))
+	err = oapi.VolumeDestroy(ctx, "vol1", false, false)
 	assert.Error(t, err, "no error returned while deleting a volume")
 }
 
@@ -1863,21 +1863,21 @@ func TestFlexgroupDestroy(t *testing.T) {
 
 	// case 1: Flexgroup destroy
 	rsi.EXPECT().FlexgroupUnmount(ctx, "trident-pvc-1234").Return(nil)
-	rsi.EXPECT().FlexGroupDestroy(ctx, "trident-pvc-1234").Return(nil)
-	err := oapi.FlexgroupDestroy(ctx, "trident-pvc-1234", true)
+	rsi.EXPECT().FlexGroupDestroy(ctx, "trident-pvc-1234", false).Return(nil)
+	err := oapi.FlexgroupDestroy(ctx, "trident-pvc-1234", true, false)
 	assert.NoError(t, err, "error returned while deleting a volume")
 
 	// case 2: Flexgroup destroyed returned error
 	rsi.EXPECT().FlexgroupUnmount(ctx, "trident-pvc-1234").Return(nil)
-	rsi.EXPECT().FlexGroupDestroy(ctx, "trident-pvc-1234").Return(
+	rsi.EXPECT().FlexGroupDestroy(ctx, "trident-pvc-1234", false).Return(
 		fmt.Errorf("failed to delete flexgroup volume"))
-	err = oapi.FlexgroupDestroy(ctx, "trident-pvc-1234", true)
+	err = oapi.FlexgroupDestroy(ctx, "trident-pvc-1234", true, false)
 	assert.Error(t, err, "no error returned while deleting a volume")
 
 	// case 3: Flexgroup unmount returned error
 	rsi.EXPECT().FlexgroupUnmount(ctx, "trident-pvc-1234").Return(
 		fmt.Errorf("failed to unmount flexgroup volume"))
-	err = oapi.FlexgroupDestroy(ctx, "trident-pvc-1234", true)
+	err = oapi.FlexgroupDestroy(ctx, "trident-pvc-1234", true, false)
 	assert.Error(t, err, "no error returned while deleting a volume")
 }
 

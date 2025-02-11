@@ -1748,6 +1748,21 @@ func (c Client) VolumeSetComment(ctx context.Context, volumeName, newVolumeComme
 	return response, err
 }
 
+// VolumeRecoveryQueuePurge purges the volume from the recovery queue
+func (c Client) VolumeRecoveryQueuePurge(volumeName string) (*azgo.VolumeRecoveryQueuePurgeResponse, error) {
+	return azgo.NewVolumeRecoveryQueuePurgeRequest().
+		SetVolumeName(volumeName).
+		ExecuteUsing(c.zr)
+}
+
+func (c Client) VolumeRecoveryQueueGetIter(volumeName string) (*azgo.VolumeRecoveryQueueGetIterResponse, error) {
+	queryAtters := &azgo.VolumeRecoveryQueueGetIterRequestQuery{}
+	queryAtters.SetVolumeRecoveryQueueInfo(*azgo.NewVolumeRecoveryQueueInfoType().SetVolumeName(volumeName).
+		SetVserverName(c.SVMName()))
+
+	return azgo.NewVolumeRecoveryQueueGetIterRequest().SetQuery(*queryAtters).ExecuteUsing(c.zr)
+}
+
 // VOLUME operations END
 // ///////////////////////////////////////////////////////////////////////////
 

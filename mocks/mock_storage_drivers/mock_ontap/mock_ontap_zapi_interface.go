@@ -2233,6 +2233,36 @@ func (mr *MockZapiClientInterfaceMockRecorder) VolumeOffline(arg0 any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeOffline", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeOffline), arg0)
 }
 
+// VolumeRecoveryQueueGetIter mocks base method.
+func (m *MockZapiClientInterface) VolumeRecoveryQueueGetIter(arg0 string) (*azgo.VolumeRecoveryQueueGetIterResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeRecoveryQueueGetIter", arg0)
+	ret0, _ := ret[0].(*azgo.VolumeRecoveryQueueGetIterResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VolumeRecoveryQueueGetIter indicates an expected call of VolumeRecoveryQueueGetIter.
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeRecoveryQueueGetIter(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeRecoveryQueueGetIter", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeRecoveryQueueGetIter), arg0)
+}
+
+// VolumeRecoveryQueuePurge mocks base method.
+func (m *MockZapiClientInterface) VolumeRecoveryQueuePurge(arg0 string) (*azgo.VolumeRecoveryQueuePurgeResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeRecoveryQueuePurge", arg0)
+	ret0, _ := ret[0].(*azgo.VolumeRecoveryQueuePurgeResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VolumeRecoveryQueuePurge indicates an expected call of VolumeRecoveryQueuePurge.
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeRecoveryQueuePurge(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeRecoveryQueuePurge", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeRecoveryQueuePurge), arg0)
+}
+
 // VolumeRename mocks base method.
 func (m *MockZapiClientInterface) VolumeRename(arg0, arg1 string) (*azgo.VolumeRenameResponse, error) {
 	m.ctrl.T.Helper()

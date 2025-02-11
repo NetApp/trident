@@ -96,6 +96,7 @@ const (
 	ProvisioningType      = "provisioningType"
 	SplitOnClone          = "splitOnClone"
 	TieringPolicy         = "tieringPolicy"
+	SkipRecoveryQueue     = "skipRecoveryQueue"
 	QosPolicy             = "qosPolicy"
 	AdaptiveQosPolicy     = "adaptiveQosPolicy"
 	maxFlexGroupCloneWait = 120 * time.Second
@@ -1681,6 +1682,7 @@ const (
 	DefaultLimitVolumePoolSize       = ""
 	DefaultDenyNewVolumePools        = "false"
 	DefaultTieringPolicy             = ""
+	DefaultSkipRecoveryQueue         = "false"
 	DefaultExt3FormatOptions         = ""
 	DefaultExt4FormatOptions         = ""
 	DefaultXfsFormatOptions          = ""
@@ -1808,6 +1810,10 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 
 	if config.TieringPolicy == "" {
 		config.TieringPolicy = DefaultTieringPolicy
+	}
+
+	if config.SkipRecoveryQueue == "" {
+		config.SkipRecoveryQueue = DefaultSkipRecoveryQueue
 	}
 
 	if len(config.AutoExportCIDRs) == 0 {
@@ -2506,6 +2512,7 @@ func InitializeStoragePoolsCommon(
 		pool.InternalAttributes()[ExportPolicy] = config.ExportPolicy
 		pool.InternalAttributes()[SecurityStyle] = config.SecurityStyle
 		pool.InternalAttributes()[TieringPolicy] = config.TieringPolicy
+		pool.InternalAttributes()[SkipRecoveryQueue] = config.SkipRecoveryQueue
 		pool.InternalAttributes()[QosPolicy] = config.QosPolicy
 		pool.InternalAttributes()[AdaptiveQosPolicy] = config.AdaptiveQosPolicy
 
@@ -2622,6 +2629,11 @@ func InitializeStoragePoolsCommon(
 			tieringPolicy = vpool.TieringPolicy
 		}
 
+		skipRecoveryQueue := config.SkipRecoveryQueue
+		if vpool.SkipRecoveryQueue != "" {
+			skipRecoveryQueue = vpool.SkipRecoveryQueue
+		}
+
 		qosPolicy := config.QosPolicy
 		if vpool.QosPolicy != "" {
 			qosPolicy = vpool.QosPolicy
@@ -2700,6 +2712,7 @@ func InitializeStoragePoolsCommon(
 		pool.InternalAttributes()[ExportPolicy] = exportPolicy
 		pool.InternalAttributes()[SecurityStyle] = securityStyle
 		pool.InternalAttributes()[TieringPolicy] = tieringPolicy
+		pool.InternalAttributes()[SkipRecoveryQueue] = skipRecoveryQueue
 		pool.InternalAttributes()[QosPolicy] = qosPolicy
 		pool.InternalAttributes()[LUKSEncryption] = luksEncryption
 		pool.InternalAttributes()[AdaptiveQosPolicy] = adaptiveQosPolicy
@@ -2812,6 +2825,15 @@ func ValidateStoragePools(
 			break
 		default:
 			return fmt.Errorf("invalid tieringPolicy %s in pool %s", pool.InternalAttributes()[TieringPolicy], poolName)
+		}
+
+		// Validate SkipRecoveryQueue
+		if pool.InternalAttributes()[SkipRecoveryQueue] == "" {
+			return fmt.Errorf("skipRecoveryQueue cannot by empty in pool %s", poolName)
+		} else {
+			if _, err = strconv.ParseBool(pool.InternalAttributes()[SkipRecoveryQueue]); err != nil {
+				return fmt.Errorf("invalid value for skipRecoveryQueue in pool %s: %v", poolName, err)
+			}
 		}
 
 		// Validate QoS policy or adaptive QoS policy
@@ -3018,6 +3040,16 @@ func getVolumeOptsCommon(
 				"Invalid boolean value for volume '%v' snapshotDir: %v.", volConfig.Name, volConfig.SnapshotDir)
 		}
 		opts["snapshotDir"] = snapshotDirFormatted
+	}
+
+	// If skipRecoveryQueue is provided, ensure it is lower case
+	if volConfig.SkipRecoveryQueue != "" {
+		skipRecoveryQueueFormatted, err := convert.ToFormattedBool(volConfig.SkipRecoveryQueue)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf(
+				"Invalid boolean value for volume '%v' skipRecoveryQueue: %v.", volConfig.Name, volConfig.SkipRecoveryQueue)
+		}
+		opts["skipRecoveryQueue"] = skipRecoveryQueueFormatted
 	}
 
 	if volConfig.ExportPolicy != "" {
@@ -4013,4 +4045,19 @@ func removeExportPolicyRules(
 	}
 
 	return nil
+}
+
+// purgeRecoveryQueueVolume is best effort
+func purgeRecoveryQueueVolume(ctx context.Context, api api.OntapAPI, volumeName string) {
+	recoveryQueueVolumeName, err := api.VolumeRecoveryQueueGetName(ctx, volumeName)
+	if err != nil {
+		Logc(ctx).WithField("volume",
+			volumeName).Errorf("error getting volume from ONTAP recovery queue: %v", err)
+		return
+	}
+
+	if err = api.VolumeRecoveryQueuePurge(ctx, recoveryQueueVolumeName); err != nil {
+		Logc(ctx).WithField("volume",
+			volumeName).Errorf("error purging volume from ONTAP recovery queue: %v", err)
+	}
 }

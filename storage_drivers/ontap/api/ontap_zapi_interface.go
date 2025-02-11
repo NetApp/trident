@@ -209,6 +209,10 @@ type ZapiClientInterface interface {
 	// VolumeSetComment sets a volume's comment to the supplied value
 	// equivalent to filer::> volume modify -vserver iscsi_vs -volume v -comment newVolumeComment
 	VolumeSetComment(ctx context.Context, volumeName, newVolumeComment string) (*azgo.VolumeModifyIterResponse, error)
+	// VolumeRecoveryQueuePurge deletes the specified volume from the recovery queue
+	VolumeRecoveryQueuePurge(volumeName string) (*azgo.VolumeRecoveryQueuePurgeResponse, error)
+	// VolumeRecoveryQueueGetIter returns a list of volumes that match the specified volume name
+	VolumeRecoveryQueueGetIter(volumeName string) (*azgo.VolumeRecoveryQueueGetIterResponse, error)
 	// QtreeCreate creates a qtree with the specified options
 	// equivalent to filer::> qtree create -vserver ndvp_vs -volume v -qtree q -export-policy default -unix-permissions ---rwxr-xr-x -security-style unix
 	QtreeCreate(

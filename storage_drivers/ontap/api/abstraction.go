@@ -68,7 +68,7 @@ type OntapAPI interface {
 	) error
 	FlexgroupMount(ctx context.Context, name, junctionPath string) error
 	FlexgroupListByPrefix(ctx context.Context, prefix string) (Volumes, error)
-	FlexgroupDestroy(ctx context.Context, volumeName string, force bool) error
+	FlexgroupDestroy(ctx context.Context, volumeName string, force, skipRecoveryQueue bool) error
 	FlexgroupSetSize(ctx context.Context, name, newSize string) error
 	FlexgroupSize(ctx context.Context, volumeName string) (uint64, error)
 	FlexgroupUnmount(ctx context.Context, name string, force bool) error
@@ -195,7 +195,7 @@ type OntapAPI interface {
 	VolumeCloneSplitStart(ctx context.Context, cloneName string) error
 
 	VolumeCreate(ctx context.Context, volume Volume) error
-	VolumeDestroy(ctx context.Context, volumeName string, force bool) error
+	VolumeDestroy(ctx context.Context, volumeName string, force, skipRecoveryQueue bool) error
 	VolumeModifySnapshotDirectoryAccess(ctx context.Context, name string, enable bool) error
 	VolumeExists(ctx context.Context, volumeName string) (bool, error)
 	VolumeInfo(ctx context.Context, volumeName string) (*Volume, error)
@@ -221,6 +221,8 @@ type OntapAPI interface {
 		ctx context.Context, volumeName string, desiredStates, abortStates []string,
 		maxElapsedTime time.Duration,
 	) (string, error)
+	VolumeRecoveryQueuePurge(ctx context.Context, recoveryQueueVolumeName string) error
+	VolumeRecoveryQueueGetName(ctx context.Context, name string) (string, error)
 	SMBShareCreate(ctx context.Context, shareName, path string) error
 	SMBShareExists(ctx context.Context, shareName string) (bool, error)
 	SMBShareDestroy(ctx context.Context, shareName string) error

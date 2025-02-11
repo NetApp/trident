@@ -287,6 +287,7 @@ func (d *NVMeStorageDriver) Create(
 		securityStyle     = collection.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
 		encryption        = collection.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
 		tieringPolicy     = collection.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+		skipRecoveryQueue = collection.GetV(opts, "skipRecoveryQueue", storagePool.InternalAttributes()[SkipRecoveryQueue])
 		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
 		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
 		luksEncryption    = storagePool.InternalAttributes()[LUKSEncryption]
@@ -343,6 +344,10 @@ func (d *NVMeStorageDriver) Create(
 		tieringPolicy = d.API.TieringPolicyValue(ctx)
 	}
 
+	if _, err = strconv.ParseBool(skipRecoveryQueue); skipRecoveryQueue != "" && err != nil {
+		return fmt.Errorf("invalid boolean value for skipRecoveryQueue: %v", err)
+	}
+
 	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
 	if err != nil {
 		return err
@@ -358,6 +363,7 @@ func (d *NVMeStorageDriver) Create(
 	volConfig.ExportPolicy = exportPolicy
 	volConfig.SecurityStyle = securityStyle
 	volConfig.Encryption = configEncryption
+	volConfig.SkipRecoveryQueue = skipRecoveryQueue
 	volConfig.QosPolicy = qosPolicy
 	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
 	volConfig.LUKSEncryption = luksEncryption
@@ -377,6 +383,8 @@ func (d *NVMeStorageDriver) Create(
 		"securityStyle":     securityStyle,
 		"LUKSEncryption":    luksEncryption,
 		"encryption":        convert.ToPrintableBoolPtr(enableEncryption),
+		"tieringPolicy":     tieringPolicy,
+		"skipRecoveryQueue": skipRecoveryQueue,
 		"qosPolicy":         qosPolicy,
 		"adaptiveQosPolicy": adaptiveQosPolicy,
 	}).Debug("Creating FlexVol.")
@@ -485,7 +493,7 @@ func (d *NVMeStorageDriver) Create(
 				createErrors = append(createErrors, fmt.Errorf(errMessage))
 
 				// Don't leave the new FlexVol around.
-				if err := d.API.VolumeDestroy(ctx, name, true); err != nil {
+				if err := d.API.VolumeDestroy(ctx, name, true, true); err != nil {
 					Logc(ctx).WithField("volume", name).Errorf("Could not clean up volume; %v", err)
 				} else {
 					Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after Namespace create error.")
@@ -753,11 +761,19 @@ func (d *NVMeStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volu
 		Logc(ctx).Debug("No actions for Destroy for Docker.")
 	}
 
+	skipRecoveryQueue := false
+	if skipRecoveryQueueValue, err := strconv.ParseBool(volConfig.SkipRecoveryQueue); err == nil {
+		skipRecoveryQueue = skipRecoveryQueueValue
+	}
+
 	// If volume exists and this is FSx, try the FSx SDK first so that any backup mirror relationship
 	// is cleaned up.  If the volume isn't found, then FSx may not know about it yet, so just try the
 	// underlying ONTAP delete call.  Any race condition with FSx will be resolved on a retry.
 	if d.AWSAPI != nil {
 		err = destroyFSxVolume(ctx, d.AWSAPI, volConfig, &d.Config)
+		if skipRecoveryQueue && (err == nil || errors.IsNotFoundError(err)) {
+			purgeRecoveryQueueVolume(ctx, d.API, volConfig.InternalName)
+		}
 		if err == nil || !errors.IsNotFoundError(err) {
 			return err
 		}
@@ -771,7 +787,7 @@ func (d *NVMeStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volu
 	}
 
 	// Delete the FlexVol and Namespace.
-	err = d.API.VolumeDestroy(ctx, name, true)
+	err = d.API.VolumeDestroy(ctx, name, true, skipRecoveryQueue)
 	if err != nil {
 		return fmt.Errorf("error destroying volume %v: %v", name, err)
 	}

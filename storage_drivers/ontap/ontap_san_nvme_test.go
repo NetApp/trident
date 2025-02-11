@@ -968,14 +968,14 @@ func TestNVMeCreate_NamespaceCreateAPIError(t *testing.T) {
 		Return("", fmt.Errorf("failed to create namespace")).
 		Times(2)
 	// Volume destroy error test case.
-	mAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(fmt.Errorf("failed to delete volume"))
+	mAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(fmt.Errorf("failed to delete volume"))
 
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
 
 	assert.ErrorContains(t, err, "failed to create namespace")
 
 	// Volume destroy success test case.
-	mAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(nil)
+	mAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(nil)
 
 	err = d.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -995,6 +995,19 @@ func TestNVMeCreate_LUKSVolume(t *testing.T) {
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
 
 	assert.NoError(t, err, "Failed to create NVMe volume.")
+}
+
+func TestNVMeCreate_InvalidSkipRecoveryQueue(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
+
+	volConfig.SkipRecoveryQueue = "asdf"
+	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
+	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
+
+	err := d.Create(ctx, volConfig, pool1, volAttrs)
+
+	assert.Error(t, err, "Invalid skipRecoveryQueue value should have failed.")
 }
 
 func TestNVMeCreate_Success(t *testing.T) {
@@ -1132,7 +1145,7 @@ func TestNVMeDestroy_VolumeDestroy_FSx(t *testing.T) {
 				mAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
 				mAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volConfig.InternalName, svmName).Return(nil)
 				// mockAPI.EXPECT().SnapmirrorRelease(ctx, volConfig.InternalName, svmName).Return(nil)
-				mAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true).Return(nil)
+				mAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true, false).Return(nil)
 			}
 			result := d.Destroy(ctx, volConfig)
 
@@ -1157,7 +1170,8 @@ func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
 				mockAPI.EXPECT().SVMName().Return("svm")
 				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(fmt.Errorf("destroy volume failed"))
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true,
+					false).Return(fmt.Errorf("destroy volume failed"))
 			},
 			getVolumeConfig: func(driver *NVMeStorageDriver) storage.VolumeConfig {
 				_, volConfig, _ := getNVMeCreateArgs(driver)
@@ -1170,7 +1184,8 @@ func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
 				mockAPI.EXPECT().SVMName().Return("svm")
 				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(fmt.Errorf("destroy volume failed"))
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true,
+					false).Return(fmt.Errorf("destroy volume failed"))
 			},
 			getVolumeConfig: func(driver *NVMeStorageDriver) storage.VolumeConfig {
 				_, volConfig, _ := getNVMeCreateArgs(driver)
@@ -1185,7 +1200,7 @@ func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
 				mockAPI.EXPECT().SVMName().Return("svm")
 				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, false).Return(nil)
 			},
 			getVolumeConfig: func(driver *NVMeStorageDriver) storage.VolumeConfig {
 				_, volConfig, _ := getNVMeCreateArgs(driver)
@@ -1198,7 +1213,7 @@ func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
 				mockAPI.EXPECT().SVMName().Return("svm")
 				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, false).Return(nil)
 				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, cloneSourceSnapshot, "").Return(nil)
 			},
 			getVolumeConfig: func(driver *NVMeStorageDriver) storage.VolumeConfig {
@@ -1214,7 +1229,7 @@ func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
 				mockAPI.EXPECT().SVMName().Return("svm")
 				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, false).Return(nil)
 				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, cloneSourceSnapshot, "").
 					Return(fmt.Errorf("failed to delete snapshot"))
 			},
@@ -1231,7 +1246,7 @@ func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
 				mockAPI.EXPECT().SVMName().Return("svm")
 				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, false).Return(nil)
 				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, cloneSourceSnapshot, "").
 					Return(api.NotFoundError("snapshot not found"))
 			},
@@ -1239,6 +1254,20 @@ func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 				_, volConfig, _ := getNVMeCreateArgs(driver)
 				volConfig.CloneSourceSnapshotInternal = cloneSourceSnapshot
 				volConfig.CloneSourceSnapshot = ""
+				return *volConfig
+			},
+			expectError: false,
+		},
+		"skipRecoveryQueue volume": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
+				mockAPI.EXPECT().SVMName().Return("svm")
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(nil)
+			},
+			getVolumeConfig: func(driver *NVMeStorageDriver) storage.VolumeConfig {
+				_, volConfig, _ := getNVMeCreateArgs(driver)
+				volConfig.SkipRecoveryQueue = "true"
 				return *volConfig
 			},
 			expectError: false,

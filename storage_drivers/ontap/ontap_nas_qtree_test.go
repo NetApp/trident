@@ -1624,7 +1624,7 @@ func TestCreateFlexvolForQtree_WithInvalidSnapshotReserve(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(nil)
-	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().QuotaSetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 
@@ -1652,7 +1652,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(mockError)
-	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
 
 	resultFlexvol2, result2 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
@@ -1665,7 +1665,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(mockError)
-	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(mockError)
+	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).AnyTimes().Return(mockError)
 
 	resultFlexvol3, result3 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
@@ -1679,7 +1679,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(mockError)
-	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
 
 	resultFlexvol4, result4 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
@@ -1693,7 +1693,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(mockError)
-	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(mockError)
+	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).AnyTimes().Return(mockError)
 
 	resultFlexvol5, result5 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
@@ -1709,7 +1709,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().QuotaSetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any()).AnyTimes().Return(mockError)
-	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
 
 	resultFlexvol6, result6 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
@@ -1725,7 +1725,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().QuotaSetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any()).AnyTimes().Return(mockError)
-	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(mockError)
+	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).AnyTimes().Return(mockError)
 
 	resultFlexvol7, result7 := driver.createFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
@@ -1738,7 +1738,7 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 func addExpectForCreateFlexvolForQtree(mockAPI *mockapi.MockOntapAPI) {
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).AnyTimes().Return(nil)
-	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().QuotaSetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		AnyTimes().Return(nil)
@@ -2282,7 +2282,7 @@ func TestPruneUnusedFlexvols_WithExpiredFlexvolWithZeroQtree(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeListByPrefix(ctx, flexvolPrefix).AnyTimes().Return(api.Volumes{vol}, nil)
 	mockAPI.EXPECT().QtreeCount(ctx, volName).AnyTimes().Return(0, nil)
-	mockAPI.EXPECT().VolumeDestroy(ctx, volName, true).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(ctx, volName, true, true).AnyTimes().Return(nil)
 
 	// Populate driver's emptyFlexvolMap with mock volume and initialEmptyTime as much before now
 	driver.emptyFlexvolMap = map[string]time.Time{
@@ -2313,7 +2313,7 @@ func TestPruneUnusedFlexvols_WithUnexpiredFlexvolWithZeroQtree(t *testing.T) {
 		nil)
 	mockAPI.EXPECT().QtreeCount(ctx, volName).AnyTimes().Return(0, nil)
 	mockAPI.EXPECT().QtreeCount(ctx, volNotInEmptyFlexvolMapName).AnyTimes().Return(0, nil)
-	mockAPI.EXPECT().VolumeDestroy(ctx, volName, true).AnyTimes().Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(ctx, volName, true, true).AnyTimes().Return(nil)
 
 	// Populate driver's emptyFlexvolMap with mock volume
 	driver.emptyFlexvolMap = map[string]time.Time{volName: time.Now()}
@@ -2384,7 +2384,7 @@ func TestPruneUnusedFlexvols_WithErrorInApiOperation(t *testing.T) {
 	driver.flexvolNamePrefix = flexvolPrefix
 	mockAPI.EXPECT().VolumeListByPrefix(ctx, flexvolPrefix).AnyTimes().Return(api.Volumes{vol}, nil)
 	mockAPI.EXPECT().QtreeCount(ctx, volName).AnyTimes().Return(0, nil)
-	mockAPI.EXPECT().VolumeDestroy(ctx, volName, true).AnyTimes().Return(mockError)
+	mockAPI.EXPECT().VolumeDestroy(ctx, volName, true, true).AnyTimes().Return(mockError)
 
 	// Populate driver's emptyFlexvolMap with mock volume
 	driver.emptyFlexvolMap = map[string]time.Time{volName: time.Now()}

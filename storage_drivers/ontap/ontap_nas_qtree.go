@@ -1340,7 +1340,7 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	if !enableSnapshotDir {
 		err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, flexvol, false)
 		if err != nil {
-			if err := d.API.VolumeDestroy(ctx, flexvol, true); err != nil {
+			if err := d.API.VolumeDestroy(ctx, flexvol, true, true); err != nil {
 				Logc(ctx).Error(err)
 			}
 			return "", fmt.Errorf("error disabling snapshot directory access: %v", err)
@@ -1350,7 +1350,7 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	// Mount the volume at the specified junction
 	err = d.API.VolumeMount(ctx, flexvol, "/"+flexvol)
 	if err != nil {
-		if err := d.API.VolumeDestroy(ctx, flexvol, true); err != nil {
+		if err := d.API.VolumeDestroy(ctx, flexvol, true, true); err != nil {
 			Logc(ctx).Error(err)
 		}
 		return "", fmt.Errorf("error mounting Flexvol: %v", err)
@@ -1359,7 +1359,7 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	// Create the default quota rule so we can use quota-resize for new qtrees
 	err = d.addDefaultQuotaForFlexvol(ctx, flexvol)
 	if err != nil {
-		if err := d.API.VolumeDestroy(ctx, flexvol, true); err != nil {
+		if err := d.API.VolumeDestroy(ctx, flexvol, true, true); err != nil {
 			Logc(ctx).Error(err)
 		}
 		return "", fmt.Errorf("error adding default quota to Flexvol: %v", err)
@@ -1699,7 +1699,7 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols(ctx context.Context) {
 		expirationTime := initialEmptyTime.Add(d.emptyFlexvolDeferredDeletePeriod)
 		if expirationTime.Before(now) {
 			Logc(ctx).WithField("flexvol", flexvol).Debug("Deleting managed Flexvol with no qtrees.")
-			err := d.API.VolumeDestroy(ctx, flexvol, true)
+			err := d.API.VolumeDestroy(ctx, flexvol, true, true)
 			if err != nil {
 				Logc(ctx).WithFields(LogFields{"flexvol": flexvol, "error": err}).Error("Could not delete Flexvol.")
 			} else {

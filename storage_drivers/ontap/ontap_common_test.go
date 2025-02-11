@@ -799,18 +799,19 @@ func getValidOntapNASPool() *storage.StoragePool {
 	})
 	pool.SetInternalAttributes(
 		map[string]string{
-			SpaceReserve:    "none",
-			SnapshotPolicy:  "none",
-			SnapshotReserve: "0",
-			UnixPermissions: "777",
-			SnapshotDir:     "false",
-			ExportPolicy:    "default",
-			SecurityStyle:   "unix",
-			Encryption:      "false",
-			SplitOnClone:    "false",
-			TieringPolicy:   "",
-			Size:            "1Gi",
-			NameTemplate:    "pool_{{.labels.clusterName}}_{{.volume.Namespace}}_{{.volume.RequestName}}",
+			SpaceReserve:      "none",
+			SnapshotPolicy:    "none",
+			SnapshotReserve:   "0",
+			UnixPermissions:   "777",
+			SnapshotDir:       "false",
+			ExportPolicy:      "default",
+			SecurityStyle:     "unix",
+			Encryption:        "false",
+			SplitOnClone:      "false",
+			TieringPolicy:     "",
+			SkipRecoveryQueue: "false",
+			Size:              "1Gi",
+			NameTemplate:      "pool_{{.labels.clusterName}}_{{.volume.Namespace}}_{{.volume.RequestName}}",
 		},
 	)
 	return pool
@@ -825,19 +826,20 @@ func getValidOntapSANPool() *storage.StoragePool {
 	})
 	pool.SetInternalAttributes(
 		map[string]string{
-			SpaceReserve:    "none",
-			SnapshotPolicy:  "none",
-			SnapshotReserve: "0",
-			UnixPermissions: "777",
-			SnapshotDir:     "false",
-			ExportPolicy:    "default",
-			SecurityStyle:   "unix",
-			Encryption:      "false",
-			SplitOnClone:    "false",
-			TieringPolicy:   "",
-			Size:            "1Gi",
-			SpaceAllocation: "true",
-			FileSystemType:  "ext4",
+			SpaceReserve:      "none",
+			SnapshotPolicy:    "none",
+			SnapshotReserve:   "0",
+			UnixPermissions:   "777",
+			SnapshotDir:       "false",
+			ExportPolicy:      "default",
+			SecurityStyle:     "unix",
+			Encryption:        "false",
+			SplitOnClone:      "false",
+			TieringPolicy:     "",
+			SkipRecoveryQueue: "false",
+			Size:              "1Gi",
+			SpaceAllocation:   "true",
+			FileSystemType:    "ext4",
 		},
 	)
 	return pool
@@ -1031,6 +1033,32 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[TieringPolicy] = "fakePolicy"
+
+	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+
+	assert.Error(t, err)
+
+	// Negative case: Test one valid virtual with Invalid value ofskipRecoveryQueue
+	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
+		tridentconfig.DriverContext("CSI"), false, nil)
+	physicalPools = map[string]storage.Pool{}
+	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
+	storageDriver.virtualPools = virtualPools
+	storageDriver.physicalPools = physicalPools
+	storageDriver.virtualPools["test"].InternalAttributes()[SkipRecoveryQueue] = "asdf"
+
+	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+
+	assert.Error(t, err)
+
+	// Negative case: Test one valid virtual with empty value of skipRecoveryQueue
+	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
+		tridentconfig.DriverContext("CSI"), false, nil)
+	physicalPools = map[string]storage.Pool{}
+	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
+	storageDriver.virtualPools = virtualPools
+	storageDriver.physicalPools = physicalPools
+	storageDriver.virtualPools["test"].InternalAttributes()[SkipRecoveryQueue] = ""
 
 	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
 
@@ -4649,6 +4677,60 @@ func TestGetVolumeOptsCommon_InvalidEncryptionType(t *testing.T) {
 	assert.NotEqual(t, 0, len(opts))
 }
 
+func TestGetVolumeOptsCommon_InvalidSkipRecoveryQueue(t *testing.T) {
+	ctx := context.Background()
+	volConfig := &storage.VolumeConfig{
+		Name:              "fakeVolName",
+		InternalName:      "fakeInternalName",
+		SnapshotPolicy:    "fakeSnapPoliy",
+		SnapshotReserve:   "fakeSnapReserve",
+		UnixPermissions:   "fakePermissions",
+		SnapshotDir:       "fakeSnapDir",
+		ExportPolicy:      "fakeExportPolicy",
+		SpaceReserve:      "fakeSpaceReserve",
+		SecurityStyle:     "fakeSecurityStyle",
+		SplitOnClone:      "fakeSplitOnClone",
+		FileSystem:        "fakeFilesystem",
+		Encryption:        "fakeEncryption",
+		SkipRecoveryQueue: "fakeSkipRecoveryQueue",
+		QosPolicy:         "fakeQoSPolicy",
+		AdaptiveQosPolicy: "fakeAdaptiveQosPolicy",
+	}
+
+	requests := map[string]sa.Request{}
+
+	opts := getVolumeOptsCommon(ctx, volConfig, requests)
+
+	assert.Equal(t, "fakeSkipRecoveryQueue", opts["skipRecoveryQueue"])
+}
+
+func TestGetVolumeOptsCommon_SkipRecoveryQueue(t *testing.T) {
+	ctx := context.Background()
+	volConfig := &storage.VolumeConfig{
+		Name:              "fakeVolName",
+		InternalName:      "fakeInternalName",
+		SnapshotPolicy:    "fakeSnapPoliy",
+		SnapshotReserve:   "fakeSnapReserve",
+		UnixPermissions:   "fakePermissions",
+		SnapshotDir:       "fakeSnapDir",
+		ExportPolicy:      "fakeExportPolicy",
+		SpaceReserve:      "fakeSpaceReserve",
+		SecurityStyle:     "fakeSecurityStyle",
+		SplitOnClone:      "fakeSplitOnClone",
+		FileSystem:        "fakeFilesystem",
+		Encryption:        "fakeEncryption",
+		SkipRecoveryQueue: "true",
+		QosPolicy:         "fakeQoSPolicy",
+		AdaptiveQosPolicy: "fakeAdaptiveQosPolicy",
+	}
+
+	requests := map[string]sa.Request{}
+
+	opts := getVolumeOptsCommon(ctx, volConfig, requests)
+
+	assert.Equal(t, "true", opts["skipRecoveryQueue"])
+}
+
 func TestGetVolumeOptsCommon_DifferentSnapshotDir(t *testing.T) {
 	ctx := context.Background()
 
@@ -6355,6 +6437,7 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	backendName := "dummyBackend"
 	storageDriver.Config.Region = "dummyRegion"
 	storageDriver.Config.Zone = "dummyZone"
+	storageDriver.Config.SkipRecoveryQueue = "false"
 	CommonConfigDefault := &drivers.CommonStorageDriverConfigDefaults{
 		Size:         "10000",
 		NameTemplate: "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}",
@@ -6373,6 +6456,7 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 		Encryption:                        "true",
 		LUKSEncryption:                    "false",
 		TieringPolicy:                     "fakeTieringPolicy",
+		SkipRecoveryQueue:                 "true",
 		QosPolicy:                         "fakeQosPolicy",
 		AdaptiveQosPolicy:                 "fakeAdaptiveQosPolicy",
 		CommonStorageDriverConfigDefaults: *CommonConfigDefault,
@@ -6402,6 +6486,8 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	assert.NotNil(t, virtualPool, "Virtual Pool not found when expected")
 	// Ensure snapshotDir is a lower case value
 	assert.Equal(t, "true", virtualPool["dummyBackend_pool_0"].InternalAttributes()[SnapshotDir])
+	assert.Equal(t, "false", physicalPool["dummyPool1"].InternalAttributes()[SkipRecoveryQueue])
+	assert.Equal(t, "true", virtualPool["dummyBackend_pool_0"].InternalAttributes()[SkipRecoveryQueue])
 	assert.NoError(t, err)
 
 	// Test2 - Invalid value of encryption
@@ -6551,7 +6637,7 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
 
 	assert.Nil(t, physicalPool, "Physical Pool not expected but found")
-	assert.Nil(t, virtualPool, "Virtual pool not exepcted but found")
+	assert.Nil(t, virtualPool, "Virtual pool not expected but found")
 	assert.Error(t, err)
 }
 
@@ -6564,7 +6650,7 @@ func TestValidateDataLIF(t *testing.T) {
 
 	addresses, err := ValidateDataLIF(ctx, dataLIF, dataLIFs)
 
-	assert.Nil(t, addresses, "Unexepected response received")
+	assert.Nil(t, addresses, "Unexpected response received")
 	assert.Error(t, err)
 
 	// Test2 : Valid dataLIF passed
@@ -6572,7 +6658,7 @@ func TestValidateDataLIF(t *testing.T) {
 
 	addresses, err = ValidateDataLIF(ctx, dataLIF, dataLIFs)
 
-	assert.NotNil(t, addresses, "Unexepected response received")
+	assert.NotNil(t, addresses, "Unexpected response received")
 	assert.NoError(t, err)
 }
 

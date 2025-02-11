@@ -272,17 +272,17 @@ func (mr *MockRestClientInterfaceMockRecorder) FlexGroupCreate(arg0, arg1, arg2,
 }
 
 // FlexGroupDestroy mocks base method.
-func (m *MockRestClientInterface) FlexGroupDestroy(arg0 context.Context, arg1 string) error {
+func (m *MockRestClientInterface) FlexGroupDestroy(arg0 context.Context, arg1 string, arg2 bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexGroupDestroy", arg0, arg1)
+	ret := m.ctrl.Call(m, "FlexGroupDestroy", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // FlexGroupDestroy indicates an expected call of FlexGroupDestroy.
-func (mr *MockRestClientInterfaceMockRecorder) FlexGroupDestroy(arg0, arg1 any) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) FlexGroupDestroy(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupDestroy", reflect.TypeOf((*MockRestClientInterface)(nil).FlexGroupDestroy), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupDestroy", reflect.TypeOf((*MockRestClientInterface)(nil).FlexGroupDestroy), arg0, arg1, arg2)
 }
 
 // FlexGroupExists mocks base method.
@@ -2246,17 +2246,17 @@ func (mr *MockRestClientInterfaceMockRecorder) VolumeCreate(arg0, arg1, arg2, ar
 }
 
 // VolumeDestroy mocks base method.
-func (m *MockRestClientInterface) VolumeDestroy(arg0 context.Context, arg1 string) error {
+func (m *MockRestClientInterface) VolumeDestroy(arg0 context.Context, arg1 string, arg2 bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeDestroy", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeDestroy", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // VolumeDestroy indicates an expected call of VolumeDestroy.
-func (mr *MockRestClientInterfaceMockRecorder) VolumeDestroy(arg0, arg1 any) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) VolumeDestroy(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeDestroy", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeDestroy), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeDestroy", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeDestroy), arg0, arg1, arg2)
 }
 
 // VolumeExists mocks base method.
@@ -2388,6 +2388,35 @@ func (m *MockRestClientInterface) VolumeMount(arg0 context.Context, arg1, arg2 s
 func (mr *MockRestClientInterfaceMockRecorder) VolumeMount(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeMount", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeMount), arg0, arg1, arg2)
+}
+
+// VolumeRecoveryQueueGetName mocks base method.
+func (m *MockRestClientInterface) VolumeRecoveryQueueGetName(arg0 context.Context, arg1 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeRecoveryQueueGetName", arg0, arg1)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VolumeRecoveryQueueGetName indicates an expected call of VolumeRecoveryQueueGetName.
+func (mr *MockRestClientInterfaceMockRecorder) VolumeRecoveryQueueGetName(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeRecoveryQueueGetName", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeRecoveryQueueGetName), arg0, arg1)
+}
+
+// VolumeRecoveryQueuePurge mocks base method.
+func (m *MockRestClientInterface) VolumeRecoveryQueuePurge(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeRecoveryQueuePurge", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VolumeRecoveryQueuePurge indicates an expected call of VolumeRecoveryQueuePurge.
+func (mr *MockRestClientInterfaceMockRecorder) VolumeRecoveryQueuePurge(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeRecoveryQueuePurge", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeRecoveryQueuePurge), arg0, arg1)
 }
 
 // VolumeRename mocks base method.

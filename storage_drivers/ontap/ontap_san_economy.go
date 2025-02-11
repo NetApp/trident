@@ -614,7 +614,7 @@ func (d *SANEconomyStorageDriver) Create(
 
 			// Don't leave the new Flexvol around if we just created it
 			if newVol {
-				if err := d.API.VolumeDestroy(ctx, bucketVol, true); err != nil {
+				if err := d.API.VolumeDestroy(ctx, bucketVol, true, true); err != nil {
 					Logc(ctx).WithField("volume", bucketVol).Errorf("Could not clean up volume; %v", err)
 				} else {
 					Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after resize error.")
@@ -655,7 +655,7 @@ func (d *SANEconomyStorageDriver) Create(
 
 				// Don't leave the new Flexvol around if we just created it
 				if newVol {
-					if err := d.API.VolumeDestroy(ctx, bucketVol, true); err != nil {
+					if err := d.API.VolumeDestroy(ctx, bucketVol, true, true); err != nil {
 						Logc(ctx).WithField("volume", bucketVol).Errorf("Could not clean up volume; %v", err)
 					} else {
 						Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after LUN create error.")
@@ -697,7 +697,7 @@ func (d *SANEconomyStorageDriver) Create(
 
 			// Don't leave the new Flexvol around if we just created it
 			if newVol {
-				if err := d.API.VolumeDestroy(ctx, bucketVol, true); err != nil {
+				if err := d.API.VolumeDestroy(ctx, bucketVol, true, true); err != nil {
 					Logc(ctx).WithField("volume", bucketVol).Errorf("Could not clean up volume; %v", err)
 				} else {
 					Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after set attribute error.")
@@ -1129,7 +1129,7 @@ func (d *SANEconomyStorageDriver) DeleteBucketIfEmpty(ctx context.Context, bucke
 		}
 
 		// Delete the bucketVol
-		err := d.API.VolumeDestroy(ctx, bucketVol, true)
+		err := d.API.VolumeDestroy(ctx, bucketVol, true, true)
 		if err != nil {
 			return fmt.Errorf("error destroying volume %v: %v", bucketVol, err)
 		}

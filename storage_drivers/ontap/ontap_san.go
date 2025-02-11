@@ -290,7 +290,7 @@ func (d *SANStorageDriver) destroyVolumeIfNoLUN(ctx context.Context, volConfig *
 		return false, fmt.Errorf("error checking for existing LUN %s: %v", newLUNPath, err)
 	}
 	// LUN does not exist, but volume. Initiate clean-up.
-	if err = d.API.VolumeDestroy(ctx, name, true); err != nil {
+	if err = d.API.VolumeDestroy(ctx, name, true, true); err != nil {
 		Logc(ctx).WithField("volume", name).Errorf("Could not clean up volume: %v", err)
 		return true, fmt.Errorf("could not clean up partial create of vol/lun: %v", err)
 	}
@@ -354,6 +354,7 @@ func (d *SANStorageDriver) Create(
 		securityStyle     = collection.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
 		encryption        = collection.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
 		tieringPolicy     = collection.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+		skipRecoveryQueue = collection.GetV(opts, "skipRecoveryQueue", storagePool.InternalAttributes()[SkipRecoveryQueue])
 		formatOptions     = collection.GetV(opts, "formatOptions", storagePool.InternalAttributes()[FormatOptions])
 		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
 		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
@@ -411,6 +412,10 @@ func (d *SANStorageDriver) Create(
 		tieringPolicy = d.API.TieringPolicyValue(ctx)
 	}
 
+	if _, err = strconv.ParseBool(skipRecoveryQueue); skipRecoveryQueue != "" && err != nil {
+		return fmt.Errorf("invalid boolean value for skipRecoveryQueue: %v", err)
+	}
+
 	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
 	if err != nil {
 		return err
@@ -425,6 +430,7 @@ func (d *SANStorageDriver) Create(
 	volConfig.ExportPolicy = exportPolicy
 	volConfig.SecurityStyle = securityStyle
 	volConfig.Encryption = configEncryption
+	volConfig.SkipRecoveryQueue = skipRecoveryQueue
 	volConfig.QosPolicy = qosPolicy
 	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
 	volConfig.LUKSEncryption = luksEncryption
@@ -444,6 +450,8 @@ func (d *SANStorageDriver) Create(
 		"securityStyle":     securityStyle,
 		"LUKSEncryption":    luksEncryption,
 		"encryption":        convert.ToPrintableBoolPtr(enableEncryption),
+		"tieringPolicy":     tieringPolicy,
+		"skipRecoveryQueue": skipRecoveryQueue,
 		"qosPolicy":         qosPolicy,
 		"adaptiveQosPolicy": adaptiveQosPolicy,
 		"formatOptions":     formatOptions,
@@ -538,7 +546,7 @@ func (d *SANStorageDriver) Create(
 
 				// Don't leave the new Flexvol around.
 				// If VolumeDestroy() fails for any reason, volume must be manually deleted.
-				if err := d.API.VolumeDestroy(ctx, name, true); err != nil {
+				if err := d.API.VolumeDestroy(ctx, name, true, true); err != nil {
 					Logc(ctx).WithField("volume", name).Errorf("Could not clean up volume; %v", err)
 				} else {
 					Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after LUN create error.")
@@ -570,7 +578,7 @@ func (d *SANStorageDriver) Create(
 
 				// Don't leave the new Flexvol around.
 				// If the following VolumeDestroy() fails for any reason, volume must be manually deleted.
-				if err := d.API.VolumeDestroy(ctx, name, true); err != nil {
+				if err := d.API.VolumeDestroy(ctx, name, true, true); err != nil {
 					Logc(ctx).WithField("volume", name).Errorf("Could not clean up volume; %v", err)
 				} else {
 					Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after set attribute error.")
@@ -826,16 +834,6 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 		iSCSINodeName string
 	)
 
-	// Validate Flexvol exists before trying to destroy
-	volExists, err := d.API.VolumeExists(ctx, name)
-	if err != nil {
-		return fmt.Errorf("error checking for existing volume: %v", err)
-	}
-	if !volExists {
-		Logc(ctx).WithField("volume", name).Debug("Volume already deleted, skipping destroy.")
-		return nil
-	}
-
 	defer func() {
 		deleteAutomaticSnapshot(ctx, d, err, volConfig, d.API.VolumeSnapshotDelete)
 	}()
@@ -871,14 +869,32 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 		}
 	}
 
+	skipRecoveryQueue := false
+	if skipRecoveryQueueValue, err := strconv.ParseBool(volConfig.SkipRecoveryQueue); err == nil {
+		skipRecoveryQueue = skipRecoveryQueueValue
+	}
+
 	// If volume exists and this is FSx, try the FSx SDK first so that any backup mirror relationship
 	// is cleaned up.  If the volume isn't found, then FSx may not know about it yet, so just try the
 	// underlying ONTAP delete call.  Any race condition with FSx will be resolved on a retry.
 	if d.AWSAPI != nil {
 		err = destroyFSxVolume(ctx, d.AWSAPI, volConfig, &d.Config)
+		if skipRecoveryQueue && (err == nil || errors.IsNotFoundError(err)) {
+			purgeRecoveryQueueVolume(ctx, d.API, volConfig.InternalName)
+		}
 		if err == nil || !errors.IsNotFoundError(err) {
 			return err
 		}
+	}
+
+	// Validate Flexvol exists before trying to destroy
+	volExists, volExistsErr := d.API.VolumeExists(ctx, name)
+	if volExistsErr != nil {
+		return fmt.Errorf("error checking for existing volume: %v", volExistsErr)
+	}
+	if !volExists {
+		Logc(ctx).WithField("volume", name).Debug("Volume already deleted, skipping destroy.")
+		return nil
 	}
 
 	// If flexvol has been a snapmirror destination
@@ -896,7 +912,7 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	}
 
 	// Delete the Flexvol & LUN
-	err = d.API.VolumeDestroy(ctx, name, true)
+	err = d.API.VolumeDestroy(ctx, name, true, skipRecoveryQueue)
 	if err != nil {
 		return fmt.Errorf("error destroying volume %v: %v", name, err)
 	}

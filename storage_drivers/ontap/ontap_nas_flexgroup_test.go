@@ -1052,6 +1052,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate(t *testing.T) {
 		SecurityStyle:     "mixed",
 		Encryption:        "false",
 		TieringPolicy:     "",
+		SkipRecoveryQueue: "false",
 		QosPolicy:         "fake-qos-policy",
 		AdaptiveQosPolicy: "",
 	})
@@ -1075,6 +1076,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate(t *testing.T) {
 	assert.Equal(t, "trident-"+BackendUUID, volConfig.ExportPolicy)
 	assert.Equal(t, "mixed", volConfig.SecurityStyle)
 	assert.Equal(t, "false", volConfig.Encryption)
+	assert.Equal(t, "false", volConfig.SkipRecoveryQueue)
 	assert.Equal(t, "fake-qos-policy", volConfig.QosPolicy)
 	assert.Equal(t, "", volConfig.AdaptiveQosPolicy)
 }
@@ -1553,6 +1555,54 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_FlexgroupSize(t *testing.T) 
 	}
 }
 
+func TestOntapNasFlexgroupStorageDriverVolumeCreate_InvalidSkipRecoveryQueue(t *testing.T) {
+	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy":   "none",
+		SkipRecoveryQueue: "true",
+	})
+	driver.physicalPool = pool1
+
+	tests := []struct {
+		skipRecoveryQueue string
+		expectErr         bool
+	}{
+		{"asdf", true},
+	}
+	for _, test := range tests {
+		t.Run(test.skipRecoveryQueue, func(t *testing.T) {
+			volConfig := &storage.VolumeConfig{
+				Size:              "1G",
+				SnapshotDir:       "true",
+				Encryption:        "false",
+				SkipRecoveryQueue: test.skipRecoveryQueue,
+				FileSystem:        "nfs",
+				InternalName:      "vol1",
+				PeerVolumeHandle:  "fakesvm:vol1",
+			}
+
+			mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
+			mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+			if !test.expectErr {
+				mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).Return(nil)
+				mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(nil)
+
+			}
+
+			result := driver.Create(ctx, volConfig, pool1, map[string]sa.Request{})
+
+			if test.expectErr {
+				assert.Error(t, result, "expected error, got nil")
+			} else {
+				assert.NoError(t, result, "expected no error, got error")
+			}
+		})
+	}
+}
+
 func TestOntapNasFlexgroupStorageDriverVolumeDestroy_FSx(t *testing.T) {
 	svmName := "SVM1"
 	volName := "testVol"
@@ -1569,20 +1619,19 @@ func TestOntapNasFlexgroupStorageDriverVolumeDestroy_FSx(t *testing.T) {
 
 	assert.NotNil(t, mockAPI)
 
-	tests := []struct {
-		message  string
+	tests := map[string]struct {
 		nasType  string
 		smbShare string
 		state    string
 	}{
-		{"Test NFS volume in FSx in available state", "nfs", "", "AVAILABLE"},
-		{"Test NFS volume in FSx in deleting state", "nfs", "", "DELETING"},
-		{"Test NFS volume does not exist in FSx", "nfs", "", ""},
-		{"Test SMB volume does not exist in FSx", "smb", volConfig.InternalName, ""},
+		"Test NFS volume in FSx in available state": {"nfs", "", "AVAILABLE"},
+		"Test NFS volume in FSx in deleting state":  {"nfs", "", "DELETING"},
+		"Test NFS volume does not exist in FSx":     {"nfs", "", ""},
+		"Test SMB volume does not exist in FSx":     {"smb", volConfig.InternalName, ""},
 	}
 
-	for _, test := range tests {
-		t.Run(test.message, func(t *testing.T) {
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
 			vol := awsapi.Volume{
 				State: test.state,
 			}
@@ -1596,7 +1645,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeDestroy_FSx(t *testing.T) {
 				}
 			} else {
 				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-				mockAPI.EXPECT().FlexgroupDestroy(ctx, volConfig.InternalName, true).Return(nil)
+				mockAPI.EXPECT().FlexgroupDestroy(ctx, volConfig.InternalName, true, false).Return(nil)
 				if test.nasType == sa.SMB {
 					if test.smbShare == "" {
 						mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(true, nil)
@@ -1615,11 +1664,19 @@ func TestOntapNasFlexgroupStorageDriverVolumeDestroy_FSx(t *testing.T) {
 }
 
 func TestOntapNasFlexgroupStorageDriverVolumeDestroy(t *testing.T) {
-	svmName := "SVM1"
-	volName := "testVol"
-	volNameInternal := volName + "Internal"
-	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
-	volConfig := &storage.VolumeConfig{
+	type parameters struct {
+		nasType           string
+		smbShare          string
+		volumeConfig      *storage.VolumeConfig
+		setupMockONTAPAPI func(ontapAPI *mockapi.MockOntapAPI)
+		setupDriverConfig func(driver *NASFlexGroupStorageDriver)
+	}
+
+	const svmName = "SVM1"
+	const volName = "testVol"
+	const volNameInternal = volName + "Internal"
+
+	defaultVolConfig := &storage.VolumeConfig{
 		Size:         "400g",
 		Name:         volName,
 		InternalName: volNameInternal,
@@ -1627,31 +1684,89 @@ func TestOntapNasFlexgroupStorageDriverVolumeDestroy(t *testing.T) {
 		FileSystem:   "xfs",
 	}
 
-	assert.NotNil(t, mockAPI)
-
-	tests := []struct {
-		message  string
-		nasType  string
-		smbShare string
-	}{
-		{"Test NFS volume", "nfs", ""},
-		{"Test SMB volume", "smb", ""},
-		{"Test SMB volume with share", "smb", volConfig.InternalName},
+	skipRecoveryQueueVolumeConfig := &storage.VolumeConfig{
+		Size:              "400g",
+		Name:              volName,
+		InternalName:      volNameInternal,
+		Encryption:        "false",
+		FileSystem:        "xfs",
+		SkipRecoveryQueue: "true",
 	}
 
-	for _, test := range tests {
-		t.Run(test.message, func(t *testing.T) {
-			mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-			mockAPI.EXPECT().FlexgroupDestroy(ctx, volConfig.InternalName, true).Return(nil)
-			if test.nasType == sa.SMB {
-				if test.smbShare == "" {
-					mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(true, nil)
-					mockAPI.EXPECT().SMBShareDestroy(ctx, volConfig.InternalName).Return(nil)
-				}
+	tests := map[string]parameters{
+		"NFS volume": {
+			nasType:      "nfs",
+			volumeConfig: defaultVolConfig,
+			setupMockONTAPAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+				mockAPI.EXPECT().FlexgroupDestroy(ctx, volNameInternal, true, false).Return(nil)
+			},
+		},
+		"SMB volume": {
+			nasType:      "smb",
+			volumeConfig: defaultVolConfig,
+			setupMockONTAPAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+				mockAPI.EXPECT().FlexgroupDestroy(ctx, volNameInternal, true, false).Return(nil)
+				mockAPI.EXPECT().SMBShareExists(ctx, volNameInternal).Return(true, nil)
+				mockAPI.EXPECT().SMBShareDestroy(ctx, volNameInternal).Return(nil)
+			},
+			setupDriverConfig: func(driver *NASFlexGroupStorageDriver) {
 				driver.Config.NASType = sa.SMB
-				driver.Config.SMBShare = test.smbShare
+				driver.Config.SMBShare = ""
+			},
+		},
+		"SMB volume with share": {
+			nasType:      "smb",
+			smbShare:     volNameInternal,
+			volumeConfig: defaultVolConfig,
+			setupMockONTAPAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+				mockAPI.EXPECT().FlexgroupDestroy(ctx, volNameInternal, true, false).Return(nil)
+			},
+			setupDriverConfig: func(driver *NASFlexGroupStorageDriver) {
+				driver.Config.NASType = sa.SMB
+				driver.Config.SMBShare = volNameInternal
+			},
+		},
+		"SkipRecoveryQueue NFS volume": {
+			nasType:      "nfs",
+			volumeConfig: skipRecoveryQueueVolumeConfig,
+			setupMockONTAPAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+				mockAPI.EXPECT().FlexgroupDestroy(ctx, volNameInternal, true, true).Return(nil)
+			},
+		},
+		"SkipRecoveryQueue SMB volume": {
+			nasType:      "smb",
+			volumeConfig: skipRecoveryQueueVolumeConfig,
+			setupMockONTAPAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+				mockAPI.EXPECT().FlexgroupDestroy(ctx, volNameInternal, true, true).Return(nil)
+				mockAPI.EXPECT().SMBShareExists(ctx, volNameInternal).Return(true, nil)
+				mockAPI.EXPECT().SMBShareDestroy(ctx, volNameInternal).Return(nil)
+			},
+			setupDriverConfig: func(driver *NASFlexGroupStorageDriver) {
+				driver.Config.NASType = sa.SMB
+				driver.Config.SMBShare = ""
+			},
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+			assert.NotNil(t, mockAPI)
+
+			if params.setupMockONTAPAPI != nil {
+				params.setupMockONTAPAPI(mockAPI)
 			}
-			result := driver.Destroy(ctx, volConfig)
+
+			if params.setupDriverConfig != nil {
+				params.setupDriverConfig(driver)
+			}
+
+			result := driver.Destroy(ctx, params.volumeConfig)
 
 			assert.NoError(t, result)
 		})
@@ -1672,7 +1787,8 @@ func TestOntapNasFlexgroupStorageDriverVolumeDestroy_Fail(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-	mockAPI.EXPECT().FlexgroupDestroy(ctx, volConfig.InternalName, true).Return(fmt.Errorf("cannot delete volume"))
+	mockAPI.EXPECT().FlexgroupDestroy(ctx, volConfig.InternalName, true,
+		false).Return(fmt.Errorf("cannot delete volume"))
 
 	result := driver.Destroy(ctx, volConfig)
 
@@ -1704,7 +1820,7 @@ func TestOntapNasFlexgroupStorageDriverSMBShareDestroy_VolumeNotFound(t *testing
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-			mockAPI.EXPECT().FlexgroupDestroy(ctx, volConfig.InternalName, true).Return(nil)
+			mockAPI.EXPECT().FlexgroupDestroy(ctx, volConfig.InternalName, true, false).Return(nil)
 			if test.name == "SMBShareServerError" {
 				mockAPI.EXPECT().SMBShareExists(ctx, volNameInternal).Return(false,
 					fmt.Errorf(test.errMessage))
@@ -1736,7 +1852,7 @@ func TestOntapNasFlexgroupStorageDriverSMBDestroy_Fail(t *testing.T) {
 	driver.Config.NASType = sa.SMB
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-	mockAPI.EXPECT().FlexgroupDestroy(ctx, volConfig.InternalName, true).Return(nil)
+	mockAPI.EXPECT().FlexgroupDestroy(ctx, volConfig.InternalName, true, false).Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, volNameInternal).Return(true, nil)
 	mockAPI.EXPECT().SMBShareDestroy(ctx, volNameInternal).Return(fmt.Errorf("cannot delete SMB share"))
 

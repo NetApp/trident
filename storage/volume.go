@@ -68,6 +68,7 @@ type VolumeConfig struct {
 	SubordinateVolumes map[string]interface{} `json:"-"`
 	Namespace          string                 `json:"namespace"`
 	RequestName        string                 `json:"requestName"`
+	SkipRecoveryQueue  string                 `json:"skipRecoveryQueue"`
 }
 
 type VolumeCreatingConfig struct {

@@ -3,6 +3,7 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -11,6 +12,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"reflect"
@@ -803,7 +805,7 @@ func (c RestClient) renameVolumeByNameAndStyle(ctx context.Context, volumeName, 
 }
 
 // destroyVolumeByNameAndStyle destroys a volume
-func (c RestClient) destroyVolumeByNameAndStyle(ctx context.Context, name, style string) error {
+func (c RestClient) destroyVolumeByNameAndStyle(ctx context.Context, name, style string, force bool) error {
 	fields := []string{""}
 	volume, err := c.getVolumeByNameAndStyle(ctx, name, style, fields)
 	if err != nil {
@@ -820,6 +822,7 @@ func (c RestClient) destroyVolumeByNameAndStyle(ctx context.Context, name, style
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 	params.UUID = *volume.UUID
+	params.Force = &force
 
 	_, volumeDeleteAccepted, err := c.api.Storage.VolumeDelete(params, c.authInfo)
 	if err != nil {
@@ -1547,8 +1550,148 @@ func (c RestClient) VolumeCloneSplitStart(ctx context.Context, volumeName string
 }
 
 // VolumeDestroy destroys a flexvol
-func (c RestClient) VolumeDestroy(ctx context.Context, name string) error {
-	return c.destroyVolumeByNameAndStyle(ctx, name, models.VolumeStyleFlexvol)
+func (c RestClient) VolumeDestroy(ctx context.Context, name string, force bool) error {
+	return c.destroyVolumeByNameAndStyle(ctx, name, models.VolumeStyleFlexvol, force)
+}
+
+// VolumeRecoveryQueuePurge uses the cli passthrough REST API to purge a volume from the recovery queue.
+// the cli does not support passing in the UUID of the verver instead of the name. This will not work with
+// a failed over metro cluster. This is a workaround until the FSxN API supports a mechanism like the force option to
+// directly purge the volume from the recovery queue.
+func (c RestClient) VolumeRecoveryQueuePurge(ctx context.Context, recoveryQueueVolumeName string) error {
+	fields := LogFields{
+		"Method":     "VolumeRecoveryQueuePurge",
+		"Type":       "ontap_rest",
+		"volumeName": recoveryQueueVolumeName,
+	}
+	Logd(ctx, c.driverName, c.config.DebugTraceFlags["method"]).WithFields(fields).
+		Trace(">>>> VolumeRecoveryQueuePurge")
+	defer Logd(ctx, c.driverName, c.config.DebugTraceFlags["method"]).WithFields(fields).
+		Trace("<<<< VolumeRecoveryQueuePurge")
+
+	requestUrl := fmt.Sprintf("https://%s/api/private/cli/volume/recovery-queue/purge", c.config.ManagementLIF)
+
+	requestContent := map[string]string{
+		"vserver": c.svmName,
+		"volume":  recoveryQueueVolumeName,
+	}
+	requestBodyBytes, err := json.Marshal(requestContent)
+	if err != nil {
+		return err
+	}
+
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, requestUrl, bytes.NewReader(requestBodyBytes))
+	if err != nil {
+		return err
+	}
+
+	response, err := c.sendPassThroughCliCommand(ctx, request)
+	if err != nil {
+		return err
+	}
+
+	defer func() { _ = response.Body.Close() }()
+
+	if response.StatusCode != http.StatusAccepted {
+
+		var responseBodyBytes []byte
+		if response.Body != nil {
+			responseBodyBytes, _ = io.ReadAll(response.Body)
+		}
+
+		Logc(ctx).WithField("statusCode", response.StatusCode).Error(
+			"failed to purge volume from recovery queue: %s", string(responseBodyBytes))
+		return fmt.Errorf("unexpected response status code: %v", response.StatusCode)
+	}
+
+	return nil
+}
+
+func (c RestClient) VolumeRecoveryQueueGetName(ctx context.Context, name string) (string, error) {
+	fields := LogFields{
+		"Method":     "VolumeRecoveryQueueGetName",
+		"Type":       "ontap_rest",
+		"volumeName": name,
+	}
+	Logd(ctx, c.driverName, c.config.DebugTraceFlags["method"]).WithFields(fields).
+		Trace(">>>> VolumeRecoveryQueueGetName")
+	defer Logd(ctx, c.driverName, c.config.DebugTraceFlags["method"]).WithFields(fields).
+		Trace("<<<< VolumeRecoveryQueueGetName")
+
+	requestUrl := fmt.Sprintf("https://%s/api/private/cli/volume/recovery-queue", c.config.ManagementLIF)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, requestUrl, nil)
+	if err != nil {
+		return "", err
+	}
+
+	q := request.URL.Query()
+	q.Add("vserver", c.svmName)
+	q.Add("volume", fmt.Sprintf("%s*", name))
+	request.URL.RawQuery = q.Encode()
+
+	response, err := c.sendPassThroughCliCommand(ctx, request)
+	if err != nil {
+		return "", err
+	}
+
+	defer func() { _ = response.Body.Close() }()
+
+	var responseBodyBytes []byte
+	if response.Body != nil {
+		if responseBodyBytes, err = io.ReadAll(response.Body); err != nil {
+			return "", fmt.Errorf("failed to read response body: %v", err)
+		}
+	}
+
+	if response.StatusCode != http.StatusOK {
+		Logc(ctx).WithField("statusCode", response.StatusCode).Error(
+			"failed to get recovery queue volume name: %s", string(responseBodyBytes))
+		return "", fmt.Errorf("unexpected response status code: %v", response.StatusCode)
+	}
+
+	type recoveryQueueVolumeListResponse struct {
+		Records []struct {
+			Volume string
+		}
+	}
+
+	responseObject := recoveryQueueVolumeListResponse{}
+	if err = json.Unmarshal(responseBodyBytes, &responseObject); err != nil {
+		return "", fmt.Errorf("failed to unmarshal response body: %v", err)
+	}
+
+	if len(responseObject.Records) == 0 {
+		return "", errors.NotFoundError(fmt.Sprintf("unable to find volume '%s' in the recovery queue", name))
+	}
+
+	if len(responseObject.Records) > 1 {
+		return "", fmt.Errorf("found multiple volumes matching '%s' in the recovery queue", name)
+	}
+
+	return responseObject.Records[0].Volume, nil
+}
+
+func (c RestClient) sendPassThroughCliCommand(ctx context.Context, request *http.Request) (*http.Response, error) {
+	request.Header.Set("Content-Type", "application/json")
+
+	if c.config.Username != "" && c.config.Password != "" {
+		request.SetBasicAuth(c.config.Username, c.config.Password)
+	}
+
+	httpClient := &http.Client{
+		Transport: c.tr,
+		Timeout:   tridentconfig.StorageAPITimeoutSeconds * time.Second,
+	}
+
+	response, err := httpClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	responseBytes, _ := httputil.DumpResponse(response, true)
+	Logd(ctx, c.driverName, c.config.DebugTraceFlags["api"]).Debugf("%s\n", string(responseBytes))
+
+	return response, nil
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -4164,7 +4307,7 @@ func (c RestClient) FlexgroupCloneSplitStart(ctx context.Context, volumeName str
 }
 
 // FlexGroupDestroy destroys a FlexGroup
-func (c RestClient) FlexGroupDestroy(ctx context.Context, name string) error {
+func (c RestClient) FlexGroupDestroy(ctx context.Context, name string, force bool) error {
 	fields := []string{""}
 	volume, err := c.FlexGroupGetByName(ctx, name, fields)
 	if err != nil {
@@ -4178,6 +4321,7 @@ func (c RestClient) FlexGroupDestroy(ctx context.Context, name string) error {
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 	params.UUID = *volume.UUID
+	params.Force = &force
 
 	_, volumeDeleteAccepted, err := c.api.Storage.VolumeDelete(params, c.authInfo)
 	if err != nil {

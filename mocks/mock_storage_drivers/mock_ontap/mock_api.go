@@ -242,17 +242,17 @@ func (mr *MockOntapAPIMockRecorder) FlexgroupCreate(arg0, arg1 any) *gomock.Call
 }
 
 // FlexgroupDestroy mocks base method.
-func (m *MockOntapAPI) FlexgroupDestroy(arg0 context.Context, arg1 string, arg2 bool) error {
+func (m *MockOntapAPI) FlexgroupDestroy(arg0 context.Context, arg1 string, arg2, arg3 bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexgroupDestroy", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "FlexgroupDestroy", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // FlexgroupDestroy indicates an expected call of FlexgroupDestroy.
-func (mr *MockOntapAPIMockRecorder) FlexgroupDestroy(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) FlexgroupDestroy(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexgroupDestroy", reflect.TypeOf((*MockOntapAPI)(nil).FlexgroupDestroy), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexgroupDestroy", reflect.TypeOf((*MockOntapAPI)(nil).FlexgroupDestroy), arg0, arg1, arg2, arg3)
 }
 
 // FlexgroupExists mocks base method.
@@ -1834,17 +1834,17 @@ func (mr *MockOntapAPIMockRecorder) VolumeCreate(arg0, arg1 any) *gomock.Call {
 }
 
 // VolumeDestroy mocks base method.
-func (m *MockOntapAPI) VolumeDestroy(arg0 context.Context, arg1 string, arg2 bool) error {
+func (m *MockOntapAPI) VolumeDestroy(arg0 context.Context, arg1 string, arg2, arg3 bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeDestroy", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "VolumeDestroy", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // VolumeDestroy indicates an expected call of VolumeDestroy.
-func (mr *MockOntapAPIMockRecorder) VolumeDestroy(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) VolumeDestroy(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeDestroy", reflect.TypeOf((*MockOntapAPI)(nil).VolumeDestroy), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeDestroy", reflect.TypeOf((*MockOntapAPI)(nil).VolumeDestroy), arg0, arg1, arg2, arg3)
 }
 
 // VolumeExists mocks base method.
@@ -1976,6 +1976,35 @@ func (m *MockOntapAPI) VolumeMount(arg0 context.Context, arg1, arg2 string) erro
 func (mr *MockOntapAPIMockRecorder) VolumeMount(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeMount", reflect.TypeOf((*MockOntapAPI)(nil).VolumeMount), arg0, arg1, arg2)
+}
+
+// VolumeRecoveryQueueGetName mocks base method.
+func (m *MockOntapAPI) VolumeRecoveryQueueGetName(arg0 context.Context, arg1 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeRecoveryQueueGetName", arg0, arg1)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VolumeRecoveryQueueGetName indicates an expected call of VolumeRecoveryQueueGetName.
+func (mr *MockOntapAPIMockRecorder) VolumeRecoveryQueueGetName(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeRecoveryQueueGetName", reflect.TypeOf((*MockOntapAPI)(nil).VolumeRecoveryQueueGetName), arg0, arg1)
+}
+
+// VolumeRecoveryQueuePurge mocks base method.
+func (m *MockOntapAPI) VolumeRecoveryQueuePurge(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeRecoveryQueuePurge", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VolumeRecoveryQueuePurge indicates an expected call of VolumeRecoveryQueuePurge.
+func (mr *MockOntapAPIMockRecorder) VolumeRecoveryQueuePurge(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeRecoveryQueuePurge", reflect.TypeOf((*MockOntapAPI)(nil).VolumeRecoveryQueuePurge), arg0, arg1)
 }
 
 // VolumeRename mocks base method.

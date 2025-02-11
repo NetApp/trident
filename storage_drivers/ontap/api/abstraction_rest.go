@@ -180,12 +180,28 @@ func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) error {
 	return nil
 }
 
-func (d OntapAPIREST) VolumeDestroy(ctx context.Context, name string, force bool) error {
-	deletionErr := d.api.VolumeDestroy(ctx, name)
+func (d OntapAPIREST) VolumeDestroy(ctx context.Context, name string, force, skipRecoveryQueue bool) error {
+	deletionErr := d.api.VolumeDestroy(ctx, name, skipRecoveryQueue)
 	if deletionErr != nil {
 		return fmt.Errorf("error destroying volume %v: %v", name, deletionErr)
 	}
 	return nil
+}
+
+func (d OntapAPIREST) VolumeRecoveryQueuePurge(ctx context.Context, recoveryQueueVolumeName string) error {
+	purgeErr := d.api.VolumeRecoveryQueuePurge(ctx, recoveryQueueVolumeName)
+	if purgeErr != nil {
+		return fmt.Errorf("error purging volume vfrom recovery queue %v: %v", recoveryQueueVolumeName, purgeErr)
+	}
+	return nil
+}
+
+func (d OntapAPIREST) VolumeRecoveryQueueGetName(ctx context.Context, name string) (string, error) {
+	recoveryQueueVolumeName, err := d.api.VolumeRecoveryQueueGetName(ctx, name)
+	if err != nil {
+		return "", fmt.Errorf("error listing volumes in recovery queue: %v", err)
+	}
+	return recoveryQueueVolumeName, nil
 }
 
 func (d OntapAPIREST) VolumeInfo(ctx context.Context, name string) (*Volume, error) {
@@ -722,7 +738,7 @@ func (d OntapAPIREST) FlexgroupMount(ctx context.Context, name, junctionPath str
 	return nil
 }
 
-func (d OntapAPIREST) FlexgroupDestroy(ctx context.Context, volumeName string, force bool) error {
+func (d OntapAPIREST) FlexgroupDestroy(ctx context.Context, volumeName string, force, skipRecoveryQueue bool) error {
 	if err := d.FlexgroupUnmount(ctx, volumeName, true); err != nil {
 		return fmt.Errorf("error unmounting volume %v: %v", volumeName, err)
 	}
@@ -733,7 +749,7 @@ func (d OntapAPIREST) FlexgroupDestroy(ctx context.Context, volumeName string, f
 	// utilized space. Is that what we want? Or should we just deny the delete, and force the
 	// user to keep the volume around until all of the clones are gone? If we do that, need a
 	// way to list the clones. Maybe volume inspect.
-	deletionErr := d.api.FlexGroupDestroy(ctx, volumeName)
+	deletionErr := d.api.FlexGroupDestroy(ctx, volumeName, skipRecoveryQueue)
 	if deletionErr != nil {
 		return fmt.Errorf("error destroying volume %v: %v", volumeName, deletionErr)
 	}
