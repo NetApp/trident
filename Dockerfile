@@ -11,9 +11,9 @@ RUN --mount=type=secret,id=activation_key,env=ACTIVATION_KEY \
     --mount=type=secret,id=organization,env=ORGANIZATION \
     function unregister() { subscription-manager unregister || true; }; trap unregister EXIT; \
     if [[ $DEPS_IMAGE =~ "alpine" ]]; \
-        then apk add nfs-utils; \
-        else subscription-manager register --activationkey $ACTIVATION_KEY --org $ORGANIZATION && \
-             yum install --repo=rhel-9-*-baseos-rpms -y nfs-utils; \
+    then apk add nfs-utils; \
+    else subscription-manager register --activationkey $ACTIVATION_KEY --org $ORGANIZATION && \
+    yum install --repo=rhel-9-*-baseos-rpms -y nfs-utils; \
     fi
 
 # Get the mount.nfs4 dependency
@@ -23,8 +23,8 @@ RUN ldd /sbin/mount.nfs | tr -s '[:space:]' '\n' | grep '^/' | xargs -I % sh -c 
 FROM scratch
 
 LABEL maintainers="The NetApp Trident Team" \
-      app="trident.netapp.io" \
-      description="Trident Storage Orchestrator"
+    app="trident.netapp.io" \
+    description="Trident Storage Orchestrator"
 
 COPY --from=deps /bin/mount /bin/umount /bin/
 COPY --from=deps /sbin/mount.nfs /sbin/mount.nfs4 /sbin/

@@ -150,8 +150,8 @@ const (
 	UnixPathSeparator    = "/"
 
 	// Minimum and maximum supported Kubernetes versions
-	KubernetesVersionMin = "v1.25"
-	KubernetesVersionMax = "v1.31"
+	KubernetesVersionMin = "v1.26"
+	KubernetesVersionMax = "v1.32"
 
 	// KubernetesCSISidecarRegistry is where the CSI sidecar images are hosted
 	KubernetesCSISidecarRegistry = "registry.k8s.io/sig-storage"
