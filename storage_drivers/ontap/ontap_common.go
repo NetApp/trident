@@ -319,22 +319,26 @@ func reconcileNASNodeAccess(
 	if !config.AutoExportPolicy {
 		return nil
 	}
+
 	err := ensureExportPolicyExists(ctx, policyName, clientAPI)
 	if err != nil {
 		return err
 	}
+
 	desiredRules, err := getDesiredExportPolicyRules(ctx, nodes, config)
 	if err != nil {
 		err = fmt.Errorf("unable to determine desired export policy rules; %v", err)
 		Logc(ctx).Error(err)
 		return err
 	}
+
 	err = reconcileExportPolicyRules(ctx, policyName, desiredRules, clientAPI, config)
 	if err != nil {
-		err = fmt.Errorf("unabled to reconcile export policy rules; %v", err)
+		err = fmt.Errorf("unable to reconcile export policy rules; %v", err)
 		Logc(ctx).WithField("ExportPolicy", policyName).Error(err)
 		return err
 	}
+
 	return nil
 }
 
@@ -344,6 +348,16 @@ func ensureNodeAccessForPolicy(
 	ctx context.Context, targetNode *tridentmodels.Node, clientAPI api.OntapAPI,
 	config *drivers.OntapStorageDriverConfig, policyName string,
 ) error {
+	fields := LogFields{
+		"Method":        "ensureNodeAccessForPolicy",
+		"Type":          "ontap_common",
+		"policyName":    policyName,
+		"targetNodeIPs": targetNode.IPs,
+	}
+
+	Logc(ctx).WithFields(fields).Debug(">>>> ensureNodeAccessForPolicy")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< ensureNodeAccessForPolicy")
+
 	if exists, err := clientAPI.ExportPolicyExists(ctx, policyName); err != nil {
 		return err
 	} else if !exists {
@@ -360,6 +374,7 @@ func ensureNodeAccessForPolicy(
 		Logc(ctx).Error(err)
 		return err
 	}
+	Logc(ctx).WithField("desiredRules", desiredRules).Debug("Desired export policy rules.")
 
 	// first grab all existing rules
 	existingRules, err := clientAPI.ExportRuleList(ctx, policyName)
@@ -367,17 +382,41 @@ func ensureNodeAccessForPolicy(
 		// Could not list rules, just log it, no action required.
 		Logc(ctx).WithField("error", err).Debug("Export policy rules could not be listed.")
 	}
+	Logc(ctx).WithField("existingRules", existingRules).Debug("Existing export policy rules.")
 
 	for _, desiredRule := range desiredRules {
+		desiredRule = strings.TrimSpace(desiredRule)
+
+		desiredIP := net.ParseIP(desiredRule)
+		if desiredIP == nil {
+			Logc(ctx).WithField("desiredRule", desiredRule).Debug("Invalid desired rule IP")
+			continue
+		}
 
 		// Loop through the existing rules one by one and compare to make sure we cover the scenario where the
-		// existing rule is of format "10.193.112.26, 10.244.2.0" and the desired rule is format "10.193.112.26".
+		// existing rule is of format "1.1.1.1, 2.2.2.2" and the desired rule is format "1.1.1.1".
 		// This can happen because of the difference in how ONTAP ZAPI and ONTAP REST creates export rule.
 
 		ruleFound := false
 		for existingRule := range existingRules {
-			if strings.Contains(existingRule, desiredRule) {
-				ruleFound = true
+			existingIPs := strings.Split(existingRule, ",")
+
+			for _, ip := range existingIPs {
+				ip = strings.TrimSpace(ip)
+
+				existingIP := net.ParseIP(ip)
+				if existingIP == nil {
+					Logc(ctx).WithField("existingRule", existingRule).Debug("Invalid existing rule IP")
+					continue
+				}
+
+				if existingIP.Equal(desiredIP) {
+					ruleFound = true
+					break
+				}
+			}
+
+			if ruleFound {
 				break
 			}
 		}
@@ -385,6 +424,12 @@ func ensureNodeAccessForPolicy(
 		// Rule does not exist, so create it
 		if !ruleFound {
 			if err = clientAPI.ExportRuleCreate(ctx, policyName, desiredRule, config.NASType); err != nil {
+				// Check if error is that the export policy rule already exist error
+				if errors.IsAlreadyExistsError(err) {
+					Logc(ctx).WithField("desiredRule", desiredRule).WithError(err).Debug(
+						"Export policy rule already exists")
+					continue
+				}
 				return err
 			}
 		}
@@ -429,10 +474,18 @@ func reconcileExportPolicyRules(
 		// Could not extract rules, just log it, no action required.
 		Logc(ctx).WithField("error", err).Debug("Export policy rules could not be extracted.")
 	}
+	Logc(ctx).WithField("existingRules", existingRules).Debug("Existing export policy rules.")
 
 	undesiredRules := maps.Clone(existingRules)
 
 	for _, desiredRule := range desiredPolicyRules {
+		desiredRule = strings.TrimSpace(desiredRule)
+
+		desiredIP := net.ParseIP(desiredRule)
+		if desiredIP == nil {
+			Logc(ctx).WithField("desiredRule", desiredRule).Debug("Invalid desired rule IP")
+			continue
+		}
 
 		// Loop through the existing rules one by one and compare to make sure we cover the scenario where the
 		// existing rule is of format "1.1.1.1, 2.2.2.2" and the desired rule is format "1.1.1.1".
@@ -440,8 +493,24 @@ func reconcileExportPolicyRules(
 
 		foundExistingRule := ""
 		for existingRule := range existingRules {
-			if strings.Contains(existingRule, desiredRule) {
-				foundExistingRule = existingRule
+			existingIPs := strings.Split(existingRule, ",")
+
+			for _, ip := range existingIPs {
+				ip = strings.TrimSpace(ip)
+
+				existingIP := net.ParseIP(ip)
+				if existingIP == nil {
+					Logc(ctx).WithField("existingRule", existingRule).Debug("Invalid existing rule IP")
+					continue
+				}
+
+				if existingIP.Equal(desiredIP) {
+					foundExistingRule = existingRule
+					break
+				}
+			}
+
+			if foundExistingRule != "" {
 				break
 			}
 		}
@@ -462,6 +531,8 @@ func reconcileExportPolicyRules(
 			}
 		}
 	}
+
+	Logc(ctx).WithField("undesiredRules", undesiredRules).Debug("Undesired export policy rules.")
 	// Now that the desired rules exists, delete the undesired rules
 	for _, ruleIndex := range undesiredRules {
 		if err = clientAPI.ExportRuleDestroy(ctx, policyName, ruleIndex); err != nil {

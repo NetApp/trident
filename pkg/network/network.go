@@ -59,6 +59,7 @@ func FilterIPs(ctx context.Context, ips, cidrs []string) ([]string, error) {
 	}
 
 	for _, ip := range ips {
+		ip = strings.TrimSpace(ip)
 		parsedIP := net.ParseIP(ip)
 		for _, network := range networks {
 			fields := logging.LogFields{
