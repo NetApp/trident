@@ -718,11 +718,34 @@ func (d *NASQtreeStorageDriver) publishQtreeShare(
 	}
 
 	// Ensure the qtree has the correct export policy and rules applied.
+	backendPolicyName := getExportPolicyName(publishInfo.BackendUUID)
+	qtreePolicyName := qtree
+	// Trident versions <23.04 may not have the exportPolicy field set in the volume config,
+	// if this is the case we need to use the export policy from the qtree info from ONTAP.
+	if volConfig.ExportPolicy != backendPolicyName && volConfig.ExportPolicy != qtreePolicyName &&
+		volConfig.ExportPolicy != getEmptyExportPolicyName(*d.Config.StoragePrefix) {
+		backendQtree, err := d.API.QtreeGetByName(ctx, qtree, flexvol)
+		if err != nil {
+			return err
+		}
+		if backendQtree == nil {
+			return errors.NotFoundError(fmt.Sprintf("qtree %s not found", qtree))
+		}
+		volConfig.ExportPolicy = backendQtree.ExportPolicy
+	}
+
 	// If the qtree already have backend policy, leave it as it is. We will have an opportunity to migrate it
 	// to qtree policy during unpublish.
-	qtreePolicyName := qtree
-	if volConfig.ExportPolicy == getExportPolicyName(publishInfo.BackendUUID) {
-		qtreePolicyName = volConfig.ExportPolicy
+	switch volConfig.ExportPolicy {
+	case getEmptyExportPolicyName(*d.Config.StoragePrefix), qtree:
+		qtreePolicyName = qtree
+	case backendPolicyName:
+		qtreePolicyName = backendPolicyName
+	default:
+		// This can happen if the customer switched from autoExportPolicy=false to true and the volume is still using
+		// default or user supplied export policy.
+		Logc(ctx).Debugf("Export policy %s is not managed by Trident.", volConfig.ExportPolicy)
+		return nil
 	}
 
 	volConfig.ExportPolicy = qtreePolicyName
@@ -743,8 +766,6 @@ func (d *NASQtreeStorageDriver) publishQtreeShare(
 	}
 
 	// Ensure the parent flex-vol has the correct export policy and rules applied
-	backendPolicyName := getExportPolicyName(publishInfo.BackendUUID)
-
 	if err := ensureNodeAccessForPolicy(ctx, targetNode, d.API, &d.Config, backendPolicyName); err != nil {
 		return err
 	}
@@ -796,17 +817,20 @@ func (d *NASQtreeStorageDriver) Unpublish(
 		Logc(ctx).WithError(err).Error("Error getting volume pattern.")
 		return err
 	}
-	exists, flexvol, err := d.API.QtreeExists(ctx, qtreeName, volumePattern)
+	qtree, err := d.API.QtreeGetByName(ctx, qtreeName, volumePattern)
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Error checking for existing qtree.")
 		return err
 	}
-	if !exists {
+	if qtree == nil {
 		Logc(ctx).WithField("qtree", qtreeName).Debug("Qtree not found.")
 		return errors.NotFoundError("qtree not found")
 	}
 
 	exportPolicy := volConfig.ExportPolicy
+	if exportPolicy == "" {
+		exportPolicy = qtree.ExportPolicy
+	}
 	if exportPolicy == qtreeName {
 		// Remove export policy rules matching the node IP address from qtree level policy
 		if err = removeExportPolicyRules(ctx, exportPolicy, publishInfo, d.API); err != nil {
@@ -822,7 +846,7 @@ func (d *NASQtreeStorageDriver) Unpublish(
 		}
 		if len(allExportRules) == 0 {
 			// Set qtree to the empty policy
-			if err = d.setQtreeToEmptyPolicy(ctx, qtreeName, flexvol); err != nil {
+			if err = d.setQtreeToEmptyPolicy(ctx, qtreeName, qtree.Volume); err != nil {
 				return err
 			}
 
@@ -837,7 +861,7 @@ func (d *NASQtreeStorageDriver) Unpublish(
 	} else if exportPolicy == getExportPolicyName(publishInfo.BackendUUID) {
 		// Qtree using backend-based export policy.
 		if len(publishInfo.Nodes) == 0 {
-			if err = d.setQtreeToEmptyPolicy(ctx, qtreeName, flexvol); err != nil {
+			if err = d.setQtreeToEmptyPolicy(ctx, qtreeName, qtree.Volume); err != nil {
 				return err
 			}
 			volConfig.ExportPolicy = getEmptyExportPolicyName(*d.Config.StoragePrefix)
