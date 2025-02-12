@@ -327,7 +327,7 @@ func (s *NVMeSubsystem) GetNVMeDeviceAt(ctx context.Context, nsUUID string) (NVM
 			fileContent := strings.TrimSpace(string(fileBytes))
 
 			if nsUUID == fileContent {
-				return &NVMeDevice{UUID: nsUUID, Device: "/dev/" + pathContent.Name()}, nil
+				return &NVMeDevice{UUID: nsUUID, Device: "/dev/" + pathContent.Name(), command: s.command}, nil
 			}
 		}
 	}
