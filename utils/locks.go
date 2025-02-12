@@ -30,20 +30,20 @@ func getLock(ctx context.Context, lockID string) *sync.Mutex {
 // calling this method.  The semantics of this method are intentionally identical to sync.Mutex.Lock().
 func Lock(ctx context.Context, lockContext, lockID string) {
 	IncrementQueueSize(lockID)
-	Logc(ctx).WithField("lock", lockID).Debugf("Attempting to acquire shared lock (%s); %d position in the queue.",
-		lockContext, WaitQueueSize(lockID))
+	Logc(ctx).WithField("lockContext", lockContext).Debugf("Attempting to acquire shared lock (%s); %d position in the queue.",
+		lockID, WaitQueueSize(lockID))
 
 	getLock(ctx, lockID).Lock()
 
 	DecrementQueueSize(lockID)
-	Logc(ctx).WithField("lock", lockID).Debugf("Acquired shared lock (%s).", lockContext)
+	Logc(ctx).WithField("lockContext", lockContext).Debugf("Acquired shared lock (%s).", lockID)
 }
 
 // Unlock releases a mutex with the specified ID.  The semantics of this method are intentionally
 // identical to sync.Mutex.Unlock().
 func Unlock(ctx context.Context, lockContext, lockID string) {
 	getLock(ctx, lockID).Unlock()
-	Logc(ctx).WithField("lock", lockID).Debugf("Released shared lock (%s).", lockContext)
+	Logc(ctx).WithField("lockContext", lockContext).Debugf("Released shared lock (%s).", lockID)
 }
 
 // IncrementQueueSize increments the wait queue size by 1

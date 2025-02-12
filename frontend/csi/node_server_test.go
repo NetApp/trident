@@ -1047,9 +1047,9 @@ func TestFixISCSISessions(t *testing.T) {
 			portals := getPortals(input.PublishedPortals, input.PortalActions)
 
 			if input.AddNewNodeOps {
-				go utils.Lock(ctx, "test-lock1", lockID)
+				go utils.Lock(ctx, "test-lock1", nodeLockID)
 				snooze(10)
-				go utils.Lock(ctx, "test-lock2", lockID)
+				go utils.Lock(ctx, "test-lock2", nodeLockID)
 				snooze(10)
 			}
 
@@ -1074,16 +1074,16 @@ func TestFixISCSISessions(t *testing.T) {
 			}
 
 			if input.AddNewNodeOps {
-				utils.Unlock(ctx, "test-lock1", lockID)
+				utils.Unlock(ctx, "test-lock1", nodeLockID)
 
 				// Wait for the lock to be released
-				for utils.WaitQueueSize(lockID) > 1 {
+				for utils.WaitQueueSize(nodeLockID) > 1 {
 					snooze(10)
 				}
 
 				// Give some time for another context to acquire the lock
 				snooze(100)
-				utils.Unlock(ctx, "test-lock2", lockID)
+				utils.Unlock(ctx, "test-lock2", nodeLockID)
 			}
 		})
 	}
@@ -1599,23 +1599,23 @@ func TestAttemptLock_Failure(t *testing.T) {
 	lockContext := "fakeLockContext-req1"
 	lockTimeout := 200 * time.Millisecond
 	// first request takes the lock
-	expected := attemptLock(ctx, lockContext, lockTimeout)
+	expected := attemptLock(ctx, lockContext, nodeLockID, lockTimeout)
 
 	// start the second request so that it is in race for the lock
 	go func() {
 		defer wg.Done()
 		ctx := context.Background()
 		lockContext := "fakeLockContext-req2"
-		expected := attemptLock(ctx, lockContext, lockTimeout)
+		expected := attemptLock(ctx, lockContext, nodeLockID, lockTimeout)
 
 		assert.False(t, expected)
-		utils.Unlock(ctx, lockContext, lockID)
+		utils.Unlock(ctx, lockContext, nodeLockID)
 	}()
 	// first request goes to sleep holding the lock
 	if expected {
 		time.Sleep(500 * time.Millisecond)
 	}
-	utils.Unlock(ctx, lockContext, lockID)
+	utils.Unlock(ctx, lockContext, nodeLockID)
 	wg.Wait()
 }
 
@@ -1632,7 +1632,7 @@ func TestAttemptLock_Success(t *testing.T) {
 	lockContext := "fakeLockContext-req1"
 	lockTimeout := 500 * time.Millisecond
 	// first request takes the lock
-	expected := attemptLock(ctx, lockContext, lockTimeout)
+	expected := attemptLock(ctx, lockContext, nodeLockID, lockTimeout)
 
 	// start the second request so that it is in race for the lock
 	go func() {
@@ -1641,16 +1641,16 @@ func TestAttemptLock_Success(t *testing.T) {
 		lockContext := "fakeLockContext-req2"
 		lockTimeout := 5 * time.Second
 
-		expected := attemptLock(ctx, lockContext, lockTimeout)
+		expected := attemptLock(ctx, lockContext, nodeLockID, lockTimeout)
 
 		assert.True(t, expected)
-		utils.Unlock(ctx, lockContext, lockID)
+		utils.Unlock(ctx, lockContext, nodeLockID)
 	}()
 	// first request goes to sleep holding the lock
 	if expected {
 		time.Sleep(200 * time.Millisecond)
 	}
-	utils.Unlock(ctx, lockContext, lockID)
+	utils.Unlock(ctx, lockContext, nodeLockID)
 	wg.Wait()
 }
 

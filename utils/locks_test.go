@@ -146,105 +146,245 @@ func TestLockBehavior(t *testing.T) {
 
 func TestWaitQueueSize(t *testing.T) {
 	ctx1, ctx2, ctx3 := "testContext1", "testContext2", "testContext3"
-	lockID := "waitLock"
+	lockID1, lockID2, lockID3 := "lockID1", "lockID2", "lockID3"
 
-	r := make(chan string, 3)
-	m1 := make(chan string, 3)
-	m2 := make(chan string, 3)
-	m3 := make(chan string, 3)
+	r := make(chan string, 9)
+	lockID1_m1 := make(chan string, 3)
+	lockID1_m2 := make(chan string, 3)
+	lockID1_m3 := make(chan string, 3)
 
-	go acquire1(m1, r, ctx1, lockID)
-	go acquire2(m2, r, ctx2, lockID)
-	go acquire3(m3, r, ctx3, lockID)
+	lockID2_m1 := make(chan string, 3)
+	lockID2_m2 := make(chan string, 3)
+	lockID2_m3 := make(chan string, 3)
 
-	assert.True(t, WaitQueueSize(lockID) == 0, "Expected Queue size to be 0.")
-	m3 <- "lock"
-	snooze()
-	assert.True(t, WaitQueueSize(lockID) == 0, "Expected Queue size to be 0.")
-	m2 <- "lock"
-	snooze()
-	assert.True(t, WaitQueueSize(lockID) == 1, "Expected Queue size to be 1.")
-	m1 <- "lock"
-	snooze()
-	assert.True(t, WaitQueueSize(lockID) == 2, "Expected Queue size to be 2.")
-	m3 <- "unlock"
-	snooze()
-	assert.True(t, WaitQueueSize(lockID) == 1, "Expected Queue size to be 1.")
-	m3 <- "done"
-	snooze()
-	assert.True(t, WaitQueueSize(lockID) == 1, "Expected Queue size to be 1.")
-	m2 <- "unlock"
-	snooze()
-	assert.True(t, WaitQueueSize(lockID) == 0, "Expected Queue size to be 0.")
-	m2 <- "done"
-	snooze()
-	assert.True(t, WaitQueueSize(lockID) == 0, "Expected Queue size to be 0.")
-	m1 <- "unlock"
-	snooze()
-	assert.True(t, WaitQueueSize(lockID) == 0, "Expected Queue size to be 0.")
-	m1 <- "done"
-	snooze()
-	assert.True(t, WaitQueueSize(lockID) == 0, "Expected Queue size to be 0.")
+	lockID3_m1 := make(chan string, 3)
+	lockID3_m2 := make(chan string, 3)
+	lockID3_m3 := make(chan string, 3)
 
-	r1 := <-r
-	r2 := <-r
-	r3 := <-r
+	go acquire1(lockID1_m1, r, ctx1, lockID1)
+	go acquire2(lockID1_m2, r, ctx2, lockID1)
+	go acquire3(lockID1_m3, r, ctx3, lockID1)
 
-	if r1 != "done3" && r2 != "done2" && r3 != "done1" {
+	go acquire1(lockID2_m1, r, ctx1, lockID2)
+	go acquire2(lockID2_m2, r, ctx2, lockID2)
+	go acquire3(lockID2_m3, r, ctx3, lockID2)
+
+	go acquire1(lockID3_m1, r, ctx1, lockID3)
+	go acquire2(lockID3_m2, r, ctx2, lockID3)
+	go acquire3(lockID3_m3, r, ctx3, lockID3)
+
+	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
+
+	lockID1_m3 <- "lock"
+	lockID2_m3 <- "lock"
+	lockID3_m3 <- "lock"
+	snooze()
+	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
+
+	lockID1_m2 <- "lock"
+	lockID2_m2 <- "lock"
+	lockID3_m2 <- "lock"
+	snooze()
+	assert.True(t, waitUntilHelper(lockID1, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID3))
+
+	lockID1_m1 <- "lock"
+	lockID2_m1 <- "lock"
+	lockID3_m1 <- "lock"
+	snooze()
+	assert.True(t, waitUntilHelper(lockID1, 2), fmt.Sprintf("Expected Queue size for lock %s to be 2.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 2), fmt.Sprintf("Expected Queue size for lock %s to be 2.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 2), fmt.Sprintf("Expected Queue size for lock %s to be 2.", lockID3))
+
+	lockID1_m3 <- "unlock"
+	lockID2_m3 <- "unlock"
+	lockID3_m3 <- "unlock"
+	snooze()
+	assert.True(t, waitUntilHelper(lockID1, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID3))
+
+	lockID1_m3 <- "done"
+	lockID2_m3 <- "done"
+	lockID3_m3 <- "done"
+	snooze()
+	assert.True(t, waitUntilHelper(lockID1, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID3))
+
+	lockID1_m2 <- "unlock"
+	lockID2_m2 <- "unlock"
+	lockID3_m2 <- "unlock"
+	snooze()
+	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
+
+	lockID1_m2 <- "done"
+	lockID2_m2 <- "done"
+	lockID3_m2 <- "done"
+	snooze()
+	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
+
+	lockID1_m1 <- "unlock"
+	lockID2_m1 <- "unlock"
+	lockID3_m1 <- "unlock"
+	snooze()
+	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
+
+	lockID1_m1 <- "done"
+	lockID2_m1 <- "done"
+	lockID3_m1 <- "done"
+	snooze()
+	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
+
+	lockID1_r1 := <-r
+	lockID1_r2 := <-r
+	lockID1_r3 := <-r
+
+	lockID2_r1 := <-r
+	lockID2_r2 := <-r
+	lockID2_r3 := <-r
+
+	lockID3_r1 := <-r
+	lockID3_r2 := <-r
+	lockID3_r3 := <-r
+
+	if lockID1_r1 != "done3" && lockID1_r2 != "done2" && lockID1_r3 != "done1" {
+		t.Error("Expected done3 followed by done2 followed by done1")
+	}
+	if lockID2_r1 != "done3" && lockID2_r2 != "done2" && lockID2_r3 != "done1" {
+		t.Error("Expected done3 followed by done2 followed by done1")
+	}
+	if lockID3_r1 != "done3" && lockID3_r2 != "done2" && lockID3_r3 != "done1" {
 		t.Error("Expected done3 followed by done2 followed by done1")
 	}
 }
 
 func TestWaitQueueSize2(t *testing.T) {
 	ctx1, ctx2, ctx3 := "testContext1", "testContext2", "testContext3"
-	lockID := "waitLock"
+	lockID1, lockID2, lockID3 := "waitLock1", "waitLock2", "waitLock3"
 
-	r := make(chan string, 3)
-	m1 := make(chan string, 3)
-	m2 := make(chan string, 3)
-	m3 := make(chan string, 3)
+	r := make(chan string, 9)
+	lockID1_m1 := make(chan string, 3)
+	lockID1_m2 := make(chan string, 3)
+	lockID1_m3 := make(chan string, 3)
 
-	go acquire1(m1, r, ctx1, lockID)
-	go acquire2(m2, r, ctx2, lockID)
-	go acquire3(m3, r, ctx3, lockID)
+	lockID2_m1 := make(chan string, 3)
+	lockID2_m2 := make(chan string, 3)
+	lockID2_m3 := make(chan string, 3)
 
-	assert.True(t, waitUntilHelper(lockID, 0), "Expected Queue size to be 0.")
-	m3 <- "lock"
-	m2 <- "lock"
+	lockID3_m1 := make(chan string, 3)
+	lockID3_m2 := make(chan string, 3)
+	lockID3_m3 := make(chan string, 3)
 
-	assert.True(t, waitUntilHelper(lockID, 1), "Expected Queue size to be 2.")
+	go acquire1(lockID1_m1, r, ctx1, lockID1)
+	go acquire2(lockID1_m2, r, ctx2, lockID1)
+	go acquire3(lockID1_m3, r, ctx3, lockID1)
 
-	Unlock(ctx(), ctx3, lockID)
+	go acquire1(lockID2_m1, r, ctx1, lockID2)
+	go acquire2(lockID2_m2, r, ctx2, lockID2)
+	go acquire3(lockID2_m3, r, ctx3, lockID2)
+
+	go acquire1(lockID3_m1, r, ctx1, lockID3)
+	go acquire2(lockID3_m2, r, ctx2, lockID3)
+	go acquire3(lockID3_m3, r, ctx3, lockID3)
+
+	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
+
+	lockID1_m3 <- "lock"
+	lockID1_m2 <- "lock"
+	lockID2_m3 <- "lock"
+	lockID2_m2 <- "lock"
+	lockID3_m3 <- "lock"
+	lockID3_m2 <- "lock"
+	assert.True(t, waitUntilHelper(lockID1, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID3))
+
+	Unlock(ctx(), ctx3, lockID1)
+	Unlock(ctx(), ctx3, lockID2)
+	Unlock(ctx(), ctx3, lockID3)
 	snooze()
-	assert.True(t, waitUntilHelper(lockID, 0), "Expected Queue size to be 1.")
+	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
 
-	m1 <- "lock"
-
-	m3 <- "done"
+	lockID1_m1 <- "lock"
+	lockID1_m3 <- "done"
+	lockID2_m1 <- "lock"
+	lockID2_m3 <- "done"
+	lockID3_m1 <- "lock"
+	lockID3_m3 <- "done"
 	snooze()
-	assert.True(t, waitUntilHelper(lockID, 1), "Expected Queue size to be 1.")
+	assert.True(t, waitUntilHelper(lockID1, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 1), fmt.Sprintf("Expected Queue size for lock %s to be 1.", lockID3))
 
-	Unlock(ctx(), ctx2, lockID)
+	Unlock(ctx(), ctx2, lockID1)
+	Unlock(ctx(), ctx2, lockID2)
+	Unlock(ctx(), ctx2, lockID3)
 	snooze()
-	assert.True(t, waitUntilHelper(lockID, 0), "Expected Queue size to be 0.")
+	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
 
-	m2 <- "done"
+	lockID1_m2 <- "done"
+	lockID2_m2 <- "done"
+	lockID3_m2 <- "done"
 	snooze()
-	assert.True(t, waitUntilHelper(lockID, 0), "Expected Queue size to be 0.")
+	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
 
-	Unlock(ctx(), ctx1, lockID)
+	Unlock(ctx(), ctx1, lockID1)
+	Unlock(ctx(), ctx1, lockID2)
+	Unlock(ctx(), ctx1, lockID3)
 	snooze()
-	assert.True(t, waitUntilHelper(lockID, 0), "Expected Queue size to be 0.")
+	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
 
-	m1 <- "done"
+	lockID1_m1 <- "done"
+	lockID2_m1 <- "done"
+	lockID3_m1 <- "done"
 	snooze()
-	assert.True(t, waitUntilHelper(lockID, 0), "Expected Queue size to be 0.")
+	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
 
-	r1 := <-r
-	r2 := <-r
-	r3 := <-r
+	lockID1_r1 := <-r
+	lockID1_r2 := <-r
+	lockID1_r3 := <-r
 
-	if r1 != "done3" && r2 != "done2" && r3 != "done1" {
+	lockID2_r1 := <-r
+	lockID2_r2 := <-r
+	lockID2_r3 := <-r
+
+	lockID3_r1 := <-r
+	lockID3_r2 := <-r
+	lockID3_r3 := <-r
+
+	if lockID1_r1 != "done3" && lockID1_r2 != "done2" && lockID1_r3 != "done1" {
+		t.Error("Expected done3 followed by done2 followed by done1")
+	}
+	if lockID2_r1 != "done3" && lockID2_r2 != "done2" && lockID2_r3 != "done1" {
+		t.Error("Expected done3 followed by done2 followed by done1")
+	}
+	if lockID3_r1 != "done3" && lockID3_r2 != "done2" && lockID3_r3 != "done1" {
 		t.Error("Expected done3 followed by done2 followed by done1")
 	}
 }
@@ -252,27 +392,44 @@ func TestWaitQueueSize2(t *testing.T) {
 func TestWaitQueueSize3(t *testing.T) {
 	const total = uint32(10)
 	r := make(chan string, total)
-	var allChan [total]chan string
-	lockID := "waitLock"
+	var allChan1 [total]chan string
+	var allChan2 [total]chan string
+	var allChan3 [total]chan string
+	lockID1 := "waitLock1"
+	lockID2 := "waitLock2"
+	lockID3 := "waitLock3"
 
-	for i := 1; i <= int(total); i++ {
-		allChan[i-1] = make(chan string)
-	}
-
-	assert.True(t, waitUntilHelper(lockID, 0), "Expected Queue size to be 0.")
+	assert.True(t, waitUntilHelper(lockID1, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID1))
+	assert.True(t, waitUntilHelper(lockID2, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID2))
+	assert.True(t, waitUntilHelper(lockID3, 0), fmt.Sprintf("Expected Queue size for lock %s to be 0.", lockID3))
 
 	for i := 0; i < int(total); i++ {
-		allChan[i] = make(chan string, 3)
+		allChan1[i] = make(chan string, 3)
+		allChan2[i] = make(chan string, 3)
+		allChan3[i] = make(chan string, 3)
 
-		go acquireX(allChan[i], r, "textContext"+strconv.Itoa(i+1), lockID)
-		allChan[i] <- "lock"
+		go acquireX(allChan1[i], r, "textContext"+strconv.Itoa(i+1), lockID1)
+		go acquireX(allChan2[i], r, "textContext"+strconv.Itoa(i+1), lockID2)
+		go acquireX(allChan3[i], r, "textContext"+strconv.Itoa(i+1), lockID3)
+
+		allChan1[i] <- "lock"
+		allChan2[i] <- "lock"
+		allChan3[i] <- "lock"
 
 		snooze()
-		assert.True(t, waitUntilHelper(lockID, uint32(i)),
+		assert.True(t, waitUntilHelper(lockID1, uint32(i)),
+			fmt.Sprintf("Expected Queue size to be %v", i))
+		assert.True(t, waitUntilHelper(lockID2, uint32(i)),
+			fmt.Sprintf("Expected Queue size to be %v", i))
+		assert.True(t, waitUntilHelper(lockID3, uint32(i)),
 			fmt.Sprintf("Expected Queue size to be %v", i))
 	}
 
-	assert.True(t, waitUntilHelper(lockID, total-1), fmt.Sprintf("Expected Queue size to be %v.",
+	assert.True(t, waitUntilHelper(lockID1, total-1), fmt.Sprintf("Expected Queue size to be %v.",
+		total-1))
+	assert.True(t, waitUntilHelper(lockID2, total-1), fmt.Sprintf("Expected Queue size to be %v.",
+		total-1))
+	assert.True(t, waitUntilHelper(lockID3, total-1), fmt.Sprintf("Expected Queue size to be %v.",
 		total-1))
 
 	for i := 0; i < int(total); i++ {
@@ -281,16 +438,28 @@ func TestWaitQueueSize3(t *testing.T) {
 			expectedCount = 0
 		}
 
-		Unlock(ctx(), "textContext"+strconv.Itoa(i+1), lockID)
+		Unlock(ctx(), "textContext"+strconv.Itoa(i+1), lockID1)
+		Unlock(ctx(), "textContext"+strconv.Itoa(i+1), lockID2)
+		Unlock(ctx(), "textContext"+strconv.Itoa(i+1), lockID3)
 		snooze()
 
-		assert.True(t, waitUntilHelper(lockID, expectedCount),
+		assert.True(t, waitUntilHelper(lockID1, expectedCount),
+			fmt.Sprintf("Expected Queue size to be %v", expectedCount))
+		assert.True(t, waitUntilHelper(lockID2, expectedCount),
+			fmt.Sprintf("Expected Queue size to be %v", expectedCount))
+		assert.True(t, waitUntilHelper(lockID3, expectedCount),
 			fmt.Sprintf("Expected Queue size to be %v", expectedCount))
 
-		allChan[i] <- "done"
+		allChan1[i] <- "done"
+		allChan2[i] <- "done"
+		allChan3[i] <- "done"
 
 		snooze()
-		assert.True(t, waitUntilHelper(lockID, expectedCount),
+		assert.True(t, waitUntilHelper(lockID1, expectedCount),
+			fmt.Sprintf("Expected Queue size to be %v", expectedCount))
+		assert.True(t, waitUntilHelper(lockID2, expectedCount),
+			fmt.Sprintf("Expected Queue size to be %v", expectedCount))
+		assert.True(t, waitUntilHelper(lockID3, expectedCount),
 			fmt.Sprintf("Expected Queue size to be %v", expectedCount))
 	}
 }

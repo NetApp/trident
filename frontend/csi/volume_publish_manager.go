@@ -12,10 +12,13 @@ import (
 	"strings"
 
 	"github.com/spf13/afero"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
@@ -95,6 +98,13 @@ func (v *VolumePublishManager) WriteTrackingInfo(
 		return err
 	}
 
+	// we can have locks on filename itself.
+	lockContext := "WriteTrackingInfo"
+	defer utils.Unlock(ctx, lockContext, filename)
+	if !attemptLock(ctx, lockContext, filename, csiNodeLockTimeout) {
+		return status.Error(codes.Aborted, "request waited too long for the lock")
+	}
+
 	err := jsonRW.WriteJSONFile(ctx, trackingInfo, tmpFile, "volume tracking info")
 	if err != nil {
 		return err
@@ -133,6 +143,11 @@ func (v *VolumePublishManager) readTrackingInfo(
 		return nil, err
 	}
 
+	lockContext := "ReadTrackingInfo"
+	defer utils.Unlock(ctx, lockContext, filename)
+	if !attemptLock(ctx, lockContext, filename, csiNodeLockTimeout) {
+		return nil, status.Error(codes.Aborted, "request waited too long for the lock on tracking file")
+	}
 	err := jsonRW.ReadJSONFile(ctx, &volumeTrackingInfo, path.Join(v.volumeTrackingInfoPath, filename),
 		"volume tracking info")
 	if err != nil {

@@ -27,6 +27,7 @@ import (
 	"github.com/netapp/trident/utils/fcp"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
+	"github.com/netapp/trident/utils/limiter"
 	"github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/mount"
 	"github.com/netapp/trident/utils/nvme"
@@ -72,6 +73,8 @@ type Plugin struct {
 	opCache sync.Map
 
 	nodeIsRegistered bool
+
+	limiterSharedMap map[string]limiter.Limiter
 
 	iSCSISelfHealingTicker   *time.Ticker
 	iSCSISelfHealingChannel  chan struct{}
@@ -196,6 +199,7 @@ func NewNodePlugin(
 		enableForceDetach:        enableForceDetach,
 		unsafeDetach:             unsafeDetach,
 		opCache:                  sync.Map{},
+		limiterSharedMap:         make(map[string]limiter.Limiter),
 		iSCSISelfHealingInterval: iSCSISelfHealingInterval,
 		iSCSISelfHealingWaitTime: iSCSIStaleSessionWaitTime,
 		nvmeHandler:              nvme.NewNVMeHandler(),
@@ -306,6 +310,7 @@ func NewAllInOnePlugin(
 		controllerHelper:         *controllerHelper,
 		nodeHelper:               *nodeHelper,
 		opCache:                  sync.Map{},
+		limiterSharedMap:         make(map[string]limiter.Limiter),
 		iSCSISelfHealingInterval: iSCSISelfHealingInterval,
 		iSCSISelfHealingWaitTime: iSCSIStaleSessionWaitTime,
 		nvmeHandler:              nvme.NewNVMeHandler(),
@@ -394,6 +399,9 @@ func (p *Plugin) Activate() error {
 
 			p.startISCSISelfHealingThread(ctx)
 			p.startNVMeSelfHealingThread(ctx)
+
+			// Initialize node scalability limiter.
+			p.InitializeNodeLimiter(ctx)
 
 			if p.enableForceDetach {
 				p.startReconcilingNodePublications(ctx)
@@ -617,4 +625,68 @@ func (p *Plugin) stopNVMeSelfHealingThread(_ context.Context) {
 	}
 
 	return
+}
+
+// InitializeNodeLimiter initializes the sharedMapLimiter of node with various csi workflow related limiters.
+// This function sets up limiters for different volume operations such as staging, unstaging,
+// publishing, and unpublishing NFS and SMB volumes. Each limiter is configured with a semaphoreN
+// to control the maximum number of concurrent operations allowed for each type of volume operation.
+func (p *Plugin) InitializeNodeLimiter(ctx context.Context) {
+	var err error
+
+	if p.limiterSharedMap[NodeStageNFSVolume], err = limiter.New(ctx,
+		NodeStageNFSVolume,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodeStageNFSVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodeStageNFSVolume, err)
+	}
+
+	if p.limiterSharedMap[NodeStageSMBVolume], err = limiter.New(ctx,
+		NodeStageSMBVolume,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodeStageSMBVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodeStageSMBVolume, err)
+	}
+
+	if p.limiterSharedMap[NodeUnstageNFSVolume], err = limiter.New(ctx,
+		NodeUnstageNFSVolume,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodeUnstageNFSVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodeUnstageNFSVolume, err)
+	}
+
+	if p.limiterSharedMap[NodeUnstageSMBVolume], err = limiter.New(ctx,
+		NodeUnstageSMBVolume,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodeUnstageSMBVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodeUnstageSMBVolume, err)
+	}
+
+	if p.limiterSharedMap[NodePublishNFSVolume], err = limiter.New(ctx,
+		NodePublishNFSVolume,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodePublishNFSVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodePublishNFSVolume, err)
+	}
+
+	if p.limiterSharedMap[NodePublishSMBVolume], err = limiter.New(ctx,
+		NodePublishSMBVolume,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodePublishSMBVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodePublishSMBVolume, err)
+	}
+
+	if p.limiterSharedMap[NodeUnpublishVolume], err = limiter.New(ctx,
+		NodeUnpublishVolume,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodeUnpublishVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodeUnpublishVolume, err)
+	}
 }

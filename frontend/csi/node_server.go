@@ -44,7 +44,7 @@ import (
 
 const (
 	tridentDeviceInfoPath           = "/var/lib/trident/tracking"
-	lockID                          = "csi_node_server"
+	nodeLockID                      = "csi_node_server"
 	AttachISCSIVolumeTimeoutShort   = 20 * time.Second
 	AttachFCPVolumeTimeoutShort     = 20 * time.Second
 	iSCSINodeUnstageMaxDuration     = 15 * time.Second
@@ -57,12 +57,31 @@ const (
 	nvmeMaxFlushWaitDuration        = 6 * time.Minute
 	csiNodeLockTimeout              = 60 * time.Second
 	fsUnavailableTimeout            = 5 * time.Second
+
+	// Node Scalability constants.
+	maxNodeStageNFSVolumeOperations   = 10
+	maxNodeStageSMBVolumeOperations   = 10
+	maxNodeUnstageNFSVolumeOperations = 10
+	maxNodeUnstageSMBVolumeOperations = 10
+	maxNodePublishNFSVolumeOperations = 10
+	maxNodePublishSMBVolumeOperations = 10
+	maxNodeUnpublishVolumeOperations  = 10
+
+	NodeStageNFSVolume   = "NodeStageNFSVolume"
+	NodeStageSMBVolume   = "NodeStageSMBVolume"
+	NodeUnstageNFSVolume = "NodeUnstageNFSVolume"
+	NodeUnstageSMBVolume = "NodeUnstageSMBVolume"
+	NodePublishNFSVolume = "NodePublishNFSVolume"
+	NodePublishSMBVolume = "NodePublishSMBVolume"
+	NodeUnpublishVolume  = "NodeUnpublishVolume"
 )
 
 var (
-	topologyLabels = make(map[string]string)
-	iscsiUtils     = utils.IscsiUtils
-	fcpUtils       = utils.FcpUtils
+	// TODO (pshashan): Unify both csiNodeLockTimeout and csiKubeletTimeout
+	csiKubeletTimeout = 110 * time.Second
+	topologyLabels    = make(map[string]string)
+	iscsiUtils        = utils.IscsiUtils
+	fcpUtils          = utils.FcpUtils
 
 	publishedISCSISessions, currentISCSISessions models.ISCSISessions
 	publishedNVMeSessions, currentNVMeSessions   nvme.NVMeSessions
@@ -80,7 +99,7 @@ const (
 	removeMultipathDeviceMappingRetryDelay = 500 * time.Millisecond
 )
 
-func attemptLock(ctx context.Context, lockContext string, lockTimeout time.Duration) bool {
+func attemptLock(ctx context.Context, lockContext, lockID string, lockTimeout time.Duration) bool {
 	startTime := time.Now()
 	utils.Lock(ctx, lockContext, lockID)
 	// Fail if the gRPC call came in a long time ago to avoid kubelet 120s timeout
@@ -96,29 +115,42 @@ func (p *Plugin) NodeStageVolume(
 ) (*csi.NodeStageVolumeResponse, error) {
 	ctx = SetContextWorkflow(ctx, WorkflowNodeStage)
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
+	ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+	defer cancel()
 
 	fields := LogFields{"Method": "NodeStageVolume", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeStageVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeStageVolume")
 
-	lockContext := "NodeStageVolume-" + req.GetVolumeId()
-	defer utils.Unlock(ctx, lockContext, lockID)
-
-	if !attemptLock(ctx, lockContext, csiNodeLockTimeout) {
+	lockContext := "NodeStageVolume"
+	defer utils.Unlock(ctx, lockContext, req.GetVolumeId())
+	if !attemptLock(ctx, lockContext, req.GetVolumeId(), csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
 	}
+
+	var resp *csi.NodeStageVolumeResponse
+	var err error
+
 	switch req.PublishContext["protocol"] {
 	case string(tridentconfig.File):
 		if req.PublishContext["filesystemType"] == smb.SMB {
-			return p.nodeStageSMBVolume(ctx, req)
+			resp, err = p.nodeStageSMBVolume(ctx, req)
 		} else {
-			return p.nodeStageNFSVolume(ctx, req)
+			resp, err = p.nodeStageNFSVolume(ctx, req)
 		}
 	case string(tridentconfig.Block):
 		return p.nodeStageSANVolume(ctx, req)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "unknown protocol")
 	}
+
+	if err != nil {
+		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+			return nil, status.Error(codes.DeadlineExceeded, "nodeStageVolume timed out")
+		}
+		return nil, err
+	}
+	return resp, nil
 }
 
 func (p *Plugin) NodeUnstageVolume(
@@ -126,6 +158,8 @@ func (p *Plugin) NodeUnstageVolume(
 ) (*csi.NodeUnstageVolumeResponse, error) {
 	ctx = SetContextWorkflow(ctx, WorkflowNodeUnstage)
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
+	ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+	defer cancel()
 
 	return p.nodeUnstageVolume(ctx, req, false)
 }
@@ -142,12 +176,12 @@ func (p *Plugin) nodeUnstageVolume(
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeUnstageVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeUnstageVolume")
 
-	lockContext := "NodeUnstageVolume-" + req.GetVolumeId()
-	defer utils.Unlock(ctx, lockContext, lockID)
-
-	if !attemptLock(ctx, lockContext, csiNodeLockTimeout) {
+	lockContext := "NodeUnstageVolume"
+	defer utils.Unlock(ctx, lockContext, req.GetVolumeId())
+	if !attemptLock(ctx, lockContext, req.GetVolumeId(), csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
 	}
+
 	// Empty strings for either of these arguments are required by CSI Sanity to return an error.
 	if req.VolumeId == "" {
 		msg := "nodeUnstageVolume was called, but no VolumeID was provided in the request"
@@ -184,6 +218,8 @@ func (p *Plugin) nodeUnstageVolume(
 		return nil, status.Errorf(codes.FailedPrecondition, "unable to read protocol info from publish info; %s", err)
 	}
 
+	var resp *csi.NodeUnstageVolumeResponse
+
 	switch protocol {
 	case tridentconfig.File:
 		if publishInfo.FilesystemType == smb.SMB {
@@ -191,9 +227,11 @@ func (p *Plugin) nodeUnstageVolume(
 				Logc(ctx).WithFields(fields).WithField("protocol", tridentconfig.File).
 					Warning("forced unstage not supported for this protocol")
 			}
-			return p.nodeUnstageSMBVolume(ctx, req)
+			resp, err = p.nodeUnstageSMBVolume(ctx, req)
+		} else {
+			resp, err = p.nodeUnstageNFSVolume(ctx, req)
 		}
-		return p.nodeUnstageNFSVolume(ctx, req)
+
 	case tridentconfig.Block:
 		if publishInfo.SANType == sa.NVMe {
 			return p.nodeUnstageNVMeVolume(ctx, req, publishInfo, force)
@@ -204,6 +242,14 @@ func (p *Plugin) nodeUnstageVolume(
 	default:
 		return nil, status.Error(codes.InvalidArgument, "unknown protocol")
 	}
+
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return nil, status.Error(codes.DeadlineExceeded, "nodeUnstageVolume timed out")
+		}
+		return nil, err
+	}
+	return resp, nil
 }
 
 func (p *Plugin) NodePublishVolume(
@@ -211,20 +257,26 @@ func (p *Plugin) NodePublishVolume(
 ) (*csi.NodePublishVolumeResponse, error) {
 	ctx = SetContextWorkflow(ctx, WorkflowNodePublish)
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
+	ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+	defer cancel()
 
 	fields := LogFields{"Method": "NodePublishVolume", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodePublishVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodePublishVolume")
 
-	lockContext := "NodePublishVolume-" + req.GetVolumeId()
-	defer utils.Unlock(ctx, lockContext, lockID)
-
-	if !attemptLock(ctx, lockContext, csiNodeLockTimeout) {
+	lockContext := "NodePublishVolume"
+	defer utils.Unlock(ctx, lockContext, req.GetVolumeId())
+	if !attemptLock(ctx, lockContext, req.GetVolumeId(), csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
 	}
+
+	var resp *csi.NodePublishVolumeResponse
+	var err error
+
 	switch req.PublishContext["protocol"] {
 	case string(tridentconfig.File):
-		trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeId)
+		var trackingInfo *models.VolumeTrackingInfo
+		trackingInfo, err = p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeId)
 		if err != nil {
 			if errors.IsNotFoundError(err) {
 				return nil, status.Error(codes.FailedPrecondition, err.Error())
@@ -233,9 +285,9 @@ func (p *Plugin) NodePublishVolume(
 			}
 		}
 		if trackingInfo.VolumePublishInfo.FilesystemType == smb.SMB {
-			return p.nodePublishSMBVolume(ctx, req)
+			resp, err = p.nodePublishSMBVolume(ctx, req)
 		} else {
-			return p.nodePublishNFSVolume(ctx, req)
+			resp, err = p.nodePublishNFSVolume(ctx, req)
 		}
 	case string(tridentconfig.Block):
 		if req.PublishContext["SANType"] == sa.NVMe {
@@ -247,6 +299,14 @@ func (p *Plugin) NodePublishVolume(
 	default:
 		return nil, status.Error(codes.InvalidArgument, "unknown protocol")
 	}
+
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return nil, status.Error(codes.DeadlineExceeded, "nodePublishVolume timed out")
+		}
+		return nil, err
+	}
+	return resp, nil
 }
 
 func (p *Plugin) NodeUnpublishVolume(
@@ -254,17 +314,23 @@ func (p *Plugin) NodeUnpublishVolume(
 ) (*csi.NodeUnpublishVolumeResponse, error) {
 	ctx = SetContextWorkflow(ctx, WorkflowNodeUnpublish)
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
+	ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+	defer cancel()
 
 	fields := LogFields{"Method": "NodeUnpublishVolume", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeUnpublishVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeUnpublishVolume")
 
-	lockContext := "NodeUnpublishVolume-" + req.GetVolumeId()
-	defer utils.Unlock(ctx, lockContext, lockID)
-
-	if !attemptLock(ctx, lockContext, csiNodeLockTimeout) {
+	lockContext := "NodeUnpublishVolume"
+	defer utils.Unlock(ctx, lockContext, req.GetVolumeId())
+	if !attemptLock(ctx, lockContext, req.GetVolumeId(), csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
 	}
+
+	if err := p.limiterSharedMap[NodeUnpublishVolume].Wait(ctx); err != nil {
+		return nil, err
+	}
+	defer p.limiterSharedMap[NodeUnpublishVolume].Release(ctx)
 
 	if req.GetVolumeId() == "" {
 		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")
@@ -838,6 +904,14 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Du
 func (p *Plugin) nodeStageNFSVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
+	Logc(ctx).Debug(">>>> nodeStageNFSVolume")
+	defer Logc(ctx).Debug("<<<< nodeStageNFSVolume")
+
+	if err := p.limiterSharedMap[NodeStageNFSVolume].Wait(ctx); err != nil {
+		return nil, err
+	}
+	defer p.limiterSharedMap[NodeStageNFSVolume].Release(ctx)
+
 	publishInfo := &models.VolumePublishInfo{
 		Localhost:      true,
 		FilesystemType: "nfs",
@@ -873,6 +947,14 @@ func (p *Plugin) nodeStageNFSVolume(
 func (p *Plugin) nodeUnstageNFSVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest,
 ) (*csi.NodeUnstageVolumeResponse, error) {
+	Logc(ctx).Debug(">>>> nodeUnstageNFSVolume")
+	defer Logc(ctx).Debug("<<<< nodeUnstageNFSVolume")
+
+	if err := p.limiterSharedMap[NodeUnstageNFSVolume].Wait(ctx); err != nil {
+		return nil, err
+	}
+	defer p.limiterSharedMap[NodeUnstageNFSVolume].Release(ctx)
+
 	volumeId, _, err := p.getVolumeIdAndStagingPath(req)
 	if err != nil {
 		return nil, err
@@ -889,6 +971,14 @@ func (p *Plugin) nodeUnstageNFSVolume(
 func (p *Plugin) nodePublishNFSVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
+	Logc(ctx).Debug(">>>> nodePublishNFSVolume")
+	defer Logc(ctx).Debug("<<<< nodePublishNFSVolume")
+
+	if err := p.limiterSharedMap[NodePublishNFSVolume].Wait(ctx); err != nil {
+		return nil, err
+	}
+	defer p.limiterSharedMap[NodePublishNFSVolume].Release(ctx)
+
 	targetPath := req.GetTargetPath()
 	notMnt, err := p.mount.IsLikelyNotMountPoint(ctx, targetPath)
 	if err != nil {
@@ -942,6 +1032,14 @@ func (p *Plugin) nodePublishNFSVolume(
 func (p *Plugin) nodeStageSMBVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
+	Logc(ctx).Debug(">>>> nodeStageSMBVolume")
+	defer Logc(ctx).Debug("<<<< nodeStageSMBVolume")
+
+	if err := p.limiterSharedMap[NodeStageSMBVolume].Wait(ctx); err != nil {
+		return nil, err
+	}
+	defer p.limiterSharedMap[NodeStageSMBVolume].Release(ctx)
+
 	publishInfo := &models.VolumePublishInfo{
 		Localhost:      true,
 		FilesystemType: smb.SMB,
@@ -994,6 +1092,14 @@ func (p *Plugin) nodeStageSMBVolume(
 func (p *Plugin) nodeUnstageSMBVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest,
 ) (*csi.NodeUnstageVolumeResponse, error) {
+	Logc(ctx).Debug(">>>> nodeUnstageSMBVolume")
+	defer Logc(ctx).Debug("<<<< nodeUnstageSMBVolume")
+
+	if err := p.limiterSharedMap[NodeUnstageSMBVolume].Wait(ctx); err != nil {
+		return nil, err
+	}
+	defer p.limiterSharedMap[NodeUnstageSMBVolume].Release(ctx)
+
 	var mappingPath string
 
 	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
@@ -1024,6 +1130,14 @@ func (p *Plugin) nodeUnstageSMBVolume(
 func (p *Plugin) nodePublishSMBVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
+	Logc(ctx).Debug(">>>> nodePublishSMBVolume")
+	defer Logc(ctx).Debug("<<<< nodePublishSMBVolume")
+
+	if err := p.limiterSharedMap[NodePublishSMBVolume].Wait(ctx); err != nil {
+		return nil, err
+	}
+	defer p.limiterSharedMap[NodePublishSMBVolume].Release(ctx)
+
 	targetPath := req.GetTargetPath()
 	if len(targetPath) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "Target path not provided")
@@ -1383,6 +1497,14 @@ func (p *Plugin) nodeUnstageFCPVolume(
 func (p *Plugin) nodeUnstageFCPVolumeRetry(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *models.VolumePublishInfo, force bool,
 ) (*csi.NodeUnstageVolumeResponse, error) {
+	// Serializing all the parallel requests by relying on the constant var.
+	lockContext := "NodeUnstageFCPVolume-" + req.GetVolumeId()
+	defer utils.Unlock(ctx, lockContext, nodeLockID)
+
+	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
+		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	}
+
 	nodeUnstageFCPVolumeNotify := func(err error, duration time.Duration) {
 		Logc(ctx).WithField("increment", duration).Debug("Failed to unstage the volume, retrying.")
 	}
@@ -1410,6 +1532,14 @@ func (p *Plugin) nodeUnstageFCPVolumeRetry(
 func (p *Plugin) nodePublishFCPVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
+	// Serializing all the parallel requests by relying on the constant var.
+	lockContext := "NodePublishFCPVolume-" + req.GetVolumeId()
+	defer utils.Unlock(ctx, lockContext, nodeLockID)
+
+	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
+		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	}
+
 	var err error
 
 	// Read the device info from the volume tracking info path, or if that doesn't exist yet, the staging path.
@@ -1844,6 +1974,14 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 func (p *Plugin) nodeUnstageISCSIVolumeRetry(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *models.VolumePublishInfo, force bool,
 ) (*csi.NodeUnstageVolumeResponse, error) {
+	// Serializing all the parallel requests by relying on the constant var.
+	lockContext := "NodeUnstageISCSIVolume-" + req.GetVolumeId()
+	defer utils.Unlock(ctx, lockContext, nodeLockID)
+
+	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
+		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	}
+
 	nodeUnstageISCSIVolumeNotify := func(err error, duration time.Duration) {
 		Logc(ctx).WithField("increment", duration).Debug("Failed to unstage the volume, retrying.")
 	}
@@ -1871,6 +2009,14 @@ func (p *Plugin) nodeUnstageISCSIVolumeRetry(
 func (p *Plugin) nodePublishISCSIVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
+	// Serializing all the parallel requests by relying on the constant var.
+	lockContext := "NodePublishISCSIVolume-" + req.GetVolumeId()
+	defer utils.Unlock(ctx, lockContext, nodeLockID)
+
+	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
+		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	}
+
 	var err error
 
 	// Read the device info from the volume tracking info path, or if that doesn't exist yet, the staging path.
@@ -2322,8 +2468,8 @@ func (p *Plugin) deprecatedIgroupInUse(ctx context.Context) bool {
 // performISCSISelfHealing inspects the desired state of the iSCSI sessions with the current state and accordingly
 // identifies candidate sessions that require remediation. This function is invoked periodically.
 func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
-	utils.Lock(ctx, iSCSISelfHealingLockContext, lockID)
-	defer utils.Unlock(ctx, iSCSISelfHealingLockContext, lockID)
+	utils.Lock(ctx, iSCSISelfHealingLockContext, nodeLockID)
+	defer utils.Unlock(ctx, iSCSISelfHealingLockContext, nodeLockID)
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -2404,7 +2550,7 @@ func (p *Plugin) fixISCSISessions(ctx context.Context, portals []string, portalT
 
 		// Check if there is a need to stop the loop from running
 		// NOTE: The loop should run at least once for all portal types.
-		if idx > 0 && utils.WaitQueueSize(lockID) > 0 {
+		if idx > 0 && utils.WaitQueueSize(nodeLockID) > 0 {
 			// Check to see if some other operation(s) requires node lock, if not then continue to resolve
 			// non-stale iSCSI portal issues else break out of this loop.
 			if isNonStaleSessionFix {
@@ -2561,6 +2707,14 @@ func (p *Plugin) nodeStageNVMeVolume(
 func (p *Plugin) nodeUnstageNVMeVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *models.VolumePublishInfo, force bool,
 ) (*csi.NodeUnstageVolumeResponse, error) {
+	// Serializing all the parallel requests by relying on the constant var.
+	lockContext := "NodeUnstageNVMeVolume-" + req.GetVolumeId()
+	defer utils.Unlock(ctx, lockContext, nodeLockID)
+
+	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
+		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	}
+
 	disconnect := p.nvmeHandler.RemovePublishedNVMeSession(&publishedNVMeSessions, publishInfo.NVMeSubsystemNQN,
 		publishInfo.NVMeNamespaceUUID)
 
@@ -2691,6 +2845,14 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 func (p *Plugin) nodePublishNVMeVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
+	// Serializing all the parallel requests by relying on the constant var.
+	lockContext := "NodePublishNVMeVolume-" + req.GetVolumeId()
+	defer utils.Unlock(ctx, lockContext, nodeLockID)
+
+	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
+		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	}
+
 	var err error
 
 	// Read the device info from the volume tracking info path, or if that doesn't exist yet, the staging path.
@@ -2754,6 +2916,14 @@ func (p *Plugin) nodePublishNVMeVolume(
 func (p *Plugin) nodeStageSANVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
+	// Serializing all the parallel requests by relying on the constant var.
+	lockContext := "NodeStageSanVolume-" + req.GetVolumeId()
+	defer utils.Unlock(ctx, lockContext, nodeLockID)
+
+	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
+		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	}
+
 	var err error
 
 	mountCapability := req.GetVolumeCapability().GetMount()
@@ -2810,8 +2980,8 @@ func (p *Plugin) nodeStageSANVolume(
 // performNVMeSelfHealing inspects the desired state of the NVMe sessions with the current state and accordingly
 // identifies candidate sessions that require remediation. This function is invoked periodically.
 func (p *Plugin) performNVMeSelfHealing(ctx context.Context) {
-	utils.Lock(ctx, nvmeSelfHealingLockContext, lockID)
-	defer utils.Unlock(ctx, nvmeSelfHealingLockContext, lockID)
+	utils.Lock(ctx, nvmeSelfHealingLockContext, nodeLockID)
+	defer utils.Unlock(ctx, nvmeSelfHealingLockContext, nodeLockID)
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -2860,7 +3030,7 @@ func (p *Plugin) fixNVMeSessions(ctx context.Context, stopAt time.Time, subsyste
 		// 1. We should fix at least one subsystem in a single self-healing thread.
 		// 2. If there's another thread waiting for the node lock and if we have exceeded our 60 secs lock, we should
 		//    stop NVMe self-healing.
-		if index > 0 && utils.WaitQueueSize(lockID) > 0 && time.Now().After(stopAt) {
+		if index > 0 && utils.WaitQueueSize(nodeLockID) > 0 && time.Now().After(stopAt) {
 			Logc(ctx).Info("Self-healing has exceeded maximum runtime; preempting NVMe session self-healing.")
 			break
 		}
