@@ -73,8 +73,9 @@ type CommonStorageDriverConfig struct {
 	DisableDelete     bool                  `json:"disableDelete"`
 	StoragePrefixRaw  json.RawMessage       `json:"storagePrefix,string"`
 	StoragePrefix     *string               `json:"-"`
-	SerialNumbers     []string              `json:"serialNumbers,omitEmpty"`
-	BackendPools      []string              `json:"backendPools,omitEmpty"`
+	SerialNumbers     []string              `json:"serialNumbers,omitempty"`
+	Flags             map[string]string     `json:"flags,omitempty"`
+	BackendPools      []string              `json:"backendPools,omitempty"`
 	DriverContext     trident.DriverContext `json:"-"`
 	LimitVolumeSize   string                `json:"limitVolumeSize"`
 	Credentials       map[string]string     `json:"credentials"`
@@ -109,7 +110,7 @@ func (d *CommonStorageDriverConfig) SetBackendName(backendName string) {
 // OntapStorageDriverConfig holds settings for OntapStorageDrivers
 type OntapStorageDriverConfig struct {
 	*CommonStorageDriverConfig                  // embedded types replicate all fields
-	AWSConfig                        *AWSConfig `json:"aws,omitEmpty"` // AWS-specific config attributes
+	AWSConfig                        *AWSConfig `json:"aws,omitempty"` // AWS-specific config attributes
 	ManagementLIF                    string     `json:"managementLIF"`
 	DataLIF                          string     `json:"dataLIF"`
 	IgroupName                       string     `json:"igroupName"`
@@ -123,7 +124,7 @@ type OntapStorageDriverConfig struct {
 	QtreesPerFlexvol                 string     `json:"qtreesPerFlexvol"`                 // default to 200
 	LUNsPerFlexvol                   string     `json:"lunsPerFlexvol"`                   // default to 100
 	EmptyFlexvolDeferredDeletePeriod string     `json:"emptyFlexvolDeferredDeletePeriod"` // in seconds, default to 28800
-	CloneSplitDelay                  string     `json:"cloneSplitDelay,omitEmpty"`        // in seconds, default to 10
+	CloneSplitDelay                  string     `json:"cloneSplitDelay,omitempty"`        // in seconds, default to 10
 	NfsMountOptions                  string     `json:"nfsMountOptions"`
 	LimitAggregateUsage              string     `json:"limitAggregateUsage"`
 	LimitVolumePoolSize              string     `json:"limitVolumePoolSize"`
@@ -182,7 +183,7 @@ type OntapFlexGroupStorageBackendPool struct {
 // OntapStorageBackendPool is a non-overlapping section of an ONTAP backend that may be used for provisioning storage.
 type OntapStorageBackendPool struct {
 	SvmUUID   string `json:"svmUUID"`
-	Aggregate string `json:"aggregate"`
+	Aggregate string `json:"aggregate,omitempty"`
 }
 
 // OntapEconomyStorageBackendPool is a non-overlapping section of an ONTAP economy backend that may be used for

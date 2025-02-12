@@ -114,8 +114,8 @@ type ZapiClientInterface interface {
 	// LunUnmap deletes the lun mapping for the given LUN path and igroup
 	// equivalent to filer::> lun mapping delete -vserver iscsi_vs -path /vol/v/lun0 -igroup group
 	LunUnmap(initiatorGroupName, lunPath string) (*azgo.LunUnmapResponse, error)
-	// LunSize retrieves the size of the specified volume, does not work with economy driver
-	LunSize(flexvolName string) (int, error)
+	// LunSize retrieves the size of the specified LUN, does not work with economy driver
+	LunSize(lunPath string) (int, error)
 	// FlexGroupCreate creates a FlexGroup with the specified options
 	// equivalent to filer::> volume create -vserver svm_name -volume fg_vol_name –auto-provision-as flexgroup -size fg_size  -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
 	FlexGroupCreate(

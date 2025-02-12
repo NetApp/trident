@@ -3516,8 +3516,7 @@ func TestLunCreate(t *testing.T) {
 
 	// case 2: Create LUN returned error
 	rsi.EXPECT().LunCreate(ctx, lun.Name, int64(2147483648), lun.OsType, lun.Qos, lun.SpaceReserved,
-		lun.SpaceAllocated).
-		Return(fmt.Errorf("Failed to create LUN"))
+		lun.SpaceAllocated).Return(fmt.Errorf("Failed to create LUN"))
 	err = oapi.LunCreate(ctx, lun)
 	assert.Error(t, err, "no error returned while creating a LUN info")
 }
@@ -3655,19 +3654,9 @@ func TestLunCloneCreate(t *testing.T) {
 func TestLunSetComments(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
-	// Positive test, update the comment on LUN
 	rsi.EXPECT().LunSetComment(ctx, gomock.Any(), gomock.Any()).Return(nil)
-	err := oapi.LunSetComments(ctx, "/", "filesystem", "fake-context", "")
+	err := oapi.LunSetComment(ctx, "/", "fake-context")
 	assert.NoError(t, err, "error returned while modifying a comment on LUN")
-
-	// Negative test, the length of comment is more than 254 char
-	context := "thisIsATestLabelWhoseLengthShouldExceed1023Characters_AddingSomeRandomCharacters_" +
-		"V88bESTQlRIWRSS40sx9ND8P9yPf0LV8jPofiqtTp2iIXgotGh83zZ1HEeFlMGxZlIcOiPdoi07cJ" +
-		"V88bESTQlRIWRSS40sx9ND8P9yPf0LV8jPofiqtTp2iIXgotGh83zZ1HEeFlMGxZlIcOiPdoi07cJ" +
-		"bQBuHvTRNX6pHRKUXaIrjEpygM4SpaqHYdZ8O1k2meeugg7eXu4dPhqetI3Sip3W4v9QuFkh1YBaI"
-
-	err = oapi.LunSetComments(ctx, "/", "filesystem", context, "")
-	assert.Error(t, err, "no error returned while modifying a comment on LUN")
 }
 
 func TestLunSetQosPolicy(t *testing.T) {
@@ -3848,14 +3837,14 @@ func TestLunSize(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Positive test, get the lun size.
-	rsi.EXPECT().LunSize(ctx, gomock.Any()).Return(2147483648, nil)
-	size, err := oapi.LunSize(ctx, "/vol/lun0")
+	rsi.EXPECT().LunSize(ctx, "/vol/vol1/lun0").Return(2147483648, nil)
+	size, err := oapi.LunSize(ctx, "/vol/vol1/lun0")
 	assert.NoError(t, err, "error returned while getting a lun size")
 	assert.Equal(t, 2147483648, size)
 
 	// case 2: Negative test, get the lun size.
-	rsi.EXPECT().LunSize(ctx, gomock.Any()).Return(0, fmt.Errorf("failed to get size"))
-	_, err = oapi.LunSize(ctx, "/vol/lun0")
+	rsi.EXPECT().LunSize(ctx, "/vol/vol1/lun0").Return(0, fmt.Errorf("failed to get size"))
+	_, err = oapi.LunSize(ctx, "/vol/vol1/lun0")
 	assert.Error(t, err, "no error returned while getting a lun size")
 }
 

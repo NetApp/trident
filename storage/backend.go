@@ -864,8 +864,8 @@ func (b *StorageBackend) CreateSnapshot(
 ) (*Snapshot, error) {
 	Logc(ctx).WithFields(LogFields{
 		"backend":        b.name,
-		"volume":         snapConfig.Name,
-		"volumeInternal": snapConfig.InternalName,
+		"volume":         volConfig.Name,
+		"volumeInternal": volConfig.InternalName,
 		"snapshot":       snapConfig.Name,
 	}).Debug("Attempting snapshot create.")
 

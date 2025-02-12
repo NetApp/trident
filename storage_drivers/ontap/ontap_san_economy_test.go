@@ -242,6 +242,9 @@ func newMockAWSOntapSanEcoDriver(t *testing.T) (*mockapi.MockOntapAPI, *mockapi.
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mockAWSAPI := mockapi.NewMockAWSAPI(mockCtrl)
 
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
+
 	driver := newTestOntapSanEcoDriver(t, vserverAdminHost, vserverAdminPort, vserverAggrName, false, &fsxId, mockAPI)
 	driver.AWSAPI = mockAWSAPI
 	return mockAPI, mockAWSAPI, driver
@@ -254,6 +257,9 @@ func newMockOntapSanEcoDriver(t *testing.T) (*mockapi.MockOntapAPI, *SANEconomyS
 
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
 	driver := newTestOntapSanEcoDriver(t, vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil, mockAPI)
 	return mockAPI, driver
@@ -3767,6 +3773,7 @@ func TestOntapSanEconomyEnsureFlexvolForLUN_FlexvolNotFound(t *testing.T) {
 
 func TestOntapSanEconomyEnsureFlexvolForLUN_NewFlexvolNotPermitted(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
+	d.Config.CommonStorageDriverConfig = nil
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "ontap-san-economy",
@@ -4624,6 +4631,7 @@ func TestOntapSanEconomyVolumeResize_VolumeSetSizeFailed2(t *testing.T) {
 
 func TestOntapSanEconomyInitialize(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
+	d.Config.CommonStorageDriverConfig = nil
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "ontap-san-economy",
@@ -4684,6 +4692,7 @@ func TestOntapSanEconomyInitialize_WithNameTemplate(t *testing.T) {
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
 	d := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	d.Config.CommonStorageDriverConfig = nil
 	d.API = mockAPI
 	d.ips = []string{"127.0.0.1"}
 
@@ -4741,6 +4750,7 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInStoragePool(t *testing.T)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
 	d := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	d.Config.CommonStorageDriverConfig = nil
 	d.API = mockAPI
 	d.ips = []string{"127.0.0.1"}
 
@@ -4805,6 +4815,7 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
 	d := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	d.Config.CommonStorageDriverConfig = nil
 	d.API = mockAPI
 	d.ips = []string{"127.0.0.1"}
 
@@ -4869,6 +4880,7 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 
 func TestOntapSanEconomyInitialize_InvalidConfig(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
+	d.Config.CommonStorageDriverConfig = nil
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "ontap-san-economy",
@@ -4938,6 +4950,7 @@ func TestOntapSanEconomyInitialize_NoDataLIFs(t *testing.T) {
 
 func TestOntapSanEconomyInitialize_NumOfLUNs(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
+
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "ontap-san-economy",
@@ -4965,6 +4978,7 @@ func TestOntapSanEconomyInitialize_NumOfLUNs(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.numOfLUNs, func(t *testing.T) {
+			d.Config.CommonStorageDriverConfig = nil
 			commonConfigJSON := fmt.Sprintf(`
 			{
 			    "managementLIF":     "10.0.207.8",
@@ -5007,7 +5021,7 @@ func TestOntapSanEconomyInitialize_NumOfLUNs(t *testing.T) {
 
 func TestOntapSanEconomyInitialize_OtherContext(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
-
+	d.Config.CommonStorageDriverConfig = nil
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "ontap-san-economy",

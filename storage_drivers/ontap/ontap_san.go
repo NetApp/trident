@@ -33,6 +33,14 @@ func lunPath(name string) string {
 	return fmt.Sprintf("/vol/%v/lun0", name)
 }
 
+func lunSizeGetterFromFlexvol(
+	baseGetter func(context.Context, string) (int, error),
+) func(context.Context, string) (int, error) {
+	return func(ctx context.Context, volumeName string) (int, error) {
+		return baseGetter(ctx, lunPath(volumeName))
+	}
+}
+
 // SANStorageDriver is for iSCSI storage provisioning
 type SANStorageDriver struct {
 	initialized bool
@@ -105,20 +113,24 @@ func (d *SANStorageDriver) Initialize(
 		return fmt.Errorf("could not initialize iSCSI client; %v", err)
 	}
 
-	// Initialize the driver's CommonStorageDriverConfig
-	d.Config.CommonStorageDriverConfig = commonConfig
+	if d.Config.CommonStorageDriverConfig == nil {
 
-	// Parse the config
-	config, err := InitializeOntapConfig(ctx, driverContext, configJSON, commonConfig, backendSecret)
-	if err != nil {
-		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+		// Initialize the driver's CommonStorageDriverConfig
+		d.Config.CommonStorageDriverConfig = commonConfig
+
+		// Parse the config
+		config, err := InitializeOntapConfig(ctx, driverContext, configJSON, commonConfig, backendSecret)
+		if err != nil {
+			return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+		}
+
+		d.Config = *config
 	}
-	d.Config = *config
 
 	// Initialize AWS API if applicable.
 	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
 	if d.AWSAPI == nil {
-		d.AWSAPI, err = initializeAWSDriver(ctx, config)
+		d.AWSAPI, err = initializeAWSDriver(ctx, &d.Config)
 		if err != nil {
 			return fmt.Errorf("error initializing %s AWS driver; %v", d.Name(), err)
 		}
@@ -127,12 +139,15 @@ func (d *SANStorageDriver) Initialize(
 	// Initialize the ONTAP API.
 	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
 	if d.API == nil {
-		d.API, err = InitializeOntapDriver(ctx, config)
-		if err != nil {
+		if d.API, err = InitializeOntapDriver(ctx, &d.Config); err != nil {
 			return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 		}
 	}
-	d.Config = *config
+
+	// Load default config parameters
+	if err = PopulateConfigurationDefaults(ctx, &d.Config); err != nil {
+		return fmt.Errorf("could not populate configuration defaults: %v", err)
+	}
 
 	if d.Config.SANType == sa.FCP {
 		if d.wwpns, err = d.API.NetFcpInterfaceGetDataLIFs(ctx, d.Config.SANType); err != nil {
@@ -166,9 +181,8 @@ func (d *SANStorageDriver) Initialize(
 	if err != nil {
 		if d.Config.DriverContext == tridentconfig.ContextCSI {
 			// Clean up igroup for failed driver.
-			err := d.API.IgroupDestroy(ctx, d.Config.IgroupName)
-			if err != nil {
-				Logc(ctx).WithError(err).WithField("igroup", d.Config.IgroupName).Warn("Error deleting igroup.")
+			if igroupErr := d.API.IgroupDestroy(ctx, d.Config.IgroupName); igroupErr != nil {
+				Logc(ctx).WithError(igroupErr).WithField("igroup", d.Config.IgroupName).Warn("Error deleting igroup.")
 			}
 		}
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
@@ -1058,7 +1072,7 @@ func (d *SANStorageDriver) GetSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
 
-	return getVolumeSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.LunSize)
+	return getVolumeSnapshot(ctx, snapConfig, &d.Config, d.API, lunSizeGetterFromFlexvol(d.API.LunSize))
 }
 
 // GetSnapshots returns the list of snapshots associated with the specified volume
@@ -1073,7 +1087,7 @@ func (d *SANStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshots")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshots")
 
-	return getVolumeSnapshotList(ctx, volConfig, &d.Config, d.API, d.API.LunSize)
+	return getVolumeSnapshotList(ctx, volConfig, &d.Config, d.API, lunSizeGetterFromFlexvol(d.API.LunSize))
 }
 
 // CreateSnapshot creates a snapshot for the given volume
@@ -1092,7 +1106,7 @@ func (d *SANStorageDriver) CreateSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
 
-	return createFlexvolSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.LunSize)
+	return createFlexvolSnapshot(ctx, snapConfig, &d.Config, d.API, lunSizeGetterFromFlexvol(d.API.LunSize))
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
@@ -1433,7 +1447,7 @@ func (d *SANStorageDriver) Resize(
 		return fmt.Errorf("error occurred when checking volume size")
 	}
 
-	currentLunSize, err := d.API.LunSize(ctx, name)
+	currentLunSize, err := d.API.LunSize(ctx, lunPath(name))
 	if err != nil {
 		return fmt.Errorf("error occurred when checking lun size")
 	}

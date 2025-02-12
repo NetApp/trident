@@ -3,7 +3,6 @@
 package api
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -139,6 +138,14 @@ func NewOntapAPIRESTFromRestClientInterface(restClient RestClientInterface) (Ont
 
 func (d OntapAPIREST) SVMName() string {
 	return d.api.SVMName()
+}
+
+func (d OntapAPIREST) IsSANOptimized() bool {
+	return d.api.IsSANOptimized()
+}
+
+func (d OntapAPIREST) IsDisaggregated() bool {
+	return d.api.IsDisaggregated()
 }
 
 func (d OntapAPIREST) ValidateAPIVersion(ctx context.Context) error {
@@ -1685,16 +1692,13 @@ func (d OntapAPIREST) SnapshotDeleteByNameAndStyle(
 
 	// check snapshot delete job status
 	jobLink := getGenericJobLinkFromSnapshotJobLink(snapshotDeleteResult.Payload)
-	snapshotDeleteErr := d.api.PollJobStatus(ctx, jobLink)
-	// if err := client.PollJobStatus(ctx, snapshotDeleteResult.Payload); err != nil {
-	if snapshotDeleteErr != nil {
+	if snapshotDeleteErr := d.api.PollJobStatus(ctx, jobLink); snapshotDeleteErr != nil {
 		Logc(ctx).Debugf("Could not delete the snapshot, going to check if it's busy; error was: %v", snapshotDeleteErr)
 		if restErr, ok := snapshotDeleteErr.(RestError); ok {
 			Logc(ctx).Debugf("restErr: %v", restErr)
 			Logc(ctx).Debugf("restErr.Code(): %v", restErr.Code())
 			if restErr.IsSnapshotBusy() {
 				Logc(ctx).Debug("Snapshot was busy, going to split it")
-				// Start a split here before returning the error so a subsequent delete attempt may succeed.
 				return SnapshotBusyError(fmt.Sprintf("snapshot %s backing volume %s is busy", snapshotName,
 					sourceVolume))
 			}
@@ -2128,15 +2132,15 @@ func (d OntapAPIREST) LunDestroy(ctx context.Context, lunPath string) error {
 	fields := []string{""}
 	lun, err := d.api.LunGetByName(ctx, lunPath, fields)
 	if err != nil {
-		return fmt.Errorf("error getting LUN: %v", lunPath)
+		return fmt.Errorf("error getting LUN %v: %v", lunPath, err)
 	}
 	if lun.UUID == nil {
-		return fmt.Errorf("error getting LUN: %v", lunPath)
+		return fmt.Errorf("error getting LUN %v: LUN UUID is nil", lunPath)
 	}
 
 	err = d.api.LunDelete(ctx, *lun.UUID)
 	if err != nil {
-		return fmt.Errorf("error deleting LUN: %v", lunPath)
+		return fmt.Errorf("error deleting LUN %v: %v", lunPath, err)
 	}
 
 	return nil
@@ -2277,55 +2281,8 @@ func (d OntapAPIREST) LunCloneCreate(
 	return d.api.LunCloneCreate(ctx, fullCloneLunPath, fullSourceLunPath, sizeBytes, lun.OsType, qosPolicyGroup)
 }
 
-// TODO: Change this for LUN Attributes when available
-func (d OntapAPIREST) LunSetComments(ctx context.Context, lunPath, fstype, context, luks string) error {
-	setComment, err := d.GetCommentJSON(ctx, fstype, context, luks, 254)
-	if err != nil {
-		return err
-	}
-	return d.api.LunSetComment(ctx, lunPath, setComment)
-}
-
-// TODO: Change this for LUN Attributes when available
-// GetCommentJSON returns a JSON-formatted string containing the labels on this LUN.
-// This is a temporary solution until we are able to implement LUN attributes in REST
-// For example: {"lunAttributes":{"fstype":"xfs","driverContext":"csi"}}
-func (d OntapAPIREST) GetCommentJSON(ctx context.Context, fstype, context, luks string, commentLimit int) (string,
-	error,
-) {
-	lunCommentMap := make(map[string]map[string]string)
-	newcommentMap := make(map[string]string)
-	newcommentMap["fstype"] = fstype
-	newcommentMap["LUKS"] = luks
-	newcommentMap["driverContext"] = context
-	lunCommentMap["lunAttributes"] = newcommentMap
-
-	lunCommentJSON, err := json.Marshal(lunCommentMap)
-	if err != nil {
-		Logc(ctx).Errorf("Failed to marshal lun comments: %+v", lunCommentMap)
-		return "", err
-	}
-
-	commentsJsonBytes := new(bytes.Buffer)
-	err = json.Compact(commentsJsonBytes, lunCommentJSON)
-	if err != nil {
-		Logc(ctx).Errorf("Failed to compact lun comments: %s", string(lunCommentJSON))
-		return "", err
-	}
-
-	commentsJSON := commentsJsonBytes.String()
-
-	if commentLimit != 0 && len(commentsJSON) > commentLimit {
-		Logc(ctx).WithFields(LogFields{
-			"commentsJSON":       commentsJSON,
-			"commentsJSONLength": len(commentsJSON),
-			"maxCommentLength":   commentLimit,
-		}).Error("comment length exceeds the character limit")
-		return "", fmt.Errorf("comment length %v exceeds the character limit of %v characters", len(commentsJSON),
-			commentLimit)
-	}
-
-	return commentsJSON, nil
+func (d OntapAPIREST) LunSetComment(ctx context.Context, lunPath, comment string) error {
+	return d.api.LunSetComment(ctx, lunPath, comment)
 }
 
 func (d OntapAPIREST) LunSetQosPolicyGroup(ctx context.Context, lunPath string, qosPolicyGroup QosPolicyGroup) error {
@@ -2367,6 +2324,29 @@ func (d OntapAPIREST) LunGetByName(ctx context.Context, name string) (*Lun, erro
 		return nil, err
 	}
 	return lun, nil
+}
+
+func (d OntapAPIREST) LunExists(ctx context.Context, name string) (bool, error) {
+	logFields := LogFields{
+		"Method":  "LunExists",
+		"Type":    "OntapAPIREST",
+		"LunPath": name,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace(">>>> LunExists")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace("<<<< LunExists")
+
+	lunResponse, err := d.api.LunGetByName(ctx, name, make([]string, 0))
+	if err != nil {
+		return false, err
+	}
+
+	if lunResponse != nil {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func (d OntapAPIREST) LunRename(ctx context.Context, lunPath, newLunPath string) error {
@@ -2572,8 +2552,9 @@ func (d OntapAPIREST) LunMapGetReportingNodes(ctx context.Context, initiatorGrou
 	return d.api.LunMapGetReportingNodes(ctx, initiatorGroupName, lunPath)
 }
 
-func (d OntapAPIREST) LunSize(ctx context.Context, flexvolName string) (int, error) {
-	lunPath := fmt.Sprintf("/vol/%v/lun0", flexvolName)
+func (d OntapAPIREST) LunSize(ctx context.Context, lunPath string) (int, error) {
+	// lunPath is either an actual LUN name or a path in the form of /vol/<flexvol>/<lun>.
+	// The caller is responsible for ensuring that the path is in the correct format.
 	return d.api.LunSize(ctx, lunPath)
 }
 
@@ -3367,6 +3348,238 @@ func (d OntapAPIREST) NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, 
 
 func (d OntapAPIREST) NVMeNamespaceGetSize(ctx context.Context, namespacePath string) (int, error) {
 	return d.api.NVMeNamespaceSize(ctx, namespacePath)
+}
+
+func (d OntapAPIREST) StorageUnitSnapshotCreate(
+	ctx context.Context, snapshotName,
+	suName, suType string,
+) error {
+	suUUID, err := d.getStorageUnitUUIDBasedOnType(ctx, suName, suType)
+	if err != nil {
+		return err
+	}
+
+	if err = d.api.StorageUnitSnapshotCreateAndWait(ctx, suUUID, snapshotName); err != nil {
+		return fmt.Errorf("could not create snapshot %v for volume %v; %w", snapshotName, suName, err)
+	}
+	return nil
+}
+
+func (d OntapAPIREST) StorageUnitSnapshotInfo(
+	ctx context.Context, snapshotName,
+	suName, suType string,
+) (*Snapshot, error) {
+	suUUID, err := d.getStorageUnitUUIDBasedOnType(ctx, suName, suType)
+	if err != nil {
+		return nil, err
+	}
+
+	snapListResponse, err := d.api.StorageUnitSnapshotListByName(ctx, suUUID, snapshotName)
+	if err != nil {
+		return nil, fmt.Errorf("error getting snapshot %v for volume %v: %w", snapshotName, suName, err)
+	}
+	if snapListResponse == nil || snapListResponse.Payload == nil || snapListResponse.Payload.StorageUnitSnapshotResponseInlineRecords == nil {
+		return nil, errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapshotName, suName))
+	}
+	if len(snapListResponse.Payload.StorageUnitSnapshotResponseInlineRecords) == 0 {
+		return nil, errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapshotName, suName))
+	}
+
+	if len(snapListResponse.Payload.StorageUnitSnapshotResponseInlineRecords) > 1 {
+		return nil, fmt.Errorf("should have exactly 1 record, not: %v",
+			len(snapListResponse.Payload.StorageUnitSnapshotResponseInlineRecords))
+	}
+
+	snap := snapListResponse.Payload.StorageUnitSnapshotResponseInlineRecords[0]
+	if snap == nil || snap.CreateTime == nil || snap.Name == nil {
+		return nil, fmt.Errorf("error getting snapshot %v for volume %v: %w", snapshotName, suName, err)
+	}
+
+	result := Snapshot{
+		CreateTime: snap.CreateTime.String(),
+		Name:       *snap.Name,
+	}
+	return &result, nil
+}
+
+func (d OntapAPIREST) StorageUnitSnapshotList(
+	ctx context.Context, suName, suType string,
+) (*Snapshots, error) {
+	suUUID, err := d.getStorageUnitUUIDBasedOnType(ctx, suName, suType)
+	if err != nil {
+		return nil, err
+	}
+
+	snapListResponse, err := d.api.StorageUnitSnapshotList(ctx, suUUID)
+	if err != nil {
+		return nil, fmt.Errorf("error enumerating snapshots; %w", err)
+	}
+	if snapListResponse == nil {
+		return nil, fmt.Errorf("error enumerating snapshots")
+	}
+	snapshots := Snapshots{}
+
+	if snapListResponse.Payload != nil {
+		for _, snap := range snapListResponse.Payload.StorageUnitSnapshotResponseInlineRecords {
+			if snap.CreateTime == nil || snap.Name == nil {
+				continue
+			}
+			snapshots = append(snapshots, Snapshot{
+				CreateTime: snap.CreateTime.String(),
+				Name:       *snap.Name,
+			})
+		}
+	}
+
+	Logc(ctx).Debugf("Returned %v snapshots.", snapListResponse.Payload.NumRecords)
+
+	return &snapshots, nil
+}
+
+func (d OntapAPIREST) StorageUnitSnapshotRestore(
+	ctx context.Context, snapshotName,
+	suName, suType string,
+) error {
+	suUUID, err := d.getStorageUnitUUIDBasedOnType(ctx, suName, suType)
+	if err != nil {
+		return err
+	}
+
+	if err := d.api.StorageUnitSnapshotRestore(ctx, snapshotName, suUUID); err != nil {
+		return fmt.Errorf("error restoring snapshot; %w", err)
+	}
+
+	return nil
+}
+
+func (d OntapAPIREST) StorageUnitSnapshotDelete(
+	ctx context.Context, snapshotName,
+	suName, suType string,
+) error {
+	suUUID, err := d.getStorageUnitUUIDBasedOnType(ctx, suName, suType)
+	if err != nil {
+		return err
+	}
+
+	return d.suSnapshotDeleteByNameAndStyle(ctx, snapshotName, suUUID, suName)
+}
+
+func (d OntapAPIREST) suSnapshotDeleteByNameAndStyle(
+	ctx context.Context, snapshotName, suUUID, suName string,
+) error {
+	// GET the storage unit snapshot by name
+	snapshot, err := d.api.StorageUnitSnapshotGetByName(ctx, snapshotName, suUUID)
+	if err != nil {
+		return fmt.Errorf("error checking for snapshot; %w", err)
+	}
+	if snapshot == nil || snapshot.UUID == nil {
+		return fmt.Errorf("error looking up snapshot: %v", snapshotName)
+	}
+
+	snapshotUUID := *snapshot.UUID
+
+	// DELETE the snapshot
+	snapshotDeleteResult, err := d.api.StorageUnitSnapshotDelete(ctx, suUUID, snapshotUUID)
+	if err != nil {
+		return fmt.Errorf("error while deleting snapshot; %w", err)
+	}
+	if snapshotDeleteResult == nil {
+		return fmt.Errorf("error while deleting snapshot: %v", snapshotName)
+	}
+
+	// check snapshot delete job status
+	jobLink := getGenericJobLinkFromStorageUnitSnapshotJobLink(snapshotDeleteResult.Payload)
+	snapshotDeleteErr := d.api.PollJobStatus(ctx, jobLink)
+	if snapshotDeleteErr != nil {
+		Logc(ctx).Debugf("Could not delete the snapshot, going to check if it's busy; error was: %v", snapshotDeleteErr)
+		if restErr, ok := snapshotDeleteErr.(RestError); ok {
+			Logc(ctx).WithFields(LogFields{
+				"error": restErr,
+				"code":  restErr.Code(),
+			}).Debug("Snapshot delete error.")
+			if restErr.IsSnapshotBusy() {
+				Logc(ctx).Debugf("Could not delete the snapshot %s, snapshot is busy.", snapshotName)
+				return SnapshotBusyError(fmt.Sprintf("snapshot %s backing the storage unit %s is busy", snapshotName,
+					suName))
+			}
+		}
+		return snapshotDeleteErr
+	}
+
+	return nil
+}
+
+func (d OntapAPIREST) StorageUnitCloneCreate(ctx context.Context, cloneName, sourceName, snapshot, suType string) error {
+	suUUID, err := d.getStorageUnitUUIDBasedOnType(ctx, sourceName, suType)
+	if err != nil {
+		return err
+	}
+
+	err = d.api.StorageUnitCloneCreate(ctx, suUUID, cloneName, snapshot)
+	if err != nil {
+		return fmt.Errorf("error creating clone; %w", err)
+	}
+
+	return nil
+}
+
+func (d OntapAPIREST) StorageUnitCloneSplitStart(
+	ctx context.Context, cloneName, suType string,
+) error {
+	suUUID, err := d.getStorageUnitUUIDBasedOnType(ctx, cloneName, suType)
+	if err != nil {
+		return err
+	}
+
+	if err := d.api.StorageUnitCloneSplitStart(ctx, suUUID); err != nil {
+		return fmt.Errorf("error splitting clone; %w", err)
+	}
+	return nil
+}
+
+func (d OntapAPIREST) getStorageUnitUUIDBasedOnType(
+	ctx context.Context, suName, suType string,
+) (string, error) {
+	suUUID := ""
+	switch strings.ToLower(suType) {
+	case "lun":
+		// Get lun info
+		lun, err := d.LunGetByName(ctx, suName)
+		if err != nil {
+			return "", err
+		}
+		if lun == nil {
+			return "", errors.NotFoundError("could not get storage unit %s by name", suName)
+		}
+
+		suUUID = lun.UUID
+	default:
+		return "", fmt.Errorf("%v is invalid type: %v", suName, suType)
+	}
+
+	return suUUID, nil
+}
+
+func (d OntapAPIREST) StorageUnitListBySnapshotParent(
+	ctx context.Context, snapshotName, sourceSU string,
+) (VolumeNameList, error) {
+	childVolumes, err := d.api.StorageUnitListAllBackedBySnapshot(ctx, sourceSU, snapshotName)
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"snapshotName": snapshotName,
+			"parentSUName": sourceSU,
+			"error":        err,
+		}).Error("Could not list storage units backed by snapshot.")
+		return nil, err
+	} else if len(childVolumes) == 0 {
+		return nil, nil
+	}
+
+	// We're going to start a single split operation, but there could be multiple children, so we
+	// sort the volumes by name to not have more than one split operation running at a time.
+	sort.Strings(childVolumes)
+
+	return childVolumes, nil
 }
 
 type TerminalStateError struct {

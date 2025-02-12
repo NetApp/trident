@@ -676,6 +676,34 @@ func (mr *MockOntapAPIMockRecorder) IgroupRemove(arg0, arg1, arg2, arg3 any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupRemove", reflect.TypeOf((*MockOntapAPI)(nil).IgroupRemove), arg0, arg1, arg2, arg3)
 }
 
+// IsDisaggregated mocks base method.
+func (m *MockOntapAPI) IsDisaggregated() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsDisaggregated")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsDisaggregated indicates an expected call of IsDisaggregated.
+func (mr *MockOntapAPIMockRecorder) IsDisaggregated() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsDisaggregated", reflect.TypeOf((*MockOntapAPI)(nil).IsDisaggregated))
+}
+
+// IsSANOptimized mocks base method.
+func (m *MockOntapAPI) IsSANOptimized() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsSANOptimized")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsSANOptimized indicates an expected call of IsSANOptimized.
+func (mr *MockOntapAPIMockRecorder) IsSANOptimized() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsSANOptimized", reflect.TypeOf((*MockOntapAPI)(nil).IsSANOptimized))
+}
+
 // IsSVMDRCapable mocks base method.
 func (m *MockOntapAPI) IsSVMDRCapable(arg0 context.Context) (bool, error) {
 	m.ctrl.T.Helper()
@@ -805,6 +833,21 @@ func (m *MockOntapAPI) LunDestroy(arg0 context.Context, arg1 string) error {
 func (mr *MockOntapAPIMockRecorder) LunDestroy(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunDestroy", reflect.TypeOf((*MockOntapAPI)(nil).LunDestroy), arg0, arg1)
+}
+
+// LunExists mocks base method.
+func (m *MockOntapAPI) LunExists(arg0 context.Context, arg1 string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunExists", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LunExists indicates an expected call of LunExists.
+func (mr *MockOntapAPIMockRecorder) LunExists(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunExists", reflect.TypeOf((*MockOntapAPI)(nil).LunExists), arg0, arg1)
 }
 
 // LunGetAttribute mocks base method.
@@ -953,6 +996,20 @@ func (m *MockOntapAPI) LunSetAttribute(arg0 context.Context, arg1, arg2, arg3, a
 func (mr *MockOntapAPIMockRecorder) LunSetAttribute(arg0, arg1, arg2, arg3, arg4, arg5, arg6 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunSetAttribute", reflect.TypeOf((*MockOntapAPI)(nil).LunSetAttribute), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+}
+
+// LunSetComment mocks base method.
+func (m *MockOntapAPI) LunSetComment(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunSetComment", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// LunSetComment indicates an expected call of LunSetComment.
+func (mr *MockOntapAPIMockRecorder) LunSetComment(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunSetComment", reflect.TypeOf((*MockOntapAPI)(nil).LunSetComment), arg0, arg1, arg2)
 }
 
 // LunSetQosPolicyGroup mocks base method.
@@ -1747,6 +1804,121 @@ func (m *MockOntapAPI) SnapshotRestoreVolume(arg0 context.Context, arg1, arg2 st
 func (mr *MockOntapAPIMockRecorder) SnapshotRestoreVolume(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapshotRestoreVolume", reflect.TypeOf((*MockOntapAPI)(nil).SnapshotRestoreVolume), arg0, arg1, arg2)
+}
+
+// StorageUnitCloneCreate mocks base method.
+func (m *MockOntapAPI) StorageUnitCloneCreate(arg0 context.Context, arg1, arg2, arg3, arg4 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageUnitCloneCreate", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StorageUnitCloneCreate indicates an expected call of StorageUnitCloneCreate.
+func (mr *MockOntapAPIMockRecorder) StorageUnitCloneCreate(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageUnitCloneCreate", reflect.TypeOf((*MockOntapAPI)(nil).StorageUnitCloneCreate), arg0, arg1, arg2, arg3, arg4)
+}
+
+// StorageUnitCloneSplitStart mocks base method.
+func (m *MockOntapAPI) StorageUnitCloneSplitStart(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageUnitCloneSplitStart", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StorageUnitCloneSplitStart indicates an expected call of StorageUnitCloneSplitStart.
+func (mr *MockOntapAPIMockRecorder) StorageUnitCloneSplitStart(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageUnitCloneSplitStart", reflect.TypeOf((*MockOntapAPI)(nil).StorageUnitCloneSplitStart), arg0, arg1, arg2)
+}
+
+// StorageUnitListBySnapshotParent mocks base method.
+func (m *MockOntapAPI) StorageUnitListBySnapshotParent(arg0 context.Context, arg1, arg2 string) (api.VolumeNameList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageUnitListBySnapshotParent", arg0, arg1, arg2)
+	ret0, _ := ret[0].(api.VolumeNameList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageUnitListBySnapshotParent indicates an expected call of StorageUnitListBySnapshotParent.
+func (mr *MockOntapAPIMockRecorder) StorageUnitListBySnapshotParent(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageUnitListBySnapshotParent", reflect.TypeOf((*MockOntapAPI)(nil).StorageUnitListBySnapshotParent), arg0, arg1, arg2)
+}
+
+// StorageUnitSnapshotCreate mocks base method.
+func (m *MockOntapAPI) StorageUnitSnapshotCreate(arg0 context.Context, arg1, arg2, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageUnitSnapshotCreate", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StorageUnitSnapshotCreate indicates an expected call of StorageUnitSnapshotCreate.
+func (mr *MockOntapAPIMockRecorder) StorageUnitSnapshotCreate(arg0, arg1, arg2, arg3 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageUnitSnapshotCreate", reflect.TypeOf((*MockOntapAPI)(nil).StorageUnitSnapshotCreate), arg0, arg1, arg2, arg3)
+}
+
+// StorageUnitSnapshotDelete mocks base method.
+func (m *MockOntapAPI) StorageUnitSnapshotDelete(arg0 context.Context, arg1, arg2, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageUnitSnapshotDelete", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StorageUnitSnapshotDelete indicates an expected call of StorageUnitSnapshotDelete.
+func (mr *MockOntapAPIMockRecorder) StorageUnitSnapshotDelete(arg0, arg1, arg2, arg3 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageUnitSnapshotDelete", reflect.TypeOf((*MockOntapAPI)(nil).StorageUnitSnapshotDelete), arg0, arg1, arg2, arg3)
+}
+
+// StorageUnitSnapshotInfo mocks base method.
+func (m *MockOntapAPI) StorageUnitSnapshotInfo(arg0 context.Context, arg1, arg2, arg3 string) (*api.Snapshot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageUnitSnapshotInfo", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(*api.Snapshot)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageUnitSnapshotInfo indicates an expected call of StorageUnitSnapshotInfo.
+func (mr *MockOntapAPIMockRecorder) StorageUnitSnapshotInfo(arg0, arg1, arg2, arg3 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageUnitSnapshotInfo", reflect.TypeOf((*MockOntapAPI)(nil).StorageUnitSnapshotInfo), arg0, arg1, arg2, arg3)
+}
+
+// StorageUnitSnapshotList mocks base method.
+func (m *MockOntapAPI) StorageUnitSnapshotList(arg0 context.Context, arg1, arg2 string) (*api.Snapshots, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageUnitSnapshotList", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*api.Snapshots)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageUnitSnapshotList indicates an expected call of StorageUnitSnapshotList.
+func (mr *MockOntapAPIMockRecorder) StorageUnitSnapshotList(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageUnitSnapshotList", reflect.TypeOf((*MockOntapAPI)(nil).StorageUnitSnapshotList), arg0, arg1, arg2)
+}
+
+// StorageUnitSnapshotRestore mocks base method.
+func (m *MockOntapAPI) StorageUnitSnapshotRestore(arg0 context.Context, arg1, arg2, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageUnitSnapshotRestore", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StorageUnitSnapshotRestore indicates an expected call of StorageUnitSnapshotRestore.
+func (mr *MockOntapAPIMockRecorder) StorageUnitSnapshotRestore(arg0, arg1, arg2, arg3 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageUnitSnapshotRestore", reflect.TypeOf((*MockOntapAPI)(nil).StorageUnitSnapshotRestore), arg0, arg1, arg2, arg3)
 }
 
 // SupportsFeature mocks base method.

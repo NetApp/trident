@@ -29,6 +29,16 @@ func (d OntapAPIZAPI) SVMName() string {
 	return d.api.SVMName()
 }
 
+func (d OntapAPIZAPI) IsSANOptimized() bool {
+	// No SAN optimized version of ONTAP uses ZAPI
+	return false
+}
+
+func (d OntapAPIZAPI) IsDisaggregated() bool {
+	// No disaggregated version of ONTAP uses ZAPI
+	return false
+}
+
 func (d OntapAPIZAPI) ValidateAPIVersion(ctx context.Context) error {
 	// Make sure we're using a valid ONTAP version
 	ontapVersion, err := d.APIVersion(ctx, true)
@@ -566,6 +576,12 @@ func (d OntapAPIZAPI) LunSetAttribute(
 	return nil
 }
 
+func (d OntapAPIZAPI) LunSetComment(
+	_ context.Context, _, _ string,
+) error {
+	return errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
 func (d OntapAPIZAPI) LunSetQosPolicyGroup(ctx context.Context, lunPath string, qosPolicyGroup QosPolicyGroup) error {
 	qosResponse, err := d.api.LunSetQosPolicyGroup(lunPath, qosPolicyGroup)
 	if err = azgo.GetError(ctx, qosResponse, err); err != nil {
@@ -595,6 +611,30 @@ func (d OntapAPIZAPI) LunGetByName(ctx context.Context, name string) (*Lun, erro
 		return nil, err
 	}
 	return lun, nil
+}
+
+func (d OntapAPIZAPI) LunExists(ctx context.Context, name string) (bool, error) {
+	fields := LogFields{
+		"Method":  "LunExists",
+		"Type":    "OntapAPIZAPI",
+		"LunPath": name,
+	}
+
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunExists")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunExists")
+
+	lunResponse, err := d.api.LunGet(name)
+	if err != nil {
+		return false, err
+	}
+
+	if lunResponse != nil {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func lunInfoFromZapiAttrsHelper(lunResponse azgo.LunInfoType) (*Lun, error) {
@@ -710,8 +750,10 @@ func (d OntapAPIZAPI) EnsureLunMapped(ctx context.Context, initiatorGroupName, l
 	return d.api.LunMapIfNotMapped(ctx, initiatorGroupName, lunPath)
 }
 
-func (d OntapAPIZAPI) LunSize(ctx context.Context, flexvolName string) (int, error) {
-	size, err := d.api.LunSize(flexvolName)
+func (d OntapAPIZAPI) LunSize(ctx context.Context, lunPath string) (int, error) {
+	// lunPath is either an actual LUN name or a path in the form of /vol/<flexvol>/<lun>.
+	// The caller is responsible for ensuring that the path is in the correct format.
+	size, err := d.api.LunSize(lunPath)
 	if err != nil {
 		return 0, err
 	}
@@ -2597,67 +2639,66 @@ func (d OntapAPIZAPI) SMBShareDestroy(ctx context.Context, shareName string) err
 
 // NVMeNamespaceCreate creates NVMe namespace.
 func (d OntapAPIZAPI) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error) {
-	return "", fmt.Errorf("ZAPI call is not supported yet")
+	return "", errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 // NVMeNamespaceSetSize updates the namespace size to newSize.
 func (d OntapAPIZAPI) NVMeNamespaceSetSize(ctx context.Context, nsUUID string, newSize int64) error {
-	return fmt.Errorf("ZAPI call is not supported yet")
+	return errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 // NVMeNamespaceGetByName returns NVMe namespace with the specified name.
 func (d OntapAPIZAPI) NVMeNamespaceGetByName(ctx context.Context, name string) (*NVMeNamespace, error) {
-	return nil, fmt.Errorf("ZAPI call is not supported yet")
+	return nil, errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 // NVMeNamespaceList returns the list of NVMe namespaces with the specified pattern.
 func (d OntapAPIZAPI) NVMeNamespaceList(ctx context.Context, pattern string) (NVMeNamespaces, error) {
-	return nil, fmt.Errorf("ZAPI call is not supported yet")
+	return nil, errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) NamespaceSize(ctx context.Context, subsystemName string) (int, error) {
-	return 0, fmt.Errorf("ZAPI call is not supported yet")
+	return 0, errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*NVMeSubsystem, error) {
-	return nil, fmt.Errorf("ZAPI call is not supported yet")
+	return nil, errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error {
-	// TODO: Implement me!
-	return fmt.Errorf("ZAPI call is not supported yet")
+	return errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error {
-	return fmt.Errorf("ZAPI call is not supported yet")
+	return errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) NVMeSubsystemGetNamespaceCount(ctx context.Context, subsysUUID string) (int64, error) {
-	return 0, fmt.Errorf("ZAPI call is not supported yet")
+	return 0, errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error {
-	return fmt.Errorf("ZAPI call is not supported yet")
+	return errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) NVMeAddHostToSubsystem(ctx context.Context, hostNQN, subsUUID string) error {
-	return fmt.Errorf("ZAPI call is not supported yet")
+	return errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, subsUUID string) error {
-	return fmt.Errorf("ZAPI call is not supported yet")
+	return errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, nsUUID string) (bool, error) {
-	return false, fmt.Errorf("ZAPI call is not supported yet")
+	return false, errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) NVMeEnsureNamespaceMapped(ctx context.Context, subsystemUUID, nsUUID string) error {
-	return fmt.Errorf("ZAPI call is not supported yet")
+	return errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, subsystemUUID, namespaceUUID string) (bool, error) {
-	return false, fmt.Errorf("ZAPI call is not supported yet")
+	return false, errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) NVMeNamespaceGetSize(ctx context.Context, subsystemName string) (int, error) {
@@ -2744,4 +2785,56 @@ func (d OntapAPIZAPI) VolumeWaitForStates(
 
 	Logc(ctx).WithField("desiredStates", desiredStates).Debug("Desired volume state reached.")
 	return volumeState, nil
+}
+
+func (d OntapAPIZAPI) StorageUnitSnapshotCreate(
+	_ context.Context, _,
+	_, _ string,
+) error {
+	return errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) StorageUnitSnapshotInfo(
+	_ context.Context, _,
+	_, _ string,
+) (*Snapshot, error) {
+	return nil, errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) StorageUnitSnapshotList(
+	_ context.Context, _, _ string,
+) (*Snapshots, error) {
+	return nil, errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) StorageUnitSnapshotRestore(
+	_ context.Context, _,
+	_, suType string,
+) error {
+	return errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) StorageUnitSnapshotDelete(
+	_ context.Context, _,
+	_, _ string,
+) error {
+	return errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) StorageUnitCloneCreate(
+	_ context.Context, _, _, _, _ string,
+) error {
+	return errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) StorageUnitCloneSplitStart(
+	_ context.Context, _, _ string,
+) error {
+	return errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) StorageUnitListBySnapshotParent(
+	_ context.Context, _, _ string,
+) (VolumeNameList, error) {
+	return nil, errors.UnsupportedError("ZAPI call is not supported yet")
 }

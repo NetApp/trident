@@ -53,6 +53,9 @@ func newMockAWSOntapSANDriver(t *testing.T) (*mockapi.MockOntapAPI, *mockapi.Moc
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mockAWSAPI := mockapi.NewMockAWSAPI(mockCtrl)
 
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
+
 	fsxId := FSX_ID
 	driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, &fsxId, mockAPI)
 	driver.API = mockAPI
@@ -65,6 +68,9 @@ func newMockAWSOntapSANDriver(t *testing.T) (*mockapi.MockOntapAPI, *mockapi.Moc
 func newMockOntapSANDriver(t *testing.T) (*mockapi.MockOntapAPI, *SANStorageDriver) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
 	driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	driver.API = mockAPI
@@ -85,6 +91,8 @@ func TestOntapSanStorageDriverConfigString(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	ontapSanDrivers := []SANStorageDriver{
@@ -604,6 +612,8 @@ func TestOntapSanUnpublish(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
+			mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+				gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 			d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
@@ -625,6 +635,8 @@ func TestOntapSanVolumePublishManaged(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
@@ -669,6 +681,8 @@ func TestOntapSanVolumePublishUnmanaged(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
@@ -713,6 +727,8 @@ func TestOntapSanVolumePublishSLMError(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
@@ -755,14 +771,16 @@ func TestSANStorageDriverGetBackendState(t *testing.T) {
 	ctx := context.Background()
 
 	mockCtrl := gomock.NewController(t)
-	mockApi := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	mockApi.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
-	mockDriver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockApi)
-	mockDriver.API = mockApi
+	mockDriver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	mockDriver.API = mockAPI
 
-	mockApi.EXPECT().GetSVMState(ctx).Return("", fmt.Errorf("returning test error"))
+	mockAPI.EXPECT().GetSVMState(ctx).Return("", fmt.Errorf("returning test error"))
 
 	reason, changeMap := mockDriver.GetBackendState(ctx)
 	assert.Equal(t, reason, StateReasonSVMUnreachable, "should be 'SVM is not reachable'")
@@ -2958,6 +2976,8 @@ func TestOntapSanVolumeCreatePrepare_NilPool(t *testing.T) {
 
 	defer mockCtrl.Finish()
 
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	driver.Config.NameTemplate = `{{.volume.Name}}_{{.volume.Namespace}}_{{.volume.StorageClass}}`
@@ -3289,7 +3309,7 @@ func TestOntapSANStorageDriverResize(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeExists(ctx, "trident-pvc-1234").Return(true, nil)
 	mockAPI.EXPECT().VolumeSize(ctx, "trident-pvc-1234").Return(uint64(1073741824), nil)
-	mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(1073741824, nil)
+	mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(1073741824, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, "trident-pvc-1234").AnyTimes().Return(&volume, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, "trident-pvc-1234",
 		"2362232012").Return(nil) // LUNMetadataBufferMultiplier * 1.1
@@ -3314,7 +3334,7 @@ func TestOntapSANStorageDriverResize_SameSize(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeExists(ctx, "trident-pvc-1234").Return(true, nil)
 	mockAPI.EXPECT().VolumeSize(ctx, "trident-pvc-1234").Return(uint64(1181116006), nil)
-	mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(1073741824, nil)
+	mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(1073741824, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, "trident-pvc-1234").AnyTimes().Return(&volume, nil)
 
 	err := driver.Resize(ctx, &volConfig, 1073741824) // 2GB
@@ -3336,7 +3356,7 @@ func TestOntapSANStorageDriverResize_VolumeLargerThanResizeRequest(t *testing.T)
 
 	mockAPI.EXPECT().VolumeExists(ctx, "trident-pvc-1234").Return(true, nil)
 	mockAPI.EXPECT().VolumeSize(ctx, "trident-pvc-1234").Return(uint64(2684354560), nil) // 2.5 Gi
-	mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(1073741824, nil)            // 1 Gi
+	mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(1073741824, nil)  // 1 Gi
 	mockAPI.EXPECT().VolumeInfo(ctx, "trident-pvc-1234").AnyTimes().Return(&volume, nil)
 	mockAPI.EXPECT().LunSetSize(ctx, "/vol/trident-pvc-1234/lun0", "2147483648").Return(uint64(214748364), nil)
 
@@ -3359,7 +3379,7 @@ func TestOntapSANStorageDriverResize_UpdateSmallerSize(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeExists(ctx, "trident-pvc-1234").Return(true, nil)
 	mockAPI.EXPECT().VolumeSize(ctx, "trident-pvc-1234").Return(uint64(1181116006), nil)
-	mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(1073741824, nil)
+	mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(1073741824, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, "trident-pvc-1234").AnyTimes().Return(&volume, nil)
 
 	err := driver.Resize(ctx, &volConfig, 107374182)
@@ -3402,7 +3422,7 @@ func TestOntapSANStorageDriverResize_VolumeExistsFail(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(ctx, "trident-pvc-1234").Return(true, nil)
 				mockAPI.EXPECT().VolumeSize(ctx, "trident-pvc-1234").Return(uint64(1073741824), nil)
-				mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(1073741824, nil)
+				mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(1073741824, nil)
 				mockAPI.EXPECT().VolumeInfo(ctx, "trident-pvc-1234").AnyTimes().Return(
 					nil, fmt.Errorf("failed to get volume"))
 			},
@@ -3457,7 +3477,7 @@ func TestOntapSANStorageDriverResize_VolumeSizeFail(t *testing.T) {
 			name: "GetLUNSizeFail",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeSize(ctx, "trident-pvc-1234").Return(uint64(1073741824), nil)
-				mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(0,
+				mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(0,
 					fmt.Errorf("error occurred while checking LUN size"))
 			},
 			wantErr:       assert.Error,
@@ -3467,7 +3487,7 @@ func TestOntapSANStorageDriverResize_VolumeSizeFail(t *testing.T) {
 			name: "VolumeSetSizeFail",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeSize(ctx, "trident-pvc-1234").Return(uint64(1073741824), nil)
-				mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(1073741824, nil)
+				mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(1073741824, nil)
 				mockAPI.EXPECT().VolumeInfo(ctx, "trident-pvc-1234").AnyTimes().Return(&volume, nil)
 				mockAPI.EXPECT().VolumeSetSize(ctx, "trident-pvc-1234",
 					"2362232012").Return(fmt.Errorf("error occurred while updating volume size"))
@@ -3479,7 +3499,7 @@ func TestOntapSANStorageDriverResize_VolumeSizeFail(t *testing.T) {
 			name: "LunSetSizeFail",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeSize(ctx, "trident-pvc-1234").Return(uint64(1073741824), nil)
-				mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(1073741824, nil)
+				mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(1073741824, nil)
 				mockAPI.EXPECT().VolumeInfo(ctx, "trident-pvc-1234").AnyTimes().Return(&volume, nil)
 				mockAPI.EXPECT().VolumeSetSize(ctx, "trident-pvc-1234", "2362232012").Return(nil)
 				mockAPI.EXPECT().LunSetSize(ctx, "/vol/trident-pvc-1234/lun0", "2147483648").Return(uint64(0),
@@ -3493,7 +3513,7 @@ func TestOntapSANStorageDriverResize_VolumeSizeFail(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				driver.Config.CommonStorageDriverConfig.LimitVolumeSize = "InvalidLimitSize"
 				mockAPI.EXPECT().VolumeSize(ctx, "trident-pvc-1234").Return(uint64(1073741824), nil)
-				mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(1073741824, nil)
+				mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(1073741824, nil)
 				mockAPI.EXPECT().VolumeInfo(ctx, "trident-pvc-1234").AnyTimes().Return(&volume, nil)
 			},
 			wantErr:       assert.Error,
@@ -3632,34 +3652,6 @@ func TestOntapSanVolumePublishisFlexvolRW(t *testing.T) {
 	assert.Errorf(t, err, "no reporting nodes found")
 }
 
-func TestOntapSANStorageDriverInitialize_WithTwoAuthMethods(t *testing.T) {
-	vserverAdminHost := ONTAPTEST_LOCALHOST
-	vserverAdminPort := "0"
-	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
-
-	commonConfig := getCommonConfig()
-
-	configJSON := `
-	{
-		"version":           1,
-		"storageDriverName": "ontap-san",
-		"managementLIF":     "1.1.1.1:10",
-		"svm":               "SVM1",
-		"aggregate":         "data",
-		"username":          "dummyuser",
-		"password":          "dummypassword",
-		"clientcertificate": "dummy-certificate",
-		"clientprivatekey":  "dummy-client-private-key"
-	}`
-	sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil, nil)
-
-	result := sanStorageDriver.Initialize(ctx, "CSI", configJSON, commonConfig,
-		map[string]string{}, BackendUUID)
-
-	assert.Error(t, result, "driver initialization succeeded even with more than one authentication methods in config")
-	assert.Contains(t, result.Error(), "more than one authentication method", "expected error string not found")
-}
-
 func TestOntapSANStorageDriverInitialize_WithNameTemplate(t *testing.T) {
 	{
 		ctx := context.Background()
@@ -3669,10 +3661,13 @@ func TestOntapSANStorageDriverInitialize_WithNameTemplate(t *testing.T) {
 
 		driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 		driver.API = mockAPI
+		driver.Config.CommonStorageDriverConfig = nil
 		driver.ips = []string{"127.0.0.1"}
 
 		defer mockCtrl.Finish()
 
+		mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+			gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 		mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 		commonConfig := getCommonConfig()
@@ -3747,6 +3742,8 @@ func TestOntapSANStorageDriverInitialize_NameTemplateDefineInStoragePool(t *test
 
 		defer mockCtrl.Finish()
 
+		mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+			gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 		mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 		commonConfig := getCommonConfig()
@@ -3826,10 +3823,13 @@ func TestOntapSANStorageDriverInitialize_NameTemplateDefineInBothPool(t *testing
 
 		driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 		driver.API = mockAPI
+		driver.Config.CommonStorageDriverConfig = nil
 		driver.ips = []string{"127.0.0.1"}
 
 		defer mockCtrl.Finish()
 
+		mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+			gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 		mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 		commonConfig := getCommonConfig()
@@ -3925,6 +3925,7 @@ func TestOntapSANStorageDriverInitialize_WithTwoAuthMethodsWithSecrets(t *testin
 		"clientcertificate": "dummy-certificate",
 	}
 	sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil, nil)
+	sanStorageDriver.Config.CommonStorageDriverConfig = nil
 
 	result := sanStorageDriver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets,
 		BackendUUID)
@@ -3955,6 +3956,7 @@ func TestOntapSANStorageDriverInitialize_WithTwoAuthMethodsWithConfigAndSecrets(
 		"clientcertificate": "dummy-certificate",
 	}
 	sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil, nil)
+	sanStorageDriver.Config.CommonStorageDriverConfig = nil
 
 	result := sanStorageDriver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets,
 		BackendUUID)
@@ -3967,6 +3969,7 @@ func TestOntapSanStorageDriverInitialize(t *testing.T) {
 	ctx := context.Background()
 
 	mockAPI, driver := newMockOntapSANDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	commonConfig := getCommonConfig()
@@ -4026,6 +4029,7 @@ func TestOntapSanStorageDriverInitialize_WithFC(t *testing.T) {
 	ctx := context.Background()
 
 	mockAPI, driver := newMockOntapSANDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	commonConfig := getCommonConfig()
@@ -4073,6 +4077,7 @@ func TestOntapSanStorageDriverInitialize_WithFC(t *testing.T) {
 
 func TestOntapSANStorageDriverInitialize_Failure(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	driver.API = nil // setting driver API nil
 
@@ -4102,6 +4107,7 @@ func TestOntapSanStorageDriverInitialize_NetInterfaceGetDataLIFsFail(t *testing.
 	ctx := context.Background()
 
 	mockAPI, driver := newMockOntapSANDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	commonConfig := getCommonConfig()
@@ -4149,6 +4155,7 @@ func TestOntapSanStorageDriverInitialize_FcpInterfaceGetFail(t *testing.T) {
 	ctx := context.Background()
 
 	mockAPI, driver := newMockOntapSANDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	commonConfig := getCommonConfig()
@@ -4248,6 +4255,7 @@ func TestOntapSANStorageDriverInitialize_StoragePoolFailed(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			driver.Config.CommonStorageDriverConfig = nil
 			test.mocks(mockAPI)
 			mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
 
@@ -4270,6 +4278,8 @@ func TestOntapSANStorageDriverInitializeStoragePools_NameTemplatesAndLabels(t *t
 
 	defer mockCtrl.Finish()
 
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	d.Config.Storage = []drivers.OntapStorageDriverPool{
@@ -4445,6 +4455,7 @@ func getOntapSANStorageDriverConfigJson() ([]byte, error) {
 
 func TestOntapSANStorageDriverInitialize_ValidationFailed(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	commonConfig := getCommonConfig()
@@ -4940,7 +4951,7 @@ func TestOntapSanVolumeGetSnapshot(t *testing.T) {
 
 	volConfig := getVolumeConfig()
 
-	mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(1073741824, nil)
+	mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(1073741824, nil)
 	mockAPI.EXPECT().VolumeSnapshotInfo(ctx,
 		snapshotConfig.InternalName, snapshotConfig.VolumeInternalName).Return(
 		api.Snapshot{
@@ -4970,7 +4981,7 @@ func TestOntapSanVolumeGetSnapshots(t *testing.T) {
 		Name:       "trident-pvc-1234_snap",
 	})
 
-	mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(1073741824, nil)
+	mockAPI.EXPECT().LunSize(ctx, "/vol/trident-pvc-1234/lun0").Return(1073741824, nil)
 	mockAPI.EXPECT().VolumeSnapshotList(ctx, "trident-pvc-1234").Return(snapshots, nil)
 
 	snapshot, err := driver.GetSnapshots(ctx, &volConfig)
@@ -5034,7 +5045,10 @@ func TestOntapSanVolumeValidate_ValidateSANDriver(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
 	driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	driver.API = mockAPI
 

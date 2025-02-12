@@ -26,6 +26,8 @@ type RestClientInterface interface {
 	SVMUUID() string
 	SetSVMName(svmName string)
 	SVMName() string
+	IsSANOptimized() bool
+	IsDisaggregated() bool
 	// SupportsFeature returns true if the Ontap version supports the supplied feature
 	SupportsFeature(ctx context.Context, feature Feature) bool
 	// VolumeList returns the names of all Flexvols whose names match the supplied pattern
@@ -149,7 +151,7 @@ type RestClientInterface interface {
 	LunGetAttribute(ctx context.Context, lunPath, attributeName string) (string, error)
 	// LunSetAttribute sets the attribute to the provided value for a given LUN.
 	LunSetAttribute(ctx context.Context, lunPath, attributeName, attributeValue string) error
-	// LunSetComment sets the comment for a given LUN.
+	// LunSetQosPolicyGroup sets the QoS Policy Group for a given LUN.
 	LunSetQosPolicyGroup(ctx context.Context, lunPath, qosPolicyGroup string) error
 	// LunRename changes the name of a LUN
 	LunRename(ctx context.Context, lunPath, newLunPath string) error
@@ -193,7 +195,7 @@ type RestClientInterface interface {
 	SvmGetByName(ctx context.Context, svmName string) (*models.Svm, error)
 	SVMGetAggregateNames(ctx context.Context) ([]string, error)
 	// ClusterInfo returns information about the cluster
-	ClusterInfo(ctx context.Context) (*cluster.ClusterGetOK, error)
+	ClusterInfo(ctx context.Context, fields []string, ignoreUnknownFields bool) (*cluster.ClusterGetOK, error)
 	// SystemGetOntapVersion gets the ONTAP version using the credentials, and caches & returns the result.
 	SystemGetOntapVersion(ctx context.Context, cached bool) (string, error)
 	// NodeList returns information about nodes
@@ -380,4 +382,14 @@ type RestClientInterface interface {
 	// NVMeGetHostsOfSubsystem retuns all the hosts connected to a subsystem
 	NVMeGetHostsOfSubsystem(ctx context.Context, subsUUID string) ([]*models.NvmeSubsystemHost, error)
 	NVMeNamespaceSize(ctx context.Context, namespacePath string) (int, error)
+
+	StorageUnitSnapshotCreateAndWait(ctx context.Context, suUUID, snapshotName string) error
+	StorageUnitSnapshotListByName(ctx context.Context, suUUID, snapshotName string) (*san.StorageUnitSnapshotCollectionGetOK, error)
+	StorageUnitSnapshotList(ctx context.Context, suUUID string) (*san.StorageUnitSnapshotCollectionGetOK, error)
+	StorageUnitSnapshotRestore(ctx context.Context, snapshotName, suUUID string) error
+	StorageUnitSnapshotGetByName(ctx context.Context, snapshotName, suUUID string) (*models.StorageUnitSnapshot, error)
+	StorageUnitSnapshotDelete(ctx context.Context, suUUID, snapshotUUID string) (*san.StorageUnitSnapshotDeleteAccepted, error)
+	StorageUnitCloneCreate(ctx context.Context, suUUID, cloneName, snapshot string) error
+	StorageUnitCloneSplitStart(ctx context.Context, suUUID string) error
+	StorageUnitListAllBackedBySnapshot(ctx context.Context, suName, snapshotName string) ([]string, error)
 }

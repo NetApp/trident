@@ -15,11 +15,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/mocks/mock_storage"
 	"github.com/netapp/trident/storage"
-	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 )
 
@@ -164,12 +162,6 @@ func TestGetStorageDriver(t *testing.T) {
 		Valid             bool
 	}{
 		{"fake", "", true},
-		{"ontap-nas", "", true},
-		{"ontap-nas-flexgroup", "", true},
-		{"ontap-nas-economy", "", true},
-		{"ontap-san", sa.ISCSI, true},
-		{"ontap-san", sa.NVMe, true},
-		{"ontap-san-economy", "", true},
 		{"solidfire-san", "", true},
 		{"azure-netapp-files", "", true},
 		{"gcp-cvs", "", true},
@@ -178,7 +170,7 @@ func TestGetStorageDriver(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.StorageDriverName+"-"+test.DriverProtocol, func(t *testing.T) {
-			driver, err := GetStorageDriver(test.StorageDriverName, "")
+			driver, err := GetStorageDriver(test.StorageDriverName)
 			if test.Valid {
 				assert.Nil(t, err)
 				assert.NotNil(t, driver)
@@ -313,30 +305,4 @@ func TestValidateCommonSettings_ValidationFailed(t *testing.T) {
 
 	_, _, err = ValidateCommonSettings(ctx, string(marshaledJSON))
 	assert.NotNil(t, err, "Storage driver name missing")
-}
-
-func TestGetDriverProtocol(t *testing.T) {
-	driverName := config.OntapSANStorageDriverName
-
-	// Unmarshal error
-	_, err := GetDriverProtocol(driverName, `{"SANType"}`)
-	assert.ErrorContains(t, err, "failed to get pool values")
-
-	// SANType as NVMe
-	SANType, err := GetDriverProtocol(driverName, `{"SANType": "nvme"}`)
-	assert.Equal(t, SANType, sa.NVMe, "Incorrect protocol type.")
-	assert.NoError(t, err, "Failed to get protocol type.")
-
-	// Empty SANType
-	SANType, err = GetDriverProtocol(driverName, `{}`)
-	assert.Equal(t, sa.ISCSI, SANType, "Incorrect protocol type.")
-	assert.NoError(t, err, "Failed to get protocol type.")
-
-	// Incorrect SANType
-	SANType, err = GetDriverProtocol(driverName, `{"SANType": "invalid"}`)
-	assert.ErrorContains(t, err, "unsupported SAN protocol")
-
-	// Different driver returns no protocol
-	_, err = GetDriverProtocol(config.OntapNASStorageDriverName, `{}`)
-	assert.NoError(t, err, "Failed to get protocol type.")
 }

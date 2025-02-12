@@ -79,18 +79,18 @@ func (mr *MockRestClientInterfaceMockRecorder) ClientConfig() *gomock.Call {
 }
 
 // ClusterInfo mocks base method.
-func (m *MockRestClientInterface) ClusterInfo(arg0 context.Context) (*cluster.ClusterGetOK, error) {
+func (m *MockRestClientInterface) ClusterInfo(arg0 context.Context, arg1 []string, arg2 bool) (*cluster.ClusterGetOK, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ClusterInfo", arg0)
+	ret := m.ctrl.Call(m, "ClusterInfo", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*cluster.ClusterGetOK)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ClusterInfo indicates an expected call of ClusterInfo.
-func (mr *MockRestClientInterfaceMockRecorder) ClusterInfo(arg0 any) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) ClusterInfo(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterInfo", reflect.TypeOf((*MockRestClientInterface)(nil).ClusterInfo), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterInfo", reflect.TypeOf((*MockRestClientInterface)(nil).ClusterInfo), arg0, arg1, arg2)
 }
 
 // EmsAutosupportLog mocks base method.
@@ -617,6 +617,20 @@ func (mr *MockRestClientInterfaceMockRecorder) IgroupRemove(arg0, arg1, arg2 any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupRemove", reflect.TypeOf((*MockRestClientInterface)(nil).IgroupRemove), arg0, arg1, arg2)
 }
 
+// IsDisaggregated mocks base method.
+func (m *MockRestClientInterface) IsDisaggregated() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsDisaggregated")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsDisaggregated indicates an expected call of IsDisaggregated.
+func (mr *MockRestClientInterfaceMockRecorder) IsDisaggregated() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsDisaggregated", reflect.TypeOf((*MockRestClientInterface)(nil).IsDisaggregated))
+}
+
 // IsJobFinished mocks base method.
 func (m *MockRestClientInterface) IsJobFinished(arg0 context.Context, arg1 *models.JobLinkResponse) (bool, error) {
 	m.ctrl.T.Helper()
@@ -630,6 +644,20 @@ func (m *MockRestClientInterface) IsJobFinished(arg0 context.Context, arg1 *mode
 func (mr *MockRestClientInterfaceMockRecorder) IsJobFinished(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsJobFinished", reflect.TypeOf((*MockRestClientInterface)(nil).IsJobFinished), arg0, arg1)
+}
+
+// IsSANOptimized mocks base method.
+func (m *MockRestClientInterface) IsSANOptimized() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsSANOptimized")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsSANOptimized indicates an expected call of IsSANOptimized.
+func (mr *MockRestClientInterfaceMockRecorder) IsSANOptimized() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsSANOptimized", reflect.TypeOf((*MockRestClientInterface)(nil).IsSANOptimized))
 }
 
 // IsVserverDRCapable mocks base method.
@@ -2098,6 +2126,137 @@ func (m *MockRestClientInterface) SnapshotRestoreVolume(arg0 context.Context, ar
 func (mr *MockRestClientInterfaceMockRecorder) SnapshotRestoreVolume(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapshotRestoreVolume", reflect.TypeOf((*MockRestClientInterface)(nil).SnapshotRestoreVolume), arg0, arg1, arg2)
+}
+
+// StorageUnitCloneCreate mocks base method.
+func (m *MockRestClientInterface) StorageUnitCloneCreate(arg0 context.Context, arg1, arg2, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageUnitCloneCreate", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StorageUnitCloneCreate indicates an expected call of StorageUnitCloneCreate.
+func (mr *MockRestClientInterfaceMockRecorder) StorageUnitCloneCreate(arg0, arg1, arg2, arg3 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageUnitCloneCreate", reflect.TypeOf((*MockRestClientInterface)(nil).StorageUnitCloneCreate), arg0, arg1, arg2, arg3)
+}
+
+// StorageUnitCloneSplitStart mocks base method.
+func (m *MockRestClientInterface) StorageUnitCloneSplitStart(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageUnitCloneSplitStart", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StorageUnitCloneSplitStart indicates an expected call of StorageUnitCloneSplitStart.
+func (mr *MockRestClientInterfaceMockRecorder) StorageUnitCloneSplitStart(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageUnitCloneSplitStart", reflect.TypeOf((*MockRestClientInterface)(nil).StorageUnitCloneSplitStart), arg0, arg1)
+}
+
+// StorageUnitListAllBackedBySnapshot mocks base method.
+func (m *MockRestClientInterface) StorageUnitListAllBackedBySnapshot(arg0 context.Context, arg1, arg2 string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageUnitListAllBackedBySnapshot", arg0, arg1, arg2)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageUnitListAllBackedBySnapshot indicates an expected call of StorageUnitListAllBackedBySnapshot.
+func (mr *MockRestClientInterfaceMockRecorder) StorageUnitListAllBackedBySnapshot(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageUnitListAllBackedBySnapshot", reflect.TypeOf((*MockRestClientInterface)(nil).StorageUnitListAllBackedBySnapshot), arg0, arg1, arg2)
+}
+
+// StorageUnitSnapshotCreateAndWait mocks base method.
+func (m *MockRestClientInterface) StorageUnitSnapshotCreateAndWait(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageUnitSnapshotCreateAndWait", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StorageUnitSnapshotCreateAndWait indicates an expected call of StorageUnitSnapshotCreateAndWait.
+func (mr *MockRestClientInterfaceMockRecorder) StorageUnitSnapshotCreateAndWait(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageUnitSnapshotCreateAndWait", reflect.TypeOf((*MockRestClientInterface)(nil).StorageUnitSnapshotCreateAndWait), arg0, arg1, arg2)
+}
+
+// StorageUnitSnapshotDelete mocks base method.
+func (m *MockRestClientInterface) StorageUnitSnapshotDelete(arg0 context.Context, arg1, arg2 string) (*s_a_n.StorageUnitSnapshotDeleteAccepted, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageUnitSnapshotDelete", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*s_a_n.StorageUnitSnapshotDeleteAccepted)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageUnitSnapshotDelete indicates an expected call of StorageUnitSnapshotDelete.
+func (mr *MockRestClientInterfaceMockRecorder) StorageUnitSnapshotDelete(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageUnitSnapshotDelete", reflect.TypeOf((*MockRestClientInterface)(nil).StorageUnitSnapshotDelete), arg0, arg1, arg2)
+}
+
+// StorageUnitSnapshotGetByName mocks base method.
+func (m *MockRestClientInterface) StorageUnitSnapshotGetByName(arg0 context.Context, arg1, arg2 string) (*models.StorageUnitSnapshot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageUnitSnapshotGetByName", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*models.StorageUnitSnapshot)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageUnitSnapshotGetByName indicates an expected call of StorageUnitSnapshotGetByName.
+func (mr *MockRestClientInterfaceMockRecorder) StorageUnitSnapshotGetByName(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageUnitSnapshotGetByName", reflect.TypeOf((*MockRestClientInterface)(nil).StorageUnitSnapshotGetByName), arg0, arg1, arg2)
+}
+
+// StorageUnitSnapshotList mocks base method.
+func (m *MockRestClientInterface) StorageUnitSnapshotList(arg0 context.Context, arg1 string) (*s_a_n.StorageUnitSnapshotCollectionGetOK, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageUnitSnapshotList", arg0, arg1)
+	ret0, _ := ret[0].(*s_a_n.StorageUnitSnapshotCollectionGetOK)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageUnitSnapshotList indicates an expected call of StorageUnitSnapshotList.
+func (mr *MockRestClientInterfaceMockRecorder) StorageUnitSnapshotList(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageUnitSnapshotList", reflect.TypeOf((*MockRestClientInterface)(nil).StorageUnitSnapshotList), arg0, arg1)
+}
+
+// StorageUnitSnapshotListByName mocks base method.
+func (m *MockRestClientInterface) StorageUnitSnapshotListByName(arg0 context.Context, arg1, arg2 string) (*s_a_n.StorageUnitSnapshotCollectionGetOK, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageUnitSnapshotListByName", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*s_a_n.StorageUnitSnapshotCollectionGetOK)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageUnitSnapshotListByName indicates an expected call of StorageUnitSnapshotListByName.
+func (mr *MockRestClientInterfaceMockRecorder) StorageUnitSnapshotListByName(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageUnitSnapshotListByName", reflect.TypeOf((*MockRestClientInterface)(nil).StorageUnitSnapshotListByName), arg0, arg1, arg2)
+}
+
+// StorageUnitSnapshotRestore mocks base method.
+func (m *MockRestClientInterface) StorageUnitSnapshotRestore(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageUnitSnapshotRestore", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StorageUnitSnapshotRestore indicates an expected call of StorageUnitSnapshotRestore.
+func (mr *MockRestClientInterfaceMockRecorder) StorageUnitSnapshotRestore(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageUnitSnapshotRestore", reflect.TypeOf((*MockRestClientInterface)(nil).StorageUnitSnapshotRestore), arg0, arg1, arg2)
 }
 
 // SupportsFeature mocks base method.

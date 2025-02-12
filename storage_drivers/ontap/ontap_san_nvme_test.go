@@ -70,12 +70,18 @@ func newNVMeDriverAndMockApiAndAwsApi(t *testing.T) (*NVMeStorageDriver, *mockap
 	mockAWSAPI := mockapi.NewMockAWSAPI(mockCtrl)
 	fsxId := FSX_ID
 
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
+
 	return newNVMeDriver(mockAPI, mockAWSAPI, &fsxId), mockAPI, mockAWSAPI
 }
 
 func newNVMeDriverAndMockApi(t *testing.T) (*NVMeStorageDriver, *mockapi.MockOntapAPI) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 
 	return newNVMeDriver(mockAPI, nil, nil), mockAPI
 }
@@ -102,6 +108,7 @@ func TestNVMeBackendName(t *testing.T) {
 
 func TestNVMeInitialize_ConfigUnmarshalError(t *testing.T) {
 	d := newNVMeDriver(nil, nil, nil)
+	d.Config.CommonStorageDriverConfig = nil
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		// Version:           1,
 		StorageDriverName: "ontap-san",
@@ -179,6 +186,7 @@ func TestNVMeInitialize_GetAggrNamesError(t *testing.T) {
 
 func TestNVMeInitialize_ValidateStoragePrefixError(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
+	d.Config.CommonStorageDriverConfig = nil
 	badStoragePrefix := "abc&$#"
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		StorageDriverName: "ontap-san",
@@ -225,6 +233,7 @@ func TestNVMeInitialize_WithNameTemplate(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	d := newNVMeDriver(mAPI, nil, nil)
+	d.Config.CommonStorageDriverConfig = nil
 	defer mockCtrl.Finish()
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		StorageDriverName: "ontap-san",

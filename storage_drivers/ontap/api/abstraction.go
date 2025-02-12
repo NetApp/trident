@@ -45,6 +45,8 @@ const (
 type OntapAPI interface {
 	APIVersion(ctx context.Context, cached bool) (string, error)
 	SVMName() string
+	IsSANOptimized() bool
+	IsDisaggregated() bool
 
 	EmsAutosupportLog(
 		ctx context.Context, driverName, appVersion string, autoSupport bool, category string,
@@ -88,8 +90,10 @@ type OntapAPI interface {
 	LunGetFSType(ctx context.Context, lunPath string) (string, error)
 	LunGetAttribute(ctx context.Context, lunPath, attributeName string) (string, error)
 	LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context, luks, formatOptions string) error
+	LunSetComment(ctx context.Context, lunPath, comment string) error
 	LunSetQosPolicyGroup(ctx context.Context, lunPath string, qosPolicyGroup QosPolicyGroup) error
 	LunGetByName(ctx context.Context, name string) (*Lun, error)
+	LunExists(ctx context.Context, name string) (bool, error)
 	LunRename(ctx context.Context, lunPath, newLunPath string) error
 	LunMapInfo(ctx context.Context, initiatorGroupName, lunPath string) (int, error)
 	EnsureLunMapped(ctx context.Context, initiatorGroupName, lunPath string) (int, error)
@@ -244,6 +248,15 @@ type OntapAPI interface {
 	NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, nsUUID string) (bool, error)
 	NVMeEnsureNamespaceMapped(ctx context.Context, subsystemUUID, nsUUID string) error
 	NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, subsytemUUID, nsUUID string) (bool, error)
+
+	StorageUnitSnapshotCreate(ctx context.Context, snapshotName, suName, suType string) error
+	StorageUnitSnapshotInfo(ctx context.Context, snapshotName, suName, suType string) (*Snapshot, error)
+	StorageUnitSnapshotList(ctx context.Context, suName, suType string) (*Snapshots, error)
+	StorageUnitSnapshotRestore(ctx context.Context, snapshotName, suName, suType string) error
+	StorageUnitSnapshotDelete(ctx context.Context, snapshotName, suName, suType string) error
+	StorageUnitCloneCreate(ctx context.Context, cloneName, sourceName, snapshot, suType string) error
+	StorageUnitCloneSplitStart(ctx context.Context, cloneName, suType string) error
+	StorageUnitListBySnapshotParent(ctx context.Context, snapshotName, sourceSU string) (VolumeNameList, error)
 }
 
 type AggregateSpace interface {

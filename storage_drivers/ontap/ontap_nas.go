@@ -102,19 +102,26 @@ func (d *NASStorageDriver) Initialize(
 	defer Logd(ctx, commonConfig.StorageDriverName,
 		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
-	// Initialize the driver's CommonStorageDriverConfig
-	d.Config.CommonStorageDriverConfig = commonConfig
+	var err error
 
-	// Parse the config
-	config, err := InitializeOntapConfig(ctx, driverContext, configJSON, commonConfig, backendSecret)
-	if err != nil {
-		return fmt.Errorf("error initializing %s driver; %v", d.Name(), err)
+	if d.Config.CommonStorageDriverConfig == nil {
+
+		// Initialize the driver's CommonStorageDriverConfig
+		d.Config.CommonStorageDriverConfig = commonConfig
+
+		// Parse the config
+		config, err := InitializeOntapConfig(ctx, driverContext, configJSON, commonConfig, backendSecret)
+		if err != nil {
+			return fmt.Errorf("error initializing %s driver; %v", d.Name(), err)
+		}
+
+		d.Config = *config
 	}
 
 	// Initialize AWS API if applicable.
 	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
 	if d.AWSAPI == nil {
-		d.AWSAPI, err = initializeAWSDriver(ctx, config)
+		d.AWSAPI, err = initializeAWSDriver(ctx, &d.Config)
 		if err != nil {
 			return fmt.Errorf("error initializing %s AWS driver; %v", d.Name(), err)
 		}
@@ -123,12 +130,15 @@ func (d *NASStorageDriver) Initialize(
 	// Initialize the ONTAP API.
 	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
 	if d.API == nil {
-		d.API, err = InitializeOntapDriver(ctx, config)
-		if err != nil {
+		if d.API, err = InitializeOntapDriver(ctx, &d.Config); err != nil {
 			return fmt.Errorf("error initializing %s driver; %v", d.Name(), err)
 		}
 	}
-	d.Config = *config
+
+	// Load default config parameters
+	if err = PopulateConfigurationDefaults(ctx, &d.Config); err != nil {
+		return fmt.Errorf("could not populate configuration defaults: %v", err)
+	}
 
 	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d,
 		d.getStoragePoolAttributes(ctx), d.BackendName())
@@ -1103,7 +1113,24 @@ func (d *NASStorageDriver) CreateSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
 
-	return createFlexvolSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.VolumeUsedSize)
+	return createFlexvolSnapshot(ctx, snapConfig, &d.Config, d.API, d.volumeUsedSize)
+}
+
+func (d *NASStorageDriver) volumeUsedSize(ctx context.Context, volumeName string) (int, error) {
+	fields := LogFields{
+		"Method":       "volumeUsedSize",
+		"Type":         "NASStorageDriver",
+		"sourceVolume": volumeName,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> volumeUsedSize")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< volumeUsedSize")
+
+	size, err := d.API.VolumeUsedSize(ctx, volumeName)
+	if err != nil {
+		return 0, err
+	}
+
+	return size, nil
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.

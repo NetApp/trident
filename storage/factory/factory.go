@@ -14,7 +14,6 @@ import (
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
-	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/azure"
 	"github.com/netapp/trident/storage_drivers/fake"
@@ -78,16 +77,18 @@ func NewStorageBackendForConfig(
 		}
 	}()
 
-	driverProtocol, err := GetDriverProtocol(commonConfig.StorageDriverName, configJSON)
-	if err != nil {
-		Logc(ctx).WithField("error", err).Error("Failed to get driver protocol.")
-		return nil, err
-	}
-
 	var storageDriver storage.Driver
-	if storageDriver, err = GetStorageDriver(commonConfig.StorageDriverName, driverProtocol); err != nil {
-		Logc(ctx).WithField("error", err).Error("Invalid or unknown storage driver found.")
-		return nil, err
+	if strings.HasPrefix(commonConfig.StorageDriverName, "ontap") {
+		// For ONTAP drivers, use the ONTAP-specific factory since we need to read the system details first
+		// to understand the type of storage controller we are managing.
+		if storageDriver, err = ontap.GetStorageDriver(ctx, configJSON, commonConfig, backendSecret); err != nil {
+			return nil, err
+		}
+	} else {
+		if storageDriver, err = GetStorageDriver(commonConfig.StorageDriverName); err != nil {
+			Logc(ctx).WithField("error", err).Error("Invalid or unknown storage driver found.")
+			return nil, err
+		}
 	}
 
 	Logc(ctx).WithField("driver", commonConfig.StorageDriverName).Debug("Initializing storage driver.")
@@ -118,25 +119,11 @@ func NewStorageBackendForConfig(
 	return sb, err
 }
 
-func GetStorageDriver(driverName, driverProtocol string) (storage.Driver, error) {
+func GetStorageDriver(driverName string) (storage.Driver, error) {
 	var storageDriver storage.Driver
 
 	// Pre-driver initialization setup
 	switch driverName {
-	case config.OntapNASStorageDriverName:
-		storageDriver = &ontap.NASStorageDriver{}
-	case config.OntapNASFlexGroupStorageDriverName:
-		storageDriver = &ontap.NASFlexGroupStorageDriver{}
-	case config.OntapNASQtreeStorageDriverName:
-		storageDriver = &ontap.NASQtreeStorageDriver{}
-	case config.OntapSANStorageDriverName:
-		if driverProtocol == sa.ISCSI || driverProtocol == sa.FCP {
-			storageDriver = &ontap.SANStorageDriver{}
-		} else {
-			storageDriver = &ontap.NVMeStorageDriver{}
-		}
-	case config.OntapSANEconomyStorageDriverName:
-		storageDriver = &ontap.SANEconomyStorageDriver{}
 	case config.SolidfireSANStorageDriverName:
 		storageDriver = &solidfire.SANStorageDriver{}
 	case config.AzureNASStorageDriverName:
@@ -167,28 +154,4 @@ func CreateNewStorageBackend(ctx context.Context, storageDriver storage.Driver) 
 
 	Logc(ctx).WithField("backend", sb).Info("Created new storage backend.")
 	return sb, nil
-}
-
-// GetDriverProtocol returns the protocol type for SAN Drivers using the backend config.
-// This function can be extended for NAS drivers if required.
-func GetDriverProtocol(driverName, configJSON string) (string, error) {
-	pool := drivers.OntapStorageDriverPool{}
-	if err := json.Unmarshal([]byte(configJSON), &pool); err != nil {
-		return "", fmt.Errorf("failed to get pool values: %v", err)
-	}
-
-	if driverName == config.OntapSANStorageDriverName {
-		SANType := strings.ToLower(pool.SANType)
-		switch SANType {
-		case sa.ISCSI, sa.NVMe, sa.FCP:
-			return SANType, nil
-		case "":
-			// Old iSCSI backends will have no value for SANType
-			return sa.ISCSI, nil
-		default:
-			return "", fmt.Errorf("unsupported SAN protocol %s", SANType)
-		}
-	}
-
-	return "", nil
 }

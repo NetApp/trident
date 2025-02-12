@@ -91,6 +91,9 @@ func newMockOntapNASFlexgroupDriver(t *testing.T) (*mockapi.MockOntapAPI, *NASFl
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
+
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAdminPort := "0"
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
@@ -201,6 +204,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_WithTwoAuthMethods(t *testing.
 	}`
 	ontapNasDriver := newTestOntapNASFlexgroupDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
 		"CSI", false, nil)
+	ontapNasDriver.Config.CommonStorageDriverConfig = nil
 
 	result := ontapNasDriver.Initialize(ctx, "CSI", configJSON, commonConfig,
 		map[string]string{}, BackendUUID)
@@ -238,6 +242,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_WithTwoAuthMethodsWithSecrets(
 	}
 	ontapNasDriver := newTestOntapNASFlexgroupDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
 		"CSI", false, nil)
+	ontapNasDriver.Config.CommonStorageDriverConfig = nil
 
 	result := ontapNasDriver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets,
 		BackendUUID)
@@ -275,6 +280,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_WithTwoAuthMethodsWithConfigAn
 	}
 	ontapNasDriver := newTestOntapNASFlexgroupDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
 		"CSI", false, nil)
+	ontapNasDriver.Config.CommonStorageDriverConfig = nil
 
 	result := ontapNasDriver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets,
 		BackendUUID)
@@ -285,6 +291,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_WithTwoAuthMethodsWithConfigAn
 
 func TestOntapNasFlexgroupStorageDriverInitialize(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -337,6 +344,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize(t *testing.T) {
 
 func TestOntapNasFlexgroupStorageDriverInitialize_withNameTemplate(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -382,6 +390,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_withNameTemplate(t *testing.T)
 
 func TestOntapNasFlexgroupStorageDriverInitialize_NameTemplateDefineInStoragePool(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -434,6 +443,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_NameTemplateDefineInStoragePoo
 
 func TestOntapNasFlexgroupStorageDriverInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -520,6 +530,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_StoragePool(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			driver.Config.CommonStorageDriverConfig = nil
 			SVMAggregateNames := []string{"aggr1", "aggr2"}
 			SVMAggregateAttributes := map[string]string{SVMAggregateNames[0]: "hybrid", SVMAggregateNames[1]: "hdd"}
 			var configJSON []byte
@@ -713,6 +724,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_NameTemplatesAndLabels(t *test
 
 func TestOntapNasFlexgroupStorageDriverInitialize_Failure(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	driver.API = nil // setting driver API nil
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -745,6 +757,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_Failure(t *testing.T) {
 
 func TestOntapNasFlexgroupStorageDriverInitialize_StoragePoolFailed(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -813,11 +826,11 @@ func TestOntapNasFlexgroupStorageDriverInitialize_ValidationFailed(t *testing.T)
 	}{
 		{"SupportsFeatureFailed", "ONTAP version does not support FlexGroups"},
 		{"NASDriverValidationFailed", "driver validation failed"},
-		{"storagePrefixValidationFailed", "storage prefix may only contain letters/digits/underscore/dash and must begin with letter"},
 		{"storagePoolValidation", "invalid spaceReserve"},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			driver.Config.CommonStorageDriverConfig = nil
 			mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
 
 			if test.name == "SupportsFeatureFailed" {
@@ -829,6 +842,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_ValidationFailed(t *testing.T)
 				mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 					map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 				)
+
 				result := driver.Initialize(ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
 
 				assert.Error(t, result,
@@ -845,26 +859,10 @@ func TestOntapNasFlexgroupStorageDriverInitialize_ValidationFailed(t *testing.T)
 				)
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(nil,
 					fmt.Errorf("failed to get data LIFs")) // failed to get network interface
+
 				result := driver.Initialize(ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
 
 				assert.Error(t, result, "FlexGroup driver initialization succeeded even with failed to get data lifs")
-				assert.Contains(t, result.Error(), test.errMesaage)
-			} else if test.name == "storagePrefixValidationFailed" {
-				configJSON, _ := getOntapStorageDriverConfigJson("true", "volume", "", "none", []string{
-					"aggr1", "aggr2",
-				})
-				storagePrefix := *driver.Config.StoragePrefix
-				*driver.Config.StoragePrefix = "Test@&" // invalid storage pool prefix
-				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-				mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
-				mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
-					map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
-				)
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
-				result := driver.Initialize(ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
-
-				*driver.Config.StoragePrefix = storagePrefix
-				assert.Error(t, result, "FlexGroup driver initialization succeeded even with invalid storage pool prefix")
 				assert.Contains(t, result.Error(), test.errMesaage)
 			} else if test.name == "storagePoolValidation" {
 				configJSON, _ := getOntapStorageDriverConfigJson("true", "invalidSpaceReserve", "", "none", []string{
@@ -876,6 +874,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_ValidationFailed(t *testing.T)
 					map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 				)
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
+
 				result := driver.Initialize(ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
 
 				assert.Error(t, result, "FlexGroup driver initialization succeeded even with invalid spaceReserve")
@@ -887,6 +886,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_ValidationFailed(t *testing.T)
 
 func TestOntapNasFlexgroupStorageDriverInitialize_GetSVMAggregateNamesFailed(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -918,6 +918,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_GetSVMAggregateNamesFailed(t *
 
 func TestOntapNasFlexgroupStorageDriverInitialize_GetSVMAggregateNameEmptyList(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	commonConfig := &drivers.CommonStorageDriverConfig{

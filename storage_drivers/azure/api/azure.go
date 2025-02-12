@@ -1140,7 +1140,7 @@ func (c Client) ModifyVolume(
 
 	// Modify the export-rule for kerberos volumes
 	if *anfVolume.Properties.KerberosEnabled && exportRule != nil {
-		for i := range len(anfVolume.Properties.ExportPolicy.Rules) {
+		for i := range anfVolume.Properties.ExportPolicy.Rules {
 			anfVolume.Properties.ExportPolicy.Rules[i].Nfsv41 = &exportRule.Nfsv41
 			anfVolume.Properties.ExportPolicy.Rules[i].Kerberos5ReadWrite = &exportRule.Kerberos5ReadWrite
 			anfVolume.Properties.ExportPolicy.Rules[i].Kerberos5ReadOnly = &exportRule.Kerberos5ReadOnly

@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring/v2"
+	"github.com/cenkalti/backoff/v4"
 	"github.com/google/go-cmp/cmp"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -107,6 +108,8 @@ const (
 	VolTypeDP  = "dp"  // data-protection
 	VolTypeDC  = "dc"  // data-cache
 	VolTypeTMP = "tmp" // temporary
+
+	ASATypeLun = "lun"
 )
 
 // For legacy reasons, these strings mustn't change
@@ -272,12 +275,6 @@ func InitializeOntapConfig(
 	if config.ClientPrivateKey != "" && config.Username != "" {
 		return nil, fmt.Errorf("more than one authentication method (username/password and clientPrivateKey)" +
 			" present in backend config; please ensure only one authentication method is provided")
-	}
-
-	// Load default config parameters
-	err = PopulateConfigurationDefaults(ctx, config)
-	if err != nil {
-		return nil, fmt.Errorf("could not populate configuration defaults: %v", err)
 	}
 
 	return config, nil
@@ -1686,6 +1683,7 @@ const (
 	DefaultExt3FormatOptions         = ""
 	DefaultExt4FormatOptions         = ""
 	DefaultXfsFormatOptions          = ""
+	DefaultASAEncryption             = "true"
 )
 
 // PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
@@ -1889,6 +1887,121 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		"AutoExportCIDRs":        config.AutoExportCIDRs,
 		"FlexgroupAggregateList": config.FlexGroupAggregateList,
 		"NameTemplate":           config.NameTemplate,
+	}).Debugf("Configuration defaults")
+
+	return nil
+}
+
+// PopulateASAConfigurationDefaults fills in default values for configuration settings if not supplied in the config
+// file.  This function uses defaults appropriate for ONTAP's All-SAN Array personality.
+func PopulateASAConfigurationDefaults(ctx context.Context, config *drivers.OntapStorageDriverConfig) error {
+	fields := LogFields{"Method": "PopulateASAConfigurationDefaults", "Type": "ontap_common"}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> PopulateASAConfigurationDefaults")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< PopulateASAConfigurationDefaults")
+
+	var err error
+
+	// Ensure the default volume size is valid, using a "default default" of 1G if not set
+	if config.Size == "" {
+		config.Size = drivers.DefaultVolumeSize
+	} else {
+		if _, err = capacity.ToBytes(config.Size); err != nil {
+			return fmt.Errorf("invalid value for default volume size: %v", err)
+		}
+	}
+
+	if config.StoragePrefix == nil {
+		prefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
+		config.StoragePrefix = &prefix
+	}
+
+	if config.SpaceAllocation == "" {
+		config.SpaceAllocation = DefaultSpaceAllocation
+	}
+
+	if config.SpaceReserve == "" {
+		config.SpaceReserve = DefaultSpaceReserve
+	}
+
+	if config.SnapshotPolicy == "" {
+		config.SnapshotPolicy = DefaultSnapshotPolicy
+	}
+
+	if config.Encryption == "" {
+		config.Encryption = DefaultASAEncryption
+	}
+
+	if config.SplitOnClone == "" {
+		config.SplitOnClone = DefaultSplitOnClone
+	} else {
+		if _, err = strconv.ParseBool(config.SplitOnClone); err != nil {
+			return fmt.Errorf("invalid boolean value for splitOnClone: %v", err)
+		}
+	}
+
+	if config.CloneSplitDelay == "" {
+		config.CloneSplitDelay = strconv.FormatInt(DefaultCloneSplitDelay, 10)
+	} else if v, err := strconv.ParseInt(config.CloneSplitDelay, 10, 0); err != nil || v <= 0 {
+		return fmt.Errorf("invalid value for cloneSplitDelay: %v", config.CloneSplitDelay)
+	}
+
+	if config.FileSystemType == "" {
+		config.FileSystemType = drivers.DefaultFileSystemType
+	}
+
+	if config.FormatOptions == "" {
+		switch config.FileSystemType {
+		case "ext3":
+			config.FormatOptions = DefaultExt3FormatOptions
+		case "ext4":
+			config.FormatOptions = DefaultExt4FormatOptions
+		case "xfs":
+			config.FormatOptions = DefaultXfsFormatOptions
+		}
+	}
+
+	if config.LUKSEncryption == "" {
+		config.LUKSEncryption = DefaultLuksEncryption
+	}
+
+	if config.Mirroring == "" {
+		config.Mirroring = DefaultMirroring
+	}
+
+	if config.TieringPolicy == "" {
+		config.TieringPolicy = DefaultTieringPolicy
+	}
+
+	if config.SANType == "" {
+		config.SANType = sa.ISCSI
+	} else {
+		config.SANType = strings.ToLower(config.SANType)
+	}
+
+	if config.NameTemplate != "" {
+		config.NameTemplate = ensureUniquenessInNameTemplate(config.NameTemplate)
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"StoragePrefix":       *config.StoragePrefix,
+		"SpaceAllocation":     config.SpaceAllocation,
+		"SpaceReserve":        config.SpaceReserve,
+		"SnapshotPolicy":      config.SnapshotPolicy,
+		"SnapshotReserve":     config.SnapshotReserve,
+		"SplitOnClone":        config.SplitOnClone,
+		"CloneSplitDelay":     config.CloneSplitDelay,
+		"FileSystemType":      config.FileSystemType,
+		"Encryption":          config.Encryption,
+		"LUKSEncryption":      config.LUKSEncryption,
+		"Mirroring":           config.Mirroring,
+		"LimitAggregateUsage": config.LimitAggregateUsage,
+		"LimitVolumeSize":     config.LimitVolumeSize,
+		"Size":                config.Size,
+		"TieringPolicy":       config.TieringPolicy,
+		"NameTemplate":        config.NameTemplate,
+		"SANType":             config.SANType,
 	}).Debugf("Configuration defaults")
 
 	return nil
@@ -2163,11 +2276,100 @@ func SplitVolumeFromBusySnapshot(
 	return nil
 }
 
+func SplitASAVolumeFromBusySnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
+	client api.OntapAPI, cloneSplitStart func(ctx context.Context, cloneName, asaType string) error,
+	asaType string,
+) error {
+	fields := LogFields{
+		"Method":       "SplitASAVolumeFromBusySnapshot",
+		"Type":         "ontap_common",
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
+	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> SplitASAVolumeFromBusySnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< SplitASAVolumeFromBusySnapshot")
+
+	childVolumes, err := client.StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName,
+		snapConfig.VolumeInternalName)
+	if err != nil {
+		return err
+	} else if childVolumes == nil || len(childVolumes) == 0 {
+		return nil
+	}
+
+	if err := cloneSplitStart(ctx, childVolumes[0], asaType); err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"snapshotName":     snapConfig.InternalName,
+			"parentVolumeName": snapConfig.VolumeInternalName,
+			"cloneVolumeName":  childVolumes[0],
+			"error":            err,
+		}).Error("Could not begin splitting ASA clone from snapshot.")
+		return fmt.Errorf("error splitting ASA clone: %v", err)
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"snapshotName":     snapConfig.InternalName,
+		"parentVolumeName": snapConfig.VolumeInternalName,
+		"cloneVolumeName":  childVolumes[0],
+	}).Info("Began splitting ASA clone from snapshot.")
+
+	return nil
+}
+
 func SplitVolumeFromBusySnapshotWithDelay(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
 	client api.OntapAPI, cloneSplitStart func(ctx context.Context, cloneName string) error,
 	cloneSplitTimers map[string]time.Time,
 ) {
+	snapshotID := snapConfig.ID()
+	cloneSplitDelay, expired := hasCloneSplitTimerExpired(ctx, snapConfig, config, cloneSplitTimers)
+	if !expired {
+		// Clone split timer has not expired, so do nothing.
+		return
+	}
+
+	// The delay has expired, so start the split
+	splitErr := SplitVolumeFromBusySnapshot(ctx, snapConfig, config, client, cloneSplitStart)
+	if splitErr != nil {
+
+		// The split start failed, so reset the timer so we start again after another brief delay.
+		cloneSplitTimers[snapshotID] = time.Now()
+
+		Logc(ctx).WithFields(LogFields{
+			"snapshot":           snapshotID,
+			"secondsBeforeSplit": fmt.Sprintf("%3.2f", cloneSplitDelay.Seconds()),
+		}).Warning("Retried locked snapshot delete, clone split failed, restarted timer.")
+
+	} else {
+
+		// The split start succeeded, so add enough time to the timer that we don't try to start it again.
+		cloneSplitTimers[snapshotID] = time.Now().Add(1 * time.Hour)
+
+		Logc(ctx).WithField("snapshot", snapshotID).Warning("Retried locked snapshot delete, clone split started.")
+	}
+}
+
+// hasCloneSplitTimerExpired Checks whether clone split timer has expired. If yes, returns the clone split delay time.
+func hasCloneSplitTimerExpired(
+	ctx context.Context, snapConfig *storage.SnapshotConfig,
+	config *drivers.OntapStorageDriverConfig, cloneSplitTimers map[string]time.Time,
+) (time.Duration, bool) {
+	fields := LogFields{
+		"Method":       "hasCloneSplitTimerExpired",
+		"Type":         "ontap_common",
+		"snapshotID":   snapConfig.ID(),
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
+	}
+
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> hasCloneSplitTimerExpired")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< hasCloneSplitTimerExpired")
+
 	snapshotID := snapConfig.ID()
 
 	// Find the configured value for cloneSplitDelay
@@ -2188,7 +2390,7 @@ func SplitVolumeFromBusySnapshotWithDelay(
 			"secondsBeforeSplit": fmt.Sprintf("%3.2f", cloneSplitDelay.Seconds()),
 		}).Warning("Initial locked snapshot delete, starting clone split timer.")
 
-		return
+		return 0, false
 	}
 
 	// This isn't the first delete, and the split is still running, so there is nothing to do.
@@ -2198,7 +2400,7 @@ func SplitVolumeFromBusySnapshotWithDelay(
 			"snapshot": snapshotID,
 		}).Warning("Retried locked snapshot delete, clone split still running.")
 
-		return
+		return 0, false
 	}
 
 	// This isn't the first delete, and the delay has not expired, so there is nothing to do.
@@ -2209,11 +2411,40 @@ func SplitVolumeFromBusySnapshotWithDelay(
 			"secondsBeforeSplit": fmt.Sprintf("%3.2f", time.Now().Sub(firstDeleteTime).Seconds()),
 		}).Warning("Retried locked snapshot delete, clone split timer not yet expired.")
 
+		return 0, false
+	}
+
+	return cloneSplitDelay, true
+}
+
+func SplitASAVolumeFromBusySnapshotWithDelay(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
+	client api.OntapAPI, cloneSplitStart func(ctx context.Context, cloneName, asaType string) error,
+	cloneSplitTimers map[string]time.Time, asaType string,
+) {
+	fields := LogFields{
+		"Method":       "SplitASAVolumeFromBusySnapshotWithDelay",
+		"Type":         "ontap_common",
+		"snapshotID":   snapConfig.ID(),
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
+		"asaType":      asaType,
+	}
+
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> SplitASAVolumeFromBusySnapshotWithDelay")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< SplitASAVolumeFromBusySnapshotWithDelay")
+
+	snapshotID := snapConfig.ID()
+	cloneSplitDelay, expired := hasCloneSplitTimerExpired(ctx, snapConfig, config, cloneSplitTimers)
+	if !expired {
+		// Clone split timer has not expired, so do nothing.
 		return
 	}
 
 	// The delay has expired, so start the split
-	splitErr := SplitVolumeFromBusySnapshot(ctx, snapConfig, config, client, cloneSplitStart)
+	splitErr := SplitASAVolumeFromBusySnapshot(ctx, snapConfig, config, client, cloneSplitStart, asaType)
 	if splitErr != nil {
 
 		// The split start failed, so reset the timer so we start again after another brief delay.
@@ -2532,6 +2763,89 @@ func InitializeStoragePoolsCommon(
 		physicalPools[pool.Name()] = pool
 	}
 
+	virtualPools, err = initializeVirtualPools(ctx, d, poolAttributes, backendName, mediaOffers)
+
+	return physicalPools, virtualPools, err
+}
+
+func InitializeASAStoragePoolsCommon(
+	ctx context.Context, d StorageDriver, poolAttributes map[string]sa.Offer, backendName string,
+) (map[string]storage.Pool, map[string]storage.Pool, error) {
+	var err error
+	config := d.GetOntapConfig()
+
+	mediaOffers := make([]sa.Offer, 0)
+	if mediaOffer, ok := poolAttributes[sa.Media]; ok {
+		mediaOffers = append(mediaOffers, mediaOffer)
+	}
+
+	pool := storage.NewStoragePool(nil, backendName)
+
+	// Update pool with attributes set by default for this backend
+	// We do not set internal attributes with these values as this
+	// merely means that pools supports these capabilities like
+	// encryption, cloning, thick/thin provisioning
+	for attrName, offer := range poolAttributes {
+		pool.Attributes()[attrName] = offer
+	}
+
+	if config.Region != "" {
+		pool.Attributes()[sa.Region] = sa.NewStringOffer(config.Region)
+	}
+	if config.Zone != "" {
+		pool.Attributes()[sa.Zone] = sa.NewStringOffer(config.Zone)
+	}
+
+	if config.SnapshotDir != "" {
+		config.SnapshotDir, err = convert.ToFormattedBool(config.SnapshotDir)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", config.SnapshotDir)
+			return nil, nil, fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
+		}
+	}
+
+	pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels)
+	pool.Attributes()[sa.NASType] = sa.NewStringOffer(config.NASType)
+	pool.Attributes()[sa.SANType] = sa.NewStringOffer(config.SANType)
+
+	pool.InternalAttributes()[Size] = config.Size
+	pool.InternalAttributes()[NameTemplate] = config.NameTemplate
+	pool.InternalAttributes()[Region] = config.Region
+	pool.InternalAttributes()[Zone] = config.Zone
+	pool.InternalAttributes()[SpaceReserve] = config.SpaceReserve
+	pool.InternalAttributes()[SnapshotPolicy] = config.SnapshotPolicy
+	pool.InternalAttributes()[SnapshotReserve] = config.SnapshotReserve
+	pool.InternalAttributes()[SplitOnClone] = config.SplitOnClone
+	pool.InternalAttributes()[Encryption] = config.Encryption
+	pool.InternalAttributes()[LUKSEncryption] = config.LUKSEncryption
+	pool.InternalAttributes()[UnixPermissions] = config.UnixPermissions
+	pool.InternalAttributes()[SnapshotDir] = config.SnapshotDir
+	pool.InternalAttributes()[ExportPolicy] = config.ExportPolicy
+	pool.InternalAttributes()[SecurityStyle] = config.SecurityStyle
+	pool.InternalAttributes()[TieringPolicy] = config.TieringPolicy
+	pool.InternalAttributes()[QosPolicy] = config.QosPolicy
+	pool.InternalAttributes()[AdaptiveQosPolicy] = config.AdaptiveQosPolicy
+	pool.InternalAttributes()[SpaceAllocation] = config.SpaceAllocation
+	pool.InternalAttributes()[FileSystemType] = config.FileSystemType
+
+	pool.SetSupportedTopologies(config.SupportedTopologies)
+
+	physicalPools := map[string]storage.Pool{pool.Name(): pool}
+
+	virtualPools, err := initializeVirtualPools(ctx, d, poolAttributes, backendName, mediaOffers)
+
+	return physicalPools, virtualPools, err
+}
+
+func initializeVirtualPools(
+	ctx context.Context, d StorageDriver, poolAttributes map[string]sa.Offer, backendName string,
+	mediaOffers []sa.Offer,
+) (map[string]storage.Pool, error) {
+	config := d.GetOntapConfig()
+	virtualPools := make(map[string]storage.Pool)
+
+	var err error
+
 	// Define virtual pools
 	for index, vpool := range config.Storage {
 
@@ -2595,7 +2909,7 @@ func InitializeStoragePoolsCommon(
 			snapshotDir, err = convert.ToFormattedBool(vpool.SnapshotDir)
 			if err != nil {
 				Logc(ctx).WithError(err).Errorf("Invalid boolean value for vpool's snapshotDir: %v.", vpool.SnapshotDir)
-				return nil, nil, fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
+				return nil, fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
 			}
 		}
 
@@ -2663,14 +2977,14 @@ func InitializeStoragePoolsCommon(
 		if vpool.SANType != "" {
 			sanType = strings.ToLower(vpool.SANType)
 			if config.SANType != sanType {
-				return nil, nil, fmt.Errorf("trident does not support mixing of %s and %s SAN types", sanType, config.SANType)
+				return nil, fmt.Errorf("trident does not support mixing of %s and %s SAN types", sanType, config.SANType)
 			}
 		}
 
 		formatOptions := config.FormatOptions
 		if vpool.FormatOptions != "" {
 			if err = validateFormatOptions(vpool.FormatOptions); err != nil {
-				return nil, nil, fmt.Errorf("invalid formatOptions: %w, in pool: %v", err, pool.Name())
+				return nil, fmt.Errorf("invalid formatOptions: %w, in pool: %v", err, pool.Name())
 			}
 			formatOptions = strings.TrimSpace(vpool.FormatOptions)
 		}
@@ -2692,8 +3006,7 @@ func InitializeStoragePoolsCommon(
 		if encryption != "" {
 			enableEncryption, err := strconv.ParseBool(encryption)
 			if err != nil {
-				return nil, nil, fmt.Errorf("invalid boolean value for encryption: %v in virtual pool: %s", err,
-					pool.Name())
+				return nil, fmt.Errorf("invalid boolean value for encryption: %v in virtual pool: %s", err, pool.Name())
 			}
 			pool.Attributes()[sa.Encryption] = sa.NewBoolOffer(enableEncryption)
 			pool.InternalAttributes()[Encryption] = encryption
@@ -2727,11 +3040,11 @@ func InitializeStoragePoolsCommon(
 		virtualPools[pool.Name()] = pool
 	}
 
-	return physicalPools, virtualPools, nil
+	return virtualPools, nil
 }
 
-// ValidateStoragePools makes sure that values are set for the fields, if value(s) were not specified
-// for a field then a default should have been set in for that field in the initialize storage pools
+// ValidateStoragePools checks that pool attribute values are valid for a traditional ONTAP storage cluster.
+// Any fields not explicitly specified would have been set to default values during pool initialization.
 func ValidateStoragePools(
 	ctx context.Context, physicalPools, virtualPools map[string]storage.Pool, d StorageDriver, labelLimit int,
 ) error {
@@ -2771,9 +3084,10 @@ func ValidateStoragePools(
 				return fmt.Errorf("invalid value for encryption in pool %s: %v", poolName, err)
 			}
 		}
-		// Validate snapshot dir
+
+		// Validate SnapshotDir
 		if pool.InternalAttributes()[SnapshotDir] == "" {
-			return fmt.Errorf("snapshotDir cannot by empty in pool %s", poolName)
+			return fmt.Errorf("snapshotDir cannot be empty in pool %s", poolName)
 		} else {
 			_, err := strconv.ParseBool(pool.InternalAttributes()[SnapshotDir])
 			if err != nil {
@@ -2948,6 +3262,184 @@ func ValidateStoragePools(
 				if err != nil {
 					return fmt.Errorf("invalid value for fileSystemType in pool %s: %v", poolName, err)
 				}
+			}
+		}
+	}
+
+	return nil
+}
+
+// ValidateASAStoragePools checks that pool attribute values are valid for an All-SAN Array storage cluster.
+// Any fields not explicitly specified would have been set to default values during pool initialization.
+func ValidateASAStoragePools(
+	ctx context.Context, physicalPools, virtualPools map[string]storage.Pool, d StorageDriver, labelLimit int,
+) error {
+	config := d.GetOntapConfig()
+
+	if config.NASType != "" {
+		return errors.New("nasType must not be set for a SAN backend")
+	}
+
+	if len(config.AutoExportCIDRs) > 0 {
+		return errors.New("invalid value for autoExportCIDRs")
+	}
+
+	switch config.SANType {
+	case sa.ISCSI:
+		break
+	default:
+		return errors.New("invalid value for sanType")
+	}
+
+	// Validate pool-level attributes
+	allPools := make([]storage.Pool, 0, len(physicalPools)+len(virtualPools))
+
+	for _, pool := range physicalPools {
+		allPools = append(allPools, pool)
+	}
+	for _, pool := range virtualPools {
+		allPools = append(allPools, pool)
+	}
+
+	for _, pool := range allPools {
+
+		poolName := pool.Name()
+
+		if pool.InternalAttributes()[SpaceReserve] != "none" {
+			return errors.New("spaceReserve must be set to none")
+		}
+
+		if pool.InternalAttributes()[SnapshotReserve] != "" {
+			return errors.New("snapshotReserve must not be set")
+		}
+
+		if pool.InternalAttributes()[SnapshotPolicy] != "none" {
+			return errors.New("snapshotPolicy must be set to none")
+		}
+
+		if pool.InternalAttributes()[Encryption] != "" {
+			if encryption, err := strconv.ParseBool(pool.InternalAttributes()[Encryption]); err != nil {
+				return fmt.Errorf("invalid value for encryption in pool %s: %v", poolName, err)
+			} else if !encryption {
+				return errors.New("encryption must be set to true")
+			}
+		}
+
+		if pool.InternalAttributes()[SnapshotDir] != "" {
+			return errors.New("snapshotDir must not be set")
+		}
+
+		if pool.InternalAttributes()[SecurityStyle] != "" {
+			return errors.New("invalid value for securityStyle")
+		}
+
+		if pool.InternalAttributes()[ExportPolicy] != "" {
+			return fmt.Errorf("invalid value for exportPolicy")
+		}
+
+		if pool.InternalAttributes()[UnixPermissions] != "" {
+			return errors.New("invalid value for unixPermissions")
+		}
+
+		if pool.InternalAttributes()[TieringPolicy] != "" {
+			return errors.New("tieringPolicy must not be set")
+		}
+
+		// Validate QoS policy or adaptive QoS policy
+		if pool.InternalAttributes()[QosPolicy] != "" || pool.InternalAttributes()[AdaptiveQosPolicy] != "" {
+			if _, err := api.NewQosPolicyGroup(
+				pool.InternalAttributes()[QosPolicy], pool.InternalAttributes()[AdaptiveQosPolicy],
+			); err != nil {
+				return err
+			}
+		}
+
+		// Validate media type
+		if pool.InternalAttributes()[Media] != "" {
+			for _, mediaType := range strings.Split(pool.InternalAttributes()[Media], ",") {
+				if mediaType != sa.SSD {
+					Logc(ctx).Errorf("invalid media type %s in pool %s", mediaType, pool.Name())
+				}
+			}
+		}
+
+		// Validate default size
+		if defaultSize, err := capacity.ToBytes(pool.InternalAttributes()[Size]); err != nil {
+			return fmt.Errorf("invalid value for default volume size in pool %s: %v", poolName, err)
+		} else {
+			sizeBytes, _ := strconv.ParseUint(defaultSize, 10, 64)
+			if sizeBytes < MinimumVolumeSizeBytes {
+				return fmt.Errorf("invalid value for size in pool %s. Requested volume size ("+
+					"%d bytes) is too small; the minimum volume size is %d bytes", poolName, sizeBytes,
+					MinimumVolumeSizeBytes)
+			}
+		}
+
+		// Validate name template
+		if pool.InternalAttributes()[NameTemplate] != "" {
+			if _, err := template.New(poolName).Parse(pool.InternalAttributes()[NameTemplate]); err != nil {
+				return fmt.Errorf("invalid value for volume name template in pool %s; %v", pool.Name(), err)
+			}
+		}
+
+		if pool.Attributes()[sa.Labels] != nil {
+			// make an array of map of string to string
+			labelOffer, ok := pool.Attributes()[sa.Labels].(sa.LabelOffer)
+			if !ok {
+				return fmt.Errorf("invalid value for labels in pool %s", poolName)
+			}
+
+			labelOfferMap := labelOffer.Labels()
+			if len(labelOfferMap) != 0 {
+				for _, v := range labelOfferMap {
+					if _, err := template.New(poolName).Parse(v); err != nil {
+						return fmt.Errorf("invalid labels template in pool %s; %v", poolName, err)
+					}
+				}
+			}
+
+			if _, err := pool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, labelLimit); err != nil {
+				return fmt.Errorf("invalid value for label in pool %s: %v", poolName, err)
+			}
+		}
+
+		// Validate splitOnClone
+		if pool.InternalAttributes()[SplitOnClone] == "" {
+			return fmt.Errorf("splitOnClone cannot by empty in pool %s", poolName)
+		} else {
+			_, err := strconv.ParseBool(pool.InternalAttributes()[SplitOnClone])
+			if err != nil {
+				return fmt.Errorf("invalid value for splitOnClone in pool %s: %v", poolName, err)
+			}
+		}
+
+		// Validate LUKS configuration, only boolean value and only supported by non-ASA SAN backends
+		if _, ok := pool.InternalAttributes()[LUKSEncryption]; ok {
+			if isLuks, err := strconv.ParseBool(pool.InternalAttributes()[LUKSEncryption]); err != nil {
+				return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v",
+					pool.InternalAttributes()[LUKSEncryption])
+			} else if isLuks {
+				return fmt.Errorf("LUKS encrypted volumes are not supported by All-SAN Array backends")
+			}
+		}
+
+		// Validate SpaceAllocation
+		if pool.InternalAttributes()[SpaceAllocation] == "" {
+			return fmt.Errorf("spaceAllocation cannot by empty in pool %s", poolName)
+		} else {
+			spaceAllocation, err := strconv.ParseBool(pool.InternalAttributes()[SpaceAllocation])
+			if !spaceAllocation || err != nil {
+				return fmt.Errorf("invalid value for SpaceAllocation in pool %s: %v", poolName, err)
+			}
+		}
+
+		// Validate FileSystemType
+		if pool.InternalAttributes()[FileSystemType] == "" {
+			return fmt.Errorf("fileSystemType cannot by empty in pool %s", poolName)
+		} else {
+			_, err := drivers.CheckSupportedFilesystem(ctx, pool.InternalAttributes()[FileSystemType], "")
+			if err != nil {
+				return fmt.Errorf("invalid value for fileSystemType in pool %s: %v", poolName, err)
 			}
 		}
 	}
@@ -4041,6 +4533,367 @@ func removeExportPolicyRules(
 		if err = clientAPI.ExportRuleDestroy(ctx, exportPolicy, ruleIndex); err != nil {
 			Logc(ctx).WithError(err).Error("Error deleting export policy rule.")
 			return err
+		}
+	}
+
+	return nil
+}
+
+func deleteAutomaticASASnapshot(
+	ctx context.Context,
+	config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
+	volConfig *storage.VolumeConfig, asaType string,
+) {
+	name := volConfig.InternalName
+	source := volConfig.CloneSourceVolumeInternal
+	snapshotInternal := volConfig.CloneSourceSnapshotInternal
+	snapshot := volConfig.CloneSourceSnapshot
+
+	fields := LogFields{
+		"Method":       "DeleteAutomaticASASnapshot",
+		"Type":         "ontap_common",
+		"snapshotName": snapshotInternal,
+		"volumeName":   name,
+		"asaType":      asaType,
+	}
+
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> deleteAutomaticASASnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< deleteAutomaticASASnapshot")
+
+	logFields := LogFields{
+		"snapshotName":    snapshotInternal,
+		"cloneSourceName": source,
+		"cloneName":       name,
+		"asaType":         asaType,
+	}
+
+	// Automatic snapshot when created will set snapshotInternal field and leave snapshot field empty. Check if such exists.
+	if !(snapshot == "" && snapshotInternal != "") {
+		Logc(ctx).WithFields(logFields).Debug("No automatic ASA clone source snapshot exists, skipping cleanup.")
+		return
+	}
+
+	// Delete automatic ASA snapshot with backoff retry to handle busy snapshots case
+	deleteSnapshot := func() error {
+		if err := client.StorageUnitSnapshotDelete(ctx, snapshotInternal, source, asaType); err != nil {
+			if api.IsNotFoundError(err) {
+				// Snapshot is already deleted. Nothing to clean up.
+				Logc(ctx).WithFields(logFields).Debug("Automatic ASA snapshot not found, skipping cleanup.")
+				return nil
+			} else if api.IsSnapshotBusyError(err) {
+				// Snapshot is busy. Retry after some time.
+				Logc(ctx).WithFields(logFields).WithError(err).Error("Error deleting automatic ASA snapshot. " +
+					"Snapshot is busy. Retrying after some time.")
+				return err
+			} else {
+				// Some other error occurred. Log the error and ask to do cleanup manually.
+				Logc(ctx).WithFields(logFields).WithError(err).Error("Error deleting automatic ASA snapshot. " +
+					"Any automatic snapshot must be manually deleted.")
+				return nil
+			}
+		}
+
+		return nil
+	}
+
+	statusNotify := func(err error, duration time.Duration) {
+		logFields["increment"] = duration
+		Logc(ctx).WithFields(logFields).Debug("Automatic ASA Snapshot is not deleted, waiting.")
+	}
+
+	statusBackoff := backoff.NewExponentialBackOff()
+	statusBackoff.InitialInterval = 2 * time.Second
+	statusBackoff.Multiplier = 2
+	statusBackoff.RandomizationFactor = 0.1
+	statusBackoff.MaxElapsedTime = 10 * time.Second
+
+	// Delete automatic ASA snapshot using an exponential backoff
+	if err := backoff.RetryNotify(deleteSnapshot, statusBackoff, statusNotify); err != nil {
+		Logc(ctx).WithFields(logFields).Warnf("Automatic ASA Snapshot not deleted even after %3.2f seconds."+
+			"Any automatic snapshot must be manually deleted.",
+			statusBackoff.MaxElapsedTime.Seconds())
+		return
+	}
+
+	return
+}
+
+// createASASnapshot Creates a snapshot for ASA unit.
+func createASASnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig,
+	config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
+	asaType string,
+) (*storage.Snapshot, error) {
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	fields := LogFields{
+		"Method":       "createASASnapshot",
+		"Type":         "ontap_common",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+		"asaType":      asaType,
+	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> createASASnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< createASASnapshot")
+
+	// Create the snapshot for ASA unit
+	if err := client.StorageUnitSnapshotCreate(ctx, internalSnapName, internalVolName, asaType); err != nil {
+		return nil, err
+	}
+
+	snap, err := client.StorageUnitSnapshotInfo(ctx, internalSnapName, internalVolName, asaType)
+	if err != nil {
+		return nil, err
+	}
+
+	if snap == nil {
+		// unlikely case
+		return nil, fmt.Errorf("no snapshot with name %v could be created for volume %v", internalSnapName, internalVolName)
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+		"created":      snap.CreateTime,
+	}).Debug("Found snapshot.")
+
+	return &storage.Snapshot{
+		Config:  snapConfig,
+		Created: snap.CreateTime,
+		State:   storage.SnapshotStateOnline,
+	}, nil
+}
+
+func getASASnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig,
+	config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
+	asaType string,
+) (*storage.Snapshot, error) {
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	fields := LogFields{
+		"Method":       "getASASnapshot",
+		"Type":         "ontap_common",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+		"asaType":      asaType,
+	}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
+
+	snap, err := client.StorageUnitSnapshotInfo(ctx, internalSnapName, internalVolName, asaType)
+	if err != nil {
+		if errors.IsNotFoundError(err) {
+			return nil, nil
+		} else {
+			return nil, err
+		}
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+		"created":      snap.CreateTime,
+	}).Debug("Found snapshot.")
+	return &storage.Snapshot{
+		Config:  snapConfig,
+		Created: snap.CreateTime,
+		State:   storage.SnapshotStateOnline,
+	}, nil
+}
+
+// getVolumeSnapshotList returns the list of snapshots associated with the named volume.
+func getASASnapshotList(
+	ctx context.Context, volConfig *storage.VolumeConfig,
+	config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
+	asaType string,
+) ([]*storage.Snapshot, error) {
+	internalVolName := volConfig.InternalName
+
+	fields := LogFields{
+		"Method":     "getASASnapshotList",
+		"Type":       "ontap_common",
+		"volumeName": internalVolName,
+		"asaType":    asaType,
+	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getASASnapshotList")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getASASnapshotList")
+
+	snapshots, err := client.StorageUnitSnapshotList(ctx, internalVolName, asaType)
+	if err != nil {
+		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
+	}
+
+	if snapshots == nil {
+		return nil, fmt.Errorf("no snapshots found for volume %v", internalVolName)
+	}
+
+	result := make([]*storage.Snapshot, 0)
+
+	for _, snap := range *snapshots {
+
+		Logc(ctx).WithFields(LogFields{
+			"name":       snap.Name,
+			"accessTime": snap.CreateTime,
+		}).Debug("Snapshot")
+
+		snapshot := &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				Version:            tridentconfig.OrchestratorAPIVersion,
+				Name:               snap.Name,
+				InternalName:       snap.Name,
+				VolumeName:         volConfig.Name,
+				VolumeInternalName: volConfig.InternalName,
+			},
+			Created: snap.CreateTime,
+			State:   storage.SnapshotStateOnline,
+		}
+
+		result = append(result, snapshot)
+	}
+
+	return result, nil
+}
+
+func restoreASASnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig,
+	config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
+	asaType string,
+) error {
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	fields := LogFields{
+		"Method":       "restoreASASnapshot",
+		"Type":         "ontap_common",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+		"asaType":      asaType,
+	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreASASnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreASASnapshot")
+
+	if err := client.SnapshotRestoreVolume(ctx, internalSnapName, internalVolName); err != nil {
+		return err
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+	}).Debug("Restored snapshot.")
+
+	return nil
+}
+
+func deleteASASnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig,
+	config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
+	cloneSplitTimers map[string]time.Time, asaType string,
+) error {
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	fields := LogFields{
+		"Method":       "deleteASASnapshot",
+		"Type":         "ontap_common",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+		"asaType":      asaType,
+	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteASASnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteASASnapshot")
+
+	err := client.StorageUnitSnapshotDelete(ctx, snapConfig.InternalName, internalVolName, asaType)
+	if err != nil {
+		if api.IsSnapshotBusyError(err) {
+			Logc(ctx).WithFields(LogFields{
+				"snapshotName": internalSnapName,
+				"volumeName":   internalVolName,
+			}).Debug("Snapshot busy.")
+
+			// Start a split here before returning the error so a subsequent delete attempt may succeed.
+			SplitASAVolumeFromBusySnapshotWithDelay(ctx, snapConfig, config, client,
+				client.StorageUnitCloneSplitStart, cloneSplitTimers, asaType)
+		}
+
+		// We must return the error, even if we started a split, so the snapshot delete is retried.
+		return err
+	}
+
+	// Clean up any split timer
+	delete(cloneSplitTimers, snapConfig.ID())
+
+	Logc(ctx).WithFields(LogFields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+	}).Debug("Deleted ASA snapshot.")
+
+	return nil
+}
+
+// cloneASAvol
+func cloneASAvol(
+	ctx context.Context, cloneVolConfig *storage.VolumeConfig,
+	split bool, config *drivers.OntapStorageDriverConfig,
+	client api.OntapAPI, asaType string,
+) error {
+	name := cloneVolConfig.InternalName
+	source := cloneVolConfig.CloneSourceVolumeInternal
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
+
+	fields := LogFields{
+		"Method":   "cloneASAvol",
+		"Type":     "ontap_common",
+		"name":     name,
+		"source":   source,
+		"snapshot": snapshot,
+		"split":    split,
+	}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> cloneASAvol")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< cloneASAvol")
+
+	// TODO (aparna0508): Get LUN or NVMe namespace based on ASA type.
+	// If the specified volume already exists, return an error
+	volExists, err := client.LunExists(ctx, name)
+	if err != nil {
+		return fmt.Errorf("error checking for existing volume: %v", err)
+	}
+	if volExists {
+		return fmt.Errorf("volume %s already exists", name)
+	}
+
+	// If no specific snapshot was requested, create one
+	if snapshot == "" {
+		snapshot = time.Now().UTC().Format(storage.SnapshotNameFormat)
+		if err = client.StorageUnitSnapshotCreate(ctx, snapshot, source, asaType); err != nil {
+			return err
+		}
+		cloneVolConfig.CloneSourceSnapshotInternal = snapshot
+	}
+
+	// Create the clone based on a snapshot
+	if err = client.StorageUnitCloneCreate(ctx, name, source, snapshot, asaType); err != nil {
+		return err
+	}
+
+	// Split the clone if requested
+	if split {
+		if err := client.StorageUnitCloneSplitStart(ctx, name, asaType); err != nil {
+			return fmt.Errorf("error splitting clone: %v", err)
 		}
 	}
 

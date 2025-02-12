@@ -88,20 +88,26 @@ func (d *NASFlexGroupStorageDriver) Initialize(
 	defer Logd(ctx, commonConfig.StorageDriverName,
 		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
-	// Initialize the driver's CommonStorageDriverConfig
-	d.Config.CommonStorageDriverConfig = commonConfig
+	var err error
 
-	// Parse the config
-	config, err := InitializeOntapConfig(ctx, driverContext, configJSON, commonConfig, backendSecret)
-	if err != nil {
-		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+	if d.Config.CommonStorageDriverConfig == nil {
+
+		// Initialize the driver's CommonStorageDriverConfig
+		d.Config.CommonStorageDriverConfig = commonConfig
+
+		// Parse the config
+		config, err := InitializeOntapConfig(ctx, driverContext, configJSON, commonConfig, backendSecret)
+		if err != nil {
+			return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+		}
+
+		d.Config = *config
 	}
-	d.Config = *config
 
 	// Initialize AWS API if applicable.
 	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
 	if d.AWSAPI == nil {
-		d.AWSAPI, err = initializeAWSDriver(ctx, config)
+		d.AWSAPI, err = initializeAWSDriver(ctx, &d.Config)
 		if err != nil {
 			return fmt.Errorf("error initializing %s AWS driver; %v", d.Name(), err)
 		}
@@ -110,13 +116,15 @@ func (d *NASFlexGroupStorageDriver) Initialize(
 	// Initialize the ONTAP API.
 	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
 	if d.API == nil {
-		d.API, err = InitializeOntapDriver(ctx, config)
-		if err != nil {
+		if d.API, err = InitializeOntapDriver(ctx, &d.Config); err != nil {
 			return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 		}
 	}
 
-	d.Config = *config
+	// Load default config parameters
+	if err = PopulateConfigurationDefaults(ctx, &d.Config); err != nil {
+		return fmt.Errorf("could not populate configuration defaults: %v", err)
+	}
 
 	// Identify Virtual Pools
 	if err := d.initializeStoragePools(ctx); err != nil {

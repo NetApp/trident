@@ -250,9 +250,6 @@ func (d *SANEconomyStorageDriver) Initialize(
 	defer Logd(ctx, commonConfig.StorageDriverName,
 		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
-	// Initialize the driver's CommonStorageDriverConfig
-	d.Config.CommonStorageDriverConfig = commonConfig
-
 	// Initialize the iSCSI client
 	var err error
 	d.iscsi, err = iscsi.New()
@@ -260,17 +257,24 @@ func (d *SANEconomyStorageDriver) Initialize(
 		return fmt.Errorf("error initializing iSCSI client: %v", err)
 	}
 
-	// Parse the config
-	config, err := InitializeOntapConfig(ctx, driverContext, configJSON, commonConfig, backendSecret)
-	if err != nil {
-		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+	if d.Config.CommonStorageDriverConfig == nil {
+
+		// Initialize the driver's CommonStorageDriverConfig
+		d.Config.CommonStorageDriverConfig = commonConfig
+
+		// Parse the config
+		config, err := InitializeOntapConfig(ctx, driverContext, configJSON, commonConfig, backendSecret)
+		if err != nil {
+			return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+		}
+
+		d.Config = *config
 	}
-	d.Config = *config
 
 	// Initialize AWS API if applicable.
 	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
 	if d.AWSAPI == nil {
-		d.AWSAPI, err = initializeAWSDriver(ctx, config)
+		d.AWSAPI, err = initializeAWSDriver(ctx, &d.Config)
 		if err != nil {
 			return fmt.Errorf("error initializing %s AWS driver; %v", d.Name(), err)
 		}
@@ -279,12 +283,16 @@ func (d *SANEconomyStorageDriver) Initialize(
 	// Initialize the ONTAP API.
 	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
 	if d.API == nil {
-		d.API, err = InitializeOntapDriver(ctx, config)
-		if err != nil {
+		if d.API, err = InitializeOntapDriver(ctx, &d.Config); err != nil {
 			return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 		}
 	}
-	d.Config = *config
+
+	// Load default config parameters
+	if err = PopulateConfigurationDefaults(ctx, &d.Config); err != nil {
+		return fmt.Errorf("could not populate configuration defaults: %v", err)
+	}
+
 	d.helper = NewLUNHelper(d.Config, driverContext)
 
 	d.ips, err = d.API.NetInterfaceGetDataLIFs(ctx, "iscsi")
@@ -315,11 +323,11 @@ func (d *SANEconomyStorageDriver) Initialize(
 	d.denyNewFlexvols, _ = strconv.ParseBool(d.Config.DenyNewVolumePools)
 
 	// ensure lun cap is valid
-	if config.LUNsPerFlexvol == "" {
+	if d.Config.LUNsPerFlexvol == "" {
 		d.lunsPerFlexvol = defaultLUNsPerFlexvol
 	} else {
 		errstr := "invalid config value for lunsPerFlexvol"
-		if d.lunsPerFlexvol, err = strconv.Atoi(config.LUNsPerFlexvol); err != nil {
+		if d.lunsPerFlexvol, err = strconv.Atoi(d.Config.LUNsPerFlexvol); err != nil {
 			return fmt.Errorf("%v: %v", errstr, err)
 		}
 		if d.lunsPerFlexvol < minLUNsPerFlexvol {
@@ -351,9 +359,8 @@ func (d *SANEconomyStorageDriver) Initialize(
 	if err != nil {
 		if d.Config.DriverContext == tridentconfig.ContextCSI {
 			// Clean up igroup for failed driver.
-			err := d.API.IgroupDestroy(ctx, d.Config.IgroupName)
-			if err != nil {
-				Logc(ctx).WithError(err).WithField("igroup", d.Config.IgroupName).Warn("Error deleting igroup.")
+			if igroupErr := d.API.IgroupDestroy(ctx, d.Config.IgroupName); igroupErr != nil {
+				Logc(ctx).WithError(igroupErr).WithField("igroup", d.Config.IgroupName).Warn("Error deleting igroup.")
 			}
 		}
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)

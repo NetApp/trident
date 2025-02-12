@@ -53,18 +53,21 @@ import (
 
 // RestClient is the object to use for interacting with ONTAP controllers via the REST API
 type RestClient struct {
-	config       ClientConfig
-	tr           *http.Transport
-	httpClient   *http.Client
-	api          *client.ONTAPRESTAPIOnlineReference
-	authInfo     runtime.ClientAuthInfoWriter
-	OntapVersion string
-	driverName   string
-	svmUUID      string
-	svmName      string
+	config        ClientConfig
+	tr            *http.Transport
+	httpClient    *http.Client
+	api           *client.ONTAPRESTAPIOnlineReference
+	authInfo      runtime.ClientAuthInfoWriter
+	OntapVersion  string
+	driverName    string
+	svmUUID       string
+	svmName       string
+	clusterUUID   string
+	sanOptimized  bool
+	disaggregated bool
 }
 
-func (c RestClient) ClientConfig() ClientConfig {
+func (c *RestClient) ClientConfig() ClientConfig {
 	return c.config
 }
 
@@ -82,6 +85,18 @@ func (c *RestClient) SetSVMName(svmName string) {
 
 func (c *RestClient) SVMName() string {
 	return c.svmName
+}
+
+// IsSANOptimized returns whether this client has detected a SAN-optimized ONTAP cluster.  This
+// property is discovered in SystemGetOntapVersion().
+func (c *RestClient) IsSANOptimized() bool {
+	return c.sanOptimized
+}
+
+// IsDisaggregated returns whether this client has detected a disaggregated ONTAP cluster.  This
+// property is discovered in SystemGetOntapVersion().
+func (c *RestClient) IsDisaggregated() bool {
+	return c.disaggregated
 }
 
 // NewRestClient is a factory method for creating a new instance
@@ -256,7 +271,11 @@ func NewRestClientFromOntapConfig(
 		return nil, fmt.Errorf("could not instantiate REST client")
 	}
 
-	if err := EnsureSVMWithRest(ctx, ontapConfig, restClient); err != nil {
+	if _, err = restClient.SystemGetOntapVersion(ctx, false); err != nil {
+		return nil, err
+	}
+
+	if err = EnsureSVMWithRest(ctx, ontapConfig, restClient); err != nil {
 		return nil, err
 	}
 
@@ -271,6 +290,7 @@ func NewRestClientFromOntapConfig(
 var (
 	MinimumONTAPVersion        = versionutils.MustParseSemantic("9.12.1")
 	MinimumONTAPVersionDefault = versionutils.MustParseSemantic("9.15.1")
+	MinimumASAR2Version        = versionutils.MustParseSemantic("9.16.1")
 )
 
 func IsRESTSupported(version string) (bool, error) {
@@ -300,7 +320,7 @@ func IsRESTSupportedDefault(version string) (bool, error) {
 }
 
 // SupportsFeature returns true if the Ontap version supports the supplied feature
-func (c RestClient) SupportsFeature(ctx context.Context, feature Feature) bool {
+func (c *RestClient) SupportsFeature(ctx context.Context, feature Feature) bool {
 	ontapVersion, err := c.SystemGetOntapVersion(ctx, true)
 	if err != nil {
 		return false
@@ -316,6 +336,29 @@ func (c RestClient) SupportsFeature(ctx context.Context, feature Feature) bool {
 	} else {
 		return false
 	}
+}
+
+// QueryWrapper wraps a Param instance and overrides query parameters
+type QueryWrapper struct {
+	originalParams runtime.ClientRequestWriter
+	queryParams    map[string]string
+}
+
+// WriteToRequest adds custom query parameters to the request
+func (q *QueryWrapper) WriteToRequest(req runtime.ClientRequest, reg strfmt.Registry) error {
+	// Call the original Params function if it exists
+	if q.originalParams != nil {
+		if err := q.originalParams.WriteToRequest(req, reg); err != nil {
+			return err
+		}
+	}
+	// Add the custom query parameters
+	for k, v := range q.queryParams {
+		if err := req.SetQueryParam(k, v); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // ParamWrapper wraps a Param instance and overrides request parameters
@@ -439,7 +482,7 @@ func HasNextLink(restResult interface{}) (result bool) {
 // NAS VOLUME operations by style (flexgroup and flexvol)
 // ////////////////////////////////////////////////////////////////////////////
 
-func (c RestClient) getAllVolumePayloadRecords(
+func (c *RestClient) getAllVolumePayloadRecords(
 	payload *models.VolumeResponse,
 	params *storage.VolumeCollectionGetParams,
 ) (*models.VolumeResponse, error) {
@@ -473,7 +516,7 @@ func (c RestClient) getAllVolumePayloadRecords(
 }
 
 // getAllVolumesByPatternStyleAndState returns all relevant details for all volumes of the style specified whose names match the supplied prefix
-func (c RestClient) getAllVolumesByPatternStyleAndState(
+func (c *RestClient) getAllVolumesByPatternStyleAndState(
 	ctx context.Context, pattern, style, state string, fields []string,
 ) (*storage.VolumeCollectionGetOK, error) {
 	if style != models.VolumeStyleFlexvol && style != models.VolumeStyleFlexgroup {
@@ -523,7 +566,7 @@ func (c RestClient) getAllVolumesByPatternStyleAndState(
 }
 
 // checkVolumeExistsByNameAndStyle tests for the existence of a volume of the style and name specified
-func (c RestClient) checkVolumeExistsByNameAndStyle(ctx context.Context, volumeName, style string) (bool, error) {
+func (c *RestClient) checkVolumeExistsByNameAndStyle(ctx context.Context, volumeName, style string) (bool, error) {
 	if volumeName == "" {
 		return false, nil
 	}
@@ -539,7 +582,7 @@ func (c RestClient) checkVolumeExistsByNameAndStyle(ctx context.Context, volumeN
 }
 
 // getVolumeByNameAndStyle gets the volume of the style and name specified
-func (c RestClient) getVolumeByNameAndStyle(
+func (c *RestClient) getVolumeByNameAndStyle(
 	ctx context.Context,
 	volumeName string,
 	style string,
@@ -560,7 +603,7 @@ func (c RestClient) getVolumeByNameAndStyle(
 }
 
 // getVolumeInAnyStateByNameAndStyle gets the volume of the style and name specified
-func (c RestClient) getVolumeInAnyStateByNameAndStyle(
+func (c *RestClient) getVolumeInAnyStateByNameAndStyle(
 	ctx context.Context,
 	volumeName string,
 	style string,
@@ -581,7 +624,7 @@ func (c RestClient) getVolumeInAnyStateByNameAndStyle(
 }
 
 // getVolumeSizeByNameAndStyle retrieves the size of the volume of the style and name specified
-func (c RestClient) getVolumeSizeByNameAndStyle(ctx context.Context, volumeName, style string) (uint64, error) {
+func (c *RestClient) getVolumeSizeByNameAndStyle(ctx context.Context, volumeName, style string) (uint64, error) {
 	fields := []string{"size"}
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style, fields)
 	if err != nil {
@@ -598,7 +641,7 @@ func (c RestClient) getVolumeSizeByNameAndStyle(ctx context.Context, volumeName,
 }
 
 // getVolumeUsedSizeByNameAndStyle retrieves the used bytes of the the volume of the style and name specified
-func (c RestClient) getVolumeUsedSizeByNameAndStyle(ctx context.Context, volumeName, style string) (int, error) {
+func (c *RestClient) getVolumeUsedSizeByNameAndStyle(ctx context.Context, volumeName, style string) (int, error) {
 	fields := []string{"space.logical_space.used"}
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style, fields)
 	if err != nil {
@@ -624,7 +667,7 @@ func (c RestClient) getVolumeUsedSizeByNameAndStyle(ctx context.Context, volumeN
 }
 
 // setVolumeSizeByNameAndStyle sets the size of the specified volume of given style
-func (c RestClient) setVolumeSizeByNameAndStyle(ctx context.Context, volumeName, newSize, style string) error {
+func (c *RestClient) setVolumeSizeByNameAndStyle(ctx context.Context, volumeName, newSize, style string) error {
 	fields := []string{""}
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style, fields)
 	if err != nil {
@@ -670,7 +713,7 @@ func (c RestClient) setVolumeSizeByNameAndStyle(ctx context.Context, volumeName,
 }
 
 // mountVolumeByNameAndStyle mounts a volume at the specified junction
-func (c RestClient) mountVolumeByNameAndStyle(ctx context.Context, volumeName, junctionPath, style string) error {
+func (c *RestClient) mountVolumeByNameAndStyle(ctx context.Context, volumeName, junctionPath, style string) error {
 	fields := []string{"nas.path"}
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style, fields)
 	if err != nil {
@@ -715,7 +758,7 @@ func (c RestClient) mountVolumeByNameAndStyle(ctx context.Context, volumeName, j
 }
 
 // unmountVolumeByNameAndStyle umounts a volume
-func (c RestClient) unmountVolumeByNameAndStyle(
+func (c *RestClient) unmountVolumeByNameAndStyle(
 	ctx context.Context,
 	volumeName, style string,
 ) error {
@@ -766,7 +809,7 @@ func (c RestClient) unmountVolumeByNameAndStyle(
 }
 
 // RenameVolumeByNameAndStyle changes the name of a FlexVol (but not a FlexGroup!)
-func (c RestClient) renameVolumeByNameAndStyle(ctx context.Context, volumeName, newVolumeName, style string) error {
+func (c *RestClient) renameVolumeByNameAndStyle(ctx context.Context, volumeName, newVolumeName, style string) error {
 	fields := []string{""}
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style, fields)
 	if err != nil {
@@ -805,7 +848,7 @@ func (c RestClient) renameVolumeByNameAndStyle(ctx context.Context, volumeName, 
 }
 
 // destroyVolumeByNameAndStyle destroys a volume
-func (c RestClient) destroyVolumeByNameAndStyle(ctx context.Context, name, style string, force bool) error {
+func (c *RestClient) destroyVolumeByNameAndStyle(ctx context.Context, name, style string, force bool) error {
 	fields := []string{""}
 	volume, err := c.getVolumeByNameAndStyle(ctx, name, style, fields)
 	if err != nil {
@@ -836,7 +879,7 @@ func (c RestClient) destroyVolumeByNameAndStyle(ctx context.Context, name, style
 	return c.PollJobStatus(ctx, jobLink)
 }
 
-func (c RestClient) modifyVolumeExportPolicyByNameAndStyle(
+func (c *RestClient) modifyVolumeExportPolicyByNameAndStyle(
 	ctx context.Context, volumeName, exportPolicyName, style string,
 ) error {
 	fields := []string{""}
@@ -875,7 +918,7 @@ func (c RestClient) modifyVolumeExportPolicyByNameAndStyle(
 	return c.PollJobStatus(ctx, jobLink)
 }
 
-func (c RestClient) modifyVolumeUnixPermissionsByNameAndStyle(
+func (c *RestClient) modifyVolumeUnixPermissionsByNameAndStyle(
 	ctx context.Context,
 	volumeName, unixPermissions, style string,
 ) error {
@@ -928,7 +971,7 @@ func (c RestClient) modifyVolumeUnixPermissionsByNameAndStyle(
 
 // setVolumeCommentByNameAndStyle sets a volume's comment to the supplied value
 // equivalent to filer::> volume modify -vserver iscsi_vs -volume v -comment newVolumeComment
-func (c RestClient) setVolumeCommentByNameAndStyle(
+func (c *RestClient) setVolumeCommentByNameAndStyle(
 	ctx context.Context,
 	volumeName, newVolumeComment, style string,
 ) error {
@@ -1009,7 +1052,7 @@ func convertUnixPermissions(s string) string {
 
 // setVolumeQosPolicyGroupNameByNameAndStyle sets the QoS Policy Group for volume clones since
 // we can't set adaptive policy groups directly during volume clone creation.
-func (c RestClient) setVolumeQosPolicyGroupNameByNameAndStyle(
+func (c *RestClient) setVolumeQosPolicyGroupNameByNameAndStyle(
 	ctx context.Context, volumeName string, qosPolicyGroup QosPolicyGroup, style string,
 ) error {
 	fields := []string{""}
@@ -1058,7 +1101,7 @@ func (c RestClient) setVolumeQosPolicyGroupNameByNameAndStyle(
 }
 
 // startCloneSplitByNameAndStyle starts splitting the clone
-func (c RestClient) startCloneSplitByNameAndStyle(ctx context.Context, volumeName, style string) error {
+func (c *RestClient) startCloneSplitByNameAndStyle(ctx context.Context, volumeName, style string) error {
 	fields := []string{""}
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style, fields)
 	if err != nil {
@@ -1097,7 +1140,7 @@ func (c RestClient) startCloneSplitByNameAndStyle(ctx context.Context, volumeNam
 }
 
 // restoreSnapshotByNameAndStyle restores a volume to a snapshot as a non-blocking operation
-func (c RestClient) restoreSnapshotByNameAndStyle(
+func (c *RestClient) restoreSnapshotByNameAndStyle(
 	ctx context.Context,
 	snapshotName, volumeName, style string,
 ) error {
@@ -1134,7 +1177,7 @@ func (c RestClient) restoreSnapshotByNameAndStyle(
 	return c.PollJobStatus(ctx, jobLink)
 }
 
-func (c RestClient) createCloneNAS(
+func (c *RestClient) createCloneNAS(
 	ctx context.Context,
 	cloneName, sourceVolumeName, snapshotName string,
 ) (*storage.VolumeCreateAccepted, error) {
@@ -1166,7 +1209,7 @@ func (c RestClient) createCloneNAS(
 }
 
 // listAllVolumeNamesBackedBySnapshot returns the names of all volumes backed by the specified snapshot
-func (c RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, volumeName, snapshotName string) (
+func (c *RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, volumeName, snapshotName string) (
 	[]string, error,
 ) {
 	params := storage.NewVolumeCollectionGetParamsWithTimeout(c.httpClient.Timeout)
@@ -1211,7 +1254,7 @@ func (c RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, volu
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW
 // -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
 // -encrypt false
-func (c RestClient) createVolumeByStyle(
+func (c *RestClient) createVolumeByStyle(
 	ctx context.Context, name string, sizeInBytes int64, aggrs []string,
 	spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
 	qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, style string, dpVolume bool,
@@ -1316,7 +1359,7 @@ func (c RestClient) createVolumeByStyle(
 }
 
 // waitForVolume polls for the ONTAP volume to exist, with backoff retry logic
-func (c RestClient) waitForVolume(ctx context.Context, volumeName string) error {
+func (c *RestClient) waitForVolume(ctx context.Context, volumeName string) error {
 	checkStatus := func() error {
 		exists, err := c.VolumeExists(ctx, volumeName)
 		if !exists {
@@ -1344,7 +1387,7 @@ func (c RestClient) waitForVolume(ctx context.Context, volumeName string) error 
 }
 
 // waitForFlexgroup polls for the ONTAP flexgroup to exist, with backoff retry logic
-func (c RestClient) waitForFlexgroup(ctx context.Context, volumeName string) error {
+func (c *RestClient) waitForFlexgroup(ctx context.Context, volumeName string) error {
 	checkStatus := func() error {
 		exists, err := c.FlexGroupExists(ctx, volumeName)
 		if !exists {
@@ -1380,7 +1423,7 @@ func (c RestClient) waitForFlexgroup(ctx context.Context, volumeName string) err
 // ////////////////////////////////////////////////////////////////////////////
 
 // VolumeList returns the names of all Flexvols whose names match the supplied pattern
-func (c RestClient) VolumeList(
+func (c *RestClient) VolumeList(
 	ctx context.Context, pattern string, fields []string,
 ) (*storage.VolumeCollectionGetOK, error) {
 	return c.getAllVolumesByPatternStyleAndState(ctx, pattern, models.VolumeStyleFlexvol, models.VolumeStateOnline,
@@ -1388,7 +1431,7 @@ func (c RestClient) VolumeList(
 }
 
 // VolumeListByAttrs is used to find bucket volumes for nas-eco and san-eco
-func (c RestClient) VolumeListByAttrs(
+func (c *RestClient) VolumeListByAttrs(
 	ctx context.Context, volumeAttrs *Volume, fields []string,
 ) (*storage.VolumeCollectionGetOK, error) {
 	params := storage.NewVolumeCollectionGetParamsWithTimeout(c.httpClient.Timeout)
@@ -1463,7 +1506,7 @@ func (c RestClient) VolumeListByAttrs(
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW
 // -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
 // -encrypt false
-func (c RestClient) VolumeCreate(
+func (c *RestClient) VolumeCreate(
 	ctx context.Context,
 	name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
 	qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool,
@@ -1477,17 +1520,17 @@ func (c RestClient) VolumeCreate(
 }
 
 // VolumeExists tests for the existence of a flexvol
-func (c RestClient) VolumeExists(ctx context.Context, volumeName string) (bool, error) {
+func (c *RestClient) VolumeExists(ctx context.Context, volumeName string) (bool, error) {
 	return c.checkVolumeExistsByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol)
 }
 
 // VolumeGetByName gets the flexvol with the specified name
-func (c RestClient) VolumeGetByName(ctx context.Context, volumeName string, fields []string) (*models.Volume, error) {
+func (c *RestClient) VolumeGetByName(ctx context.Context, volumeName string, fields []string) (*models.Volume, error) {
 	return c.getVolumeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol, fields)
 }
 
 // VolumeMount mounts a flexvol at the specified junction
-func (c RestClient) VolumeMount(
+func (c *RestClient) VolumeMount(
 	ctx context.Context,
 	volumeName, junctionPath string,
 ) error {
@@ -1495,14 +1538,14 @@ func (c RestClient) VolumeMount(
 }
 
 // VolumeRename changes the name of a flexvol
-func (c RestClient) VolumeRename(
+func (c *RestClient) VolumeRename(
 	ctx context.Context,
 	volumeName, newVolumeName string,
 ) error {
 	return c.renameVolumeByNameAndStyle(ctx, volumeName, newVolumeName, models.VolumeStyleFlexvol)
 }
 
-func (c RestClient) VolumeModifyExportPolicy(
+func (c *RestClient) VolumeModifyExportPolicy(
 	ctx context.Context,
 	volumeName, exportPolicyName string,
 ) error {
@@ -1510,47 +1553,47 @@ func (c RestClient) VolumeModifyExportPolicy(
 }
 
 // VolumeSize retrieves the size of the specified flexvol
-func (c RestClient) VolumeSize(
+func (c *RestClient) VolumeSize(
 	ctx context.Context, volumeName string,
 ) (uint64, error) {
 	return c.getVolumeSizeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol)
 }
 
 // VolumeUsedSize retrieves the used bytes of the specified volume
-func (c RestClient) VolumeUsedSize(ctx context.Context, volumeName string) (int, error) {
+func (c *RestClient) VolumeUsedSize(ctx context.Context, volumeName string) (int, error) {
 	return c.getVolumeUsedSizeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol)
 }
 
 // VolumeSetSize sets the size of the specified flexvol
-func (c RestClient) VolumeSetSize(ctx context.Context, volumeName, newSize string) error {
+func (c *RestClient) VolumeSetSize(ctx context.Context, volumeName, newSize string) error {
 	return c.setVolumeSizeByNameAndStyle(ctx, volumeName, newSize, models.VolumeStyleFlexvol)
 }
 
-func (c RestClient) VolumeModifyUnixPermissions(ctx context.Context, volumeName, unixPermissions string) error {
+func (c *RestClient) VolumeModifyUnixPermissions(ctx context.Context, volumeName, unixPermissions string) error {
 	return c.modifyVolumeUnixPermissionsByNameAndStyle(ctx, volumeName, unixPermissions, models.VolumeStyleFlexvol)
 }
 
 // VolumeSetComment sets a flexvol's comment to the supplied value
 // equivalent to filer::> volume modify -vserver iscsi_vs -volume v -comment newVolumeComment
-func (c RestClient) VolumeSetComment(ctx context.Context, volumeName, newVolumeComment string) error {
+func (c *RestClient) VolumeSetComment(ctx context.Context, volumeName, newVolumeComment string) error {
 	return c.setVolumeCommentByNameAndStyle(ctx, volumeName, newVolumeComment, models.VolumeStyleFlexvol)
 }
 
 // VolumeSetQosPolicyGroupName sets the QoS Policy Group for volume clones since
 // we can't set adaptive policy groups directly during volume clone creation.
-func (c RestClient) VolumeSetQosPolicyGroupName(
+func (c *RestClient) VolumeSetQosPolicyGroupName(
 	ctx context.Context, volumeName string, qosPolicyGroup QosPolicyGroup,
 ) error {
 	return c.setVolumeQosPolicyGroupNameByNameAndStyle(ctx, volumeName, qosPolicyGroup, models.VolumeStyleFlexvol)
 }
 
 // VolumeCloneSplitStart starts splitting theflexvol clone
-func (c RestClient) VolumeCloneSplitStart(ctx context.Context, volumeName string) error {
+func (c *RestClient) VolumeCloneSplitStart(ctx context.Context, volumeName string) error {
 	return c.startCloneSplitByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol)
 }
 
 // VolumeDestroy destroys a flexvol
-func (c RestClient) VolumeDestroy(ctx context.Context, name string, force bool) error {
+func (c *RestClient) VolumeDestroy(ctx context.Context, name string, force bool) error {
 	return c.destroyVolumeByNameAndStyle(ctx, name, models.VolumeStyleFlexvol, force)
 }
 
@@ -1558,7 +1601,7 @@ func (c RestClient) VolumeDestroy(ctx context.Context, name string, force bool) 
 // the cli does not support passing in the UUID of the verver instead of the name. This will not work with
 // a failed over metro cluster. This is a workaround until the FSxN API supports a mechanism like the force option to
 // directly purge the volume from the recovery queue.
-func (c RestClient) VolumeRecoveryQueuePurge(ctx context.Context, recoveryQueueVolumeName string) error {
+func (c *RestClient) VolumeRecoveryQueuePurge(ctx context.Context, recoveryQueueVolumeName string) error {
 	fields := LogFields{
 		"Method":     "VolumeRecoveryQueuePurge",
 		"Type":       "ontap_rest",
@@ -1607,7 +1650,7 @@ func (c RestClient) VolumeRecoveryQueuePurge(ctx context.Context, recoveryQueueV
 	return nil
 }
 
-func (c RestClient) VolumeRecoveryQueueGetName(ctx context.Context, name string) (string, error) {
+func (c *RestClient) VolumeRecoveryQueueGetName(ctx context.Context, name string) (string, error) {
 	fields := LogFields{
 		"Method":     "VolumeRecoveryQueueGetName",
 		"Type":       "ontap_rest",
@@ -1671,7 +1714,7 @@ func (c RestClient) VolumeRecoveryQueueGetName(ctx context.Context, name string)
 	return responseObject.Records[0].Volume, nil
 }
 
-func (c RestClient) sendPassThroughCliCommand(ctx context.Context, request *http.Request) (*http.Response, error) {
+func (c *RestClient) sendPassThroughCliCommand(ctx context.Context, request *http.Request) (*http.Response, error) {
 	request.Header.Set("Content-Type", "application/json")
 
 	if c.config.Username != "" && c.config.Password != "" {
@@ -1699,7 +1742,7 @@ func (c RestClient) sendPassThroughCliCommand(ctx context.Context, request *http
 // ////////////////////////////////////////////////////////////////////////////
 
 // SnapshotCreate creates a snapshot
-func (c RestClient) SnapshotCreate(
+func (c *RestClient) SnapshotCreate(
 	ctx context.Context, volumeUUID, snapshotName string,
 ) (*storage.SnapshotCreateAccepted, error) {
 	params := storage.NewSnapshotCreateParamsWithTimeout(c.httpClient.Timeout)
@@ -1721,7 +1764,7 @@ func (c RestClient) SnapshotCreate(
 }
 
 // SnapshotCreateAndWait creates a snapshot and waits on the job to complete
-func (c RestClient) SnapshotCreateAndWait(ctx context.Context, volumeUUID, snapshotName string) error {
+func (c *RestClient) SnapshotCreateAndWait(ctx context.Context, volumeUUID, snapshotName string) error {
 	snapshotCreateResult, err := c.SnapshotCreate(ctx, volumeUUID, snapshotName)
 	if err != nil {
 		return fmt.Errorf("could not create snapshot; %v", err)
@@ -1735,7 +1778,7 @@ func (c RestClient) SnapshotCreateAndWait(ctx context.Context, volumeUUID, snaps
 }
 
 // SnapshotList lists snapshots
-func (c RestClient) SnapshotList(ctx context.Context, volumeUUID string) (*storage.SnapshotCollectionGetOK, error) {
+func (c *RestClient) SnapshotList(ctx context.Context, volumeUUID string) (*storage.SnapshotCollectionGetOK, error) {
 	params := storage.NewSnapshotCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -1786,7 +1829,7 @@ func (c RestClient) SnapshotList(ctx context.Context, volumeUUID string) (*stora
 }
 
 // SnapshotListByName lists snapshots by name
-func (c RestClient) SnapshotListByName(ctx context.Context, volumeUUID, snapshotName string) (
+func (c *RestClient) SnapshotListByName(ctx context.Context, volumeUUID, snapshotName string) (
 	*storage.SnapshotCollectionGetOK, error,
 ) {
 	params := storage.NewSnapshotCollectionGetParamsWithTimeout(c.httpClient.Timeout)
@@ -1803,7 +1846,7 @@ func (c RestClient) SnapshotListByName(ctx context.Context, volumeUUID, snapshot
 }
 
 // SnapshotGet returns info on the snapshot
-func (c RestClient) SnapshotGet(ctx context.Context, volumeUUID, snapshotUUID string) (*storage.SnapshotGetOK, error) {
+func (c *RestClient) SnapshotGet(ctx context.Context, volumeUUID, snapshotUUID string) (*storage.SnapshotGetOK, error) {
 	params := storage.NewSnapshotGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -1815,7 +1858,7 @@ func (c RestClient) SnapshotGet(ctx context.Context, volumeUUID, snapshotUUID st
 }
 
 // SnapshotGetByName finds the snapshot by name
-func (c RestClient) SnapshotGetByName(ctx context.Context, volumeUUID, snapshotName string) (*models.Snapshot, error) {
+func (c *RestClient) SnapshotGetByName(ctx context.Context, volumeUUID, snapshotName string) (*models.Snapshot, error) {
 	result, err := c.SnapshotListByName(ctx, volumeUUID, snapshotName)
 	if result.Payload != nil && result.Payload.NumRecords != nil && *result.Payload.NumRecords == 1 && result.Payload.SnapshotResponseInlineRecords != nil {
 		return result.Payload.SnapshotResponseInlineRecords[0], nil
@@ -1824,7 +1867,7 @@ func (c RestClient) SnapshotGetByName(ctx context.Context, volumeUUID, snapshotN
 }
 
 // SnapshotDelete deletes a snapshot
-func (c RestClient) SnapshotDelete(
+func (c *RestClient) SnapshotDelete(
 	ctx context.Context,
 	volumeUUID, snapshotUUID string,
 ) (*storage.SnapshotDeleteAccepted, error) {
@@ -1840,17 +1883,17 @@ func (c RestClient) SnapshotDelete(
 }
 
 // SnapshotRestoreVolume restores a volume to a snapshot as a non-blocking operation
-func (c RestClient) SnapshotRestoreVolume(ctx context.Context, snapshotName, volumeName string) error {
+func (c *RestClient) SnapshotRestoreVolume(ctx context.Context, snapshotName, volumeName string) error {
 	return c.restoreSnapshotByNameAndStyle(ctx, snapshotName, volumeName, models.VolumeStyleFlexvol)
 }
 
 // SnapshotRestoreFlexgroup restores a volume to a snapshot as a non-blocking operation
-func (c RestClient) SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, volumeName string) error {
+func (c *RestClient) SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, volumeName string) error {
 	return c.restoreSnapshotByNameAndStyle(ctx, snapshotName, volumeName, models.VolumeStyleFlexgroup)
 }
 
 // VolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
-func (c RestClient) VolumeModifySnapshotDirectoryAccess(ctx context.Context, volumeName string, enable bool) error {
+func (c *RestClient) VolumeModifySnapshotDirectoryAccess(ctx context.Context, volumeName string, enable bool) error {
 	fields := []string{""}
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol, fields)
 	if err != nil {
@@ -1887,7 +1930,7 @@ func (c RestClient) VolumeModifySnapshotDirectoryAccess(ctx context.Context, vol
 }
 
 // VolumeListAllBackedBySnapshot returns the names of all FlexVols backed by the specified snapshot
-func (c RestClient) VolumeListAllBackedBySnapshot(ctx context.Context, volumeName, snapshotName string) ([]string,
+func (c *RestClient) VolumeListAllBackedBySnapshot(ctx context.Context, volumeName, snapshotName string) ([]string,
 	error,
 ) {
 	return c.listAllVolumeNamesBackedBySnapshot(ctx, volumeName, snapshotName)
@@ -1899,14 +1942,14 @@ func (c RestClient) VolumeListAllBackedBySnapshot(ctx context.Context, volumeNam
 
 // VolumeCloneCreate creates a clone
 // see also: https://library.netapp.com/ecmdocs/ECMLP2858435/html/resources/volume.html#creating-a-flexclone-and-specifying-its-properties-using-post
-func (c RestClient) VolumeCloneCreate(ctx context.Context, cloneName, sourceVolumeName, snapshotName string) (
+func (c *RestClient) VolumeCloneCreate(ctx context.Context, cloneName, sourceVolumeName, snapshotName string) (
 	*storage.VolumeCreateAccepted, error,
 ) {
 	return c.createCloneNAS(ctx, cloneName, sourceVolumeName, snapshotName)
 }
 
 // VolumeCloneCreateAsync clones a volume from a snapshot
-func (c RestClient) VolumeCloneCreateAsync(ctx context.Context, cloneName, sourceVolumeName, snapshot string) error {
+func (c *RestClient) VolumeCloneCreateAsync(ctx context.Context, cloneName, sourceVolumeName, snapshot string) error {
 	cloneCreateResult, err := c.createCloneNAS(ctx, cloneName, sourceVolumeName, snapshot)
 	if err != nil {
 		return fmt.Errorf("could not create clone; %v", err)
@@ -1926,7 +1969,7 @@ func (c RestClient) VolumeCloneCreateAsync(ctx context.Context, cloneName, sourc
 
 // IscsiInitiatorGetDefaultAuth returns the authorization details for the default initiator
 // equivalent to filer::> vserver iscsi security show -vserver SVM -initiator-name default
-func (c RestClient) IscsiInitiatorGetDefaultAuth(
+func (c *RestClient) IscsiInitiatorGetDefaultAuth(
 	ctx context.Context, fields []string,
 ) (*san.IscsiCredentialsCollectionGetOK, error) {
 	params := san.NewIscsiCredentialsCollectionGetParamsWithTimeout(c.httpClient.Timeout)
@@ -1952,7 +1995,7 @@ func (c RestClient) IscsiInitiatorGetDefaultAuth(
 }
 
 // IscsiInterfaceGet returns information about the vserver's  iSCSI interfaces
-func (c RestClient) IscsiInterfaceGet(ctx context.Context, fields []string) (*san.IscsiServiceCollectionGetOK,
+func (c *RestClient) IscsiInterfaceGet(ctx context.Context, fields []string) (*san.IscsiServiceCollectionGetOK,
 	error,
 ) {
 	params := san.NewIscsiServiceCollectionGetParamsWithTimeout(c.httpClient.Timeout)
@@ -1978,7 +2021,7 @@ func (c RestClient) IscsiInterfaceGet(ctx context.Context, fields []string) (*sa
 //
 //	equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name default \
 //	                          -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
-func (c RestClient) IscsiInitiatorSetDefaultAuth(
+func (c *RestClient) IscsiInitiatorSetDefaultAuth(
 	ctx context.Context, authType, userName, passphrase,
 	outbountUserName, outboundPassphrase string,
 ) error {
@@ -2038,7 +2081,7 @@ func (c RestClient) IscsiInitiatorSetDefaultAuth(
 }
 
 // IscsiNodeGetName returns information about the vserver's iSCSI node name
-func (c RestClient) IscsiNodeGetName(ctx context.Context, fields []string) (*san.IscsiServiceGetOK,
+func (c *RestClient) IscsiNodeGetName(ctx context.Context, fields []string) (*san.IscsiServiceGetOK,
 	error,
 ) {
 	svmResult, err := c.SvmGet(ctx, c.svmUUID)
@@ -2072,7 +2115,7 @@ func (c RestClient) IscsiNodeGetName(ctx context.Context, fields []string) (*san
 // FcpNodeGetName returns information about the vserver's FCP target name
 //
 //	Equivalent to filer::> vserver fcp show -vserver svm1
-func (c RestClient) FcpNodeGetName(ctx context.Context, fields []string) (*san.FcpServiceGetOK,
+func (c *RestClient) FcpNodeGetName(ctx context.Context, fields []string) (*san.FcpServiceGetOK,
 	error,
 ) {
 	svmResult, err := c.SvmGet(ctx, c.svmUUID)
@@ -2104,7 +2147,7 @@ func (c RestClient) FcpNodeGetName(ctx context.Context, fields []string) (*san.F
 }
 
 // FcpInterfaceGet returns information about the vserver's  FCP interfaces
-func (c RestClient) FcpInterfaceGet(ctx context.Context, fields []string) (*san.FcpServiceCollectionGetOK,
+func (c *RestClient) FcpInterfaceGet(ctx context.Context, fields []string) (*san.FcpServiceCollectionGetOK,
 	error,
 ) {
 	params := san.NewFcpServiceCollectionGetParamsWithTimeout(c.httpClient.Timeout)
@@ -2132,7 +2175,7 @@ func (c RestClient) FcpInterfaceGet(ctx context.Context, fields []string) (*san.
 
 // IgroupCreate creates the specified initiator group
 // equivalent to filer::> igroup create docker -vserver iscsi_vs -protocol iscsi -ostype linux
-func (c RestClient) IgroupCreate(ctx context.Context, initiatorGroupName, initiatorGroupType, osType string) error {
+func (c *RestClient) IgroupCreate(ctx context.Context, initiatorGroupName, initiatorGroupType, osType string) error {
 	params := san.NewIgroupCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -2173,7 +2216,7 @@ func (c RestClient) IgroupCreate(ctx context.Context, initiatorGroupName, initia
 // IgroupAdd adds an initiator to an initiator group
 // equivalent to filer::> lun igroup add -vserver iscsi_vs -igroup docker -initiator iqn.1993-08.org.
 // debian:01:9031309bbebd
-func (c RestClient) IgroupAdd(ctx context.Context, initiatorGroupName, initiator string) error {
+func (c *RestClient) IgroupAdd(ctx context.Context, initiatorGroupName, initiator string) error {
 	fields := []string{""}
 	igroup, err := c.IgroupGetByName(ctx, initiatorGroupName, fields)
 	if err != nil {
@@ -2207,7 +2250,7 @@ func (c RestClient) IgroupAdd(ctx context.Context, initiatorGroupName, initiator
 }
 
 // IgroupRemove removes an initiator from an initiator group
-func (c RestClient) IgroupRemove(ctx context.Context, initiatorGroupName, initiator string) error {
+func (c *RestClient) IgroupRemove(ctx context.Context, initiatorGroupName, initiator string) error {
 	fields := []string{""}
 	igroup, err := c.IgroupGetByName(ctx, initiatorGroupName, fields)
 	if err != nil {
@@ -2239,7 +2282,7 @@ func (c RestClient) IgroupRemove(ctx context.Context, initiatorGroupName, initia
 }
 
 // IgroupDestroy destroys an initiator group
-func (c RestClient) IgroupDestroy(ctx context.Context, initiatorGroupName string) error {
+func (c *RestClient) IgroupDestroy(ctx context.Context, initiatorGroupName string) error {
 	fields := []string{""}
 	igroup, err := c.IgroupGetByName(ctx, initiatorGroupName, fields)
 	if err != nil {
@@ -2274,7 +2317,7 @@ func (c RestClient) IgroupDestroy(ctx context.Context, initiatorGroupName string
 }
 
 // IgroupList lists initiator groups
-func (c RestClient) IgroupList(ctx context.Context, pattern string, fields []string) (*san.IgroupCollectionGetOK,
+func (c *RestClient) IgroupList(ctx context.Context, pattern string, fields []string) (*san.IgroupCollectionGetOK,
 	error,
 ) {
 	if pattern == "" {
@@ -2330,7 +2373,7 @@ func (c RestClient) IgroupList(ctx context.Context, pattern string, fields []str
 }
 
 // IgroupGet gets the igroup with the specified uuid
-func (c RestClient) IgroupGet(ctx context.Context, uuid string) (*san.IgroupGetOK, error) {
+func (c *RestClient) IgroupGet(ctx context.Context, uuid string) (*san.IgroupGetOK, error) {
 	params := san.NewIgroupGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -2340,7 +2383,7 @@ func (c RestClient) IgroupGet(ctx context.Context, uuid string) (*san.IgroupGetO
 }
 
 // IgroupGetByName gets the igroup with the specified name
-func (c RestClient) IgroupGetByName(ctx context.Context, initiatorGroupName string, fields []string) (*models.Igroup,
+func (c *RestClient) IgroupGetByName(ctx context.Context, initiatorGroupName string, fields []string) (*models.Igroup,
 	error,
 ) {
 	result, err := c.IgroupList(ctx, initiatorGroupName, fields)
@@ -2374,12 +2417,12 @@ type LunOptionsResult struct {
 }
 
 // LunOptions gets the LUN options
-func (d RestClient) LunOptions(
+func (c *RestClient) LunOptions(
 	ctx context.Context,
 ) (*LunOptionsResult, error) {
 	url := fmt.Sprintf(
 		`https://%v/api/v1/storage/luns?return_schema=POST&fields=space.size`,
-		d.config.ManagementLIF,
+		c.config.ManagementLIF,
 	)
 
 	Logc(ctx).WithFields(LogFields{
@@ -2388,12 +2431,12 @@ func (d RestClient) LunOptions(
 
 	req, _ := http.NewRequestWithContext(ctx, "OPTIONS", url, nil)
 	req.Header.Set("Content-Type", "application/json")
-	if d.config.Username != "" && d.config.Password != "" {
-		req.SetBasicAuth(d.config.Username, d.config.Password)
+	if c.config.Username != "" && c.config.Password != "" {
+		req.SetBasicAuth(c.config.Username, c.config.Password)
 	}
 
 	// certs will have been parsed and configured already, if needed, as part of the RestClient init
-	tr := d.tr
+	tr := c.tr
 
 	client := &http.Client{
 		Transport: tr,
@@ -2428,7 +2471,7 @@ func (d RestClient) LunOptions(
 }
 
 // pollLunCreate polls for the created LUN to appear, with backoff retry logic
-func (c RestClient) pollLunCreate(ctx context.Context, lunPath string) error {
+func (c *RestClient) pollLunCreate(ctx context.Context, lunPath string) error {
 	checkCreateStatus := func() error {
 		fields := []string{""}
 		lun, err := c.LunGetByName(ctx, lunPath, fields)
@@ -2460,7 +2503,7 @@ func (c RestClient) pollLunCreate(ctx context.Context, lunPath string) error {
 }
 
 // LunCloneCreate creates a LUN clone
-func (c RestClient) LunCloneCreate(
+func (c *RestClient) LunCloneCreate(
 	ctx context.Context, lunPath, sourcePath string, sizeInBytes int64, osType string, qosPolicyGroup QosPolicyGroup,
 ) error {
 	fields := LogFields{
@@ -2518,7 +2561,7 @@ func (c RestClient) LunCloneCreate(
 }
 
 // LunCreate creates a LUN
-func (c RestClient) LunCreate(
+func (c *RestClient) LunCreate(
 	ctx context.Context, lunPath string, sizeInBytes int64, osType string, qosPolicyGroup QosPolicyGroup,
 	spaceReserved, spaceAllocated *bool,
 ) error {
@@ -2577,7 +2620,7 @@ func (c RestClient) LunCreate(
 }
 
 // LunGet gets the LUN with the specified uuid
-func (c RestClient) LunGet(ctx context.Context, uuid string) (*san.LunGetOK, error) {
+func (c *RestClient) LunGet(ctx context.Context, uuid string) (*san.LunGetOK, error) {
 	params := san.NewLunGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -2587,7 +2630,7 @@ func (c RestClient) LunGet(ctx context.Context, uuid string) (*san.LunGetOK, err
 }
 
 // LunGetByName gets the LUN with the specified name
-func (c RestClient) LunGetByName(ctx context.Context, name string, fields []string) (*models.Lun, error) {
+func (c *RestClient) LunGetByName(ctx context.Context, name string, fields []string) (*models.Lun, error) {
 	result, err := c.LunList(ctx, name, fields)
 	if err != nil || result.Payload == nil {
 		return nil, err
@@ -2604,7 +2647,7 @@ func (c RestClient) LunGetByName(ctx context.Context, name string, fields []stri
 }
 
 // LunList finds LUNs with the specified pattern
-func (c RestClient) LunList(ctx context.Context, pattern string, fields []string) (*san.LunCollectionGetOK, error) {
+func (c *RestClient) LunList(ctx context.Context, pattern string, fields []string) (*san.LunCollectionGetOK, error) {
 	params := san.NewLunCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -2655,7 +2698,7 @@ func (c RestClient) LunList(ctx context.Context, pattern string, fields []string
 }
 
 // LunDelete deletes a LUN
-func (c RestClient) LunDelete(
+func (c *RestClient) LunDelete(
 	ctx context.Context,
 	lunUUID string,
 ) error {
@@ -2678,7 +2721,7 @@ func (c RestClient) LunDelete(
 }
 
 // LunGetComment gets the comment for a given LUN.
-func (c RestClient) LunGetComment(
+func (c *RestClient) LunGetComment(
 	ctx context.Context,
 	lunPath string,
 ) (string, error) {
@@ -2698,7 +2741,7 @@ func (c RestClient) LunGetComment(
 }
 
 // LunSetComment sets the comment for a given LUN.
-func (c RestClient) LunSetComment(
+func (c *RestClient) LunSetComment(
 	ctx context.Context,
 	lunPath, comment string,
 ) error {
@@ -2741,7 +2784,7 @@ func (c RestClient) LunSetComment(
 }
 
 // LunGetAttribute gets an attribute by name for a given LUN.
-func (c RestClient) LunGetAttribute(
+func (c *RestClient) LunGetAttribute(
 	ctx context.Context,
 	lunPath, attributeName string,
 ) (string, error) {
@@ -2769,7 +2812,7 @@ func (c RestClient) LunGetAttribute(
 }
 
 // LunSetAttribute sets the attribute to the provided value for a given LUN.
-func (c RestClient) LunSetAttribute(
+func (c *RestClient) LunSetAttribute(
 	ctx context.Context,
 	lunPath, attributeName, attributeValue string,
 ) error {
@@ -2845,7 +2888,7 @@ func (c RestClient) LunSetAttribute(
 }
 
 // LunSetComment sets the comment for a given LUN.
-func (c RestClient) LunSetQosPolicyGroup(
+func (c *RestClient) LunSetQosPolicyGroup(
 	ctx context.Context,
 	lunPath, qosPolicyGroup string,
 ) error {
@@ -2891,7 +2934,7 @@ func (c RestClient) LunSetQosPolicyGroup(
 }
 
 // LunRename changes the name of a LUN
-func (c RestClient) LunRename(
+func (c *RestClient) LunRename(
 	ctx context.Context,
 	lunPath, newLunPath string,
 ) error {
@@ -2930,11 +2973,17 @@ func (c RestClient) LunRename(
 		return fmt.Errorf("unexpected response from LUN modify")
 	}
 
+	// If the API is async, then poll and wait for the job to complete
+	if lunModifyAccepted != nil {
+		jobLink := getGenericJobLinkFromLunJobLink(lunModifyAccepted.Payload)
+		return c.PollJobStatus(ctx, jobLink)
+	}
+
 	return nil
 }
 
 // LunMapInfo gets the LUN maping information for the specified LUN
-func (c RestClient) LunMapInfo(
+func (c *RestClient) LunMapInfo(
 	ctx context.Context,
 	initiatorGroupName, lunPath string,
 ) (*san.LunMapCollectionGetOK, error) {
@@ -2952,7 +3001,7 @@ func (c RestClient) LunMapInfo(
 
 // LunUnmap deletes the lun mapping for the given LUN path and igroup
 // equivalent to filer::> lun mapping delete -vserver iscsi_vs -path /vol/v/lun0 -igroup group
-func (c RestClient) LunUnmap(
+func (c *RestClient) LunUnmap(
 	ctx context.Context,
 	initiatorGroupName, lunPath string,
 ) error {
@@ -3003,7 +3052,7 @@ func (c RestClient) LunUnmap(
 
 // LunMap maps a LUN to an id in an initiator group
 // equivalent to filer::> lun map -vserver iscsi_vs -path /vol/v/lun1 -igroup docker -lun-id 0
-func (c RestClient) LunMap(
+func (c *RestClient) LunMap(
 	ctx context.Context,
 	initiatorGroupName, lunPath string,
 	lunID int,
@@ -3055,7 +3104,7 @@ func (c RestClient) LunMap(
 // filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
 // filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup *
 // filer::> lun mapping show -vserver iscsi_vs -path *           -igroup trident
-func (c RestClient) LunMapList(
+func (c *RestClient) LunMapList(
 	ctx context.Context,
 	initiatorGroupName, lunPath string,
 	fields []string,
@@ -3073,7 +3122,7 @@ func (c RestClient) LunMapList(
 
 // LunMapGetReportingNodes
 // equivalent to filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
-func (c RestClient) LunMapGetReportingNodes(
+func (c *RestClient) LunMapGetReportingNodes(
 	ctx context.Context,
 	initiatorGroupName, lunPath string,
 ) ([]string, error) {
@@ -3137,7 +3186,7 @@ func (c RestClient) LunMapGetReportingNodes(
 }
 
 // LunSize gets the size for a given LUN.
-func (c RestClient) LunSize(
+func (c *RestClient) LunSize(
 	ctx context.Context,
 	lunPath string,
 ) (int, error) {
@@ -3161,7 +3210,7 @@ func (c RestClient) LunSize(
 }
 
 // LunSetSize sets the size for a given LUN.
-func (c RestClient) LunSetSize(
+func (c *RestClient) LunSetSize(
 	ctx context.Context,
 	lunPath, newSize string,
 ) (uint64, error) {
@@ -3218,7 +3267,7 @@ func (c RestClient) LunSetSize(
 // ////////////////////////////////////////////////////////////////////////////
 
 // NetworkIPInterfacesList lists all IP interfaces
-func (c RestClient) NetworkIPInterfacesList(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
+func (c *RestClient) NetworkIPInterfacesList(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
 	params := networking.NewNetworkIPInterfacesGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -3268,7 +3317,7 @@ func (c RestClient) NetworkIPInterfacesList(ctx context.Context) (*networking.Ne
 	return result, nil
 }
 
-func (c RestClient) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
+func (c *RestClient) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
 	if protocol == "" {
 		return nil, fmt.Errorf("missing protocol specification")
 	}
@@ -3303,7 +3352,7 @@ func (c RestClient) NetInterfaceGetDataLIFs(ctx context.Context, protocol string
 	return dataLIFs, nil
 }
 
-func (c RestClient) NetFcpInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
+func (c *RestClient) NetFcpInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
 	if protocol == "" {
 		return nil, fmt.Errorf("missing protocol specification")
 	}
@@ -3342,7 +3391,7 @@ func (c RestClient) NetFcpInterfaceGetDataLIFs(ctx context.Context, protocol str
 // ////////////////////////////////////////////////////////////////////////////
 
 // JobGet returns the job by ID
-func (c RestClient) JobGet(ctx context.Context, jobUUID string, fields []string) (*cluster.JobGetOK, error) {
+func (c *RestClient) JobGet(ctx context.Context, jobUUID string, fields []string) (*cluster.JobGetOK, error) {
 	params := cluster.NewJobGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -3354,7 +3403,7 @@ func (c RestClient) JobGet(ctx context.Context, jobUUID string, fields []string)
 }
 
 // IsJobFinished lookus up the supplied JobLinkResponse's UUID to see if it's reached a terminal state
-func (c RestClient) IsJobFinished(ctx context.Context, payload *models.JobLinkResponse) (bool, error) {
+func (c *RestClient) IsJobFinished(ctx context.Context, payload *models.JobLinkResponse) (bool, error) {
 	if payload == nil {
 		return false, fmt.Errorf("payload is nil")
 	}
@@ -3407,7 +3456,7 @@ func (c RestClient) IsJobFinished(ctx context.Context, payload *models.JobLinkRe
 }
 
 // PollJobStatus polls for the ONTAP job to complete, with backoff retry logic
-func (c RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkResponse) error {
+func (c *RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkResponse) error {
 	job := payload.Job
 	if job == nil {
 		return fmt.Errorf("missing job result")
@@ -3498,7 +3547,7 @@ func (c RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkRe
 }
 
 func getGenericJobLinkFromVolumeJobLink(volJobLink *models.VolumeJobLinkResponse) *models.JobLinkResponse {
-	var jobLink *models.JobLinkResponse = &models.JobLinkResponse{}
+	jobLink := &models.JobLinkResponse{}
 	if volJobLink != nil {
 		jobLink.Job = volJobLink.Job
 	}
@@ -3506,7 +3555,7 @@ func getGenericJobLinkFromVolumeJobLink(volJobLink *models.VolumeJobLinkResponse
 }
 
 func getGenericJobLinkFromSnapshotJobLink(snapshotJobLink *models.SnapshotJobLinkResponse) *models.JobLinkResponse {
-	var jobLink *models.JobLinkResponse = &models.JobLinkResponse{}
+	jobLink := &models.JobLinkResponse{}
 	if snapshotJobLink != nil {
 		jobLink.Job = snapshotJobLink.Job
 	}
@@ -3514,7 +3563,7 @@ func getGenericJobLinkFromSnapshotJobLink(snapshotJobLink *models.SnapshotJobLin
 }
 
 func getGenericJobLinkFromQtreeJobLink(qtreeJobLink *models.QtreeJobLinkResponse) *models.JobLinkResponse {
-	var jobLink *models.JobLinkResponse = &models.JobLinkResponse{}
+	jobLink := &models.JobLinkResponse{}
 	if qtreeJobLink != nil {
 		jobLink.Job = qtreeJobLink.Job
 	}
@@ -3522,7 +3571,7 @@ func getGenericJobLinkFromQtreeJobLink(qtreeJobLink *models.QtreeJobLinkResponse
 }
 
 func getGenericJobLinkFromQuotaRuleJobLink(quotaRuleJobLink *models.QuotaRuleJobLinkResponse) *models.JobLinkResponse {
-	var jobLink *models.JobLinkResponse = &models.JobLinkResponse{}
+	jobLink := &models.JobLinkResponse{}
 	if quotaRuleJobLink != nil {
 		jobLink.Job = quotaRuleJobLink.Job
 	}
@@ -3530,9 +3579,33 @@ func getGenericJobLinkFromQuotaRuleJobLink(quotaRuleJobLink *models.QuotaRuleJob
 }
 
 func getGenericJobLinkFromSMRJobLink(smrJobLink *models.SnapmirrorRelationshipJobLinkResponse) *models.JobLinkResponse {
-	var jobLink *models.JobLinkResponse = &models.JobLinkResponse{}
+	jobLink := &models.JobLinkResponse{}
 	if smrJobLink != nil {
 		jobLink.Job = smrJobLink.Job
+	}
+	return jobLink
+}
+
+func getGenericJobLinkFromLunJobLink(lunJobLink *models.LunJobLinkResponse) *models.JobLinkResponse {
+	jobLink := &models.JobLinkResponse{}
+	if lunJobLink != nil {
+		jobLink.Job = lunJobLink.Job
+	}
+	return jobLink
+}
+
+func getGenericJobLinkFromStorageUnitJobLink(suJobLink *models.StorageUnitJobLinkResponse) *models.JobLinkResponse {
+	jobLink := &models.JobLinkResponse{}
+	if suJobLink != nil {
+		jobLink.Job = suJobLink.Job
+	}
+	return jobLink
+}
+
+func getGenericJobLinkFromStorageUnitSnapshotJobLink(suSnapshotJobLink *models.StorageUnitSnapshotJobLinkResponse) *models.JobLinkResponse {
+	jobLink := &models.JobLinkResponse{}
+	if suSnapshotJobLink != nil {
+		jobLink.Job = suSnapshotJobLink.Job
 	}
 	return jobLink
 }
@@ -3542,7 +3615,7 @@ func getGenericJobLinkFromSMRJobLink(smrJobLink *models.SnapmirrorRelationshipJo
 // ////////////////////////////////////////////////////////////////////////////
 
 // AggregateList returns the names of all Aggregates whose names match the supplied pattern
-func (c RestClient) AggregateList(
+func (c *RestClient) AggregateList(
 	ctx context.Context, pattern string, fields []string,
 ) (*storage.AggregateCollectionGetOK, error) {
 	params := storage.NewAggregateCollectionGetParamsWithTimeout(c.httpClient.Timeout)
@@ -3598,7 +3671,7 @@ func (c RestClient) AggregateList(
 // ////////////////////////////////////////////////////////////////////////////
 
 // SvmGet gets the volume with the specified uuid
-func (c RestClient) SvmGet(ctx context.Context, uuid string) (*svm.SvmGetOK, error) {
+func (c *RestClient) SvmGet(ctx context.Context, uuid string) (*svm.SvmGetOK, error) {
 	params := svm.NewSvmGetParamsWithTimeout(c.httpClient.Timeout)
 
 	params.Context = ctx
@@ -3609,7 +3682,7 @@ func (c RestClient) SvmGet(ctx context.Context, uuid string) (*svm.SvmGetOK, err
 }
 
 // SvmList returns the names of all SVMs whose names match the supplied pattern
-func (c RestClient) SvmList(ctx context.Context, pattern string) (*svm.SvmCollectionGetOK, error) {
+func (c *RestClient) SvmList(ctx context.Context, pattern string) (*svm.SvmCollectionGetOK, error) {
 	params := svm.NewSvmCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 
 	params.Context = ctx
@@ -3763,7 +3836,7 @@ func getType(i interface{}) string {
 }
 
 // SvmGetByName gets the SVM with the specified name
-func (c RestClient) SvmGetByName(ctx context.Context, svmName string) (*models.Svm, error) {
+func (c *RestClient) SvmGetByName(ctx context.Context, svmName string) (*models.Svm, error) {
 	result, err := c.SvmList(ctx, svmName)
 	if err != nil {
 		return nil, err
@@ -3779,7 +3852,7 @@ func (c RestClient) SvmGetByName(ctx context.Context, svmName string) (*models.S
 	return nil, fmt.Errorf("unexpected result")
 }
 
-func (c RestClient) SVMGetAggregateNames(
+func (c *RestClient) SVMGetAggregateNames(
 	ctx context.Context,
 ) ([]string, error) {
 	result, err := c.SvmGet(ctx, c.svmUUID)
@@ -3806,20 +3879,34 @@ func (c RestClient) SVMGetAggregateNames(
 // ////////////////////////////////////////////////////////////////////////////
 
 // ClusterInfo returns information about the cluster
-func (c RestClient) ClusterInfo(
-	ctx context.Context,
+func (c *RestClient) ClusterInfo(
+	ctx context.Context, fields []string, ignoreUnknownFields bool,
 ) (*cluster.ClusterGetOK, error) {
 	params := cluster.NewClusterGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
-	fields := []string{"version"}
+
+	if len(fields) == 0 {
+		fields = []string{"**"}
+	}
 	params.SetFields(fields)
 
-	return c.api.Cluster.ClusterGet(params, c.authInfo)
+	if ignoreUnknownFields {
+		// Create a custom ClientOption to add the ignore_unknown_fields query parameter
+		addQueryParam := func(op *runtime.ClientOperation) {
+			op.Params = &QueryWrapper{
+				originalParams: op.Params,
+				queryParams:    map[string]string{"ignore_unknown_fields": "true"},
+			}
+		}
+		return c.api.Cluster.ClusterGet(params, c.authInfo, addQueryParam)
+	} else {
+		return c.api.Cluster.ClusterGet(params, c.authInfo)
+	}
 }
 
 // SystemGetOntapVersion gets the ONTAP version using the credentials, and caches & returns the result.
-func (c RestClient) SystemGetOntapVersion(
+func (c *RestClient) SystemGetOntapVersion(
 	ctx context.Context, cached bool,
 ) (string, error) {
 	if c.OntapVersion != "" && cached {
@@ -3828,15 +3915,11 @@ func (c RestClient) SystemGetOntapVersion(
 	}
 
 	// it wasn't cached, look it up and cache it
-	clusterInfoResult, err := c.ClusterInfo(ctx)
+	clusterInfoResult, err := c.ClusterInfo(ctx, nil, false)
 	if err != nil {
 		return "unknown", err
 	}
-	if clusterInfoResult == nil {
-		return "unknown", fmt.Errorf("could not determine cluster version")
-	}
-
-	if clusterInfoResult.Payload == nil {
+	if clusterInfoResult == nil || clusterInfoResult.Payload == nil {
 		return "unknown", fmt.Errorf("could not determine cluster version")
 	}
 
@@ -3847,11 +3930,40 @@ func (c RestClient) SystemGetOntapVersion(
 
 	// version.Full // "NetApp Release 9.8X29: Sun Sep 27 12:15:48 UTC 2020"
 	c.OntapVersion = fmt.Sprintf("%d.%d.%d", *version.Generation, *version.Major, *version.Minor) // 9.8.0
+
+	parsedVersion, err := versionutils.ParseSemantic(c.OntapVersion)
+	if err != nil {
+		return "unknown", fmt.Errorf("could not determine cluster version %s; %v", c.OntapVersion, err)
+	}
+
+	// Determine ONTAP personality by invoking ClusterInfo again and requesting fields that ONTAP doesn't
+	// return with vsadmin credentials even if fields="**".
+	if parsedVersion.AtLeast(MinimumASAR2Version) {
+
+		clusterInfoResult, err = c.ClusterInfo(ctx, []string{"san_optimized", "disaggregated"}, true)
+		if err != nil {
+			return "unknown", err
+		}
+		if clusterInfoResult == nil || clusterInfoResult.Payload == nil {
+			return "unknown", fmt.Errorf("could not determine cluster personality")
+		}
+
+		sanOptimized := clusterInfoResult.Payload.SanOptimized
+		if sanOptimized != nil {
+			c.sanOptimized = *sanOptimized
+		}
+
+		disaggregated := clusterInfoResult.Payload.Disaggregated
+		if disaggregated != nil {
+			c.disaggregated = *disaggregated
+		}
+	}
+
 	return c.OntapVersion, nil
 }
 
 // NodeList returns information about nodes
-func (c RestClient) NodeList(ctx context.Context, pattern string) (*cluster.NodesGetOK, error) {
+func (c *RestClient) NodeList(ctx context.Context, pattern string) (*cluster.NodesGetOK, error) {
 	params := cluster.NewNodesGetParamsWithTimeout(c.httpClient.Timeout)
 
 	params.Context = ctx
@@ -3902,7 +4014,7 @@ func (c RestClient) NodeList(ctx context.Context, pattern string) (*cluster.Node
 	return result, nil
 }
 
-func (c RestClient) NodeListSerialNumbers(ctx context.Context) ([]string, error) {
+func (c *RestClient) NodeListSerialNumbers(ctx context.Context) ([]string, error) {
 	serialNumbers := make([]string, 0)
 
 	nodeListResult, err := c.NodeList(ctx, "*")
@@ -3941,7 +4053,7 @@ func (c RestClient) NodeListSerialNumbers(ctx context.Context) ([]string, error)
 }
 
 // EmsAutosupportLog generates an auto support message with the supplied parameters
-func (c RestClient) EmsAutosupportLog(
+func (c *RestClient) EmsAutosupportLog(
 	ctx context.Context,
 	appVersion string,
 	autoSupport bool,
@@ -3981,7 +4093,7 @@ func (c RestClient) EmsAutosupportLog(
 	return err
 }
 
-func (c RestClient) TieringPolicyValue(
+func (c *RestClient) TieringPolicyValue(
 	ctx context.Context,
 ) string {
 	// Becase the REST API is always > ONTAP 9.5, just default to "none"
@@ -3994,7 +4106,7 @@ func (c RestClient) TieringPolicyValue(
 
 // ExportPolicyCreate creates an export policy
 // equivalent to filer::> vserver export-policy create
-func (c RestClient) ExportPolicyCreate(ctx context.Context, policy string) (*nas.ExportPolicyCreateCreated, error) {
+func (c *RestClient) ExportPolicyCreate(ctx context.Context, policy string) (*nas.ExportPolicyCreateCreated, error) {
 	params := nas.NewExportPolicyCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -4011,7 +4123,7 @@ func (c RestClient) ExportPolicyCreate(ctx context.Context, policy string) (*nas
 }
 
 // ExportPolicyGet gets the export policy with the specified uuid
-func (c RestClient) ExportPolicyGet(ctx context.Context, id int64) (*nas.ExportPolicyGetOK, error) {
+func (c *RestClient) ExportPolicyGet(ctx context.Context, id int64) (*nas.ExportPolicyGetOK, error) {
 	params := nas.NewExportPolicyGetParamsWithTimeout(c.httpClient.Timeout)
 
 	params.Context = ctx
@@ -4022,7 +4134,7 @@ func (c RestClient) ExportPolicyGet(ctx context.Context, id int64) (*nas.ExportP
 }
 
 // ExportPolicyList returns the names of all export polices whose names match the supplied pattern
-func (c RestClient) ExportPolicyList(ctx context.Context, pattern string) (*nas.ExportPolicyCollectionGetOK, error) {
+func (c *RestClient) ExportPolicyList(ctx context.Context, pattern string) (*nas.ExportPolicyCollectionGetOK, error) {
 	params := nas.NewExportPolicyCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 
 	params.Context = ctx
@@ -4074,7 +4186,7 @@ func (c RestClient) ExportPolicyList(ctx context.Context, pattern string) (*nas.
 }
 
 // ExportPolicyGetByName gets the volume with the specified name
-func (c RestClient) ExportPolicyGetByName(ctx context.Context, exportPolicyName string) (*models.ExportPolicy, error) {
+func (c *RestClient) ExportPolicyGetByName(ctx context.Context, exportPolicyName string) (*models.ExportPolicy, error) {
 	result, err := c.ExportPolicyList(ctx, exportPolicyName)
 	if err == nil && result != nil && result.Payload != nil && result.Payload.NumRecords != nil &&
 		*result.Payload.NumRecords == 1 && result.Payload.ExportPolicyResponseInlineRecords != nil {
@@ -4083,7 +4195,7 @@ func (c RestClient) ExportPolicyGetByName(ctx context.Context, exportPolicyName 
 	return nil, err
 }
 
-func (c RestClient) ExportPolicyDestroy(ctx context.Context, policy string) (*nas.ExportPolicyDeleteOK, error) {
+func (c *RestClient) ExportPolicyDestroy(ctx context.Context, policy string) (*nas.ExportPolicyDeleteOK, error) {
 	exportPolicy, err := c.ExportPolicyGetByName(ctx, policy)
 	if err != nil {
 		return nil, err
@@ -4105,7 +4217,7 @@ func (c RestClient) ExportPolicyDestroy(ctx context.Context, policy string) (*na
 
 // ExportRuleList returns the export rules in an export policy
 // equivalent to filer::> vserver export-policy rule show
-func (c RestClient) ExportRuleList(ctx context.Context, policy string) (*nas.ExportRuleCollectionGetOK, error) {
+func (c *RestClient) ExportRuleList(ctx context.Context, policy string) (*nas.ExportRuleCollectionGetOK, error) {
 	exportPolicy, err := c.ExportPolicyGetByName(ctx, policy)
 	if err != nil {
 		return nil, err
@@ -4168,7 +4280,7 @@ func (c RestClient) ExportRuleList(ctx context.Context, policy string) (*nas.Exp
 
 // ExportRuleCreate creates a rule in an export policy
 // equivalent to filer::> vserver export-policy rule create
-func (c RestClient) ExportRuleCreate(
+func (c *RestClient) ExportRuleCreate(
 	ctx context.Context, policy, clientMatch string, protocols, roSecFlavors, rwSecFlavors, suSecFlavors []string,
 ) (*nas.ExportRuleCreateCreated, error) {
 	exportPolicy, err := c.ExportPolicyGetByName(ctx, policy)
@@ -4240,7 +4352,7 @@ func ToExportAuthenticationFlavorSlice(authFlavor []string) []*models.ExportAuth
 }
 
 // ExportRuleDestroy deletes the rule at the given index in the given policy
-func (c RestClient) ExportRuleDestroy(
+func (c *RestClient) ExportRuleDestroy(
 	ctx context.Context, policy string, ruleIndex int,
 ) (*nas.ExportRuleDeleteOK, error) {
 	exportPolicy, err := c.ExportPolicyGetByName(ctx, policy)
@@ -4291,7 +4403,7 @@ func ToSliceVolumeAggregatesItems(aggrs []string) []*models.VolumeInlineAggregat
 // equivalent to filer::> volume create -vserver svm_name -volume fg_vol_name –auto-provision-as flexgroup -size fg_size
 // -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none
 // -security-style unix -encrypt false
-func (c RestClient) FlexGroupCreate(
+func (c *RestClient) FlexGroupCreate(
 	ctx context.Context, name string, size int, aggrs []string, spaceReserve, snapshotPolicy, unixPermissions,
 	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 	snapshotReserve int,
@@ -4302,12 +4414,12 @@ func (c RestClient) FlexGroupCreate(
 }
 
 // FlexgroupCloneSplitStart starts splitting the flexgroup clone
-func (c RestClient) FlexgroupCloneSplitStart(ctx context.Context, volumeName string) error {
+func (c *RestClient) FlexgroupCloneSplitStart(ctx context.Context, volumeName string) error {
 	return c.startCloneSplitByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexgroup)
 }
 
 // FlexGroupDestroy destroys a FlexGroup
-func (c RestClient) FlexGroupDestroy(ctx context.Context, name string, force bool) error {
+func (c *RestClient) FlexGroupDestroy(ctx context.Context, name string, force bool) error {
 	fields := []string{""}
 	volume, err := c.FlexGroupGetByName(ctx, name, fields)
 	if err != nil {
@@ -4336,34 +4448,34 @@ func (c RestClient) FlexGroupDestroy(ctx context.Context, name string, force boo
 }
 
 // FlexGroupExists tests for the existence of a FlexGroup
-func (c RestClient) FlexGroupExists(ctx context.Context, volumeName string) (bool, error) {
+func (c *RestClient) FlexGroupExists(ctx context.Context, volumeName string) (bool, error) {
 	return c.checkVolumeExistsByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexgroup)
 }
 
 // FlexGroupSize retrieves the size of the specified flexgroup
-func (c RestClient) FlexGroupSize(ctx context.Context, volumeName string) (uint64, error) {
+func (c *RestClient) FlexGroupSize(ctx context.Context, volumeName string) (uint64, error) {
 	return c.getVolumeSizeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexgroup)
 }
 
 // FlexGroupUsedSize retrieves the used space of the specified volume
-func (c RestClient) FlexGroupUsedSize(ctx context.Context, volumeName string) (int, error) {
+func (c *RestClient) FlexGroupUsedSize(ctx context.Context, volumeName string) (int, error) {
 	return c.getVolumeUsedSizeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexgroup)
 }
 
 // FlexGroupSetSize sets the size of the specified FlexGroup
-func (c RestClient) FlexGroupSetSize(ctx context.Context, volumeName, newSize string) error {
+func (c *RestClient) FlexGroupSetSize(ctx context.Context, volumeName, newSize string) error {
 	return c.setVolumeSizeByNameAndStyle(ctx, volumeName, newSize, models.VolumeStyleFlexgroup)
 }
 
 // FlexgroupSetQosPolicyGroupName note: we can't set adaptive policy groups directly during volume clone creation.
-func (c RestClient) FlexgroupSetQosPolicyGroupName(
+func (c *RestClient) FlexgroupSetQosPolicyGroupName(
 	ctx context.Context, volumeName string, qosPolicyGroup QosPolicyGroup,
 ) error {
 	return c.setVolumeQosPolicyGroupNameByNameAndStyle(ctx, volumeName, qosPolicyGroup, models.VolumeStyleFlexgroup)
 }
 
 // FlexGroupVolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
-func (c RestClient) FlexGroupVolumeModifySnapshotDirectoryAccess(
+func (c *RestClient) FlexGroupVolumeModifySnapshotDirectoryAccess(
 	ctx context.Context, flexGroupVolumeName string, enable bool,
 ) error {
 	fields := []string{""}
@@ -4401,24 +4513,24 @@ func (c RestClient) FlexGroupVolumeModifySnapshotDirectoryAccess(
 	return c.PollJobStatus(ctx, jobLink)
 }
 
-func (c RestClient) FlexGroupModifyUnixPermissions(ctx context.Context, volumeName, unixPermissions string) error {
+func (c *RestClient) FlexGroupModifyUnixPermissions(ctx context.Context, volumeName, unixPermissions string) error {
 	return c.modifyVolumeUnixPermissionsByNameAndStyle(ctx, volumeName, unixPermissions, models.VolumeStyleFlexgroup)
 }
 
 // FlexGroupSetComment sets a flexgroup's comment to the supplied value
-func (c RestClient) FlexGroupSetComment(ctx context.Context, volumeName, newVolumeComment string) error {
+func (c *RestClient) FlexGroupSetComment(ctx context.Context, volumeName, newVolumeComment string) error {
 	return c.setVolumeCommentByNameAndStyle(ctx, volumeName, newVolumeComment, models.VolumeStyleFlexgroup)
 }
 
 // FlexGroupGetByName gets the flexgroup with the specified name
-func (c RestClient) FlexGroupGetByName(
+func (c *RestClient) FlexGroupGetByName(
 	ctx context.Context, volumeName string, fields []string,
 ) (*models.Volume, error) {
 	return c.getVolumeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexgroup, fields)
 }
 
 // FlexGroupGetAll returns all relevant details for all FlexGroups whose names match the supplied prefix
-func (c RestClient) FlexGroupGetAll(
+func (c *RestClient) FlexGroupGetAll(
 	ctx context.Context, pattern string, fields []string,
 ) (*storage.VolumeCollectionGetOK, error) {
 	return c.getAllVolumesByPatternStyleAndState(ctx, pattern, models.VolumeStyleFlexgroup, models.VolumeStateOnline,
@@ -4426,16 +4538,16 @@ func (c RestClient) FlexGroupGetAll(
 }
 
 // FlexGroupMount mounts a flexgroup at the specified junction
-func (c RestClient) FlexGroupMount(ctx context.Context, volumeName, junctionPath string) error {
+func (c *RestClient) FlexGroupMount(ctx context.Context, volumeName, junctionPath string) error {
 	return c.mountVolumeByNameAndStyle(ctx, volumeName, junctionPath, models.VolumeStyleFlexgroup)
 }
 
 // FlexgroupUnmount unmounts the flexgroup
-func (c RestClient) FlexgroupUnmount(ctx context.Context, volumeName string) error {
+func (c *RestClient) FlexgroupUnmount(ctx context.Context, volumeName string) error {
 	return c.unmountVolumeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexgroup)
 }
 
-func (c RestClient) FlexgroupModifyExportPolicy(ctx context.Context, volumeName, exportPolicyName string) error {
+func (c *RestClient) FlexgroupModifyExportPolicy(ctx context.Context, volumeName, exportPolicyName string) error {
 	return c.modifyVolumeExportPolicyByNameAndStyle(ctx, volumeName, exportPolicyName, models.VolumeStyleFlexgroup)
 }
 
@@ -4448,7 +4560,7 @@ func (c RestClient) FlexgroupModifyExportPolicy(ctx context.Context, volumeName,
 
 // QtreeCreate creates a qtree with the specified options
 // equivalent to filer::> qtree create -vserver ndvp_vs -volume v -qtree q -export-policy default -unix-permissions ---rwxr-xr-x -security-style unix
-func (c RestClient) QtreeCreate(
+func (c *RestClient) QtreeCreate(
 	ctx context.Context, name, volumeName, unixPermissions, exportPolicy, securityStyle, qosPolicy string,
 ) error {
 	params := storage.NewQtreeCreateParamsWithTimeout(c.httpClient.Timeout)
@@ -4499,7 +4611,7 @@ func (c RestClient) QtreeCreate(
 }
 
 // waitForQtree polls for the ONTAP qtree to exist, with backoff retry logic
-func (c RestClient) waitForQtree(ctx context.Context, volumeName, qtreeName string) error {
+func (c *RestClient) waitForQtree(ctx context.Context, volumeName, qtreeName string) error {
 	checkStatus := func() error {
 		qtree, err := c.QtreeGetByName(ctx, qtreeName, volumeName)
 		if qtree == nil {
@@ -4529,7 +4641,7 @@ func (c RestClient) waitForQtree(ctx context.Context, volumeName, qtreeName stri
 
 // QtreeRename renames a qtree
 // equivalent to filer::> volume qtree rename
-func (c RestClient) QtreeRename(ctx context.Context, path, newPath string) error {
+func (c *RestClient) QtreeRename(ctx context.Context, path, newPath string) error {
 	fields := []string{""}
 	qtree, err := c.QtreeGetByPath(ctx, path, fields)
 	if err != nil {
@@ -4572,7 +4684,7 @@ func (c RestClient) QtreeRename(ctx context.Context, path, newPath string) error
 
 // QtreeDestroyAsync destroys a qtree in the background
 // equivalent to filer::> volume qtree delete -foreground false
-func (c RestClient) QtreeDestroyAsync(ctx context.Context, path string, force bool) error {
+func (c *RestClient) QtreeDestroyAsync(ctx context.Context, path string, force bool) error {
 	// note, force isn't used
 	fields := []string{""}
 	qtree, err := c.QtreeGetByPath(ctx, path, fields)
@@ -4609,7 +4721,7 @@ func (c RestClient) QtreeDestroyAsync(ctx context.Context, path string, force bo
 
 // QtreeList returns the names of all Qtrees whose names match the supplied prefix
 // equivalent to filer::> volume qtree show
-func (c RestClient) QtreeList(
+func (c *RestClient) QtreeList(
 	ctx context.Context, prefix, volumePrefix string, fields []string,
 ) (*storage.QtreeCollectionGetOK, error) {
 	namePattern := "*"
@@ -4675,7 +4787,7 @@ func (c RestClient) QtreeList(
 }
 
 // QtreeGetByPath gets the qtree with the specified path
-func (c RestClient) QtreeGetByPath(ctx context.Context, path string, fields []string) (*models.Qtree, error) {
+func (c *RestClient) QtreeGetByPath(ctx context.Context, path string, fields []string) (*models.Qtree, error) {
 	// Limit the qtrees to those specified path
 	params := storage.NewQtreeCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
@@ -4709,7 +4821,7 @@ func (c RestClient) QtreeGetByPath(ctx context.Context, path string, fields []st
 }
 
 // QtreeGetByName gets the qtree with the specified name in the specified volume
-func (c RestClient) QtreeGetByName(ctx context.Context, name, volumeName string) (*models.Qtree, error) {
+func (c *RestClient) QtreeGetByName(ctx context.Context, name, volumeName string) (*models.Qtree, error) {
 	// Limit to the single qtree /volumeName/name
 	params := storage.NewQtreeCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
@@ -4745,7 +4857,7 @@ func (c RestClient) QtreeGetByName(ctx context.Context, name, volumeName string)
 }
 
 // QtreeCount returns the number of Qtrees in the specified Flexvol, not including the Flexvol itself
-func (c RestClient) QtreeCount(ctx context.Context, volumeName string) (int, error) {
+func (c *RestClient) QtreeCount(ctx context.Context, volumeName string) (int, error) {
 	// Limit the qtrees to those in the specified Flexvol name
 	params := storage.NewQtreeCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
@@ -4809,7 +4921,7 @@ func (c RestClient) QtreeCount(ctx context.Context, volumeName string) (int, err
 }
 
 // QtreeExists returns true if the named Qtree exists (and is unique in the matching Flexvols)
-func (c RestClient) QtreeExists(ctx context.Context, name, volumePattern string) (bool, string, error) {
+func (c *RestClient) QtreeExists(ctx context.Context, name, volumePattern string) (bool, string, error) {
 	// Limit the qtrees to those matching the Flexvol and Qtree name prefixes
 	params := storage.NewQtreeCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
@@ -4883,7 +4995,7 @@ func (c RestClient) QtreeExists(ctx context.Context, name, volumePattern string)
 
 // QtreeGet returns all relevant details for a single qtree
 // equivalent to filer::> volume qtree show
-func (c RestClient) QtreeGet(ctx context.Context, name, volumePrefix string) (*models.Qtree, error) {
+func (c *RestClient) QtreeGet(ctx context.Context, name, volumePrefix string) (*models.Qtree, error) {
 	pattern := "*"
 	if volumePrefix != "" {
 		pattern = volumePrefix + "*"
@@ -4927,7 +5039,7 @@ func (c RestClient) QtreeGet(ctx context.Context, name, volumePrefix string) (*m
 
 // QtreeGetAll returns all relevant details for all qtrees whose Flexvol names match the supplied prefix
 // equivalent to filer::> volume qtree show
-func (c RestClient) QtreeGetAll(ctx context.Context, volumePrefix string) (*storage.QtreeCollectionGetOK, error) {
+func (c *RestClient) QtreeGetAll(ctx context.Context, volumePrefix string) (*storage.QtreeCollectionGetOK, error) {
 	pattern := "*"
 	if volumePrefix != "" {
 		pattern = volumePrefix + "*"
@@ -4986,7 +5098,7 @@ func (c RestClient) QtreeGetAll(ctx context.Context, volumePrefix string) (*stor
 }
 
 // QtreeModifyExportPolicy modifies the export policy for the qtree
-func (c RestClient) QtreeModifyExportPolicy(ctx context.Context, name, volumeName, newExportPolicyName string) error {
+func (c *RestClient) QtreeModifyExportPolicy(ctx context.Context, name, volumeName, newExportPolicyName string) error {
 	qtree, err := c.QtreeGetByName(ctx, name, volumeName)
 	if err != nil {
 		return err
@@ -5038,18 +5150,18 @@ func (c RestClient) QtreeModifyExportPolicy(ctx context.Context, name, volumeNam
 
 // QuotaOn enables quotas on a Flexvol
 // equivalent to filer::> volume quota on
-func (c RestClient) QuotaOn(ctx context.Context, volumeName string) error {
+func (c *RestClient) QuotaOn(ctx context.Context, volumeName string) error {
 	return c.quotaModify(ctx, volumeName, true)
 }
 
 // QuotaOff disables quotas on a Flexvol
 // equivalent to filer::> volume quota off
-func (c RestClient) QuotaOff(ctx context.Context, volumeName string) error {
+func (c *RestClient) QuotaOff(ctx context.Context, volumeName string) error {
 	return c.quotaModify(ctx, volumeName, false)
 }
 
 // quotaModify enables/disables quotas on a Flexvol
-func (c RestClient) quotaModify(ctx context.Context, volumeName string, quotaEnabled bool) error {
+func (c *RestClient) quotaModify(ctx context.Context, volumeName string, quotaEnabled bool) error {
 	fields := []string{"quota"}
 	volume, err := c.VolumeGetByName(ctx, volumeName, fields)
 	if err != nil {
@@ -5094,7 +5206,7 @@ func (c RestClient) quotaModify(ctx context.Context, volumeName string, quotaEna
 
 // QuotaSetEntry updates (or creates) a quota rule with an optional hard disk limit
 // equivalent to filer::> volume quota policy rule modify
-func (c RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, quotaType, diskLimit string) error {
+func (c *RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, quotaType, diskLimit string) error {
 	// We can only modify existing rules, so we must check if this rule exists first
 	quotaRule, err := c.QuotaGetEntry(ctx, volumeName, qtreeName, quotaType)
 	if err != nil && !errors.IsNotFoundError(err) {
@@ -5146,7 +5258,7 @@ func (c RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, qu
 
 // QuotaAddEntry creates a quota rule with an optional hard disk limit
 // equivalent to filer::> volume quota policy rule create
-func (c RestClient) QuotaAddEntry(ctx context.Context, volumeName, qtreeName, quotaType, diskLimit string) error {
+func (c *RestClient) QuotaAddEntry(ctx context.Context, volumeName, qtreeName, quotaType, diskLimit string) error {
 	params := storage.NewQuotaRuleCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
@@ -5190,7 +5302,7 @@ func (c RestClient) QuotaAddEntry(ctx context.Context, volumeName, qtreeName, qu
 
 // QuotaGetEntry returns the disk limit for a single qtree
 // equivalent to filer::> volume quota policy rule show
-func (c RestClient) QuotaGetEntry(
+func (c *RestClient) QuotaGetEntry(
 	ctx context.Context, volumeName, qtreeName, quotaType string,
 ) (*models.QuotaRule, error) {
 	params := storage.NewQuotaRuleCollectionGetParamsWithTimeout(c.httpClient.Timeout)
@@ -5263,7 +5375,7 @@ func (c RestClient) QuotaGetEntry(
 
 // QuotaEntryList returns the disk limit quotas for a Flexvol
 // equivalent to filer::> volume quota policy rule show
-func (c RestClient) QuotaEntryList(ctx context.Context, volumeName string) (*storage.QuotaRuleCollectionGetOK, error) {
+func (c *RestClient) QuotaEntryList(ctx context.Context, volumeName string) (*storage.QuotaRuleCollectionGetOK, error) {
 	params := storage.NewQuotaRuleCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
@@ -5324,7 +5436,7 @@ func (c RestClient) QuotaEntryList(ctx context.Context, volumeName string) (*sto
 // SNAPMIRROR operations BEGIN
 
 // GetPeeredVservers returns a list of vservers peered with the vserver for this backend
-func (c RestClient) GetPeeredVservers(ctx context.Context) ([]string, error) {
+func (c *RestClient) GetPeeredVservers(ctx context.Context) ([]string, error) {
 	peers := *new([]string)
 
 	params := svm.NewSvmPeerCollectionGetParamsWithTimeout(c.httpClient.Timeout)
@@ -5351,7 +5463,7 @@ func (c RestClient) GetPeeredVservers(ctx context.Context) ([]string, error) {
 	return peers, err
 }
 
-func (c RestClient) SnapmirrorRelationshipsList(ctx context.Context) (*snapmirror.SnapmirrorRelationshipsGetOK, error) {
+func (c *RestClient) SnapmirrorRelationshipsList(ctx context.Context) (*snapmirror.SnapmirrorRelationshipsGetOK, error) {
 	params := snapmirror.NewSnapmirrorRelationshipsGetParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
@@ -5368,7 +5480,7 @@ func (c RestClient) SnapmirrorRelationshipsList(ctx context.Context) (*snapmirro
 }
 
 // IsVserverDRDestination identifies if the Vserver is a destination vserver of Snapmirror relationship (SVM-DR) or not
-func (c RestClient) IsVserverDRDestination(ctx context.Context) (bool, error) {
+func (c *RestClient) IsVserverDRDestination(ctx context.Context) (bool, error) {
 	results, err := c.SnapmirrorRelationshipsList(ctx)
 	if err != nil {
 		return false, err
@@ -5399,7 +5511,7 @@ func (c RestClient) IsVserverDRDestination(ctx context.Context) (bool, error) {
 }
 
 // IsVserverDRSource identifies if the Vserver is a source vserver of Snapmirror relationship (SVM-DR) or not
-func (c RestClient) IsVserverDRSource(ctx context.Context) (bool, error) {
+func (c *RestClient) IsVserverDRSource(ctx context.Context) (bool, error) {
 	results, err := c.SnapmirrorRelationshipsList(ctx)
 	if err != nil {
 		return false, err
@@ -5430,14 +5542,14 @@ func (c RestClient) IsVserverDRSource(ctx context.Context) (bool, error) {
 }
 
 // IsVserverInSVMDR identifies if the Vserver is in Snapmirror relationship (SVM-DR) or not
-func (c RestClient) IsVserverInSVMDR(ctx context.Context) bool {
+func (c *RestClient) IsVserverInSVMDR(ctx context.Context) bool {
 	isSVMDRSource, _ := c.IsVserverDRSource(ctx)
 	isSVMDRDestination, _ := c.IsVserverDRDestination(ctx)
 
 	return isSVMDRSource || isSVMDRDestination
 }
 
-func (c RestClient) SnapmirrorGet(
+func (c *RestClient) SnapmirrorGet(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string, fields []string,
 ) (*models.SnapmirrorRelationship, error) {
 	params := snapmirror.NewSnapmirrorRelationshipsGetParamsWithTimeout(c.httpClient.Timeout)
@@ -5483,7 +5595,7 @@ func (c RestClient) SnapmirrorGet(
 	return nil, NotFoundError("could not find relationship")
 }
 
-func (c RestClient) SnapmirrorListDestinations(
+func (c *RestClient) SnapmirrorListDestinations(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*models.SnapmirrorRelationship, error) {
 	params := snapmirror.NewSnapmirrorRelationshipsGetParamsWithTimeout(c.httpClient.Timeout)
@@ -5529,7 +5641,7 @@ func (c RestClient) SnapmirrorListDestinations(
 	return nil, NotFoundError("could not find relationship")
 }
 
-func (c RestClient) SnapmirrorCreate(
+func (c *RestClient) SnapmirrorCreate(
 	ctx context.Context,
 	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string,
 ) error {
@@ -5571,7 +5683,7 @@ func (c RestClient) SnapmirrorCreate(
 	return c.PollJobStatus(ctx, jobLink)
 }
 
-func (c RestClient) SnapmirrorInitialize(
+func (c *RestClient) SnapmirrorInitialize(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) error {
 	// first, find the relationship so we can then use the UUID to modify it
@@ -5606,7 +5718,7 @@ func (c RestClient) SnapmirrorInitialize(
 	return nil
 }
 
-func (c RestClient) SnapmirrorResync(
+func (c *RestClient) SnapmirrorResync(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) error {
 	// first, find the relationship, then we can then use the UUID to modify it
@@ -5649,7 +5761,7 @@ func (c RestClient) SnapmirrorResync(
 	return c.PollJobStatus(ctx, jobLink)
 }
 
-func (c RestClient) SnapmirrorBreak(
+func (c *RestClient) SnapmirrorBreak(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string,
 ) error {
 	// first, find the relationship so we can then use the UUID to modify it
@@ -5690,7 +5802,7 @@ func (c RestClient) SnapmirrorBreak(
 	return c.PollJobStatus(ctx, jobLink)
 }
 
-func (c RestClient) SnapmirrorQuiesce(
+func (c *RestClient) SnapmirrorQuiesce(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) error {
 	// first, find the relationship so we can then use the UUID to modify it
@@ -5727,7 +5839,7 @@ func (c RestClient) SnapmirrorQuiesce(
 	return c.PollJobStatus(ctx, jobLink)
 }
 
-func (c RestClient) SnapmirrorAbort(
+func (c *RestClient) SnapmirrorAbort(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) error {
 	// first, find the relationship so we can then use the UUID to modify it
@@ -5766,7 +5878,7 @@ func (c RestClient) SnapmirrorAbort(
 
 // SnapmirrorRelease removes all local snapmirror relationship metadata from the source vserver
 // Intended to be used on the source vserver
-func (c RestClient) SnapmirrorRelease(ctx context.Context, sourceFlexvolName, sourceSVMName string) error {
+func (c *RestClient) SnapmirrorRelease(ctx context.Context, sourceFlexvolName, sourceSVMName string) error {
 	// first, find the relationship so we can then use the UUID to delete it
 	relationship, err := c.SnapmirrorListDestinations(ctx, "", "", sourceFlexvolName, sourceSVMName)
 	if err != nil {
@@ -5799,7 +5911,7 @@ func (c RestClient) SnapmirrorRelease(ctx context.Context, sourceFlexvolName, so
 }
 
 // Intended to be from the destination vserver
-func (c RestClient) SnapmirrorDeleteViaDestination(
+func (c *RestClient) SnapmirrorDeleteViaDestination(
 	ctx context.Context, localFlexvolName, localSVMName string,
 ) error {
 	// first, find the relationship so we can then use the UUID to delete it
@@ -5867,7 +5979,7 @@ func (c RestClient) SnapmirrorDeleteViaDestination(
 }
 
 // Intended to be from the destination vserver
-func (c RestClient) SnapmirrorDelete(
+func (c *RestClient) SnapmirrorDelete(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) error {
 	// first, find the relationship so we can then use the UUID to delete it
@@ -5903,7 +6015,7 @@ func (c RestClient) SnapmirrorDelete(
 	return c.PollJobStatus(ctx, jobLink)
 }
 
-func (c RestClient) IsVserverDRCapable(ctx context.Context) (bool, error) {
+func (c *RestClient) IsVserverDRCapable(ctx context.Context) (bool, error) {
 	params := svm.NewSvmPeerCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
@@ -5936,7 +6048,7 @@ func (c RestClient) IsVserverDRCapable(ctx context.Context) (bool, error) {
 	return peerFound, nil
 }
 
-func (c RestClient) SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error) {
+func (c *RestClient) SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error) {
 	policy, err := c.SnapmirrorPolicyGet(ctx, policyName)
 	if err != nil {
 		return false, err
@@ -5947,7 +6059,7 @@ func (c RestClient) SnapmirrorPolicyExists(ctx context.Context, policyName strin
 	return true, nil
 }
 
-func (c RestClient) SnapmirrorPolicyGet(
+func (c *RestClient) SnapmirrorPolicyGet(
 	ctx context.Context, policyName string,
 ) (*snapmirror.SnapmirrorPoliciesGetOK, error) {
 	// Policy is typically cluster scoped not SVM scoped, do not use SVM UUID
@@ -5966,7 +6078,7 @@ func (c RestClient) SnapmirrorPolicyGet(
 	return result, nil
 }
 
-func (c RestClient) JobScheduleExists(ctx context.Context, jobName string) (bool, error) {
+func (c *RestClient) JobScheduleExists(ctx context.Context, jobName string) (bool, error) {
 	// Schedule is typically cluster scoped not SVM scoped, do not use SVM UUID
 	params := cluster.NewScheduleCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
@@ -6011,7 +6123,7 @@ func (c *RestClient) GetSVMState(ctx context.Context) (string, error) {
 	return *svmResult.Payload.State, nil
 }
 
-func (c RestClient) SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error {
+func (c *RestClient) SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error {
 	// first, find the relationship so we can then use the UUID to update
 	fields := []string{"destination.path", "source.path"}
 	relationship, err := c.SnapmirrorGet(ctx, localInternalVolumeName, c.SVMName(), "", "", fields)
@@ -6050,7 +6162,7 @@ func (c RestClient) SnapmirrorUpdate(ctx context.Context, localInternalVolumeNam
 
 // SMBShareCreate creates an SMB share with the specified name and path.
 // Equivalent to filer::> vserver cifs share create -share-name <shareName> -path <path>
-func (c RestClient) SMBShareCreate(ctx context.Context, shareName, path string) error {
+func (c *RestClient) SMBShareCreate(ctx context.Context, shareName, path string) error {
 	params := nas.NewCifsShareCreateParams()
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -6073,7 +6185,7 @@ func (c RestClient) SMBShareCreate(ctx context.Context, shareName, path string) 
 }
 
 // getSMBShareByName gets an SMB share with the given name.
-func (c RestClient) getSMBShareByName(ctx context.Context, shareName string) (*models.CifsShare, error) {
+func (c *RestClient) getSMBShareByName(ctx context.Context, shareName string) (*models.CifsShare, error) {
 	params := nas.NewCifsShareCollectionGetParams()
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
@@ -6098,7 +6210,7 @@ func (c RestClient) getSMBShareByName(ctx context.Context, shareName string) (*m
 
 // SMBShareExists checks for the existence of an SMB share with the given name.
 // Equivalent to filer::> cifs share show <shareName>
-func (c RestClient) SMBShareExists(ctx context.Context, smbShareName string) (bool, error) {
+func (c *RestClient) SMBShareExists(ctx context.Context, smbShareName string) (bool, error) {
 	share, err := c.getSMBShareByName(ctx, smbShareName)
 	if err != nil {
 		return false, err
@@ -6112,7 +6224,7 @@ func (c RestClient) SMBShareExists(ctx context.Context, smbShareName string) (bo
 
 // SMBShareDestroy destroys an SMB share.
 // Equivalent to filer::> cifs share delete <shareName>
-func (c RestClient) SMBShareDestroy(ctx context.Context, shareName string) error {
+func (c *RestClient) SMBShareDestroy(ctx context.Context, shareName string) error {
 	params := nas.NewCifsShareDeleteParams()
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -6133,7 +6245,7 @@ func (c RestClient) SMBShareDestroy(ctx context.Context, shareName string) error
 
 // NVMe Namespace operations
 // NVMeNamespaceCreate creates NVMe namespace in the backend's SVM.
-func (c RestClient) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error) {
+func (c *RestClient) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error) {
 	params := nvme.NewNvmeNamespaceCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -6178,7 +6290,7 @@ func (c RestClient) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (
 }
 
 // NVMeNamespaceSetSize updates the namespace size to newSize.
-func (c RestClient) NVMeNamespaceSetSize(ctx context.Context, nsUUID string, newSize int64) error {
+func (c *RestClient) NVMeNamespaceSetSize(ctx context.Context, nsUUID string, newSize int64) error {
 	params := nvme.NewNvmeNamespaceModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -6205,7 +6317,7 @@ func (c RestClient) NVMeNamespaceSetSize(ctx context.Context, nsUUID string, new
 }
 
 // NVMeNamespaceList finds Namespaces with the specified pattern.
-func (c RestClient) NVMeNamespaceList(
+func (c *RestClient) NVMeNamespaceList(
 	ctx context.Context, pattern string, fields []string,
 ) (*nvme.NvmeNamespaceCollectionGetOK, error) {
 	params := nvme.NewNvmeNamespaceCollectionGetParamsWithTimeout(c.httpClient.Timeout)
@@ -6257,7 +6369,7 @@ func (c RestClient) NVMeNamespaceList(
 }
 
 // NVMeNamespaceGetByName gets the Namespace with the specified name.
-func (c RestClient) NVMeNamespaceGetByName(ctx context.Context, name string, fields []string) (*models.NvmeNamespace,
+func (c *RestClient) NVMeNamespaceGetByName(ctx context.Context, name string, fields []string) (*models.NvmeNamespace,
 	error,
 ) {
 	result, err := c.NVMeNamespaceList(ctx, name, fields)
@@ -6274,7 +6386,7 @@ func (c RestClient) NVMeNamespaceGetByName(ctx context.Context, name string, fie
 
 // NVMe Subsystem operations
 // NVMeSubsystemAddNamespace adds namespace to subsystem-map
-func (c RestClient) NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error {
+func (c *RestClient) NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error {
 	params := nvme.NewNvmeSubsystemMapCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -6296,7 +6408,7 @@ func (c RestClient) NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID
 }
 
 // NVMeSubsystemRemoveNamespace removes a namespace from subsystem-map
-func (c RestClient) NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error {
+func (c *RestClient) NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error {
 	params := nvme.NewNvmeSubsystemMapDeleteParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -6312,7 +6424,7 @@ func (c RestClient) NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID
 }
 
 // NVMeIsNamespaceMapped retrives a namespace from subsystem-map
-func (c RestClient) NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, namespaceUUID string) (bool, error) {
+func (c *RestClient) NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, namespaceUUID string) (bool, error) {
 	params := nvme.NewNvmeSubsystemMapCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -6347,7 +6459,7 @@ func (c RestClient) NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, names
 }
 
 // NVMeNamespaceCount gets the number of namespaces mapped to a subsystem
-func (c RestClient) NVMeNamespaceCount(ctx context.Context, subsysUUID string) (int64, error) {
+func (c *RestClient) NVMeNamespaceCount(ctx context.Context, subsysUUID string) (int64, error) {
 	params := nvme.NewNvmeSubsystemMapCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -6374,7 +6486,7 @@ func (c RestClient) NVMeNamespaceCount(ctx context.Context, subsysUUID string) (
 
 // Subsystem operations
 // NVMeSubsystemList returns a list of subsystems seen by the host
-func (c RestClient) NVMeSubsystemList(
+func (c *RestClient) NVMeSubsystemList(
 	ctx context.Context, pattern string, fields []string,
 ) (*nvme.NvmeSubsystemCollectionGetOK, error) {
 	if pattern == "" {
@@ -6430,7 +6542,7 @@ func (c RestClient) NVMeSubsystemList(
 }
 
 // NVMeSubsystemGetByName gets the subsystem with the specified name
-func (c RestClient) NVMeSubsystemGetByName(
+func (c *RestClient) NVMeSubsystemGetByName(
 	ctx context.Context, subsystemName string, fields []string,
 ) (*models.NvmeSubsystem, error) {
 	result, err := c.NVMeSubsystemList(ctx, subsystemName, fields)
@@ -6447,7 +6559,7 @@ func (c RestClient) NVMeSubsystemGetByName(
 }
 
 // NVMeSubsystemCreate creates a new subsystem
-func (c RestClient) NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*models.NvmeSubsystem, error) {
+func (c *RestClient) NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*models.NvmeSubsystem, error) {
 	params := nvme.NewNvmeSubsystemCreateParamsWithTimeout(c.httpClient.Timeout)
 	osType := "linux"
 	params.Context = ctx
@@ -6482,7 +6594,7 @@ func (c RestClient) NVMeSubsystemCreate(ctx context.Context, subsystemName strin
 }
 
 // NVMeSubsystemDelete deletes a given subsystem
-func (c RestClient) NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error {
+func (c *RestClient) NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error {
 	params := nvme.NewNvmeSubsystemDeleteParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -6507,7 +6619,7 @@ func (c RestClient) NVMeSubsystemDelete(ctx context.Context, subsysUUID string) 
 }
 
 // NVMeAddHostNqnToSubsystem adds the NQN of the host to the subsystem
-func (c RestClient) NVMeAddHostNqnToSubsystem(ctx context.Context, hostNQN, subsUUID string) error {
+func (c *RestClient) NVMeAddHostNqnToSubsystem(ctx context.Context, hostNQN, subsUUID string) error {
 	params := nvme.NewNvmeSubsystemHostCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -6530,7 +6642,7 @@ func (c RestClient) NVMeAddHostNqnToSubsystem(ctx context.Context, hostNQN, subs
 }
 
 // NVMeRemoveHostFromSubsystem remove the NQN of the host from the subsystem
-func (c RestClient) NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, subsUUID string) error {
+func (c *RestClient) NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, subsUUID string) error {
 	params := nvme.NewNvmeSubsystemHostDeleteParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -6549,7 +6661,7 @@ func (c RestClient) NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, su
 }
 
 // NVMeGetHostsOfSubsystem retuns all the hosts connected to a subsystem
-func (c RestClient) NVMeGetHostsOfSubsystem(ctx context.Context, subsUUID string) ([]*models.NvmeSubsystemHost, error) {
+func (c *RestClient) NVMeGetHostsOfSubsystem(ctx context.Context, subsUUID string) ([]*models.NvmeSubsystemHost, error) {
 	params := nvme.NewNvmeSubsystemHostCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -6571,7 +6683,7 @@ func (c RestClient) NVMeGetHostsOfSubsystem(ctx context.Context, subsUUID string
 }
 
 // NVMeNamespaceSize returns the size of the namespace
-func (c RestClient) NVMeNamespaceSize(ctx context.Context, namespacePath string) (int, error) {
+func (c *RestClient) NVMeNamespaceSize(ctx context.Context, namespacePath string) (int, error) {
 	fields := []string{"space.size"}
 	namespace, err := c.NVMeNamespaceGetByName(ctx, namespacePath, fields)
 	if err != nil {
@@ -6585,3 +6697,334 @@ func (c RestClient) NVMeNamespaceSize(ctx context.Context, namespacePath string)
 }
 
 // ///////////////////////////////////////////////////////////////////////////
+
+// ////////////////////////////////////////////////////////////////////////////
+// ASA.Next operations
+// ////////////////////////////////////////////////////////////////////////////
+
+// StorageUnitSnapshotCreateAndWait creates a snapshot and waits on the job to complete
+func (c *RestClient) StorageUnitSnapshotCreateAndWait(ctx context.Context, suUUID, snapshotName string) error {
+	snapshotCreateResult, err := c.storageUnitSnapshotCreate(ctx, suUUID, snapshotName)
+	if err != nil {
+		return fmt.Errorf("could not create snapshot; %v", err)
+	}
+	if snapshotCreateResult == nil {
+		return fmt.Errorf("could not create snapshot: %v", "unexpected result")
+	}
+
+	jobLink := getGenericJobLinkFromStorageUnitSnapshotJobLink(snapshotCreateResult.Payload)
+	return c.PollJobStatus(ctx, jobLink)
+}
+
+func (c *RestClient) storageUnitSnapshotCreate(
+	ctx context.Context, suUUID, snapshotName string,
+) (*san.StorageUnitSnapshotCreateAccepted, error) {
+	params := san.NewStorageUnitSnapshotCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.StorageUnitUUID = suUUID
+
+	snapshotInfo := &models.StorageUnitSnapshot{
+		Name: convert.ToPtr(snapshotName),
+		Svm: &models.StorageUnitSnapshotInlineSvm{
+			UUID: convert.ToPtr(c.svmUUID),
+		},
+	}
+	params.SetInfo(snapshotInfo)
+
+	_, snapshotCreateAccepted, err := c.api.San.StorageUnitSnapshotCreate(params, c.authInfo)
+	return snapshotCreateAccepted, err
+}
+
+func (c *RestClient) StorageUnitSnapshotListByName(
+	ctx context.Context, suUUID,
+	snapshotName string,
+) (*san.StorageUnitSnapshotCollectionGetOK, error) {
+	// Get storage unit snapshot by name
+	params := san.NewStorageUnitSnapshotCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.StorageUnitUUID = suUUID
+	params.Name = convert.ToPtr(snapshotName)
+	params.SvmUUID = convert.ToPtr(c.svmUUID)
+
+	// TODO (cknight): pass in fields requested
+	params.Fields = []string{"**"}
+
+	result, err := c.api.San.StorageUnitSnapshotCollectionGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (c *RestClient) StorageUnitSnapshotList(
+	ctx context.Context, suUUID string,
+) (*san.StorageUnitSnapshotCollectionGetOK, error) {
+	params := san.NewStorageUnitSnapshotCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.StorageUnitUUID = suUUID
+	params.SvmUUID = convert.ToPtr(c.svmUUID)
+
+	params.SetFields([]string{"name", "create_time"})
+
+	result, err := c.api.San.StorageUnitSnapshotCollectionGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	if HasNextLink(result.Payload) {
+		nextLink := result.Payload.Links.Next
+		done := false
+	NextLoop:
+		for !done {
+			resultNext, errNext := c.api.San.StorageUnitSnapshotCollectionGet(params, c.authInfo, WithNextLink(nextLink))
+			if errNext != nil {
+				return nil, errNext
+			}
+			if resultNext == nil || resultNext.Payload == nil || resultNext.Payload.NumRecords == nil {
+				done = true
+				continue NextLoop
+			}
+
+			if result.Payload.NumRecords == nil {
+				result.Payload.NumRecords = convert.ToPtr(int64(0))
+			}
+			result.Payload.NumRecords = convert.ToPtr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
+			result.Payload.StorageUnitSnapshotResponseInlineRecords = append(result.Payload.StorageUnitSnapshotResponseInlineRecords,
+				resultNext.Payload.StorageUnitSnapshotResponseInlineRecords...)
+
+			if !HasNextLink(resultNext.Payload) {
+				done = true
+				continue NextLoop
+			} else {
+				nextLink = resultNext.Payload.Links.Next
+			}
+		}
+	}
+	return result, nil
+}
+
+func (c *RestClient) StorageUnitSnapshotRestore(
+	ctx context.Context, snapshotName, suUUID string,
+) error {
+	return c.restoreSUSnapshotByNameAndStyle(ctx, snapshotName, suUUID)
+}
+
+func (c *RestClient) restoreSUSnapshotByNameAndStyle(
+	ctx context.Context, snapshotName,
+	suUUID string,
+) error {
+	params := san.NewStorageUnitModifyParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.UUID = suUUID
+	params.RestoreToSnapshotName = &snapshotName
+
+	_, suModifyAccepted, err := c.api.San.StorageUnitModify(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if suModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from storage unit modify")
+	}
+
+	jobLink := getGenericJobLinkFromStorageUnitJobLink(suModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
+}
+
+func (c *RestClient) StorageUnitSnapshotGetByName(
+	ctx context.Context, snapshotName, suUUID string,
+) (*models.StorageUnitSnapshot, error) {
+	result, err := c.StorageUnitSnapshotListByName(ctx, suUUID, snapshotName)
+	if result.Payload != nil && result.Payload.NumRecords != nil &&
+		*result.Payload.NumRecords == 1 && result.Payload.StorageUnitSnapshotResponseInlineRecords != nil {
+		return result.Payload.StorageUnitSnapshotResponseInlineRecords[0], nil
+	}
+	return nil, err
+}
+
+func (c *RestClient) StorageUnitSnapshotDelete(
+	ctx context.Context, suUUID, snapshotUUID string,
+) (*san.StorageUnitSnapshotDeleteAccepted, error) {
+	params := san.NewStorageUnitSnapshotDeleteParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.StorageUnitUUID = suUUID
+	params.UUID = snapshotUUID
+
+	_, snapshotDeleteAccepted, err := c.api.San.StorageUnitSnapshotDelete(params, c.authInfo)
+	return snapshotDeleteAccepted, err
+}
+
+func (c *RestClient) StorageUnitCloneCreate(ctx context.Context, suUUID, cloneName, snapshot string) error {
+	cloneCreateResult, err := c.suCreateClone(ctx, suUUID, cloneName, snapshot)
+	if err != nil {
+		return fmt.Errorf("could not create clone; %v", err)
+	}
+	if cloneCreateResult == nil {
+		return fmt.Errorf("could not create clone: %v", "unexpected result")
+	}
+
+	jobLink := getGenericJobLinkFromStorageUnitJobLink(cloneCreateResult.Payload)
+	return c.PollJobStatus(ctx, jobLink)
+}
+
+func (c *RestClient) suCreateClone(
+	ctx context.Context, suUUID, cloneName, snapshotName string,
+) (*san.StorageUnitCreateAccepted, error) {
+	params := san.NewStorageUnitCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.ReturnRecords = convert.ToPtr(true)
+
+	// Create details of clone info
+	var sourceSnapshot *models.StorageUnitCloneInlineSourceInlineSnapshot = nil
+	if snapshotName != "" {
+		sourceSnapshot = &models.StorageUnitCloneInlineSourceInlineSnapshot{
+			Name: convert.ToPtr(snapshotName),
+		}
+	}
+	cloneInfo := &models.StorageUnitClone{
+		Source: &models.StorageUnitCloneInlineSource{
+			Snapshot: sourceSnapshot,
+			StorageUnit: &models.StorageUnitCloneInlineSourceInlineStorageUnit{
+				UUID: convert.ToPtr(suUUID),
+			},
+			Svm: &models.StorageUnitCloneInlineSourceInlineSvm{
+				UUID: convert.ToPtr(c.svmUUID),
+			},
+		},
+		// IsFlexclone: convert.ToPtr(true), // TODO (aparna0508): set flexclone or leave default?
+	}
+
+	// Create a new storage unit with the above clone info
+	suInfo := &models.StorageUnit{
+		Name:  convert.ToPtr(cloneName),
+		Clone: cloneInfo,
+		Svm:   &models.StorageUnitInlineSvm{UUID: convert.ToPtr(c.svmUUID)},
+	}
+	params.SetInfo(suInfo)
+
+	_, suCreateAccepted, err := c.api.San.StorageUnitCreate(params, c.authInfo)
+	return suCreateAccepted, err
+}
+
+func (c *RestClient) StorageUnitCloneSplitStart(
+	ctx context.Context, suUUID string,
+) error {
+	params := san.NewStorageUnitModifyParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.UUID = suUUID
+
+	suInfo := &models.StorageUnit{
+		Clone: &models.StorageUnitClone{SplitInitiated: convert.ToPtr(true)},
+	}
+
+	params.SetInfo(suInfo)
+
+	_, suModifyAccepted, err := c.api.San.StorageUnitModify(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if suModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from volume modify")
+	}
+
+	jobLink := getGenericJobLinkFromStorageUnitJobLink(suModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
+}
+
+func (c *RestClient) StorageUnitListAllBackedBySnapshot(ctx context.Context, suName, snapshotName string) ([]string,
+	error,
+) {
+	return c.listAllSUNamesBackedBySnapshot(ctx, suName, snapshotName)
+}
+
+// listAllSUNamesBackedBySnapshot returns the names of all storage units backed by the specified snapshot
+func (c *RestClient) listAllSUNamesBackedBySnapshot(ctx context.Context, volumeName, snapshotName string) (
+	[]string, error,
+) {
+	params := san.NewStorageUnitCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.SvmUUID = &c.svmUUID
+	params.SetFields([]string{"name"})
+
+	params.SetCloneSourceStorageUnitName(convert.ToPtr(volumeName))
+	params.SetCloneSourceSnapshotName(convert.ToPtr(snapshotName))
+
+	result, err := c.api.San.StorageUnitCollectionGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	result.Payload, err = c.getAllStorageUnitPayloadRecords(result.Payload, params)
+	if err != nil {
+		return nil, err
+	}
+
+	suNames := make([]string, 0)
+	for _, su := range result.Payload.StorageUnitResponseInlineRecords {
+		if su == nil || su.Name == nil {
+			continue
+		}
+		if su.Clone != nil && su.Clone.Source != nil {
+			sourceSU := su.Clone.Source.StorageUnit
+			sourceSnapshot := su.Clone.Source.Snapshot
+			if sourceSU != nil && sourceSU.Name != nil && *sourceSU.Name == volumeName &&
+				sourceSnapshot != nil && sourceSnapshot.Name != nil && *sourceSnapshot.Name == snapshotName {
+				suNames = append(suNames, *su.Name)
+			}
+		}
+	}
+	return suNames, nil
+}
+
+func (c *RestClient) getAllStorageUnitPayloadRecords(
+	payload *models.StorageUnitResponse,
+	params *san.StorageUnitCollectionGetParams,
+) (*models.StorageUnitResponse, error) {
+	if HasNextLink(payload) {
+		nextLink := payload.Links.Next
+
+		for {
+			resultNext, errNext := c.api.San.StorageUnitCollectionGet(params, c.authInfo, WithNextLink(nextLink))
+			if errNext != nil {
+				return nil, errNext
+			}
+			if resultNext == nil || resultNext.Payload == nil || resultNext.Payload.NumRecords == nil {
+				break
+			}
+
+			if payload.NumRecords == nil {
+				payload.NumRecords = convert.ToPtr(int64(0))
+			}
+			payload.NumRecords = convert.ToPtr(*payload.NumRecords + *resultNext.Payload.NumRecords)
+			payload.StorageUnitResponseInlineRecords = append(payload.StorageUnitResponseInlineRecords,
+				resultNext.Payload.StorageUnitResponseInlineRecords...)
+
+			if !HasNextLink(resultNext.Payload) {
+				break
+			} else {
+				nextLink = resultNext.Payload.Links.Next
+			}
+		}
+	}
+	return payload, nil
+}

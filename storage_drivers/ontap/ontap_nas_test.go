@@ -261,6 +261,7 @@ func TestOntapNasStorageDriverInitialize_WithTwoAuthMethods(t *testing.T) {
 	}`
 	ontapNasDriver := newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
 		"CSI", false, nil)
+	ontapNasDriver.Config.CommonStorageDriverConfig = nil
 
 	result := ontapNasDriver.Initialize(ctx, "CSI", configJSON, commonConfig,
 		map[string]string{}, BackendUUID)
@@ -298,6 +299,7 @@ func TestOntapNasStorageDriverInitialize_WithTwoAuthMethodsWithSecrets(t *testin
 	}
 	ontapNasDriver := newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
 		"CSI", false, nil)
+	ontapNasDriver.Config.CommonStorageDriverConfig = nil
 
 	result := ontapNasDriver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets,
 		BackendUUID)
@@ -335,6 +337,7 @@ func TestOntapNasStorageDriverInitialize_WithTwoAuthMethodsWithConfigAndSecrets(
 	}
 	ontapNasDriver := newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
 		"CSI", false, nil)
+	ontapNasDriver.Config.CommonStorageDriverConfig = nil
 
 	result := ontapNasDriver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets,
 		BackendUUID)
@@ -355,6 +358,9 @@ func newMockOntapNASDriver(t *testing.T) (*mockapi.MockOntapAPI, *NASStorageDriv
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
+
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAdminPort := "0"
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
@@ -368,6 +374,7 @@ func newMockOntapNASDriver(t *testing.T) (*mockapi.MockOntapAPI, *NASStorageDriv
 
 func TestOntapNasStorageDriverInitialize(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -419,6 +426,7 @@ func TestOntapNasStorageDriverInitialize(t *testing.T) {
 
 func TestOntapNasStorageDriverInitialize_NameTemplateDefineInBackendConfig(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -477,6 +485,7 @@ func TestOntapNasStorageDriverInitialize_NameTemplateDefineInBackendConfig(t *te
 
 func TestOntapNasStorageDriverInitialize_NameTemplateDefineInStoragePool(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -540,6 +549,7 @@ func TestOntapNasStorageDriverInitialize_NameTemplateDefineInStoragePool(t *test
 
 func TestOntapNasStorageDriverInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -637,6 +647,7 @@ func TestOntapNasStorageDriverInitialize_Failure(t *testing.T) {
 
 func TestOntapNasStorageDriverInitialize_StoragePoolFailed(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -671,6 +682,7 @@ func TestOntapNasStorageDriverInitialize_StoragePoolFailed(t *testing.T) {
 
 func TestOntapNasStorageDriverInitialize_ValidationFailed(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,

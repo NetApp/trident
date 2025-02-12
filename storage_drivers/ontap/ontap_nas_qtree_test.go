@@ -70,6 +70,10 @@ func newNASQtreeStorageDriver(api api.OntapAPI) *NASQtreeStorageDriver {
 func newMockOntapNasQtreeDriver(t *testing.T) (*mockapi.MockOntapAPI, *NASQtreeStorageDriver) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
+		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
+
 	driver := newNASQtreeStorageDriver(mockAPI)
 	return mockAPI, driver
 }
@@ -145,6 +149,7 @@ func TestInitialize_Success(t *testing.T) {
 
 	// Create mock driver and api
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 
 	// Add various expect to mockAPI
 	addCommonExpectToMockApiForInitialize(mockAPI)
@@ -184,6 +189,7 @@ func TestInitializeWithNameTemplate_Success(t *testing.T) {
 
 	// Create mock driver and api
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 
 	// Add various expect to mockAPI
 	addCommonExpectToMockApiForInitialize(mockAPI)
@@ -231,6 +237,7 @@ func TestInitializeWith_NameTemplateDefineInStoragePool(t *testing.T) {
 
 	// Create mock driver and api
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 
 	// Add various expect to mockAPI
 	addCommonExpectToMockApiForInitialize(mockAPI)
@@ -281,6 +288,7 @@ func TestInitializeWith_NameTemplateDefineInBothPool(t *testing.T) {
 
 	// Create mock driver and api
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 
 	// Add various expect to mockAPI
 	addCommonExpectToMockApiForInitialize(mockAPI)
@@ -329,6 +337,7 @@ func TestInitialize_WithInvalidConfigJson(t *testing.T) {
 
 	// Create mock driver
 	_, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 
 	// Initialize
 	result := driver.Initialize(ctx, driverContextCSI, *configJSON,
@@ -449,6 +458,8 @@ func TestInitialize_WithDifferentQtreePerFlexvol(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
+			driver.Config.CommonStorageDriverConfig = nil
+
 			// Get structs needed for initializing driver
 			commonConfig, _, secrets := getStructsForInitializeDriver()
 
@@ -478,6 +489,7 @@ func TestInitialize_WithNoStoragePool(t *testing.T) {
 
 	// Create mock driver and api
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	addCommonExpectToMockApiForInitialize(mockAPI)
 
 	// Provide a configJSON which has aggregate different than that returned by API
@@ -1513,6 +1525,7 @@ func TestEnsureFlexvolForQtree_Success_NewFlexvolNotPermitted(t *testing.T) {
 
 	// Create mock driver and api
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.CommonStorageDriverConfig = nil
 	addCommonExpectToMockApiForInitialize(mockAPI)
 
 	// Provide a configJSON which has aggregate different than that returned by API

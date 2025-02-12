@@ -1556,6 +1556,67 @@ func TestOntapREST_LunRename(t *testing.T) {
 	}
 }
 
+func mockLunResponseSuccessAsync(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/api/cluster/jobs/1234" {
+		mockJobResponse(w, r)
+	} else if r.Method == "PATCH" {
+		mockRequestAccepted(w, r)
+	} else {
+		lunInfo := getLunInfo(convert.ToPtr("lunAttr"))
+		numRecords := int64(1)
+		lunResponse := models.LunResponse{
+			LunResponseInlineRecords: []*models.Lun{lunInfo},
+			NumRecords:               &numRecords,
+		}
+
+		r.Host = "127.0.0.1"
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(lunResponse)
+	}
+}
+
+func mockJobResponseBadRequest(w http.ResponseWriter, r *http.Request) {
+	jobId := strfmt.UUID("1234")
+	jobStatus := models.JobStateSuccess
+	jobLink := models.Job{
+		UUID:  &jobId,
+		State: &jobStatus,
+		Error: &models.JobInlineError{
+			Code:    convert.ToPtr("5376461"),
+			Message: convert.ToPtr("mock error which resulted in job failure"),
+		},
+	}
+	setHTTPResponseHeader(w, http.StatusBadRequest)
+	json.NewEncoder(w).Encode(jobLink)
+}
+
+func TestOntapREST_LunRename_Async(t *testing.T) {
+	tests := []struct {
+		name            string
+		newName         string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", "fake_valid_new_name", mockLunResponseSuccessAsync, false},
+		{"NegativeTest", "fake-%invalid-new-name", mockJobResponseBadRequest, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.LunRename(ctx, "fake-oldLunName", test.newName)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "expected no error in LUN rename, but got one.")
+			} else {
+				assert.Error(t, err, "expected error in LUN rename, but got none.")
+			}
+			server.Close()
+		})
+	}
+}
+
 func TestOntapREST_LunMapInfo(t *testing.T) {
 	tests := []struct {
 		name            string
