@@ -31,6 +31,13 @@ type VolumeAccessInfo struct {
 	AccessMode int32 `json:"accessMode,omitempty"`
 }
 
+// ISCSIDiscoveryInfo contains information about discovered iSCSI targets.
+type ISCSIDiscoveryInfo struct {
+	Portal     string
+	PortalIP   string
+	TargetName string
+}
+
 type IscsiChapInfo struct {
 	UseCHAP              bool   `json:"useCHAP"`
 	IscsiUsername        string `json:"iscsiUsername,omitempty"`

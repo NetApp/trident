@@ -63,6 +63,9 @@ type FCP interface {
 		ctx context.Context, deviceInfo *models.ScsiDeviceInfo, publishInfo *models.VolumePublishInfo,
 		allPublishInfos []models.VolumePublishInfo, ignoreErrors, force bool,
 	) (string, error)
+	GetDeviceInfoForFCPLUN(
+		ctx context.Context, hostSessionMap []map[string]int, lunID int, iSCSINodeName string, isDetachCall bool,
+	) (*models.ScsiDeviceInfo, error)
 }
 
 // DefaultSelfHealingExclusion Exclusion list contains keywords if found in any Target WWNN should not be considered for
@@ -1186,4 +1189,26 @@ func (client *Client) removeSCSIDevice(ctx context.Context, deviceInfo *models.S
 	// one may need to revisit the below bool ignoreErrors being set on timeout error
 	// resulting from multipathFlushDevice() call at the start of this function.
 	return ignoreErrors || skipFlush, nil
+}
+
+func (client *Client) GetDeviceInfoForFCPLUN(
+	ctx context.Context, hostSessionMap []map[string]int, lunID int, iSCSINodeName string, isDetachCall bool,
+) (*models.ScsiDeviceInfo, error) {
+	deviceInfo, err := client.GetDeviceInfoForLUN(ctx, hostSessionMap, lunID, iSCSINodeName, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.ScsiDeviceInfo{
+		ScsiDeviceAddress: models.ScsiDeviceAddress{
+			Host:    deviceInfo.Host,
+			Channel: deviceInfo.Channel,
+			Target:  deviceInfo.Target,
+			LUN:     deviceInfo.LUN,
+		},
+		Devices:         deviceInfo.Devices,
+		MultipathDevice: deviceInfo.MultipathDevice,
+		WWNN:            deviceInfo.WWNN,
+		SessionNumber:   deviceInfo.SessionNumber,
+	}, nil
 }

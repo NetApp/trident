@@ -590,15 +590,6 @@ func (c *Client) RemoveMultipathDeviceMappingWithRetries(ctx context.Context, de
 	return nil
 }
 
-// ------ TODO remove:  temporary functions to bridge the gap while we transition to the new iscsi client ------
-
-//func GetDeviceInfoForLUN(
-//	ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string, isDetachCall bool,
-//) (*models.ScsiDeviceInfo, error) {
-//	// TODO: check if we require both isDetachCall and needFSType
-//	return iscsiClient.GetDeviceInfoForLUN(ctx, hostSessionMap, lunID, iSCSINodeName, isDetachCall)
-//}
-
 // FindMultipathDeviceForDevice finds the devicemapper parent of a device name like /dev/sdx.
 func (c *Client) FindMultipathDeviceForDevice(ctx context.Context, device string) string {
 	Logc(ctx).WithField("device", device).Debug(">>>> iscsi.findMultipathDeviceForDevice")

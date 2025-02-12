@@ -363,14 +363,15 @@ func RemoveSCSIDeviceByPublishInfo(ctx context.Context, publishInfo *tridentmode
 			return
 		}
 
-		deviceInfo, err := utils.GetDeviceInfoForLUN(ctx, hostSessionMap, int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN, false)
+		deviceInfo, err := utils.IscsiClient.GetDeviceInfoForLUN(ctx, hostSessionMap, int(publishInfo.IscsiLunNumber),
+			publishInfo.IscsiTargetIQN, false)
 		if err != nil {
 			Logc(ctx).WithError(err).WithFields(fields).Error("Error getting device info.")
 		} else if deviceInfo == nil {
 			Logc(ctx).WithFields(fields).Error("No device info found.")
 		} else {
 			// Inform the host about the device removal
-			if _, err := utils.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, true, false); err != nil {
+			if _, err := utils.IscsiClient.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, true, false); err != nil {
 				Logc(ctx).WithError(err).WithFields(fields).Error("Error removing device.")
 			}
 		}
@@ -382,7 +383,7 @@ func RemoveSCSIDeviceByPublishInfo(ctx context.Context, publishInfo *tridentmode
 			return
 		}
 
-		deviceInfo, err := utils.GetDeviceInfoForFCPLUN(ctx, hostSessionMap, int(publishInfo.FCPLunNumber),
+		deviceInfo, err := utils.FcpClient.GetDeviceInfoForFCPLUN(ctx, hostSessionMap, int(publishInfo.FCPLunNumber),
 			publishInfo.FCTargetWWNN, false)
 		if err != nil {
 			Logc(ctx).WithError(err).WithFields(fields).Error("Error getting device info.")
@@ -390,7 +391,8 @@ func RemoveSCSIDeviceByPublishInfo(ctx context.Context, publishInfo *tridentmode
 			Logc(ctx).WithFields(fields).Error("No device info found.")
 		} else {
 			// Inform the host about the device removal
-			if _, err := utils.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, true, false); err != nil {
+			if _, err := utils.IscsiClient.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, true,
+				false); err != nil {
 				Logc(ctx).WithError(err).WithFields(fields).Error("Error removing device.")
 			}
 		}

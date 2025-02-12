@@ -56,6 +56,21 @@ func (mr *MockFCPMockRecorder) AttachVolumeRetry(arg0, arg1, arg2, arg3, arg4, a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachVolumeRetry", reflect.TypeOf((*MockFCP)(nil).AttachVolumeRetry), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
+// GetDeviceInfoForFCPLUN mocks base method.
+func (m *MockFCP) GetDeviceInfoForFCPLUN(arg0 context.Context, arg1 []map[string]int, arg2 int, arg3 string, arg4 bool) (*models.ScsiDeviceInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDeviceInfoForFCPLUN", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(*models.ScsiDeviceInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDeviceInfoForFCPLUN indicates an expected call of GetDeviceInfoForFCPLUN.
+func (mr *MockFCPMockRecorder) GetDeviceInfoForFCPLUN(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeviceInfoForFCPLUN", reflect.TypeOf((*MockFCP)(nil).GetDeviceInfoForFCPLUN), arg0, arg1, arg2, arg3, arg4)
+}
+
 // GetDeviceInfoForLUN mocks base method.
 func (m *MockFCP) GetDeviceInfoForLUN(arg0 context.Context, arg1 []map[string]int, arg2 int, arg3 string, arg4 bool) (*models.ScsiDeviceInfo, error) {
 	m.ctrl.T.Helper()

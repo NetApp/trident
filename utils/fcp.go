@@ -11,6 +11,6 @@ import (
 var (
 	command   = exec.NewCommand()
 	FcpUtils  = fcp.NewReconcileUtils(osutils.ChrootPathPrefix, osutils.New())
-	fcpClient = fcp.NewDetailed(osutils.ChrootPathPrefix, command, fcp.DefaultSelfHealingExclusion, osutils.New(),
+	FcpClient = fcp.NewDetailed(osutils.ChrootPathPrefix, command, fcp.DefaultSelfHealingExclusion, osutils.New(),
 		devices.New(), filesystem.New(mountClient), mountClient, FcpUtils)
 )

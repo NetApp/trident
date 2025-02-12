@@ -1102,7 +1102,7 @@ func getPortals(sessions *models.ISCSISessions, portalActions []PortalAction) []
 		portals[idx] = portalAction.Portal
 	}
 
-	utils.SortPortals(portals, sessions)
+	iscsi.SortPortals(portals, sessions)
 
 	return portals
 }

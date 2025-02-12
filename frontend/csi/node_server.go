@@ -1625,7 +1625,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 	// Update in-mem map used for self-healing; do it after a volume has been staged.
 	// Beyond here if there is a problem with the session or there are missing LUNs
 	// then self-healing should be able to fix those issues.
-	newCtx := context.WithValue(ctx, iscsi.SessionInfoSource, utils.SessionSourceNodeStage)
+	newCtx := context.WithValue(ctx, iscsi.SessionInfoSource, iscsi.SessionSourceNodeStage)
 	p.iscsi.AddSession(newCtx, &publishedISCSISessions, publishInfo, req.GetVolumeId(), "", models.NotInvalid)
 	return nil
 }
@@ -2353,7 +2353,7 @@ func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
 		Logc(ctx).WithError(err).Error("Failed to reset remediation value(s) for published iSCSI sessions. ")
 	}
 
-	if err := utils.PopulateCurrentSessions(ctx, &currentISCSISessions); err != nil {
+	if err := p.iscsi.PopulateCurrentSessions(ctx, &currentISCSISessions); err != nil {
 		Logc(ctx).WithError(err).
 			Error("Failed to get current state of iSCSI Sessions LUN mappings; skipping iSCSI self-heal cycle.")
 		return
@@ -2374,7 +2374,7 @@ func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
 	// to temporary networking issue or logged-out sessions or LUNs that were never scanned for some sessions.
 
 	// SELF-HEAL STEP 1: Identify all sorted candidate stale portals and sorted candidate non-stale portals.
-	staleISCSIPortals, nonStaleISCSIPortals := utils.InspectAllISCSISessions(ctx, &publishedISCSISessions,
+	staleISCSIPortals, nonStaleISCSIPortals := p.iscsi.InspectAllISCSISessions(ctx, &publishedISCSISessions,
 		&currentISCSISessions, p.iSCSISelfHealingWaitTime)
 
 	// SELF-HEAL STEP 2: Attempt to fix all the stale portals.

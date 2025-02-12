@@ -68,6 +68,34 @@ func (mr *MockISCSIMockRecorder) AttachVolumeRetry(arg0, arg1, arg2, arg3, arg4,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachVolumeRetry", reflect.TypeOf((*MockISCSI)(nil).AttachVolumeRetry), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
+// EnsureISCSISessionWithPortalDiscovery mocks base method.
+func (m *MockISCSI) EnsureISCSISessionWithPortalDiscovery(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureISCSISessionWithPortalDiscovery", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnsureISCSISessionWithPortalDiscovery indicates an expected call of EnsureISCSISessionWithPortalDiscovery.
+func (mr *MockISCSIMockRecorder) EnsureISCSISessionWithPortalDiscovery(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureISCSISessionWithPortalDiscovery", reflect.TypeOf((*MockISCSI)(nil).EnsureISCSISessionWithPortalDiscovery), arg0, arg1)
+}
+
+// EnsureISCSISessionsWithPortalDiscovery mocks base method.
+func (m *MockISCSI) EnsureISCSISessionsWithPortalDiscovery(arg0 context.Context, arg1 []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureISCSISessionsWithPortalDiscovery", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnsureISCSISessionsWithPortalDiscovery indicates an expected call of EnsureISCSISessionsWithPortalDiscovery.
+func (mr *MockISCSIMockRecorder) EnsureISCSISessionsWithPortalDiscovery(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureISCSISessionsWithPortalDiscovery", reflect.TypeOf((*MockISCSI)(nil).EnsureISCSISessionsWithPortalDiscovery), arg0, arg1)
+}
+
 // GetDeviceInfoForLUN mocks base method.
 func (m *MockISCSI) GetDeviceInfoForLUN(arg0 context.Context, arg1 map[int]int, arg2 int, arg3 string, arg4 bool) (*models.ScsiDeviceInfo, error) {
 	m.ctrl.T.Helper()
@@ -98,6 +126,36 @@ func (mr *MockISCSIMockRecorder) ISCSIActiveOnHost(arg0, arg1 any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ISCSIActiveOnHost", reflect.TypeOf((*MockISCSI)(nil).ISCSIActiveOnHost), arg0, arg1)
 }
 
+// ISCSIDiscovery mocks base method.
+func (m *MockISCSI) ISCSIDiscovery(arg0 context.Context, arg1 string) ([]models.ISCSIDiscoveryInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ISCSIDiscovery", arg0, arg1)
+	ret0, _ := ret[0].([]models.ISCSIDiscoveryInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ISCSIDiscovery indicates an expected call of ISCSIDiscovery.
+func (mr *MockISCSIMockRecorder) ISCSIDiscovery(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ISCSIDiscovery", reflect.TypeOf((*MockISCSI)(nil).ISCSIDiscovery), arg0, arg1)
+}
+
+// InspectAllISCSISessions mocks base method.
+func (m *MockISCSI) InspectAllISCSISessions(arg0 context.Context, arg1, arg2 *models.ISCSISessions, arg3 time.Duration) ([]string, []string) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InspectAllISCSISessions", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].([]string)
+	return ret0, ret1
+}
+
+// InspectAllISCSISessions indicates an expected call of InspectAllISCSISessions.
+func (mr *MockISCSIMockRecorder) InspectAllISCSISessions(arg0, arg1, arg2, arg3 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InspectAllISCSISessions", reflect.TypeOf((*MockISCSI)(nil).InspectAllISCSISessions), arg0, arg1, arg2, arg3)
+}
+
 // IsAlreadyAttached mocks base method.
 func (m *MockISCSI) IsAlreadyAttached(arg0 context.Context, arg1 int, arg2 string) bool {
 	m.ctrl.T.Helper()
@@ -124,6 +182,20 @@ func (m *MockISCSI) Logout(arg0 context.Context, arg1, arg2 string) error {
 func (mr *MockISCSIMockRecorder) Logout(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockISCSI)(nil).Logout), arg0, arg1, arg2)
+}
+
+// PopulateCurrentSessions mocks base method.
+func (m *MockISCSI) PopulateCurrentSessions(arg0 context.Context, arg1 *models.ISCSISessions) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PopulateCurrentSessions", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PopulateCurrentSessions indicates an expected call of PopulateCurrentSessions.
+func (mr *MockISCSIMockRecorder) PopulateCurrentSessions(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PopulateCurrentSessions", reflect.TypeOf((*MockISCSI)(nil).PopulateCurrentSessions), arg0, arg1)
 }
 
 // PreChecks mocks base method.
@@ -205,6 +277,20 @@ func (m *MockISCSI) SafeToLogOut(arg0 context.Context, arg1, arg2 int) bool {
 func (mr *MockISCSIMockRecorder) SafeToLogOut(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SafeToLogOut", reflect.TypeOf((*MockISCSI)(nil).SafeToLogOut), arg0, arg1, arg2)
+}
+
+// Supported mocks base method.
+func (m *MockISCSI) Supported(arg0 context.Context) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Supported", arg0)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Supported indicates an expected call of Supported.
+func (mr *MockISCSIMockRecorder) Supported(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Supported", reflect.TypeOf((*MockISCSI)(nil).Supported), arg0)
 }
 
 // TargetHasMountedDevice mocks base method.

@@ -26,7 +26,6 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/solidfire/api"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
@@ -636,7 +635,7 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
 		// Validate the environment
-		isIscsiSupported := utils.ISCSISupported(ctx)
+		isIscsiSupported := d.iscsi.Supported(ctx)
 		if !isIscsiSupported {
 			Logc(ctx).Error("Host doesn't appear to support iSCSI.")
 			return errors.New("no iSCSI support on this host")
