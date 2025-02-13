@@ -2134,6 +2134,20 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 					gomock.Any()).Return(map[int]int{})
 				return mockIscsiReconcileUtilsClient
 			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return(mockDevicePath, nil)
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), mockDevicePath).
+					Return(nil)
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil)
+				return mockDeviceClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
+			},
 		},
 		"SAN: iSCSI unstage: GetDeviceInfoForLUN no devices": {
 			assertError: assert.NoError,

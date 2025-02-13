@@ -15,6 +15,7 @@ import (
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/errors"
 	execCmd "github.com/netapp/trident/utils/exec"
+	"github.com/netapp/trident/utils/lsblk"
 )
 
 const (
@@ -178,4 +179,22 @@ func GetLUKSPassphrasesFromSecretMap(secrets map[string]string) (string, string,
 // IsLegacyLUKSDevicePath returns true if the device path points to mapped LUKS device instead of mpath device.
 func IsLegacyLUKSDevicePath(devicePath string) bool {
 	return strings.Contains(devicePath, "luks")
+}
+
+// GetDmDevicePathFromLUKSLegacyPath returns the device mapper path (e.g. /dev/dm-0) for a legacy LUKS device
+// path (e.g. /dev/mapper/luks-<UUID>).
+func GetDmDevicePathFromLUKSLegacyPath(
+	ctx context.Context, command execCmd.Command, devicePath string,
+) (string, error) {
+	if !IsLegacyLUKSDevicePath(devicePath) {
+		return "", fmt.Errorf("device path is not a legacy LUKS device path")
+	}
+	lsblk := lsblk.NewLsblkUtilDetailed(command)
+	dev, err := lsblk.GetParentDeviceKname(ctx, devicePath)
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"devicePath": devicePath,
+		}).WithError(err).Error("Unable to determine luks parent device.")
+	}
+	return devices.DevPrefix + dev, nil
 }
