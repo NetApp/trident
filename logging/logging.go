@@ -16,7 +16,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/utils/crypto"
@@ -153,7 +153,7 @@ func (hook *ConsoleHook) Levels() []log.Level {
 func (hook *ConsoleHook) checkIfTerminal(w io.Writer) bool {
 	switch v := w.(type) {
 	case *os.File:
-		return terminal.IsTerminal(int(v.Fd()))
+		return term.IsTerminal(int(v.Fd()))
 	default:
 		return false
 	}
