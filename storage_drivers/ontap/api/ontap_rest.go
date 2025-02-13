@@ -4682,7 +4682,7 @@ func (c RestClient) QtreeGet(ctx context.Context, name, volumePrefix string) (*m
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetName(utils.Ptr(name))          // qtree name
 	params.SetVolumeName(utils.Ptr(pattern)) // Flexvol name prefix
-	fields := []string{""}
+	fields := []string{"export_policy.name"}
 	params.SetFields(fields)
 
 	result, err := c.api.Storage.QtreeCollectionGet(params, c.authInfo)
