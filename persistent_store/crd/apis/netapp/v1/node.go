@@ -42,6 +42,7 @@ func (in *TridentNode) Apply(persistent *models.Node) error {
 	in.IQN = persistent.IQN
 	in.NQN = persistent.NQN
 	in.IPs = persistent.IPs
+	in.HostWWPNMap = persistent.HostWWPNMap
 	in.Deleted = persistent.Deleted
 	in.PublicationState = string(persistent.PublicationState)
 	in.LogLevel = persistent.LogLevel
@@ -75,6 +76,7 @@ func (in *TridentNode) Persistent() (*models.Node, error) {
 		IQN:              in.IQN,
 		NQN:              in.NQN,
 		IPs:              in.IPs,
+		HostWWPNMap:      in.HostWWPNMap,
 		NodePrep:         &models.NodePrep{},
 		HostInfo:         &models.HostSystem{},
 		Deleted:          in.Deleted,
