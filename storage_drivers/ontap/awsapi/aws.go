@@ -35,8 +35,8 @@ const (
 )
 
 var (
-	volumeARNRegex = regexp.MustCompile(`^arn:aws:fsx:(?P<region>[^:]+):(?P<accountID>\d{12}):volume/(?P<filesystemID>[A-z0-9-]+)/(?P<volumeID>[A-z0-9-]+)$`)
-	secretARNRegex = regexp.MustCompile(`^arn:aws:secretsmanager:(?P<region>[^:]+):(?P<accountID>\d{12}):secret:(?P<secretName>[A-z0-9/_+=.@-]+)-[A-z0-9/_+=.@-]{6}$`)
+	volumeARNRegex = regexp.MustCompile(`^arn:(?P<partition>aws|aws-cn|aws-us-gov){1}:fsx:(?P<region>[^:]+):(?P<accountID>\d{12}):volume/(?P<filesystemID>[A-z0-9-]+)/(?P<volumeID>[A-z0-9-]+)$`)
+	secretARNRegex = regexp.MustCompile(`^arn:(?P<partition>aws|aws-cn|aws-us-gov){1}:secretsmanager:(?P<region>[^:]+):(?P<accountID>\d{12}):secret:(?P<secretName>[A-z0-9/_+=.@-]+)-[A-z0-9/_+=.@-]{6}$`)
 )
 
 // ClientConfig holds configuration data for the API driver object.
