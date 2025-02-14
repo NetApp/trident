@@ -23,6 +23,11 @@ func TestGetDriverProtocol(t *testing.T) {
 	assert.Equal(t, SANType, sa.NVMe, "Incorrect protocol type.")
 	assert.NoError(t, err, "Failed to get protocol type.")
 
+	// SANType as FCP
+	SANType, err = GetDriverProtocol(driverName, `{"SANType": "fcp"}`)
+	assert.Equal(t, SANType, sa.FCP, "Incorrect protocol type.")
+	assert.NoError(t, err, "Failed to get protocol type.")
+
 	// Empty SANType
 	SANType, err = GetDriverProtocol(driverName, `{}`)
 	assert.Equal(t, sa.ISCSI, SANType, "Incorrect protocol type.")
