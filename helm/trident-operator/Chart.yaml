@@ -1,6 +1,6 @@
 apiVersion: v2
 name: trident-operator
-version: 100.2502.0 # Some services require a semver here: "100.<CalVer>"
+version: 100.2506.0 # Some services require a semver here: "100.<CalVer>"
 kubeVersion: ">= 1.24.0-0"
 description: "A Helm chart for deploying NetApp's Trident CSI storage provisioner using the Trident Operator."
 type: application
@@ -11,4 +11,4 @@ icon: "https://raw.githubusercontent.com/NetApp/trident/master/logo/trident.png"
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
-appVersion: 25.02.0
+appVersion: 25.06.0

@@ -39,7 +39,7 @@ const (
 	OrchestratorName                 = "trident"
 	OrchestratorClientName           = OrchestratorName + "ctl"
 	OrchestratorAPIVersion           = "1"
-	DefaultOrchestratorVersion       = "25.02.0"
+	DefaultOrchestratorVersion       = "25.06.0"
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second
 	PersistentStoreTimeout           = 10 * time.Second
@@ -253,7 +253,7 @@ var (
 	}
 
 	// DefaultAutosupportImage default image used by tridentctl and operator for asup sidecar
-	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:24.06"
+	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:24.10"
 
 	// DefaultACPImage default image used by tridentctl and operator for acp sidecar
 	DefaultACPImage = "cr.astra.netapp.io/astra/trident-acp:24.10.0"
