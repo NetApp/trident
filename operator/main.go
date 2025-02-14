@@ -5,13 +5,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"math/rand"
 	"os"
 	"os/signal"
 	"runtime"
 	"strings"
 	"syscall"
-	"time"
 
 	. "github.com/netapp/trident/logging"
 	operatorclient "github.com/netapp/trident/operator/clients"
@@ -52,9 +50,6 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	flag.Parse()
 	frontends := make([]controllers.Controller, 0)
-
-	// Seed RNG one time
-	rand.Seed(time.Now().UnixNano())
 
 	if *debug {
 		*logLevel = "debug"
