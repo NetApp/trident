@@ -368,6 +368,8 @@ type TridentNode struct {
 	NQN string `json:"nqn,omitempty"`
 	// IPs is a list of IP addresses for the TridentNode
 	IPs []string `json:"ips,omitempty"`
+	// HostWWPNMap is the map of host WWPNs
+	HostWWPNMap map[string][]string `json:"hostWWPNMap,omitempty"`
 	// NodePrep is the current status of node preparation for this node
 	NodePrep runtime.RawExtension `json:"nodePrep,omitempty"`
 	// HostInfo contains information about the node's host machine

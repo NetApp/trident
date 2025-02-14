@@ -111,7 +111,7 @@ func GetDriverProtocol(driverName, configJSON string) (string, error) {
 	if driverName == config.OntapSANStorageDriverName {
 		SANType := strings.ToLower(pool.SANType)
 		switch SANType {
-		case sa.ISCSI, sa.NVMe:
+		case sa.ISCSI, sa.NVMe, sa.FCP:
 			return SANType, nil
 		case "":
 			// Old iSCSI backends will have no value for SANType
