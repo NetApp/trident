@@ -1797,7 +1797,7 @@ func (i *Installer) getTridentVersionYAML(imageName string, controllingCRDetails
 	}
 
 	// Wait for Trident version pod to provide information
-	timeout := 30 * time.Second
+	timeout := 300 * time.Second
 	output, err := i.client.ExecPodForVersionInformation(podName, tridentVersionCommand, timeout)
 	if err != nil {
 		errMessage := fmt.Sprintf("failed to exec Trident version pod '%s' (image: '%s') for the information; err: %v",
