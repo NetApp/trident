@@ -45,7 +45,7 @@ var (
 	pidRegex                 = regexp.MustCompile(`^\d+$`)
 	pidRunningOrIdleRegex    = regexp.MustCompile(`pid \d+ (running|idle)`)
 	tagsWithIndentationRegex = regexp.MustCompile(`(?m)^[\t ]*find_multipaths[\t ]*["|']?(?P<tagName>[\w-_]+)["|']?[\t ]*$`)
-	beforeFlushDevice        = fiji.Register("beforeFlushDevice", "devices")
+	beforeFlushDevice        = fiji.Register("fcpBeforeFlushDevice", "devices")
 )
 
 type FCP interface {
