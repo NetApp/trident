@@ -221,7 +221,7 @@ var featuresByVersion = map[Feature]*versionutils.Version{
 	NVMeProtocol:              versionutils.MustParseSemantic("9.10.1"),
 }
 
-var MaximumONTAPIVersion = versionutils.MustParseMajorMinorVersion("9.17")
+var MaximumONTAPIVersion = versionutils.MustParseMajorMinorVersion("9.99")
 
 // SupportsFeature returns true if the Ontapi version supports the supplied feature
 func (c Client) SupportsFeature(ctx context.Context, feature Feature) bool {
