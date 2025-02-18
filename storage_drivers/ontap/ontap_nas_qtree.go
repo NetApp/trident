@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"net"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -786,6 +787,16 @@ func ensureNodeAccessForPolicy(
 	ctx context.Context, targetNode *models.Node, clientAPI api.OntapAPI,
 	config *drivers.OntapStorageDriverConfig, policyName string,
 ) error {
+	fields := LogFields{
+		"Method":        "ensureNodeAccessForPolicy",
+		"Type":          "ontap_common",
+		"policyName":    policyName,
+		"targetNodeIPs": targetNode.IPs,
+	}
+
+	Logc(ctx).WithFields(fields).Debug(">>>> ensureNodeAccessForPolicy")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< ensureNodeAccessForPolicy")
+
 	if exists, err := clientAPI.ExportPolicyExists(ctx, policyName); err != nil {
 		return err
 	} else if !exists {
@@ -802,6 +813,7 @@ func ensureNodeAccessForPolicy(
 		Logc(ctx).Error(err)
 		return err
 	}
+	Logc(ctx).WithField("desiredRules", desiredRules).Debug("Desired export policy rules.")
 
 	// first grab all existing rules
 	existingRules, err := clientAPI.ExportRuleList(ctx, policyName)
@@ -809,17 +821,41 @@ func ensureNodeAccessForPolicy(
 		// Could not list rules, just log it, no action required.
 		Logc(ctx).WithField("error", err).Debug("Export policy rules could not be listed.")
 	}
+	Logc(ctx).WithField("existingRules", existingRules).Debug("Existing export policy rules.")
 
 	for _, desiredRule := range desiredRules {
+		desiredRule = strings.TrimSpace(desiredRule)
+
+		desiredIP := net.ParseIP(desiredRule)
+		if desiredIP == nil {
+			Logc(ctx).WithField("desiredRule", desiredRule).Debug("Invalid desired rule IP")
+			continue
+		}
 
 		// Loop through the existing rules one by one and compare to make sure we cover the scenario where the
-		// existing rule is of format "10.193.112.26, 10.244.2.0" and the desired rule is format "10.193.112.26".
+		// existing rule is of format "1.1.1.1, 2.2.2.2" and the desired rule is format "1.1.1.1".
 		// This can happen because of the difference in how ONTAP ZAPI and ONTAP REST creates export rule.
 
 		ruleFound := false
 		for existingRule := range existingRules {
-			if strings.Contains(existingRule, desiredRule) {
-				ruleFound = true
+			existingIPs := strings.Split(existingRule, ",")
+
+			for _, ip := range existingIPs {
+				ip = strings.TrimSpace(ip)
+
+				existingIP := net.ParseIP(ip)
+				if existingIP == nil {
+					Logc(ctx).WithField("existingRule", existingRule).Debug("Invalid existing rule IP")
+					continue
+				}
+
+				if existingIP.Equal(desiredIP) {
+					ruleFound = true
+					break
+				}
+			}
+
+			if ruleFound {
 				break
 			}
 		}
@@ -827,6 +863,12 @@ func ensureNodeAccessForPolicy(
 		// Rule does not exist, so create it
 		if !ruleFound {
 			if err = clientAPI.ExportRuleCreate(ctx, policyName, desiredRule, config.NASType); err != nil {
+				// Check if error is that the export policy rule already exist error
+				if errors.IsAlreadyExistsError(err) {
+					Logc(ctx).WithField("desiredRule", desiredRule).WithError(err).Debug(
+						"Export policy rule already exists")
+					continue
+				}
 				return err
 			}
 		}
@@ -896,6 +938,7 @@ func (d *NASQtreeStorageDriver) Unpublish(
 			Logc(ctx).Errorf("Could not list export rules for policy %s.", exportPolicy)
 			return err
 		}
+
 		if len(allExportRules) == 0 {
 			// Set qtree to the empty policy
 			if err = d.setQtreeToEmptyPolicy(ctx, qtreeName, qtree.Volume); err != nil {
@@ -929,20 +972,33 @@ func (d *NASQtreeStorageDriver) Unpublish(
 func (d *NASQtreeStorageDriver) removeExportPolicyRules(
 	ctx context.Context, exportPolicy string, publishInfo *models.VolumePublishInfo,
 ) error {
+	fields := LogFields{
+		"Method":     "removeExportPolicyRules",
+		"policyName": exportPolicy,
+		"nodeIPs":    publishInfo.HostIP,
+	}
+
+	Logc(ctx).WithFields(fields).Debug(">>>> removeExportPolicyRules")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< removeExportPolicyRules")
+
 	var removeRuleIndexes []int
 
 	nodeIPRules := make(map[string]struct{})
 	for _, ip := range publishInfo.HostIP {
+		ip = strings.TrimSpace(ip)
 		nodeIPRules[ip] = struct{}{}
 	}
+
 	// Get export policy rules from given policy
-	allExportRules, err := d.API.ExportRuleList(ctx, exportPolicy)
+	existingRules, err := d.API.ExportRuleList(ctx, exportPolicy)
 	if err != nil {
 		return err
 	}
+	Logc(ctx).WithField("existingRules", existingRules).Debug("Existing export policy rules.")
+
 	// Match list of rules to rule index based on clientMatch address
 	// ONTAP expects the rule index to delete
-	for clientMatch, ruleIndex := range allExportRules {
+	for clientMatch, ruleIndex := range existingRules {
 		// For the qtree level policy, match the node IP addresses to the clientMatch to remove the matched items.
 		// Example:
 		// qtree trident_pvc_123 is attached to node1 and node2. The qtree is being unpublished from node1.
@@ -959,14 +1015,27 @@ func (d *NASQtreeStorageDriver) removeExportPolicyRules(
 		// index 1: "1.1.1.0, 1.1.1.1"
 		// index 2: "2.2.2.0, 2.2.2.2"
 		// For this example, index 1 will be removed.
+
+		// Add a ruleIndex for deletion only if ALL the IPs in the clientMatch are in the list of IPs we are trying
+		// to delete.
+		allMatch := true
 		for _, singleClientMatch := range strings.Split(clientMatch, ",") {
-			if _, match := nodeIPRules[singleClientMatch]; match {
-				removeRuleIndexes = append(removeRuleIndexes, ruleIndex)
+			singleClientMatch = strings.TrimSpace(singleClientMatch)
+			if _, match := nodeIPRules[singleClientMatch]; !match {
+				// Do not add the ruleIndex to the list of indexes to be removed if even a single IP in the clientMatch
+				// is not in the list of node IPs we are trying to remove
+				allMatch = false
+				break
 			}
+		}
+
+		if allMatch {
+			removeRuleIndexes = append(removeRuleIndexes, ruleIndex)
 		}
 	}
 
 	// Attempt to remove node IP addresses from export policy rules
+	Logc(ctx).WithField("removeRuleIndexes", removeRuleIndexes).Debug("Rule indexes to remove.")
 	for _, ruleIndex := range removeRuleIndexes {
 		if err = d.API.ExportRuleDestroy(ctx, exportPolicy, ruleIndex); err != nil {
 			Logc(ctx).WithError(err).Error("Error deleting export policy rule.")

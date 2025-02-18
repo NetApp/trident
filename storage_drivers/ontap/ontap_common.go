@@ -344,22 +344,26 @@ func reconcileNASNodeAccess(
 	if !config.AutoExportPolicy {
 		return nil
 	}
+
 	err := ensureExportPolicyExists(ctx, policyName, clientAPI)
 	if err != nil {
 		return err
 	}
+
 	desiredRules, err := getDesiredExportPolicyRules(ctx, nodes, config)
 	if err != nil {
 		err = fmt.Errorf("unable to determine desired export policy rules; %v", err)
 		Logc(ctx).Error(err)
 		return err
 	}
+
 	err = reconcileExportPolicyRules(ctx, policyName, desiredRules, clientAPI, config)
 	if err != nil {
-		err = fmt.Errorf("unabled to reconcile export policy rules; %v", err)
+		err = fmt.Errorf("unable to reconcile export policy rules; %v", err)
 		Logc(ctx).WithField("ExportPolicy", policyName).Error(err)
 		return err
 	}
+
 	return nil
 }
 
@@ -399,10 +403,18 @@ func reconcileExportPolicyRules(
 		// Could not extract rules, just log it, no action required.
 		Logc(ctx).WithField("error", err).Debug("Export policy rules could not be extracted.")
 	}
+	Logc(ctx).WithField("existingRules", existingRules).Debug("Existing export policy rules.")
 
 	undesiredRules := maps.Clone(existingRules)
 
 	for _, desiredRule := range desiredPolicyRules {
+		desiredRule = strings.TrimSpace(desiredRule)
+
+		desiredIP := net.ParseIP(desiredRule)
+		if desiredIP == nil {
+			Logc(ctx).WithField("desiredRule", desiredRule).Debug("Invalid desired rule IP")
+			continue
+		}
 
 		// Loop through the existing rules one by one and compare to make sure we cover the scenario where the
 		// existing rule is of format "1.1.1.1, 2.2.2.2" and the desired rule is format "1.1.1.1".
@@ -410,8 +422,24 @@ func reconcileExportPolicyRules(
 
 		foundExistingRule := ""
 		for existingRule := range existingRules {
-			if strings.Contains(existingRule, desiredRule) {
-				foundExistingRule = existingRule
+			existingIPs := strings.Split(existingRule, ",")
+
+			for _, ip := range existingIPs {
+				ip = strings.TrimSpace(ip)
+
+				existingIP := net.ParseIP(ip)
+				if existingIP == nil {
+					Logc(ctx).WithField("existingRule", existingRule).Debug("Invalid existing rule IP")
+					continue
+				}
+
+				if existingIP.Equal(desiredIP) {
+					foundExistingRule = existingRule
+					break
+				}
+			}
+
+			if foundExistingRule != "" {
 				break
 			}
 		}
@@ -432,6 +460,8 @@ func reconcileExportPolicyRules(
 			}
 		}
 	}
+
+	Logc(ctx).WithField("undesiredRules", undesiredRules).Debug("Undesired export policy rules.")
 	// Now that the desired rules exists, delete the undesired rules
 	for _, ruleIndex := range undesiredRules {
 		if err = clientAPI.ExportRuleDestroy(ctx, policyName, ruleIndex); err != nil {

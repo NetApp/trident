@@ -5714,206 +5714,6 @@ func TestNASQtreeStorageDriver_UpdateSnapshotDirectory_Failure(t *testing.T) {
 	assert.Nil(t, result)
 }
 
-func TestEnsureNodeAccessForPolicy_PolicyExist(t *testing.T) {
-	ctx := context.Background()
-	ontapConfig := newOntapStorageDriverConfig()
-	policyName := "trident-fakeUUID"
-	mockCtrl := gomock.NewController(t)
-	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-
-	nodeIP := "1.1.1.1"
-	nodes := make([]*models.Node, 0)
-	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
-
-	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
-	// Return an empty set of rules when asked for them
-	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(make(map[string]int), nil)
-	// Ensure that the rules are created after getting an empty list of rules
-	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
-		gomock.Any()).After(ruleListCall).Return(nil)
-
-	ontapConfig.AutoExportPolicy = true
-	ontapConfig.AutoExportCIDRs = []string{"0.0.0.0/0"}
-
-	err := ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, ontapConfig, policyName)
-	assert.NoError(t, err)
-}
-
-func TestEnsureNodeAccessForPolicy_PolicyDoesNotExist(t *testing.T) {
-	ctx := context.Background()
-	ontapConfig := newOntapStorageDriverConfig()
-	policyName := "trident-fakeUUID"
-	mockCtrl := gomock.NewController(t)
-	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-
-	nodeIP := "1.1.1.1"
-	nodes := make([]*models.Node, 0)
-	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
-
-	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(false, nil)
-	mockAPI.EXPECT().ExportPolicyCreate(ctx, policyName).Times(1).Return(nil)
-	// Return an empty set of rules when asked for them
-	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(make(map[string]int), nil)
-	// Ensure that the rules are created after getting an empty list of rules
-	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
-		gomock.Any()).After(ruleListCall).Return(nil)
-
-	ontapConfig.AutoExportPolicy = true
-	ontapConfig.AutoExportCIDRs = []string{"0.0.0.0/0"}
-
-	err := ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, ontapConfig, policyName)
-	assert.NoError(t, err)
-}
-
-func TestEnsureNodeAccessForPolicy_NoCidrRuleMatch(t *testing.T) {
-	ctx := context.Background()
-	ontapConfig := newOntapStorageDriverConfig()
-	policyName := "trident-fakeUUID"
-	mockCtrl := gomock.NewController(t)
-	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-
-	nodeIP := "1.1.1.1"
-	nodes := make([]*models.Node, 0)
-	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
-
-	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
-	// Return an empty set of rules when asked for them
-	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(make(map[string]int), nil)
-
-	ontapConfig.AutoExportPolicy = true
-	ontapConfig.AutoExportCIDRs = []string{"2.2.2.2/24"}
-
-	err := ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, ontapConfig, policyName)
-	assert.NoError(t, err)
-}
-
-func TestEnsureNodeAccessForPolicy_RuleAlreadyExist(t *testing.T) {
-	ctx := context.Background()
-	ontapConfig := newOntapStorageDriverConfig()
-	policyName := "trident-fakeUUID"
-	mockCtrl := gomock.NewController(t)
-	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-
-	nodeIP := "1.1.1.1"
-	nodes := make([]*models.Node, 0)
-	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
-
-	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
-	// Return an empty set of rules when asked for them
-	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(map[string]int{"1.1.1.1": 1}, nil)
-
-	ontapConfig.AutoExportPolicy = true
-	ontapConfig.AutoExportCIDRs = []string{"0.0.0.0/0"}
-
-	err := ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, ontapConfig, policyName)
-	assert.NoError(t, err)
-}
-
-func TestEnsureNodeAccessForPolicy_AddRuleToPolicy(t *testing.T) {
-	ctx := context.Background()
-	ontapConfig := newOntapStorageDriverConfig()
-	policyName := "trident-fakeUUID"
-	mockCtrl := gomock.NewController(t)
-	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-
-	nodeIP := "1.1.1.1"
-	nodes := make([]*models.Node, 0)
-	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
-
-	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
-	// Return an empty set of rules when asked for them
-	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(make(map[string]int), nil)
-	// Ensure that the rules are created after getting an empty list of rules
-	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
-		gomock.Any()).After(ruleListCall).Return(nil)
-
-	ontapConfig.AutoExportPolicy = true
-	ontapConfig.AutoExportCIDRs = []string{"0.0.0.0/0"}
-
-	err := ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, ontapConfig, policyName)
-	assert.NoError(t, err)
-}
-
-func TestEnsureNodeAccessForPolicy_WithErrorInApiOperation(t *testing.T) {
-	ctx := context.Background()
-	policyName := "trident-fakeUUID"
-
-	nodeIP := "1.1.1.1"
-	nodes := make([]*models.Node, 0)
-	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
-
-	// CASE 1: Error in checking if export policy exists
-	mockAPI, driver := newMockOntapNasQtreeDriver(t)
-	driver.Config.AutoExportPolicy = true
-	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
-	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Return(false, mockError)
-	err := ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, &driver.Config, policyName)
-	assert.Error(t, err, "expected error when checking for export policy")
-
-	// CASE 2: Error in creating export policy
-	mockAPI, driver = newMockOntapNasQtreeDriver(t)
-	driver.Config.AutoExportPolicy = true
-	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
-	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Times(1).Return(false, nil)
-	mockAPI.EXPECT().ExportPolicyCreate(ctx, policyName).Times(1).Return(mockError)
-	err = ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, &driver.Config, policyName)
-	assert.Error(t, err, "expected error when creating export policy")
-
-	// CASE 3: Error in listing export policy rules, the rule should still be added
-	mockAPI, driver = newMockOntapNasQtreeDriver(t)
-	driver.Config.AutoExportPolicy = true
-	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
-	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Times(1).Return(true, nil)
-	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(nil, mockError)
-	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, nodeIP, gomock.Any()).Times(1).Return(nil)
-	err = ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, &driver.Config, policyName)
-	assert.NoError(t, err, "expected no error when listing export rules")
-
-	// CASE 4: Error in creating export policy rule
-	mockAPI, driver = newMockOntapNasQtreeDriver(t)
-	driver.Config.AutoExportPolicy = true
-	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
-	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Times(1).Return(true, nil)
-	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(make(map[string]int), nil)
-	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, nodeIP, gomock.Any()).Times(1).Return(mockError)
-
-	err = ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, &driver.Config, policyName)
-	assert.Error(t, err, "expected error when creating export rule")
-}
-
-func TestEnsureNodeAccessForPolicy_ExportRuleCombinationForZapiAndRest(t *testing.T) {
-	ctx := context.Background()
-	policyName := "trident-fakeUUID"
-
-	nodeIP := "10.193.112.26"
-	nodes := make([]*models.Node, 0)
-	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
-
-	mockAPI, driver := newMockOntapNasQtreeDriver(t)
-	driver.Config.AutoExportPolicy = true
-	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
-
-	// CASE 1: desired rule matches the existing zapi format export rule
-
-	zapiExportRule := map[string]int{"10.193.112.26, 10.244.2.0": 1}
-
-	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
-	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(zapiExportRule, nil)
-
-	err := ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, &driver.Config, policyName)
-	assert.NoError(t, err, "expected no error")
-
-	// CASE 2: desired rule matches the existing REST format export rules
-
-	restExportRule := map[string]int{"10.193.112.26": 1, "10.244.2.0": 2}
-
-	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
-	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(restExportRule, nil)
-
-	err = ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, &driver.Config, policyName)
-	assert.NoError(t, err, "expected no error")
-}
-
 func TestOntapNasEcoUnpublish(t *testing.T) {
 	ctx := context.Background()
 	originalContext := tridentconfig.CurrentDriverContext
@@ -6147,6 +5947,655 @@ func TestOntapNasEcoLegacyUnpublish(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestEnsureNodeAccessForPolicy_PolicyExist(t *testing.T) {
+	ctx := context.Background()
+	ontapConfig := newOntapStorageDriverConfig()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodeIP := "1.1.1.1"
+	nodes := make([]*models.Node, 0)
+	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	// Return an empty set of rules when asked for them
+	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(make(map[string]int), nil)
+	// Ensure that the rules are created after getting an empty list of rules
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
+		gomock.Any()).After(ruleListCall).Return(nil)
+
+	ontapConfig.AutoExportPolicy = true
+	ontapConfig.AutoExportCIDRs = []string{"0.0.0.0/0"}
+
+	err := ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, ontapConfig, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessForPolicy_PolicyDoesNotExist(t *testing.T) {
+	ctx := context.Background()
+	ontapConfig := newOntapStorageDriverConfig()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodeIP := "1.1.1.1"
+	nodes := make([]*models.Node, 0)
+	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(false, nil)
+	mockAPI.EXPECT().ExportPolicyCreate(ctx, policyName).Times(1).Return(nil)
+	// Return an empty set of rules when asked for them
+	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(make(map[string]int), nil)
+	// Ensure that the rules are created after getting an empty list of rules
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
+		gomock.Any()).After(ruleListCall).Return(nil)
+
+	ontapConfig.AutoExportPolicy = true
+	ontapConfig.AutoExportCIDRs = []string{"0.0.0.0/0"}
+
+	err := ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, ontapConfig, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessForPolicy_NoCidrRuleMatch(t *testing.T) {
+	ctx := context.Background()
+	ontapConfig := newOntapStorageDriverConfig()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodeIP := "1.1.1.1"
+	nodes := make([]*models.Node, 0)
+	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	// Return an empty set of rules when asked for them
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(make(map[string]int), nil)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	ontapConfig.AutoExportPolicy = true
+	ontapConfig.AutoExportCIDRs = []string{"2.2.2.2/24"}
+
+	err := ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, ontapConfig, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessForPolicy_RuleAlreadyExist(t *testing.T) {
+	ctx := context.Background()
+	ontapConfig := newOntapStorageDriverConfig()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodeIP := "1.1.1.1"
+	nodes := make([]*models.Node, 0)
+	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	// Return an empty set of rules when asked for them
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	ontapConfig.AutoExportPolicy = true
+	ontapConfig.AutoExportCIDRs = []string{"0.0.0.0/0"}
+
+	err := ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, ontapConfig, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessForPolicy_AddRuleToPolicy(t *testing.T) {
+	ctx := context.Background()
+	ontapConfig := newOntapStorageDriverConfig()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodeIP := "1.1.1.1"
+	nodes := make([]*models.Node, 0)
+	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	// Return an empty set of rules when asked for them
+	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(make(map[string]int), nil)
+	// Ensure that the rules are created after getting an empty list of rules
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
+		gomock.Any()).After(ruleListCall).Return(nil)
+
+	ontapConfig.AutoExportPolicy = true
+	ontapConfig.AutoExportCIDRs = []string{"0.0.0.0/0"}
+
+	err := ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, ontapConfig, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessForPolicy_NodeWithInvalidIPs(t *testing.T) {
+	ctx := context.TODO()
+	clientAPI := newMockOntapAPI(t)
+	targetNode := &models.Node{IPs: []string{"invalidIP"}}
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"192.168.1.0/24"}}
+	policyName := "testPolicy"
+
+	clientAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
+	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[string]int{"1.1.1.1": 1}, nil)
+	clientAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := ensureNodeAccessForPolicy(ctx, targetNode, clientAPI, config, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessForPolicy_NodeWithNoIPs(t *testing.T) {
+	ctx := context.TODO()
+	clientAPI := newMockOntapAPI(t)
+	targetNode := &models.Node{IPs: []string{}}
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"192.168.1.0/24"}}
+	policyName := "testPolicy"
+
+	clientAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
+	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[string]int{"1.1.1.1": 1}, nil)
+	clientAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := ensureNodeAccessForPolicy(ctx, targetNode, clientAPI, config, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessForPolicy_NodeWithMultipleIPs(t *testing.T) {
+	ctx := context.TODO()
+	clientAPI := newMockOntapAPI(t)
+	targetNode := &models.Node{IPs: []string{"192.168.1.1", "192.168.1.2"}}
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"192.168.1.0/24"}}
+	policyName := "testPolicy"
+
+	clientAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
+	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[string]int{"192.168.1.1": 1}, nil)
+	clientAPI.EXPECT().ExportRuleCreate(ctx, policyName, "192.168.1.2", config.NASType).Return(nil)
+
+	err := ensureNodeAccessForPolicy(ctx, targetNode, clientAPI, config, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessForPolicy_NodeWithIPv6(t *testing.T) {
+	ctx := context.TODO()
+	clientAPI := newMockOntapAPI(t)
+	targetNode := &models.Node{IPs: []string{"2001:db8::1"}}
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"2001:db8::/32"}}
+	policyName := "testPolicy"
+
+	clientAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
+	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[string]int{}, nil)
+	clientAPI.EXPECT().ExportRuleCreate(ctx, policyName, "2001:db8::1", config.NASType).Return(nil)
+
+	err := ensureNodeAccessForPolicy(ctx, targetNode, clientAPI, config, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessForPolicy_NodeWithMixedIPv4AndIPv6(t *testing.T) {
+	ctx := context.TODO()
+	clientAPI := newMockOntapAPI(t)
+	targetNode := &models.Node{IPs: []string{"192.168.1.1", "2001:db8::1"}}
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"192.168.1.0/24", "2001:db8::/32"}}
+	policyName := "testPolicy"
+
+	clientAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
+	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[string]int{"192.168.1.1": 1}, nil)
+	clientAPI.EXPECT().ExportRuleCreate(ctx, policyName, "2001:db8::1", config.NASType).Return(nil)
+
+	err := ensureNodeAccessForPolicy(ctx, targetNode, clientAPI, config, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessForPolicy_NodeWithDuplicateIPs(t *testing.T) {
+	ctx := context.TODO()
+	clientAPI := newMockOntapAPI(t)
+	targetNode := &models.Node{IPs: []string{"192.168.1.1", "192.168.1.1"}}
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"192.168.1.0/24"}}
+	policyName := "testPolicy"
+
+	clientAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
+	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[string]int{"192.168.1.1": 1}, nil)
+	clientAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := ensureNodeAccessForPolicy(ctx, targetNode, clientAPI, config, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessForPolicy_MatchingIPv4IPv6NoCreate(t *testing.T) {
+	ctx := context.TODO()
+	clientAPI := newMockOntapAPI(t)
+	targetNode := &models.Node{IPs: []string{"192.168.1.1"}}
+	config := &drivers.OntapStorageDriverConfig{AutoExportCIDRs: []string{"192.168.1.0/24"}}
+	policyName := "testPolicy"
+
+	clientAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
+	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[string]int{"::ffff:192.168.1.1": 1}, nil)
+	clientAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := ensureNodeAccessForPolicy(ctx, targetNode, clientAPI, config, policyName)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessForPolicy_WithErrorInApiOperation(t *testing.T) {
+	ctx := context.Background()
+	policyName := "trident-fakeUUID"
+
+	nodeIP := "1.1.1.1"
+	nodes := make([]*models.Node, 0)
+	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
+
+	// CASE 1: Error in checking if export policy exists
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
+	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Return(false, mockError)
+	mockAPI.EXPECT().ExportPolicyCreate(ctx, gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	err := ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, &driver.Config, policyName)
+	assert.Error(t, err, "expected error when checking for export policy")
+
+	// CASE 2: Error in creating export policy
+	mockAPI, driver = newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
+	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Times(1).Return(false, nil)
+	mockAPI.EXPECT().ExportPolicyCreate(ctx, policyName).Times(1).Return(mockError)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	err = ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, &driver.Config, policyName)
+	assert.Error(t, err, "expected error when creating export policy")
+
+	// CASE 3: Error in listing export policy rules, the rule should still be added
+	mockAPI, driver = newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
+	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(nil, mockError)
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, nodeIP, gomock.Any()).Times(1).Return(nil)
+	err = ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, &driver.Config, policyName)
+	assert.NoError(t, err, "expected no error when listing export rules")
+
+	// CASE 4: Error in creating export policy rule
+	mockAPI, driver = newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
+	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(make(map[string]int), nil)
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, nodeIP, gomock.Any()).Times(1).Return(mockError)
+
+	err = ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, &driver.Config, policyName)
+	assert.Error(t, err, "expected error when creating export rule")
+}
+
+func TestEnsureNodeAccessForPolicy_ExportRuleCombinationForZapiAndRest(t *testing.T) {
+	ctx := context.Background()
+	policyName := "trident-fakeUUID"
+
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
+
+	// CASE 1: desired rule matches the existing zapi format export rule
+
+	nodeIP := "10.1.1.26"
+	nodes := make([]*models.Node, 0)
+	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
+
+	zapiExportRule := map[string]int{"10.1.1.26, 10.1.1.0": 1}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(zapiExportRule, nil)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err := ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, &driver.Config, policyName)
+	assert.NoError(t, err, "expected no error")
+
+	// CASE 2: desired rule matches the existing REST format export rules
+
+	nodeIP = "10.1.1.26"
+	nodes = make([]*models.Node, 0)
+	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
+
+	restExportRule := map[string]int{"10.1.1.26": 1, "10.1.1.0": 2}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(restExportRule, nil)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err = ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, &driver.Config, policyName)
+	assert.NoError(t, err, "expected no error")
+
+	// CASE 3: create new rule with mixed existing zapi and rest rules
+
+	nodeIP = "10.1.1.1"
+	nodes = make([]*models.Node, 0)
+	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
+
+	restExportRule = map[string]int{"10.1.1.2, 10.1.1.3": 1, "10.1.1.4": 2}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(restExportRule, nil)
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, nodeIP, gomock.Any()).Return(nil).Times(1)
+
+	err = ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, &driver.Config, policyName)
+	assert.NoError(t, err, "expected no error")
+
+	// CASE 4: duplicate ips in existing zapi and rest rules, no create
+
+	nodeIP = "10.1.1.1"
+	nodes = make([]*models.Node, 0)
+	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
+
+	restExportRule = map[string]int{"10.1.1.1, 10.1.1.3": 1, "10.1.1.1": 2}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(restExportRule, nil)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	err = ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, &driver.Config, policyName)
+	assert.NoError(t, err, "expected no error")
+}
+
+func TestEnsureNodeAccessForPolicy_OverlappingStringInIPs(t *testing.T) {
+	ctx := context.Background()
+	policyName := "trident-fakeUUID"
+
+	// intentionally added extra space in the IP address to cover the case where the IP address may have extra space
+	node1IP := "10.10.1.118 "
+	node2IP := " 10.10.1.11"
+	node := &models.Node{
+		Name: "node1", IPs: []string{node1IP, node2IP},
+	}
+
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
+
+	// CASE 1: desired rules for the node matches the existing zapi format export rule
+
+	zapiExportRule := map[string]int{"10.10.1.118, 10.10.1.11": 1}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(zapiExportRule, nil)
+
+	err := ensureNodeAccessForPolicy(ctx, node, mockAPI, &driver.Config, policyName)
+	assert.NoError(t, err, "expected no error")
+
+	// CASE 2: both desired rules for the node does not matches the existing zapi format export rule
+
+	zapiExportRule = map[string]int{"10.10.1.222, 10.10.1.223": 1}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(zapiExportRule, nil)
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, strings.TrimSpace(node2IP), gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, strings.TrimSpace(node1IP), gomock.Any()).Times(1).Return(nil)
+
+	err = ensureNodeAccessForPolicy(ctx, node, mockAPI, &driver.Config, policyName)
+	assert.NoError(t, err, "expected no error")
+
+	// CASE 3: one desired rule for the node does not match the existing zapi format export rule
+
+	zapiExportRule = map[string]int{"10.10.1.11, 10.10.1.223": 1}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(zapiExportRule, nil)
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, strings.TrimSpace(node1IP), gomock.Any()).Times(1).Return(nil)
+
+	err = ensureNodeAccessForPolicy(ctx, node, mockAPI, &driver.Config, policyName)
+	assert.NoError(t, err, "expected no error")
+
+	// CASE 4: desired rules for the node matches the existing REST format export rule
+
+	restExportRule := map[string]int{"10.10.1.118": 1, "10.10.1.11": 2}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(restExportRule, nil)
+
+	err = ensureNodeAccessForPolicy(ctx, node, mockAPI, &driver.Config, policyName)
+	assert.NoError(t, err, "expected no error")
+
+	// CASE 5: both desired rules for the node does not match the existing REST format export rule
+
+	restExportRule = map[string]int{"10.10.1.222": 1, "10.10.1.223": 2}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(restExportRule, nil)
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, strings.TrimSpace(node2IP), gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, strings.TrimSpace(node1IP), gomock.Any()).Times(1).Return(nil)
+
+	err = ensureNodeAccessForPolicy(ctx, node, mockAPI, &driver.Config, policyName)
+	assert.NoError(t, err, "expected no error")
+
+	// CASE 6: one desired rule f for the node does not match the existing REST format export rule
+
+	restExportRule = map[string]int{"10.10.1.11": 1, "10.10.1.223": 2}
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(restExportRule, nil)
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, strings.TrimSpace(node1IP), gomock.Any()).Times(1).Return(nil)
+
+	err = ensureNodeAccessForPolicy(ctx, node, mockAPI, &driver.Config, policyName)
+	assert.NoError(t, err, "expected no error")
+}
+
+func TestRemoveExportPolicyRules_Success(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	driver := &NASQtreeStorageDriver{API: mockAPI}
+	exportPolicy := "testPolicy"
+	publishInfo := &models.VolumePublishInfo{HostIP: []string{"1.1.1.1", "1.1.1.2"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1, "1.1.1.2": 2}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
+
+	err := driver.removeExportPolicyRules(ctx, exportPolicy, publishInfo)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_ErrorInList(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	driver := &NASQtreeStorageDriver{API: mockAPI}
+	exportPolicy := "testPolicy"
+	publishInfo := &models.VolumePublishInfo{HostIP: []string{"1.1.1.1"}}
+	fakeErr := errors.New("fake error")
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(nil, fakeErr)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+
+	err := driver.removeExportPolicyRules(ctx, exportPolicy, publishInfo)
+	assert.Error(t, err)
+	assert.Equal(t, fakeErr, err)
+}
+
+func TestRemoveExportPolicyRules_ErrorInFirstDestroy(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	driver := &NASQtreeStorageDriver{API: mockAPI}
+	exportPolicy := "testPolicy"
+	publishInfo := &models.VolumePublishInfo{HostIP: []string{"1.1.1.1", "2.2.2.2"}}
+	fakeErr := errors.New("fake destroy error")
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1, "2.2.2.2": 2}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(fakeErr)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
+
+	err := driver.removeExportPolicyRules(ctx, exportPolicy, publishInfo)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_NoMatchingRules(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	driver := &NASQtreeStorageDriver{API: mockAPI}
+	exportPolicy := "testPolicy"
+	publishInfo := &models.VolumePublishInfo{HostIP: []string{"1.1.1.1"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"2.2.2.2": 1}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+
+	err := driver.removeExportPolicyRules(ctx, exportPolicy, publishInfo)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_AllIPsMatchInZapiRule(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	driver := &NASQtreeStorageDriver{API: mockAPI}
+	exportPolicy := "testPolicy"
+	publishInfo := &models.VolumePublishInfo{HostIP: []string{"1.1.1.2", "1.1.1.1"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1, 1.1.1.2": 1}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
+
+	err := driver.removeExportPolicyRules(ctx, exportPolicy, publishInfo)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_DuplicateIPsMatchInZapiRule(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	driver := &NASQtreeStorageDriver{API: mockAPI}
+	exportPolicy := "testPolicy"
+	publishInfo := &models.VolumePublishInfo{HostIP: []string{"1.1.1.1", "1.1.1.2"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).
+		Return(map[string]int{"1.1.1.1, 1.1.1.2": 1, "1.1.1.2, 1.1.1.1": 2}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil).Times(1)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil).Times(1)
+
+	err := driver.removeExportPolicyRules(ctx, exportPolicy, publishInfo)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_OneIPMatchInZapiRule(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	driver := &NASQtreeStorageDriver{API: mockAPI}
+	exportPolicy := "testPolicy"
+	publishInfo := &models.VolumePublishInfo{HostIP: []string{"1.1.1.2"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1, 1.1.1.2": 1}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+
+	err := driver.removeExportPolicyRules(ctx, exportPolicy, publishInfo)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_NoIPMatchInZapiRule(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	driver := &NASQtreeStorageDriver{API: mockAPI}
+	exportPolicy := "testPolicy"
+	publishInfo := &models.VolumePublishInfo{HostIP: []string{"2.2.2.2", "2.2.2.3"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1, 1.1.1.2": 1}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+
+	err := driver.removeExportPolicyRules(ctx, exportPolicy, publishInfo)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_EmptyHostIPList(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	driver := &NASQtreeStorageDriver{API: mockAPI}
+	exportPolicy := "testPolicy"
+	publishInfo := &models.VolumePublishInfo{HostIP: []string{}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+
+	err := driver.removeExportPolicyRules(ctx, exportPolicy, publishInfo)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_EmptyExportRuleList(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	driver := &NASQtreeStorageDriver{API: mockAPI}
+	exportPolicy := "testPolicy"
+	publishInfo := &models.VolumePublishInfo{HostIP: []string{"1.1.1.1"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+
+	err := driver.removeExportPolicyRules(ctx, exportPolicy, publishInfo)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_InvalidIPFormat(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	driver := &NASQtreeStorageDriver{API: mockAPI}
+	exportPolicy := "testPolicy"
+	publishInfo := &models.VolumePublishInfo{HostIP: []string{"invalidIP"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+
+	err := driver.removeExportPolicyRules(ctx, exportPolicy, publishInfo)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_MixedValidAndInvalidIPs(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	driver := &NASQtreeStorageDriver{API: mockAPI}
+	exportPolicy := "testPolicy"
+	publishInfo := &models.VolumePublishInfo{HostIP: []string{"1.1.1.1", "invalidIP"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
+
+	err := driver.removeExportPolicyRules(ctx, exportPolicy, publishInfo)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_IPsWithSpaces(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	driver := &NASQtreeStorageDriver{API: mockAPI}
+	exportPolicy := "testPolicy"
+	publishInfo := &models.VolumePublishInfo{HostIP: []string{" 1.1.1.1 ", " 1.1.1.2 "}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1, "1.1.1.2": 2}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
+
+	err := driver.removeExportPolicyRules(ctx, exportPolicy, publishInfo)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_IPsWithMixedFormats(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	driver := &NASQtreeStorageDriver{API: mockAPI}
+	exportPolicy := "testPolicy"
+	publishInfo := &models.VolumePublishInfo{HostIP: []string{"1.1.1.1", "2001:db8::1"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1, "2001:db8::1": 2}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
+
+	err := driver.removeExportPolicyRules(ctx, exportPolicy, publishInfo)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_IPsMatchInMixedFormats(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	driver := &NASQtreeStorageDriver{API: mockAPI}
+	exportPolicy := "testPolicy"
+	publishInfo := &models.VolumePublishInfo{HostIP: []string{"1.1.1.1"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"::ffff:1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+
+	err := driver.removeExportPolicyRules(ctx, exportPolicy, publishInfo)
+	assert.NoError(t, err)
 }
 
 func getMockVolume(name, internalID string) *storage.Volume {
