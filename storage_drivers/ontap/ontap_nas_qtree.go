@@ -866,8 +866,8 @@ func (d *NASQtreeStorageDriver) Unpublish(
 			}
 		}
 
-	} else if exportPolicy == getExportPolicyName(publishInfo.BackendUUID) {
-		// Qtree using backend-based export policy.
+	} else {
+		// Qtree is using a backend-based policy or migrating to using autoExportPolicies.
 		if len(publishInfo.Nodes) == 0 {
 			if err = d.setQtreeToEmptyPolicy(ctx, qtreeName, qtree.Volume); err != nil {
 				return err

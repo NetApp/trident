@@ -4661,7 +4661,7 @@ func TestPublishFlexVolShare_WithEmptyPolicy_Success(t *testing.T) {
 		HostName:    "node1",
 	}
 
-	volConfig := &storage.VolumeConfig{ExportPolicy: "trident_empty"}
+	volConfig := &storage.VolumeConfig{ExportPolicy: "test_empty"}
 
 	// Create mock driver and api
 	mockAPI, driver := newMockOntapNASDriver(t)
@@ -4764,7 +4764,7 @@ func TestPublishFlexVolShare_WithErrorInApiOperation(t *testing.T) {
 		HostName:    "node1",
 	}
 
-	volConfig := &storage.VolumeConfig{ExportPolicy: "trident_empty"}
+	volConfig := &storage.VolumeConfig{ExportPolicy: "test_empty"}
 
 	// CASE 1: Error in checking if export policy exists
 	mockAPI, driver := newMockOntapNASDriver(t)
@@ -4812,6 +4812,75 @@ func TestPublishFlexVolShare_NodeNotPresentError(t *testing.T) {
 	assert.Error(t, result1, "Expected error when node is not present in publish info, got nil")
 }
 
+func TestPublishFlexVolShare_WithDefaultPolicy_Success(t *testing.T) {
+	flexVolName := "testFlexVol"
+	nodeIP := "1.1.1.1"
+	defaultPolicy := "default"
+
+	nodes := make([]*models.Node, 0)
+	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
+
+	publishInfo := models.VolumePublishInfo{
+		BackendUUID: BackendUUID,
+		Unmanaged:   false,
+		Nodes:       nodes,
+		HostName:    "node1",
+	}
+
+	// Create mock driver and api
+	mockAPI, driver := newMockOntapNASDriver(t)
+	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: defaultPolicy}, nil).Times(1)
+	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any()).Times(0)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, gomock.Any(), gomock.Any()).Times(0)
+
+	// This handles the case where the customer originally created a backend with autoExportPolicy set to false and
+	// mounted a volume and then later changed autoExportPolicy to true
+	volConfig := &storage.VolumeConfig{ExportPolicy: defaultPolicy}
+	driver.Config.AutoExportPolicy = true
+
+	result := driver.publishFlexVolShare(ctx, flexVolName, volConfig, &publishInfo)
+	assert.Equal(t, "default", volConfig.ExportPolicy)
+	assert.NoError(t, result, "Expected no error in publishFlexVolShare, got error")
+}
+
+func TestPublishFlexVolShare_LegacyVolumeWithEmptyPolicyInConfig_Success(t *testing.T) {
+	flexVolName := "testFlexVol"
+	nodeIP := "1.1.1.1"
+	backendPolicy := getExportPolicyName(BackendUUID)
+
+	nodes := make([]*models.Node, 0)
+	nodes = append(nodes, &models.Node{Name: "node1", IPs: []string{nodeIP}})
+
+	publishInfo := models.VolumePublishInfo{
+		BackendUUID: BackendUUID,
+		Unmanaged:   false,
+		Nodes:       nodes,
+		HostName:    "node1",
+	}
+
+	// Create mock driver and api
+	mockAPI, driver := newMockOntapNASDriver(t)
+	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil).Times(1)
+	mockAPI.EXPECT().ExportPolicyExists(ctx, backendPolicy).Return(true, nil).Times(1)
+	// Return node ip rules when asked for them
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, backendPolicy).Return(nil).Times(1)
+
+	// This handles the case where the customer originally created and mounted a volume in trident version <=23.01
+	// and then later upgraded to 24.10. This would have the volConfig.ExportPolicy = "".
+	driver.Config.AutoExportPolicy = true
+	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
+	volConfig := &storage.VolumeConfig{ExportPolicy: ""}
+
+	result := driver.publishFlexVolShare(ctx, flexVolName, volConfig, &publishInfo)
+
+	assert.Equal(t, backendPolicy, volConfig.ExportPolicy)
+	assert.NoError(t, result, "Expected no error in publishFlexVolShare, got error")
+}
+
 func TestOntapNasUnpublish(t *testing.T) {
 	ctx := context.Background()
 	originalContext := tridentconfig.CurrentDriverContext
@@ -4820,6 +4889,7 @@ func TestOntapNasUnpublish(t *testing.T) {
 
 	type args struct {
 		publishEnforcement bool
+		exportPolicy       string
 		autoExportPolicy   bool
 	}
 
@@ -4834,9 +4904,9 @@ func TestOntapNasUnpublish(t *testing.T) {
 			// This volume is expected to have the export policy "trident_pvc_123" with the above rules.
 			// After unpublish, the volume is expected to be set to the empty export policy with no rules and
 			// delete the previous export policy after their rules have been deleted.
-			args: args{publishEnforcement: false, autoExportPolicy: true},
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeExists(ctx, volName).Return(true, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).
 					Return(map[string]int{"1.1.1.1": 1, "2.2.2.2": 2}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, gomock.Any()).Times(2)
@@ -4847,10 +4917,24 @@ func TestOntapNasUnpublish(t *testing.T) {
 			},
 			wantErr: assert.NoError,
 		},
+		"legacyVolWithEmptyExportPolicyInVolConfig": {
+			// This vol has the backend based export policy "trident-1234" but its volConfig.ExportPolicy="" because
+			// this qtree vol was created using trident version <= 23.01. During Unpublish, the correct export policy
+			// should be queried from backend and used.
+			// After unpublish, the qtree is expected to be set to the empty export policy with no rules because it
+			// is no longer in use by any pods on any node.
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: ""},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, flexVolName, backendPolicy string) {
+				mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, "test_empty")
+			},
+			wantErr: assert.NoError,
+		},
 		"emptyPolicyDoesNotExist": {
-			args: args{publishEnforcement: false, autoExportPolicy: true},
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeExists(ctx, volName).Return(true, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).
 					Return(map[string]int{"1.1.1.1": 1, "2.2.2.2": 2}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, gomock.Any()).Times(2)
@@ -4867,9 +4951,9 @@ func TestOntapNasUnpublish(t *testing.T) {
 			// node1 has IP addresses 1.1.1.1 and 2.2.2.2, node2 has IP addresses 4.4.4.4 and 5.5.5.5.
 			// This volume is expected to have the export policy "trident_pvc_123" with all the above rules.
 			// After unpublish from node1, trident_pvc_123 is expected to only have the IP addresses from node2.
-			args: args{publishEnforcement: false, autoExportPolicy: true},
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeExists(ctx, volName).Return(true, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).
 					Return(map[string]int{"1.1.1.1": 1, "2.2.2.2": 2, "4.4.4.4": 4, "5.5.5.5": 5}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, gomock.Any()).Times(2)
@@ -4878,36 +4962,49 @@ func TestOntapNasUnpublish(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		"volumeDoesNotExist": {
-			args: args{publishEnforcement: false, autoExportPolicy: true},
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeExists(ctx, volName).Return(false, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(nil, fmt.Errorf("volume does not exist"))
 			},
 			wantErr: assert.Error,
 		},
 		"volumeExistError": {
-			args: args{publishEnforcement: false, autoExportPolicy: true},
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeExists(ctx, volName).Return(false, fmt.Errorf("some api error"))
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(nil, fmt.Errorf("some api error"))
 			},
 			wantErr: assert.Error,
 		},
 		"exportRuleListError": {
-			args: args{publishEnforcement: false, autoExportPolicy: true},
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeExists(ctx, volName).Return(true, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(nil, fmt.Errorf("some api error"))
 			},
 			wantErr: assert.Error,
 		},
 		"exportRuleDestroyError": {
-			args: args{publishEnforcement: false, autoExportPolicy: true},
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeExists(ctx, volName).Return(true, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[string]int{"1.1.1.1": 1, "2.2.2.2": 2}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, gomock.Any()).Times(2)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(nil, fmt.Errorf("some api error"))
 			},
 			wantErr: assert.Error,
+		},
+		"DefaultExportPolicy": {
+			// This volume is expected to have the export policy "default",
+			// this is the case if a customer updates their backend to use autoExportPolicy=true after it was
+			// originally false.
+			// After unpublish, the volume is expected to be set to the empty export policy.
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "default"},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: "default"}, nil).Times(1)
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil).Times(1)
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty").Times(1)
+			},
+			wantErr: assert.NoError,
 		},
 	}
 
@@ -4915,7 +5012,6 @@ func TestOntapNasUnpublish(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			volConfig := &storage.VolumeConfig{
 				InternalName: "trident_pvc_123",
-				ExportPolicy: "trident_pvc_123",
 				AccessInfo:   models.VolumeAccessInfo{PublishEnforcement: params.args.publishEnforcement},
 			}
 
@@ -4928,6 +5024,7 @@ func TestOntapNasUnpublish(t *testing.T) {
 
 			mockAPI, driver := newMockOntapNASDriver(t)
 			driver.Config.AutoExportPolicy = params.args.autoExportPolicy
+			volConfig.ExportPolicy = params.args.exportPolicy
 
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 			params.mocks(mockAPI, volConfig.InternalName, getExportPolicyName(publishInfo.BackendUUID))
@@ -4963,7 +5060,7 @@ func TestOntapNasLegacyUnpublish(t *testing.T) {
 			// is no longer in use by any pods on any node.
 			args: args{autoExportPolicy: true, nodeNum: 0},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeExists(ctx, volName).Return(true, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
 				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty")
 			},
@@ -4975,7 +5072,7 @@ func TestOntapNasLegacyUnpublish(t *testing.T) {
 			// is no longer in use by any pods on any node.
 			args: args{autoExportPolicy: true, nodeNum: 0},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeExists(ctx, volName).Return(true, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(false, nil)
 				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty")
 				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty")
@@ -4987,7 +5084,7 @@ func TestOntapNasLegacyUnpublish(t *testing.T) {
 			// After unpublish, the volume is expected to continue to use the backend based export policy.
 			args: args{autoExportPolicy: true, nodeNum: 2},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
-				mockAPI.EXPECT().VolumeExists(ctx, volName).Return(true, nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
 			},
 			wantErr: assert.NoError,
 		},

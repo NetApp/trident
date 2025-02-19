@@ -826,16 +826,21 @@ func (d *NASStorageDriver) Unpublish(
 		return nil
 	}
 
-	exists, err := d.API.VolumeExists(ctx, volConfig.InternalName)
+	volume, err := d.API.VolumeInfo(ctx, volConfig.InternalName)
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Error checking for existing volume.")
 		return err
 	}
-	if !exists {
+	if volume == nil {
 		Logc(ctx).WithField("volume", volConfig.InternalName).Debug("Volume not found.")
 		return errors.NotFoundError("volume not found")
 	}
 
+	// Trident versions <23.04 may not have the exportPolicy field set in the volume config,
+	// if this is the case we need to use the export policy from the volume info from ONTAP.
+	if volConfig.ExportPolicy == "" {
+		volConfig.ExportPolicy = volume.ExportPolicy
+	}
 	exportPolicy := volConfig.ExportPolicy
 	if exportPolicy == volExportPolicyName {
 		// Remove export policy rules matching the node IP address from the volume level policy
@@ -864,8 +869,8 @@ func (d *NASStorageDriver) Unpublish(
 			}
 		}
 
-	} else if exportPolicy == getExportPolicyName(publishInfo.BackendUUID) {
-		// volume using backend-based export policy.
+	} else {
+		// Volume is using a backend-based policy or migrating to using autoExportPolicies.
 		if len(publishInfo.Nodes) == 0 {
 			if err = d.setVolToEmptyPolicy(ctx, volConfig.InternalName); err != nil {
 				return err
@@ -929,11 +934,34 @@ func (d *NASStorageDriver) publishFlexVolShare(
 	}
 
 	// Ensure the flexVol has the correct export policy and rules applied.
+	backendPolicyName := getExportPolicyName(publishInfo.BackendUUID)
+	flexVolPolicyName := flexvol
+	// Trident versions <23.04 may not have the exportPolicy field set in the volume config,
+	// if this is the case we need to use the export policy from the volume info from ONTAP.
+	if volConfig.ExportPolicy != backendPolicyName && volConfig.ExportPolicy != flexvol &&
+		volConfig.ExportPolicy != getEmptyExportPolicyName(*d.Config.StoragePrefix) {
+		volume, err := d.API.VolumeInfo(ctx, flexvol)
+		if err != nil {
+			return err
+		}
+		if volume == nil {
+			return errors.NotFoundError("volume not found")
+		}
+		volConfig.ExportPolicy = volume.ExportPolicy
+	}
+
 	// If the flexVol already have backend policy, leave it as it is. We will have an opportunity to migrate it
 	// to flexVol policy during unpublish.
-	flexVolPolicyName := flexvol
-	if volConfig.ExportPolicy == getExportPolicyName(publishInfo.BackendUUID) {
-		flexVolPolicyName = volConfig.ExportPolicy
+	switch volConfig.ExportPolicy {
+	case getEmptyExportPolicyName(*d.Config.StoragePrefix), flexvol:
+		flexVolPolicyName = flexvol
+	case backendPolicyName:
+		flexVolPolicyName = backendPolicyName
+	default:
+		// This can happen if the customer switched from autoExportPolicy=false to true and the volume is still using
+		// default or user supplied export policy.
+		Logc(ctx).Debugf("Export policy %s is not managed by Trident.", volConfig.ExportPolicy)
+		return nil
 	}
 
 	volConfig.ExportPolicy = flexVolPolicyName
