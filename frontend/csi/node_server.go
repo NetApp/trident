@@ -1377,9 +1377,61 @@ func (p *Plugin) ensureAttachFCPVolume(
 func (p *Plugin) nodeUnstageFCPVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *models.VolumePublishInfo, force bool,
 ) error {
+	// TODO: (vhs) This is a temporary fix to handle the case where the device list is empty. We need to
+	// refactor nodeUnstageFCPVolume to handle this case more gracefully and not rely on the device list.
 	hostSessionMap := fcpUtils.GetFCPHostSessionMapForTarget(ctx, publishInfo.FCTargetWWNN)
-	if len(hostSessionMap) == 0 {
-		Logc(ctx).Debug("No host sessions found, nothing to do.")
+	paths := fcpUtils.GetSysfsBlockDirsForLUN(int(publishInfo.FCPLunNumber), hostSessionMap)
+	if deviceNames, err := fcpUtils.GetDevicesForLUN(paths); err != nil {
+		return fmt.Errorf("could not get devices for LUN: %v", err)
+	} else if len(deviceNames) == 0 {
+		// If we are in this block it likely means we have errored or had a pod restart
+		// before the tracking file has been removed. We need to ensure the device was removed and remove the tracking
+		// file, without going through the rest of the unstage process.
+		if convert.ToBool(publishInfo.LUKSEncryption) {
+			var err error
+			var luksMapperPath string
+			fields := LogFields{"device": publishInfo.DevicePath}
+			// Set device path to dm device to correctly verify legacy volumes.
+			if luks.IsLegacyLUKSDevicePath(publishInfo.DevicePath) {
+				luksMapperPath = publishInfo.DevicePath
+				dmPath, err := luks.GetDmDevicePathFromLUKSLegacyPath(ctx, p.command,
+					publishInfo.DevicePath)
+				if err != nil {
+					Logc(ctx).WithFields(fields).WithError(err).Warn(
+						"Could not determine dm device path from legacy LUKS device path. " +
+							"Continuing with device removal.")
+				} else {
+					publishInfo.DevicePath = dmPath
+				}
+			} else {
+				// If not using luks legacy device path we need to find the LUKS mapper device
+				luksMapperPath, err = p.devices.GetLUKSDeviceForMultipathDevice(publishInfo.DevicePath)
+				if err != nil {
+					if !errors.IsNotFoundError(err) {
+						Logc(ctx).WithFields(fields).WithError(err).Warn(
+							"Could not determine LUKS device path from multipath device. " +
+								"Continuing with device removal.")
+					}
+					Logc(ctx).WithFields(fields).Info("No LUKS device path found from multipath device.")
+				}
+			}
+			err = p.devices.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath)
+			if err != nil {
+				Logc(ctx).WithError(err).Debug("Unable to remove LUKS device. Continuing with tracking file removal.")
+			}
+		}
+		if err := p.devices.RemoveMultipathDeviceMappingWithRetries(ctx, publishInfo.DevicePath,
+			removeMultipathDeviceMappingRetries, removeMultipathDeviceMappingRetryDelay); err != nil {
+			Logc(ctx).Warn("Unable to remove multipath device. Continuing with tracking file removal.")
+		}
+		// Ensure the tracking file is removed.
+		volumeId, _, err := p.getVolumeIdAndStagingPath(req)
+		if err != nil {
+			return err
+		}
+		if err := p.nodeHelper.DeleteTrackingInfo(ctx, volumeId); err != nil {
+			return status.Error(codes.Internal, err.Error())
+		}
 		return nil
 	}
 
