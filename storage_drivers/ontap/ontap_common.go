@@ -4490,21 +4490,33 @@ func deleteAutomaticSnapshot(
 func removeExportPolicyRules(
 	ctx context.Context, exportPolicy string, publishInfo *tridentmodels.VolumePublishInfo, clientAPI api.OntapAPI,
 ) error {
+	fields := LogFields{
+		"Method":     "removeExportPolicyRules",
+		"policyName": exportPolicy,
+		"nodeIPs":    publishInfo.HostIP,
+	}
+
+	Logc(ctx).WithFields(fields).Debug(">>>> removeExportPolicyRules")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< removeExportPolicyRules")
+
 	var removeRuleIndexes []int
 
 	nodeIPRules := make(map[string]struct{})
 	for _, ip := range publishInfo.HostIP {
+		ip = strings.TrimSpace(ip)
 		nodeIPRules[ip] = struct{}{}
 	}
+
 	// Get export policy rules from given policy
-	allExportRules, err := clientAPI.ExportRuleList(ctx, exportPolicy)
+	existingExportRules, err := clientAPI.ExportRuleList(ctx, exportPolicy)
 	if err != nil {
 		return err
 	}
+	Logc(ctx).WithField("existingExportRules", existingExportRules).Debug("Existing export policy rules.")
 
 	// Match list of rules to rule index based on clientMatch address
 	// ONTAP expects the rule index to delete
-	for clientMatch, ruleIndex := range allExportRules {
+	for clientMatch, ruleIndex := range existingExportRules {
 		// For the policy, match the node IP addresses to the clientMatch to remove the matched items.
 		// Example:
 		// trident_pvc_123 is attached to node1 and node2. The policy is being unpublished from node1.
@@ -4521,18 +4533,27 @@ func removeExportPolicyRules(
 		// index 1: "1.1.1.0, 1.1.1.1"
 		// index 2: "2.2.2.0, 2.2.2.2"
 		// For this example, index 1 will be removed.
+
+		// Add a ruleIndex for deletion only if ALL the IPs in the clientMatch are in the list of IPs we are trying
+		// to delete
+		allMatch := true
 		for _, singleClientMatch := range strings.Split(clientMatch, ",") {
-			if _, match := nodeIPRules[singleClientMatch]; match {
-				removeRuleIndexes = append(removeRuleIndexes, ruleIndex)
+			singleClientMatch = strings.TrimSpace(singleClientMatch)
+			if _, match := nodeIPRules[singleClientMatch]; !match {
+				allMatch = false
+				break
 			}
+		}
+		if allMatch {
+			removeRuleIndexes = append(removeRuleIndexes, ruleIndex)
 		}
 	}
 
 	// Attempt to remove node IP addresses from export policy rules
+	Logc(ctx).WithField("removeRuleIndexes", removeRuleIndexes).Debug("Rule indexes to remove.")
 	for _, ruleIndex := range removeRuleIndexes {
 		if err = clientAPI.ExportRuleDestroy(ctx, exportPolicy, ruleIndex); err != nil {
 			Logc(ctx).WithError(err).Error("Error deleting export policy rule.")
-			return err
 		}
 	}
 

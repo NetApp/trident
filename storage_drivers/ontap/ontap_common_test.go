@@ -2569,7 +2569,7 @@ func TestEnsureNodeAccess(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	// Test 2 - Test When policy doesn't exists
+	// Test 2 - Test When policy doesn't exist
 
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockRestClient := newMockRestClient(t)
@@ -2601,6 +2601,210 @@ func TestEnsureNodeAccess(t *testing.T) {
 	err = ensureNodeAccess(ctx, volInfo, mockAPI, ontapConfig)
 
 	assert.Error(t, err)
+}
+
+func TestRemoveExportPolicyRules_Success(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1", "1.1.1.2"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1, "1.1.1.2": 2}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_ErrorInList(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1"}}
+	fakeErr := errors.New("fake error")
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(nil, fakeErr)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.Error(t, err)
+	assert.Equal(t, fakeErr, err)
+}
+
+func TestRemoveExportPolicyRules_ErrorInFirstDestroy(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1", "2.2.2.2"}}
+	fakeErr := errors.New("fake destroy error")
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1, "2.2.2.2": 2}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(fakeErr)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_NoMatchingRules(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"2.2.2.2": 1}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_AllIPsMatchInZapiRule(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.2", "1.1.1.1"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1, 1.1.1.2": 1}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_DuplicateIPsMatchInZapiRule(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1", "1.1.1.2"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).
+		Return(map[string]int{"1.1.1.1, 1.1.1.2": 1, "1.1.1.2, 1.1.1.1": 2}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil).Times(1)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil).Times(1)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_OneIPMatchInZapiRule(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.2"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1, 1.1.1.2": 1}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_NoIPMatchInZapiRule(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"2.2.2.2", "2.2.2.3"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1, 1.1.1.2": 1}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_EmptyHostIPList(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_EmptyExportRuleList(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_InvalidIPFormat(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"invalidIP"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_MixedValidAndInvalidIPs(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1", "invalidIP"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_IPsWithSpaces(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{" 1.1.1.1 ", " 1.1.1.2 "}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1, "1.1.1.2": 2}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_IPsWithMixedFormats(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1", "2001:db8::1"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1, "2001:db8::1": 2}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_IPsMatchInMixedFormats(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1"}}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"::ffff:1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
 }
 
 func TestDeleteExportPolicy(t *testing.T) {
