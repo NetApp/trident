@@ -387,6 +387,9 @@ func (p *Plugin) Activate() error {
 		if p.role == CSINode || p.role == CSIAllInOne {
 			p.nodeRegisterWithController(ctx, 0) // Retry indefinitely
 
+			// Initialize node scalability limiter.
+			p.InitializeNodeLimiter(ctx)
+
 			// Cleanup any stale volume publication state immediately so self-healing works with current data.
 			if err := p.performNodeCleanup(ctx); err != nil {
 				Logc(ctx).WithError(err).Warn("Failed to clean node; self-healing features may be unreliable.")
@@ -399,9 +402,6 @@ func (p *Plugin) Activate() error {
 
 			p.startISCSISelfHealingThread(ctx)
 			p.startNVMeSelfHealingThread(ctx)
-
-			// Initialize node scalability limiter.
-			p.InitializeNodeLimiter(ctx)
 
 			if p.enableForceDetach {
 				p.startReconcilingNodePublications(ctx)
@@ -633,6 +633,9 @@ func (p *Plugin) stopNVMeSelfHealingThread(_ context.Context) {
 // to control the maximum number of concurrent operations allowed for each type of volume operation.
 func (p *Plugin) InitializeNodeLimiter(ctx context.Context) {
 	var err error
+
+	Logc(ctx).Debug("Initializing node limiters.")
+	defer Logc(ctx).Debug("Node limiters initialized.")
 
 	if p.limiterSharedMap[NodeStageNFSVolume], err = limiter.New(ctx,
 		NodeStageNFSVolume,
