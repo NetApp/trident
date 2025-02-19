@@ -408,6 +408,21 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		args.ImageRegistry = commonconfig.KubernetesCSISidecarRegistry
 	}
 
+	sidecarImages := []struct {
+		arg *string
+		tag string
+	}{
+		{&args.CSISidecarProvisionerImage, commonconfig.CSISidecarProvisionerImageTag},
+		{&args.CSISidecarAttacherImage, commonconfig.CSISidecarAttacherImageTag},
+		{&args.CSISidecarResizerImage, commonconfig.CSISidecarResizerImageTag},
+		{&args.CSISidecarSnapshotterImage, commonconfig.CSISidecarSnapshotterImageTag},
+	}
+	for _, image := range sidecarImages {
+		if *image.arg == "" {
+			*image.arg = args.ImageRegistry + "/" + image.tag
+		}
+	}
+
 	if args.AutosupportImage == "" {
 		args.AutosupportImage = commonconfig.DefaultAutosupportImage
 	}
@@ -477,7 +492,10 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{TRIDENT_IMAGE}", args.TridentImage)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEPLOYMENT_NAME}", args.DeploymentName)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_REGISTRY}", args.ImageRegistry)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_PROVISIONER_IMAGE}", args.CSISidecarProvisionerImage)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_ATTACHER_IMAGE}", args.CSISidecarAttacherImage)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_RESIZER_IMAGE}", args.CSISidecarResizerImage)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_SNAPSHOTTER_IMAGE}", args.CSISidecarSnapshotterImage)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LABEL_APP}", args.Labels[TridentAppLabelKey])
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{SIDECAR_LOG_LEVEL}", sideCarLogLevel)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_FORMAT}", args.LogFormat)
@@ -633,7 +651,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v5.2.0
+        image: {CSI_SIDECAR_PROVISIONER_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
         securityContext:
           capabilities:
@@ -653,7 +671,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v4.8.0
+        image: {CSI_SIDECAR_ATTACHER_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
         securityContext:
           capabilities:
@@ -672,8 +690,12 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.13.1
+        image: {CSI_SIDECAR_RESIZER_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          capabilities:
+            drop:
+            - all
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=300s"
@@ -686,7 +708,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v8.2.0
+        image: {CSI_SIDECAR_SNAPSHOTTER_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
         securityContext:
           capabilities:
@@ -771,10 +793,6 @@ func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
 		daemonSetYAML = daemonSet120YAMLTemplateWindows
 	}
 
-	if args.ImageRegistry == "" {
-		args.ImageRegistry = commonconfig.KubernetesCSISidecarRegistry
-	}
-
 	if args.Labels == nil {
 		args.Labels = map[string]string{}
 	}
@@ -788,10 +806,28 @@ func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
 		}
 	}
 
+	if args.ImageRegistry == "" {
+		args.ImageRegistry = commonconfig.KubernetesCSISidecarRegistry
+	}
+
+	sidecarImages := []struct {
+		arg *string
+		tag string
+	}{
+		{&args.CSISidecarNodeDriverRegistrarImage, commonconfig.CSISidecarNodeDriverRegistrarImageTag},
+		{&args.CSISidecarLivenessProbeImage, commonconfig.CSISidecarLivenessProbeImageTag},
+	}
+	for _, image := range sidecarImages {
+		if *image.arg == "" {
+			*image.arg = args.ImageRegistry + "/" + image.tag
+		}
+	}
+
 	kubeletDir := strings.TrimRight(args.KubeletDir, "/")
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{TRIDENT_IMAGE}", args.TridentImage)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DAEMONSET_NAME}", args.DaemonsetName)
-	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{CSI_SIDECAR_REGISTRY}", args.ImageRegistry)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{CSI_SIDECAR_NODE_DRIVER_REGISTRAR_IMAGE}", args.CSISidecarNodeDriverRegistrarImage)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{CSI_SIDECAR_LIVENESS_PROBE_IMAGE}", args.CSISidecarLivenessProbeImage)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{KUBELET_DIR}", kubeletDir)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LABEL_APP}", args.Labels[TridentAppLabelKey])
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{SIDECAR_LOG_LEVEL}", sidecarLogLevel)
@@ -844,10 +880,6 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 
 	daemonSetYAML := daemonSet120YAMLTemplateLinux
 
-	if args.ImageRegistry == "" {
-		args.ImageRegistry = commonconfig.KubernetesCSISidecarRegistry
-	}
-
 	if args.Labels == nil {
 		args.Labels = map[string]string{}
 	}
@@ -861,12 +893,21 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 		}
 	}
 
+	if args.ImageRegistry == "" {
+		args.ImageRegistry = commonconfig.KubernetesCSISidecarRegistry
+	}
+
+	if args.CSISidecarNodeDriverRegistrarImage == "" {
+		args.CSISidecarNodeDriverRegistrarImage = args.ImageRegistry + "/" + commonconfig.CSISidecarNodeDriverRegistrarImageTag
+	}
+
 	kubeletDir := strings.TrimRight(args.KubeletDir, "/")
 	// NodePrep this must come first because it adds a section that has tags in it
 	daemonSetYAML = replaceNodePrepTag(daemonSetYAML, args.NodePrep)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{TRIDENT_IMAGE}", args.TridentImage)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DAEMONSET_NAME}", args.DaemonsetName)
-	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{CSI_SIDECAR_REGISTRY}", args.ImageRegistry)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{CSI_SIDECAR_NODE_DRIVER_REGISTRAR_IMAGE}",
+		args.CSISidecarNodeDriverRegistrarImage)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{KUBELET_DIR}", kubeletDir)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LABEL_APP}", args.Labels[TridentAppLabelKey])
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{FORCE_DETACH_BOOL}", strconv.FormatBool(args.EnableForceDetach))
@@ -1069,7 +1110,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.13.0
+        image: {CSI_SIDECAR_NODE_DRIVER_REGISTRAR_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
@@ -1273,7 +1314,7 @@ spec:
             cpu: 10m
             memory: 20Mi
       - name: node-driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.10.0
+        image: {CSI_SIDECAR_NODE_DRIVER_REGISTRAR_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - --v=2
@@ -1313,7 +1354,7 @@ spec:
         volumeMounts:
           - mountPath: C:\csi
             name: plugin-dir
-        image: {CSI_SIDECAR_REGISTRY}/livenessprobe:v2.5.0
+        image: {CSI_SIDECAR_LIVENESS_PROBE_IMAGE}
         args:
           - --csi-address=$(CSI_ENDPOINT)
           - --probe-timeout=3s

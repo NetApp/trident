@@ -154,7 +154,13 @@ const (
 	KubernetesVersionMax = "v1.32"
 
 	// KubernetesCSISidecarRegistry is where the CSI sidecar images are hosted
-	KubernetesCSISidecarRegistry = "registry.k8s.io/sig-storage"
+	KubernetesCSISidecarRegistry          = "registry.k8s.io/sig-storage"
+	CSISidecarProvisionerImageTag         = "csi-provisioner:v5.2.0"
+	CSISidecarAttacherImageTag            = "csi-attacher:v4.8.0"
+	CSISidecarResizerImageTag             = "csi-resizer:v1.13.1"
+	CSISidecarSnapshotterImageTag         = "csi-snapshotter:v8.2.0"
+	CSISidecarNodeDriverRegistrarImageTag = "csi-node-driver-registrar:v2.13.0"
+	CSISidecarLivenessProbeImageTag       = "livenessprobe:v2.9.0"
 
 	DefaultK8sAPIQPS   = 100.0
 	DefaultK8sAPIBurst = 200

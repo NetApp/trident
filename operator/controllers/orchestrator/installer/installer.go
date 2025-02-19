@@ -15,6 +15,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/client-go/rest"
+	"k8s.io/utils/env"
 
 	"github.com/netapp/trident/cli/api"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
@@ -22,6 +23,7 @@ import (
 	"github.com/netapp/trident/internal/crypto"
 	"github.com/netapp/trident/internal/nodeprep/protocol"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/operator/config"
 	netappv1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/pkg/network"
@@ -60,17 +62,23 @@ var (
 	silenceAutosupport bool
 	windows            bool
 
-	logLevel        string
-	logWorkflows    string
-	logLayers       string
-	logFormat       string
-	probePort       string
-	tridentImage    string
-	imageRegistry   string
-	kubeletDir      string
-	imagePullPolicy string
-	cloudProvider   string
-	cloudIdentity   string
+	logLevel                           string
+	logWorkflows                       string
+	logLayers                          string
+	logFormat                          string
+	probePort                          string
+	tridentImage                       string
+	csiSidecarProvisionerImage         string
+	csiSidecarAttacherImage            string
+	csiSidecarResizerImage             string
+	csiSidecarSnapshotterImage         string
+	csiSidecarNodeDriverRegistrarImage string
+	csiSidecarLivenessProbeImage       string
+	imageRegistry                      string
+	kubeletDir                         string
+	imagePullPolicy                    string
+	cloudProvider                      string
+	cloudIdentity                      string
 
 	acpImage  string
 	enableACP bool
@@ -334,10 +342,19 @@ func (i *Installer) setInstallationParams(
 	// Get default values
 	logFormat = DefaultLogFormat
 	probePort = DefaultProbePort
-	tridentImage = TridentImage
+
+	// Images set via environment are considered default
+	tridentImage = env.GetString(config.TridentImageEnv, TridentImage)
+	autosupportImage = env.GetString(config.AutosupportImageEnv, commonconfig.DefaultAutosupportImage)
+	csiSidecarProvisionerImage = env.GetString(config.CSISidecarProvisionerImageEnv, "")
+	csiSidecarAttacherImage = env.GetString(config.CSISidecarAttacherImageEnv, "")
+	csiSidecarResizerImage = env.GetString(config.CSISidecarResizerImageEnv, "")
+	csiSidecarSnapshotterImage = env.GetString(config.CSISidecarSnapshotterImageEnv, "")
+	csiSidecarNodeDriverRegistrarImage = env.GetString(config.CSISidecarNodeDriverRegistrarImageEnv, "")
+	csiSidecarLivenessProbeImage = env.GetString(config.CSISidecarLivenessProbeImageEnv, "")
+
 	imageRegistry = ""
 	kubeletDir = DefaultKubeletDir
-	autosupportImage = commonconfig.DefaultAutosupportImage
 	httpTimeout = commonconfig.HTTPTimeoutString
 	iscsiSelfHealingInterval = commonconfig.IscsiSelfHealingIntervalString
 	iscsiSelfHealingWaitTime = commonconfig.ISCSISelfHealingWaitTimeString
@@ -406,6 +423,9 @@ func (i *Installer) setInstallationParams(
 	if cr.Spec.ImageRegistry != "" {
 		imageRegistry = cr.Spec.ImageRegistry
 	}
+
+	// Now that imageRegistry has been set we can set the sidecar images
+
 	if cr.Spec.TridentImage != "" {
 		tridentImage = cr.Spec.TridentImage
 
@@ -419,6 +439,22 @@ func (i *Installer) setInstallationParams(
 			tridentImage = network.ReplaceImageRegistry(tridentImage, cr.Spec.ImageRegistry)
 		}
 	}
+
+	// Override sidecar images if registry is configured
+	if cr.Spec.ImageRegistry != "" {
+		sidecarImages := []*string{
+			&csiSidecarProvisionerImage,
+			&csiSidecarAttacherImage,
+			&csiSidecarResizerImage,
+			&csiSidecarSnapshotterImage,
+			&csiSidecarNodeDriverRegistrarImage,
+			&csiSidecarLivenessProbeImage,
+		}
+		for _, sidecarImage := range sidecarImages {
+			*sidecarImage = network.ReplaceImageRegistry(*sidecarImage, cr.Spec.ImageRegistry)
+		}
+	}
+
 	if cr.Spec.AutosupportImage != "" {
 		autosupportImage = cr.Spec.AutosupportImage
 	} else {
@@ -1383,38 +1419,42 @@ func (i *Installer) createOrPatchTridentDeployment(
 	}
 
 	deploymentArgs := &k8sclient.DeploymentYAMLArguments{
-		DeploymentName:          deploymentName,
-		TridentImage:            tridentImage,
-		AutosupportImage:        autosupportImage,
-		AutosupportProxy:        autosupportProxy,
-		AutosupportInsecure:     autosupportInsecure,
-		AutosupportCustomURL:    "",
-		AutosupportSerialNumber: autosupportSerialNumber,
-		AutosupportHostname:     autosupportHostname,
-		ImageRegistry:           imageRegistry,
-		Debug:                   debug,
-		LogLevel:                determineLogLevel(),
-		LogWorkflows:            logWorkflows,
-		LogLayers:               logLayers,
-		LogFormat:               logFormat,
-		DisableAuditLog:         disableAuditLog,
-		ImagePullSecrets:        imagePullSecrets,
-		Labels:                  labels,
-		ControllingCRDetails:    controllingCRDetails,
-		UseIPv6:                 useIPv6,
-		SilenceAutosupport:      silenceAutosupport,
-		Version:                 i.client.ServerVersion(),
-		HTTPRequestTimeout:      httpTimeout,
-		NodeSelector:            controllerPluginNodeSelector,
-		Tolerations:             tolerations,
-		ServiceAccountName:      serviceAccName,
-		ImagePullPolicy:         imagePullPolicy,
-		EnableForceDetach:       enableForceDetach,
-		CloudProvider:           cloudProvider,
-		ACPImage:                acpImage,
-		EnableACP:               enableACP,
-		IdentityLabel:           identityLabel,
-		K8sAPIQPS:               k8sAPIQPS,
+		DeploymentName:             deploymentName,
+		TridentImage:               tridentImage,
+		CSISidecarProvisionerImage: csiSidecarProvisionerImage,
+		CSISidecarAttacherImage:    csiSidecarAttacherImage,
+		CSISidecarResizerImage:     csiSidecarResizerImage,
+		CSISidecarSnapshotterImage: csiSidecarSnapshotterImage,
+		AutosupportImage:           autosupportImage,
+		AutosupportProxy:           autosupportProxy,
+		AutosupportInsecure:        autosupportInsecure,
+		AutosupportCustomURL:       "",
+		AutosupportSerialNumber:    autosupportSerialNumber,
+		AutosupportHostname:        autosupportHostname,
+		ImageRegistry:              imageRegistry,
+		Debug:                      debug,
+		LogLevel:                   determineLogLevel(),
+		LogWorkflows:               logWorkflows,
+		LogLayers:                  logLayers,
+		LogFormat:                  logFormat,
+		DisableAuditLog:            disableAuditLog,
+		ImagePullSecrets:           imagePullSecrets,
+		Labels:                     labels,
+		ControllingCRDetails:       controllingCRDetails,
+		UseIPv6:                    useIPv6,
+		SilenceAutosupport:         silenceAutosupport,
+		Version:                    i.client.ServerVersion(),
+		HTTPRequestTimeout:         httpTimeout,
+		NodeSelector:               controllerPluginNodeSelector,
+		Tolerations:                tolerations,
+		ServiceAccountName:         serviceAccName,
+		ImagePullPolicy:            imagePullPolicy,
+		EnableForceDetach:          enableForceDetach,
+		CloudProvider:              cloudProvider,
+		ACPImage:                   acpImage,
+		EnableACP:                  enableACP,
+		IdentityLabel:              identityLabel,
+		K8sAPIQPS:                  k8sAPIQPS,
 	}
 
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
@@ -1471,30 +1511,32 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 	}
 
 	daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
-		DaemonsetName:            getDaemonSetName(isWindows),
-		TridentImage:             tridentImage,
-		ImageRegistry:            imageRegistry,
-		KubeletDir:               kubeletDir,
-		LogFormat:                logFormat,
-		DisableAuditLog:          disableAuditLog,
-		Debug:                    debug,
-		LogLevel:                 determineLogLevel(),
-		LogWorkflows:             logWorkflows,
-		LogLayers:                logLayers,
-		ProbePort:                probePort,
-		ImagePullSecrets:         imagePullSecrets,
-		Labels:                   labels,
-		ControllingCRDetails:     controllingCRDetails,
-		EnableForceDetach:        enableForceDetach,
-		Version:                  i.client.ServerVersion(),
-		HTTPRequestTimeout:       httpTimeout,
-		NodeSelector:             nodePluginNodeSelector,
-		Tolerations:              tolerations,
-		ServiceAccountName:       serviceAccountName,
-		ImagePullPolicy:          imagePullPolicy,
-		ISCSISelfHealingInterval: iscsiSelfHealingInterval,
-		ISCSISelfHealingWaitTime: iscsiSelfHealingWaitTime,
-		NodePrep:                 nodePrep,
+		DaemonsetName:                      getDaemonSetName(isWindows),
+		TridentImage:                       tridentImage,
+		CSISidecarNodeDriverRegistrarImage: csiSidecarNodeDriverRegistrarImage,
+		CSISidecarLivenessProbeImage:       csiSidecarLivenessProbeImage,
+		ImageRegistry:                      imageRegistry,
+		KubeletDir:                         kubeletDir,
+		LogFormat:                          logFormat,
+		DisableAuditLog:                    disableAuditLog,
+		Debug:                              debug,
+		LogLevel:                           determineLogLevel(),
+		LogWorkflows:                       logWorkflows,
+		LogLayers:                          logLayers,
+		ProbePort:                          probePort,
+		ImagePullSecrets:                   imagePullSecrets,
+		Labels:                             labels,
+		ControllingCRDetails:               controllingCRDetails,
+		EnableForceDetach:                  enableForceDetach,
+		Version:                            i.client.ServerVersion(),
+		HTTPRequestTimeout:                 httpTimeout,
+		NodeSelector:                       nodePluginNodeSelector,
+		Tolerations:                        tolerations,
+		ServiceAccountName:                 serviceAccountName,
+		ImagePullPolicy:                    imagePullPolicy,
+		ISCSISelfHealingInterval:           iscsiSelfHealingInterval,
+		ISCSISelfHealingWaitTime:           iscsiSelfHealingWaitTime,
+		NodePrep:                           nodePrep,
 	}
 
 	var newDaemonSetYAML string

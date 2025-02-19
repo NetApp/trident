@@ -323,9 +323,9 @@ create_manifest_for_platforms = $(DOCKER_BUILDX_BUILD_CLI) imagetools create -t 
 # digest: "$digest", os: "$os", architecture: "$arch"}
 # usage: $(call image_digests,$(platforms),$(tag))
 image_digests = for image in $(foreach platform,$1,$(call image_tag,$2,$(platform))); do\
-		$(DOCKER_BUILDX_BUILD_CLI) imagetools inspect --raw $$image |\
+		$(DOCKER_BUILDX_BUILD_CLI) imagetools inspect --format '{{json .Manifest}}' $$image |\
 		jq ".manifests[0] | {image: \"$$image\", digest: .digest, os: .platform.os, architecture: .platform.architecture }";\
-	done | jq -n '{manifest: "$2", images: [inputs]}'
+	done | jq -n "{manifest: \"$2\", digest: \"$$($(DOCKER_BUILDX_BUILD_CLI) imagetools inspect --format '{{json .Manifest}}' $2 | jq -r .digest)\", images: [inputs]}"
 
 # Build targets
 
