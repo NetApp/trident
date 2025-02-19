@@ -42,6 +42,13 @@ func GetStorageDriver(
 		return nil, fmt.Errorf("error initializing %s driver: %v", commonConfig.StorageDriverName, err)
 	}
 
+	// Initialize AWS API if applicable.
+	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
+	AWSAPI, err := initializeAWSDriver(ctx, ontapConfig)
+	if err != nil {
+		return nil, fmt.Errorf("error initializing %s AWS driver; %v", commonConfig.StorageDriverName, err)
+	}
+
 	// Initialize the ONTAP API.
 	API, err := InitializeOntapDriver(ctx, ontapConfig)
 	if err != nil {
@@ -59,13 +66,13 @@ func GetStorageDriver(
 	switch ontapConfig.StorageDriverName {
 
 	case config.OntapNASStorageDriverName:
-		storageDriver = &NASStorageDriver{API: API, Config: *ontapConfig}
+		storageDriver = &NASStorageDriver{API: API, AWSAPI: AWSAPI, Config: *ontapConfig}
 	case config.OntapNASFlexGroupStorageDriverName:
-		storageDriver = &NASFlexGroupStorageDriver{API: API, Config: *ontapConfig}
+		storageDriver = &NASFlexGroupStorageDriver{API: API, AWSAPI: AWSAPI, Config: *ontapConfig}
 	case config.OntapNASQtreeStorageDriverName:
-		storageDriver = &NASQtreeStorageDriver{API: API, Config: *ontapConfig}
+		storageDriver = &NASQtreeStorageDriver{API: API, AWSAPI: AWSAPI, Config: *ontapConfig}
 	case config.OntapSANEconomyStorageDriverName:
-		storageDriver = &SANEconomyStorageDriver{API: API, Config: *ontapConfig}
+		storageDriver = &SANEconomyStorageDriver{API: API, AWSAPI: AWSAPI, Config: *ontapConfig}
 
 	// ontap-san uses additional system details to choose the needed driver
 	case config.OntapSANStorageDriverName:
@@ -75,15 +82,15 @@ func GetStorageDriver(
 				ontapConfig.Flags[FlagPersonality] = PersonalityASAr2 // Used by ASUP to distinguish personalities
 				storageDriver = &ASAStorageDriver{API: API, Config: *ontapConfig}
 			} else if !API.IsSANOptimized() && !API.IsDisaggregated() {
-				storageDriver = &SANStorageDriver{API: API, Config: *ontapConfig}
+				storageDriver = &SANStorageDriver{API: API, AWSAPI: AWSAPI, Config: *ontapConfig}
 			} else {
 				return nil, fmt.Errorf("unsupported ONTAP personality with disaggregated %t and SAN optimized %t",
 					API.IsDisaggregated(), API.IsSANOptimized())
 			}
 		case sa.FCP:
-			storageDriver = &SANStorageDriver{API: API, Config: *ontapConfig}
+			storageDriver = &SANStorageDriver{API: API, AWSAPI: AWSAPI, Config: *ontapConfig}
 		case sa.NVMe:
-			storageDriver = &NVMeStorageDriver{API: API, Config: *ontapConfig}
+			storageDriver = &NVMeStorageDriver{API: API, AWSAPI: AWSAPI, Config: *ontapConfig}
 		default:
 			return nil, fmt.Errorf("unsupported SAN protocol %s", driverProtocol)
 		}

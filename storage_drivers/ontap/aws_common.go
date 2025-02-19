@@ -5,7 +5,6 @@ package ontap
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
@@ -19,10 +18,11 @@ import (
 // SetSvmCredentials Pull SVM credentials out of AWS secret store and enter them into the config.
 func SetSvmCredentials(ctx context.Context, secretARN string, api awsapi.AWSAPI, config *drivers.OntapStorageDriverConfig) (err error) {
 	secret, secretErr := api.GetSecret(ctx, secretARN)
-	secretMap := secret.SecretMap
 	if secretErr != nil {
 		return fmt.Errorf("could not retrieve credentials from AWS Secrets Manager; %w", secretErr)
 	}
+
+	secretMap := secret.SecretMap
 
 	if username, ok := secretMap["username"]; !ok {
 		return fmt.Errorf("%s driver must include username in the secret referenced by Credentials",
@@ -192,12 +192,13 @@ func getAWSSecretsManagerARNFromConfig(_ context.Context, config *drivers.OntapS
 		return config.Credentials[drivers.KeyName], nil
 	}
 
-	if strings.HasPrefix(config.Username, "arn:aws:secretsmanager:") {
+	_, _, _, err := awsapi.ParseSecretARN(config.Username)
+	if err != nil {
+		return config.Username, errors.NotFoundError("%s, %s driver with FSxN personality must include Credentials of type %s "+
+			"in the configuration", err, config.StorageDriverName, string(drivers.CredentialStoreAWSARN))
+	} else {
 		return config.Username, nil
 	}
-
-	return "", errors.NotFoundError("%s driver with FSxN personality must include Credentials of type %s "+
-		"in the configuration", config.StorageDriverName, string(drivers.CredentialStoreAWSARN))
 }
 
 // destroyFSxVolume discovers and deletes a volume using the FSx SDK.  This is needed to delete a volume in the case
