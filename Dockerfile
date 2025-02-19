@@ -31,6 +31,8 @@ COPY --from=deps /sbin/mount.nfs /sbin/mount.nfs4 /sbin/
 COPY --from=deps /etc/netconfig /etc/
 COPY --from=deps /nfs-deps/ /
 
+COPY --from=deps /etc/ssl/certs/ /etc/ssl/certs/
+
 ARG BIN=trident_orchestrator
 ARG CLI_BIN=tridentctl
 ARG CHWRAP_BIN=chwrap.tar
