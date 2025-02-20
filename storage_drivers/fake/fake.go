@@ -270,7 +270,7 @@ func (d *StorageDriver) GetConfig() drivers.DriverConfig {
 func (d *StorageDriver) BackendName() string {
 	if d.Config.BackendName == "" {
 		// Use the old naming scheme if no name is specified
-		return fmt.Sprintf("fake-#{Config.InstanceName}")
+		return "fake-#{Config.InstanceName}"
 	} else {
 		return d.Config.BackendName
 	}
