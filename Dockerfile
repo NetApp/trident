@@ -14,6 +14,9 @@ RUN --mount=type=secret,id=activation_key,env=ACTIVATION_KEY \
         then apk add nfs-utils; \
         else subscription-manager register --activationkey $ACTIVATION_KEY --org $ORGANIZATION && \
             yum install --repo=rhel-9-*-baseos-rpms -y nfs-utils; \
+            # Copy real certificates
+            mkdir /real-certs; \
+            cp -L /etc/ssl/certs/* /real-certs/; \
     fi
 
 # Get the mount.nfs4 dependency
@@ -31,7 +34,7 @@ COPY --from=deps /sbin/mount.nfs /sbin/mount.nfs4 /sbin/
 COPY --from=deps /etc/netconfig /etc/
 COPY --from=deps /nfs-deps/ /
 
-COPY --from=deps /etc/ssl/certs/ /etc/ssl/certs/
+COPY --from=deps /real-certs/ /etc/ssl/certs/
 
 ARG BIN=trident_orchestrator
 ARG CLI_BIN=tridentctl
