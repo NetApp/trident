@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package iscsi
 
@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -38,8 +39,9 @@ const (
 	DevPrefix     = "/dev/"
 	DevMapperRoot = "/dev/mapper/"
 
-	sessionStateLoggedIn = "LOGGED_IN"
-	SessionInfoSource    = "sessionSource"
+	sessionStateLoggedIn     = "LOGGED_IN"
+	SessionInfoSource        = "sessionSource"
+	sessionConnectionStateUp = "up"
 
 	iscsiadmLoginTimeoutValue = 10
 	iscsiadmLoginTimeout      = iscsiadmLoginTimeoutValue * time.Second
@@ -1189,6 +1191,109 @@ func (client *Client) portalsToLogin(ctx context.Context, targetIQN string, port
 
 	loggedIn := len(portals) != (len(portalsNotLoggedIn) + len(portalsInStaleState))
 	return portalsNotLoggedIn, loggedIn, nil
+}
+
+// getSessionConnectionsState returns the state of iscsi session connections stored in:
+// '/sys/class/iscsi_session/session<ID>/device/connection<ID>:0/iscsi_connection/connection<ID>:0.
+func (client *Client) getSessionConnectionsState(ctx context.Context, sessionID string) []string {
+	Logc(ctx).WithField("sessionID", sessionID).Debug(">>>> iscsi.getSessionConnectionsState")
+	defer Logc(ctx).Debug("<<<< iscsi.getSessionConnectionsState")
+
+	// Find the session device dirs under: '/sys/class/iscsi_session/session<ID>/device/'.
+	sessionName := fmt.Sprintf("session%s", sessionID)
+	sessionDevicePath := filepath.Join(client.chrootPathPrefix, "sys", "class", "iscsi_session", sessionName, "device")
+	sessionDeviceEntries, err := client.os.ReadDir(sessionDevicePath)
+	if err != nil {
+		Logc(ctx).WithField("path", sessionDevicePath).WithError(err).Error("Could not read session dirs.")
+		return nil
+	}
+
+	const notFound = "<NOT FOUND>"
+	var errs error
+
+	// Dynamically discover the 'state' for all underlying connections and return them.
+	connectionStates := make([]string, 0)
+	for _, entry := range sessionDeviceEntries {
+		// Only consider: `/sys/class/iscsi_session/session<ID>/device/connection<ID>:0`
+		connection := entry.Name()
+		if !strings.HasPrefix(connection, "connection") {
+			continue
+		}
+
+		// At this point, we know we're looking at something like:
+		// '/sys/class/iscsi_session/session<ID>/device/connection<ID>:0' but we need:
+		// '/sys/class/iscsi_session/session<ID>/device/connection<ID>:0/iscsi_connection/connection<ID>:0'
+		state := notFound
+		statePath := filepath.Join(sessionDevicePath, connection, "iscsi_connection", connection, "state")
+		rawState, err := client.os.ReadFile(statePath)
+		if err != nil {
+			errs = errors.Join(errs, fmt.Errorf("failed to read session state at: '%s'; %w", statePath, err))
+		} else if len(rawState) != 0 {
+			state = strings.TrimSpace(string(rawState))
+		}
+
+		// If the connection state is "up" or not found, further inspection won't be helpful. Ignore this and move on.
+		if state == sessionConnectionStateUp || state == notFound {
+			continue
+		}
+
+		// Get the persistent address. This is the IP associated with a session.
+		address := notFound
+		addrPath := filepath.Join(sessionDevicePath, connection, "iscsi_connection", connection, "persistent_address")
+		rawAddress, err := client.os.ReadFile(addrPath)
+		if err != nil {
+			errs = errors.Join(errs, fmt.Errorf("failed to read connection IP at: '%s'; %w", addrPath, err))
+		} else if len(rawAddress) != 0 {
+			address = strings.TrimSpace(string(rawAddress))
+		}
+
+		// Get the persistent port. This is the port associated with a session.
+		port := notFound
+		portPath := filepath.Join(sessionDevicePath, connection, "iscsi_connection", connection, "persistent_port")
+		rawPort, err := client.os.ReadFile(portPath)
+		if err != nil {
+			errs = errors.Join(errs, fmt.Errorf("failed to read connection port at: '%s'; %w", portPath, err))
+		} else if len(rawPort) != 0 {
+			port = strings.TrimSpace(string(rawPort))
+		}
+
+		portal := fmt.Sprintf("%s:%s", address, port)
+
+		// This will allow Trident to communicate which portals have bad connections.
+		connectionState := fmt.Sprintf("\"portal:'%s'; connection:'%s'; state:'%s'\"", portal, connection, state)
+		connectionStates = append(connectionStates, connectionState)
+	}
+
+	if errs != nil {
+		Logc(ctx).WithError(errs).Error("Could not discover state of iSCSI connections.")
+	}
+
+	return connectionStates
+}
+
+func (client *Client) getSessionState(ctx context.Context, sessionID string) string {
+	Logc(ctx).WithField("sessionID", sessionID).Debug(">>>> iscsi.getSessionState")
+	defer Logc(ctx).Debug("<<<< iscsi.getSessionState")
+
+	// Find the session state from the session at /sys/class/iscsi_session/sessionXXX/state
+	filename := fmt.Sprintf(client.chrootPathPrefix+"/sys/class/iscsi_session/session%s/state", sessionID)
+	sessionStateBytes, err := client.os.ReadFile(filename)
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"path":  filename,
+			"error": err,
+		}).Error("Could not read session state file.")
+		return ""
+	}
+
+	sessionState := strings.TrimSpace(string(sessionStateBytes))
+	Logc(ctx).WithFields(LogFields{
+		"sessionID":    sessionID,
+		"sessionState": sessionState,
+		"sysfsFile":    filename,
+	}).Debug("Found iSCSI session state.")
+
+	return sessionState
 }
 
 // IsSessionStale - reads /sys/class/iscsi_session/session<sid>/state and returns true if it is not "LOGGED_IN".

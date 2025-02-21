@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -726,6 +726,14 @@ func InspectAllISCSISessions(
 
 			if action != models.NoAction {
 				candidateStalePortals = append(candidateStalePortals, portal)
+
+				// At this point we know the iSCSI session has been stale for some time but do not know why.
+				// Retrieve additional state from sysfs and inform the admin of an issue.
+				Logc(ctx).WithFields(LogFields{
+					"portal":          portal,
+					"sessionState":    GetSessionState(ctx, currentPortalInfo.SessionNumber),
+					"connectionState": GetSessionConnectionsState(ctx, currentPortalInfo.SessionNumber),
+				}).Warn("Portal requires manual intervention; storage network connection may be unstable.")
 			}
 			continue
 		}
@@ -795,7 +803,10 @@ func isStalePortal(
 	} else if timeNow.Sub(publishedPortalInfo.FirstIdentifiedStaleAt) >= iSCSISessionWaitTime {
 		Logc(ctx).WithFields(logFields).Warningf("Portal exceeded stale wait time at %v; adding to stale portals list.",
 			timeNow)
-		return models.LogoutLoginScan
+		// Things like storage platform upgrades or extended network outages may result in a FREE or FAILED state on the
+		// session. At this point in time, there isn't a reliable mechanism to know when it would be safe to perform a
+		// Logout remediation step, so only ever perform a LoginScan.
+		return models.LoginScan
 	} else {
 		Logc(ctx).WithFields(logFields).Warningf("Portal has not exceeded stale wait time at %v.", timeNow)
 	}
@@ -913,6 +924,14 @@ func LoginISCSITarget(ctx context.Context, publishInfo *models.VolumePublishInfo
 
 func iSCSIScanTargetLUN(ctx context.Context, lunID int, hosts []int) error {
 	return iscsiClient.ScanTargetLUN(ctx, lunID, hosts)
+}
+
+func GetSessionState(ctx context.Context, sessionID string) string {
+	return iscsiClient.GetSessionState(ctx, sessionID)
+}
+
+func GetSessionConnectionsState(ctx context.Context, sessionID string) []string {
+	return iscsiClient.GetSessionConnectionsState(ctx, sessionID)
 }
 
 func IsISCSISessionStale(ctx context.Context, sessionNumber string) bool {

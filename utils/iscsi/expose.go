@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package iscsi
 
@@ -52,6 +52,14 @@ func (client *Client) FindMultipathDeviceForDevice(ctx context.Context, device s
 
 func (client *Client) GetLunSerial(ctx context.Context, path string) (string, error) {
 	return client.getLunSerial(ctx, path)
+}
+
+func (client *Client) GetSessionState(ctx context.Context, sessionID string) string {
+	return client.getSessionState(ctx, sessionID)
+}
+
+func (client *Client) GetSessionConnectionsState(ctx context.Context, sessionID string) []string {
+	return client.getSessionConnectionsState(ctx, sessionID)
 }
 
 func (client *Client) IsSessionStale(ctx context.Context, sessionID string) bool {

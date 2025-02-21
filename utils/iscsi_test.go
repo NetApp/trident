@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -268,7 +268,7 @@ func TestIsStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now().Add(20 * time.Second),
 			Portal:          ipList[0],
-			ResultAction:    models.LogoutLoginScan,
+			ResultAction:    models.LoginScan,
 			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
 				publishedSessions.Info[portal].PortalInfo.FirstIdentifiedStaleAt = time.Now()
 			},
@@ -332,7 +332,7 @@ func TestIsStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now().Add(20 * time.Second),
 			Portal:          ipList[0],
-			ResultAction:    models.LogoutLoginScan,
+			ResultAction:    models.LoginScan,
 			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
 				publishedSessions.Info[portal].PortalInfo.Credentials = chapCredentials[0]
 				publishedSessions.Info[portal].PortalInfo.FirstIdentifiedStaleAt = time.Now()
