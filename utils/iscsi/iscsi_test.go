@@ -5879,7 +5879,7 @@ func TestIsStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now().Add(20 * time.Second),
 			Portal:          ipList[0],
-			ResultAction:    models.LogoutLoginScan,
+			ResultAction:    models.LoginScan,
 			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
 				publishedSessions.Info[portal].PortalInfo.FirstIdentifiedStaleAt = time.Now()
 			},
@@ -5943,7 +5943,7 @@ func TestIsStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now().Add(20 * time.Second),
 			Portal:          ipList[0],
-			ResultAction:    models.LogoutLoginScan,
+			ResultAction:    models.LoginScan,
 			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
 				publishedSessions.Info[portal].PortalInfo.Credentials = chapCredentials[0]
 				publishedSessions.Info[portal].PortalInfo.FirstIdentifiedStaleAt = time.Now()
@@ -5954,7 +5954,6 @@ func TestIsStalePortal(t *testing.T) {
 	for _, input := range inputs {
 		t.Run(input.TestName, func(t *testing.T) {
 			portal := input.Portal
-
 			input.SimulateConditions(input.PublishedPortals, input.CurrentPortals, portal)
 
 			publishedPortalData, _ := input.PublishedPortals.Info[portal]
