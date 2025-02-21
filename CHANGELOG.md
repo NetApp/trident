@@ -2,7 +2,21 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v24.06.0
+## Changes since v24.10.0
+
+**Fixes:**
+
+- Fixed missing node IP addresses from automatic export policies (Issue [#965](https://github.com/NetApp/trident/issues/965)).
+- Fixed automatic export policies switching to per volume policy prematurely for ONTAP-NAS-Economy.
+- Updated Trident and Trident-ASUP dependencies to address CVE-2024-45337 and CVE-2024-45310.
+- Removed logouts for intermittently unhealthy non-CHAP portals during iSCSI self-healing (Issue [#961](https://github.com/NetApp/trident/issues/961)).
+
+**Enhancements:**
+
+- **Kubernetes:** Added support for Kubernetes 1.32.
+- Added iSCSI connection state discovery and logging when iSCSI sessions should be logged in but are not (Issue [#961](https://github.com/NetApp/trident/issues/961)).
+
+## v24.10.0
 
 **New:** Trident data protection and data management features
 - Backup and recovery
