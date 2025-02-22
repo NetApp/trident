@@ -28,7 +28,7 @@ const (
 	DefaultZapiRecords   = 100
 	MaxZapiRecords       = 0xfffffffe
 	NumericalValueNotSet = -1
-	maxFlexGroupWait     = 30 * time.Second
+	maxFlexGroupWait     = 120 * time.Second
 
 	MaxNASLabelLength = 1023
 	MaxSANLabelLength = 254
