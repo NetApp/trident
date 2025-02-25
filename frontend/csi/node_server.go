@@ -55,7 +55,6 @@ const (
 	defaultNodeReconciliationPeriod = 1 * time.Minute
 	maximumNodeReconciliationJitter = 5000 * time.Millisecond
 	nvmeMaxFlushWaitDuration        = 6 * time.Minute
-	csiNodeLockTimeout              = 60 * time.Second
 	fsUnavailableTimeout            = 5 * time.Second
 
 	// Node Scalability constants.
@@ -77,6 +76,7 @@ const (
 )
 
 var (
+	csiNodeLockTimeout = 60 * time.Second
 	// TODO (pshashan): Unify both csiNodeLockTimeout and csiKubeletTimeout
 	csiKubeletTimeout = 110 * time.Second
 	topologyLabels    = make(map[string]string)
