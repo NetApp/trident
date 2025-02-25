@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -30,6 +30,7 @@ func GetStorageDriver(
 	ctx context.Context, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 	backendSecret map[string]string,
 ) (storage.Driver, error) {
+	var storageDriver storage.Driver
 	driverProtocol, err := GetDriverProtocol(commonConfig.StorageDriverName, configJSON)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Error("Failed to get driver protocol.")
@@ -51,8 +52,13 @@ func GetStorageDriver(
 
 	// Initialize the ONTAP API.
 	API, err := InitializeOntapDriver(ctx, ontapConfig)
-	if err != nil {
-		return nil, fmt.Errorf("error initializing %s driver: %v", commonConfig.StorageDriverName, err)
+	if API == nil {
+		Logc(ctx).WithError(err).Errorf("error initializing %s driver", commonConfig.StorageDriverName)
+		storageDriver, err = getEmptyStorageDriver(commonConfig.StorageDriverName, driverProtocol)
+		if err != nil {
+			return nil, err
+		}
+		return storageDriver, nil
 	}
 
 	// Set up driver flags
@@ -62,7 +68,6 @@ func GetStorageDriver(
 		FlagSANOptimized:  strconv.FormatBool(API.IsSANOptimized()),
 	}
 
-	var storageDriver storage.Driver
 	switch ontapConfig.StorageDriverName {
 
 	case config.OntapNASStorageDriverName:
@@ -103,6 +108,32 @@ func GetStorageDriver(
 		"disaggregated": API.IsDisaggregated(),
 		"sanOptimized":  API.IsSANOptimized(),
 	}).Infof("ONTAP factory creating %T backend.", storageDriver)
+
+	return storageDriver, nil
+}
+
+func getEmptyStorageDriver(driverName, driverProtocol string) (storage.Driver, error) {
+	var storageDriver storage.Driver
+
+	// Pre-driver initialization setup
+	switch driverName {
+	case config.OntapNASStorageDriverName:
+		storageDriver = &NASStorageDriver{}
+	case config.OntapNASFlexGroupStorageDriverName:
+		storageDriver = &NASFlexGroupStorageDriver{}
+	case config.OntapNASQtreeStorageDriverName:
+		storageDriver = &NASQtreeStorageDriver{}
+	case config.OntapSANStorageDriverName:
+		if driverProtocol == sa.ISCSI || driverProtocol == sa.FCP {
+			storageDriver = &SANStorageDriver{}
+		} else {
+			storageDriver = &NVMeStorageDriver{}
+		}
+	case config.OntapSANEconomyStorageDriverName:
+		storageDriver = &SANEconomyStorageDriver{}
+	default:
+		return nil, fmt.Errorf("unknown storage driver: %v", driverName)
+	}
 
 	return storageDriver, nil
 }
