@@ -1337,8 +1337,16 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 		return nil, err
 	case updateCode.Contains(storage.PrefixChange):
 		err := errors.UnsupportedConfigError("updating the storage prefix isn't currently supported")
-		Logc(ctx).WithField("error", err).Error("Backend update failed.")
-		return nil, err
+		// TODO: (victorir) to unblock updating a backend 25.02. Needs refactoring.
+		Logc(ctx).WithField("error", err).Error("Backend update continuing, " +
+			"if storage prefix has been changed there may be errors.")
+		// return nil, err
+		// Update backend information
+		if err = o.updateBackendOnPersistentStore(ctx, backend, false); err != nil {
+			Logc(ctx).WithField("error", err).Errorf("Could not persist renamed backend from %v to %v",
+				originalBackend.Name(), backend.Name())
+			return nil, err
+		}
 	case updateCode.Contains(storage.BackendRename):
 		checkingBackend, lookupErr := o.getBackendByBackendName(backend.Name())
 		if lookupErr == nil {
