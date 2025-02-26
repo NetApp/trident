@@ -1,7 +1,12 @@
 package fcp
 
 import (
+	"context"
+	"os"
+	"runtime"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMatchWorldWideNames(t *testing.T) {
@@ -64,4 +69,39 @@ func TestMatchWorldWideNames(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetFCPRPortsDirectories(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Skipping test on Windows")
+	}
+
+	path := "/tmp/sys/class/fc_remote_ports"
+
+	defer os.RemoveAll("/tmp/sys/class/fc_remote_ports")
+
+	err := os.MkdirAll("/tmp/sys/class/fc_remote_ports", 0o755)
+	assert.NoError(t, err)
+
+	f, err := os.Create("/tmp/sys/class/fc_remote_ports/rport_test")
+	assert.NoError(t, err)
+
+	_, err = f.WriteString("content")
+	assert.NoError(t, err)
+
+	_, getFCPErr := getFCPRPortsDirectories(context.TODO(), path)
+	assert.Nil(t, getFCPErr, "getFCPRPortsDirectories returns error")
+}
+
+func TestGetFCPRPortsDirectoriesErrorCase(t *testing.T) {
+	_, err := getFCPRPortsDirectories(context.TODO(), "")
+	assert.NotNil(t, err, "getFCPRPortsDirectories returns error")
+}
+
+func TestConvertStrToWWNFormat(t *testing.T) {
+	wwnStr := "1231231235"
+	expected := "12:31:23:12:35"
+
+	result := ConvertStrToWWNFormat(wwnStr)
+	assert.Equal(t, result, expected, "ConvertStrToWWNFormat does not convert as expected")
 }

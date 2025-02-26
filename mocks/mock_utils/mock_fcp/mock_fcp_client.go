@@ -22,6 +22,7 @@ import (
 type MockFCP struct {
 	ctrl     *gomock.Controller
 	recorder *MockFCPMockRecorder
+	isgomock struct{}
 }
 
 // MockFCPMockRecorder is the mock recorder for MockFCP.
@@ -42,103 +43,103 @@ func (m *MockFCP) EXPECT() *MockFCPMockRecorder {
 }
 
 // AttachVolumeRetry mocks base method.
-func (m *MockFCP) AttachVolumeRetry(arg0 context.Context, arg1, arg2 string, arg3 *models.VolumePublishInfo, arg4 map[string]string, arg5 time.Duration) (int64, error) {
+func (m *MockFCP) AttachVolumeRetry(ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string, timeout time.Duration) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AttachVolumeRetry", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "AttachVolumeRetry", ctx, name, mountpoint, publishInfo, secrets, timeout)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AttachVolumeRetry indicates an expected call of AttachVolumeRetry.
-func (mr *MockFCPMockRecorder) AttachVolumeRetry(arg0, arg1, arg2, arg3, arg4, arg5 any) *gomock.Call {
+func (mr *MockFCPMockRecorder) AttachVolumeRetry(ctx, name, mountpoint, publishInfo, secrets, timeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachVolumeRetry", reflect.TypeOf((*MockFCP)(nil).AttachVolumeRetry), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachVolumeRetry", reflect.TypeOf((*MockFCP)(nil).AttachVolumeRetry), ctx, name, mountpoint, publishInfo, secrets, timeout)
 }
 
 // GetDeviceInfoForFCPLUN mocks base method.
-func (m *MockFCP) GetDeviceInfoForFCPLUN(arg0 context.Context, arg1 []map[string]int, arg2 int, arg3 string, arg4 bool) (*models.ScsiDeviceInfo, error) {
+func (m *MockFCP) GetDeviceInfoForFCPLUN(ctx context.Context, hostSessionMap []map[string]int, lunID int, iSCSINodeName string, isDetachCall bool) (*models.ScsiDeviceInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDeviceInfoForFCPLUN", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "GetDeviceInfoForFCPLUN", ctx, hostSessionMap, lunID, iSCSINodeName, isDetachCall)
 	ret0, _ := ret[0].(*models.ScsiDeviceInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetDeviceInfoForFCPLUN indicates an expected call of GetDeviceInfoForFCPLUN.
-func (mr *MockFCPMockRecorder) GetDeviceInfoForFCPLUN(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockFCPMockRecorder) GetDeviceInfoForFCPLUN(ctx, hostSessionMap, lunID, iSCSINodeName, isDetachCall any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeviceInfoForFCPLUN", reflect.TypeOf((*MockFCP)(nil).GetDeviceInfoForFCPLUN), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeviceInfoForFCPLUN", reflect.TypeOf((*MockFCP)(nil).GetDeviceInfoForFCPLUN), ctx, hostSessionMap, lunID, iSCSINodeName, isDetachCall)
 }
 
 // GetDeviceInfoForLUN mocks base method.
-func (m *MockFCP) GetDeviceInfoForLUN(arg0 context.Context, arg1 []map[string]int, arg2 int, arg3 string, arg4 bool) (*models.ScsiDeviceInfo, error) {
+func (m *MockFCP) GetDeviceInfoForLUN(ctx context.Context, hostSessionMap []map[string]int, lunID int, fcpNodeName string, needFSType bool) (*models.ScsiDeviceInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDeviceInfoForLUN", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "GetDeviceInfoForLUN", ctx, hostSessionMap, lunID, fcpNodeName, needFSType)
 	ret0, _ := ret[0].(*models.ScsiDeviceInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetDeviceInfoForLUN indicates an expected call of GetDeviceInfoForLUN.
-func (mr *MockFCPMockRecorder) GetDeviceInfoForLUN(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockFCPMockRecorder) GetDeviceInfoForLUN(ctx, hostSessionMap, lunID, fcpNodeName, needFSType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeviceInfoForLUN", reflect.TypeOf((*MockFCP)(nil).GetDeviceInfoForLUN), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeviceInfoForLUN", reflect.TypeOf((*MockFCP)(nil).GetDeviceInfoForLUN), ctx, hostSessionMap, lunID, fcpNodeName, needFSType)
 }
 
 // IsAlreadyAttached mocks base method.
-func (m *MockFCP) IsAlreadyAttached(arg0 context.Context, arg1 int, arg2 string) bool {
+func (m *MockFCP) IsAlreadyAttached(ctx context.Context, lunID int, targetWWNN string) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsAlreadyAttached", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "IsAlreadyAttached", ctx, lunID, targetWWNN)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // IsAlreadyAttached indicates an expected call of IsAlreadyAttached.
-func (mr *MockFCPMockRecorder) IsAlreadyAttached(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockFCPMockRecorder) IsAlreadyAttached(ctx, lunID, targetWWNN any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAlreadyAttached", reflect.TypeOf((*MockFCP)(nil).IsAlreadyAttached), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAlreadyAttached", reflect.TypeOf((*MockFCP)(nil).IsAlreadyAttached), ctx, lunID, targetWWNN)
 }
 
 // PreChecks mocks base method.
-func (m *MockFCP) PreChecks(arg0 context.Context) error {
+func (m *MockFCP) PreChecks(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PreChecks", arg0)
+	ret := m.ctrl.Call(m, "PreChecks", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PreChecks indicates an expected call of PreChecks.
-func (mr *MockFCPMockRecorder) PreChecks(arg0 any) *gomock.Call {
+func (mr *MockFCPMockRecorder) PreChecks(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PreChecks", reflect.TypeOf((*MockFCP)(nil).PreChecks), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PreChecks", reflect.TypeOf((*MockFCP)(nil).PreChecks), ctx)
 }
 
 // PrepareDeviceForRemoval mocks base method.
-func (m *MockFCP) PrepareDeviceForRemoval(arg0 context.Context, arg1 *models.ScsiDeviceInfo, arg2 *models.VolumePublishInfo, arg3 []models.VolumePublishInfo, arg4, arg5 bool) (string, error) {
+func (m *MockFCP) PrepareDeviceForRemoval(ctx context.Context, deviceInfo *models.ScsiDeviceInfo, publishInfo *models.VolumePublishInfo, allPublishInfos []models.VolumePublishInfo, ignoreErrors, force bool) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PrepareDeviceForRemoval", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "PrepareDeviceForRemoval", ctx, deviceInfo, publishInfo, allPublishInfos, ignoreErrors, force)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // PrepareDeviceForRemoval indicates an expected call of PrepareDeviceForRemoval.
-func (mr *MockFCPMockRecorder) PrepareDeviceForRemoval(arg0, arg1, arg2, arg3, arg4, arg5 any) *gomock.Call {
+func (mr *MockFCPMockRecorder) PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, allPublishInfos, ignoreErrors, force any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareDeviceForRemoval", reflect.TypeOf((*MockFCP)(nil).PrepareDeviceForRemoval), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareDeviceForRemoval", reflect.TypeOf((*MockFCP)(nil).PrepareDeviceForRemoval), ctx, deviceInfo, publishInfo, allPublishInfos, ignoreErrors, force)
 }
 
 // RescanDevices mocks base method.
-func (m *MockFCP) RescanDevices(arg0 context.Context, arg1 string, arg2 int32, arg3 int64) error {
+func (m *MockFCP) RescanDevices(ctx context.Context, targetWWNN string, lunID int32, minSize int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RescanDevices", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "RescanDevices", ctx, targetWWNN, lunID, minSize)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RescanDevices indicates an expected call of RescanDevices.
-func (mr *MockFCPMockRecorder) RescanDevices(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockFCPMockRecorder) RescanDevices(ctx, targetWWNN, lunID, minSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RescanDevices", reflect.TypeOf((*MockFCP)(nil).RescanDevices), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RescanDevices", reflect.TypeOf((*MockFCP)(nil).RescanDevices), ctx, targetWWNN, lunID, minSize)
 }

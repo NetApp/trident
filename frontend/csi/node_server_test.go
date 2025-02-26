@@ -17,6 +17,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	"github.com/netapp/trident/mocks/mock_utils/mock_fcp"
+	"github.com/netapp/trident/utils/fcp"
+
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	"github.com/netapp/trident/internal/crypto"
@@ -5436,6 +5439,31 @@ func NewNodeStageVolumeRequestBuilder(requestType NodeStageVolumeRequestType) *N
 			},
 		}
 
+	case TypeFCPRequest:
+		return &NodeStageVolumeRequestBuilder{
+			request: csi.NodeStageVolumeRequest{
+				PublishContext: map[string]string{
+					"protocol":       "block",
+					"sharedTarget":   "false",
+					"filesystemType": filesystem.Ext4,
+					"useCHAP":        "false",
+					"fcpLunNumber":   "0",
+					"p1":             "127.0.0.1:4321",
+					"p2":             "127.0.0.1:4322",
+					"SANType":        sa.FCP,
+				},
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType: "ext4",
+						},
+					},
+				},
+				VolumeId:          "pvc-85987a99-648d-4d84-95df-47d0256ca2ab",
+				StagingTargetPath: "/foo",
+			},
+		}
+
 	case TypeSMBRequest:
 		return &NodeStageVolumeRequestBuilder{
 			request: csi.NodeStageVolumeRequest{
@@ -5502,8 +5530,14 @@ func (builder *NodeStageVolumeRequestBuilder) WithIscsiLunNumber(lunNumber strin
 	return builder
 }
 
+func (builder *NodeStageVolumeRequestBuilder) WithFcpLunNumber(lunNumber string) *NodeStageVolumeRequestBuilder {
+	builder.request.PublishContext["fcpLunNumber"] = lunNumber
+	return builder
+}
+
 func (builder *NodeStageVolumeRequestBuilder) WithLUKSEncryption(luksEncryption string) *NodeStageVolumeRequestBuilder {
 	builder.request.PublishContext["LUKSEncryption"] = luksEncryption
+	builder.request.PublishContext["fcpLunNumber"] = "0"
 	return builder
 }
 
@@ -5553,6 +5587,7 @@ func (builder *NodeStageVolumeRequestBuilder) WithStagingTargetPath(stagingTarge
 }
 
 func (builder *NodeStageVolumeRequestBuilder) Build() csi.NodeStageVolumeRequest {
+	builder.request.PublishContext["fcpLunNumber"] = "0"
 	return builder.request
 }
 
@@ -5766,4 +5801,75 @@ func NewNodeUnpublishVolumeRequestBuilder() *NodeUnpublishVolumeRequestBuilder {
 
 func (u *NodeUnpublishVolumeRequestBuilder) Build() csi.NodeUnpublishVolumeRequest {
 	return u.request
+}
+
+func TestNodeStageFCPVolume(t *testing.T) {
+	type parameters struct {
+		getFCPClient           func() fcp.FCP
+		getNodeHelper          func() nodehelpers.NodeHelper
+		getRestClient          func() controllerAPI.TridentController
+		nodeStageVolumeRequest csi.NodeStageVolumeRequest
+		assertError            assert.ErrorAssertionFunc
+		aesKey                 []byte
+	}
+
+	request := NewNodeStageVolumeRequestBuilder(TypeFCPRequest).Build()
+	tests := map[string]parameters{
+		"error writing the tracking file when attachment error exists": {
+			getFCPClient: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(0), errors.New("some error"))
+				return mockFCPClient
+			},
+
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("some error"))
+				return mockNodeHelper
+			},
+			nodeStageVolumeRequest: request,
+			assertError:            assert.Error,
+		},
+	}
+
+	mountClient, _ := mount.New()
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			plugin := &Plugin{
+				role:   CSINode,
+				aesKey: params.aesKey,
+				fs:     filesystem.New(mountClient),
+			}
+
+			if params.getFCPClient != nil {
+				plugin.fcp = params.getFCPClient()
+			}
+
+			if params.getNodeHelper != nil {
+				plugin.nodeHelper = params.getNodeHelper()
+			}
+
+			if params.getRestClient != nil {
+				plugin.restClient = params.getRestClient()
+			}
+
+			sharedTarget, err := strconv.ParseBool(params.nodeStageVolumeRequest.PublishContext["sharedTarget"])
+			assert.Nil(t, err)
+
+			publishInfo := models.VolumePublishInfo{
+				Localhost:      true,
+				FilesystemType: params.nodeStageVolumeRequest.PublishContext["filesystemType"],
+				SharedTarget:   sharedTarget,
+			}
+
+			err = plugin.nodeStageFCPVolume(context.Background(), &params.nodeStageVolumeRequest, &publishInfo)
+			if params.assertError != nil {
+				params.assertError(t, err)
+			}
+		})
+	}
 }

@@ -13,8 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	models "github.com/netapp/trident/utils/models"
 	gomock "go.uber.org/mock/gomock"
+
+	models "github.com/netapp/trident/utils/models"
 )
 
 // MockFcpReconcileUtils is a mock of FcpReconcileUtils interface.

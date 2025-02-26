@@ -3,6 +3,7 @@
 package fcp
 
 //go:generate mockgen -destination=../../mocks/mock_utils/mock_fcp/mock_fcp_client.go github.com/netapp/trident/utils/fcp FCP
+//go:generate mockgen -destination=../../mocks/mock_utils/mock_fcp/mock_fcp_os_client.go github.com/netapp/trident/utils/fcp OS
 
 import (
 	"context"
@@ -15,6 +16,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
+	"github.com/spf13/afero"
 
 	"github.com/netapp/trident/internal/fiji"
 	"github.com/netapp/trident/pkg/collection"
@@ -103,6 +105,7 @@ type Client struct {
 	deviceClient         devices.Devices
 	fileSystemClient     FileSystem
 	mountClient          Mount
+	os                   afero.Afero
 	fcpUtils             FcpReconcileUtils
 }
 
@@ -118,17 +121,17 @@ func New() (*Client, error) {
 	}
 
 	fileSystemClient := filesystem.New(mountClient)
-
+	osFs := afero.Afero{Fs: afero.NewOsFs()}
 	return NewDetailed(
 		chrootPathPrefix, tridentexec.NewCommand(), DefaultSelfHealingExclusion, osClient,
-		devices.New(), fileSystemClient, mountClient, reconcileutils,
+		devices.New(), fileSystemClient, mountClient, reconcileutils, osFs,
 	), nil
 }
 
 func NewDetailed(
 	chrootPathPrefix string, command tridentexec.Command, selfHealingExclusion []string,
 	osClient OS, deviceClient devices.Devices, fs FileSystem, mount Mount,
-	fcpUtils FcpReconcileUtils,
+	fcpUtils FcpReconcileUtils, os afero.Afero,
 ) *Client {
 	return &Client{
 		chrootPathPrefix:     chrootPathPrefix,
@@ -139,6 +142,7 @@ func NewDetailed(
 		mountClient:          mount,
 		fcpUtils:             fcpUtils,
 		selfHealingExclusion: selfHealingExclusion,
+		os:                   os,
 	}
 }
 
@@ -272,7 +276,7 @@ func (client *Client) rescanDisk(ctx context.Context, deviceName string) error {
 	filename := fmt.Sprintf(client.chrootPathPrefix+"/sys/block/%s/device/rescan", deviceName)
 	Logc(ctx).WithField("filename", filename).Debug("Opening file for writing.")
 
-	f, err := os.OpenFile(filename, os.O_WRONLY, 0)
+	f, err := client.os.OpenFile(filename, os.O_WRONLY, 0)
 	if err != nil {
 		Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
 		return err
@@ -386,6 +390,7 @@ func (client *Client) AttachVolume(
 
 	// Then attempt to fix invalid serials by purging them (to be scanned
 	// again later)
+
 	err = client.handleInvalidSerials(ctx, hostSessionMap, lunID, publishInfo.FCTargetWWNN, publishInfo.FCPLunSerial,
 		purgeOneLun)
 	if err != nil {
