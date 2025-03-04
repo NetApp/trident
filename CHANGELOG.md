@@ -2,7 +2,65 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v24.06.0
+## Changes since v24.10.0
+
+### Trident
+
+**Fixes:**
+- **Kubernetes:** Fixed missing node IP addresses from automatic export policies (Issue [#965](https://github.com/NetApp/trident/issues/965)).
+- **Kubernetes:** Fixed automatic export policies switching to per volume policy prematurely for ONTAP-NAS-Economy.
+- **Kubernetes:** Fixed backend config credentials to support all available AWS ARN partitions (Issue [#913](https://github.com/NetApp/trident/issues/913)).
+- **Kubernetes:** Added option to disable the auto configurator reconciliation in the Trident operator (Issue [#924](https://github.com/NetApp/trident/issues/924)).
+- **Kubernetes:** Added securityContext for csi-resizer container (Issue [#976](https://github.com/NetApp/trident/issues/976)).
+- Fixed Zonal Flex pools for GCNV driver.
+
+**Enhancements:**
+- **Kubernetes:** Added support for ONTAP ASA r2 for iSCSI.
+- Added Fibre Channel support on ONTAP-SAN driver.
+- Added NVMe LUKS support.
+- **Kubernetes:** Added support for force detach for ONTAP-NAS volumes during Non-Graceful Node Shutdown scenarios.
+  New ONTAP-NAS volumes will now utilize per-volume export policies managed by Trident. Provided an
+  upgrade path for existing volumes to transition to the new export policy model on unpublish without affecting active
+  workloads.
+- **Openshift:** Added support for automatic iSCSI node preparation for RHCOS on ROSA clusters.
+- **Kubernetes:** Added support for cross namespace volume cloning.
+- **Kubernetes:** Added cloneFromSnapshot PVC annotation.
+- **Kubernetes:** Added automatic backend configuration for EKS add-on and helm based installation for AWS FSxN.
+- **Kubernetes:** Added support for Kubernetes 1.32.
+- Switched to scratch image for all base images.
+- **Kubernetes:** Enhanced iSCSI self-healing to initiate scans by exact host, channel, target and LUN ID.
+- Added support for SMB volumes with GCNV driver.
+- Allow ONTAP volumes to skip recovery queue on deletion.
+- Added support to override default images using SHAs instead of tags.
+- Added image-pull-secrets flag to tridentctl installer.
+- **Openshift:** Added support for Openshift Virtualization for ONTAP drivers.
+
+### Trident Protect
+
+You are required to install the new Trident protect module to unlock these capabilities. [Read more to get started](https://docs.netapp.com/us-en/trident/trident-protect/learn-about-trident-protect.html).
+
+**Fixes:**
+- Improved the management of temporary volumes to skip the ONTAP Volume Recovery Queue.
+- Security Context Constraint (SCC) annotations are now restored to original values.
+- Improved Restore efficiency with support for parallel operations.
+- Enhanced support for Execution Hook timeouts for larger applications.
+
+**Enhancements:**
+- **New:** Added Backup and Restore support for KubeVirt / OpenShift Virtualization VMs for both volumeMode: File 
+  and volumeMode: Block (raw device) storage, to already available storage replication through AppMirrorRelationship.
+- Capability to control freeze behaviour at application level for KubeVirt environments.
+- Support for configuring AutoSupport proxy connections.
+- Ability to define a secret for data mover encryption (Kopia / Restic).
+- Ability to manually run an execution hook.
+- Ability to configure Security Context Constraints (SCCs) during Trident protect installation.
+- Support for configuring node selector and affinity rules during Trident protect installation.
+- Support for HTTP / HTTPS egress proxy for AppVault objects.
+- SESSION_TOKEN support added to AWS S3 AppVault credentials.
+- Extended ResourceFilter to allow exclusion of Cluster Scoped Resources.
+- Support for AWS Session Token in S3 AppVault credentials.
+- Added support for resource collection after pre-snapshot execution hook.
+
+## v24.10.0
 
 **New:** Trident data protection and data management features
 - Backup and recovery

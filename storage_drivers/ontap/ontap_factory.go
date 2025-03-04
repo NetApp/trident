@@ -21,8 +21,8 @@ const (
 	FlagDisaggregated = "disaggregated"
 	FlagSANOptimized  = "sanOptimized"
 
-	PersonalityONTAP9 = "ONTAP9"
-	PersonalityASAr2  = "ASAr2"
+	PersonalityUnified = "Unified"
+	PersonalityASAr2   = "ASAr2"
 )
 
 // GetStorageDriver uses a backend config to create an ONTAP API client and constructs the necessary storage driver.
@@ -63,7 +63,7 @@ func GetStorageDriver(
 
 	// Set up driver flags
 	ontapConfig.Flags = map[string]string{
-		FlagPersonality:   PersonalityONTAP9,
+		FlagPersonality:   PersonalityUnified,
 		FlagDisaggregated: strconv.FormatBool(API.IsDisaggregated()),
 		FlagSANOptimized:  strconv.FormatBool(API.IsSANOptimized()),
 	}
