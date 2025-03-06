@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package exec
 
@@ -22,7 +22,7 @@ var (
 	_ Command = NewCommand()
 )
 
-// ExitErrorInterface defines the methods that exec.ExitError implements.
+// ExitError defines the methods that exec.ExitError implements.
 // This enables unit testing and mocking of exit codes.
 type ExitError interface {
 	error

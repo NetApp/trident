@@ -43,12 +43,16 @@ const (
 	SessionSourceCurrentStatus = "currentStatus"
 	SessionSourceNodeStage     = "nodeStage"
 
-	iscsiadmLoginTimeoutValue = 10
-	iscsiadmLoginTimeout      = iscsiadmLoginTimeoutValue * time.Second
-	iscsiadmLoginRetryMax     = "1"
+	iscsiadmLoginTimeoutValue       = 10
+	iscsiadmLoginTimeout            = iscsiadmLoginTimeoutValue * time.Second
+	iscsiadmAccessiblePortalTimeout = 15 * time.Second
+	iscsiadmLoginRetryMax           = "1"
 
-	errNoObjsFound     = 21
-	errLoginAuthFailed = 24
+	errTransport        = 4  // ISCSI_ERR_TRANS
+	errTransportTimeout = 8  // ISCSI_ERR_TRANS_TIMEOUT
+	errPDUTimeout       = 11 // ISCSI_ERR_PDU_TIMEOUT
+	errNoObjsFound      = 21
+	errLoginAuthFailed  = 24 // ISCSI_ERR_LOGIN_AUTH_FAILED
 
 	// REDACTED is a copy of what is in utils package.
 	// we can reference that once we do not have any references into the utils package
@@ -100,6 +104,8 @@ type ISCSI interface {
 	EnsureISCSISessionsWithPortalDiscovery(ctx context.Context, hostDataIPs []string) error
 	ISCSIDiscovery(ctx context.Context, portal string) ([]models.ISCSIDiscoveryInfo, error)
 	Supported(ctx context.Context) bool
+	IsPortalAccessible(ctx context.Context, portal string) (bool, error)
+	IsSessionStale(ctx context.Context, sessionID string) bool
 }
 
 // Exclusion list contains keywords if found in any Target IQN should not be considered for
@@ -1115,14 +1121,17 @@ func (client *Client) portalsToLogin(ctx context.Context, targetIQN string, port
 	return portalsNotLoggedIn, loggedIn, nil
 }
 
-// IsSessionStale - reads /sys/class/iscsi_session/session<sid>/state and returns true if it is not "LOGGED_IN".
+func (client *Client) IsSessionStale(ctx context.Context, sessionID string) bool {
+	Logc(ctx).WithField("sessionID", sessionID).Debug(">>>> iscsi.IsSessionStale")
+	defer Logc(ctx).Debug("<<<< iscsi.IsSessionStale")
+	return client.isSessionStale(ctx, sessionID)
+}
+
+// isSessionStale - reads /sys/class/iscsi_session/session<sid>/state and returns true if it is not "LOGGED_IN".
 // Looks that the state of an already established session to identify if it is
 // logged in or not, if it is not logged in then it could be a stale session.
 // For now, we are relying on the sysfs files
 func (client *Client) isSessionStale(ctx context.Context, sessionID string) bool {
-	Logc(ctx).WithField("sessionID", sessionID).Debug(">>>> iscsi.IsSessionStale")
-	defer Logc(ctx).Debug("<<<< iscsi.IsSessionStale")
-
 	// Find the session state from the session at /sys/class/iscsi_session/sessionXXX/state
 	filename := fmt.Sprintf(client.chrootPathPrefix+"/sys/class/iscsi_session/session%s/state", sessionID)
 	sessionStateBytes, err := client.os.ReadFile(filename)
@@ -1133,7 +1142,6 @@ func (client *Client) isSessionStale(ctx context.Context, sessionID string) bool
 		}).Error("Could not read session state file")
 		return false
 	}
-
 	sessionState := strings.TrimSpace(string(sessionStateBytes))
 
 	Logc(ctx).WithFields(LogFields{
@@ -1141,7 +1149,6 @@ func (client *Client) isSessionStale(ctx context.Context, sessionID string) bool
 		"sessionState": sessionState,
 		"sysfsFile":    filename,
 	}).Debug("Found iSCSI session state.")
-
 	return sessionState != sessionStateLoggedIn
 }
 
@@ -1978,7 +1985,7 @@ func (client *Client) Logout(ctx context.Context, targetIQN, targetPortal string
 }
 
 // GetISCSIDevices returns a list of iSCSI devices that are attached to (but not necessarily mounted on) this host.
-func (c *Client) GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*models.ScsiDeviceInfo, error) {
+func (client *Client) GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*models.ScsiDeviceInfo, error) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
 	Logc(ctx).Debug(">>>> devices.GetISCSIDevices")
@@ -1988,8 +1995,8 @@ func (c *Client) GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*m
 	hostSessionMapCache := make(map[string]map[int]int)
 
 	// Start by reading the sessions from /sys/class/iscsi_session
-	sysPath := c.chrootPathPrefix + "/sys/class/iscsi_session/"
-	sessionDirs, err := c.os.ReadDir(sysPath)
+	sysPath := client.chrootPathPrefix + "/sys/class/iscsi_session/"
+	sessionDirs, err := client.os.ReadDir(sysPath)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Errorf("Could not read %s", sysPath)
 		return nil, err
@@ -2022,7 +2029,7 @@ func (c *Client) GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*m
 		sessionValues := make(map[string]string, len(sessionFiles))
 		for file, value := range sessionFiles {
 			path := sessionPath + "/" + file
-			fileBytes, err := c.os.ReadFile(path)
+			fileBytes, err := client.os.ReadFile(path)
 			if err != nil {
 				Logc(ctx).WithFields(LogFields{
 					"path":  path,
@@ -2063,7 +2070,7 @@ func (c *Client) GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*m
 
 		// Find the one target at /sys/class/iscsi_session/sessionXXX/device/targetHH:BB:DD (host:bus:device)
 		sessionDevicePath := sessionPath + "/device/"
-		targetDirs, err := c.os.ReadDir(sessionDevicePath)
+		targetDirs, err := client.os.ReadDir(sessionDevicePath)
 		if err != nil {
 			Logc(ctx).WithField("error", err).Errorf("Could not read %s", sessionDevicePath)
 			return nil, err
@@ -2095,7 +2102,7 @@ func (c *Client) GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*m
 		}).Debug("Found host/bus/device path.")
 
 		// Find the devices at /sys/class/iscsi_session/sessionXXX/device/targetHH:BB:DD/HH:BB:DD:LL (host:bus:device:lun)
-		hostBusDeviceLunDirs, err := c.os.ReadDir(sessionDeviceHBDPath)
+		hostBusDeviceLunDirs, err := client.os.ReadDir(sessionDeviceHBDPath)
 		if err != nil {
 			Logc(ctx).WithField("error", err).Errorf("Could not read %s", sessionDeviceHBDPath)
 			return nil, err
@@ -2129,7 +2136,7 @@ func (c *Client) GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*m
 			blockPath := sessionDeviceHBDLPath + "/block/"
 
 			// Find the block device at /sys/class/iscsi_session/sessionXXX/device/targetHH:BB:DD/HH:BB:DD:LL/block
-			blockDeviceDirs, err := c.os.ReadDir(blockPath)
+			blockDeviceDirs, err := client.os.ReadDir(blockPath)
 			if err != nil {
 				Logc(ctx).WithField("error", err).Errorf("Could not read %s", blockPath)
 				return nil, err
@@ -2143,9 +2150,9 @@ func (c *Client) GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*m
 
 				// Find multipath device, if any
 				var slaveDevices []string
-				multipathDevice := c.devices.FindMultipathDeviceForDevice(ctx, blockDeviceName)
+				multipathDevice := client.devices.FindMultipathDeviceForDevice(ctx, blockDeviceName)
 				if multipathDevice != "" {
-					slaveDevices = c.devices.FindDevicesForMultipathDevice(ctx, multipathDevice)
+					slaveDevices = client.devices.FindDevicesForMultipathDevice(ctx, multipathDevice)
 				} else {
 					slaveDevices = []string{blockDeviceName}
 				}
@@ -2153,7 +2160,7 @@ func (c *Client) GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*m
 				// Get the host/session map, using a cached value if available
 				hostSessionMap, ok := hostSessionMapCache[targetIQN]
 				if !ok {
-					hostSessionMap = c.iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIQN)
+					hostSessionMap = client.iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIQN)
 					hostSessionMapCache[targetIQN] = hostSessionMap
 				}
 
@@ -2720,7 +2727,7 @@ func (client *Client) InspectAllISCSISessions(
 		// we can identify if the session is logged in or not (stale state).
 		// If stale, an attempt is made to identify if the session should be fixed right now or there is a need to wait.
 		if client.isSessionStale(ctx, currentPortalInfo.SessionNumber) {
-			action := isStalePortal(ctx, publishedPortalInfo, currentPortalInfo, iSCSISessionWaitTime, timeNow, portal)
+			action := client.isStalePortal(ctx, publishedPortalInfo, currentPortalInfo, iSCSISessionWaitTime, timeNow, portal)
 			publishedSessionData.Remediation = action
 
 			if action != models.NoAction {
@@ -2755,51 +2762,85 @@ func (client *Client) InspectAllISCSISessions(
 	return candidateStalePortals, candidateNonStalePortal
 }
 
-// isStalePortal attempts to identify if a session should be immediately fixed or not using published
-// and current credentials or based on iSCSI session wait timer.
-// For CHAP: It first inspects published sessions and compare CHAP credentials with current in-use
-//
-//	CHAP credentials, if different it returns true, else we wait until session exceeds
-//	iSCSISessionWaitTime that is the CHAP & non-CHAP scenario. For this logic to work correct
-//	ensure last portal update came from NodeStage and not from Tracking Info.
-//
-// FOR CHAP & non-CHAP:
-// 1. If the FirstIdentifiedStaleAt is not set, set it; else
-// 2. Compare timeNow with the FirstIdentifiedStaleAt; if it exceeds iSCSISessionWaitTime then it returns true;
-// 3. Else do nothing and continue
-func isStalePortal(
-	ctx context.Context, publishedPortalInfo, currentPortalInfo *models.PortalInfo,
-	iSCSISessionWaitTime time.Duration, timeNow time.Time, portal string,
-) models.ISCSIAction {
-	logFields := LogFields{
-		"portal":            portal,
-		"CHAPInUse":         publishedPortalInfo.CHAPInUse(),
-		"sessionInfoSource": publishedPortalInfo.Source,
-	}
+func (client *Client) IsPortalAccessible(ctx context.Context, portal string) (bool, error) {
+	fields := LogFields{"portal": portal}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.IsPortalAccessible")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.IsPortalAccessible")
 
-	// The reason we can rely on CHAP information from NodeStage and not from TrackingInfo is that
-	// the multiple tracking information may contain different CHAP credentials for the same
-	// portal and they may be read in any sequence.
-	if publishedPortalInfo.CHAPInUse() && publishedPortalInfo.Source == SessionSourceNodeStage {
-		if publishedPortalInfo.Credentials != currentPortalInfo.Credentials {
-			Logc(ctx).WithFields(logFields).Warning("Portal's published credentials do not match current credentials" +
-				" in-use.")
-			return models.LogoutLoginScan
+	isAccessible, err := client.isPortalAccessible(ctx, portal)
+	if !isAccessible {
+		Logc(ctx).Warn("Portal may require manual intervention; storage network connection is unstable.")
+		return false, err
+	}
+	return true, err
+}
+
+// isPortalAccessible checks if the supplied portal is responsive.
+// If the portal is reachable and does not use CHAP, this should return true
+// If the portal is reachable, CHAP is in use but with stale credentials, this should fail with an authentication error.
+// If the portal is not reachable, this should fail with a connection error.
+// If it's unclear if the portal is reachable or unreachable, an error will be returned.
+func (client *Client) isPortalAccessible(ctx context.Context, portal string) (bool, error) {
+	args := []string{"-m", "discovery", "-t", "sendtargets", "-p", portal}
+	_, err := client.execIscsiadmCommandWithTimeout(ctx, iscsiadmAccessiblePortalTimeout, args...)
+	if err != nil {
+		// A timeout here indicates that iscsiadm command didn't return or exit in time.
+		// In this case, we cannot determine if the portal is accessible or not, so return early.
+		if errors.IsTimeoutError(err) {
+			return false, fmt.Errorf("failed to determine if portal is accessible; %w", err)
+		}
+
+		exitErr, ok := err.(tridentexec.ExitError)
+		if !ok {
+			return false, fmt.Errorf("failed to determine if portal is accessible; %w", err)
+		}
+
+		// Differentiate between different exit codes.
+		switch exitErr.ExitCode() {
+		case errLoginAuthFailed:
+			return true, errors.AuthError("CHAP authorization failure")
+		case errPDUTimeout, errTransportTimeout, errTransport:
+			return false, errors.WrapWithConnectionError(err, "inaccessible portal '%s'", portal)
+		default:
+			return false, fmt.Errorf("unrecognized error: %w", err)
 		}
 	}
 
-	if !publishedPortalInfo.IsFirstIdentifiedStaleAtSet() {
-		Logc(ctx).WithFields(logFields).Warningf("Portal identified to be stale at %v.", timeNow)
-		publishedPortalInfo.FirstIdentifiedStaleAt = timeNow
-	} else if timeNow.Sub(publishedPortalInfo.FirstIdentifiedStaleAt) >= iSCSISessionWaitTime {
-		Logc(ctx).WithFields(logFields).Warningf("Portal exceeded stale wait time at %v; adding to stale portals list.",
-			timeNow)
-		return models.LogoutLoginScan
-	} else {
-		Logc(ctx).WithFields(logFields).Warningf("Portal has not exceeded stale wait time at %v.", timeNow)
+	return true, nil
+}
+
+// isStalePortal attempts to identify if a session should be immediately fixed or not using published
+// and current credentials or based on iSCSI session wait timer.
+// For CHAP: It first inspects published sessions and compare CHAP credentials with current in-use
+// FOR CHAP & non-CHAP:
+// 1. If the FirstIdentifiedStaleAt is not set, set it; else
+// 2. Compare timeNow with the FirstIdentifiedStaleAt; if it exceeds iSCSISessionWaitTime then it returns LoginScan.
+// 3. If it exceeds iSCSISessionWaitTime and CHAP credentials are different, it returns LogoutLoginScan.
+func (client *Client) isStalePortal(
+	ctx context.Context, publishedPortalInfo, currentPortalInfo *models.PortalInfo, iSCSISessionWaitTime time.Duration,
+	timeNow time.Time, portal string,
+) models.ISCSIAction {
+	fields := LogFields{
+		"portal":    portal,
+		"CHAPInUse": publishedPortalInfo.CHAPInUse(),
 	}
 
-	return models.NoAction
+	// Identified stale at Time.Now(), and remains there until we remediate it.
+	if !publishedPortalInfo.IsFirstIdentifiedStaleAtSet() {
+		Logc(ctx).WithFields(fields).Warnf("Portal identified to be stale at %s.", timeNow)
+		publishedPortalInfo.FirstIdentifiedStaleAt = timeNow
+		return models.NoAction
+	} else if timeNow.Sub(publishedPortalInfo.FirstIdentifiedStaleAt) < iSCSISessionWaitTime {
+		Logc(ctx).WithFields(fields).Warnf("Portal has not exceeded stale wait time at %s.", timeNow)
+		return models.NoAction
+	}
+
+	if publishedPortalInfo.CHAPInUse() && (publishedPortalInfo.Credentials != currentPortalInfo.Credentials) {
+		Logc(ctx).WithFields(fields).Warn("Portal's published credentials do not match current credentials.")
+		return models.LogoutLoginScan
+	}
+
+	return models.LoginScan
 }
 
 // isNonStalePortal attempts to identify if a session has any issues other than being stale.

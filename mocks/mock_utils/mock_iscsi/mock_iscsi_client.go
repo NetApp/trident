@@ -170,6 +170,35 @@ func (mr *MockISCSIMockRecorder) IsAlreadyAttached(arg0, arg1, arg2 any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAlreadyAttached", reflect.TypeOf((*MockISCSI)(nil).IsAlreadyAttached), arg0, arg1, arg2)
 }
 
+// IsPortalAccessible mocks base method.
+func (m *MockISCSI) IsPortalAccessible(arg0 context.Context, arg1 string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsPortalAccessible", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsPortalAccessible indicates an expected call of IsPortalAccessible.
+func (mr *MockISCSIMockRecorder) IsPortalAccessible(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsPortalAccessible", reflect.TypeOf((*MockISCSI)(nil).IsPortalAccessible), arg0, arg1)
+}
+
+// IsSessionStale mocks base method.
+func (m *MockISCSI) IsSessionStale(arg0 context.Context, arg1 string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsSessionStale", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsSessionStale indicates an expected call of IsSessionStale.
+func (mr *MockISCSIMockRecorder) IsSessionStale(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsSessionStale", reflect.TypeOf((*MockISCSI)(nil).IsSessionStale), arg0, arg1)
+}
+
 // Logout mocks base method.
 func (m *MockISCSI) Logout(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
