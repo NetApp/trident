@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package errors
 
@@ -298,6 +298,48 @@ func IsVolumeStateError(err error) bool {
 	}
 	_, ok := err.(*volumeStateError)
 	return ok
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// connectionError
+// ///////////////////////////////////////////////////////////////////////////
+
+type connectionError struct {
+	inner   error
+	message string
+}
+
+func (e *connectionError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
+
+func (e *connectionError) Unwrap() error {
+	// Return the inner error.
+	return e.inner
+}
+
+func ConnectionError(message string, a ...any) error {
+	return &connectionError{message: fmt.Sprintf(message, a...)}
+}
+
+func WrapWithConnectionError(err error, message string, a ...any) error {
+	return &connectionError{
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
+	}
+}
+
+func IsConnectionError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPointer *connectionError
+	return errors.As(err, &errPointer)
 }
 
 // ///////////////////////////////////////////////////////////////////////////

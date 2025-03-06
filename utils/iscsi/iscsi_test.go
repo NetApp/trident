@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"math"
 	"os"
 	"testing"
 	"time"
@@ -5749,6 +5750,142 @@ func createMockIscsiSessions(fs afero.Fs) error {
 	return nil
 }
 
+func TestIsPortalAccessible(t *testing.T) {
+	tests := []struct {
+		name       string
+		portal     string
+		setupMock  func(*gomock.Controller) *mockexec.MockCommand
+		assertErr  assert.ErrorAssertionFunc
+		assertBool assert.BoolAssertionFunc
+	}{
+		{
+			name:   "has successful discovery",
+			portal: "127.0.0.1:3260",
+			setupMock: func(ctrl *gomock.Controller) *mockexec.MockCommand {
+				mockCommand := mockexec.NewMockCommand(ctrl)
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "iscsiadm", iscsiadmAccessiblePortalTimeout, true, "-m", "discovery", "-t",
+					"sendtargets", "-p", "127.0.0.1:3260",
+				).Return([]byte(""), nil)
+				return mockCommand
+			},
+			assertErr:  assert.NoError,
+			assertBool: assert.True,
+		},
+		{
+			name:   "has timeout running the command",
+			portal: "127.0.0.1:3260",
+			setupMock: func(ctrl *gomock.Controller) *mockexec.MockCommand {
+				mockCommand := mockexec.NewMockCommand(ctrl)
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "iscsiadm", iscsiadmAccessiblePortalTimeout, true, "-m", "discovery", "-t",
+					"sendtargets", "-p", "127.0.0.1:3260",
+				).Return(nil, errors.TimeoutError("timeout error"))
+				return mockCommand
+			},
+			assertErr:  assert.Error,
+			assertBool: assert.False,
+		},
+		{
+			name:   "has iSCSI CHAP auth failure",
+			portal: "127.0.0.1:3260",
+			setupMock: func(ctrl *gomock.Controller) *mockexec.MockCommand {
+				mockCommand := mockexec.NewMockCommand(ctrl)
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "iscsiadm", iscsiadmAccessiblePortalTimeout, true, "-m", "discovery", "-t",
+					"sendtargets", "-p", "127.0.0.1:3260",
+				).Return(nil, mockexec.NewMockExitError(errLoginAuthFailed, "auth failed"))
+				return mockCommand
+			},
+			assertErr:  assert.Error,
+			assertBool: assert.True,
+		},
+		{
+			name:   "has iSCSI PDU timeout",
+			portal: "127.0.0.1:3260",
+			setupMock: func(ctrl *gomock.Controller) *mockexec.MockCommand {
+				mockCommand := mockexec.NewMockCommand(ctrl)
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "iscsiadm", iscsiadmAccessiblePortalTimeout, true, "-m", "discovery", "-t",
+					"sendtargets", "-p", "127.0.0.1:3260",
+				).Return(nil, mockexec.NewMockExitError(errPDUTimeout, "iSCSI PDU timeout"))
+				return mockCommand
+			},
+			assertErr:  assert.Error,
+			assertBool: assert.False,
+		},
+		{
+			name:   "has transport timeout error",
+			portal: "127.0.0.1:3260",
+			setupMock: func(ctrl *gomock.Controller) *mockexec.MockCommand {
+				mockCommand := mockexec.NewMockCommand(ctrl)
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "iscsiadm", iscsiadmAccessiblePortalTimeout, true, "-m", "discovery", "-t",
+					"sendtargets", "-p", "127.0.0.1:3260",
+				).Return(nil, mockexec.NewMockExitError(errTransportTimeout, "transport timeout"))
+				return mockCommand
+			},
+			assertErr:  assert.Error,
+			assertBool: assert.False,
+		},
+		{
+			name:   "has transport error",
+			portal: "127.0.0.1:3260",
+			setupMock: func(ctrl *gomock.Controller) *mockexec.MockCommand {
+				mockCommand := mockexec.NewMockCommand(ctrl)
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "iscsiadm", iscsiadmAccessiblePortalTimeout, true, "-m", "discovery", "-t",
+					"sendtargets", "-p", "127.0.0.1:3260",
+				).Return(nil, mockexec.NewMockExitError(errTransport, "transport failure"))
+				return mockCommand
+			},
+			assertErr:  assert.Error,
+			assertBool: assert.False,
+		},
+		{
+			name:   "has unrecognized exit error",
+			portal: "127.0.0.1:3260",
+			setupMock: func(ctrl *gomock.Controller) *mockexec.MockCommand {
+				mockCommand := mockexec.NewMockCommand(ctrl)
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "iscsiadm", iscsiadmAccessiblePortalTimeout, true, "-m", "discovery", "-t",
+					"sendtargets", "-p", "127.0.0.1:3260",
+				).Return(nil, mockexec.NewMockExitError(math.MaxInt64, "unrecognized exit error"))
+				return mockCommand
+			},
+			assertErr:  assert.Error,
+			assertBool: assert.False,
+		},
+		{
+			name:   "has unrecognized error",
+			portal: "127.0.0.1:3260",
+			setupMock: func(ctrl *gomock.Controller) *mockexec.MockCommand {
+				mockCommand := mockexec.NewMockCommand(ctrl)
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "iscsiadm", iscsiadmAccessiblePortalTimeout, true, "-m", "discovery", "-t",
+					"sendtargets", "-p", "127.0.0.1:3260",
+				).Return(nil, errors.New("unrecognized error"))
+				return mockCommand
+			},
+			assertErr:  assert.Error,
+			assertBool: assert.False,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			client := &Client{}
+			client.command = tt.setupMock(mockCtrl)
+			isAccessible, err := client.IsPortalAccessible(context.Background(), tt.portal)
+			tt.assertErr(t, err)
+			tt.assertBool(t, isAccessible)
+		})
+	}
+}
+
 func TestIsStalePortal(t *testing.T) {
 	ipList := []string{"1.2.3.4", "2.3.4.5", "3.4.5.6", "4.5.6.7"}
 
@@ -5801,28 +5938,7 @@ func TestIsStalePortal(t *testing.T) {
 		SimulateConditions PreRun
 	}{
 		{
-			TestName: "CHAP in use and Source is NodeStage and Credentials Mismatch",
-			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
-				ipList[0]: structCopyHelper(sessionData1),
-				ipList[1]: structCopyHelper(sessionData2),
-				ipList[2]: structCopyHelper(sessionData1),
-			}},
-			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
-				ipList[0]: structCopyHelper(sessionData1),
-				ipList[1]: structCopyHelper(sessionData2),
-				ipList[2]: structCopyHelper(sessionData1),
-			}},
-			SessionWaitTime: 10 * time.Second,
-			TimeNow:         time.Now(),
-			Portal:          ipList[0],
-			ResultAction:    models.LogoutLoginScan,
-			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
-				publishedSessions.Info[portal].PortalInfo.Source = SessionSourceNodeStage
-				currentSessions.Info[portal].PortalInfo.Credentials = chapCredentials[1]
-			},
-		},
-		{
-			TestName: "CHAP in use and Source is NodeStage and Credentials NOT Mismatch and First time stale",
+			TestName: "CHAP portal is newly identified as stale with up-to-date credentials",
 			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
@@ -5838,13 +5954,11 @@ func TestIsStalePortal(t *testing.T) {
 			Portal:          ipList[0],
 			ResultAction:    models.NoAction,
 			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
-				publishedSessions.Info[portal].PortalInfo.Source = SessionSourceNodeStage
 				publishedSessions.Info[portal].PortalInfo.FirstIdentifiedStaleAt = time.Time{}
 			},
 		},
 		{
-			TestName: "CHAP in use and Source is NOT NodeStage and NOT First time stale but NOT exceeds Session Wait" +
-				" Time",
+			TestName: "CHAP portal has not exceeded session wait time",
 			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
@@ -5864,8 +5978,7 @@ func TestIsStalePortal(t *testing.T) {
 			},
 		},
 		{
-			TestName: "CHAP in use and Source is NOT NodeStage and NOT First time stale and exceeds Session Wait" +
-				" Time",
+			TestName: "CHAP portal exceeds session wait time with outdated credentials",
 			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
@@ -5879,13 +5992,14 @@ func TestIsStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now().Add(20 * time.Second),
 			Portal:          ipList[0],
-			ResultAction:    models.LoginScan,
+			ResultAction:    models.LogoutLoginScan,
 			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
 				publishedSessions.Info[portal].PortalInfo.FirstIdentifiedStaleAt = time.Now()
+				publishedSessions.Info[portal].PortalInfo.Credentials = chapCredentials[1] // Replace credentials.
 			},
 		},
 		{
-			TestName: "CHAP NOT in use and First time stale",
+			TestName: "non-CHAP portal is newly identified as stale",
 			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
@@ -5906,8 +6020,7 @@ func TestIsStalePortal(t *testing.T) {
 			},
 		},
 		{
-			TestName: "CHAP NOT in use and NOT First time stale but NOT exceeds Session Wait" +
-				" Time",
+			TestName: "non-CHAP portal is stale but has not exceeded stale wait time",
 			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
@@ -5928,8 +6041,7 @@ func TestIsStalePortal(t *testing.T) {
 			},
 		},
 		{
-			TestName: "CHAP NOT in use and NOT First time stale and exceeds Session Wait" +
-				" Time",
+			TestName: "non-CHAP portal exceeds stale wait time",
 			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
@@ -5954,6 +6066,7 @@ func TestIsStalePortal(t *testing.T) {
 	for _, input := range inputs {
 		t.Run(input.TestName, func(t *testing.T) {
 			portal := input.Portal
+
 			input.SimulateConditions(input.PublishedPortals, input.CurrentPortals, portal)
 
 			publishedPortalData, _ := input.PublishedPortals.Info[portal]
@@ -5962,9 +6075,24 @@ func TestIsStalePortal(t *testing.T) {
 			publishedPortalInfo := publishedPortalData.PortalInfo
 			currentPortalInfo := currentPortalData.PortalInfo
 
-			action := isStalePortal(context.TODO(), &publishedPortalInfo, &currentPortalInfo, input.SessionWaitTime,
-				input.TimeNow, portal)
+			const chrootPathPrefix = ""
+			ctrl := gomock.NewController(t)
+			iscsiClient := NewDetailed(
+				chrootPathPrefix,
+				mockexec.NewMockCommand(ctrl),
+				DefaultSelfHealingExclusion,
+				mock_iscsi.NewMockOS(ctrl),
+				mock_devices.NewMockDevices(ctrl),
+				mock_filesystem.NewMockFilesystem(ctrl),
+				mock_mount.NewMockMount(ctrl),
+				nil,
+				afero.Afero{Fs: afero.NewMemMapFs()},
+				nil,
+			)
 
+			action := iscsiClient.isStalePortal(
+				context.TODO(), &publishedPortalInfo, &currentPortalInfo, input.SessionWaitTime, input.TimeNow, portal,
+			)
 			assert.Equal(t, input.ResultAction, action, "Remediation action mismatch")
 		})
 	}

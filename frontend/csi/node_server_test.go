@@ -614,6 +614,91 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 	}
 }
 
+func TestGetChapInfoFromController(t *testing.T) {
+	type args struct {
+		ctx    context.Context
+		volume string
+		node   string
+	}
+
+	type data struct {
+		chapInfo *models.IscsiChapInfo
+	}
+
+	type assertions struct {
+		Error assert.ErrorAssertionFunc
+		Empty assert.ValueAssertionFunc
+		Equal assert.ComparisonAssertionFunc
+	}
+
+	tt := map[string]struct {
+		args   args
+		data   data
+		assert assertions
+		mocks  func(mockAPI *mockControllerAPI.MockTridentController, args args, data data)
+	}{
+		"Successfully gets CHAP credentials": {
+			args: args{
+				ctx:    context.Background(),
+				volume: "foo",
+				node:   "bar",
+			},
+			data: data{
+				chapInfo: &models.IscsiChapInfo{
+					UseCHAP:              true,
+					IscsiUsername:        "user",
+					IscsiInitiatorSecret: "pass",
+					IscsiTargetUsername:  "user2",
+					IscsiTargetSecret:    "pass2",
+				},
+			},
+			assert: assertions{
+				Error: assert.NoError,
+				Empty: assert.NotEmpty,
+				Equal: assert.Equal,
+			},
+			mocks: func(mockAPI *mockControllerAPI.MockTridentController, args args, data data) {
+				mockAPI.EXPECT().GetChap(args.ctx, args.volume, args.node).Return(data.chapInfo, nil)
+			},
+		},
+		"Fails to get CHAP credentials": {
+			args: args{
+				ctx:    context.Background(),
+				volume: "foo",
+				node:   "bar",
+			},
+			data: data{
+				chapInfo: nil,
+			},
+			assert: assertions{
+				Error: assert.Error,
+				Empty: assert.Empty,
+				Equal: assert.Equal,
+			},
+			mocks: func(mockAPI *mockControllerAPI.MockTridentController, args args, data data) {
+				mockAPI.EXPECT().GetChap(args.ctx, args.volume, args.node).Return(data.chapInfo, errors.New("api error"))
+			},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			mockAPI := mockControllerAPI.NewMockTridentController(mockCtrl)
+			test.mocks(mockAPI, test.args, test.data)
+
+			plugin := &Plugin{
+				restClient: mockAPI,
+			}
+
+			info, err := plugin.getChapInfoFromController(test.args.ctx, test.args.volume, test.args.node)
+			test.assert.Error(t, err)
+			test.assert.Empty(t, info)
+			test.assert.Equal(t, info, test.data.chapInfo)
+		})
+	}
+}
+
 func TestUpdateChapInfoFromController_Success(t *testing.T) {
 	testCtx := context.Background()
 	volumeName := "foo"
@@ -671,6 +756,129 @@ func TestUpdateChapInfoFromController_Error(t *testing.T) {
 	assert.NotNil(t, err, "Unexpected success")
 	assert.NotEqualValues(t, expectedChapInfo, testPublishInfo.IscsiAccessInfo.IscsiChapInfo)
 	assert.EqualValues(t, models.IscsiChapInfo{}, testPublishInfo.IscsiAccessInfo.IscsiChapInfo)
+}
+
+func TestUpdateChapInfoForSessions(t *testing.T) {
+	// Populate sessions with only the state that matters. The rest of the fields are not relevant for this test.
+	publishedSessions := &models.ISCSISessions{}
+	currentSessions := &models.ISCSISessions{}
+
+	// CHAP portals
+	chapPortals := []string{"0.0.0.0", "4.4.4.4", "5.5.5.5"}
+
+	// Unique CHAP portal
+	uniqueChapPortal := "9.9.9.9"
+	uniqueIQN := "iqn.9999-99.com.netapp:target"
+
+	// non-CHAP portals
+	nonChapPortals := []string{"1.1.1.1", "2.2.2.2", "3.3.3.3"}
+
+	sessionID := "0"
+
+	// Shared CHAP credentials
+	sharedCHAPInfo := models.IscsiChapInfo{
+		UseCHAP:              true,
+		IscsiUsername:        "user",
+		IscsiInitiatorSecret: "pass",
+		IscsiTargetUsername:  "user2",
+		IscsiTargetSecret:    "pass2",
+	}
+
+	// Add CHAP sessions to both maps.
+	for _, portal := range chapPortals {
+		err := publishedSessions.AddPortal(portal, models.PortalInfo{
+			ISCSITargetIQN: "iqn.2020-01.com.netapp:target",
+			Credentials:    sharedCHAPInfo,
+		})
+		assert.NoError(t, err)
+
+		err = currentSessions.AddPortal(portal, models.PortalInfo{
+			ISCSITargetIQN: "iqn.2020-01.com.netapp:target",
+			SessionNumber:  sessionID,
+		})
+		assert.NoError(t, err)
+	}
+
+	// Add a CHAP session with a unique IQN.
+	err := publishedSessions.AddPortal(uniqueChapPortal, models.PortalInfo{
+		// Use a different IQN here to prove we cache returned values from the REST API.
+		ISCSITargetIQN: uniqueIQN,
+		Credentials:    sharedCHAPInfo,
+	})
+	assert.NoError(t, err)
+	err = currentSessions.AddPortal(uniqueChapPortal, models.PortalInfo{
+		ISCSITargetIQN: uniqueIQN,
+		SessionNumber:  sessionID,
+	})
+	assert.NoError(t, err)
+
+	// Add non-CHAP session
+	for _, portal := range nonChapPortals {
+		err := publishedSessions.AddPortal(portal, models.PortalInfo{
+			ISCSITargetIQN: "iqn.2020-01.com.netapp:target",
+			Credentials:    models.IscsiChapInfo{},
+		})
+		assert.NoError(t, err)
+
+		err = currentSessions.AddPortal(portal, models.PortalInfo{
+			ISCSITargetIQN: "iqn.2020-01.com.netapp:target",
+			Credentials:    models.IscsiChapInfo{},
+			SessionNumber:  sessionID,
+		})
+		assert.NoError(t, err)
+	}
+
+	// Populate a single of LUN and volume in each session.
+	volume := "foo"
+	node := "bar"
+	for _, sessionData := range publishedSessions.Info {
+		sessionData.LUNs.Info[0] = volume
+	}
+
+	// Create a mock controller client that will return the expected CHAP info.
+	mockCtrl := gomock.NewController(t)
+	mockISCSI := mock_iscsi.NewMockISCSI(mockCtrl)
+	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
+
+	plugin := &Plugin{
+		nodeName:   node,
+		iscsi:      mockISCSI,
+		restClient: mockClient,
+	}
+
+	// Expect calls on the mock client for all sessions that use CHAP.
+	freshCHAPInfo := &models.IscsiChapInfo{
+		UseCHAP:              true,
+		IscsiUsername:        "user2",
+		IscsiInitiatorSecret: "pass2",
+		IscsiTargetUsername:  "user",
+		IscsiTargetSecret:    "pass",
+	}
+
+	// Mock calls to the iSCSI client
+	count := len(currentSessions.Info)
+	mockISCSI.EXPECT().IsSessionStale(gomock.Any(), sessionID).Return(true).Times(count)
+
+	// Mock API calls
+	count = len(chapPortals) - (len(chapPortals) - 1) + 1 // Expect one more call for the unique CHAP portal.
+	mockClient.EXPECT().GetChap(
+		gomock.Any(), volume, node,
+	).Return(freshCHAPInfo, nil).Times(count)
+
+	err = plugin.updateCHAPInfoForSessions(ctx, publishedSessions, currentSessions)
+	assert.NoError(t, err)
+
+	// Verify that the CHAP info was updated in all sessions that use CHAP.
+	for _, portal := range chapPortals {
+		chapInfoInSession := publishedSessions.Info[portal].PortalInfo.Credentials
+		assert.EqualValues(t, *freshCHAPInfo, chapInfoInSession)
+	}
+
+	// Verify that the non-CHAP portals were not updated.
+	for _, portal := range nonChapPortals {
+		chapInfoInSession := publishedSessions.Info[portal].PortalInfo.Credentials
+		assert.EqualValues(t, models.IscsiChapInfo{}, chapInfoInSession)
+	}
 }
 
 type PortalAction struct {

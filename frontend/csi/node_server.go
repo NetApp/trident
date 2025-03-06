@@ -50,6 +50,7 @@ const (
 	iSCSINodeUnstageMaxDuration     = 15 * time.Second
 	iSCSILoginTimeout               = 10 * time.Second
 	iSCSISelfHealingLockContext     = "ISCSISelfHealingThread"
+	iSCSISelfHealingTimeout         = 90 * time.Second
 	fcpNodeUnstageMaxDuration       = 15 * time.Second
 	nvmeSelfHealingLockContext      = "NVMeSelfHealingThread"
 	defaultNodeReconciliationPeriod = 1 * time.Minute
@@ -1843,6 +1844,17 @@ func (p *Plugin) ensureAttachISCSIVolume(
 	return mpathSize, nil
 }
 
+// getChapInfoFromController attempts to gather CHAP info from the controller in a timebound manner.
+func (p *Plugin) getChapInfoFromController(
+	ctx context.Context, volumeID, nodeName string,
+) (*models.IscsiChapInfo, error) {
+	chapInfo, err := p.restClient.GetChap(ctx, volumeID, nodeName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get CHAP info from CSI controller for volume: '%s'; %w", volumeID, err)
+	}
+	return chapInfo, nil
+}
+
 func (p *Plugin) updateChapInfoFromController(
 	ctx context.Context, req *csi.NodeStageVolumeRequest, publishInfo *models.VolumePublishInfo,
 ) error {
@@ -2478,11 +2490,17 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 
 	switch action {
 	case models.LogoutLoginScan:
+		// Do not log out if the portal is unresponsive as subsequent logins are likely to fail.
+		if isAccessible, err := p.iscsi.IsPortalAccessible(ctx, portal); !isAccessible {
+			Logc(ctx).WithError(err).Warnf("Cannot safely log out of unresponsive portal '%s'.", portal)
+			return fmt.Errorf("cannot safely log out of unresponsive portal '%s'", portal)
+		}
+
 		if err = p.iscsi.Logout(ctx, publishInfo.IscsiTargetIQN, portal); err != nil {
 			return fmt.Errorf("error while logging out of target %s", publishInfo.IscsiTargetIQN)
-		} else {
-			Logc(ctx).Debug("Logout is successful.")
 		}
+		Logc(ctx).Debug("Logout is successful.")
+
 		// Logout is successful, fallthrough to perform login.
 		fallthrough
 	case models.LoginScan:
@@ -2506,12 +2524,17 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 		}
 
 		if publishedCHAPCredentials != publishInfo.IscsiChapInfo {
-			updateErr := publishedISCSISessions.UpdateCHAPForPortal(portal, publishInfo.IscsiChapInfo)
-			if updateErr != nil {
-				Logc(ctx).Warn("Failed to update published CHAP information.")
+			fields := LogFields{
+				"portal":    portal,
+				"CHAPInUse": true,
 			}
 
-			Logc(ctx).Debug("Updated published CHAP information.")
+			// Update the CHAP info in the portal. This should never fail.
+			updateErr := publishedISCSISessions.UpdateCHAPForPortal(portal, publishInfo.IscsiChapInfo)
+			if updateErr != nil {
+				Logc(ctx).WithFields(fields).Warn("Failed to update published CHAP information.")
+			}
+			Logc(ctx).WithFields(fields).Debug("Updated published CHAP information after successful login.")
 		}
 
 		Logc(ctx).Debug("Login to target is successful.")
@@ -2564,6 +2587,64 @@ func (p *Plugin) deprecatedIgroupInUse(ctx context.Context) bool {
 	return false
 }
 
+// updateCHAPInfoForSessions provides a best attempt to populate up-to-date CHAP credentials within iSCSI self-healing's
+// published sessions. It tracks CHAP credentials by unique IQN to reduce the number of calls to the controller.
+func (p *Plugin) updateCHAPInfoForSessions(
+	ctx context.Context, publishedSessions, currentSessions *models.ISCSISessions,
+) error {
+	if publishedSessions == nil || currentSessions == nil {
+		return nil
+	}
+
+	// Timebox this operation to prevent it from running indefinitely and blocking everything in self-healing and
+	// other operations in the node server.
+	cancelCtx, cancel := context.WithTimeout(ctx, iSCSISelfHealingTimeout/3)
+	defer cancel()
+
+	// Store the CHAP credentials we've found for certain IQNs.
+	// IQNs should be unique between SVMs and CHAP credentials are scoped at the SVM level.
+	iqnToCHAP := make(map[string]*models.IscsiChapInfo, 0)
+	var errs error
+
+	for portal, publishedData := range publishedSessions.Info {
+		// If the session isn't stale on the host, then we can ignore this portal or now.
+		data, ok := currentSessions.Info[portal]
+		if ok && !p.iscsi.IsSessionStale(cancelCtx, data.PortalInfo.SessionNumber) {
+			continue
+		} else if !publishedData.PortalInfo.CHAPInUse() || !publishedData.PortalInfo.HasTargetIQN() {
+			continue
+		}
+
+		chapInfo, ok := iqnToCHAP[publishedData.PortalInfo.ISCSITargetIQN]
+		if !ok {
+			volumeID, err := publishedSessions.VolumeIDForPortal(portal)
+			if err != nil {
+				errs = errors.Join(errs, fmt.Errorf("failed to get volume ID for portal: '%s'; %w", portal, err))
+				continue
+			}
+
+			chapInfo, err = p.getChapInfoFromController(cancelCtx, volumeID, p.nodeName)
+			if err != nil {
+				errs = errors.Join(errs, fmt.Errorf("failed to get CHAP info for portal: '%s'; %w", portal, err))
+				continue
+			}
+
+			// Store what we've learned for future iterations.
+			iqnToCHAP[publishedData.PortalInfo.ISCSITargetIQN] = chapInfo
+		}
+
+		publishedData.PortalInfo.UpdateCHAPCredentials(*chapInfo)
+		Logc(cancelCtx).WithField("portal", portal).Debug("Updated CHAP info for portal.")
+	}
+
+	if errs != nil {
+		Logc(cancelCtx).WithError(errs).Error("Failed to get updated CHAP info for portal(s).")
+		return errs
+	}
+
+	return nil
+}
+
 // performISCSISelfHealing inspects the desired state of the iSCSI sessions with the current state and accordingly
 // identifies candidate sessions that require remediation. This function is invoked periodically.
 func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
@@ -2578,7 +2659,7 @@ func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
 	}()
 
 	// After this time self-healing may be stopped
-	stopSelfHealingAt := time.Now().Add(60 * time.Second)
+	stopSelfHealingAt := time.Now().Add(iSCSISelfHealingTimeout)
 
 	// If there are not iSCSI volumes expected on the host skip self-healing
 	if publishedISCSISessions.IsEmpty() {
@@ -2606,6 +2687,11 @@ func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
 
 	if currentISCSISessions.IsEmpty() {
 		Logc(ctx).Debug("No iSCSI sessions LUN mappings found.")
+	}
+
+	// Update CHAP info for published sessions.
+	if err := p.updateCHAPInfoForSessions(ctx, &publishedISCSISessions, &currentISCSISessions); err != nil {
+		Logc(ctx).WithError(err).Error("Failed to update CHAP credentials for published iSCSI sessions.")
 	}
 
 	Logc(ctx).Debugf("Published iSCSI Sessions: %v", publishedISCSISessions)

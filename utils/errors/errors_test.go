@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package errors
 
@@ -156,6 +156,46 @@ func TestNotManagedError(t *testing.T) {
 	err = NotManagedError("")
 	err = fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", err))
 	assert.True(t, IsNotManagedError(err))
+	assert.Equal(t, "outer; inner; ", err.Error())
+}
+
+func TestConnectionError(t *testing.T) {
+	err := ConnectionError("connection error with formatting %s, %s", "foo", "bar")
+	assert.True(t, strings.Contains("connection error with formatting foo, bar", err.Error()))
+
+	err = fmt.Errorf("a generic error")
+	assert.False(t, IsConnectionError(err))
+
+	assert.False(t, IsConnectionError(nil))
+
+	err = ConnectionError("")
+	assert.True(t, IsConnectionError(err))
+
+	// Test wrapping
+	err = WrapWithConnectionError(fmt.Errorf("not a connection err"), "not found")
+	assert.True(t, IsConnectionError(err))
+	assert.Equal(t, "not found; not a connection err", err.Error())
+
+	err = WrapWithConnectionError(nil, "connection")
+	assert.Equal(t, "connection", err.Error())
+
+	err = WrapWithConnectionError(fmt.Errorf("not a connection err"), "")
+	assert.True(t, IsConnectionError(err))
+	assert.Equal(t, "not a connection err", err.Error())
+
+	err = WrapWithConnectionError(fmt.Errorf(""), "connection")
+	assert.True(t, IsConnectionError(err))
+	assert.Equal(t, "connection", err.Error())
+
+	err = ConnectionError("")
+	err = fmt.Errorf("custom message: %w", err)
+	assert.True(t, IsConnectionError(err))
+	assert.Equal(t, "custom message: ", err.Error())
+
+	// wrap multi levels deep
+	err = ConnectionError("")
+	err = fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", err))
+	assert.True(t, IsConnectionError(err))
 	assert.Equal(t, "outer; inner; ", err.Error())
 }
 
