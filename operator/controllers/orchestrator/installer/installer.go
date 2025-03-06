@@ -346,12 +346,18 @@ func (i *Installer) setInstallationParams(
 	// Images set via environment are considered default
 	tridentImage = env.GetString(config.TridentImageEnv, TridentImage)
 	autosupportImage = env.GetString(config.AutosupportImageEnv, commonconfig.DefaultAutosupportImage)
-	csiSidecarProvisionerImage = env.GetString(config.CSISidecarProvisionerImageEnv, "")
-	csiSidecarAttacherImage = env.GetString(config.CSISidecarAttacherImageEnv, "")
-	csiSidecarResizerImage = env.GetString(config.CSISidecarResizerImageEnv, "")
-	csiSidecarSnapshotterImage = env.GetString(config.CSISidecarSnapshotterImageEnv, "")
-	csiSidecarNodeDriverRegistrarImage = env.GetString(config.CSISidecarNodeDriverRegistrarImageEnv, "")
-	csiSidecarLivenessProbeImage = env.GetString(config.CSISidecarLivenessProbeImageEnv, "")
+	csiSidecarProvisionerImage = env.GetString(config.CSISidecarProvisionerImageEnv,
+		commonconfig.KubernetesCSISidecarRegistry+"/"+commonconfig.CSISidecarProvisionerImageTag)
+	csiSidecarAttacherImage = env.GetString(config.CSISidecarAttacherImageEnv,
+		commonconfig.KubernetesCSISidecarRegistry+"/"+commonconfig.CSISidecarAttacherImageTag)
+	csiSidecarResizerImage = env.GetString(config.CSISidecarResizerImageEnv,
+		commonconfig.KubernetesCSISidecarRegistry+"/"+commonconfig.CSISidecarResizerImageTag)
+	csiSidecarSnapshotterImage = env.GetString(config.CSISidecarSnapshotterImageEnv,
+		commonconfig.KubernetesCSISidecarRegistry+"/"+commonconfig.CSISidecarSnapshotterImageTag)
+	csiSidecarNodeDriverRegistrarImage = env.GetString(config.CSISidecarNodeDriverRegistrarImageEnv,
+		commonconfig.KubernetesCSISidecarRegistry+"/"+commonconfig.CSISidecarNodeDriverRegistrarImageTag)
+	csiSidecarLivenessProbeImage = env.GetString(config.CSISidecarLivenessProbeImageEnv,
+		commonconfig.KubernetesCSISidecarRegistry+"/"+commonconfig.CSISidecarLivenessProbeImageTag)
 
 	imageRegistry = ""
 	kubeletDir = DefaultKubeletDir
@@ -451,7 +457,9 @@ func (i *Installer) setInstallationParams(
 			&csiSidecarLivenessProbeImage,
 		}
 		for _, sidecarImage := range sidecarImages {
-			*sidecarImage = network.ReplaceImageRegistry(*sidecarImage, cr.Spec.ImageRegistry)
+			if *sidecarImage != "" {
+				*sidecarImage = network.ReplaceImageRegistry(*sidecarImage, cr.Spec.ImageRegistry)
+			}
 		}
 	}
 

@@ -4,8 +4,10 @@ package installer
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
+	"github.com/distribution/reference"
 	"github.com/ghodss/yaml"
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
@@ -16,6 +18,7 @@ import (
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	mockExtendedK8sClient "github.com/netapp/trident/mocks/mock_operator/mock_controllers/mock_orchestrator/mock_installer"
+	"github.com/netapp/trident/operator/config"
 	netappv1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
 	"github.com/netapp/trident/utils/version"
 )
@@ -292,6 +295,114 @@ func TestSetInstallationParams_NodePrep(t *testing.T) {
 			to.Spec.NodePrep = test.nodePrep
 			_, _, _, err := installer.setInstallationParams(to, "")
 			test.assertValid(t, err)
+		})
+	}
+}
+
+func TestSetInstallationParams_Images(t *testing.T) {
+	tag := ":v1.2.3"
+	images := map[string]struct {
+		image  *string
+		envval string
+	}{
+		config.TridentImageEnv: {
+			&tridentImage,
+			"test-registry-2/" + strings.ToLower(config.TridentImageEnv) + tag,
+		},
+		config.AutosupportImageEnv: {
+			&autosupportImage,
+			"test-registry-2/" + strings.ToLower(config.AutosupportImageEnv) + tag,
+		},
+		config.CSISidecarProvisionerImageEnv: {
+			&csiSidecarProvisionerImage,
+			"test-registry-2/" + strings.ToLower(config.CSISidecarProvisionerImageEnv) + tag,
+		},
+		config.CSISidecarAttacherImageEnv: {
+			&csiSidecarAttacherImage,
+			"test-registry-2/" + strings.ToLower(config.CSISidecarAttacherImageEnv) + tag,
+		},
+		config.CSISidecarResizerImageEnv: {
+			&csiSidecarResizerImage,
+			"test-registry-2/" + strings.ToLower(config.CSISidecarResizerImageEnv) + tag,
+		},
+		config.CSISidecarSnapshotterImageEnv: {
+			&csiSidecarSnapshotterImage,
+			"test-registry-2/" + strings.ToLower(config.CSISidecarSnapshotterImageEnv) + tag,
+		},
+		config.CSISidecarNodeDriverRegistrarImageEnv: {
+			&csiSidecarNodeDriverRegistrarImage,
+			"test-registry-2/" + strings.ToLower(config.CSISidecarNodeDriverRegistrarImageEnv) + tag,
+		},
+		config.CSISidecarLivenessProbeImageEnv: {
+			&csiSidecarLivenessProbeImage,
+			"test-registry-2/" + strings.ToLower(config.CSISidecarLivenessProbeImageEnv) + tag,
+		},
+	}
+	tests := []struct {
+		name           string
+		imageRegistry  string
+		setEnvironment bool
+	}{
+		{
+			name: "default",
+		},
+		{
+			name:          "image registry set",
+			imageRegistry: "test-registry.example.com",
+		},
+		{
+			name:           "environment set",
+			setEnvironment: true,
+		},
+		{
+			name:           "environment and image registry set",
+			imageRegistry:  "test-registry.example.com",
+			setEnvironment: true,
+		},
+	}
+
+	mockK8sClient := newMockKubeClient(t)
+	mockK8sClient.EXPECT().ServerVersion().Return(&version.Version{}).AnyTimes()
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			for _, image := range images {
+				*image.image = ""
+			}
+
+			to := netappv1.TridentOrchestrator{
+				TypeMeta:   metav1.TypeMeta{},
+				ObjectMeta: metav1.ObjectMeta{},
+				Spec:       netappv1.TridentOrchestratorSpec{},
+				Status:     netappv1.TridentOrchestratorStatus{},
+			}
+			installer := newTestInstaller(mockK8sClient)
+
+			if test.setEnvironment {
+				for env, image := range images {
+					t.Setenv(env, image.envval)
+				}
+			}
+
+			to.Spec.ImageRegistry = test.imageRegistry
+			_, _, _, err := installer.setInstallationParams(to, "")
+			assert.NoError(t, err)
+
+			// Check that all images are valid or empty
+			for env, image := range images {
+				_, err := reference.Parse(*image.image)
+				assert.NoError(t, err, "invalid image %s", *image.image)
+
+				if test.setEnvironment {
+					assert.Contains(t, *image.image, strings.ToLower(env))
+					assert.True(t, strings.HasSuffix(*image.image, tag))
+
+					if test.imageRegistry != "" {
+						assert.True(t, strings.HasPrefix(*image.image, test.imageRegistry), "invalid image: %s",
+							*image.image)
+					}
+				}
+			}
 		})
 	}
 }
