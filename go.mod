@@ -17,6 +17,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.34.14
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/container-storage-interface/spec v1.9.0
+	github.com/distribution/reference v0.6.0
 	github.com/docker/go-plugins-helpers v0.0.0-20240701071450-45e2431495c8
 	github.com/dustin/go-humanize v1.0.2-0.20231009183035-961771c7ab99
 	github.com/elastic/go-sysinfo v1.15.0
@@ -145,6 +146,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
+	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/pkg/errors v0.9.1 // indirect
