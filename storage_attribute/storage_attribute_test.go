@@ -317,14 +317,14 @@ func TestCreateBackendStoragePoolsMapFromEncodedString(t *testing.T) {
 	actualMap, _ := CreateBackendStoragePoolsMapFromEncodedString("backend1:pool1,pool2;backend2:pool3")
 	targetMap := map[string][]string{"backend1": {"pool1", "pool2"}, "backend2": {"pool3"}}
 
-	assert.Equal(t, targetMap, actualMap, fmt.Sprintf("Test case failed"))
+	assert.Equal(t, targetMap, actualMap, "Test case failed")
 }
 
 func TestCreateBackendStoragePoolsMapFromEncodedStringNegative(t *testing.T) {
 	_, actualErr := CreateBackendStoragePoolsMapFromEncodedString("backend1;backend2:pool3")
 	expectedErr := fmt.Errorf("the encoded backend-storage pool string does not have the right format")
 
-	assert.Equal(t, expectedErr, actualErr, fmt.Sprintf("Test case failed"))
+	assert.Equal(t, expectedErr, actualErr, "Test case failed")
 }
 
 func TestBoolString(t *testing.T) {
@@ -377,7 +377,7 @@ func TestUnmarshalRequestMapNil(t *testing.T) {
 	_, actualErr := UnmarshalRequestMap(nil)
 	expectedErr := error(nil)
 
-	assert.Equal(t, expectedErr, actualErr, fmt.Sprintf("Test case failed"))
+	assert.Equal(t, expectedErr, actualErr, "Test case failed")
 }
 
 func TestUnmarshalRequestMapNegative(t *testing.T) {
@@ -398,7 +398,7 @@ func TestMarshalRequestMapNil(t *testing.T) {
 	_, actualErr := MarshalRequestMap(nil)
 	expectedErr := error(nil)
 
-	assert.Equal(t, expectedErr, actualErr, fmt.Sprintf("Test case failed"))
+	assert.Equal(t, expectedErr, actualErr, "Test case failed")
 }
 
 func TestCreateAttributeRequestFromAttributeValueNegative(t *testing.T) {
