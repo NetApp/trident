@@ -2,7 +2,13 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v24.10.0
+## Changes since v25.02.0
+
+**Fixes:**
+- **Kubernetes:** Fixed an issue in the trident-operator where sidecar image names and versions were incorrectly populated when using a non-default image registry (Issue [#983](https://github.com/NetApp/trident/issues/983)).
+- **Kubernetes:** Fixed the issue where multipath sessions fail to recover during an ONTAP failover giveback (Issue [#961](https://github.com/NetApp/trident/issues/961)).
+
+## v25.02.0
 
 ### Trident
 
@@ -12,7 +18,6 @@
 - **Kubernetes:** Fixed backend config credentials to support all available AWS ARN partitions (Issue [#913](https://github.com/NetApp/trident/issues/913)).
 - **Kubernetes:** Added option to disable the auto configurator reconciliation in the Trident operator (Issue [#924](https://github.com/NetApp/trident/issues/924)).
 - **Kubernetes:** Added securityContext for csi-resizer container (Issue [#976](https://github.com/NetApp/trident/issues/976)).
-- **Kubernetes:** Fixed issue where iSCSI self-healing may unsafely log out of stale iSCSI sessions when a portal is inaccessible (Issue [#961](https://github.com/NetApp/trident/issues/961)).
 - Fixed Zonal Flex pools for GCNV driver.
 
 **Enhancements:**
