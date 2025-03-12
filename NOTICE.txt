@@ -3,7 +3,7 @@ NetApp Notice Report
 Copyright 2025
 
 About this document
-The following copyright statements and licenses apply to the software components that are distributed with the Trident version 25.02.0 product.  This product does not necessarily use all the software components referred to below.
+The following copyright statements and licenses apply to the software components that are distributed with the Trident version 25.02.1 product.  This product does not necessarily use all the software components referred to below.
 
 Where required, source code is published at the following location.
 https://opensource.netapp.com/
@@ -84,13 +84,13 @@ aws/aws-sdk-go-v2 v1.34.0 : Apache License 2.0
 AzureAD/microsoft-authentication-library-for-go v1.2.2 : MIT License
 
 
-Azure/azure-sdk-for-go 20240229-snapshot : MIT License
+Azure/azure-sdk-for-go 20240711-snapshot : MIT License
 
 
-Azure/azure-sdk-for-go 20250119-snapshot : MIT License
+Azure/azure-sdk-for-go 20241007-snapshot : MIT License
 
 
-Azure/azure-sdk-for-go 20250130-snapshot : MIT License
+Azure/azure-sdk-for-go 20250202-snapshot : MIT License
 
 
 Azure/azure-sdk-for-go sdk/azcore/v1.17.0 : MIT License
@@ -172,6 +172,9 @@ cespare/xxhash v2.3.0 : MIT License
 
 
 client9/misspell v0.3.4 : (MIT License AND BSD 3-clause "New" or "Revised" License)
+
+
+client-go 20250129-snapshot : Apache License 2.0
 
 
 client-go v0.32.1 : Apache License 2.0
@@ -261,7 +264,7 @@ gengo 20240911-snapshot-2b36238f : Apache License 2.0
 github.com/antlr4-go/antlr v4.13.0 : BSD 3-clause "New" or "Revised" License
 
 
-github.com/aws/smithy-go 20250123-snapshot : Apache License 2.0
+github.com/aws/smithy-go 20250216-snapshot : Apache License 2.0
 
 
 github.com/aws/smithy-go v1.22.2 : Apache License 2.0
@@ -270,7 +273,10 @@ github.com/aws/smithy-go v1.22.2 : Apache License 2.0
 github.com/cncf/xds 20240905-snapshot-b4127c9b : Apache License 2.0
 
 
-github.com/containers/gvisor-tap-vsock 0.8.2 : (MIT License AND BSD 2-clause "Simplified" License AND Apache License 2.0 AND BSD 3-clause "New" or "Revised" License)
+github.com/containers/gvisor-tap-vsock 0.7.1 : (MIT License AND BSD 2-clause "Simplified" License AND Apache License 2.0 AND BSD 3-clause "New" or "Revised" License)
+
+
+github.com/distribution/reference v0.6.0 : Apache License 2.0
 
 
 github.com/go-kit/log v0.2.1 : MIT License
@@ -396,16 +402,13 @@ golang.org/x/net 20250123-snapshot : BSD 3-clause "New" or "Revised" License
 golang.org/x/net v0.34.0 : BSD 3-clause "New" or "Revised" License
 
 
-golang.org/x/oauth2 20250205-snapshot : BSD 3-clause "New" or "Revised" License
+golang.org/x/oauth2 20250214-snapshot : BSD 3-clause "New" or "Revised" License
 
 
 golang.org/x/oauth2 v0.26.0 : BSD 3-clause "New" or "Revised" License
 
 
 golang.org/x/sync v0.10.0 : BSD 3-clause "New" or "Revised" License
-
-
-golang.org/x/sys 20250205-snapshot : BSD 3-clause "New" or "Revised" License
 
 
 golang.org/x/sys v0.29.0 : BSD 3-clause "New" or "Revised" License
@@ -424,9 +427,6 @@ golang.org/x/tools v0.26.0 : BSD 3-clause "New" or "Revised" License
 
 
 golang.org/x/xerrors 20200804-snapshot-5ec99f83 : BSD 3-clause "New" or "Revised" License
-
-
-Golang Protobuf 20250126-snapshot : BSD 3-clause "New" or "Revised" License
 
 
 Golang Protobuf v1.36.4 : BSD 3-clause "New" or "Revised" License
@@ -459,9 +459,6 @@ go-logr/stdr v1.2.2 : Apache License 2.0
 gomega v1.35.1 : MIT License
 
 
-googleapis/gax-go 20250117-snapshot : BSD 3-clause "New" or "Revised" License
-
-
 googleapis/gax-go v2.14.1 : BSD 3-clause "New" or "Revised" License
 
 
@@ -478,9 +475,6 @@ google/cel-go v0.22.0 : Apache License 2.0
 
 
 google-cloud-go 20241225-snapshot : Apache License 2.0
-
-
-google-cloud-go 20250124-snapshot : Apache License 2.0
 
 
 google-cloud-go accessapproval/v1.8.3 : Apache License 2.0
@@ -1011,9 +1005,6 @@ kubernetes-csi/external-snapshotter 20250117-snapshot : Apache License 2.0
 kubernetes-csi/external-snapshotter client/v8.2.0 : Apache License 2.0
 
 
-kubernetes/mount-utils 20241230-snapshot : Apache License 2.0
-
-
 kubernetes/mount-utils v0.32.1 : Apache License 2.0
 
 
@@ -1086,6 +1077,9 @@ natefinch/lumberjack v2.2.1 : MIT License
 NetApp/trident v24.10.0 : Apache License 2.0
 
 
+netdata v2.2.4 : GNU General Public License v3.0 only
+
+
 niemeyer/pretty 20200227-snapshot-a10e7cae : MIT License
 
 
@@ -1107,10 +1101,10 @@ onsi/ginkgo 2.21.0 : MIT License
 OpenCensus v0.4.1 : Apache License 2.0
 
 
+opencontainers/go-digest 1.0.0 : Apache License 2.0
+
+
 openshift/api 20241121-snapshot : Apache License 2.0
-
-
-open-telemetry/opentelemetry-go 20250129-snapshot : Apache License 2.0
 
 
 open-telemetry/opentelemetry-go exporters/otlp/otlptrace/otlptracegrpc/v1.27.0 : Apache License 2.0
@@ -1134,7 +1128,7 @@ open-telemetry/opentelemetry-go trace/v1.34.0 : Apache License 2.0
 open-telemetry/opentelemetry-go v1.34.0 : Apache License 2.0
 
 
-open-telemetry/opentelemetry-go-contrib 20250115-snapshot : Apache License 2.0
+open-telemetry/opentelemetry-go-contrib 20250217-snapshot : Apache License 2.0
 
 
 open-telemetry/opentelemetry-go-contrib detectors/gcp/v1.33.0 : Apache License 2.0
@@ -1155,6 +1149,9 @@ opentracing-opentracing-go v1.2.0 : Apache License 2.0
 osbuild-osbuild-composer 126 : Apache License 2.0
 
 
+osbuild-osbuild-composer 131 : Apache License 2.0
+
+
 pkg/browser 20240102-snapshot-5ac0b6a4 : BSD 2-clause "Simplified" License
 
 
@@ -1165,6 +1162,9 @@ pmezard-go-difflib 20190219-snapshot-5d4384ee : Apache License 2.0
 
 
 podman 5.3.1 : (MIT License AND BSD 2-clause "Simplified" License AND ISC License AND Apache License 2.0 AND BSD 3-clause "New" or "Revised" License AND Mozilla Public License 2.0)
+
+
+projectatomic/buildah v1.39.0 : Apache License 2.0
 
 
 prometheus-client_model v0.6.1 : Apache License 2.0
@@ -1275,7 +1275,7 @@ Licenses:
 
 Apache License 2.0
 
-(aws/aws-sdk-go-v2 20250128-snapshot, aws/aws-sdk-go-v2 config/v1.29.2, aws/aws-sdk-go-v2 credentials/v1.17.55, aws/aws-sdk-go-v2 feature/ec2/imds/v1.16.25, aws/aws-sdk-go-v2 internal/configsources/v1.3.29, aws/aws-sdk-go-v2 internal/endpoints/v2.6.29, aws/aws-sdk-go-v2 internal/ini/v1.8.2, aws/aws-sdk-go-v2 service/fsx/v1.51.6, aws/aws-sdk-go-v2 service/internal/accept-encoding/v1.12.2, aws/aws-sdk-go-v2 service/internal/presigned-url/v1.12.10, aws/aws-sdk-go-v2 service/secretsmanager/v1.34.14, aws/aws-sdk-go-v2 service/sso/v1.24.12, aws/aws-sdk-go-v2 service/ssooidc/v1.28.11, aws/aws-sdk-go-v2 service/sts/v1.33.10, aws/aws-sdk-go-v2 v1.34.0, Azure/azure-sdk-for-go v2.0.0-beta, Azure/azure-sdk-for-go v3.0.0-beta, btree v1.0.1, census-instrumentation/opencensus-go v0.24.0, client-go v0.32.1, client_golang v1.20.4, cncf/udpa 20201120-snapshot-5459f2c9, container-storage-interface/spec v1.9.0, containerd/containerd v1.7.23, CoreOS v0.3.1, docker-go-plugins-helpers 20240701-snapshot-45e24314, docker-go-plugins-helpers 20241106-snapshot, docker-go-units v0.5.0, elastic/go-sysinfo 20241220-snapshot, elastic/go-windows v1.0.2, envoyproxy/go-control-plane envoy/v1.32.3, envoyproxy/go-control-plane v0.13.1, envoyproxy/protoc-gen-validate 1.1.0, gengo 20240911-snapshot-2b36238f, github.com/aws/smithy-go 20250123-snapshot, github.com/aws/smithy-go v1.22.2, github.com/cncf/xds 20240905-snapshot-b4127c9b, github.com/containers/gvisor-tap-vsock 0.8.2, github.com/google/cel-spec v0.19.0, github.com/kubernetes-csi/csi-lib-utils v0.16.0, github.com/mattermost/xml-roundtrip-validator 20230502-snapshot-3079e7b8, github.com/moby/spdystream v0.5.0, github.com/xdg-go/pbkdf2 1.0.0, go-etcd api/v3.5.16, go-etcd client/pkg/v3.5.16, go-etcd client/v2.305.16, go-etcd client/v3.5.16, go-etcd pkg/v3.5.16, go-etcd raft/v3.5.16, go-etcd server/v3.5.16, go-logr/logr v1.4.2, go-logr/stdr v1.2.2, go-openapi/analysis v0.23.0, go-openapi/errors v0.22.0, go-openapi/jsonpointer v0.21.0, go-openapi/loads v0.22.0, go-openapi/runtime v0.28.0, go-openapi/spec v0.21.0, go-openapi/validate v0.24.0, go-systemd 20190321-snapshot-95778dfb, go-systemd v17, go-systemd v22.5.0, go.opentelemetry.io/proto otlp/v1.3.1, godebug v1.1.0, golang-github-docker-go-connections-dev 0.4.0, golang-mock v1.1.1, golang/appengine v1.6.8, golang/glog v1.2.3, google-cloud-go 20241225-snapshot, google-cloud-go 20250124-snapshot, google-cloud-go accessapproval/v1.8.3, google-cloud-go aiplatform/v1.70.0, google-cloud-go analytics/v0.25.3, google-cloud-go apigateway/v1.7.3, google-cloud-go apigeeconnect/v1.7.3, google-cloud-go appengine/v1.9.3, google-cloud-go area120/v0.9.3, google-cloud-go artifactregistry/v1.16.1, google-cloud-go asset/v1.20.4, google-cloud-go assuredworkloads/v1.12.3, google-cloud-go auth/oauth2adapt/v0.2.7, google-cloud-go automl/v1.14.4, google-cloud-go bigquery/v1.66.0, google-cloud-go bigtable/v1.34.0, google-cloud-go billing/v1.20.1, google-cloud-go binaryauthorization/v1.9.3, google-cloud-go certificatemanager/v1.9.3, google-cloud-go channel/v1.19.2, google-cloud-go cloudbuild/v1.20.0, google-cloud-go clouddms/v1.8.3, google-cloud-go cloudtasks/v1.13.3, google-cloud-go compute/metadata/v0.6.0, google-cloud-go compute/v1.33.0, google-cloud-go container/v1.42.1, google-cloud-go containeranalysis/v0.13.3, google-cloud-go datacatalog/v1.24.3, google-cloud-go dataflow/v0.10.3, google-cloud-go datafusion/v1.8.3, google-cloud-go datalabeling/v0.9.3, google-cloud-go dataplex/v1.21.0, google-cloud-go dataqna/v0.9.3, google-cloud-go datastore/v1.20.0, google-cloud-go datastream/v1.12.1, google-cloud-go deploy/v1.26.1, google-cloud-go dialogflow/v1.64.1, google-cloud-go dlp/v1.20.1, google-cloud-go documentai/v1.35.1, google-cloud-go domains/v0.10.3, google-cloud-go errorreporting/v0.3.2, google-cloud-go essentialcontacts/v1.7.3, google-cloud-go eventarc/v1.15.1, google-cloud-go filestore/v1.9.3, google-cloud-go firestore/v1.18.0, google-cloud-go functions/v1.19.3, google-cloud-go gkeconnect/v0.12.1, google-cloud-go gkehub/v0.15.3, google-cloud-go gsuiteaddons/v1.7.3, google-cloud-go iam/v1.3.1, google-cloud-go iap/v1.10.3, google-cloud-go ids/v1.5.3, google-cloud-go iot/v1.8.3, google-cloud-go kms/v1.20.5, google-cloud-go language/v1.14.3, google-cloud-go lifesciences/v0.10.3, google-cloud-go logging/v1.13.0, google-cloud-go longrunning/v0.6.4, google-cloud-go managedidentities/v1.7.3, google-cloud-go mediatranslation/v0.9.3, google-cloud-go memcache/v1.11.3, google-cloud-go metastore/v1.14.3, google-cloud-go monitoring/v1.23.0, google-cloud-go networkconnectivity/v1.16.1, google-cloud-go networkmanagement/v1.18.0, google-cloud-go notebooks/v1.12.3, google-cloud-go optimization/v1.7.3, google-cloud-go orchestration/v1.11.4, google-cloud-go orgpolicy/v1.14.2, google-cloud-go osconfig/v1.14.3, google-cloud-go oslogin/v1.14.3, google-cloud-go phishingprotection/v0.9.3, google-cloud-go policytroubleshooter/v1.11.3, google-cloud-go privatecatalog/v0.10.4, google-cloud-go pubsub/v1.45.3, google-cloud-go pubsublite/v1.8.2, google-cloud-go recommendationengine/v0.9.3, google-cloud-go recommender/v1.13.3, google-cloud-go redis/v1.17.3, google-cloud-go resourcemanager/v1.10.3, google-cloud-go resourcesettings/v1.8.3, google-cloud-go retail/v1.19.2, google-cloud-go run/v1.8.1, google-cloud-go scheduler/v1.11.3, google-cloud-go secretmanager/v1.14.3, google-cloud-go security/v1.18.3, google-cloud-go securitycenter/v1.35.3, google-cloud-go servicedirectory/v1.12.3, google-cloud-go shell/v1.8.3, google-cloud-go spanner/v1.73.0, google-cloud-go speech/v1.26.0, google-cloud-go storagetransfer/v1.12.1, google-cloud-go texttospeech/v1.11.0, google-cloud-go tpu/v1.8.0, google-cloud-go trace/v1.11.3, google-cloud-go translate/v1.12.3, google-cloud-go v0.118.1, google-cloud-go v0.14.0, google-cloud-go video/v1.23.3, google-cloud-go videointelligence/v1.12.3, google-cloud-go vmmigration/v1.8.3, google-cloud-go vpcaccess/v1.8.3, google-cloud-go webrisk/v1.10.3, google-cloud-go websecurityscanner/v1.7.3, google-cloud-go workflows/v1.13.3, google-gofuzz v1.2.0, google-guest-agent 20241013.00, google/cel-go v0.22.0, google/gnostic-models v0.6.8, google/pprof 20241029-snapshot-d1b30feb, google/s2a-go 20250127-snapshot, google/s2a-go v0.1.9, googleapis/go-genproto 20250113-snapshot, googleapis/go-genproto 20250202-snapshot, GoogleCloudPlatform/opentelemetry-operations-go detectors/gcp/v1.25.0, GoogleCloudPlatform/opentelemetry-operations-go exporter/metric/v0.49.0, GoogleCloudPlatform/opentelemetry-operations-go internal/resourcemapping/v0.49.0, GoogleCloudPlatform/osconfig 20241004.00, groupcache 20210331-snapshot-41bb18bf, grpc-ecosystem/go-grpc-middleware v1.3.0, grpc-ecosystem/go-grpc-prometheus v1.2.0, grpc-go 20250128-snapshot, grpc-go v1.70.0, helm/helm v3.17.0, inconshreveable/mousetrap v1.1.0, jmespath-go-jmespath v0.4.0, jonboulle-clockwork v0.4.0, jsonreference v0.21.0, k8s.io/code-generator kubernetes-1.18.2-beta.0, k8s.io/code-generator v0.32.1, k8s.io/kube-openapi 20241105-snapshot-32ad38e4, k8s.io/utils 20241210-snapshot-24370bea, Kubernetes v1.32.0-alpha.1, kubernetes-csi/csi-proxy client/v1.1.3, kubernetes-csi/external-snapshotter 20250117-snapshot, kubernetes-csi/external-snapshotter client/v8.2.0, kubernetes-sigs/apiserver-network-proxy konnectivity-client/v0.31.0, kubernetes-sigs/cloud-provider-azure pkg/azclient/v0.0.50, kubernetes-sigs/structured-merge-diff v4.4.2, kubernetes/api 20250127-snapshot, kubernetes/api v0.32.1, kubernetes/apiextensions-apiserver 20241206-snapshot, kubernetes/apiextensions-apiserver v0.32.1, kubernetes/apimachinery 20250211-snapshot, kubernetes/apimachinery v0.32.1, kubernetes/apiserver v0.32.1, kubernetes/component-base v0.32.1, kubernetes/mount-utils 20241230-snapshot, kubernetes/mount-utils v0.32.1, martian v3.3.3, matttproud-golang_protobuf_extensions v1.0.4, mendersoftware/mendertesting 0.0~git20200227.1396c95, moby/sys mountinfo/v0.7.2, moby/sys userns/v0.1.0, modern-go/concurrent 20180305-snapshot-bacd9c7e, modern-go/reflect2 v1.0.2, mongodb/mongo-go-driver v1.14.0, mschoch/smat v0.2.0, mwitkow/go-conntrack 20190716-snapshot-2f068394, NetApp/trident v24.10.0, NYTimes-gziphandler v1.1.1, oklog/ulid v1.3.1, open-telemetry/opentelemetry-go 20250129-snapshot, open-telemetry/opentelemetry-go exporters/otlp/otlptrace/otlptracegrpc/v1.27.0, open-telemetry/opentelemetry-go exporters/otlp/otlptrace/v1.28.0, open-telemetry/opentelemetry-go metric/v1.34.0, open-telemetry/opentelemetry-go sdk/metric/v1.32.0, open-telemetry/opentelemetry-go sdk/v1.34.0, open-telemetry/opentelemetry-go trace/v1.34.0, open-telemetry/opentelemetry-go v1.34.0, open-telemetry/opentelemetry-go-contrib 20250115-snapshot, open-telemetry/opentelemetry-go-contrib detectors/gcp/v1.33.0, open-telemetry/opentelemetry-go-contrib instrumentation/google.golang.org/grpc/otelgrpc/v0.58.0, open-telemetry/opentelemetry-go-contrib instrumentation/net/http/otelhttp/v0.58.0, open-telemetry/opentelemetry-go-instrumentation 20250128-snapshot, OpenCensus v0.4.1, openshift/api 20241121-snapshot, opentracing-opentracing-go v1.2.0, osbuild-osbuild-composer 126, pmezard-go-difflib 20190219-snapshot-5d4384ee, podman 5.3.1, prometheus-client_model v0.6.1, prometheus-common 0.55.0, prometheus-procfs v0.15.1, RoaringBitmap-roaring v2.4.2, sigs.k8s.io/json 20241010-snapshot-9aa6b5e7, sigs.k8s.io/yaml v1.4.0, soheilhy/cmux v0.1.5, spf13-afero 20250117-snapshot, spf13-afero v1.12.0, spf13-cobra 1.8.1, strfmt v0.23.0, swag v0.23.0, uber-go/mock v0.5.0-patch, vishvananda-netlink v1.3.0, vishvananda-netns 20241127-snapshot, vishvananda-netns v0.0.5, xdg-go/scram v1.1.2, xdg-go/stringprep v1.0.4, yaml for Go 20141213-snapshot-9f9df343, yaml for Go v2.4.0, yaml for Go v3.0.1)
+(aws/aws-sdk-go-v2 20250128-snapshot, aws/aws-sdk-go-v2 config/v1.29.2, aws/aws-sdk-go-v2 credentials/v1.17.55, aws/aws-sdk-go-v2 feature/ec2/imds/v1.16.25, aws/aws-sdk-go-v2 internal/configsources/v1.3.29, aws/aws-sdk-go-v2 internal/endpoints/v2.6.29, aws/aws-sdk-go-v2 internal/ini/v1.8.2, aws/aws-sdk-go-v2 service/fsx/v1.51.6, aws/aws-sdk-go-v2 service/internal/accept-encoding/v1.12.2, aws/aws-sdk-go-v2 service/internal/presigned-url/v1.12.10, aws/aws-sdk-go-v2 service/secretsmanager/v1.34.14, aws/aws-sdk-go-v2 service/sso/v1.24.12, aws/aws-sdk-go-v2 service/ssooidc/v1.28.11, aws/aws-sdk-go-v2 service/sts/v1.33.10, aws/aws-sdk-go-v2 v1.34.0, Azure/azure-sdk-for-go v2.0.0-beta, Azure/azure-sdk-for-go v3.0.0-beta, btree v1.0.1, census-instrumentation/opencensus-go v0.24.0, client-go 20250129-snapshot, client-go v0.32.1, client_golang v1.20.4, cncf/udpa 20201120-snapshot-5459f2c9, container-storage-interface/spec v1.9.0, containerd/containerd v1.7.23, CoreOS v0.3.1, docker-go-plugins-helpers 20240701-snapshot-45e24314, docker-go-plugins-helpers 20241106-snapshot, docker-go-units v0.5.0, elastic/go-sysinfo 20241220-snapshot, elastic/go-windows v1.0.2, envoyproxy/go-control-plane envoy/v1.32.3, envoyproxy/go-control-plane v0.13.1, envoyproxy/protoc-gen-validate 1.1.0, gengo 20240911-snapshot-2b36238f, github.com/aws/smithy-go 20250216-snapshot, github.com/aws/smithy-go v1.22.2, github.com/cncf/xds 20240905-snapshot-b4127c9b, github.com/containers/gvisor-tap-vsock 0.7.1, github.com/distribution/reference v0.6.0, github.com/google/cel-spec v0.19.0, github.com/kubernetes-csi/csi-lib-utils v0.16.0, github.com/mattermost/xml-roundtrip-validator 20230502-snapshot-3079e7b8, github.com/moby/spdystream v0.5.0, github.com/xdg-go/pbkdf2 1.0.0, go-etcd api/v3.5.16, go-etcd client/pkg/v3.5.16, go-etcd client/v2.305.16, go-etcd client/v3.5.16, go-etcd pkg/v3.5.16, go-etcd raft/v3.5.16, go-etcd server/v3.5.16, go-logr/logr v1.4.2, go-logr/stdr v1.2.2, go-openapi/analysis v0.23.0, go-openapi/errors v0.22.0, go-openapi/jsonpointer v0.21.0, go-openapi/loads v0.22.0, go-openapi/runtime v0.28.0, go-openapi/spec v0.21.0, go-openapi/validate v0.24.0, go-systemd 20190321-snapshot-95778dfb, go-systemd v17, go-systemd v22.5.0, go.opentelemetry.io/proto otlp/v1.3.1, godebug v1.1.0, golang-github-docker-go-connections-dev 0.4.0, golang-mock v1.1.1, golang/appengine v1.6.8, golang/glog v1.2.3, google-cloud-go 20241225-snapshot, google-cloud-go accessapproval/v1.8.3, google-cloud-go aiplatform/v1.70.0, google-cloud-go analytics/v0.25.3, google-cloud-go apigateway/v1.7.3, google-cloud-go apigeeconnect/v1.7.3, google-cloud-go appengine/v1.9.3, google-cloud-go area120/v0.9.3, google-cloud-go artifactregistry/v1.16.1, google-cloud-go asset/v1.20.4, google-cloud-go assuredworkloads/v1.12.3, google-cloud-go auth/oauth2adapt/v0.2.7, google-cloud-go automl/v1.14.4, google-cloud-go bigquery/v1.66.0, google-cloud-go bigtable/v1.34.0, google-cloud-go billing/v1.20.1, google-cloud-go binaryauthorization/v1.9.3, google-cloud-go certificatemanager/v1.9.3, google-cloud-go channel/v1.19.2, google-cloud-go cloudbuild/v1.20.0, google-cloud-go clouddms/v1.8.3, google-cloud-go cloudtasks/v1.13.3, google-cloud-go compute/metadata/v0.6.0, google-cloud-go compute/v1.33.0, google-cloud-go container/v1.42.1, google-cloud-go containeranalysis/v0.13.3, google-cloud-go datacatalog/v1.24.3, google-cloud-go dataflow/v0.10.3, google-cloud-go datafusion/v1.8.3, google-cloud-go datalabeling/v0.9.3, google-cloud-go dataplex/v1.21.0, google-cloud-go dataqna/v0.9.3, google-cloud-go datastore/v1.20.0, google-cloud-go datastream/v1.12.1, google-cloud-go deploy/v1.26.1, google-cloud-go dialogflow/v1.64.1, google-cloud-go dlp/v1.20.1, google-cloud-go documentai/v1.35.1, google-cloud-go domains/v0.10.3, google-cloud-go errorreporting/v0.3.2, google-cloud-go essentialcontacts/v1.7.3, google-cloud-go eventarc/v1.15.1, google-cloud-go filestore/v1.9.3, google-cloud-go firestore/v1.18.0, google-cloud-go functions/v1.19.3, google-cloud-go gkeconnect/v0.12.1, google-cloud-go gkehub/v0.15.3, google-cloud-go gsuiteaddons/v1.7.3, google-cloud-go iam/v1.3.1, google-cloud-go iap/v1.10.3, google-cloud-go ids/v1.5.3, google-cloud-go iot/v1.8.3, google-cloud-go kms/v1.20.5, google-cloud-go language/v1.14.3, google-cloud-go lifesciences/v0.10.3, google-cloud-go logging/v1.13.0, google-cloud-go longrunning/v0.6.4, google-cloud-go managedidentities/v1.7.3, google-cloud-go mediatranslation/v0.9.3, google-cloud-go memcache/v1.11.3, google-cloud-go metastore/v1.14.3, google-cloud-go monitoring/v1.23.0, google-cloud-go networkconnectivity/v1.16.1, google-cloud-go networkmanagement/v1.18.0, google-cloud-go notebooks/v1.12.3, google-cloud-go optimization/v1.7.3, google-cloud-go orchestration/v1.11.4, google-cloud-go orgpolicy/v1.14.2, google-cloud-go osconfig/v1.14.3, google-cloud-go oslogin/v1.14.3, google-cloud-go phishingprotection/v0.9.3, google-cloud-go policytroubleshooter/v1.11.3, google-cloud-go privatecatalog/v0.10.4, google-cloud-go pubsub/v1.45.3, google-cloud-go pubsublite/v1.8.2, google-cloud-go recommendationengine/v0.9.3, google-cloud-go recommender/v1.13.3, google-cloud-go redis/v1.17.3, google-cloud-go resourcemanager/v1.10.3, google-cloud-go resourcesettings/v1.8.3, google-cloud-go retail/v1.19.2, google-cloud-go run/v1.8.1, google-cloud-go scheduler/v1.11.3, google-cloud-go secretmanager/v1.14.3, google-cloud-go security/v1.18.3, google-cloud-go securitycenter/v1.35.3, google-cloud-go servicedirectory/v1.12.3, google-cloud-go shell/v1.8.3, google-cloud-go spanner/v1.73.0, google-cloud-go speech/v1.26.0, google-cloud-go storagetransfer/v1.12.1, google-cloud-go texttospeech/v1.11.0, google-cloud-go tpu/v1.8.0, google-cloud-go trace/v1.11.3, google-cloud-go translate/v1.12.3, google-cloud-go v0.118.1, google-cloud-go v0.14.0, google-cloud-go video/v1.23.3, google-cloud-go videointelligence/v1.12.3, google-cloud-go vmmigration/v1.8.3, google-cloud-go vpcaccess/v1.8.3, google-cloud-go webrisk/v1.10.3, google-cloud-go websecurityscanner/v1.7.3, google-cloud-go workflows/v1.13.3, google-gofuzz v1.2.0, google-guest-agent 20241013.00, google/cel-go v0.22.0, google/gnostic-models v0.6.8, google/pprof 20241029-snapshot-d1b30feb, google/s2a-go 20250127-snapshot, google/s2a-go v0.1.9, googleapis/go-genproto 20250113-snapshot, googleapis/go-genproto 20250202-snapshot, GoogleCloudPlatform/opentelemetry-operations-go detectors/gcp/v1.25.0, GoogleCloudPlatform/opentelemetry-operations-go exporter/metric/v0.49.0, GoogleCloudPlatform/opentelemetry-operations-go internal/resourcemapping/v0.49.0, GoogleCloudPlatform/osconfig 20241004.00, groupcache 20210331-snapshot-41bb18bf, grpc-ecosystem/go-grpc-middleware v1.3.0, grpc-ecosystem/go-grpc-prometheus v1.2.0, grpc-go 20250128-snapshot, grpc-go v1.70.0, helm/helm v3.17.0, inconshreveable/mousetrap v1.1.0, jmespath-go-jmespath v0.4.0, jonboulle-clockwork v0.4.0, jsonreference v0.21.0, k8s.io/code-generator kubernetes-1.18.2-beta.0, k8s.io/code-generator v0.32.1, k8s.io/kube-openapi 20241105-snapshot-32ad38e4, k8s.io/utils 20241210-snapshot-24370bea, Kubernetes v1.32.0-alpha.1, kubernetes-csi/csi-proxy client/v1.1.3, kubernetes-csi/external-snapshotter 20250117-snapshot, kubernetes-csi/external-snapshotter client/v8.2.0, kubernetes-sigs/apiserver-network-proxy konnectivity-client/v0.31.0, kubernetes-sigs/cloud-provider-azure pkg/azclient/v0.0.50, kubernetes-sigs/structured-merge-diff v4.4.2, kubernetes/api 20250127-snapshot, kubernetes/api v0.32.1, kubernetes/apiextensions-apiserver 20241206-snapshot, kubernetes/apiextensions-apiserver v0.32.1, kubernetes/apimachinery 20250211-snapshot, kubernetes/apimachinery v0.32.1, kubernetes/apiserver v0.32.1, kubernetes/component-base v0.32.1, kubernetes/mount-utils v0.32.1, martian v3.3.3, matttproud-golang_protobuf_extensions v1.0.4, mendersoftware/mendertesting 0.0~git20200227.1396c95, moby/sys mountinfo/v0.7.2, moby/sys userns/v0.1.0, modern-go/concurrent 20180305-snapshot-bacd9c7e, modern-go/reflect2 v1.0.2, mongodb/mongo-go-driver v1.14.0, mschoch/smat v0.2.0, mwitkow/go-conntrack 20190716-snapshot-2f068394, NetApp/trident v24.10.0, NYTimes-gziphandler v1.1.1, oklog/ulid v1.3.1, open-telemetry/opentelemetry-go exporters/otlp/otlptrace/otlptracegrpc/v1.27.0, open-telemetry/opentelemetry-go exporters/otlp/otlptrace/v1.28.0, open-telemetry/opentelemetry-go metric/v1.34.0, open-telemetry/opentelemetry-go sdk/metric/v1.32.0, open-telemetry/opentelemetry-go sdk/v1.34.0, open-telemetry/opentelemetry-go trace/v1.34.0, open-telemetry/opentelemetry-go v1.34.0, open-telemetry/opentelemetry-go-contrib 20250217-snapshot, open-telemetry/opentelemetry-go-contrib detectors/gcp/v1.33.0, open-telemetry/opentelemetry-go-contrib instrumentation/google.golang.org/grpc/otelgrpc/v0.58.0, open-telemetry/opentelemetry-go-contrib instrumentation/net/http/otelhttp/v0.58.0, open-telemetry/opentelemetry-go-instrumentation 20250128-snapshot, OpenCensus v0.4.1, opencontainers/go-digest 1.0.0, openshift/api 20241121-snapshot, opentracing-opentracing-go v1.2.0, osbuild-osbuild-composer 126, osbuild-osbuild-composer 131, pmezard-go-difflib 20190219-snapshot-5d4384ee, podman 5.3.1, projectatomic/buildah v1.39.0, prometheus-client_model v0.6.1, prometheus-common 0.55.0, prometheus-procfs v0.15.1, RoaringBitmap-roaring v2.4.2, sigs.k8s.io/json 20241010-snapshot-9aa6b5e7, sigs.k8s.io/yaml v1.4.0, soheilhy/cmux v0.1.5, spf13-afero 20250117-snapshot, spf13-afero v1.12.0, spf13-cobra 1.8.1, strfmt v0.23.0, swag v0.23.0, uber-go/mock v0.5.0-patch, vishvananda-netlink v1.3.0, vishvananda-netns 20241127-snapshot, vishvananda-netns v0.0.5, xdg-go/scram v1.1.2, xdg-go/stringprep v1.0.4, yaml for Go 20141213-snapshot-9f9df343, yaml for Go v2.4.0, yaml for Go v3.0.1)
 
 Apache License
 
@@ -1941,7 +1941,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 BSD 2-clause "Simplified" License
 
-(dnaeon/go-vcr v3.2.0, github.com/containers/gvisor-tap-vsock 0.8.2, go-check-check 20201130-snapshot-10cb9826, maxatome/go-testdeep v1.12.0, pkg/browser 20240102-snapshot-5ac0b6a4, podman 5.3.1, sftp v1.13.7)
+(dnaeon/go-vcr v3.2.0, github.com/containers/gvisor-tap-vsock 0.7.1, go-check-check 20201130-snapshot-10cb9826, maxatome/go-testdeep v1.12.0, pkg/browser 20240102-snapshot-5ac0b6a4, podman 5.3.1, sftp v1.13.7)
 
 BSD Two Clause License
 
@@ -2761,7 +2761,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 BSD 3-clause "New" or "Revised" License
 
-(bits-and-blooms/bitset 20241228-snapshot, bits-and-blooms/bitset v1.20.0, evanphx/json-patch v5.9.0, exp 20240711-snapshot-8a7402ab, fsnotify-fsnotify v1.7.0, github.com/antlr4-go/antlr v4.13.0, github.com/containers/gvisor-tap-vsock 0.8.2, github.com/munnerz/goautoneg 20191010-snapshot-a7dc8b61, github.com/planetscale/vtprotobuf 20240319-snapshot-0393e58b, go-plist v1.0.1, Golang Protobuf 20250126-snapshot, Golang Protobuf v1.36.4, Golang Protobuf v1.5.4, golang-github-googleapis-gax-go-dev 2.13.0, golang.org/x/crypto v0.32.0, golang.org/x/lint 20190308-snapshot-d0100b6b, golang.org/x/mod v0.21.0, golang.org/x/net 20250123-snapshot, golang.org/x/net v0.34.0, golang.org/x/oauth2 20250205-snapshot, golang.org/x/oauth2 v0.26.0, golang.org/x/sync v0.10.0, golang.org/x/sys 20250205-snapshot, golang.org/x/sys v0.29.0, golang.org/x/term v0.28.0, golang.org/x/time v0.9.0, golang.org/x/tools 20241102-snapshot, golang.org/x/tools v0.26.0, golang.org/x/xerrors 20200804-snapshot-5ec99f83, golang/text 20240806-snapshot, golang/text v0.21.0, google/go-cmp v0.6.0, google/uuid v1.6.0, googleapis/gax-go 20250117-snapshot, googleapis/gax-go v2.14.1, googleapis/google-api-go-client v0.218.0, gorilla/mux v1.8.1, grpc-gateway v2.20.0, klauspost-compress v1.17.9, podman 5.3.1, rogpeppe/go-internal v1.13.1, xhit/go-str2duration v2.1.0)
+(bits-and-blooms/bitset 20241228-snapshot, bits-and-blooms/bitset v1.20.0, evanphx/json-patch v5.9.0, exp 20240711-snapshot-8a7402ab, fsnotify-fsnotify v1.7.0, github.com/antlr4-go/antlr v4.13.0, github.com/containers/gvisor-tap-vsock 0.7.1, github.com/munnerz/goautoneg 20191010-snapshot-a7dc8b61, github.com/planetscale/vtprotobuf 20240319-snapshot-0393e58b, go-plist v1.0.1, Golang Protobuf v1.36.4, Golang Protobuf v1.5.4, golang-github-googleapis-gax-go-dev 2.13.0, golang.org/x/crypto v0.32.0, golang.org/x/lint 20190308-snapshot-d0100b6b, golang.org/x/mod v0.21.0, golang.org/x/net 20250123-snapshot, golang.org/x/net v0.34.0, golang.org/x/oauth2 20250214-snapshot, golang.org/x/oauth2 v0.26.0, golang.org/x/sync v0.10.0, golang.org/x/sys v0.29.0, golang.org/x/term v0.28.0, golang.org/x/time v0.9.0, golang.org/x/tools 20241102-snapshot, golang.org/x/tools v0.26.0, golang.org/x/xerrors 20200804-snapshot-5ec99f83, golang/text 20240806-snapshot, golang/text v0.21.0, google/go-cmp v0.6.0, google/uuid v1.6.0, googleapis/gax-go v2.14.1, googleapis/google-api-go-client v0.218.0, gorilla/mux v1.8.1, grpc-gateway v2.20.0, klauspost-compress v1.17.9, podman 5.3.1, rogpeppe/go-internal v1.13.1, xhit/go-str2duration v2.1.0)
 
 Copyright (c) <YEAR>, <OWNER>
 
@@ -2870,6 +2870,1276 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER I
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---
+
+GNU General Public License v3.0 only
+
+(netdata v2.2.4)
+
+"This program is free software: you can redistribute it and/or modify it under
+
+the terms of version 3 of the GNU General Public License as published by the Free
+
+Software Foundation."
+
+
+
+
+
+
+
+GNU GENERAL PUBLIC LICENSE
+
+==========================
+
+
+
+Version 3,29 June 2007
+
+
+
+Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
+
+
+
+Everyone is permitted to copy and distribute verbatim copies of this license
+
+document, but changing it is not allowed.
+
+
+
+
+
+Preamble
+
+
+
+The GNU General Public License is a free, copyleft license for software and other
+
+kinds of works.
+
+
+
+The licenses for most software and other practical works are designed to take
+
+away your freedom to share and change the works. By contrast, the GNU General
+
+Public License is intended to guarantee your freedom to share and change all
+
+versions of a program--to make sure it remains free software for all its users.
+
+We, the Free Software Foundation, use the GNU General Public License for most of
+
+our software; it applies also to any other work released this way by its authors.
+
+You can apply it to your programs, too.
+
+
+
+When we speak of free software, we are referring to freedom, not price. Our
+
+General Public Licenses are designed to make sure that you have the freedom to
+
+distribute copies of free software (and charge for them if you wish), that you
+
+receive source code or can get it if you want it, that you can change the
+
+software or use pieces of it in new free programs, and that you know you can do
+
+these things.
+
+
+
+To protect your rights, we need to prevent others from denying you these rights
+
+or asking you to surrender the rights. Therefore, you have certain
+
+responsibilities if you distribute copies of the software, or if you modify it:
+
+responsibilities to respect the freedom of others.
+
+
+
+For example, if you distribute copies of such a program, whether gratis or for a
+
+fee, you must pass on to the recipients the same freedoms that you received. You
+
+must make sure that they, too, receive or can get the source code. And you must
+
+show them these terms so they know their rights.
+
+
+
+Developers that use the GNU GPL protect your rights with two steps: (1) assert
+
+copyright on the software, and (2) offer you this License giving you legal
+
+permission to copy, distribute and/or modify it.
+
+
+
+For the developers' and authors' protection, the GPL clearly explains that there
+
+is no warranty for this free software. For both users' and authors' sake, the GPL
+
+requires that modified versions be marked as changed, so that their problems will
+
+not be attributed erroneously to authors of previous versions.
+
+
+
+Some devices are designed to deny users access to install or run modified
+
+versions of the software inside them, although the manufacturer can do so. This
+
+is fundamentally incompatible with the aim of protecting users' freedom to change
+
+the software. The systematic pattern of such abuse occurs in the area of products
+
+for individuals to use, which is precisely where it is most unacceptable.
+
+Therefore, we have designed this version of the GPL to prohibit the practice for
+
+those products. If such problems arise substantially in other domains, we stand
+
+ready to extend this provision to those domains in future versions of the GPL, as
+
+needed to protect the freedom of users.
+
+
+
+Finally, every program is threatened constantly by software patents. States
+
+should not allow patents to restrict development and use of software on
+
+general-purpose computers, but in those that do, we wish to avoid the special
+
+danger that patents applied to a free program could make it effectively
+
+proprietary. To prevent this, the GPL assures that patents cannot be used to
+
+render the program non-free.
+
+
+
+The precise terms and conditions for copying, distribution and modification
+
+follow.
+
+
+
+
+
+TERMS AND CONDITIONS
+
+
+
+0. Definitions.
+
+
+
+This License refers to version 3 of the GNU General Public License.
+
+
+
+Copyright also means copyright-like laws that apply to other kinds of works,
+
+such as semiconductor masks.
+
+
+
+The Program refers to any copyrightable work licensed under this License. Each
+
+licensee is addressed as you. Licensees and recipients may be individuals
+
+or organizations.
+
+
+
+To modify a work means to copy from or adapt all or part of the work in a
+
+fashion requiring copyright permission, other than the making of an exact copy.
+
+The resulting work is called a modified version of the earlier work or a work
+
+based on the earlier work.
+
+
+
+A covered work means either the unmodified Program or a work based on the
+
+Program.
+
+
+
+To propagate a work means to do anything with it that, without permission,
+
+would make you directly or secondarily liable for infringement under applicable
+
+copyright law, except executing it on a computer or modifying a private copy.
+
+Propagation includes copying, distribution (with or without modification), making
+
+available to the public, and in some countries other activities as well.
+
+
+
+To convey a work means any kind of propagation that enables other parties to
+
+make or receive copies. Mere interaction with a user through a computer network,
+
+with no transfer of a copy, is not conveying.
+
+
+
+An interactive user interface displays Appropriate Legal Notices to the extent
+
+that it includes a convenient and prominently visible feature that (1) displays
+
+an appropriate copyright notice, and (2) tells the user that there is no warranty
+
+for the work (except to the extent that warranties are provided), that licensees
+
+may convey the work under this License, and how to view a copy of this License.
+
+If the interface presents a list of user commands or options, such as a menu, a
+
+prominent item in the list meets this criterion.
+
+
+
+1. Source Code.
+
+
+
+The source code for a work means the preferred form of the work for making
+
+modifications to it. Object code means any non-source form of a work.
+
+
+
+A Standard Interface means an interface that either is an official standard
+
+defined by a recognized standards body, or, in the case of interfaces specified
+
+for a particular programming language, one that is widely used among developers
+
+working in that language.
+
+
+
+The System Libraries of an executable work include anything, other than the
+
+work as a whole, that (a) is included in the normal form of packaging a Major
+
+Component, but which is not part of that Major Component, and (b) serves only to
+
+enable use of the work with that Major Component, or to implement a Standard
+
+Interface for which an implementation is available to the public in source code
+
+form. A Major Component, in this context, means a major essential component
+
+(kernel, window system, and so on) of the specific operating system (if any) on
+
+which the executable work runs, or a compiler used to produce the work, or an
+
+object code interpreter used to run it.
+
+
+
+The Corresponding Source for a work in object code form means all the source
+
+code needed to generate, install, and (for an executable work) run the object
+
+code and to modify the work, including scripts to control those activities.
+
+However, it does not include the work's System Libraries, or general-purpose
+
+tools or generally available free programs which are used unmodified in
+
+performing those activities but which are not part of the work. For example,
+
+Corresponding Source includes interface definition files associated with source
+
+files for the work, and the source code for shared libraries and dynamically
+
+linked subprograms that the work is specifically designed to require, such as by
+
+intimate data communication or control flow between those subprograms and other
+
+parts of the work.
+
+
+
+The Corresponding Source need not include anything that users can regenerate
+
+automatically from other parts of the Corresponding Source.
+
+
+
+The Corresponding Source for a work in source code form is that same work.
+
+
+
+2. Basic Permissions.
+
+
+
+All rights granted under this License are granted for the term of copyright on
+
+the Program, and are irrevocable provided the stated conditions are met. This
+
+License explicitly affirms your unlimited permission to run the unmodified
+
+Program. The output from running a covered work is covered by this License only
+
+if the output, given its content, constitutes a covered work. This License
+
+acknowledges your rights of fair use or other equivalent, as provided by
+
+copyright law.
+
+
+
+You may make, run and propagate covered works that you do not convey, without
+
+conditions so long as your license otherwise remains in force. You may convey
+
+covered works to others for the sole purpose of having them make modifications
+
+exclusively for you, or provide you with facilities for running those works,
+
+provided that you comply with the terms of this License in conveying all material
+
+for which you do not control copyright. Those thus making or running the covered
+
+works for you must do so exclusively on your behalf, under your direction and
+
+control, on terms that prohibit them from making any copies of your copyrighted
+
+material outside their relationship with you.
+
+
+
+Conveying under any other circumstances is permitted solely under the conditions
+
+stated below. Sublicensing is not allowed; section 10 makes it unnecessary.
+
+
+
+3. Protecting Users' Legal Rights From Anti-Circumvention Law.
+
+
+
+No covered work shall be deemed part of an effective technological measure under
+
+any applicable law fulfilling obligations under article 11 of the WIPO copyright
+
+treaty adopted on 20 December 1996, or similar laws prohibiting or restricting
+
+circumvention of such measures.
+
+
+
+When you convey a covered work, you waive any legal power to forbid circumvention
+
+of technological measures to the extent such circumvention is effected by
+
+exercising rights under this License with respect to the covered work, and you
+
+disclaim any intention to limit operation or modification of the work as a means
+
+of enforcing, against the work's users, your or third parties' legal rights to
+
+forbid circumvention of technological measures.
+
+
+
+4. Conveying Verbatim Copies.
+
+
+
+You may convey verbatim copies of the Program's source code as you receive it, in
+
+any medium, provided that you conspicuously and appropriately publish on each
+
+copy an appropriate copyright notice; keep intact all notices stating that this
+
+License and any non-permissive terms added in accord with section 7 apply to the
+
+code; keep intact all notices of the absence of any warranty; and give all
+
+recipients a copy of this License along with the Program.
+
+
+
+You may charge any price or no price for each copy that you convey, and you may
+
+offer support or warranty protection for a fee.
+
+
+
+5. Conveying Modified Source Versions.
+
+
+
+You may convey a work based on the Program, or the modifications to produce it
+
+from the Program, in the form of source code under the terms of section 4,
+
+provided that you also meet all of these conditions:
+
+
+
+  * a) The work must carry prominent notices stating that you modified it, and
+
+    giving a relevant date.
+
+
+
+  * b) The work must carry prominent notices stating that it is released under
+
+    this License and any conditions added under section 7. This requirement
+
+    modifies the requirement in section 4 to keep intact all notices.
+
+
+
+  * c) You must license the entire work, as a whole, under this License to anyone
+
+    who comes into possession of a copy. This License will therefore apply, along
+
+    with any applicable section 7 additional terms, to the whole of the work, and
+
+    all its parts, regardless of how they are packaged. This License gives no
+
+    permission to license the work in any other way, but it does not invalidate
+
+    such permission if you have separately received it.
+
+
+
+  * d) If the work has interactive user interfaces, each must display Appropriate
+
+    Legal Notices; however, if the Program has interactive interfaces that do not
+
+    display Appropriate Legal Notices, your work need not make them do so.
+
+
+
+A compilation of a covered work with other separate and independent works, which
+
+are not by their nature extensions of the covered work, and which are not
+
+combined with it such as to form a larger program, in or on a volume of a storage
+
+or distribution medium, is called an aggregate if the compilation and its
+
+resulting copyright are not used to limit the access or legal rights of the
+
+compilation's users beyond what the individual works permit. Inclusion of a
+
+covered work in an aggregate does not cause this License to apply to the other
+
+parts of the aggregate.
+
+
+
+6. Conveying Non-Source Forms.
+
+
+
+You may convey a covered work in object code form under the terms of sections 4
+
+and 5, provided that you also convey the machine-readable Corresponding Source
+
+under the terms of this License, in one of these ways:
+
+
+
+  * a) Convey the object code in, or embodied in, a physical product (including a
+
+    physical distribution medium), accompanied by the Corresponding Source fixed
+
+    on a durable physical medium customarily used for software interchange.
+
+
+
+  * b) Convey the object code in, or embodied in, a physical product (including a
+
+    physical distribution medium), accompanied by a written offer, valid for at
+
+    least three years and valid for as long as you offer spare parts or customer
+
+    support for that product model, to give anyone who possesses the object code
+
+    either (1) a copy of the Corresponding Source for all the software in the
+
+    product that is covered by this License, on a durable physical medium
+
+    customarily used for software interchange, for a price no more than your
+
+    reasonable cost of physically performing this conveying of source, or (2)
+
+    access to copy the Corresponding Source from a network server at no charge.
+
+
+
+  * c) Convey individual copies of the object code with a copy of the written
+
+    offer to provide the Corresponding Source. This alternative is allowed only
+
+    occasionally and noncommercially, and only if you received the object code
+
+    with such an offer, in accord with subsection 6b.
+
+
+
+  * d) Convey the object code by offering access from a designated place (gratis
+
+    or for a charge), and offer equivalent access to the Corresponding Source in
+
+    the same way through the same place at no further charge. You need not
+
+    require recipients to copy the Corresponding Source along with the object
+
+    code. If the place to copy the object code is a network server, the
+
+    Corresponding Source may be on a different server (operated by you or a third
+
+    party) that supports equivalent copying facilities, provided you maintain
+
+    clear directions next to the object code saying where to find the
+
+    Corresponding Source. Regardless of what server hosts the Corresponding
+
+    Source, you remain obligated to ensure that it is available for as long as
+
+    needed to satisfy these requirements.
+
+
+
+  * e) Convey the object code using peer-to-peer transmission, provided you
+
+    inform other peers where the object code and Corresponding Source of the work
+
+    are being offered to the general public at no charge under subsection 6d.
+
+
+
+A separable portion of the object code, whose source code is excluded from the
+
+Corresponding Source as a System Library, need not be included in conveying the
+
+object code work.
+
+
+
+A User Product is either (1) a consumer product, which means any tangible
+
+personal property which is normally used for personal, family, or household
+
+purposes, or (2) anything designed or sold for incorporation into a dwelling. In
+
+determining whether a product is a consumer product, doubtful cases shall be
+
+resolved in favor of coverage. For a particular product received by a particular
+
+user, normally used refers to a typical or common use of that class of product,
+
+regardless of the status of the particular user or of the way in which the
+
+particular user actually uses, or expects or is expected to use, the product. A
+
+product is a consumer product regardless of whether the product has substantial
+
+commercial, industrial or non-consumer uses, unless such uses represent the only
+
+significant mode of use of the product.
+
+
+
+Installation Information for a User Product means any methods, procedures,
+
+authorization keys, or other information required to install and execute modified
+
+versions of a covered work in that User Product from a modified version of its
+
+Corresponding Source. The information must suffice to ensure that the continued
+
+functioning of the modified object code is in no case prevented or interfered
+
+with solely because modification has been made.
+
+
+
+If you convey an object code work under this section in, or with, or specifically
+
+for use in, a User Product, and the conveying occurs as part of a transaction in
+
+which the right of possession and use of the User Product is transferred to the
+
+recipient in perpetuity or for a fixed term (regardless of how the transaction is
+
+characterized), the Corresponding Source conveyed under this section must be
+
+accompanied by the Installation Information. But this requirement does not apply
+
+if neither you nor any third party retains the ability to install modified object
+
+code on the User Product (for example, the work has been installed in ROM).
+
+
+
+The requirement to provide Installation Information does not include a
+
+requirement to continue to provide support service, warranty, or updates for a
+
+work that has been modified or installed by the recipient, or for the User
+
+Product in which it has been modified or installed. Access to a network may be
+
+denied when the modification itself materially and adversely affects the
+
+operation of the network or violates the rules and protocols for communication
+
+across the network.
+
+
+
+Corresponding Source conveyed, and Installation Information provided, in accord
+
+with this section must be in a format that is publicly documented (and with an
+
+implementation available to the public in source code form), and must require no
+
+special password or key for unpacking, reading or copying.
+
+
+
+7. Additional Terms.
+
+
+
+Additional permissions are terms that supplement the terms of this License by
+
+making exceptions from one or more of its conditions. Additional permissions that
+
+are applicable to the entire Program shall be treated as though they were
+
+included in this License, to the extent that they are valid under applicable law.
+
+If additional permissions apply only to part of the Program, that part may be
+
+used separately under those permissions, but the entire Program remains governed
+
+by this License without regard to the additional permissions.
+
+
+
+When you convey a copy of a covered work, you may at your option remove any
+
+additional permissions from that copy, or from any part of it. (Additional
+
+permissions may be written to require their own removal in certain cases when you
+
+modify the work.) You may place additional permissions on material, added by you
+
+to a covered work, for which you have or can give appropriate copyright
+
+permission.
+
+
+
+Notwithstanding any other provision of this License, for material you add to a
+
+covered work, you may (if authorized by the copyright holders of that material)
+
+supplement the terms of this License with terms:
+
+
+
+  * a) Disclaiming warranty or limiting liability differently from the terms of
+
+    sections 15 and 16 of this License; or
+
+
+
+  * b) Requiring preservation of specified reasonable legal notices or author
+
+    attributions in that material or in the Appropriate Legal Notices displayed
+
+    by works containing it; or
+
+
+
+  * c) Prohibiting misrepresentation of the origin of that material, or requiring
+
+    that modified versions of such material be marked in reasonable ways as
+
+    different from the original version; or
+
+
+
+  * d) Limiting the use for publicity purposes of names of licensors or authors
+
+    of the material; or
+
+
+
+  * e) Declining to grant rights under trademark law for use of some trade names,
+
+    trademarks, or service marks; or
+
+
+
+  * f) Requiring indemnification of licensors and authors of that material by
+
+    anyone who conveys the material (or modified versions of it) with contractual
+
+    assumptions of liability to the recipient, for any liability that these
+
+    contractual assumptions directly impose on those licensors and authors.
+
+
+
+All other non-permissive additional terms are considered further restrictions
+
+within the meaning of section 10. If the Program as you received it, or any part
+
+of it, contains a notice stating that it is governed by this License along with a
+
+term that is a further restriction, you may remove that term. If a license
+
+document contains a further restriction but permits relicensing or conveying
+
+under this License, you may add to a covered work material governed by the terms
+
+of that license document, provided that the further restriction does not survive
+
+such relicensing or conveying.
+
+
+
+If you add terms to a covered work in accord with this section, you must place,
+
+in the relevant source files, a statement of the additional terms that apply to
+
+those files, or a notice indicating where to find the applicable terms.
+
+
+
+Additional terms, permissive or non-permissive, may be stated in the form of a
+
+separately written license, or stated as exceptions; the above requirements apply
+
+either way.
+
+
+
+8. Termination.
+
+
+
+You may not propagate or modify a covered work except as expressly provided under
+
+this License. Any attempt otherwise to propagate or modify it is void, and will
+
+automatically terminate your rights under this License (including any patent
+
+licenses granted under the third paragraph of section 11).
+
+
+
+However, if you cease all violation of this License, then your license from a
+
+particular copyright holder is reinstated (a) provisionally, unless and until the
+
+copyright holder explicitly and finally terminates your license, and (b)
+
+permanently, if the copyright holder fails to notify you of the violation by some
+
+reasonable means prior to 60 days after the cessation.
+
+
+
+Moreover, your license from a particular copyright holder is reinstated
+
+permanently if the copyright holder notifies you of the violation by some
+
+reasonable means, this is the first time you have received notice of violation of
+
+this License (for any work) from that copyright holder, and you cure the
+
+violation prior to 30 days after your receipt of the notice.
+
+
+
+Termination of your rights under this section does not terminate the licenses of
+
+parties who have received copies or rights from you under this License. If your
+
+rights have been terminated and not permanently reinstated, you do not qualify to
+
+receive new licenses for the same material under section 10.
+
+
+
+9. Acceptance Not Required for Having Copies.
+
+
+
+You are not required to accept this License in order to receive or run a copy of
+
+the Program. Ancillary propagation of a covered work occurring solely as a
+
+consequence of using peer-to-peer transmission to receive a copy likewise does
+
+not require acceptance. However, nothing other than this License grants you
+
+permission to propagate or modify any covered work. These actions infringe
+
+copyright if you do not accept this License. Therefore, by modifying or
+
+propagating a covered work, you indicate your acceptance of this License to do
+
+so.
+
+
+
+10. Automatic Licensing of Downstream Recipients.
+
+
+
+Each time you convey a covered work, the recipient automatically receives a
+
+license from the original licensors, to run, modify and propagate that work,
+
+subject to this License. You are not responsible for enforcing compliance by
+
+third parties with this License.
+
+
+
+An entity transaction is a transaction transferring control of an organization,
+
+or substantially all assets of one, or subdividing an organization, or merging
+
+organizations. If propagation of a covered work results from an entity
+
+transaction, each party to that transaction who receives a copy of the work also
+
+receives whatever licenses to the work the party's predecessor in interest had or
+
+could give under the previous paragraph, plus a right to possession of the
+
+Corresponding Source of the work from the predecessor in interest, if the
+
+predecessor has it or can get it with reasonable efforts.
+
+
+
+You may not impose any further restrictions on the exercise of the rights granted
+
+or affirmed under this License. For example, you may not impose a license fee,
+
+royalty, or other charge for exercise of rights granted under this License, and
+
+you may not initiate litigation (including a cross-claim or counterclaim in a
+
+lawsuit) alleging that any patent claim is infringed by making, using, selling,
+
+offering for sale, or importing the Program or any portion of it.
+
+
+
+11. Patents.
+
+
+
+A contributor is a copyright holder who authorizes use under this License of
+
+the Program or a work on which the Program is based. The work thus licensed is
+
+called the contributor's contributor version.
+
+
+
+A contributor's essential patent claims are all patent claims owned or
+
+controlled by the contributor, whether already acquired or hereafter acquired,
+
+that would be infringed by some manner, permitted by this License, of making,
+
+using, or selling its contributor version, but do not include claims that would
+
+be infringed only as a consequence of further modification of the contributor
+
+version. For purposes of this definition, control includes the right to grant
+
+patent sublicenses in a manner consistent with the requirements of this License.
+
+
+
+Each contributor grants you a non-exclusive, worldwide, royalty-free patent
+
+license under the contributor's essential patent claims, to make, use, sell,
+
+offer for sale, import and otherwise run, modify and propagate the contents of
+
+its contributor version.
+
+
+
+In the following three paragraphs, a patent license is any express agreement or
+
+commitment, however denominated, not to enforce a patent (such as an express
+
+permission to practice a patent or covenant not to sue for patent infringement).
+
+To grant such a patent license to a party means to make such an agreement or
+
+commitment not to enforce a patent against the party.
+
+
+
+If you convey a covered work, knowingly relying on a patent license, and the
+
+Corresponding Source of the work is not available for anyone to copy, free of
+
+charge and under the terms of this License, through a publicly available network
+
+server or other readily accessible means, then you must either (1) cause the
+
+Corresponding Source to be so available, or (2) arrange to deprive yourself of
+
+the benefit of the patent license for this particular work, or (3) arrange, in a
+
+manner consistent with the requirements of this License, to extend the patent
+
+license to downstream recipients. Knowingly relying means you have actual
+
+knowledge that, but for the patent license, your conveying the covered work in a
+
+country, or your recipient's use of the covered work in a country, would infringe
+
+one or more identifiable patents in that country that you have reason to believe
+
+are valid.
+
+
+
+If, pursuant to or in connection with a single transaction or arrangement, you
+
+convey, or propagate by procuring conveyance of, a covered work, and grant a
+
+patent license to some of the parties receiving the covered work authorizing them
+
+to use, propagate, modify or convey a specific copy of the covered work, then the
+
+patent license you grant is automatically extended to all recipients of the
+
+covered work and works based on it.
+
+
+
+A patent license is discriminatory if it does not include within the scope of
+
+its coverage, prohibits the exercise of, or is conditioned on the non-exercise of
+
+one or more of the rights that are specifically granted under this License. You
+
+may not convey a covered work if you are a party to an arrangement with a third
+
+party that is in the business of distributing software, under which you make
+
+payment to the third party based on the extent of your activity of conveying the
+
+work, and under which the third party grants, to any of the parties who would
+
+receive the covered work from you, a discriminatory patent license (a) in
+
+connection with copies of the covered work conveyed by you (or copies made from
+
+those copies), or (b) primarily for and in connection with specific products or
+
+compilations that contain the covered work, unless you entered into that
+
+arrangement, or that patent license was granted, prior to 28 March 2007.
+
+
+
+Nothing in this License shall be construed as excluding or limiting any implied
+
+license or other defenses to infringement that may otherwise be available to you
+
+under applicable patent law.
+
+
+
+12. No Surrender of Others' Freedom.
+
+
+
+If conditions are imposed on you (whether by court order, agreement or otherwise)
+
+that contradict the conditions of this License, they do not excuse you from the
+
+conditions of this License. If you cannot convey a covered work so as to satisfy
+
+simultaneously your obligations under this License and any other pertinent
+
+obligations, then as a consequence you may not convey it at all. For example, if
+
+you agree to terms that obligate you to collect a royalty for further conveying
+
+from those to whom you convey the Program, the only way you could satisfy both
+
+those terms and this License would be to refrain entirely from conveying the
+
+Program.
+
+
+
+13. Use with the GNU Affero General Public License.
+
+
+
+Notwithstanding any other provision of this License, you have permission to link
+
+or combine any covered work with a work licensed under version 3 of the GNU
+
+Affero General Public License into a single combined work, and to convey the
+
+resulting work. The terms of this License will continue to apply to the part
+
+which is the covered work, but the special requirements of the GNU Affero General
+
+Public License, section 13, concerning interaction through a network will apply
+
+to the combination as such.
+
+
+
+14. Revised Versions of this License.
+
+
+
+The Free Software Foundation may publish revised and/or new versions of the GNU
+
+General Public License from time to time. Such new versions will be similar in
+
+spirit to the present version, but may differ in detail to address new problems
+
+or concerns.
+
+
+
+Each version is given a distinguishing version number. If the Program specifies
+
+that a certain numbered version of the GNU General Public License or any later
+
+version applies to it, you have the option of following the terms and conditions
+
+either of that numbered version or of any later version published by the Free
+
+Software Foundation. If the Program does not specify a version number of the GNU
+
+General Public License, you may choose any version ever published by the Free
+
+Software Foundation.
+
+
+
+If the Program specifies that a proxy can decide which future versions of the GNU
+
+General Public License can be used, that proxy's public statement of acceptance
+
+of a version permanently authorizes you to choose that version for the Program.
+
+
+
+Later license versions may give you additional or different permissions. However,
+
+no additional obligations are imposed on any author or copyright holder as a
+
+result of your choosing to follow a later version.
+
+
+
+15. Disclaimer of Warranty.
+
+
+
+THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.
+
+EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER
+
+PARTIES PROVIDE THE PROGRAM AS IS WITHOUT WARRANTY OF ANY KIND, EITHER
+
+EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE
+
+QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE
+
+DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
+
+
+
+16. Limitation of Liability.
+
+
+
+IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL ANY
+
+COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS THE PROGRAM AS
+
+PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL,
+
+INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE
+
+THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING RENDERED
+
+INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A FAILURE OF THE
+
+PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY
+
+HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+
+
+17. Interpretation of Sections 15 and 16.
+
+
+
+If the disclaimer of warranty and limitation of liability provided above cannot
+
+be given local legal effect according to their terms, reviewing courts shall
+
+apply local law that most closely approximates an absolute waiver of all civil
+
+liability in connection with the Program, unless a warranty or assumption of
+
+liability accompanies a copy of the Program in return for a fee.
+
+
+
+END OF TERMS AND CONDITIONS
+
+
+
+
+
+How to Apply These Terms to Your New Programs
+
+
+
+If you develop a new program, and you want it to be of the greatest possible use
+
+to the public, the best way to achieve this is to make it free software which
+
+everyone can redistribute and change under these terms.
+
+
+
+To do so, attach the following notices to the program. It is safest to attach
+
+them to the start of each source file to most effectively state the exclusion of
+
+warranty; and each file should have at least the copyright line and a pointer
+
+to where the full notice is found.
+
+
+
+    <one line to give the program's name and a brief idea of what it
+
+does.>
+
+    Copyright (C) <year>  <name of author>
+
+
+
+    This program is free software: you can redistribute it and/or modify
+
+    it under the terms of the GNU General Public License as published by
+
+    the Free Software Foundation, either version 3 of the License, or
+
+    (at your option) any later version.
+
+
+
+    This program is distributed in the hope that it will be useful,
+
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+
+    GNU General Public License for more details.
+
+
+
+    You should have received a copy of the GNU General Public License
+
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+Also add information on how to contact you by electronic and paper mail.
+
+
+
+If the program does terminal interaction, make it output a short notice like this
+
+when it starts in an interactive mode:
+
+
+
+    <program>  Copyright (C) <year>  <name of author>
+
+
+
+    This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+
+    This is free software, and you are welcome to redistribute it
+
+    under certain conditions; type `show c' for details.
+
+
+
+The hypothetical commands `show w' and `show c' should show the appropriate parts
+
+of the General Public License. Of course, your program's commands might be
+
+different; for a GUI interface, you would use an about box.
+
+
+
+You should also get your employer (if you work as a programmer) or school, if
+
+any, to sign a copyright disclaimer for the program, if necessary. For more
+
+information on this, and how to apply and follow the GNU GPL, see
+
+<http://www.gnu.org/licenses/>.
+
+
+
+The GNU General Public License does not permit incorporating your program into
+
+proprietary programs. If your program is a subroutine library, you may consider
+
+it more useful to permit linking proprietary applications with the library. If
+
+this is what you want to do, use the GNU Lesser General Public License instead of
+
+this License. But first, please read
+
+<http://www.gnu.org/philosophy/why-not-lgpl.html>.
 
 ---
 
@@ -3611,7 +4881,7 @@ Permission is hereby granted, free of charge, to any person obtaining a copy
 
 MIT License
 
-(alecthomas-kingpin v2.4.0, alecthomas-units 20211218-snapshot-b94a6e3c, Azure/azure-sdk-for-go 20240229-snapshot, Azure/azure-sdk-for-go 20250119-snapshot, Azure/azure-sdk-for-go 20250130-snapshot, Azure/azure-sdk-for-go sdk/azcore/v1.17.0, Azure/azure-sdk-for-go sdk/azidentity/v1.7.0, Azure/azure-sdk-for-go sdk/internal/v1.10.0, Azure/azure-sdk-for-go sdk/resourcemanager/authorization/armauthorization/v2.2.0, Azure/azure-sdk-for-go sdk/resourcemanager/compute/armcompute/v5.7.0, Azure/azure-sdk-for-go sdk/resourcemanager/containerregistry/armcontainerregistry/v1.2.0, Azure/azure-sdk-for-go sdk/resourcemanager/containerservice/armcontainerservice/v4.8.0, Azure/azure-sdk-for-go sdk/resourcemanager/keyvault/armkeyvault/v1.4.0, Azure/azure-sdk-for-go sdk/resourcemanager/managementgroups/armmanagementgroups/v1.0.0, Azure/azure-sdk-for-go sdk/resourcemanager/privatedns/armprivatedns/v1.2.0, Azure/azure-sdk-for-go sdk/resourcemanager/resourcegraph/armresourcegraph/v0.9.0, Azure/azure-sdk-for-go sdk/resourcemanager/resources/armfeatures/v1.2.0, Azure/azure-sdk-for-go sdk/resourcemanager/resources/armresources/v1.2.0, Azure/azure-sdk-for-go sdk/resourcemanager/storage/armstorage/v1.6.0, AzureAD/microsoft-authentication-library-for-go v1.2.2, cenkalti/backoff v4.3.0, cespare/xxhash v2.3.0, cpuguy83-go-md2man v2.0.4, dominikh/go-tools 20190523-snapshot-ea95bdfd, felixge/httpsnoop v1.0.4, github.com/containers/gvisor-tap-vsock 0.8.2, github.com/go-kit/log v0.2.1, go humanize 20231009-snapshot-961771c7, Go Testify v1.10.0, go-restful v3.11.0, go-task/slim-sprig v3.0.0, go-zap v1.27.0, go.etcd.io/bbolt v1.3.11, go.uber.org/goleak v1.3.0, go.uber.org/multierr v1.11.0, golang-github-ghodss-yaml-dev 20210413-snapshot-d8423dcd, golang-github-ghodss-yaml-dev 20240620-snapshot, golang-jwt/jwt v4.5.0, golang-jwt/jwt v5.2.1, golang-stats v0.7.0, gomega v1.35.1, govalidator 20230301-snapshot-a9d515a0, jarcoal/httpmock 20240816-snapshot, jarcoal/httpmock v1.3.1, kr/pretty v0.3.1, mapstructure v1.5.0, Microsoft-go-winio v0.6.0, mitchellh-hashstructure v2.0.2, natefinch/lumberjack v2.2.1, niemeyer/pretty 20200227-snapshot-a10e7cae, olekukonko-tablewriter 20230925-snapshot-df64c4bb, olekukonko-tablewriter 20231005-snapshot, onsi/ginkgo 2.21.0, podman 5.3.1, secureheader v0.2.0, Sirupsen/logrus v1.9.3, stoewer/go-strcase v1.3.0, stretchr/objx v0.5.2, tmc/grpc-websocket-proxy 20220101-snapshot-673ab2c3, xiang90-probing 20221125-snapshot-a49e3df8, yaml for Go v3.0.1, youmark/pkcs8 20181117-snapshot-1be2e3e5, yuin/goldmark v1.4.13, zcalusic/sysinfo v1.1.3)
+(alecthomas-kingpin v2.4.0, alecthomas-units 20211218-snapshot-b94a6e3c, Azure/azure-sdk-for-go 20240711-snapshot, Azure/azure-sdk-for-go 20241007-snapshot, Azure/azure-sdk-for-go 20250202-snapshot, Azure/azure-sdk-for-go sdk/azcore/v1.17.0, Azure/azure-sdk-for-go sdk/azidentity/v1.7.0, Azure/azure-sdk-for-go sdk/internal/v1.10.0, Azure/azure-sdk-for-go sdk/resourcemanager/authorization/armauthorization/v2.2.0, Azure/azure-sdk-for-go sdk/resourcemanager/compute/armcompute/v5.7.0, Azure/azure-sdk-for-go sdk/resourcemanager/containerregistry/armcontainerregistry/v1.2.0, Azure/azure-sdk-for-go sdk/resourcemanager/containerservice/armcontainerservice/v4.8.0, Azure/azure-sdk-for-go sdk/resourcemanager/keyvault/armkeyvault/v1.4.0, Azure/azure-sdk-for-go sdk/resourcemanager/managementgroups/armmanagementgroups/v1.0.0, Azure/azure-sdk-for-go sdk/resourcemanager/privatedns/armprivatedns/v1.2.0, Azure/azure-sdk-for-go sdk/resourcemanager/resourcegraph/armresourcegraph/v0.9.0, Azure/azure-sdk-for-go sdk/resourcemanager/resources/armfeatures/v1.2.0, Azure/azure-sdk-for-go sdk/resourcemanager/resources/armresources/v1.2.0, Azure/azure-sdk-for-go sdk/resourcemanager/storage/armstorage/v1.6.0, AzureAD/microsoft-authentication-library-for-go v1.2.2, cenkalti/backoff v4.3.0, cespare/xxhash v2.3.0, cpuguy83-go-md2man v2.0.4, dominikh/go-tools 20190523-snapshot-ea95bdfd, felixge/httpsnoop v1.0.4, github.com/containers/gvisor-tap-vsock 0.7.1, github.com/go-kit/log v0.2.1, go humanize 20231009-snapshot-961771c7, Go Testify v1.10.0, go-restful v3.11.0, go-task/slim-sprig v3.0.0, go-zap v1.27.0, go.etcd.io/bbolt v1.3.11, go.uber.org/goleak v1.3.0, go.uber.org/multierr v1.11.0, golang-github-ghodss-yaml-dev 20210413-snapshot-d8423dcd, golang-github-ghodss-yaml-dev 20240620-snapshot, golang-jwt/jwt v4.5.0, golang-jwt/jwt v5.2.1, golang-stats v0.7.0, gomega v1.35.1, govalidator 20230301-snapshot-a9d515a0, jarcoal/httpmock 20240816-snapshot, jarcoal/httpmock v1.3.1, kr/pretty v0.3.1, mapstructure v1.5.0, Microsoft-go-winio v0.6.0, mitchellh-hashstructure v2.0.2, natefinch/lumberjack v2.2.1, niemeyer/pretty 20200227-snapshot-a10e7cae, olekukonko-tablewriter 20230925-snapshot-df64c4bb, olekukonko-tablewriter 20231005-snapshot, onsi/ginkgo 2.21.0, podman 5.3.1, secureheader v0.2.0, Sirupsen/logrus v1.9.3, stoewer/go-strcase v1.3.0, stretchr/objx v0.5.2, tmc/grpc-websocket-proxy 20220101-snapshot-673ab2c3, xiang90-probing 20221125-snapshot-a49e3df8, yaml for Go v3.0.1, youmark/pkcs8 20181117-snapshot-1be2e3e5, yuin/goldmark v1.4.13, zcalusic/sysinfo v1.1.3)
 
 The MIT License
 
