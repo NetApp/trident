@@ -288,9 +288,10 @@ func NewRestClientFromOntapConfig(
 }
 
 var (
-	MinimumONTAPVersion        = versionutils.MustParseSemantic("9.12.1")
-	MinimumONTAPVersionDefault = versionutils.MustParseSemantic("9.15.1")
-	MinimumASAR2Version        = versionutils.MustParseSemantic("9.16.1")
+	MinimumONTAPVersion                             = versionutils.MustParseSemantic("9.12.1")
+	MinimumONTAPVersionDefault                      = versionutils.MustParseSemantic("9.15.1")
+	MinimumASAR2Version                             = versionutils.MustParseSemantic("9.16.1")
+	MinimumDisaggregatedTieringPolicyRemovedVersion = versionutils.MustParseSemantic("9.17.0")
 )
 
 func IsRESTSupported(version string) (bool, error) {
@@ -4095,9 +4096,19 @@ func (c *RestClient) EmsAutosupportLog(
 
 func (c *RestClient) TieringPolicyValue(
 	ctx context.Context,
-) string {
-	// Becase the REST API is always > ONTAP 9.5, just default to "none"
-	tieringPolicy := "none"
+) (tieringPolicy string) {
+	// Use "none" for unified ONTAP, and "" for disaggregated ONTAP.
+	tieringPolicy = "none"
+
+	parsedVersion, err := versionutils.ParseSemantic(c.OntapVersion)
+	if err != nil {
+		return
+	}
+
+	// TODO (cknight): verify this also applies to ASA r2
+	if c.disaggregated && parsedVersion.AtLeast(MinimumDisaggregatedTieringPolicyRemovedVersion) {
+		tieringPolicy = "" // An empty string prevents sending tieringPolicy when creating volumes.
+	}
 	return tieringPolicy
 }
 

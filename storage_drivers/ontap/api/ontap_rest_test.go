@@ -3405,6 +3405,38 @@ func TestOntapREST_TieringPolicy(t *testing.T) {
 	server.Close()
 }
 
+func TestOntapREST_TieringPolicy_Disaggregated_916(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(mockResourceNotFound))
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	rs.disaggregated = true
+	rs.OntapVersion = "9.16.1"
+	assert.NotNil(t, rs)
+	tieringPolicy := rs.TieringPolicyValue(ctx)
+	assert.Equal(t, "none", tieringPolicy)
+	server.Close()
+}
+
+func TestOntapREST_TieringPolicy_Disaggregated_917(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(mockResourceNotFound))
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	rs.disaggregated = true
+	rs.OntapVersion = "9.17.0"
+	assert.NotNil(t, rs)
+	tieringPolicy := rs.TieringPolicyValue(ctx)
+	assert.Equal(t, "", tieringPolicy)
+	server.Close()
+}
+
+func TestOntapREST_TieringPolicy_InvalidVersion(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(mockResourceNotFound))
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	rs.OntapVersion = "invalid"
+	assert.NotNil(t, rs)
+	tieringPolicy := rs.TieringPolicyValue(ctx)
+	assert.Equal(t, "none", tieringPolicy)
+	server.Close()
+}
+
 func mockNvmeNamespaceListResponse(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
 	numRecords := int64(1)
 	size := int64(1073741824)
