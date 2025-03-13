@@ -9033,3 +9033,291 @@ func TestDeleteAutomaticSnapshot(t *testing.T) {
 		})
 	}
 }
+
+func TestSplitASAVolumeFromBusySnapshot(t *testing.T) {
+	type testCase struct {
+		name          string
+		setupMock     func()
+		expectedError bool
+	}
+
+	mockAPI, driver := newMockOntapASADriver(t)
+	volumeName := "testVolInternalName"
+	snapConfig := storage.SnapshotConfig{
+		Version:            "1",
+		Name:               "testSnap",
+		InternalName:       "testSnap",
+		VolumeName:         "testVol",
+		VolumeInternalName: volumeName,
+	}
+	funcCloneSplitStart := mockAPI.StorageUnitCloneSplitStart
+
+	testCases := []testCase{
+		{
+			name: "Positive - Test1 - Runs without any error",
+			setupMock: func() {
+				mockAPI.EXPECT().StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(api.VolumeNameList{volumeName}, nil).Times(1)
+				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName, ASATypeLun).Return(nil).Times(1)
+			},
+			expectedError: false,
+		},
+		{
+			name: "Positive - Test2 - There are no child volumes to be returned",
+			setupMock: func() {
+				mockAPI.EXPECT().StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(api.VolumeNameList{}, nil).Times(1)
+			},
+			expectedError: false,
+		},
+		{
+			name: "Negative - Test1 - Error while fetching childVolumes of a snapshot",
+			setupMock: func() {
+				mockAPI.EXPECT().StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(api.VolumeNameList{}, fmt.Errorf("error")).Times(1)
+			},
+			expectedError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.setupMock()
+			err := SplitASAVolumeFromBusySnapshot(ctx, &snapConfig, &driver.Config, mockAPI, funcCloneSplitStart, ASATypeLun)
+			if tc.expectedError {
+				assert.Error(t, err, "Expected an error")
+			} else {
+				assert.NoError(t, err, "Shouldn't be any error")
+			}
+		})
+	}
+}
+
+func TestSplitASAVolumeFromBusySnapshotWithDelay(t *testing.T) {
+	type testCase struct {
+		name          string
+		setupMock     func()
+		expectedError bool
+		verify        func(*testing.T)
+	}
+
+	mockAPI, driver := newMockOntapASADriver(t)
+	volumeName := "testVolInternalName"
+	snapConfig := storage.SnapshotConfig{
+		Version:            "1",
+		Name:               "testSnap",
+		InternalName:       "testSnap",
+		VolumeName:         "testVol",
+		VolumeInternalName: volumeName,
+	}
+	funcCloneSplitStart := mockAPI.StorageUnitCloneSplitStart
+	var cloneSplitTimer map[string]time.Time
+
+	tests := []testCase{
+		{
+			name: "Positive - First Delete",
+			setupMock: func() {
+				cloneSplitTimer = make(map[string]time.Time)
+			},
+			expectedError: false,
+			verify: func(t *testing.T) {
+				_, ok := cloneSplitTimer[snapConfig.ID()]
+				assert.True(t, ok, "A timer should be present")
+			},
+		},
+		{
+			name: "Positive - Not a first delete, and timer hasn't moved past cloneSplitDelay",
+			setupMock: func() {
+				cloneSplitTimer = make(map[string]time.Time)
+				cloneSplitTimer[snapConfig.ID()] = time.Now()
+			},
+			expectedError: false,
+			verify: func(t *testing.T) {
+				_, ok := cloneSplitTimer[snapConfig.ID()]
+				assert.True(t, ok, "A timer should be present")
+			},
+		},
+		{
+			name: "Positive - Not a first delete, and timer has moved past cloneSplitDelay",
+			setupMock: func() {
+				cloneSplitTimer = make(map[string]time.Time)
+				cloneSplitTimer[snapConfig.ID()] = time.Now().Add(-15 * time.Second)
+				mockAPI.EXPECT().StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(api.VolumeNameList{volumeName}, nil).Times(1)
+				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName, ASATypeLun).Return(nil).Times(1)
+			},
+			expectedError: false,
+			verify: func(t *testing.T) {
+				_, ok := cloneSplitTimer[snapConfig.ID()]
+				assert.True(t, ok, "A timer should be present")
+			},
+		},
+		{
+			name: "Negative - Error is returned when SplitASAVolumeFromBusySnapshot call is made",
+			setupMock: func() {
+				cloneSplitTimer = make(map[string]time.Time)
+				cloneSplitTimer[snapConfig.ID()] = time.Now().Add(-15 * time.Second)
+				mockAPI.EXPECT().StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(api.VolumeNameList{volumeName}, nil).Times(1)
+				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName, ASATypeLun).Return(fmt.Errorf("error")).Times(1)
+			},
+			expectedError: true,
+			verify: func(t *testing.T) {
+				_, ok := cloneSplitTimer[snapConfig.ID()]
+				assert.True(t, ok, "A timer should be present")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setupMock()
+			SplitASAVolumeFromBusySnapshotWithDelay(ctx, &snapConfig, &driver.Config, mockAPI, funcCloneSplitStart, cloneSplitTimer, ASATypeLun)
+			tt.verify(t)
+		})
+	}
+}
+
+func TestCloneASAvol(t *testing.T) {
+	type testCase struct {
+		name           string
+		cloneVolConfig storage.VolumeConfig
+		split          bool
+		setupMock      func(mockAPI *mockapi.MockOntapAPI)
+		expectedError  error
+	}
+
+	mockAPI, driver := newMockOntapASADriver(t)
+
+	snapshotInternal := "testSnapshotInternal"
+	volumeName := "testVolume"
+	sourceVolume := "sourceVolume"
+
+	testCases := []testCase{
+		{
+			name: "Successfully clone volume",
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                volumeName,
+				CloneSourceVolumeInternal:   sourceVolume,
+				CloneSourceSnapshotInternal: snapshotInternal,
+			},
+			split: false,
+			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, nil).Times(1)
+				mockAPI.EXPECT().StorageUnitCloneCreate(ctx, volumeName, sourceVolume, snapshotInternal, ASATypeLun).Return(nil).Times(1)
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Volume already exists",
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                volumeName,
+				CloneSourceVolumeInternal:   sourceVolume,
+				CloneSourceSnapshotInternal: snapshotInternal,
+			},
+			split: false,
+			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(true, nil).Times(1)
+			},
+			expectedError: fmt.Errorf("volume %s already exists", volumeName),
+		},
+		{
+			name: "Error checking for existing volume",
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                volumeName,
+				CloneSourceVolumeInternal:   sourceVolume,
+				CloneSourceSnapshotInternal: snapshotInternal,
+			},
+			split: false,
+			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, fmt.Errorf("error checking for existing volume")).Times(1)
+			},
+			expectedError: fmt.Errorf("error checking for existing volume: %v", "error checking for existing volume"),
+		},
+		{
+			name: "Create snapshot if none specified",
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                volumeName,
+				CloneSourceVolumeInternal:   sourceVolume,
+				CloneSourceSnapshotInternal: "",
+			},
+			split: false,
+			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, nil).Times(1)
+				mockAPI.EXPECT().StorageUnitSnapshotCreate(ctx, gomock.Any(), sourceVolume, ASATypeLun).Return(nil).Times(1)
+				mockAPI.EXPECT().StorageUnitCloneCreate(ctx, volumeName, sourceVolume, gomock.Any(), ASATypeLun).Return(nil).Times(1)
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Error creating snapshot",
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                volumeName,
+				CloneSourceVolumeInternal:   sourceVolume,
+				CloneSourceSnapshotInternal: "",
+			},
+			split: false,
+			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, nil).Times(1)
+				mockAPI.EXPECT().StorageUnitSnapshotCreate(ctx, gomock.Any(), sourceVolume, ASATypeLun).Return(fmt.Errorf("error creating snapshot")).Times(1)
+			},
+			expectedError: fmt.Errorf("error creating snapshot"),
+		},
+		{
+			name: "Error creating clone",
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                volumeName,
+				CloneSourceVolumeInternal:   sourceVolume,
+				CloneSourceSnapshotInternal: snapshotInternal,
+			},
+			split: false,
+			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, nil).Times(1)
+				mockAPI.EXPECT().StorageUnitCloneCreate(ctx, volumeName, sourceVolume, snapshotInternal, ASATypeLun).Return(fmt.Errorf("error creating clone")).Times(1)
+			},
+			expectedError: fmt.Errorf("error creating clone"),
+		},
+		{
+			name: "Successfully clone and split volume",
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                volumeName,
+				CloneSourceVolumeInternal:   sourceVolume,
+				CloneSourceSnapshotInternal: snapshotInternal,
+			},
+			split: true,
+			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, nil)
+				mockAPI.EXPECT().StorageUnitCloneCreate(ctx, volumeName, sourceVolume, snapshotInternal, ASATypeLun).Return(nil)
+				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName, ASATypeLun).Return(nil)
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Error splitting clone",
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                volumeName,
+				CloneSourceVolumeInternal:   sourceVolume,
+				CloneSourceSnapshotInternal: snapshotInternal,
+			},
+			split: true,
+			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, nil).Times(1)
+				mockAPI.EXPECT().StorageUnitCloneCreate(ctx, volumeName, sourceVolume, snapshotInternal, ASATypeLun).Return(nil).Times(1)
+				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName, ASATypeLun).Return(fmt.Errorf("error splitting clone")).Times(1)
+			},
+			expectedError: fmt.Errorf("error splitting clone: %v", "error splitting clone"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			tc.setupMock(mockAPI)
+
+			err := cloneASAvol(ctx, &tc.cloneVolConfig, tc.split, &driver.Config, mockAPI, ASATypeLun)
+
+			if tc.expectedError != nil {
+				assert.Error(t, err)
+				assert.Equal(t, tc.expectedError.Error(), err.Error())
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
