@@ -114,7 +114,7 @@ Trident AutoSupport image
 */}}
 {{- define "trident.autosupportImage" -}}
 {{- if .Values.tridentAutosupportImage }}
-{{- .Values.tridentAutosupportImage }}
+{{- .Values.tridentAutosupportImage }}:{{ .Values.tridentAutosupportImageTag | default .Chart.AppVersion | trunc 5}}
 {{- else if .Values.imageRegistry }}
 {{- .Values.imageRegistry }}/trident-autosupport:{{ .Values.tridentAutosupportImageTag | default .Chart.AppVersion | trunc 5}}
 {{- else }}
