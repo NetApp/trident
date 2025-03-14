@@ -459,3 +459,43 @@ func TestReconcileFailedError(t *testing.T) {
 	assert.True(t, IsReconcileFailedError(err))
 	assert.Equal(t, "outer; inner; ", err.Error())
 }
+
+func TestFormatError(t *testing.T) {
+	err := FormatError(fmt.Errorf("formatting error"))
+	assert.True(t, IsFormatError(err))
+	assert.Equal(t, "Formatting failed; formatting error", err.Error())
+}
+
+func TestIsFormatError(t *testing.T) {
+	formatErr := &formatError{
+		message: "format error",
+	}
+
+	tests := []struct {
+		Name    string
+		Err     error
+		wantErr assert.BoolAssertionFunc
+	}{
+		{
+			Name:    "NotFormatError",
+			Err:     fmt.Errorf("a generic error"),
+			wantErr: assert.False,
+		},
+		{
+			Name:    "FormatError",
+			Err:     formatErr,
+			wantErr: assert.True,
+		},
+		{
+			Name:    "WrappedFormatError",
+			Err:     fmt.Errorf("wrapping formatError; %w", formatErr),
+			wantErr: assert.True,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.Name, func(t *testing.T) {
+			tt.wantErr(t, IsFormatError(tt.Err), "Unexpected error")
+		})
+	}
+}

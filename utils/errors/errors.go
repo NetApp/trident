@@ -989,3 +989,24 @@ func IsNotManagedError(err error) bool {
 	var errPtr *notManagedError
 	return errors.As(err, &errPtr)
 }
+
+// ///////////////////////////////////////////////////////////////////////////
+// formatError
+// ///////////////////////////////////////////////////////////////////////////
+
+type formatError struct {
+	message string
+}
+
+func (f *formatError) Error() string { return f.message }
+
+func FormatError(err error) error {
+	return &formatError{
+		fmt.Sprintf("Formatting failed; %s", err.Error()),
+	}
+}
+
+func IsFormatError(err error) bool {
+	var f *formatError
+	return errors.As(err, &f)
+}

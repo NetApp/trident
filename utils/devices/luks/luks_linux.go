@@ -108,7 +108,7 @@ func (d *LUKSDevice) luksFormat(ctx context.Context, luksPassphrase string) erro
 			"device": device,
 			"output": string(output),
 		}).WithError(err).Error("Failed to format LUKS device.")
-		return fmt.Errorf("could not format LUKS device; %w", err)
+		return errors.FormatError(fmt.Errorf("could not format LUKS device; %v", string(output)))
 	}
 
 	return nil
