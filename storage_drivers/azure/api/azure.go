@@ -1493,7 +1493,7 @@ func (c Client) RestoreSnapshot(ctx context.Context, filesystem *FileSystem, sna
 	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
 
 	revertBody := netapp.VolumeRevert{
-		SnapshotID: convert.ToPtr(snapshot.SnapshotID),
+		SnapshotID: convert.ToPtr(snapshot.ID),
 	}
 
 	_, err := c.sdkClient.VolumesClient.BeginRevert(responseCtx,
