@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	storagev1 "k8s.io/api/storage/v1"
+
 	commonconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
@@ -2593,7 +2595,7 @@ const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentActionSnapshotRestoreCRDYAMLv1 +
 	"\n---" + tridentConfiguratorCRDYAMLv1 + "\n"
 
-func GetCSIDriverYAML(name string, labels, controllingCRDetails map[string]string) string {
+func GetCSIDriverYAML(name, fsGroupPolicy string, labels, controllingCRDetails map[string]string) string {
 	Log().WithFields(LogFields{
 		"Name":                 name,
 		"Labels":               labels,
@@ -2601,7 +2603,17 @@ func GetCSIDriverYAML(name string, labels, controllingCRDetails map[string]strin
 	}).Trace(">>>> GetCSIDriverYAML")
 	defer func() { Log().Trace("<<<< GetCSIDriverYAML") }()
 
+	switch strings.ToLower(fsGroupPolicy) {
+	case "", strings.ToLower(string(storagev1.ReadWriteOnceWithFSTypeFSGroupPolicy)):
+		fsGroupPolicy = string(storagev1.ReadWriteOnceWithFSTypeFSGroupPolicy)
+	case strings.ToLower(string(storagev1.NoneFSGroupPolicy)):
+		fsGroupPolicy = string(storagev1.NoneFSGroupPolicy)
+	case strings.ToLower(string(storagev1.FileFSGroupPolicy)):
+		fsGroupPolicy = string(storagev1.FileFSGroupPolicy)
+	}
+
 	csiDriver := strings.ReplaceAll(CSIDriverYAMLv1, "{NAME}", name)
+	csiDriver = strings.ReplaceAll(csiDriver, "{FS_GROUP_POLICY}", fsGroupPolicy)
 	csiDriver = yaml.ReplaceMultilineTag(csiDriver, "LABELS", constructLabels(labels))
 	csiDriver = yaml.ReplaceMultilineTag(csiDriver, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
@@ -2618,6 +2630,7 @@ metadata:
   {OWNER_REF}
 spec:
   attachRequired: true
+  fsGroupPolicy: {FS_GROUP_POLICY}
 `
 
 func constructNodeSelector(nodeLabels map[string]string) string {

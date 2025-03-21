@@ -710,7 +710,7 @@ func TestPutCSIDriver(t *testing.T) {
 		},
 	}
 	appLabel := TridentCSILabel
-	newCSIDriverYAML := k8sclient.GetCSIDriverYAML(driverName, make(map[string]string), make(map[string]string))
+	newCSIDriverYAML := k8sclient.GetCSIDriverYAML(driverName, "", make(map[string]string), make(map[string]string))
 	k8sClientErr := fmt.Errorf("k8s error")
 
 	// defining a custom input type makes testing different cases easier

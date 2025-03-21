@@ -18,6 +18,7 @@ import (
 	"github.com/spf13/cobra"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/types"
 
@@ -125,6 +126,7 @@ var (
 	iscsiSelfHealingInterval time.Duration
 	iscsiSelfHealingWaitTime time.Duration
 	k8sAPIQPS                int
+	fsGroupPolicy            string
 
 	// CLI-based K8S client
 	client k8sclient.KubernetesClient
@@ -247,6 +249,8 @@ func init() {
 
 	installCmd.Flags().IntVar(&k8sAPIQPS, "k8s-api-qps", 0, "The QPS used by the controller while talking "+
 		"with the Kubernetes API server. The Burst value is automatically set as a function of the QPS value.")
+	installCmd.Flags().StringVar(&fsGroupPolicy, "fs-group-policy", "", "The FSGroupPolicy "+
+		"to set on Trident's CSIDriver resource.")
 
 	if err := installCmd.Flags().MarkHidden("skip-k8s-version-check"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
@@ -258,6 +262,9 @@ func init() {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
 	if err := installCmd.Flags().MarkHidden("autosupport-hostname"); err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, err)
+	}
+	if err := installCmd.Flags().MarkHidden("fs-group-policy"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
 }
@@ -481,6 +488,20 @@ func validateInstallationArguments() error {
 	// Validate the cloud provider and cloud identity for GCP.
 	if strings.EqualFold(cloudProvider, k8sclient.CloudProviderGCP) && !strings.Contains(cloudIdentity, k8sclient.GCPCloudIdentityKey) {
 		return fmt.Errorf("'%s' is not a valid cloud identity for the cloud provider '%s'", cloudIdentity, k8sclient.CloudProviderGCP)
+	}
+
+	// Validate the fsGroupPolicy
+	switch strings.ToLower(fsGroupPolicy) {
+	case "":
+		break
+	case strings.ToLower(string(storagev1.ReadWriteOnceWithFSTypeFSGroupPolicy)):
+		break
+	case strings.ToLower(string(storagev1.NoneFSGroupPolicy)):
+		break
+	case strings.ToLower(string(storagev1.FileFSGroupPolicy)):
+		break
+	default:
+		return fmt.Errorf("'%s' is not a valid fsGroupPolicy", fsGroupPolicy)
 	}
 
 	return nil
@@ -1415,12 +1436,12 @@ func protectCustomResourceDefinitions() error {
 
 func createK8SCSIDriver() error {
 	// Delete the object in case it already exists and we need to update it
-	err := client.DeleteObjectByYAML(k8sclient.GetCSIDriverYAML(getCSIDriverName(), nil, nil), true)
+	err := client.DeleteObjectByYAML(k8sclient.GetCSIDriverYAML(getCSIDriverName(), fsGroupPolicy, nil, nil), true)
 	if err != nil {
 		return fmt.Errorf("could not delete csidriver custom resource; %v", err)
 	}
 
-	err = client.CreateObjectByYAML(k8sclient.GetCSIDriverYAML(getCSIDriverName(), nil, nil))
+	err = client.CreateObjectByYAML(k8sclient.GetCSIDriverYAML(getCSIDriverName(), fsGroupPolicy, nil, nil))
 	if err != nil {
 		return fmt.Errorf("could not create csidriver custom resource; %v", err)
 	}

@@ -72,6 +72,9 @@ spec:
   {{- if .Values.k8sAPIQPS }}
   k8sAPIQPS: {{ .Values.k8sAPIQPS }}
   {{- end }}
+  {{- if .Values.fsGroupPolicy }}
+  fsGroupPolicy: {{ .Values.fsGroupPolicy }}
+  {{- end }}
   {{- if .Values.nodePrep }}
   nodePrep: {{- range .Values.nodePrep }}
     - {{.}} {{- end }}

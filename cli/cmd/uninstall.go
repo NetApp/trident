@@ -286,7 +286,7 @@ func uninstallTrident() error {
 
 	anyErrors = removeRBACObjects(log.InfoLevel) || anyErrors
 
-	CSIDriverYAML := k8sclient.GetCSIDriverYAML(getCSIDriverName(), nil, nil)
+	CSIDriverYAML := k8sclient.GetCSIDriverYAML(getCSIDriverName(), fsGroupPolicy, nil, nil)
 
 	if err = client.DeleteObjectByYAML(CSIDriverYAML, true); err != nil {
 		Log().WithField("error", err).Warning("Could not delete csidriver custom resource.")

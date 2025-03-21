@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	corev1 "k8s.io/api/core/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -266,6 +267,38 @@ func TestCloudIdentityPrechecks(t *testing.T) {
 	}
 }
 
+func TestFSGroupPolicyPrechecks(t *testing.T) {
+	mockK8sClient := newMockKubeClient(t)
+	installer := newTestInstaller(mockK8sClient)
+
+	tests := []struct {
+		fsGroupPolicy string
+		Valid         bool
+	}{
+		// Valid values
+		{"", true},
+		{string(storagev1.ReadWriteOnceWithFSTypeFSGroupPolicy), true},
+		{strings.ToLower(string(storagev1.ReadWriteOnceWithFSTypeFSGroupPolicy)), true},
+		{string(storagev1.FileFSGroupPolicy), true},
+		{strings.ToLower(string(storagev1.FileFSGroupPolicy)), true},
+		{string(storagev1.NoneFSGroupPolicy), true},
+		{strings.ToLower(string(storagev1.NoneFSGroupPolicy)), true},
+
+		// Invalid values
+		{"test", false},
+	}
+
+	for _, test := range tests {
+		fsGroupPolicy = test.fsGroupPolicy
+		err := installer.fsGroupPolicyPrechecks()
+		if test.Valid {
+			assert.NoError(t, err, "should be valid")
+		} else {
+			assert.Error(t, err, "should be invalid")
+		}
+	}
+}
+
 func TestSetInstallationParams_NodePrep(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -403,6 +436,39 @@ func TestSetInstallationParams_Images(t *testing.T) {
 					}
 				}
 			}
+		})
+	}
+}
+
+func TestSetInstallationParams_FSGroupPolicy(t *testing.T) {
+	tests := []struct {
+		name          string
+		fsGroupPolicy string
+		assertValid   assert.ErrorAssertionFunc
+	}{
+		{name: "validFunc nil", fsGroupPolicy: "", assertValid: assert.NoError},
+		{name: "validFunc empty", fsGroupPolicy: string(storagev1.ReadWriteOnceWithFSTypeFSGroupPolicy), assertValid: assert.NoError},
+		{name: "validFunc empty", fsGroupPolicy: string(storagev1.FileFSGroupPolicy), assertValid: assert.NoError},
+		{name: "validFunc empty", fsGroupPolicy: string(storagev1.NoneFSGroupPolicy), assertValid: assert.NoError},
+		{name: "invalid one", fsGroupPolicy: "invalid", assertValid: assert.Error},
+	}
+
+	mockK8sClient := newMockKubeClient(t)
+	mockK8sClient.EXPECT().ServerVersion().Return(&version.Version{}).AnyTimes()
+	installer := newTestInstaller(mockK8sClient)
+
+	to := netappv1.TridentOrchestrator{
+		TypeMeta:   metav1.TypeMeta{},
+		ObjectMeta: metav1.ObjectMeta{},
+		Spec:       netappv1.TridentOrchestratorSpec{},
+		Status:     netappv1.TridentOrchestratorStatus{},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			to.Spec.FSGroupPolicy = test.fsGroupPolicy
+			_, _, _, err := installer.setInstallationParams(to, "")
+			test.assertValid(t, err)
 		})
 	}
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/ghodss/yaml"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/utils/env"
@@ -107,7 +108,8 @@ var (
 	nodePluginNodeSelector       map[string]string
 	nodePluginTolerations        []netappv1.Toleration
 
-	k8sAPIQPS int
+	k8sAPIQPS     int
+	fsGroupPolicy string
 
 	nodePrep []string
 
@@ -330,6 +332,23 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 	return identifiedImageVersion, nil
 }
 
+func (i *Installer) fsGroupPolicyPrechecks() error {
+	// Validate the fsGroupPolicy
+	switch strings.ToLower(fsGroupPolicy) {
+	case "":
+		break
+	case strings.ToLower(string(storagev1.ReadWriteOnceWithFSTypeFSGroupPolicy)):
+		break
+	case strings.ToLower(string(storagev1.NoneFSGroupPolicy)):
+		break
+	case strings.ToLower(string(storagev1.FileFSGroupPolicy)):
+		break
+	default:
+		return fmt.Errorf("'%s' is not a valid fsGroupPolicy", fsGroupPolicy)
+	}
+	return nil
+}
+
 // setInstallationParams identifies the correct parameters for the Trident installation
 func (i *Installer) setInstallationParams(
 	cr netappv1.TridentOrchestrator, currentInstallationVersion string,
@@ -532,6 +551,7 @@ func (i *Installer) setInstallationParams(
 	cloudIdentity = cr.Spec.CloudIdentity
 
 	k8sAPIQPS = cr.Spec.K8sAPIQPS
+	fsGroupPolicy = cr.Spec.FSGroupPolicy
 
 	// Owner Reference details set on each of the Trident object created by the operator
 	controllingCRDetails := make(map[string]string)
@@ -600,6 +620,11 @@ func (i *Installer) setInstallationParams(
 
 	// Perform cloud identity prechecks
 	if returnError = i.cloudIdentityPrechecks(); returnError != nil {
+		return nil, nil, false, returnError
+	}
+
+	// Perform fsGroupPolicy prechecks
+	if returnError = i.fsGroupPolicyPrechecks(); returnError != nil {
 		return nil, nil, false, returnError
 	}
 
@@ -767,6 +792,8 @@ func (i *Installer) InstallOrPatchTrident(
 		ACPImage:                 acpImage,
 		ISCSISelfHealingInterval: iscsiSelfHealingInterval,
 		ISCSISelfHealingWaitTime: iscsiSelfHealingWaitTime,
+		K8sAPIQPS:                k8sAPIQPS,
+		FSGroupPolicy:            fsGroupPolicy,
 		NodePrep:                 nodePrep,
 	}
 
@@ -882,7 +909,7 @@ func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[s
 		return fmt.Errorf("failed to remove unwanted K8s CSI drivers; %v", err)
 	}
 
-	newK8sCSIDriverYAML := k8sclient.GetCSIDriverYAML(CSIDriverName, labels, controllingCRDetails)
+	newK8sCSIDriverYAML := k8sclient.GetCSIDriverYAML(CSIDriverName, fsGroupPolicy, labels, controllingCRDetails)
 
 	err = i.client.PutCSIDriver(currentCSIDriver, createCSIDriver, newK8sCSIDriverYAML, appLabel)
 	if err != nil {

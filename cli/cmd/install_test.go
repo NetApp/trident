@@ -4,11 +4,13 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	storagev1 "k8s.io/api/storage/v1"
 	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/types"
 
@@ -236,29 +238,31 @@ func TestValidateInstallationArguments(t *testing.T) {
 		imagePullPolicy     string
 		cloudProvider       string
 		cloudIdentity       string
+		fsGroupPolicy       string
 		nodePrep            []string
 		assertValid         assert.ErrorAssertionFunc
 	}{
 		// Valid arguments
-		{"default namespace", "default", "text", "IfNotPresent", "", "", nil, assert.NoError},
-		{"test namespace", "test-namespace", "text", "IfNotPresent", "", "", []string{}, assert.NoError},
-		{"image pull never", "test-namespace", "json", "Never", "", "", []string{"iscsi"}, assert.NoError},
-		{"cloud provider azure", "test-namespace", "json", "Never", k8sclient.CloudProviderAzure, "", []string{"iscsi"}, assert.NoError},
-		{"azure cloud identity key", "test", "text", "Always", k8sclient.CloudProviderAzure, k8sclient.AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582", []string{}, assert.NoError},
-		{"image pull always", "test", "text", "Always", k8sclient.CloudProviderAzure, "", []string{}, assert.NoError},
+		{"default namespace", "default", "text", "IfNotPresent", "", "", "", nil, assert.NoError},
+		{"test namespace", "test-namespace", "text", "IfNotPresent", "", "", string(storagev1.ReadWriteOnceWithFSTypeFSGroupPolicy), []string{}, assert.NoError},
+		{"image pull never", "test-namespace", "json", "Never", "", "", strings.ToLower(string(storagev1.ReadWriteOnceWithFSTypeFSGroupPolicy)), []string{"iscsi"}, assert.NoError},
+		{"cloud provider azure", "test-namespace", "json", "Never", k8sclient.CloudProviderAzure, "", string(storagev1.FileFSGroupPolicy), []string{"iscsi"}, assert.NoError},
+		{"azure cloud identity key", "test", "text", "Always", k8sclient.CloudProviderAzure, k8sclient.AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582", string(storagev1.NoneFSGroupPolicy), []string{}, assert.NoError},
+		{"image pull always", "test", "text", "Always", k8sclient.CloudProviderAzure, "", string(storagev1.ReadWriteOnceWithFSTypeFSGroupPolicy), []string{}, assert.NoError},
 
 		// Invalid arguments
-		{"invalid namespace", "", "", "", "", "", []string{}, assert.Error},
-		{"invalid log format", "test", "html", "", "", "", []string{}, assert.Error},
-		{"invalid image pull policy", "test", "text", "Anyways", "", "", []string{}, assert.Error},
-		{"invalid cloud provider", "test", "json", "Never", "Docker", "", []string{}, assert.Error},
-		{"invalid cloud provider with azure key", "test", "json", "Never", "Docker", k8sclient.AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582", []string{}, assert.Error},
-		{"invalid blank cloud identity", "test", "text", "IfNotPresent", k8sclient.CloudProviderAWS, "", []string{}, assert.Error},
-		{"invalid blank cloud provider", "test", "text", "IfNotPresent", "", k8sclient.AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582", []string{}, assert.Error},
-		{"invalid cloud identity", "test", "text", "Always", k8sclient.CloudProviderAzure, "a8rry78r8-7733-49bd-6656582", []string{}, assert.Error},
-		{"invalid blank node prep", "default", "text", "IfNotPresent", "", "", []string{""}, assert.Error},
-		{"invalid only node prep", "default", "text", "IfNotPresent", "", "", []string{"NVME"}, assert.Error},
-		{"invalid node prep in list", "default", "text", "IfNotPresent", "", "", []string{"iscsi", "nvme"}, assert.Error},
+		{"invalid namespace", "", "", "", "", "", "", []string{}, assert.Error},
+		{"invalid log format", "test", "html", "", "", "", "", []string{}, assert.Error},
+		{"invalid image pull policy", "test", "text", "Anyways", "", "", "", []string{}, assert.Error},
+		{"invalid cloud provider", "test", "json", "Never", "Docker", "", "", []string{}, assert.Error},
+		{"invalid cloud provider with azure key", "test", "json", "Never", "Docker", k8sclient.AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582", "", []string{}, assert.Error},
+		{"invalid blank cloud identity", "test", "text", "IfNotPresent", k8sclient.CloudProviderAWS, "", "", []string{}, assert.Error},
+		{"invalid blank cloud provider", "test", "text", "IfNotPresent", "", k8sclient.AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582", "", []string{}, assert.Error},
+		{"invalid cloud identity", "test", "text", "Always", k8sclient.CloudProviderAzure, "a8rry78r8-7733-49bd-6656582", "", []string{}, assert.Error},
+		{"invalid fsGroupPolicy", "default", "text", "IfNotPresent", "", "", "invalid", nil, assert.Error},
+		{"invalid blank node prep", "default", "text", "IfNotPresent", "", "", "", []string{""}, assert.Error},
+		{"invalid only node prep", "default", "text", "IfNotPresent", "", "", "", []string{"NVME"}, assert.Error},
+		{"invalid node prep in list", "default", "text", "IfNotPresent", "", "", "", []string{"iscsi", "nvme"}, assert.Error},
 	}
 
 	for _, test := range tests {
@@ -269,6 +273,7 @@ func TestValidateInstallationArguments(t *testing.T) {
 			imagePullPolicy = test.imagePullPolicy
 			cloudProvider = test.cloudProvider
 			cloudIdentity = test.cloudIdentity
+			fsGroupPolicy = test.fsGroupPolicy
 			nodePrep = test.nodePrep
 			err := validateInstallationArguments()
 			test.assertValid(t, err)

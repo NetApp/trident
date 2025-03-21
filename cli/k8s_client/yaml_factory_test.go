@@ -3638,6 +3638,7 @@ func TestGetActionSnapshotRestoreCRDYAML(t *testing.T) {
 func TestGetCSIDriverYAML(t *testing.T) {
 	name := "csi.trident.netapp.io"
 	required := true
+	fsGroupPolicy := csiv1.ReadWriteOnceWithFSTypeFSGroupPolicy
 	expected := csiv1.CSIDriver{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "CSIDriver",
@@ -3648,15 +3649,17 @@ func TestGetCSIDriverYAML(t *testing.T) {
 		},
 		Spec: csiv1.CSIDriverSpec{
 			AttachRequired: &required,
+			FSGroupPolicy:  &fsGroupPolicy,
 		},
 	}
 
 	var actual csiv1.CSIDriver
-	actualYAML := GetCSIDriverYAML(name, nil, nil)
+	actualYAML := GetCSIDriverYAML(name, strings.ToLower(string(csiv1.ReadWriteOnceWithFSTypeFSGroupPolicy)), nil, nil)
 
 	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
 	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
 	assert.Equal(t, "csi.trident.netapp.io", actual.Name)
 }
 
